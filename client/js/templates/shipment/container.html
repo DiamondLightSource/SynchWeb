@@ -1,0 +1,33 @@
+<h1>Container: <span class="NAME"><%=NAME%></span></h1>
+
+<a name="top"></a>
+<p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
+
+<% if (CONTAINERSTATUS == 'processing') { %>
+<p class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
+<% } %>
+
+<div class="form clearfix puck_wrap">
+    <div class="puck" title="Click to jump to a position in the puck"></div>
+    
+    <ul>
+        <li>
+            <span class="label">Shipment</span>
+            <span><a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a></span>
+        </li>
+        
+        <li>
+            <span class="label">Dewar</span>
+            <span><%=DEWAR%></span>
+        </li>
+        <li>
+            <span class="label">Container Type</span>
+            <span><%=CONTAINERTYPE%></span>
+        </li>
+        
+    </ul>
+    <div class="singlesamp"></div>
+</div>
+
+<a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
+<div class="table sample"></div>

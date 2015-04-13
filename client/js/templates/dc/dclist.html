@@ -1,0 +1,34 @@
+
+    <h1 class="no_mobile">
+        <div class="usage r"></div>
+        Data Collections
+    </h1>
+
+    <p class="help">This page shows all data collections for the selected visit. If the visit is ongoing the page will automatically update as new data is collected. Auto processing results will be displayed</p>
+
+    <% if (IS_VISIT && !IS_SINGLE) { %>
+    <div>
+        <a class="button" href="/assign/visit/<%=VISIT%>" title="Assign Containers" class="summary"><i class="fa fa-arrows"></i> <span>Assign Containers</span></a>
+        <a class="button" href="/dc/summary/visit/<%=VISIT%>" title="Data Summary" class="summary"><i class="fa fa-file-o"></i> <span>Summary</span></a>
+        <a class="button"  href="/stats/visit/<%=VISIT%>" title="Visit Statistics"><i class="fa fa-pie-chart"></i> <span>Visit Stats</span></a>
+        <a class="button queue"  href="/dc/queue/visit/<%=VISIT%>" title="Build GDA Queue"><i class="fa fa-cog"></i> <span>Build GDA Queue</span></a>
+        <% if (app.staff) { %>
+        <a class="button"  href="/status/bl/<%=BL%>" title="Beamline Status" class="blstat"><i class="fa fa-wrench"></i> <span>Beamline Status</span></a>
+        <% } %>
+    </div>
+    <% } %>
+
+    <% if (IS_SINGLE) { %>
+    <h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%=VISIT%><% } %>">View All Data Collections</a></h1>
+    <% } %>
+
+    <div class="st"></div>
+    <div class="sc"></div>
+    <div class="lg"></div>
+
+    <div class="srch"></div>
+    <div class="filter type"></div>
+        
+    <div class="data_collections"></div>
+        
+    <div class="page_wrap"></div>

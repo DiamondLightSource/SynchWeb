@@ -1,0 +1,98 @@
+// Nearest Cell
+
+.cells {
+    .cell, .stats, .data {
+        width: 20%;
+    }
+    
+    .users {
+        width: 30%;
+    }
+    
+    .users, .stats, .cell {
+        float: right;
+    }
+        
+    .ulist .found {
+        background: green;
+    }
+
+}
+
+
+.cell_param input {
+    width: 6%;
+}
+
+.pdbs,
+.pdb_details_not_found,
+.pdb_details {
+    display: none
+}
+
+.pdb_details {
+    
+    ul {
+        width: 100%;
+        
+        li {
+            width: 96%;
+        }
+    }
+}
+
+#pdbs,
+#pdbs2 {
+    height: 200px;
+}
+
+
+textarea[name=pdb_list] {
+    width: 100%;
+    height: 100px;
+}
+
+
+@media (max-width: $breakpoint-small) {
+    
+    .pdb, .cell, .opts {
+        display: block;
+        padding: 2px;
+        vertical-align: middle;
+    }
+
+    .pdb input, .cell input, .opts input {
+        width: 20%;
+        vertical-align: middle;
+    }
+    .cell input {
+        width: 26%
+    }
+    
+    .pdb_details > ul li {
+        float: none;
+        width: 94%;
+    }
+    
+    .cells .data,
+    .cells .cell,
+    .cells .stats,
+    .cells .users {
+        float: none !important;
+        width: 100% !important;
+    }
+
+    .cells .data ul li,
+    .cells .cell ul li,
+    .cells .stats ul li {
+        width: 50%;
+       float: left;
+        
+    }
+    
+    .cells h3 {
+        text-decoration: underline;
+        margin: 3px 0;
+    }
+    
+}

@@ -1,0 +1,44 @@
+    <h1>Data Collections for PDB Depositions</h1>
+
+    <div class="ty filter"></div>
+    <div class="analysed"></div>
+
+
+    <h1>Stats</h1>
+    <p>Results prior to 2010-05 are excluded from the calculated statistics</p>
+
+    <div class="plot_wrap clearfix">
+        <div class="plot_container left">
+            <div id="visit_pie"></div>
+            <p>Breakdown of PDB depositions</p>
+        </div>
+
+        <div class="plot_container right">
+            <div id="pdbs"></div>
+            <div id="pdbs2"></div>
+            <p>Depositions by beamline / year (Top: ISPyB, Bottom: PDB)</p>
+        </div>
+    </div>
+
+
+    <h1>Auto Processing Stats</h1>
+    <p>Results prior to 2010-05 are excluded from the calculated statistics</p>
+    Distance Cutoff: <input name="dist" value="0.2" /> (Average difference per unit cell axis: <span class="celldiff"></span>&#8491;) <a href="#" class="button update"><i class="fa fa-refresh"></i> Update</a>
+
+    <div class="plot_wrap clearfix">
+        <div class="plot_container left">
+            <div id="aps"></div>
+            <p>Breakdown of PDB depositions</p>
+        </div>
+
+        <div class="plot_container right">
+            <div id="apstats"></div>
+            <p>Depositions per year</p>
+        </div>
+    </div>
+
+    <h1>Update</h1>
+    <div class="data_collection">
+        <a href="#" class="button process"><i class="fa fa-cog"></i> Process</a>
+        <span class="processing"></span>
+    </div>

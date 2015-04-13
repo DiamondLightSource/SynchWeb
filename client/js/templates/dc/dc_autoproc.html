@@ -1,0 +1,66 @@
+
+    <p class="r downloads">
+        <a class="dll button" href="<%=APIURL%>/download/id/<%=DCID%>/aid/<%=AID%>"><i class="fa fa-download"></i> MTZ file</a>
+        <a class="view button logf" href="<%=APIURL%>/download/id/<%=DCID%>/aid/<%=AID%>/log/1/1"><i class="fa fa-search"></i> Log file</a>
+    
+        <% if (TYPE == 'Fast DP') { %>
+        <a href="#" class="button view rd"><i class="fa fa-search"></i> Radiation Damage</a>
+        <% } %>
+    
+        <a class="view button" title="Lookup Unit Cell" href="/cell/a/<%=CELL.CELL_A%>/b/<%=CELL.CELL_B%>/c/<%=CELL.CELL_C%>/al/<%=CELL.CELL_AL%>/be/<%=CELL.CELL_BE%>/ga/<%=CELL.CELL_GA%>"><i class="fa fa-search"></i> Lookup Cell</a>
+    </p>
+    <table class="reflow cell">
+        <thead>
+            <tr>
+                <th>Space Group</th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>&alpha;</th>
+                <th>&beta;</th>
+                <th>&gamma;</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><%=SG%></td>
+                <td><%=CELL.CELL_A%></td>
+                <td><%=CELL.CELL_B%></td>
+                <td><%=CELL.CELL_C%></td>
+                <td><%=CELL.CELL_AL%></td>
+                <td><%=CELL.CELL_BE%></td>
+                <td><%=CELL.CELL_GA%></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <table class="reflow shell">
+        <thead>
+            <tr>
+                <th>Shell</th>
+                <th>Observations</th>
+                <th>Unique</th>
+                <th>Resolution</th>
+                <th>Rmeas</th>
+                <th>I/sig(I)</th>
+                <th>Completeness</th>
+                <th>Multiplicity</th>
+                <th>Anom Completeness</th>
+                <th>Anom Multiplicity</th>
+            </tr>
+        </thead>
+    <% _.each(SHELLS, function(s, n) { %>
+        <tr class="<%=n%>">
+            <td><%=n%></td>
+            <td><%=s.NTOBS%></td>
+            <td><%=s.NUOBS%></td>
+            <td><%=s.RHIGH%> - <%=s.RLOW%></td>
+            <td><% print(TYPE == 'Fast DP' ? s.RMERGE : s.RMEAS)%></td>
+            <td><%=s.ISIGI%></td>
+            <td><%=s.COMPLETENESS%></td>
+            <td><%=s.MULTIPLICITY%></td>
+            <td><%=s.ANOMCOMPLETENESS%></td>
+            <td><%=s.ANOMMULTIPLICITY%></td>
+        </tr>
+    <% }) %>
+    </table>

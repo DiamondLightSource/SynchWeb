@@ -1,0 +1,52 @@
+<div class="messages"></div>
+
+<h1 class="no_mobile">Add New Container</h1>
+
+<p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
+
+<div class="form clearfix puck_wrap">
+    <form>
+    <a href="#" class="button pf no_mobile" title="Paste container contents from clipboard"><i class="fa fa-paste"></i> Paste from Spreadsheet</a>
+    <a name="top"></a>
+    <div class="puck" title="Click to jump to a position in the puck"></div>
+    
+    <ul>
+        <li>
+            <span class="label">Shipment</span>
+            <span><a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a></span>
+        </li>
+        
+        <li>
+            <span class="label">Dewar</span>
+            <span><%=DEWAR%></span>
+        </li>
+        <li>
+            <span class="label">Container Type</span>
+            <span>
+                <select name="CONTAINERTYPE"></select>
+            </span>
+        </li>
+        <li>
+            <span class="label">Container Name</span>
+            <span><input type="text" name="NAME" /></span>
+        </li>
+    </ul>
+    
+    </form>
+    <div class="singlesamp"></div>
+</div>
+
+
+<div class="la puck_controls">
+    <a class="button autofill" href="#" title="Autofill puck"><i class="fa fa-plus"></i> Autofill Puck</a>
+
+    <a class="button clonepuck" href="#" title="Clone entire puck from first sample"><i class="fa fa-plus"></i> Clone Puck</a>
+    <a class="button clearpuck" href="#" title="Clear entire puck"><i class="fa fa-times"></i> Clear Puck</a>
+
+    <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
+</div>
+<div class="table sample"></div>
+
+<div class="form">
+    <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Container</button>
+</div>

@@ -1,0 +1,37 @@
+{
+    "Sample Environment": {
+        "Beamstop X": ["MO-BS-01:X", 1],
+        "Beamstop Y": ["MO-BS-01:Y", 1],
+        "Beamstop Z": ["MO-BS-01:Z", 1],
+        "Scatterguard X": ["MO-SCAT-01:X", 1],
+        "Scatterguard Y": ["MO-SCAT-01:Y", 1],
+        "Scintillator Y": ["MO-SCIN-01:Y", 1],
+        "Scintillator Z": ["MO-SCIN-01:Z", 1],
+        "Mini Aperture X": ["MO-MAPT-01:X", 1],
+        "Mini Aperture Y": ["MO-MAPT-01:Y", 1],
+        "Mini Aperture Z": ["MO-MAPT-01:Z", 1],
+        "Cryojet Fine In": ["MO-STEP-01:GPIO_INP_BITS.B1", 2, 1],
+        "Cryojet Corse In": ["MO-STEP-02:GPIO_INP_BITS.B7", 2, 1],
+        "Beamline Disable Rq": ["MO-STEP-02:GPIO_INP_BITS.B5", 2, 1],
+        "Fluorescence Det In": ["MO-STEP-01:GPIO_INP_BITS.BE", 2, 1]
+    },
+    "Goniometer": {
+        "Goniometer X": ["MO-GONIO-01:X", 1],
+        "Goniometer Y": ["MO-GONIO-01:Y", 1],
+        "Goniometer Z": ["MO-GONIO-01:Z", 1],
+        "Omega": ["MO-GONIO-01:OMEGA", 1],
+        "Sample Centring Y": ["MO-GONIO-01:CENTREY", 1],
+        "Sample Centring Z": ["MO-GONIO-01:CENTREZ", 1],
+        "Plate Y": ["MO-GONIO-01:PLATEY", 1],
+        "Plate Z": ["MO-GONIO-01:PLATEZ", 1],
+        "Pin Detected": ["MO-STEP-02:GPIO_INP_BITS.B6", 2, 1]
+    },
+    "Robot Interface": {
+        "BSZ +ve Limit": ["MO-BS-01:Z.HLS", 2, 1],
+        "Scin Y -ve Limit": ["MO-SCIN-01:Y.LLS", 2, 1],
+        "MiniAP Y Midpoint": ["MO-STEP-01:GPIO_INP_BITS.B9", 2, 1],
+        "Detector Z Safe": ["MO-DET-01:DET_SAFE", 2, 1],
+        "Beamline Safe": ["MO-STEP-01:GPIO_OP_BITS.B1", 2, 1],
+        "Beamline Disable Rq": ["MO-STEP-02:GPIO_INP_BITS.B5", 2, 1]
+    }
+}

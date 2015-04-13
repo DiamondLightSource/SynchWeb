@@ -1,0 +1,28 @@
+<ul class="clearfix">
+    <li class="help active"><a href="#" t_old="Click to toggle help on and off">Help</a>
+        <ul>
+            <li><a href="/docs">Tutorials</a></li>
+        </ul>
+    </li>
+    <li class="feedback"><a href="/feedback">Feedback</a></li>
+    
+    <li><a href="/proposal">Proposals</a></li>
+    
+    <li>
+        <span class="current"><%=PROPOSAL ? PROPOSAL : 'No Proposal'%> <i class="fa fa-angle-double-down"></i></span>
+        <% if (PROPOSAL) { %>
+        <ul>
+            <% _.each(MENUS.menu, function(i,l) { %>
+                <li><a href="/<%=l%>"><%=i%></a></li>
+            <% }) %>
+        </ul>
+        <% } %>
+    </li>
+
+    <% if (PROPOSAL) { %>
+        <% _.each(MENUS.extra, function(i,l) { %>
+            <li><a href="/<%=l%>"><%=i%></a></li>
+        <% }) %>
+    <% } %>
+    
+</ul>

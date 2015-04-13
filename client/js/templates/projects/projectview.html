@@ -1,0 +1,39 @@
+<h1>Project Details</h1>
+
+<p class="help">This pages shows details and history for the selected project</p>
+
+<div class="ra"><a href="#" class="button imp" title="Click to change between showing explicity added project members and those implied by added proteins or samples"><i class="fa fa-arrows-alt"></i> <span>Implicit</span> Project Members</a></div>
+
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Owner</span>
+            <span class="OWNER_NAME"><%=OWNER_NAME%></span>
+        </li>
+
+        <li>
+            <span class="label">Name</span>
+            <span class="TITLE"><%=TITLE%></span>
+        </li>
+
+        <li>
+            <span class="label">Acronym</span>
+            <span class="ACRONYM"><%=ACRONYM%></span>
+        </li>
+
+        <li class="clearfix">
+            <span class="label">Users</span>
+            <span class="users floated">
+                <% if (IS_OWNER) { %>
+                    <input name="adduser" />
+                <% } %>
+                <div class="users"></div>
+            </span>
+        </li>
+
+    </ul>
+</div>
+
+<div class="proteins"></div>
+<div class="samples"></div>
+<div class="datacollections"></div>

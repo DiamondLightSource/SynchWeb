@@ -1,0 +1,42 @@
+<h1>View Protein</h1>
+
+<p class="help">This page shows details for the selected protein and a list of samples which make use of it</p>
+
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Name</span>
+            <span class="NAME"><%=NAME%></span>
+        </li>
+        
+        <li>
+            <span class="label">Acronym</span>
+            <span class="PROTEINID"><%=ACRONYM%></span>
+        </li>
+        
+        <li class="clearfix reorder">
+            <div class="SEQUENCE seq text"><%=SEQUENCE%></div>
+            <span class="label">Sequence</span>
+        </li>
+        
+        <li>
+            <span class="label">Molecular Mass</span>
+            <span class="MOLECULARMASS"><%=MOLECULARMASS%></span>
+        </li>
+        
+        <li class="clearfix">
+            <span class="label">
+                Associated PDB Files<br />
+                <a href="#" class="button add"><i class="fa fa-plus"></i> Add PDB File</a>
+            </span>
+            <span class="pdb floated">
+                <ul class="visits clearfix"></ul>
+            </span>
+        </li>
+        
+    </ul>
+    
+</div>
+
+<div class="samples"></div>
+<div class="datacollections"></div>

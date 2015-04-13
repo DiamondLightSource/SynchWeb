@@ -1,0 +1,127 @@
+
+.plot_container {
+    margin-bottom: 10px;
+    
+    &:not(.right):not(.left) {
+        padding: 1%;
+    }
+    
+    button[name=reset] {
+        float: right;
+    }
+}
+
+
+.legend table tr {
+    cursor: pointer;
+}
+
+.legend table tr:hover {
+    background: $plot-legend-background;
+}
+
+#avg_time {
+    height: 250px;
+}
+
+#visit_breakdown {
+    height: 500px;
+}
+
+#overview {
+    height: 35px;
+    width: 94%;
+}
+
+#dc_hist, #dc_hist2 {
+    height: 167px;
+}
+
+#logon {
+    height: 450px;
+    canvas {
+        transition: opacity .3s ease-in-out;
+    }
+    
+    &.loading {   
+        canvas {
+            opacity: 0.5;
+        }
+    }
+}
+
+.horizontal_stack {
+    height: 30px;
+}
+
+.usage {
+    width: 50%;
+}
+
+#system_pie,
+#ovr_pie,
+#visit_pie,
+#aps, #apstats {
+    height: 400px;
+}
+
+.legend {
+    float: right;
+    margin: 3px 0 20px 0;
+}
+
+#pie1, #pie2, #pie3 {
+    height: 250px;
+}
+
+.pie_holder {
+    padding: 0 2%;
+    float: left;
+    width: 29.3333%;
+}
+
+.legendColorBox {
+    padding: 2px;
+}
+
+.legendColorBox > div {
+    border: none !important;
+}
+
+.legendColorBox > div > div {
+    border-radius: 3px;
+}
+
+.legendLabel {
+    padding: 2px;
+}
+
+.annote {
+    position: absolute;
+    color: $body-color;
+    font-size: smaller;
+    
+    sub {
+        vertical-align: sub;
+        font-size: smaller;
+    }
+}
+
+@media (max-width: $breakpoint-vsmall) {
+    #system_pie,
+    #ovr_pie,
+    #visit_pie {
+        height: 320px !important;
+    }
+    
+    
+    .pie_holder {
+        width: 96%;
+    }
+    
+    
+    #overview {
+        width: 95%;
+    }
+}
+

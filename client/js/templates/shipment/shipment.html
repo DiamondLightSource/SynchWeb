@@ -1,0 +1,94 @@
+    <h1>Shipment: <span class="SHIPPINGNAME"><%=SHIPPINGNAME%></span></h1>
+
+    <p class="help">This page shows details and contents of the selected shipment. Most parameters can be edited by simply clicking on them.</p>
+    <p class="help excl">Shipments need to have an outgoing and return home lab contact before shipment labels can be printed</p>
+
+    <% if (LCOUT && LCRET) { %>
+    <div class="ra">
+        <% if (SHIPPINGSTATUS == 'opened') { %>
+            <a class="button send" href="#"><i class="fa fa-plane"></i> Send to DLS</a>
+        <% } %>
+
+        <a href="<%=APIURL%>/pdf/container/sid/<%=SHIPPINGID%>" class="label button" title="Print Shipment Contents"><i class="fa fa-print"></i> Print Shipment Contents</a>
+        <a href="<%=APIURL%>/pdf/sid/<%=SHIPPINGID%>" class="label button" title="Print Shipment Labels"><i class="fa fa-print"></i> Print Shipment Labels</a>
+    </div>
+    <% } %>
+
+    <div class="form">
+        <ul>
+
+            <li>
+                <span class="label">Created</span>
+                <span class="created"><%=CREATED%></span>
+            </li>
+
+            <li>
+                <span class="label">Status</span>
+                <span class="stat"><%=SHIPPINGSTATUS%></span>
+            </li>
+
+            <li>
+                <span class="label">Outgoing Lab Contact</span>
+                <span class="SENDINGLABCONTACTID"><%=LCOUT%></span>
+            </li>
+
+            <li>
+                <span class="label">Return Lab Contact</span>
+                <span class="RETURNLABCONTACTID"><%=LCRET%></span>
+            </li>
+            <li>
+                <span class="label">Safety Level</span>
+                <span class="SAFETYLEVEL"><%=SAFETYLEVEL%></span>
+            </li>
+            <li>
+                <span class="label">Courier</span>
+                <span class="DELIVERYAGENT_AGENTNAME"><%=DELIVERYAGENT_AGENTNAME%></span>
+            </li>
+
+            <li>
+                <span class="label">Courier Account No.</span>
+                <span class="DELIVERYAGENT_AGENTCODE"><%=DELIVERYAGENT_AGENTCODE%></span>
+            </li>
+
+            <li>
+                <span class="label">Shipping Date</span>
+                <span class="DELIVERYAGENT_SHIPPINGDATE"><%=DELIVERYAGENT_SHIPPINGDATE%></span>
+            </li>
+
+            <li>
+                <span class="label">Delivery Date</span>
+                <span class="DELIVERYAGENT_DELIVERYDATE"><%=DELIVERYAGENT_DELIVERYDATE%></span>
+            </li>
+
+            <li class="clearfix reorder">
+                <div class="COMMENTS text"><%=COMMENTS%></div>
+                <span class="label">Comments</span>
+            </li>
+
+        </ul>
+        <div class="clear"></div>
+    </div>
+
+
+    <h1>Shipment Contents</h1>
+
+    <p class="help">Select a dewar by clicking on the row in the table below. Dewar details are then shown below. Click the + icon to add a container to the selected dewar</p>
+
+    <div class="ra"><a href="#" class="button" id="add_dewar" title="Add a dewar to this shipment"><i class="fa fa-plus"></i> Add Dewar</a></div>
+
+    <div class="table"></div>
+
+
+    <h1>
+        Dewar Details: <span class="dewar_name"></span>
+        <span class="r padded_button add_container"></span>
+    </h1>
+
+    <p class="help">This section shows contents and history for the selected dewar. Click the spyglass icon to view the contents of the container</p>
+
+    <div class="left dcontent"></div>
+
+
+    <div class="right history table table-no-margin"></div>
+
+    <div class="clear"></div>

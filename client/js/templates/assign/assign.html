@@ -1,0 +1,23 @@
+<h1>Container Allocation for <%=VISIT.VISIT%> on <%=VISIT.BL%> at <%=VISIT.ST%></h1>
+
+<p class="help">This page allows you to allocate samples from ISPyB to the beamline sample changer. Drag and drop containers on to the locations on the beamline. Shipments and Dewars can be expanded by clicking on their titles</p>
+
+<p class="ra">
+   <a href="/dc/visit/<%=VISIT.VISIT%>" class="button"><i class="fa fa-search"></i> Data Collections</a>
+</p>
+
+<div class="drag_container">
+    
+    <div class="c_holder">
+        <h1>Assigned Containers: <?php echo $bl ?> Sample Changer</h1>
+        <div id="assigned"></div>
+    </div>
+    
+    <div class="c_holder">
+        <div class="r"><a class="button" href="/containers/add/visit/<%=VISIT.VISIT%>" title="Click to create a new container"><i class="fa fa-plus"></i> Add New Container</a></div>
+        <h1>Unassigned Containers</h1>
+        <div class="page_wrap"></div>
+        <div id="unassigned"></div>
+    </div>
+    
+</div>

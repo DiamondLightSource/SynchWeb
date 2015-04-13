@@ -1,0 +1,38 @@
+define(['marionette', 'views/table', 'collections/proposals'], function(Marionette, TableView, Proposals) {
+    
+    
+  var ClickableRow = Backgrid.Row.extend({
+    events: {
+      'click': 'onClick',
+    },
+    onClick: function() {
+      app.cookie(this.model.get('PROPOSALCODE') + this.model.get('PROPOSALNUMBER'))
+      app.trigger('visits:show')
+    },
+  })
+    
+  return Marionette.LayoutView.extend({
+    className: 'content',
+    template: '<div><h1>Proposals</h1><p class="help">This page lists all proposals available to you. Click on a row to select that proposal</p><div class="wrapper"></div></div>',
+    regions: { 'wrap': '.wrapper' },
+    
+    initialize: function(options) {
+      var columns = [{ name: 'ST', label: 'Start Date', cell: 'string', editable: false },
+                     { name: 'PROPOSALCODE', label: 'Code', cell: 'string', editable: false },
+                     { name: 'PROPOSALNUMBER', label: 'Number', cell: 'string', editable: false },
+                     { name: 'VCOUNT', label: 'Visits', cell: 'string', editable: false },
+                     { name: 'TITLE', label: 'Title', cell: 'string', editable: false }]
+                    
+      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', loading: true, backgrid: { row: ClickableRow, emptyText: 'No proposals found', } })
+    },
+                                      
+    onRender: function() {
+      this.wrap.show(this.table)
+    },
+      
+    onShow: function() {
+      this.table.focusSearch()
+    },
+  })
+
+})

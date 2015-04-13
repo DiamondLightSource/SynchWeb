@@ -1,0 +1,46 @@
+
+    <h1><a href="/dc/visit/<%=VISIT%>/id/<%=ID%>" title="Click to view full details for this data collection"><%=VISIT%>: <%=BL%> - <%=ST%></a> (<span title="Distance between search unit cell parameters and those for this data set. A smaller number means the data set is close to the searched parameters">Distance: <%=parseFloat(DIST).toFixed(2)%>, <%=TYPE%>)</span></h1>
+    <h3><%=DIR%><%=FILETEMPLATE%></h3>
+    
+    <div class="users">
+        <h3>Users</h3>
+        <p class="ulist" title="Users that match the user list for the designated PDB file are highlighted in green"><%=us.join(', ')%></p>
+        </div>
+    
+    <div class="cell">
+        <h3>Cell Parameters</h3>
+        <ul>
+            <li>A: <%=CELL_A%></li>
+            <li>B: <%=CELL_B%></li>
+            <li>C: <%=CELL_C%></li>
+            <li>&alpha;: <%=CELL_AL%></li>
+            <li>&beta;: <%=CELL_BE%></li>
+            <li>&gamma;: <%=CELL_GA%></li>
+            </ul>
+        </div>
+    
+    <div class="stats">
+        <h3>Statistics</h3>
+        <ul>
+            <li>Resolution: <%=RHIGH%> - <%=RLOW%>&#197;</li>
+            <li>Spacegroup: <%=SG%></li>
+            <li>Rmerge: <%=RMERGE%></li>
+            <li>Completeness: <%=COMPLETENESS%></li>
+            <li>I/&sigma;(I): <%=ISIGI%></li>
+            <li>Multiplicity: <%=MULTIPLICITY%></li>
+            </ul>
+        </div>
+    
+    
+    <div class="data">
+        <h3>Data Collection</h3>
+        <ul>
+            <li>&Omega; Start: <%=AXISSTART%>&deg;</li>
+            <li>&Omega; Osc: <%=AXISRANGE%>&deg;</li>
+            <li>No. Images: <%=NUMIMG%></li>
+            <li>Wavelength: <%=WAVELENGTH%>&#197;</li>
+            <li>Exposure: <%=EXPOSURETIME%>s</li>
+            <li>Transmission: <%=TRANSMISSION%>%</li>
+            </ul>
+        </div>
+    </div>

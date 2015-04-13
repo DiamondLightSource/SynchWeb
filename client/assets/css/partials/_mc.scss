@@ -1,0 +1,134 @@
+.dc {
+    background: $content-fill-color;
+    @include cols(4,0.5%,0.5%);
+    display: inline-block;
+    border-radius: 5px;
+
+    @media (max-width: $breakpoint-medium) {
+        @include cols(3,0.5%,1%);
+    }
+    
+    @media (max-width: $breakpoint-small) {
+        @include cols(2,0.5%,1%);
+    }
+    
+    @media (max-width: $breakpoint-vsmall) {
+        @include cols(1,0.5%,1%);
+    }
+    
+    &.selected {
+        background: $content-dark-background;
+    }
+
+    
+    .distl {
+        height: 100px;
+    }
+    
+    .state {
+        float: right;
+
+        ul {
+            list-style: none;
+            margin-left: -25px;
+        
+            li {
+                display: inline;
+                font-size: 10px;
+                padding-right: 2px;
+            }
+        }
+    }
+
+    img {
+        float: right;
+    }
+}
+
+.data_collection.cell, .data_collection.options {
+    input {
+        width: 65px;
+    }
+}
+
+.filter ul li a {
+    text-decoration: none;
+}
+
+.filter ul li.running, .filter ul li.running:after {
+    background: $content-active;
+}
+
+
+span.run_state {
+    float: right;
+}
+
+.autoproc {
+    padding: 0 0 1% 0;
+    display: none;
+}
+
+.dc_count {
+    float: right;
+}
+
+.blended_wrap,
+.table_wrap {
+    /*height: 28%;*/
+    overflow-y: auto;
+}
+
+.dend_wrap,
+.blended_wrap {
+    margin-bottom: 1%;
+    /*padding: 0.5%;*/
+    /*box-shadow: 2px 2px 15px #bfbfbf;*/
+    /*border-radius: 6px;*/
+}
+
+.table_wrap {
+    /*box-shadow: 2px 2px 15px #bfbfbf;*/
+    /*border-radius: 6px;*/
+    margin-bottom: 1%;
+}
+
+.dc_wrap {
+    /*height: 60%;*/
+    overflow-y: auto;
+    /*box-shadow: 2px 2px 15px #bfbfbf;*/
+    /*border-radius: 6px;*/
+}
+
+.data_collections.int {
+    width: 99%;
+}
+
+.dend_wrap {
+    padding: 0.5%;
+}
+
+.dendrogram {
+    width: 96%;
+    height: 100px;
+    //background: url('/templates/images/load.gif') center no-repeat;
+}
+
+#images iframe, #add_contact iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.dend_wrap .slider {
+    width: 50%;
+    display: inline-block;
+}
+
+.dend_wrap .controls {
+    padding: 0.5%;
+}
+
+.yAxis .tickLabel.selected {
+    font-weight: bold;
+}

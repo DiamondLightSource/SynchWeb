@@ -1,0 +1,33 @@
+/* Comobobox */
+.ui-combobox { display: inline-block; margin: 0; margin-right: 1.8em; position: relative; }
+.ui-combobox-input { padding: 0.2em; margin: 0; }
+.ui-combobox-button { position: absolute; width: 1.8em !important; margin: 0; margin-left: -1px; top: 0; bottom: 0; }
+.ui-combobox-button .ui-button-text { padding: 0em; }
+.ui-combobox .ui-autocomplete { max-height: 10em; overflow-y: auto; overflow-x: hidden; }
+/*.ui-widget.ui-widget-content.ui-corner-left.ui-combobox-input.ui-autocomplete-input { width: 100%; }*/
+.ui-dialog .ui-dialog-content { padding: 0.5em; }
+
+.ui-autocomplete-loading {
+    //background: url('/templates/images/load_small.gif') no-repeat right center
+    background: inline-image('load_small.gif') no-repeat right center
+}
+
+
+/* Time Picker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; }
+.ui-timepicker-rtl dl dd { margin: 0 65px 10px 10px; }
+
+/* Auto Complete */
+.ui-autocomplete {
+    max-height: 100px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}

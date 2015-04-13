@@ -1,0 +1,16 @@
+
+    <td class="CODE"><%=CODE%></td>
+    <td><%=BARCODE%></td>
+    <td class="FACILITYCODE"><%=FACILITYCODE%></td>
+    <td class="FIRSTEXPERIMENTID"><%=EXP%></td>
+    <td class="TRACKINGNUMBERTOSYNCHROTRON"><%=TRACKINGNUMBERTOSYNCHROTRON%></td>
+    <td class="TRACKINGNUMBERFROMSYNCHROTRON"><%=TRACKINGNUMBERFROMSYNCHROTRON%></td>
+    <td><%=DEWARSTATUS%></td>
+    <td><%=STORAGELOCATION%></td>
+    <td><%=CCOUNT%></td>
+    <td>
+        <span class="deactivate"><a class="button button-notext deact" title="Deactivate Dewar"><i class="fa  fa-power-off"></i> <span>Deactivate Dewar</span></a></span>
+        <a class="button button-notext print" title="Click to print dewar contents" href="<%=APIURL%>/pdf/container/did/<%=DEWARID%>"><i class="fa fa-print"></i> <span>Print Dewar Report</span></a>
+        <a class="button button-notext add" title="Click to add a container" href="/containers/add/did/<%=DEWARID%>"><i class="fa fa-plus"></i> <span>Add Container</span></a>
+    </td>
+

@@ -1,0 +1,18 @@
+<ul id="menu">
+    <% if (IS_STAFF && PROPOSAL) { %>
+        <% _.each(MENUS.admin, function(i,l) { %>
+            <li><a href="/<%=l%>"><i class="fa fa-2x fa-<%=i.icon%>"></i> <span class="icon-label"><%=i.title%></span></a></li>
+        <% }) %>
+    <% } %>
+    <li><a href="/logout" title="Logout"><i class="fa fa-sign-out fa-2x"></i> <span class="icon-label">Logout</span></a></li>
+</ul>
+
+<a class="icon pull" href="#"><i class="fa fa-bars fa-2x"></i> <span class="icon-label">Menu</span></a>
+<a class="icon" href="/"><i class="fa fa-home fa-2x"></i> <span class="icon-label">Home</span></a>
+<a class="icon" href="/cal"><i class="fa fa-calendar fa-2x"></i> <span class="icon-label">Calendar</span></a>
+
+<span class="search-mobile">
+    <input type="text" class="search-mobile" placeholder="&#xf002;" />
+</span>
+
+<div class="bread"></div>

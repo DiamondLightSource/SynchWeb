@@ -1,0 +1,35 @@
+<div class="form">
+    <ul>
+        <li>
+            <label>Type:</label>
+            <span>
+                <select name="type">
+                    <option value="pdb_file">File</option>
+                    <option value="pdb_code">Code</option>
+                    <option value="existing_pdb">Existing PDB</option>
+                </select>
+            </span>
+        </li>
+        <li class="ty pdb_file">
+            <label>File:</label>
+            <span class="file">
+                <input type="file" name="pdb_file" />
+            </span>
+        </li>
+        
+        <li class="ty pdb_code">
+            <label>PDB Code:</label>
+            <span>
+                <input type="text" name="pdb_code" />
+            </span>
+        </li>
+        
+        <li class="ty existing_pdb">
+            <label>Existing PDB:</label>
+            <span>
+                <select name="existing_pdb"></select>
+            </span>
+        </li>
+    </ul>
+    <div class="progress"></div>
+</div>

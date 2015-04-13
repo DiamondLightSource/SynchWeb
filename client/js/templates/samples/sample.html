@@ -1,0 +1,108 @@
+<h1>Sample Details</h1>
+
+<p class="help">This pages shows details and history for the selected sample</p>
+
+<div class="form">
+    <ul>
+        
+        <li>
+            <span class="label">Name</span>
+            <span class="NAME"><%=NAME%></span>
+        </li>
+        
+        <li>
+            <span class="label">Protein Acronym</span>
+            <span class="ACRONYM"><%=ACRONYM%></span> [<a href="/proteins/pid/<%=PROTEINID%>">View All</a>]
+        </li>
+        
+        <li>
+            <span class="label">Spacegroup</span>
+            <span class="SPACEGROUP"><%=SPACEGROUP%></span>
+        </li>
+
+        <li class="clearfix reorder">
+            <div class="text_table table">
+                <table class="reflow cell">      
+                    <thead>            
+                        <tr>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>C</th>
+                            <th>&alpha;</th>
+                            <th>&beta;</th>
+                            <th>&gamma;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>                                
+                            <td><span class="CELL_A"><%=CELL_A%></span></td>
+                            <td><span class="CELL_B"><%=CELL_B%></span></td>
+                            <td><span class="CELL_C"><%=CELL_C%></span></td>
+                            <td><span class="CELL_ALPHA"><%=CELL_ALPHA%></span></td>
+                            <td><span class="CELL_BETA"><%=CELL_BETA%></span></td> 
+                            <td><span class="CELL_GAMMA"><%=CELL_GAMMA%></span></td>
+                        </tr> 
+                    </tbody>    
+                </table>
+                <!--A: <span class="CELL_A"><%=CELL_A%></span>
+                B: <span class="CELL_B"><%=CELL_B%></span>
+                C: <span class="CELL_C"><%=CELL_C%></span>
+                &alpha;: <span class="CELL_ALPHA"><%=CELL_ALPHA%></span>
+                &beta;: <span class="CELL_BETA"><%=CELL_BETA%></span>
+                &gamma;: <span class="CELL_GAMMA"><%=CELL_GAMMA%></span>-->
+                
+            </div>
+            <span class="label">Unit Cell</span>
+        </li>
+
+        <li>
+            <span class="label">Anomalous Scatterer</span>
+            <span class="ANOMALOUSSCATTERER"><%=ANOMALOUSSCATTERER%></span>
+        </li>
+
+        <li>
+            <span class="label">Required Resolution</span>
+            <span class="REQUIREDRESOLUTION"><%=REQUIREDRESOLUTION%></span>
+        </li>
+    
+
+        <li>
+            <span class="label">Comment</span>
+            <span class="COMMENTS"><%=COMMENTS%></span>
+        </li>
+
+        <li>
+            <span class="label">Barcode</span>
+            <span class="CODE"><%=CODE%></span>
+        </li>
+        
+        <% if (CONTAINERID) { %>
+        <li>
+            <span class="label">Container</span>
+            <span class="cont"><a href="/containers/cid/<%=CONTAINERID%>"><%=CONTAINER%></a></span>
+        </li>
+        <% } %>
+        
+        <% if (DEWAR) { %>
+        <li>
+            <span class="label">Dewar</span>
+            <span class="dew"><%=DEWAR%></span>
+        </li>
+        <% } %>
+        
+        <% if (SHIPPINGID) { %>
+        <li>
+            <span class="label">Shipment</span>
+            <span class="ship"><a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a></span>
+        </li>
+        <% } %>
+        
+        <li>
+            <span class="label">Snapshots</span>
+            <span class="snapshots sample"></span>
+        </li>
+        
+    </ul>
+</div>
+
+<div class="history"></div>

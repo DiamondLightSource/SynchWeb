@@ -1,0 +1,26 @@
+<!-- Assign Container -->
+<div data-role="header">
+    <h1>Assign Container</h1>
+</div>
+
+<div class="ui-content">
+    <p>Assign: &quot;<%=container%>&quot; to</p>
+    <fieldset data-role="controlgroup" data-mini="true">
+        <% _.each(items, function(i) { %>
+        <input type="radio" name="position" value="<%=i.id%>" id="pos<%=i.id%>" />
+        <label for="pos<%=i.id%>">Position <%=i.id%>
+        
+            <% var a = assigned.findWhere({ SAMPLECHANGERLOCATION: i.id.toString() }) %>
+            <% if (a) { %>
+                (Current: <%=a.get('NAME')%>)
+            <% } %>
+        
+        </label>
+        <% }) %>
+    </fieldset>
+
+    <fieldset class="ui-grid-a">
+        <div class="ui-block-a"><a href="#" data-role="button" data-rel="back" data-theme="d">Cancel</a></div>
+        <div class="ui-block-b"><a class="submit" href="#" data-role="button" data-theme="b">Ok</a></div>
+    </fieldset>
+</div>

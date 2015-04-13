@@ -1,0 +1,62 @@
+
+    <td><%=LOCATION%></td>
+    <% if (PROTEINID == -1) { %>
+    <td colspan="6">&nbsp;</td>
+    <td class="extra" colspan="3">&nbsp;</td>
+
+    <% } else { %>
+
+    <td><%=ACRONYM%></td>
+    <td><%=NAME%></td>
+    <td><%=SPACEGROUP %></td>
+    <td><%=CODE%></td>
+    <td><%=COMMENTS%></td>
+
+    <td class="extra"><%=REQUIREDRESOLUTION%></td>
+    <td class="extra"><%=ANOMALOUSSCATTERER%></td>
+    <td class="extra">
+        <table class="reflow cell">      
+            <thead>            
+                <tr>
+                    <th>A</th>
+                    <th>B</th>
+                    <th>C</th>
+                    <th>&alpha;</th>
+                    <th>&beta;</th>
+                    <th>&gamma;</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>                                
+                    <td><span class="CELL_A"><%=CELL_A%></span></td>
+                    <td><span class="CELL_B"><%=CELL_B%></span></td>
+                    <td><span class="CELL_C"><%=CELL_C%></span></td>
+                    <td><span class="CELL_ALPHA"><%=CELL_ALPHA%></span></td>
+                    <td><span class="CELL_BETA"><%=CELL_BETA%></span></td> 
+                    <td><span class="CELL_GAMMA"><%=CELL_GAMMA%></span></td>
+                </tr> 
+            </tbody>    
+        </table>
+    <!--A: <%=CELL_A%> B:<%=CELL_B%> C:<%=CELL_C%> &alpha;:<%=CELL_ALPHA%> &beta;:<%=CELL_BETA%> &gamma;:<%=CELL_GAMMA%>-->
+    </td>
+
+    <td>
+        <% if (BLSAMPLEID && STATUS) { %>
+        <ul class="status">
+            <li class="<%=STATUS%>"></li>
+        </ul>
+        <% } %>
+    </td>
+
+    <% } %>
+    <td>
+        <% if (!IN_USE) { %>
+            <a href="#" class="edit button button-notext" title="Edit sample details"><i class="fa fa-pencil"></i> <span>Edit Sample</span></a>
+            <% if (PROTEINID > -1) { %>
+            <!--<a href="#" class="delete button button-notext"><i class="fa fa-times"></i> <span>Delete Sample</span></a>-->
+            <% } %>
+        <% } %>
+        <% if (PROTEINID > -1) { %>
+        <a href="/samples/sid/<%=BLSAMPLEID%>" class="view button button-notext" title="View sample details"><i class="fa fa-search"></i> <span>View Sample</span></a>
+        <% } %>        
+    </td>

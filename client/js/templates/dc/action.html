@@ -1,0 +1,17 @@
+<div class="data_collection" dcid="<%=ID%>" type="action">
+    <div class="snapshots">
+        <a href="<%=APIURL%>/image/ai/visit/<%=VIS_LINK%>/aid/<%=ID%>/f/1" title="Crystal Snapshot Before"><img class="lazy" data-src="<%=APIURL%>/image/ai/visit/<%=VIS_LINK%>/aid/<%=ID%>" alt="Crystal Snapshot Before" /></a>
+    </div>
+    
+    <div class="snapshots">
+        <a href="<%=APIURL%>/image/ai/visit/<%=VIS_LINK%>/aid/<%=ID%>/n/2/f/1" title="Crystal Snapshot After"><img class="lazy" data-src="<%=APIURL%>/image/ai/visit/<%=VIS_LINK%>/aid/<%=ID%>/n/2" alt="Crystal Snapshot After" /></a>
+    </div>
+    
+    <h1>
+        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%=VIS_LINK%>"><%=VIS_LINK%></a>]<% } %>  <%=ST%></span><span class="spacer"> - </span><span class="temp">Sample <% print(IMP.toLowerCase()) %></span>
+    </h1>
+    <ul class="clearfix">
+        <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%=BLSAMPLEID%>"><%=SAMPLE%></a></span></li><% } %>
+        <li>Time: <%=BSX%>s</li>
+    </ul>
+</div>

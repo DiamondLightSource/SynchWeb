@@ -1,0 +1,62 @@
+
+<h1><%=TYPE%></h1>
+<p class="r">
+    <a class="view button" title="Lookup Unit Cell" href="/cell/a/<%=CELL.A%>/b/<%=CELL.B%>/c/<%=CELL.C%>/al/<%=CELL.AL%>/be/<%=CELL.BE%>/ga/<%=CELL.GA%>"><i class="fa fa-search"></i> Lookup Cell</a>
+</p>
+
+<table class="reflow cell">
+    <thead>
+        <tr>
+            <th>Space Group</th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>&alpha;</th>
+            <th>&beta;</th>
+            <th>&gamma;</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><%=CELL.SG%></td>
+            <td><%=CELL.A%></td>
+            <td><%=CELL.B%></td>
+            <td><%=CELL.C%></td>
+            <td><%=CELL.AL%></td>
+            <td><%=CELL.BE%></td>
+            <td><%=CELL.GA%></td>
+        </tr>
+    </tbody>
+</table>
+
+
+<table class="reflow strat">
+    <thead>
+        <tr>
+            <th>Strategy</th>
+            <th>Description</th>
+            <th>&Omega; Start</th>
+            <th>&Omega; Osc</th>
+            <th>Res (&#197;)</th>
+            <th>Rel Trn (%)</th>
+            <th>Abs Trn (%)</th>
+            <th>Exposure (s)</th>
+            <th>No. Images</th>
+        </tr>
+    </thead>
+    
+    <% _.each(STRATS, function(r, i) { %>
+    <tr draggable="true" sid="<%=i%>">
+        <td><%=r.COM%></td>
+        <td><%=r.COMMENTS%></td>
+        <td><%=r.ST%></td>
+        <td><%=r.OSCRAN%></td>
+        <td><%=r.RES%></td>
+        <td><%=r.TRAN%></td>
+        <td><%=r.ATRAN%></td>
+        <td><%=r.TIME%></td>
+        <td><%=r.NIMG%></td>
+    </tr>
+    <% }) %>
+</table>
+

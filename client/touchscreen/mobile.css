@@ -1,0 +1,27 @@
+#view table tbody td {
+    padding: 0.5em 0;
+}
+
+.clear {
+    clear: both;
+}
+
+
+.ui-block-d .ui-collapsible,
+.ui-block-c .ui-collapsible,
+.ui-block-b .ui-collapsible,
+.ui-block-a .ui-collapsible {
+    padding: 0 0.5em;
+}
+
+.responsive.ui-listview li {
+    width: 24%;
+    float: left;
+    padding: 0.5%;
+    
+}
+
+.responsive.ui-listview li .ui-btn {
+    border-radius: 5px;
+    border-width: 1px;
+}

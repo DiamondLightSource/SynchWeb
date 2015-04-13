@@ -1,0 +1,110 @@
+    <h1><span class="title"><%=TITLE%></span></h1>
+
+    <div class="form">
+        <ul class="clearfix">
+
+            <li>
+                <span class="label">Beamline</span>
+                <span class="BEAMLINE"><%=BEAMLINE%></span>
+            </li>
+
+            <li>
+                <span class="label">Start Date/Time</span>
+                <span class="STARTTIME"><%=STARTTIME%></span>
+            </li>
+
+            <li>
+                <span class="label">Visit ID</span>
+                <span class="SESSIONID"><%=VISIT%></span>
+            </li>
+
+            <li>
+                <span class="label">System</span>
+                <span class="SYSTEMID"><%=SYSTEM%></span>
+            </li>
+
+            <li>
+                <span class="label">Component &amp; Sub Component</span>
+                <span class="COMPONENTID"><%=COMPONENT%></span>
+                <% if (SUBCOMPONENT) { %>
+                &raquo; <span class="SUBCOMPONENTID"><%=SUBCOMPONENT%></span>
+                <% } %>
+            </li>
+
+            <li>
+                <span class="label">Beamtime Lost</span>
+                <span class="BEAMTIMELOST"><%=BEAMTIMELOSTTEXT%></span>
+            </li>
+
+            <li class="beamtime_lost">
+                <span class="label">Beamtime Lost Between</span>
+                <span class="BEAMTIMELOST_STARTTIME"><%=BEAMTIMELOST_STARTTIME%></span> -
+                <span class="BEAMTIMELOST_ENDTIME"><%=BEAMTIMELOST_ENDTIME%></span>
+                (<span class="LOST"><%=LOST%></span>hr)
+            </li>
+
+
+
+            <li class="clearfix reorder">
+                <div class="DESCRIPTION text">
+                    <%=DESCRIPTIONMD%>
+                </div>
+                <span class="label">Description</span>
+
+            </li>
+
+
+            <% if (ATTACHMENT) { %>
+            <li>
+
+                <% if (ATTACH_IMAGE) { %>
+                    <div class="image text">
+                        <a href="<%=APIURL%>/image/fa/fid/<%=FAULTID%>"><img src="<%=APIURL%>/image/fa/fid/<%=FAULTID%>" alt="<%=ATTACHMENT%>" /></a>
+                    </div>
+                <% } else { %>
+                    <div class="ATTACHMENT text">
+                        <%=ATTACHMENT%>
+                        <a href="<%=APIURL%>/image/fa/fid/<%=FAULTID%>">Download</a>
+                    </div>
+                <% } %>
+                <span class="label">Attachment</span>
+            </li>
+            <% } %>
+
+            <li>
+                <span class="label">Reported By</span>
+                <span class="OWNER"><%=NAME%></span>
+            </li>
+
+            <% if (ASSIGNEE) { %>
+            <li>
+                <span class="label">Assignee</span>
+                <span class="ASSIGNEE"><%=ASSIGNEENAME%></span>
+            </li>
+            <% } %>
+
+            <li>
+                <span class="label">Fault Resolved</span>
+                <span class="RESOLVED"><%=RESOLVEDTEXT%></span>
+            </li>
+
+            <li class="fresolved">
+                <span class="label">End Date/Time</span>
+                <span class="ENDTIME"><%=ENDTIME%></span>
+            </li>
+
+            <li class="fresolved clearfix reorder">
+                <div class="RESOLUTION text"><%=RESOLUTIONMD%></div>
+                <span class="label">Resolution</span>
+            </li>
+
+            <% if (ELOGID) { %>
+            <li>
+                <span class="label">eLog Entry</span>
+                <span class="ELOGID"><a target="_blank" href="https://elog.pri.diamond.ac.uk/php/elog/cs_logentdtlret.php?log_entry_id=<%=ELOGID%>">Go to eLog</a></span>
+            </li>
+            <% } %>
+
+        </ul>
+
+    </div>

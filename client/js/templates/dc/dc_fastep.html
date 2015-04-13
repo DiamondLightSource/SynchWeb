@@ -1,0 +1,38 @@
+<div>
+    
+    <div class="plot_fastep"></div>
+    
+    <p class="r">
+        <a class="view button" href="/dc/map/id/<%=DCID%>/ty/ep"><i class="fa fa-search"></i> Map / Model Viewer</a>
+        <a class="dll button" href="<%=APIURL%>/download/ep/id/<%=DCID%>"><i class="fa fa-download"></i> PDB/MTZ file</a>
+        <a class="view button logf" href="<%=APIURL%>/download/ep/id/<%=DCID%>/log/1"><i class="fa fa-search"></i> Log file</a>
+    </p>
+    
+    <ul>
+        <li>Figure of Merit: <%=FOM%></li>
+        <li>Pseudo-free CC:  <%=CC%></li>
+    </ul>
+
+    <table class="atoms">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>X</th>
+                <th>Y</th>
+                <th>Z</th>
+                <th>Occ</th>
+            </tr>
+        </thead>
+    
+        <% _.each(ATOMS, function(a) { %>
+        <tr>
+            <% _.each(a, function(v) { %>
+            <td><%=v%></td>
+            <% }) %>
+        </tr>
+        
+        <% }) %>
+        
+    </table>
+
+</div>

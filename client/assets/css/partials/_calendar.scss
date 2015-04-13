@@ -1,0 +1,219 @@
+
+.calendar > ul {
+    list-style: none;
+    
+    &.links li {
+        display: block;
+        @include cols(4,1%,0.2%);
+        height: 15px;
+        text-align: center;
+        cursor: pointer;
+        
+        transition: background .3s ease-out;
+
+        &:hover {
+            background: $content-cal-hl1-background;
+        }
+    }
+    
+    > li {
+        float: left;
+        display: block;
+        @include cols(7,1%,0.2%);
+        background: $content-cal-background;
+        height: 100px;
+        //overflow: auto;
+        overflow: hidden;
+        
+        @media (max-width: $breakpoint-small) {
+            @include cols(1,2%,0.5%);
+            height: auto;
+        }
+        
+        .full {
+            display: none;
+            
+            @media (max-width: $breakpoint-small) {
+                display: inline;
+            }
+            
+        }
+        
+        &.head {
+            background: $content-cal-header-background;
+            height: 15px;
+            font-weight: bold;
+            text-align: center;
+            
+            @media (max-width: $breakpoint-small) {
+                display: none;
+            }
+        }
+        
+        &.wend {
+            background: $content-cal-hl1-background;
+        }
+        
+        &.noday {
+            background: $content-cal-hl2-background;
+            
+            @media (max-width: $breakpoint-small) {
+                display: none;
+            }
+        }
+        
+        &.no_event {
+            @media (max-width: $breakpoint-small) {
+                display: none;
+            }
+        }
+        
+        &.today {
+            background: $content-cal-header-background;
+        }
+
+        
+        @media (min-width: $breakpoint-small) {
+            &:hover {
+                position: relative;
+                overflow: visible;
+                
+                > ul {
+                    background: #dadada;
+                    border-radius: 3px;
+                    max-height: 500px;
+                }
+            }
+        }
+
+        
+        > ul {
+            @media (min-width: $breakpoint-small) {
+                overflow: hidden;
+                transition: max-height 0.5s ease-in-out;
+                max-height: 90px;
+            }
+            
+            padding: 5px;
+            
+            @media (max-width: $breakpoint-small) {
+                li .time {
+                    float: right;
+                    margin-left: 5px;
+                    
+                    &:before {
+                        content: "Starts: ";
+                    }
+                }
+            }
+            
+            > li > ul {
+                padding: 0 5px;
+                list-style: none;
+            
+                
+                li .details {
+                    display:none;
+                    
+                    padding: 2%;
+                    background: $content-cal-hl2-background;
+                    z-index: 4;
+                }
+                
+                li:hover .details {
+                    display: block;
+                }
+                
+                @media (max-width: $breakpoint-small) {
+                    border-bottom: 1px solid $content-cal-header-background;
+                    margin-bottom: 5px;
+                    padding-bottom: 5px;
+                    
+                    .short {
+                        display: none;
+                    }
+                    
+                    li {
+                        &.past {
+                            color: lighten($body-color, 60%);
+                            
+                            a {
+                                color: lighten($body-color, 60%);                                
+                            }
+                        }
+                        
+                        .details {
+                            display: block;
+                            background: none;
+                            padding: 0;
+                            color: lighten($body-color, 60%);
+                        }
+                        
+                        .type {
+                            float: right;
+                        }
+                    }
+                
+                }
+            }
+
+        }
+        
+    }
+}
+
+.calendar_header {
+    @media (max-width: $breakpoint-small) {
+        display: none;
+    }
+}
+
+.calendar_main {
+    @media (max-width: $breakpoint-small) {
+        height: 350px;
+        overflow-y: scroll;
+    }
+}
+
+.calendar ul.calendar_days {
+    display: none;
+    padding: 2px;
+    border-bottom: 1px solid $content-cal-hl1-background;
+    margin: 0.5%;
+    
+    @media (max-width: $breakpoint-small) {
+        display: block;
+        height: 55px;
+        white-space: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    
+    li {
+        width: 30px;
+        height: 45px;
+        float: none;
+        display: inline-block;
+        text-align: center;
+        
+        .day {
+            display: block;
+        }
+        .number {
+            display: block;
+            border-radius: 3px;
+            padding: 4px;
+        }
+        
+        &.past {
+            color: lighten($body-color, 60%);
+        }
+        
+        &.event {
+            .number {
+                background: $content-cal-hl1-background;
+            }
+        }
+        
+    }
+}

@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule ^(.*)$ /client/client/$1 [L]
