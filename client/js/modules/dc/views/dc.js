@@ -16,6 +16,8 @@ define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/
       this.strat = null
       this.ap = null
       this.dp = null
+
+      this.fullPath = false
     },
       
     onShow: function() {
@@ -68,8 +70,25 @@ define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/
       'click a.dl': 'showDistl',
       'click a.sn': 'showSnapshots',
       'click li.sample a': 'setProposal',
+      'click @ui.exp': 'expandPath',
     },
       
+    ui: {
+      temp: 'span.temp',
+      exp: 'i.expand',
+    },
+
+    expandPath: function(e) {
+        e.preventDefault()
+
+        this.ui.temp.html(this.fullPath ? (this.model.get('DIR')+this.model.get('FILETEMPLATE')) : (this.model.get('DIRFULL')+this.model.get('FILETEMPLATE')))
+        this.ui.exp.toggleClass('fa-caret-right')
+        this.ui.exp.toggleClass('fa-caret-left')
+        
+        this.fullPath = !this.fullPath
+    },
+
+
     setProposal: function(e) {
         console.log('setting proposal', this.model.get('PROP'))
         if (this.model.get('PROP')) app.cookie(this.model.get('PROP'))
