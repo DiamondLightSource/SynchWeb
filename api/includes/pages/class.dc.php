@@ -360,6 +360,8 @@
                 // Data collections
                 if ($dc['TYPE'] == 'data') {
                     $nf = array(1 => array('AXISSTART'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE'), 3 => array('EXPOSURETIME'), 4 => array('WAVELENGTH'));
+
+                    $dc['DIRFULL'] = $dc['DIR'];
                     $dc['DIR'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $dc['DIR']);
                     
                     $dc['BSX'] = round($dc['BSX']*1000);
