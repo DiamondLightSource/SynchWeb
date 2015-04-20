@@ -13,11 +13,12 @@ define(['marionette',
     
         'views/dialog',
         'modules/dc/views/queuebuilder',
-    
+        'modules/proposal/views/users', 
+
         'tpl!templates/dc/dclist.html',
         ],
 function(Marionette, Pages, DCListView,
-         SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, template) {
+         SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, UserView, template) {
 
              
   return Marionette.LayoutView.extend({
@@ -40,6 +41,22 @@ function(Marionette, Pages, DCListView,
       
     events: {
       //'click a.queue': 'showQueueBuilder',
+      'mouseover a.users': 'showUsers',
+      'mouseout a.users': 'hideUsers',
+    },
+
+    showUsers: function(e) {
+        console.log('show users')
+        e.preventDefault()
+        if (!this.users) {
+            this.users = new UserView({ visit: this.model.get('VISIT') })
+            this.$el.find('.users').append(this.users.render().$el)
+        }
+        this.users.$el.show()
+    },
+
+    hideUsers: function(e) {
+        if (this.users) this.users.$el.hide()
     },
       
       
