@@ -9,11 +9,16 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
         },
     })
     
+    var LoadingView = Marionette.ItemView.extend({
+        tagName: 'li',
+        template: _.template('<i class="fa fa-spin fa-spinner"></i>')
+    })
     
     return Marionette.CollectionView.extend({
         template: _.template('<h1>Users</h1><ul class="users"></ul>'),
         childViewContainer: '.users',
         childView: UserItem,
+        emptyView: LoadingView,
         className: 'visit_users',
         
         initialize: function(options) {
