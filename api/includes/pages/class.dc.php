@@ -3,7 +3,8 @@
     class Dc extends Page {
         
 
-        var $arg_list = array('id' => '\d+', 'ids' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 't' => '\w+', 'bl' => '\w\d\d(-\d)?', 'value' => '.*', 'sid' => '\d+', 'aid' => '\d+', 'pjid' => '\d+', 'imp' => '\d', 'pid' => '\d+', 'h' => '\d\d', 'dmy' => '\d\d\d\d\d\d\d\d',
+        var $arg_list = array('id' => '\d+', 'ids' => '\d+', 'visit' => '\w+\d+-\d+', 's' => '[\w\d-\/]+', 't' => '\w+', 'bl' => '\w\d\d(-\d)?', 'value' => '.*', 'sid' => '\d+', 'aid' => '\d+', 'pjid' => '\d+', 'imp' => '\d', 'pid' => '\d+', 'h' => '\d\d', 'dmy' => '\d\d\d\d\d\d\d\d',
+                              'dcg' => '\d+',
                               'a' => '\d+(.\d+)?',
                               'b' => '\d+(.\d+)?',
                               'c' => '\d+(.\d+)?',
@@ -154,6 +155,7 @@
 
                 $extc = "prop.proposalcode||prop.proposalnumber||'-'||ses.visit_number as vis, prop.proposalcode||prop.proposalnumber as prop, ";
                 $extcg = "max(prop.proposalcode||prop.proposalnumber||'-'||ses.visit_number) as vis, max(prop.proposalcode||prop.proposalnumber) as prop, ";
+                if ($this->has_arg('dcg')) $extcg = $extc;
 
                 foreach ($tables as $i => $t) {
                     $ct = sizeof($t) == 4 ? $t[3] : $t[2];
@@ -268,7 +270,30 @@
                 for ($i = 0; $i < 8; $i++) array_push($args, $s);
             }
             
-            $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count(distinct dc.datacollectiongroupid) as tot FROM datacollection dc
+
+            # Data collection group
+            if ($this->has_arg('dcg')) {
+                $count_field = 'dc.datacollectionid';
+                $fields = "1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dc.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, 1 as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam";
+                $groupby = '';
+
+                $where .= ' AND dc.datacollectiongroupid=:'.(sizeof($args)+1);
+
+                // will want to support these too at some point
+                $where2 = ' AND es.energyscanid < 0';
+                $where3 = ' AND r.robotactionid < 0';
+                $where4 = ' AND xrf.xfefluorescencespectrumid < 0';
+
+                array_push($args, $this->arg('dcg'));
+
+            } else {
+                $count_field = 'distinct dc.datacollectiongroupid';
+                $fields = "count(dc.datacollectionid) as dcc, min(smp.name) as sample, min(smp.blsampleid) as blsampleid, min(ses.visit_number) as vn, min(dc.kappastart) as kappa, min(dc.phistart) as phi, min(dc.startimagenumber) as si, min(dcg.experimenttype) as dct, dc.datacollectiongroupid as dcg, min(dc.runstatus) as runstatus, min(dc.beamsizeatsamplex) as bsx, min(dc.beamsizeatsampley) as bsy, min(dc.overlap) as overlap, 1 as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, min(dc.imageprefix) as imp, min(dc.datacollectionnumber) as run, min(dc.filetemplate) as filetemplate, min(dc.datacollectionid) as id, sum(dc.numberofimages) as ni, min(dc.imagedirectory) as dir, min(dc.resolution) as resolution, min(dc.exposuretime) as exposuretime, min(dc.axisstart) as axisstart, sum(dc.numberofimages) as numimg, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st, min(dc.transmission) as transmission, min(dc.axisrange) as axisrange, min(dc.wavelength) as wavelength, min(dc.comments) as comments, 1 as epk, 1 as ein, min(dc.xtalsnapshotfullpath1) as x1, min(dc.xtalsnapshotfullpath2) as x2, min(dc.xtalsnapshotfullpath3) as x3, min(dc.xtalsnapshotfullpath4) as x4, min(dc.starttime) as sta, min(dc.detectordistance) as det, min(dc.xbeam) as xbeam, min(dc.ybeam) as ybeam";
+                $groupby = "GROUP BY dc.datacollectiongroupid";
+            }
+
+
+            $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count($count_field) as tot FROM datacollection dc
                 INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
                 LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
                 $extj[0]
@@ -303,23 +328,21 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            #SELECT $extc smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dc.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, 1 as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam FROM datacollection dc  
 
-            //$this->db->set_debug(True);
             $q = "SELECT outer.*
              FROM (SELECT ROWNUM rn, inner.*
              FROM (
                            
-             SELECT $extcg min(smp.name) as sample, min(smp.blsampleid) as blsampleid, min(ses.visit_number) as vn, min(dc.kappastart) as kappa, min(dc.phistart) as phi, min(dc.startimagenumber) as si, min(dcg.experimenttype) as dct, dc.datacollectiongroupid as dcg, min(dc.runstatus) as runstatus, min(dc.beamsizeatsamplex) as bsx, min(dc.beamsizeatsampley) as bsy, min(dc.overlap) as overlap, 1 as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, min(dc.imageprefix) as imp, min(dc.datacollectionnumber) as run, min(dc.filetemplate) as filetemplate, min(dc.datacollectionid) as id, sum(dc.numberofimages) as ni, min(dc.imagedirectory) as dir, min(dc.resolution) as resolution, min(dc.exposuretime) as exposuretime, min(dc.axisstart) as axisstart, sum(dc.numberofimages) as numimg, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st, min(dc.transmission) as transmission, min(dc.axisrange) as axisrange, min(dc.wavelength) as wavelength, min(dc.comments) as comments, 1 as epk, 1 as ein, min(dc.xtalsnapshotfullpath1) as x1, min(dc.xtalsnapshotfullpath2) as x2, min(dc.xtalsnapshotfullpath3) as x3, min(dc.xtalsnapshotfullpath4) as x4, min(dc.starttime) as sta, min(dc.detectordistance) as det, min(dc.xbeam) as xbeam, min(dc.ybeam) as ybeam FROM datacollection dc
+             SELECT $extcg $fields FROM datacollection dc
              INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
              INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
              LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
              $extj[0]
              WHERE $sess[0] $where
-             GROUP BY dc.datacollectiongroupid
+             $groupby
                    
              UNION
-             SELECT $extc smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',1,1,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.peakfdoubleprime, 1, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1 FROM energyscan es
+             SELECT $extc 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',1,1,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.peakfdoubleprime, 1, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1 FROM energyscan es
             INNER JOIN blsession ses ON ses.sessionid = es.sessionid
             LEFT OUTER  JOIN blsample_has_energyscan bes ON es.energyscanid = bes.energyscanid
             LEFT OUTER JOIN blsample smp ON bes.blsampleid = smp.blsampleid
@@ -327,14 +350,14 @@
             WHERE $sess[1] $where2
                    
             UNION
-            SELECT $extc smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',1,1,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, 1, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1 FROM xfefluorescencespectrum xrf
+            SELECT $extc 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',1,1,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, 1, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1 FROM xfefluorescencespectrum xrf
             INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
             LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid     
             $extj[3]
             WHERE $sess[3] $where4
                    
             UNION
-            SELECT $extc smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND((CAST(r.endtimestamp AS DATE)-CAST(r.starttimestamp AS DATE))*86400, 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, 'A', r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, 'A', 'A', 'A', 'A', r.starttimestamp as sta, 1, 1, 1 FROM robotaction r
+            SELECT $extc 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND((CAST(r.endtimestamp AS DATE)-CAST(r.starttimestamp AS DATE))*86400, 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, 'A', r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, 'A', 'A', 'A', 'A', r.starttimestamp as sta, 1, 1, 1 FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
             LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
             $extj[2]
@@ -1085,6 +1108,9 @@
             $iqs = array(array(), array(), array());
 
             #$this->db->set_debug(True);
+
+            $where = $id;
+            /*
             $dcg = $this->db->pq("SELECT datacollectiongroupid as dcg FROM datacollection WHERE datacollectionid=:1", array($id));
             if (!sizeof($dcg)) $this->error('No such data collection');
 
@@ -1098,6 +1124,7 @@
                 //array_push($args, $id['ID']);
             }
             $where = implode($where, ', ');
+            */
 
             /*$tot = $this->db->pq("SELECT count(im.imagenumber) as tot 
                 FROM image im 

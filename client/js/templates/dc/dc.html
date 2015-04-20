@@ -36,8 +36,11 @@
         <li>Transmission: <%=TRANSMISSION%>%</li>
         <li>Beamsize: <%=BSX%>x<%=BSY%>&mu;m</li>
         <li>Type: <% if (DCT) print(DCT) %></li>
+        <% if (DCC > 1) { %>
+        <li>Group: <a href="/dc/visit/<%=VIS_LINK%>/dcg/<%=DCG%>"><%=DCC%> Data Collections</a></li>
+        <% } %>
         <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%=COMMENTS%></span></li>
-        <% if (!STATE) { %><li>Status: <b>Stopped</b></li><% } %>
+        <% if (!STATE) { %><li>Status: <span class="b">Stopped</span></li><% } %>
         </ul>
     
     <div class="holder">
@@ -52,5 +55,6 @@
         <div class="downstream"></div>
         <% } %>
     <% } %>
+
     </div>
 </div>
