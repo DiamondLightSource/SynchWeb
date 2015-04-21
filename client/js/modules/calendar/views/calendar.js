@@ -285,7 +285,7 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
                     year: function() { return self.year },
                     month: function() {
                         var m = self.month + 1
-                        return m < 10 ? (' '+m) : m
+                        return m < 10 ? ('0'+m) : m
                     },
                     all: options.all,
                     ty: 'mx',
