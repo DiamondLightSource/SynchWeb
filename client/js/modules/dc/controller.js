@@ -125,7 +125,7 @@ define(['marionette', 'modules/dc/datacollections', 'modules/dc/views/imageviewe
         var vis = new Visit({ VISIT: visit })
         vis.fetch({
             success: function() {
-                app.bc.reset([bc, { title: 'Sample Changer' }, { title: visit }])
+                app.bc.reset([bc, { title: 'Sample Changer' }, { title: visit, url: '/dc/visit/'+visit }])
                 app.content.show(new SampleChangerView({ model: vis, visit: visit }))
             },
             
