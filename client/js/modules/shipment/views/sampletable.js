@@ -29,6 +29,22 @@ define(['marionette',
             'click a.clone': 'cloneSample',
             'click a.clear': 'clearSample',
         },
+
+        modelEvents: {
+            'change:isSelected': 'setSelected',
+        },
+
+        setSelected: function(e) {
+            console.log('seleted', this.model.get('isSelected'))
+            this.$el.parent().find('tr').removeClass('selected')
+            this.$el.addClass('selected')
+
+            $('html, body').animate({ scrollTop: this.$el.offset().top }, 500)
+        },
+
+        className: function() {
+            if (this.model.get('isSelected')) return 'selected' 
+        },
         
         editSample: function(e) {
             e.preventDefault()

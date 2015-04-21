@@ -82,6 +82,9 @@ define(['marionette', 'utils', 'utils/canvas', 'jquery', 'backbone', 'backbone-v
         var cur = utils.get_xy(e, this.$el)
         this.selected = this._get_position(cur)
         this.trigger('sample:selected', this.selected)
+
+        var sel = this.collection.findWhere({ LOCATION: (this.selected+1).toString() })
+        if (sel) sel.set('isSelected', true)
         
         this._draw()
     },
