@@ -61,7 +61,7 @@
         # List proposals for current user
         function _get_proposals($id=null) {
             global $prop_types, $bl_types;
-            
+
             $args = array();
             $where = "WHERE p.proposalcode in ('cm', 'mx', 'nt', 'nr', 'sw', 'in', 'mt', 'ee')";
             
@@ -77,15 +77,15 @@
                 #$where .= " AND s.sessionid in ('".implode("','", $this->sessionids)."')";
             }
             
-            $tot = $this->db->pq("SELECT count(distinct p.proposalid) as tot FROM proposal p INNER JOIN blsession s ON p.proposalid = s.proposalid $where");
-            $tot = intval($tot[0]['TOT']);
-            
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
                 $where .= " AND (lower(p.title) LIKE lower('%'||:".$st."||'%') OR lower(p.proposalcode || p.proposalnumber) LIKE lower('%'||:".($st+1)."||'%'))";
                 for ($i = 0; $i < 2; $i++) array_push($args, $this->arg('s'));
             }
 
+            $tot = $this->db->pq("SELECT count(distinct p.proposalid) as tot FROM proposal p INNER JOIN blsession s ON p.proposalid = s.proposalid $where", $args);
+            $tot = intval($tot[0]['TOT']);
+            
             $start = 0;
             $end = 10;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
