@@ -329,6 +329,7 @@
             $args = array($this->proposalid);
             $where = 'pr.proposalid=:1';
             $join = '';
+            $extc = '';
 
             if ($this->has_arg('pjid')) {
                 $args = array($this->arg('pjid'));
@@ -348,6 +349,7 @@
             if ($this->has_arg('pid')) {
                 $where .= ' AND pr.proteinid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('pid'));
+                $extc = 'pr.sequence, ';
             }
             
 
@@ -380,13 +382,13 @@
             
             
             if ($this->has_arg('sort_by')) {
-                $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' =>'pr.molecularmass', 'SEQ' => 'DBMS_LOB.SUBSTR(pr.sequence,255,1)');
+                $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' =>'pr.molecularmass', 'HASSEQ' => 'SEQUENCE');
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT distinct pr.proteinid, DBMS_LOB.SUBSTR(pr.sequence,255,1) as sequence, p.proposalcode||p.proposalnumber as prop, pr.name,pr.acronym,pr.molecularmass/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
+                                  SELECT /*distinct*/ $extc CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, p.proposalcode||p.proposalnumber as prop, pr.name,pr.acronym,pr.molecularmass/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
                                   FROM protein pr
                                   /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
                                   LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
@@ -394,7 +396,7 @@
                                   INNER JOIN proposal p ON p.proposalid = pr.proposalid
                                   $join
                                   WHERE $where
-                                  GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, DBMS_LOB.SUBSTR(pr.sequence,255,1), p.proposalcode||p.proposalnumber
+                                  /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, p.proposalcode||p.proposalnumber*/
                                   ORDER BY $order
                                   ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
             
@@ -428,6 +430,7 @@
                 $r['DCOUNT'] = $dcount;
                 $scount = array_key_exists($r['PROTEINID'], $scs) ? $scs[$r['PROTEINID']] : 0;
                 $r['SCOUNT'] = $scount;
+                $r['SEQUENCE'] = $this->db->read($r['SEQUENCE']);
             }
             
             if ($this->has_arg('pid')) {
