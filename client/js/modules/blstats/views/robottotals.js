@@ -1,4 +1,4 @@
-define(['marionette', 'views/table'], function(Marionette, TableView) {
+define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableView, table) {
     
     return Marionette.LayoutView.extend({
         className: 'content',
@@ -12,7 +12,7 @@ define(['marionette', 'views/table'], function(Marionette, TableView) {
             var columns = [
                 { name: 'ST', label: 'Time', cell: 'string', editable: false },
                 { name: 'BL', label: 'Beamline', cell: 'string', editable: false },
-                { name: 'VIS', label: 'Visit', cell: 'string', editable: false },
+                { label: 'Visit', cell: table.TemplateCell, editable: false, template: '<a href="/stats/visit/<%=VIS%>"><%=VIS%></a>' },
                 { name: 'NUM', label: 'Actions', cell: 'string', editable: false },
                 { name: 'SUCCESS', label: 'Success', cell: 'string', editable: false },
                 { name: 'AVGT', label: 'Avg Time', cell: 'string', editable: false },
