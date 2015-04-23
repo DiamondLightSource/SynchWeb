@@ -106,6 +106,11 @@ function(Marionette, Pages, DCListView,
         if (this.model && this.model.get('CAMS') == 1) {
             this.status.show(new StatusView({ bl: this.model.get('BL') }))
         }
+
+        if (app.mobile()) {
+            this.$el.find('div.links a').addClass('button-notext')
+            this.$el.find('div.links a i').addClass('fa-2x')
+        }
     },
       
       
