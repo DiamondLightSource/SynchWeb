@@ -550,6 +550,7 @@
                          
                          array('fast_ep/', 'fast_ep.log', 'Best spacegroup'),
                          array('fast_dp/dimple/', 'refmac5_restr.log', 'Cruickshanks'),
+                         array('auto_mrbump/', 'MRBUMP.log', 'Ctruncate'),
                          );
             
             $out = array();
