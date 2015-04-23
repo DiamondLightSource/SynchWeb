@@ -9,12 +9,10 @@ define(['marionette',
         'modules/dc/views/edge',
         'modules/dc/views/mca',
         'modules/dc/views/action',
-        
-        'tpl!templates/dc/dclist.html',
         ],
 function(Marionette, 
          DCImageStatusCollection, DCAPStatusCollection,
-         DCItemView, RobotItemView, EdgeItemView, MCAItemView, ActionItemView, template) {
+         DCItemView, RobotItemView, EdgeItemView, MCAItemView, ActionItemView) {
              
   var EmptyCollectionView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1>No data collections yet</h1></div>' })
   var GettingCollectionView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1><i class="fa fa-spin fa-cog"></i> Retrieving data collections</h1></div>' })
@@ -74,7 +72,7 @@ function(Marionette,
                                                           
     onDestroy: function() {
       this.collection.stop()
-    }
+    },
   })
 
        
