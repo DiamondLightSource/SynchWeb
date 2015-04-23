@@ -6,9 +6,10 @@ define(['marionette'], function(Marionette) {
         getTemplate: function() {
             var temps = {
                 data: '<span class="title">New data collection</span> <a href="#"><%=DIR%><%=FILETEMPLATE%></a>',
-                edge: '<span class="title">New edge scan</span> <a href="#"><%=DIR%> Edge Scan</a>',
-                mca: '<span class="title">New MCA fluorescence spectrum</span> <a href="#"><%=DIR%> Fluorescence spectrum</a>',
+                edge: '<span class="title">New edge scan</span> <a href="#"><%=DIR%></a>',
+                mca: '<span class="title">New MCA fluorescence spectrum</span> <a href="#"><%=DIR%></a>',
                 load: '<span class="title">New sample loaded</span> <a href="#">Puck: <%=EXPOSURETIME%> Pin: <%=RESOLUTION%> Barcode: <%=DIR%></a>',
+                action: '<span class="title">New sample action</span> <a href="#"><%=IMP%></a>',
             }
             
             return _.template(this.model.get('ST').replace(/\d+-\d+-\d+ /, '')+' - '+temps[this.model.get('TYPE')])
