@@ -304,7 +304,15 @@
         function _get_users() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             
-            $rows = $this->db->pq("SELECT iu.role, u.name, u.fullname, count(it.id) as visits, TO_CHAR(max(it.startdate), 'DD-MM-YYYY') as last FROM investigation@DICAT_RO i INNER JOIN investigationuser@DICAT_RO iu ON i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u ON u.id = iu.user_id LEFT OUTER JOIN investigationuser@DICAT_RO iut ON u.id = iut.user_id LEFT OUTER JOIN investigation@DICAT_RO it ON it.id = iut.investigation_id AND it.startdate < i.startdate WHERE lower(i.visit_id) LIKE :1 GROUP BY iu.role,u.name, u.fullname ORDER BY u.fullname", array($this->arg('visit')));
+            $rows = $this->db->pq("SELECT iu.role, u.name, u.fullname, count(it.id) as visits, TO_CHAR(max(it.startdate), 'DD-MM-YYYY') as last 
+                FROM investigation@DICAT_RO i 
+                INNER JOIN investigationuser@DICAT_RO iu ON i.id = iu.investigation_id 
+                INNER JOIN user_@DICAT_RO u ON u.id = iu.user_id 
+                LEFT OUTER JOIN investigationuser@DICAT_RO iut ON u.id = iut.user_id 
+                LEFT OUTER JOIN investigation@DICAT_RO it ON it.id = iut.investigation_id AND it.startdate < i.startdate 
+                WHERE lower(i.visit_id) LIKE :1 
+                GROUP BY iu.role,u.name, u.fullname 
+                ORDER BY SUBSTR(u.fullname,INSTR(u.fullname,' ',-1,1))", array($this->arg('visit')));
             
             $this->_output($rows);
         }
