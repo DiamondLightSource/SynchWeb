@@ -33,6 +33,9 @@
                               array('/users', 'get', '_get_users'),
                               array('/login', 'get', '_login'),
                               array('/log(/)', 'post', '_log_action'),
+                              array('/time', 'get', '_get_time'),
+
+
                               //array('/set', 'get', '_set_proposal'),
                               //array('/comment', 'get', '_set_comment'),
                              );
@@ -55,7 +58,17 @@
             $this->log_action(1, $this->arg('location'));
             print $this->arg('location');
         }
-        
+
+
+
+        # ------------------------------------------------------------------------
+        # List proposals for current user
+        function _get_time() {
+            $d = new DateTime("now");
+            $this->_output(array('TIME' => $d->format('D M d Y H:i:s (\G\M\TO)')));
+        }
+
+
 
         # ------------------------------------------------------------------------
         # List proposals for current user

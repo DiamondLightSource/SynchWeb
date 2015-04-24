@@ -1,4 +1,10 @@
-define(['marionette', 'models/visit', 'collections/visits', 'modules/proposal/views/users', 'tpl!templates/calendar/current.html'], function(Marionette, Visit, Visits, UserView, template) {
+define(['marionette', 
+        'models/visit', 
+        'collections/visits', 
+        'modules/proposal/views/users', 
+        'modules/proposal/models/time', 
+        'tpl!templates/calendar/current.html'], 
+        function(Marionette, Visit, Visits, UserView, Time, template) {
 
 
     var VisitItem = Marionette.ItemView.extend({
@@ -56,7 +62,12 @@ define(['marionette', 'models/visit', 'collections/visits', 'modules/proposal/vi
             nv: '.next',
             com: '.cm',
         },
-        
+
+        ui: {
+            time: 'span.time'
+        },
+
+
         initialize: function() {
             this.deferreds = []
             if (app.staff) {
@@ -84,6 +95,9 @@ define(['marionette', 'models/visit', 'collections/visits', 'modules/proposal/vi
                     this.deferreds.push(this[d].fetch())
                 }, this)
             }
+
+            this.time = new Time()
+            this.deferreds.push(this.time.fetch())
             
         },
 
@@ -96,6 +110,8 @@ define(['marionette', 'models/visit', 'collections/visits', 'modules/proposal/vi
             this.pv.show(new VisitList({ collection: this.prev }))
             this.nv.show(new VisitList({ collection: this.next }))
             this.com.show(new VisitList({ collection: this.cm }))
+
+            this.ui.time.html(this.time.get('TIME'))
         },
         
         
