@@ -67,6 +67,7 @@ define(['backbone', 'marionette'], function(Backbone, Marionette) {
 
     filters: [
         {id: 'dc', name: 'Data Collections'},
+        {id: 'gr', name: 'Grid Scans'},
         {id: 'fc', name: 'Full Collections'},
         {id: 'ap', name: 'Auto Integrated'},
         {id: 'sc', name: 'Screenings'},
