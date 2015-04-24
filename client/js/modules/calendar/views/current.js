@@ -111,7 +111,7 @@ define(['marionette',
             this.nv.show(new VisitList({ collection: this.next }))
             this.com.show(new VisitList({ collection: this.cm }))
 
-            this.ui.time.html(this.time.get('TIME'))
+            this.ui.time.html(this.time.time())
         },
         
         
