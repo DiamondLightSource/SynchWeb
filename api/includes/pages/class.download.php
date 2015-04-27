@@ -35,7 +35,13 @@
             
             $this->db->close();
             
-            foreach ($rows as $r) {
+            print_r($rows);
+
+            if (!sizeof($rows)) $this->_error('No such auto processing');
+            else $r = $rows[0];
+        
+
+            //foreach ($rows as $r) {
                 if ($this->has_arg('log')) {
                     if ($r['FILETYPE'] == 'Log') {
                         if ($this->has_arg('LogFiles')) {
@@ -58,6 +64,7 @@
                         if (file_exists($f)) {
                             $this->_header($r['FILENAME']);
                             readfile($f);
+                            exit;
                             
                         } $this->_error('No such file', 'The specified auto processing file doesnt exist');
                         
@@ -67,11 +74,12 @@
                         if (file_exists($f)) {
                             $this->_header($this->arg('aid').'_fast_dp.mtz');
                             readfile($f);
+                            exit;
                             
                         } $this->_error('No such file', 'The specified auto processing file doesnt exist');
                     }
                 }
-            }
+            //}
         }
         
         
@@ -97,6 +105,7 @@
                 if (file_exists($f)) {
                     $this->_header('run_'.$this->arg('run').'_'.$file);
                     readfile($f);
+                    exit;
                 }
             }
         }
@@ -137,6 +146,7 @@
                     
                     $this->_header($this->arg('id').'_fast_ep.tar.gz');
                     readfile('/tmp/'.$this->arg('id').'_fast_ep.tar.gz');
+                    exit;
                 }
                 
                 
@@ -178,6 +188,7 @@
                     
                     $this->_header($this->arg('id').'_dimple.tar.gz');
                     readfile('/tmp/'.$this->arg('id').'_dimple.tar.gz');
+                    exit;
                 }
                 
                 
@@ -281,9 +292,15 @@
         # ------------------------------------------------------------------------
         # Force browser to download file
         function _header($f) {
-            $this->app->contentType("application/octet-stream");
+            /*$this->app->contentType("application/octet-stream");
+            $this->app->response->headers->set('Content-Description', 'File Transfer');
             $this->app->response->headers->set("Content-Transfer-Encoding", "Binary");
             $this->app->response->headers->set("Content-disposition", "attachment; filename=\"$f\"");
+            */
+            
+            header("Content-Type: application/octet-stream");
+            header("Content-Transfer-Encoding: Binary");
+            header("Content-disposition: attachment; filename=\"$f\"");
         }
         
     }
