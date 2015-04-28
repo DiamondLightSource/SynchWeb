@@ -6,18 +6,24 @@ define(['backbone', 'marionette', 'underscore', 'jquery',
     
     'models/proposal',
     
-    'utils', 'jquery.cookie', 'jquery-ui',
+    'utils',
+    'config',
+    'jquery.cookie', 'jquery-ui',
         ],
-function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Proposal, utils) {
+function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Proposal, utils, config) {
 
   window.app = new Marionette.Application()
 
   // Base url for the api
   app.apiurl = '/client/api'
+  //app.apiurl = '/client/api-mysql'
 
   // Base url for the app
   app.appurl = '/client'
 
+  // reference to config
+  app.config = config
+  
 
   // Allow us to set a global base url for the API
   var oldSync = Backbone.sync;
