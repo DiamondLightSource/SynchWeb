@@ -20,13 +20,13 @@ define(['marionette',
     
   var controller = {
     // Samples
-    list: function(page) {
+    list: function(s, page) {
       app.loading()
       app.bc.reset([sbc])
       page = page ? parseInt(page) : 1
-      var samples = new Samples(null, { state: { currentPage: page } })
+      var samples = new Samples(null, { state: { currentPage: page }, queryParams: { s : s } })
       samples.fetch().done(function() {
-          app.content.show(new SampleList({ collection: samples }))
+          app.content.show(new SampleList({ collection: samples, params: { s: s } }))
       })
     },
       
@@ -47,13 +47,13 @@ define(['marionette',
     },
       
     // Proteins
-    proteinlist: function(page) {
+    proteinlist: function(s, page) {
         app.loading()
         app.bc.reset([pbc])
         page = page ? parseInt(page) : 1
-        var proteins = new Proteins(null, { state: { currentPage: page }})
+        var proteins = new Proteins(null, { state: { currentPage: page }, queryParams: { s : s } })
         proteins.fetch().done(function() {
-            app.content.show(new ProteinList({ collection: proteins }))
+            app.content.show(new ProteinList({ collection: proteins, params: { s: s } }))
         })
     },
       

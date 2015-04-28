@@ -48,7 +48,7 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
       var bgopts = {}
       if (this.getOption('clickable')) bgopts.row = ClickableRow
 
-      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', loading: true, backgrid: bgopts })
+      this.table = new TableView({ collection: options.collection, columns: columns, filter: 's', search: options.params.s, tableClass: 'proposals', loading: true, backgrid: bgopts })
     },
                                       
     onRender: function() {

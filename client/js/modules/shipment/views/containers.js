@@ -24,7 +24,7 @@ define(['marionette', 'views/table', 'collections/containers', 'utils/table'], f
         })
       }
         
-      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'containers', filter: 's', loading: true, backgrid: { row: ClickableRow, emptyText: 'No containers found' } })
+      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'containers', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: 'No containers found' } })
     },
                                       
     onRender: function() {

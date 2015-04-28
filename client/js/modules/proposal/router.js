@@ -4,8 +4,8 @@ define(['marionette', 'modules/proposal/controller'], function(Marionette, c) {
     var Router = Marionette.AppRouter.extend({
     //var Router = LazyRouter.extend({
         appRoutes: {
-            'proposal(/page/:page)': 'list',
-            'visits(/page/:page)': 'visit_list',
+            'proposal(/s/:s)(/page/:page)': 'list',
+            'visits(/s/:s)(/page/:page)': 'visit_list',
         },
         
         loadEvents: ['proposals:show', 'visits:show'],

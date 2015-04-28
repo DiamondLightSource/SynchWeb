@@ -24,7 +24,7 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages'], function(Mario
         
       if (this.getOption('pages')) this.paginator = new Pages({ collection: options.collection, noUrl: options.noPageUrl })
         
-      if (options.filter) this.filter = new Search({ collection: options.collection, name: options.filter, url: !options.noSearchUrl });
+      if (options.filter) this.filter = new Search({ collection: options.collection, name: options.filter, url: !options.noSearchUrl, value: options.search });
     },
                                       
     displaySpinner: function() {

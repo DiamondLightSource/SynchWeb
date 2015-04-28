@@ -56,15 +56,15 @@ define(['marionette',
     },
     
     
-    container_list: function(page) {
+    container_list: function(s, page) {
       console.log('cont list')
       app.loading()
       app.bc.reset([bc, { title: 'Containers' }])
         
       page = page ? parseInt(page) : 1
-      var containers = new Containers(null, { state: { currentPage: page } })
+      var containers = new Containers(null, { state: { currentPage: page }, queryParams: { s: s } })
       containers.fetch().done(function() {
-          app.content.show(new ContainersView({ collection: containers }))
+          app.content.show(new ContainersView({ collection: containers, params: { s: s } }))
       })
     },
       

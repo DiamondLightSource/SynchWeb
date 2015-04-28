@@ -10,26 +10,26 @@ define(['underscore', 'marionette',
 
 ], function(_, Marionette, ProposalList, Proposals, Visits, VisitList, SAXSVisitList, GenVisitList) {
   var controller = {
-    list: function(page) {
+    list: function(s, page) {
       app.bc.reset([{ title: 'Proposals', url: '/proposals' }])
       app.loading()
       console.log('prop list')
         
       if (page) page = parseInt(page)
       else page = 1
-      var proposals = new Proposals(null, { state: { currentPage: page } })
+      var proposals = new Proposals(null, { state: { currentPage: page }, queryParams: { s: s } })
       proposals.fetch().done(function() {
-          app.content.show(new ProposalList({ collection: proposals }))
+          app.content.show(new ProposalList({ collection: proposals, params: { s: s } }))
       })
     },
        
-    visit_list: function(page) {
+    visit_list: function(s, page) {
         app.bc.reset([{ title: 'Proposals', url: '/proposals' },
                       { title: 'Visits for '+app.prop }])
         app.loading()
         page = page ? parseInt(page) : 1
         
-        var visits = new Visits(null, { state: { currentPage: page } })
+        var visits = new Visits(null, { state: { currentPage: page }, queryParams: { s: s } })
         visits.fetch().done(function() {
             var views = {
                 saxs: SAXSVisitList,
@@ -40,7 +40,7 @@ define(['underscore', 'marionette',
             if (ty in views) view = views[ty]
             else view = GenVisitList
             
-            app.content.show(new view({ collection: visits }))
+            app.content.show(new view({ collection: visits, params: { s: s } }))
         })
     }
   }

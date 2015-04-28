@@ -41,7 +41,7 @@ define(['marionette', 'views/table', 'collections/proposals', 'modules/projects/
       }
         
       var self = this
-      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', loading: true, backgrid: { row: ClickableRow, emptyText: function() { return self.collection.fetched ? 'No proteins found' : 'Retrieving proteins' } }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
+      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: function() { return self.collection.fetched ? 'No proteins found' : 'Retrieving proteins' } }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
     },
                                       
     onRender: function() {

@@ -2,9 +2,9 @@
 define(['utils/lazyrouter'], function(LazyRouter) {
   var Router = LazyRouter.extend({
     appRoutes: {
-      'samples(/page/:page)': 'list',
+      'samples(/s/:s)(/page/:page)': 'list',
       'samples/sid/:sid(/visit/:visit)': 'view',
-      'proteins(/page/:page)': 'proteinlist',
+      'proteins(/s/:s)(/page/:page)': 'proteinlist',
       'proteins/pid/:pid': 'proteinview',
       'proteins/add': 'proteinadd',
     },
