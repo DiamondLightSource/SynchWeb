@@ -109,7 +109,7 @@ define(['marionette',
         doRender: function() {
             this.pv.show(new VisitList({ collection: this.prev }))
             this.nv.show(new VisitList({ collection: this.next }))
-            this.com.show(new VisitList({ collection: this.cm }))
+            if (app.staff) this.com.show(new VisitList({ collection: this.cm }))
 
             this.ui.time.html(this.time.time())
         },
