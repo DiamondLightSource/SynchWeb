@@ -32,7 +32,7 @@ class MX extends ProposalType {
     function auth($require_staff, $parent) {
         $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
         $this->staff = false;
-        //$this->staff = in_array('mx_staff', $groups) ? True : False;
+        $this->staff = in_array('mx_staff', $groups) ? True : False;
         if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
         
         // Staff only pages
