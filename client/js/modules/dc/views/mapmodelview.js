@@ -69,7 +69,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
                 var plain = gunzip.decompress();
                 self.parseCCP4(plain.buffer, 0x5555aa, '2fofc', 1.5);
           
-                if (self.getOption('ty') == 'dimple') {
+                if (self.getOption('ty') == 'dimple' || self.getOption('ty') == 'mrbump') {
                     var xhr2 = self.xhrWithStatus('Downloading Map 2')
                     xhr2.onload = function() {
                         var gunzip = new Zlib.Gunzip(new Uint8Array(this.response));
@@ -301,7 +301,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
         
         defineRepFromController: function() {
             var all = this.getAllAtoms();
-            if (this.ty == 'dimple') {
+            if (this.ty == 'dimple' || this.ty == 'mrbump') {
                 this.colorByAtom(all, {});
                 var asu = new THREE.Object3D();
                 this.drawBondsAsLine(asu, all, this.lineWidth * 2);
@@ -330,7 +330,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
                 
                 var geo = mc.generateGeometry(Math.floor(-center.x) - mc.ncstart,
                     Math.floor(-center.y) - mc.nrstart,
-                    Math.floor(-center.z) - mc.nsstart, this.getOption('ty') == 'dimple' ? 15 : 50, mc.isol);
+                    Math.floor(-center.z) - mc.nsstart, (this.getOption('ty') == 'dimple' || this.getOption('ty') == 'mrbump') ? 15 : 50, mc.isol);
                 
                 console.log('map', i, center, geo)
             }, this)
@@ -422,7 +422,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
                 slide: this.onSlide.bind(this, 1)
             })
                 
-            if (this.getOption('ty') == 'dimple') {
+            if (this.getOption('ty') == 'dimple' ||  this.getOption('ty') == 'mrbump') {
                 this.ui.m2.slider({
                     step: 0.1,
                     value: 2.8,

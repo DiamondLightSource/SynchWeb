@@ -550,7 +550,7 @@
                          
                          array('fast_ep/', 'fast_ep.log', 'Best spacegroup'),
                          array('fast_dp/dimple/', 'refmac5_restr.log', 'Cruickshanks'),
-                         array('auto_mrbump/', 'MRBUMP.log', 'Ctruncate'),
+                         array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
                          );
             
             $out = array();
@@ -933,7 +933,6 @@
         function _dc_downstream($id) {
             $ap = array('Fast EP' => array('fast_ep', array('sad.mtz', 'sad_fa.pdb')),
                         'MrBUMP' => array('auto_mrbump', array('PostMRRefine.pdb', 'PostMRRefine.mtz')),
-                        #'Dimple' => array('fast_dp', array('dimple_refined.pdb', 'dimple_map.mtz')),
                         'Dimple' => array('fast_dp', array('dimple/final.pdb', 'dimple/final.mtz'))
                         );
             
@@ -1023,48 +1022,7 @@
                         
                         //if (sizeof($pth) > 0) {
                         if (file_exists($lf)) {
-                            $log = file_get_contents($lf);
-                         
-                            $refmac = 0;
-                            $stats = array();
-                            $plot = 0;
-                            $plots = array();
-                            foreach (explode("\n", $log) as $l) {
-                                if ($plot == 1) {
-                                    $plot++;
-                                    continue;
-                                }
-                                
-                                if (strpos(trim($l), '$TEXT:Result: $$ Final results $$') !== False) {
-                                    $refmac = 1;
-                                    $stats = array();
-                                    continue;
-                                }
-                                if (strpos(trim($l), '$$') !== False) $refmac = 0;
-                                
-                                if ($refmac) {
-                                    array_push($stats, preg_split('/\s\s+/', trim($l)));
-                                }
-                                
-                                if (strpos(trim($l), 'Ncyc    Rfact    Rfree') !== False) {
-                                    $plot = 1;
-                                    $plots = array();
-                                    continue;
-                                }
-                                
-                                if (strpos(trim($l), '$$') !== False) $plot = 0;
-                                    
-                                if ($plot) {
-                                    array_push($plots, preg_split('/\s+/', trim($l)));
-                                }
-                            }
-                            
-                            $plts = array('RVC'=>array(), 'FVC'=>array(), 'RVR'=>array());
-                            foreach ($plots as $p) {
-                                $p = array_map('floatval', $p);
-                                array_push($plts['RVC'], array($p[0], $p[1]));
-                                array_push($plts['FVC'], array($p[0], $p[2]));
-                            }
+                            list($plts, $stats) = $this->_parse_ccp4_log(file_get_contents($lf));
                             
                             $peaks = glob($root . '/dimple/*find-blobs.log');
                             $pklist = array();
@@ -1091,6 +1049,18 @@
                             
                             if (sizeof($stats)) array_push($data, $dat);
                         }
+
+
+                    # MrBUMP
+                    } else if ($n == 'MrBUMP') {
+                        $lf = $root.'/MRBUMP.log';
+                        if (file_exists($lf)) {
+                            list($plots, $stats) = $this->_parse_ccp4_log(file_get_contents($lf));
+                            $dat['PLOTS'] = $plots;
+                            $dat['STATS'] = $stats;
+                        }
+
+                        array_push($data, $dat);
                     }
                     
                     
@@ -1099,6 +1069,53 @@
             }
             
             $this->_output($data);
+        }
+
+
+        function _parse_ccp4_log($log) {
+            $refmac = 0;
+            $stats = array();
+            $plot = 0;
+            $plots = array();
+            //print $log;
+            foreach (explode("\n", $log) as $l) {
+                if ($plot == 1) {
+                    $plot++;
+                    continue;
+                }
+                
+                if (strpos(trim($l), '$TEXT:Result: $$ Final results $$') !== False) {
+                    $refmac = 1;
+                    $stats = array();
+                    continue;
+                }
+                if (strpos(trim($l), '$$') !== False) $refmac = 0;
+                
+                if ($refmac) {
+                    array_push($stats, preg_split('/\s\s+/', trim($l)));
+                }
+                
+                if (preg_match('/Ncyc\s+Rfact\s+Rfree/', trim($l))) {
+                    $plot = 1;
+                    $plots = array();
+                    continue;
+                }
+                
+                if (strpos(trim($l), '$$') !== False) $plot = 0;
+                    
+                if ($plot) {
+                    array_push($plots, preg_split('/\s+/', trim($l)));
+                }
+            }
+
+            $plts = array('RVC'=>array(), 'FVC'=>array(), 'RVR'=>array());
+            foreach ($plots as $p) {
+                $p = array_map('floatval', $p);
+                array_push($plts['RVC'], array($p[0], $p[1]));
+                array_push($plts['FVC'], array($p[0], $p[2]));
+            }
+
+            return array($plts, $stats);
         }
         
         

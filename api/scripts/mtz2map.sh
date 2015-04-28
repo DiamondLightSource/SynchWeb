@@ -8,36 +8,47 @@ export CLIBD=$CCP4_MASTER/ccp4-6.4.0/lib/data
 export CCP4_SCR=/tmp
 export root=$CCP4_MASTER/ccp4-6.4.0/bin
 
+if [ $3 == 'dimple' -o $3 == 'mrbump' ]; then
+
 if [ $3 == 'dimple' ]; then
-$root/fft HKLIN $1 MAPOUT "/tmp/$2_dimple_2fofc.map.tmp" << eof
+	fofc2="F1=F SIG1=SIGF PHI=PH2FOFCWT W=FOM"
+	fofc="F1=F SIG1=SIGF PHI=PHFOFCWT W=FOM"
+else
+	fofc2="F1=F SIG1=SIGF PHI=PHWT W=FOM"
+	fofc="F1=F SIG1=SIGF PHI=PHDELWT W=FOM"
+fi
+
+# F SIGF FC PHIC FC_ALL PHIC_ALL FWT PHWT DELFWT PHDELWT FOM FC_ALL_LS PHIC_ALL_LS
+
+$root/fft HKLIN $1 MAPOUT "/tmp/$2_$3_2fofc.map.tmp" << eof
 title $2 2fofc
 xyzlim asu
 scale F1 1.0
 labin -
-F1=F SIG1=SIGF PHI=PH2FOFCWT W=FOM
+$fofc2
 end
 eof
 
-$root/mapmask MAPIN "/tmp/$2_dimple_2fofc.map.tmp" MAPOUT "/tmp/$2_dimple_2fofc.map" XYZIN "$4" << eof
+$root/mapmask MAPIN "/tmp/$2_$3_2fofc.map.tmp" MAPOUT "/tmp/$2_$3_2fofc.map" XYZIN "$4" << eof
 BORDER 5
 eof
 
-$root/fft HKLIN $1 MAPOUT "/tmp/$2_dimple_fofc.map.tmp" << eof
+$root/fft HKLIN $1 MAPOUT "/tmp/$2_$3_fofc.map.tmp" << eof
 title $2 fofc
 xyzlim asu
 scale F1 1.0
 labin -
-F1=F SIG1=SIGF PHI=PHFOFCWT W=FOM
+$fofc
 end
 eof
 
 
-$root/mapmask MAPIN "/tmp/$2_dimple_fofc.map.tmp" MAPOUT "/tmp/$2_dimple_fofc.map" XYZIN "$4" << eof
+$root/mapmask MAPIN "/tmp/$2_$3_fofc.map.tmp" MAPOUT "/tmp/$2_$3_fofc.map" XYZIN "$4" << eof
 BORDER 5
 eof
 
-gzip "/tmp/$2_dimple_2fofc.map"
-gzip "/tmp/$2_dimple_fofc.map"
+gzip "/tmp/$2_$3_2fofc.map"
+gzip "/tmp/$2_$3_fofc.map"
 
 
 else

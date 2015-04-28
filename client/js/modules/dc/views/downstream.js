@@ -3,8 +3,9 @@ define(['marionette',
     'modules/dc/collections/downstreams',
     'modules/dc/views/fastep',
     'modules/dc/views/dimple',
+    'modules/dc/views/mrbump',
 
-    ], function(Marionette, TabView, DownStreams, FastEP, DIMPLE) {
+    ], function(Marionette, TabView, DownStreams, FastEP, DIMPLE, MrBUMP) {
 
         
     var EmptyAP = Marionette.ItemView.extend({ template: '<p>No downstream procesing available for this data collection</p>', tagName: 'p' })
@@ -18,7 +19,7 @@ define(['marionette',
             var types = {
                 'Fast EP': FastEP,
                 'Dimple': DIMPLE,
-                //'MrBump': MrBump,
+                'MrBUMP': MrBUMP,
             }
             
             return types[this.model.get('TYPE')]

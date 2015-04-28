@@ -20,6 +20,7 @@
                               array('/id/:id/aid/:aid(/log/:log/1)', 'get', '_auto_processing'),
                               array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
                               array('/dimple/id/:id(/log/:log)', 'get', '_dimple_mtz'),
+                              array('/mrbump/id/:id(/log/:log)', 'get', '_mrbump_mtz'),
                               array('/csv/visit/:visit', 'get', '_csv_report'),
                               array('/bl/visit/:visit/run/:run', 'get', '_blend_mtz'),
             );
@@ -114,47 +115,27 @@
         # ------------------------------------------------------------------------
         # Return pdb/mtz/log file for fast_ep and dimple
         function _ep_mtz() {
-            $info = $this->db->pq('SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1', array($this->arg('id')));
-            
-            if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
-            else $info = $info[0];
-            $this->db->close();
-            
-            $info['DIR'] = $this->ads($info['DIR']);
-
-            $root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_'.'/fast_ep/';
-            $file = $root . 'sad.mtz';
-            
-            print $root;
-
-            if (file_exists($file)) {
-                if ($this->has_arg('log')) {
-                    //$this->_header($this->arg('id').'_fast_ep.log');
-                    $this->app->contentType("text/plain");
-                    readfile($root.'fast_ep.log');
-                    
-                } else {
-                    if (!file_exists('/tmp/'.$this->arg('id').'_fast_ep.tar.gz')) {
-                        $a = new PharData('/tmp/'.$this->arg('id').'_fast_ep.tar');
-
-                        $a->addFile($file, 'sad.mtz');
-                        $a->addFile($root.'sad_fa.pdb', 'sad_fa.pdb');
-                        $a->compress(Phar::GZ);
-
-                        unlink('/tmp/'.$this->arg('id').'_fast_ep.tar');
-                    }
-                    
-                    $this->_header($this->arg('id').'_fast_ep.tar.gz');
-                    readfile('/tmp/'.$this->arg('id').'_fast_ep.tar.gz');
-                    exit;
-                }
-                
-                
-            } else $this->_error('File not found', 'Fast EP files were not found');
+            $this->_mtzmap('FastEP');
         }
         
-        
         function _dimple_mtz() {
+            $this->_mtzmap('Dimple');
+        }
+
+        function _mrbump_mtz() {
+            $this->_mtzmap('MrBUMP');
+        }
+
+
+        function _mtzmap($type) {
+            $types = array('MrBUMP' => array('root' => 'auto_mrbump/', 'files' => array('PostMRRefine.pdb', 'PostMRRefine.mtz'), 'log' => 'MRBUMP.log'),
+                           'Dimple' => array('root' => 'fast_dp/dimple/', 'files' => array('final.pdb', 'final.mtz'), 'log' => 'dimple.log'),
+                           'FastEP' => array('root' => 'fast_ep/', 'files' => array('sad.mtz', 'sad_fa.pdb'), 'log' => 'fast_ep.log'),
+            );
+
+            if (!array_key_exists($type, $types)) $this->_error('No such downstream type');
+            else $t = $types[$type];
+
             $info = $this->db->pq('SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1', array($this->arg('id')));
             
             if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
@@ -163,36 +144,36 @@
             
             $info['DIR'] = $this->ads($info['DIR']);
 
-            $root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_'.'/fast_dp/dimple/';
-            $file = $root . 'final.pdb';
+            $root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_/'.$t['root'];
+            $file = $root.$t['files'][0];
             
             if (file_exists($file)) {
                 if ($this->has_arg('log')) {
-                    if (file_exists($root.'08-refmac5_rigid.log')) {
-                        //$this->_header($this->arg('id').'_dimple.log');
+                    if (file_exists($root.$t['log'])) {
                         $this->app->contentType("text/plain");
-                        readfile($root.'08-refmac5_rigid.log');
+                        readfile($root.$t['log']);
 
                     } else $this->_error('Not found', 'That file couldnt be found');
                     
                 } else {
-                    if (!file_exists('/tmp/'.$this->arg('id').'_dimple.tar.gz')) {
-                        $a = new PharData('/tmp/'.$this->arg('id').'_dimple.tar');
+                    if (!file_exists('/tmp/'.$this->arg('id').'_'.$type.'.tar.gz')) {
+                        $a = new PharData('/tmp/'.$this->arg('id').'_'.$type.'.tar');
 
-                        $a->addFile($file, 'final.pdb');
-                        $a->addFile($root.'final.mtz', 'final.mtz');
+                        $a->addFile($file, $t['files'][0]);
+                        $a->addFile($root.$t['files'][1], $t['files'][1]);
                         $a->compress(Phar::GZ);
 
-                        unlink('/tmp/'.$this->arg('id').'_dimple.tar');
+                        unlink('/tmp/'.$this->arg('id').'_'.$type.'.tar');
                     }
                     
-                    $this->_header($this->arg('id').'_dimple.tar.gz');
-                    readfile('/tmp/'.$this->arg('id').'_dimple.tar.gz');
+                    $this->_header($this->arg('id').'_'.$type.'.tar.gz');
+                    readfile('/tmp/'.$this->arg('id').'_'.$type.'.tar.gz');
                     exit;
                 }
                 
                 
-            } else $this->_error('File not found', 'Dimple files were not found');
+            } else $this->_error('File not found', $type.' files were not found');
+
         }
         
         
@@ -211,25 +192,26 @@
             $info['DIR'] = $this->ads($info['DIR']);
 
             if ($this->arg('ty') == 'ep') {
-                #$root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_'.'/fast_ep/';
                 $root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/fast_ep/';
                 $file_name = 'sad';
-                $file = $root . $file_name;
                 
             } else if ($this->arg('ty') == 'dimple') {
-                #$root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_'.'/fast_dp/dimple/';
                 $root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/fast_dp/dimple/';
                 $file_name = 'final';
-                $file = $root . $file_name;
+                
+            } else if ($this->arg('ty') == 'mrbump') {
+                $root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/auto_mrbump/';
+                $file_name = 'PostMRRefine';
                 
             } else $this->_error('No file type specified');
             
+            $file = $root . $file_name;
             $ext = $this->has_arg('pdb') ? 'pdb' : 'mtz';
             
             if ($this->has_arg('pdb')) {
                 $out = $file.'.'.$ext;
             } else {
-                if ($this->arg('ty') == 'dimple') {
+                if ($this->arg('ty') == 'dimple' || $this->arg('ty') == 'mrbump') {
                     $map = $this->has_arg('map') ? 'fofc' : '2fofc';
                     $out = '/tmp/'.$this->arg('id').'_'.$this->arg('ty').'_'.$map.'.map.gz';
                     
@@ -239,6 +221,7 @@
             if ($ext == 'mtz') {
                 # convert mtz to map
                 if (!file_exists($out)) {
+                    print './scripts/mtz2map.sh '.$file.'.'.$ext.' '.$this->arg('id').' '.$this->arg('ty').' '.$file.'.pdb';
                     exec('./scripts/mtz2map.sh '.$file.'.'.$ext.' '.$this->arg('id').' '.$this->arg('ty').' '.$file.'.pdb');
                 }
                 
@@ -263,7 +246,7 @@
                     $this->app->response->headers->set("Content-length", $size);
                     readfile($out);
                 }
-            } else $this->_error('File not found', 'Fast EP / Dimple files were not found');
+            } //else $this->_error('File not found', 'Fast EP / Dimple files were not found');
         }
         
         
