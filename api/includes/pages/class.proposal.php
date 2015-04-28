@@ -223,6 +223,11 @@
                     $where .= " AND s.beamlinename IN ('i02', 'i03', 'i04', 'i04-1', 'i24', 'i23', 'b21')";
                 }
             }
+
+            if ($this->has_arg('s')) {
+                $where .= " AND s.visit_number LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('s'));
+            }
             
             
             if ($visit) {
