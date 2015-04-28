@@ -85,7 +85,7 @@
                 if ($this->has_arg('user')) {
                     if (!sizeof($us)) $us = $this->dirs('/dls/'.$r['BL'].'/data/'.$r['YR'].'/'.$r['VISIT'].'/processing/auto_mc');
                     $u = $us[$this->arg('user')];
-                } else $u = phpCAS::getUser();
+                } else $u = $this->user;
 
                 $r['INT'] = 0;
                 $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.$u, $r['DIR']).str_replace('####.cbf', '', $r['PREFIX']);
@@ -146,7 +146,7 @@
                 $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || '-' || s.visit_number as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
                                       
                 foreach ($rows as $i => $r) {
-                    $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.phpCAS::getUser(),$r['DIR']) . str_replace('####.cbf', '', $r['PREFIX']);
+                    $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.$this->user,$r['DIR']) . str_replace('####.cbf', '', $r['PREFIX']);
                     
                     $st = $ranges[$r['ID']][0] + 1;
                     $en = $ranges[$r['ID']][1];
@@ -199,7 +199,7 @@
                 if ($this->has_arg('user')) {
                     $us = $this->dirs($vis.'/processing/auto_mc');
                     $u = $us[$this->arg('user')];
-                } else $u = phpCAS::getUser();
+                } else $u = $this->user;
                 
                 $where = implode(' OR ', $where);
                 
@@ -213,7 +213,7 @@
                         $blend = substr($r['DIR'], 0, strpos($r['DIR'], $r['VISIT'])).$r['VISIT'].'/processing/auto_mc/'.$u.'/blend';
                     }
                     
-                    $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.phpCAS::getUser(),$r['DIR']) . str_replace('####.cbf', '', $r['PREFIX']);
+                    $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.$this->user,$r['DIR']) . str_replace('####.cbf', '', $r['PREFIX']);
                 
                     #$hkl = $root.'/DEFAULT/NATIVE/SWEEP1/integrate/INTEGRATE.HKL';
                     $hkl = $root.'/DEFAULT/scale/NATIVE_SWEEP1.HKL';
@@ -287,7 +287,7 @@
             if ($this->has_arg('user')) {
                 $us = $this->dirs($vis.'/processing/auto_mc');
                 $u = $us[$this->arg('user')];
-            } else $u = phpCAS::getUser();
+            } else $u = $this->user;
             
             $root = $vis.'/processing/auto_mc/'.$u.'/blend';
             
@@ -364,7 +364,7 @@
             $info = $info[0];
             
             $vis = '/dls/'.$info['BL'].'/data/'.$info['YR'].'/'.$this->arg('visit');
-            $root = $vis.'/processing/auto_mc/'.phpCAS::getUser().'/blend/run_'.$this->arg('run');
+            $root = $vis.'/processing/auto_mc/'.$this->user.'/blend/run_'.$this->arg('run');
             $this->rrmdir($root);
                                   
             $this->_output(1);    
@@ -396,7 +396,7 @@
             if ($this->has_arg('user')) {
                 $us = $this->dirs($vis.'/processing/auto_mc');
                 $u = $us[$this->arg('user')];
-            } else $u = phpCAS::getUser();
+            } else $u = $this->user;
             
             $root = $vis.'/processing/auto_mc/'.$u.'/blend/analyse';
             $cf = $root.'/CLUSTERS.txt';

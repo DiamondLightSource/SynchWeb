@@ -191,9 +191,8 @@
             }
 
             # Retrieve cookie args
-            if (!$this->blsr() && class_exists('phpCAS')) {
-                $u = phpCAS::getUser();
-                if ($u && array_key_exists('ispyb_prop_'.$u, $_COOKIE) && !array_key_exists('prop', $parsed)) $parsed['prop'] = $_COOKIE['ispyb_prop_'.$u];
+            if ($this->user) {
+                if (array_key_exists('ispyb_prop_'.$this->user, $_COOKIE) && !array_key_exists('prop', $parsed)) $parsed['prop'] = $_COOKIE['ispyb_prop_'.$this->user];
             }
             
             $this->args = $parsed;
@@ -359,12 +358,12 @@
         }
         
         
+        // Deprecated - now set in javascript
         # ------------------------------------------------------------------------
         # Set cookie for current proposal
         function cookie($val) {
-            $u = phpCAS::getUser();
-            if ($u) {
-                setcookie('ispyb_prop_'.$u, $val, time()+31536000, '/');
+            if ($this->user) {
+                setcookie('ispyb_prop_'.$this->user, $val, time()+31536000, '/');
             }
         }
      

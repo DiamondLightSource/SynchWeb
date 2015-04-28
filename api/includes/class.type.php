@@ -27,7 +27,6 @@ class ProposalType {
         $this->app = $app;
         $this->db = $db;
         $this->user = $user;
-        //$this->parts = $parts;
     }
     
     
@@ -65,10 +64,9 @@ class ProposalType {
             
         // check cookie
         } else {
-            if (class_exists('phpCAS')) {
-                $u = phpCAS::getUser();
-                if (array_key_exists('ispyb_prop_'.$u, $_COOKIE)) {
-                    $prop = $_COOKIE['ispyb_prop_'.$u];
+            if ($this->user) {
+                if (array_key_exists('ispyb_prop_'.$this->user, $_COOKIE)) {
+                    $prop = $_COOKIE['ispyb_prop_'.$this->user];
                     if (preg_match('/([A-z]+)\d+/', $prop, $m)) {
                         $prop_code = $m[1];
                         
@@ -144,8 +142,7 @@ class ProposalType {
     
     
     function auth($require_staff, $parent) {
-        $u = class_exists('phpCAS') ? phpCAS::getUser() : '';
-        $groups = explode(' ', exec('groups ' . $u));
+        $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
         $this->staff = in_array('mx_staff', $groups) ? True : False;
         if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
         //if (!$this->staff && in_array('b21_staff', $groups)) $this->staff = True;

@@ -84,10 +84,10 @@
             $nostafft = '';
             if (!$this->staff) {
                 $nostaff = "INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) = p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on (u.id = iu.user_id AND u.name=:".(sizeof($args)+1).")";
-                array_push($args, phpCAS::getUser());
+                array_push($args, $this->user);
                 
                 $nostafft = "INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) = p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on (u.id = iu.user_id AND u.name=:".(sizeof($tot_args)+1).")";
-                array_push($tot_args, phpCAS::getUser());
+                array_push($tot_args, $this->user);
             } else $nostaff = '';
             
             

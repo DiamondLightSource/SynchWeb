@@ -46,7 +46,7 @@
         # ------------------------------------------------------------------------
         # Helpers for backbone application
         function _get_user() {
-            $this->_output(array('user' => phpCAS::getUser(), 'is_staff' => $this->staff, 'visits' => $this->visits));
+            $this->_output(array('user' => $this->user, 'is_staff' => $this->staff, 'visits' => $this->visits));
         }
         
         function _login() {
@@ -85,7 +85,7 @@
             
             if (!$this->staff) {
                 $where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
-                array_push($args, phpCAS::getUser());
+                array_push($args, $this->user);
                 
                 #$where .= " AND s.sessionid in ('".implode("','", $this->sessionids)."')";
             }
@@ -233,7 +233,7 @@
             
             if (!$this->staff) {
                 $where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
-                array_push($args, phpCAS::getUser());
+                array_push($args, $this->user);
             }
             
             $tot = $this->db->pq("SELECT count(s.sessionid) as tot FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid $where", $args);

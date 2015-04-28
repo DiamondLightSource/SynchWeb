@@ -81,7 +81,7 @@
                 if (!$this->staff) {
                     $join .= " INNER JOIN blsession ses ON ses.proposalid = p.proposalid INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || ses.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id";
                     $where .= " AND u.name=:".(sizeof($args)+1);
-                    array_push($args, phpCAS::getUser());
+                    array_push($args, $this->user);
                 }
                 
                 if ($this->has_arg('imp')) {
@@ -342,7 +342,7 @@
                     INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id 
                     INNER JOIN user_@DICAT_RO u on u.id = iu.user_id ";
                     $where .= " AND u.name=:".(sizeof($args)+1);
-                    array_push($args, phpCAS::getUser());
+                    array_push($args, $this->user);
                 }
             }
             

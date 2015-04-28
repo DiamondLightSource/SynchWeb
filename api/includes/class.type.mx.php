@@ -30,11 +30,9 @@ class MX extends ProposalType {
     
     // Authentication method for this type of proposal
     function auth($require_staff, $parent) {
-        $u = class_exists('phpCAS') ? phpCAS::getUser() : '';
-        
-        $groups = explode(' ', exec('groups ' . $u));
+        $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
         $this->staff = false;
-        $this->staff = in_array('mx_staff', $groups) ? True : False;
+        //$this->staff = in_array('mx_staff', $groups) ? True : False;
         if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
         
         // Staff only pages
@@ -42,7 +40,7 @@ class MX extends ProposalType {
             $auth = $this->staff;
             
         // Beamline Sample Registration
-        } else if ($this->blsr() && !$u) {
+        } else if ($this->blsr() && !$this->user) {
             $auth = false;
 
             if ($this->has_arg('visit')) {
@@ -71,7 +69,7 @@ class MX extends ProposalType {
                 
             // Normal users
             } else {
-                $rows = $this->db->pq("SELECT lower(i.visit_id) as vis from investigation@DICAT_RO i inner join investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id where u.name=:1", array($u));
+                $rows = $this->db->pq("SELECT lower(i.visit_id) as vis from investigation@DICAT_RO i inner join investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id where u.name=:1", array($this->user));
                 
                 foreach ($rows as $row) {
                     array_push($this->visits, strtolower($row['VIS']));

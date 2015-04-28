@@ -145,7 +145,7 @@
                  
             # Projects
             } else if ($this->has_arg('pjid')) {
-                $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid WHERE p.projectid=:1 AND (p.owner=:2 or pu.username=:3)', array($this->arg('pjid'), phpCAS::getUser(), phpCAS::getUser()));
+                $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid WHERE p.projectid=:1 AND (p.owner=:2 or pu.username=:3)', array($this->arg('pjid'), $this->user, $this->user));
                 
                 $tables = array(array('project_has_dcgroup', 'dc', 'datacollectiongroupid'),
                                 array('project_has_energyscan', 'es', 'energyscanid'),
@@ -243,7 +243,7 @@
                 
                 for ($i = 0; $i < 4; $i++) {
                     $extj[$i] .= " INNER JOIN proposal p ON p.proposalid = ses.proposalid INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode||p.proposalnumber||'-'||ses.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on u.id = iu.user_id";
-                    array_push($args, phpCAS::getUser());
+                    array_push($args, $this->user);
                 }
             }
             

@@ -20,9 +20,7 @@ class GEN extends ProposalType {
     
     // Authentication method for this type of proposal
     function auth($require_staff, $parent) {
-        $u = class_exists('phpCAS') ? phpCAS::getUser() : '';
-        
-        $groups = explode(' ', exec('groups ' . $u));
+        $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
         $this->staff = in_array('mx_staff', $groups) ? True : False;
         if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
         if (!$this->staff && in_array('b21_staff', $groups)) $this->staff = True;
@@ -49,7 +47,7 @@ class GEN extends ProposalType {
                 
             // Normal users
             } else {
-                $rows = $this->db->pq("SELECT lower(i.visit_id) as vis from investigation@DICAT_RO i inner join investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id where u.name=:1", array($u));
+                $rows = $this->db->pq("SELECT lower(i.visit_id) as vis from investigation@DICAT_RO i inner join investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id where u.name=:1", array($this->user));
                 
                 foreach ($rows as $row) {
                     array_push($this->visits, strtolower($row['VIS']));
@@ -59,7 +57,7 @@ class GEN extends ProposalType {
                     
                     // Check user is in this visit
                     if ($this->has_arg('id')) {
-                        $vis = $this->db->pq('SELECT p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN datacollection dc ON s.sessionid = dc.sessionid WHERE dc.emmovieid = :1', array($this->arg('id')));
+                        $vis = $this->db->pq('SELECT p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN datacollection dc ON s.sessionid = dc.sessionid WHERE dc.datacollectionid = :1', array($this->arg('id')));
                         
                         $vis = sizeof($vis) ? $vis[0]['VIS'] : '';
                         

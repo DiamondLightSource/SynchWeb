@@ -40,7 +40,7 @@
         
         # List of projects
         function _projects() {
-            $args = array(phpCAS::getUser(), phpCAS::getUser());
+            $args = array($this->user, $this->user);
             $where = "WHERE (p.owner LIKE :1 OR pu.username LIKE :2)";
             
             $tot = $this->db->pq("SELECT count(distinct p.projectid) as tot FROM project p LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid $where", $args);
@@ -70,7 +70,7 @@
             
             foreach ($rows as &$ro) {
                 $ro['OWNER_NAME'] = $this->_get_name($ro['OWNER']);
-                $ro['IS_OWNER'] = $ro['OWNER'] == phpCAS::getUser();
+                $ro['IS_OWNER'] = $ro['OWNER'] == $this->user;
             }
             
             if ($this->has_arg('pid')) {
@@ -91,12 +91,12 @@
             
             $this->db->pq("INSERT INTO project (projectid,title,acronym,owner) 
                 VALUES (s_project.nextval, :1, :2, :3) RETURNING projectid INTO :id", 
-                array($this->arg('TITLE'), $this->arg('ACRONYM'), phpCAS::getUser()));
+                array($this->arg('TITLE'), $this->arg('ACRONYM'), $this->user));
             
             $this->_output(array('PROJECTID' => $this->db->id(), 
                 'IS_OWNER' => True, 
-                'OWNER_NAME' => $this->_get_name(phpCAS::getUser()), 
-                'OWNER' => phpCAS::getUser()));
+                'OWNER_NAME' => $this->_get_name($this->user), 
+                'OWNER' => $this->user));
         }
         
         
@@ -150,7 +150,7 @@
         function _update_project() {
             if (!$this->has_arg('pid')) $this->_error('No project id specified');
             
-            $proj = $this->db->pq("SELECT p.projectid FROM project p WHERE p.owner LIKE :1 AND p.projectid=:2", array(phpCAS::getUser(),$this->arg('pid')));
+            $proj = $this->db->pq("SELECT p.projectid FROM project p WHERE p.owner LIKE :1 AND p.projectid=:2", array($this->user,$this->arg('pid')));
             if (!sizeof($proj)) $this->_error('No such project');
             
             $fields = array('ACRONYM', 'TITLE');
@@ -182,7 +182,7 @@
             if (!$this->has_arg('PROJECTID')) $this->_error('No project id specified');
             if (!$this->has_arg('USERNAME')) $this->_error('No user specified');
             
-            $proj = $this->db->pq("SELECT p.projectid FROM project p WHERE p.owner LIKE :1 AND p.projectid=:2", array(phpCAS::getUser(),$this->arg('PROJECTID')));
+            $proj = $this->db->pq("SELECT p.projectid FROM project p WHERE p.owner LIKE :1 AND p.projectid=:2", array($this->user,$this->arg('PROJECTID')));
             
             if (!sizeof($proj)) $this->_error('No such project');
             $proj = $proj[0];
@@ -200,7 +200,7 @@
             $proj = $this->db->pq("SELECT p.projectid 
                 FROM project p 
                 INNER JOIN project_has_user pu ON pu.projectid = p.projectid
-                WHERE p.owner LIKE :1 AND pu.projecthasuserid=:2", array(phpCAS::getUser(),$this->arg('PUID')));
+                WHERE p.owner LIKE :1 AND pu.projecthasuserid=:2", array($this->user,$this->arg('PUID')));
             if (!sizeof($proj)) $this->_error('No such project');
             $proj = $proj[0];
             

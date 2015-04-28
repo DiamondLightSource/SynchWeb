@@ -293,7 +293,7 @@
             
             # Register acceptance in db
             $this->db->pq("INSERT INTO genericdata (genericdataid,parametervaluedate,parametervaluestring,parametercomments) 
-              VALUES (s_genericdata.nextval, SYSDATE, 'terms_accepted', :1)", array($this->arg('prop').','.$this->arg('SHIPPINGNAME').','.phpCAS::getUser()));
+              VALUES (s_genericdata.nextval, SYSDATE, 'terms_accepted', :1)", array($this->arg('prop').','.$this->arg('SHIPPINGNAME').','.$this->user));
             
             $root = '/dls_sw/dasc/ispyb2/shipping';
             $this->_output(array(file_get_contents($root.'/instructions.html'), file_get_contents($root.'/pin.txt'), file_get_contents($root.'/account.txt')));

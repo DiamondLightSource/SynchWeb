@@ -95,7 +95,7 @@
             else $visit = $visit[0];
             $this->db->close();
             
-            $u = $this->has_arg('u') ? $this->arg('u') : phpCAS::getUser();
+            $u = $this->has_arg('u') ? $this->arg('u') : $this->user;
             
             $root = '/dls/'.$visit['BL'].'/data/'.$visit['Y'].'/'.$this->arg('visit').'/processing/auto_mc/'.$u.'/blend/run_'.$this->arg('run');
             
