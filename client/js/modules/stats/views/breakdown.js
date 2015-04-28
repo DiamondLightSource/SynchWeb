@@ -10,6 +10,7 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
         template: template,
         
         events: {
+            'plotselected #dc_hist': 'zoomTime',
             'plotselected #avg_time': 'zoomTime',
             'plotclick #avg_time': 'showDC',
             'plotselected #overview': 'zoomOverview',
@@ -23,10 +24,16 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
         },
         
         zoomTime: function(e, ranges) {
-            $.plot($('#avg_time'), this.model.get('data'),
-                $.extend(true, {}, this.options2, { xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
-                    }));
-            
+            _.each([this.main, this.extra], function(p) {
+                var opts = p.getOptions()
+                opts.xaxes[0].min = ranges.xaxis.from
+                opts.xaxes[0].max = ranges.xaxis.to
+
+                p.setupGrid()
+                p.draw()
+                p.clearSelection()
+            })
+
             this.overview.setSelection(ranges, true);
         },
         
@@ -73,7 +80,7 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
               
                   yaxis: {
                     show: false,
-                  }
+                  },
                 }
               
                 this.options2 = _.extend({}, this.options);
@@ -84,6 +91,25 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
               
                 this.main = $.plot(this.$el.find('#avg_time'), this.model.get('data'), this.options2);
                 this.overview = $.plot(this.$el.find('#overview'), this.model.get('data'), this.options);
+
+                this.options3 = {
+                    xaxis: {
+                        mode: 'time',
+                        timezone: 'Europe/London',
+                        min: this.model.get('info').start,
+                        max: this.model.get('info').end,
+                    },
+
+                    tooltip: true,
+                    grid: {
+                        hoverable: true,
+                        borderWidth: 0,
+                    },
+
+                  yaxes: [{ position: 'right' }, { position: 'right' }],
+                }
+                this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3);
+
             }
             
         },

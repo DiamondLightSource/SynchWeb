@@ -19,7 +19,9 @@
         function _visit_breakdown() {
             $info = $this->_check_visit();
             
-            $dc = $this->db->pq("SELECT dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, (dc.endtime - dc.starttime)*86400 as dctime, dc.runstatus FROM datacollection dc WHERE dc.sessionid=:1 ORDER BY dc.starttime DESC", array($info['SID']));
+            $dc = $this->db->pq("SELECT dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, (dc.endtime - dc.starttime)*86400 as dctime, dc.runstatus 
+                FROM datacollection dc 
+                WHERE dc.sessionid=:1 ORDER BY dc.starttime DESC", array($info['SID']));
             
             $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count FROM datacollection dc WHERE dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0", array($info['SID']));
             $dcs = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count FROM datacollection dc WHERE dc.sessionid=:1 AND dc.overlap != 0", array($info['SID']));
@@ -59,6 +61,11 @@
             if ($info['DC_TOT'] + $info['E_TOT'] + $info['R_TOT'] == 0) $this->_error('No Data');
             
             $data = array();
+            $lines = array(array('data' => array()),
+                           array('data' => array()),
+                           array('data' => array()),
+                           );
+
             foreach ($dc as $d) {
                 if (strpos($d['RUNSTATUS'], 'Successful') === false) $info['DC_STOPPED']++;
                                     
@@ -66,6 +73,12 @@
                     array_push($data, array('data' => array(
                         array($this->jst($d['ST']), 1, $this->jst($d['ST'])),
                         array($this->jst($d['EN']), 1, $this->jst($d['ST']))), 'color' => 'green', 'id' => intval($d['ID']), 'type' => 'dc'));
+
+                    foreach (array('WAVELENGTH', 'BEAMSIZEATSAMPLEX', 'BEAMSIZEATSAMPLEY') as $i => $f) {
+                        $lines[$i]['label'] = $f;
+                        if ($i > 0) $lines[$i]['yaxis'] = $i > 0 ? 2 : 1;
+                        array_push($lines[$i]['data'], array($this->jst($d['ST']), floatval($d[$f])));
+                    }
                 }
             }
             
@@ -153,7 +166,7 @@
             $info['start'] = $this->jst($first);
             $info['end'] = $this->jst($last);
                                     
-            $this->_output(array('info' => $info, 'data' => $data));
+            $this->_output(array('info' => $info, 'data' => $data, 'lines' => $lines));
         }
         
        
