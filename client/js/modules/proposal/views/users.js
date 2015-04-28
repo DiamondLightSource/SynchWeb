@@ -15,8 +15,9 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
     })
     
     return Marionette.CollectionView.extend({
-        template: _.template('<h1>Users</h1><ul class="users"></ul>'),
-        childViewContainer: '.users',
+        //template: _.template('<h1>Users</h1><ul class="users"></ul>'),
+        //childViewContainer: '.users',
+        tagName: 'ul',
         childView: UserItem,
         emptyView: LoadingView,
         className: 'visit_users',
