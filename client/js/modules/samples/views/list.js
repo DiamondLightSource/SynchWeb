@@ -66,7 +66,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
       }
         
       var self = this
-      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'samples', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: function() { return self.collection.fetched ? 'No samples found' : 'Retrieving samples' }  }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
+      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'samples', filter: 's', search: options.params && options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: function() { return self.collection.fetched ? 'No samples found' : 'Retrieving samples' }  }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
         
       this.ty = new FilterView({
         url: !options.noFilterUrl,
