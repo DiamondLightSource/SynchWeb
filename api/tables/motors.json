@@ -20,6 +20,7 @@
         "Goniometer Y": ["MO-GONIO-01:Y", 1],
         "Goniometer Z": ["MO-GONIO-01:Z", 1],
         "Omega": ["MO-GONIO-01:OMEGA", 1],
+        "Kappa": ["MO-GONIO-01:KAPPA", 1],
         "Sample Centring Y": ["MO-GONIO-01:CENTREY", 1],
         "Sample Centring Z": ["MO-GONIO-01:CENTREZ", 1],
         "Plate Y": ["MO-GONIO-01:PLATEY", 1],
@@ -32,6 +33,7 @@
         "MiniAP Y Midpoint": ["MO-STEP-01:GPIO_INP_BITS.B9", 2, 1],
         "Detector Z Safe": ["MO-DET-01:DET_SAFE", 2, 1],
         "Beamline Safe": ["MO-STEP-01:GPIO_OP_BITS.B1", 2, 1],
-        "Beamline Disable Rq": ["MO-STEP-02:GPIO_INP_BITS.B5", 2, 1]
+        "Beamline Disable Rq": ["MO-STEP-02:GPIO_INP_BITS.B5", 2, 1],
+        "Kappa on Limit": ["MO-GONIO-01:KAPPA.LLS", 2, 1]
     }
 }
