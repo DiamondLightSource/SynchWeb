@@ -595,9 +595,10 @@ define(['jquery', 'marionette',
                 
         // Bind load image on return
         keyPressNum: function(e) {
+            var n = parseInt(this.ui.num.val())
             if(e.which == 13) {
-                if (this.ui.num.val() < this.model.get('NI')) {
-                    this.change(parseInt(this.ui.num.val()))
+                if (n < this.model.get('NI')) {
+                    this.change(n)
                 } else this.ui.num.val(this.model.get('NI'))
             }
         },
