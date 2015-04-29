@@ -8,6 +8,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         word: /^\w+$/,
         fcode: /^DLS\-MX\-\d\d\d\d$/i,
         datetime: /\d+-\d+-\d+ \d+:\d+/,
+        sequence: /[>|;|\w+|\n]/,
     });
     
     _.extend(Backbone.Validation.messages, {
@@ -19,6 +20,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         word: 'This field must contain only letters and numbers',
         fcode: 'This field must be of the format DLS-MX-XXXX',
         datetime: 'This field must be of the format DD-MM-YYYY HH:MM',
+        sequence: 'This field may only contain word characters and line returns',
     });
 
 })

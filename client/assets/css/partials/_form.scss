@@ -318,6 +318,14 @@ div.text {
         font-size: 12px;
         padding-bottom: 0.5%;
     }
+
+    &.seq blockquote {
+        &:before {
+            content: '>';
+            float: left;
+            margin: 1%;
+        }
+    }
 }
 
 

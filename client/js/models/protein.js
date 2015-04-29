@@ -1,9 +1,22 @@
-define(['backbone'], function(Backbone) {
+define(['backbone', 'markdown'], function(Backbone, markdown) {
     
     return Backbone.Model.extend({
         idAttribute: 'PROTEINID',
         urlRoot: '/sample/proteins',
         
+        initialize: function() {
+            this.on('change', this.refreshOptions, this)
+            this.refreshOptions()
+        },
+        
+        defaults: {
+            SEQUENCEMD: '',
+        },
+        
+        refreshOptions: function() {
+            if (this.get('SEQUENCE')) this.attributes.SEQUENCEMD = markdown.toHTML(this.get('SEQUENCE'))
+        },
+
         validation: {
             ACRONYM: {
                 required: true,
@@ -11,7 +24,7 @@ define(['backbone'], function(Backbone) {
             },
             SEQUENCE: {
                 required: false,
-                pattern: 'word',
+                pattern: 'sequence',
             },
             MOLECULARMASS: {
                 required: false,

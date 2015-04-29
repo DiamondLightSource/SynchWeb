@@ -60,7 +60,7 @@ define(['marionette',
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
             edit.create('ACRONYM', 'text')
-            edit.create('SEQUENCE', 'textarea')
+            edit.create('SEQUENCE', 'markdown')
             edit.create('MOLECULARMASS', 'text')
 
             this.pdb.show(new PDBView({ collection: this.pdbs }))
