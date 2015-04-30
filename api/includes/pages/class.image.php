@@ -124,8 +124,7 @@
             if ($n > $info['NUM']) return;
             
             $im = $info['LOC'] . '/' . $info['FT'];
-            $out = '/tmp/'.$id.'_'.$n.'.jpg';
-
+            $out = '/tmp/'.$this->arg('id').'_'.$n.'.jpg';
             
             if (!file_exists($out)) {
                 
