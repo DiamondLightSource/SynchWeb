@@ -115,7 +115,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/
     diViewer: function() {
         var self = this
         require(['modules/dc/views/imageviewer'], function(ImageViewer) {
-            app.dialog.show(new DialogView({ title: 'Diffraction Image Viewer', view: new ImageViewer({ model: self.model
+            app.dialog.show(new DialogView({ title: 'Diffraction Image Viewer', view: new ImageViewer({ model: self.model, dialog: true
             }) }))
         })
         

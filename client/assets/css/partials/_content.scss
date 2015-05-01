@@ -655,12 +655,28 @@ ol.rounded {
     
     // Inset Content
     .diffraction,
-    .snapshots {
+    .snapshots,
+    .image,
+    .diviewer {
         float: right;
         background: $content-inlay-background;
         padding: 0;
         margin: 0.25%;
         overflow: hidden;
+    }
+
+    .image, .diviewer {
+        width: 40.5%;
+        height: 300px;
+    }
+
+    .image {
+        cursor: pointer;
+
+        .controls {
+            position: absolute;
+            z-index: 99;
+        }
     }
     
     .snapshots {
@@ -772,6 +788,16 @@ ol.rounded {
     
     @media (max-width: $breakpoint-small) {
         width: 100%;
+    }
+
+    &.single {
+        width: 17%;
+
+        > li { 
+            width: 93%;
+            @include calc(width, "95.5% - 15px");
+            padding: 2.5% 2%;
+        }
     }
 
     &.half {
@@ -1283,7 +1309,7 @@ div.status.oavs {
         }
     }
     
-    #zoom, #brightness, #contrast {
+    .zoom, .brightness, .contrast {
         width: 100%;
     }
 
@@ -1318,7 +1344,7 @@ div.status.oavs {
         overflow: auto;
         background: $content-fill-color;
         
-        #img {
+        .img {
             display: none;
             
             &:hover {
@@ -1339,11 +1365,19 @@ div.status.oavs {
         @media (max-width: $breakpoint-small) {
             height: 50px;
             
-            #im_zoom {
+            .im_zoomc {
                 height: 50px;
                 width: 50px;
             }
+        }
+
+        .embed & {
+            height: 50px;
             
+            .im_zoomc {
+                height: 50px;
+                width: 50px;
+            }
         }
     }
     
@@ -1363,6 +1397,12 @@ div.status.oavs {
             height: 50px;
             margin-left: 60px;
         }
+
+        .embed & {
+            width: 25px;
+            height: 50px;
+            margin-left: 60px;
+        }
     }
     
     .xprofile {
@@ -1372,6 +1412,12 @@ div.status.oavs {
         margin: 110px 0 0 10px;
         
         @media (max-width: $breakpoint-small) {
+            width: 50px;
+            height: 25px;
+            margin-top: 60px;
+        }
+
+        .embed & {
             width: 50px;
             height: 25px;
             margin-top: 60px;
@@ -1386,6 +1432,10 @@ div.status.oavs {
             margin: 90px 0 0 10px;
         }
         
+        .embed & {
+            margin: 90px 0 0 10px;
+        }
+
         p {
             margin: 0;
             padding: 0;
@@ -1400,6 +1450,11 @@ div.status.oavs {
         border: 1px solid blue;
         
         @media (max-width: $breakpoint-small) {
+            width: 20px;
+            height: 20px;
+        }
+
+        .embed & {
             width: 20px;
             height: 20px;
         }

@@ -5,6 +5,7 @@ define(['marionette',
         'modules/dc/collections/apstatuses',
         
         'modules/dc/views/dc',
+        'modules/dc/views/grid',
         'modules/dc/views/load',
         'modules/dc/views/edge',
         'modules/dc/views/mca',
@@ -12,7 +13,7 @@ define(['marionette',
         ],
 function(Marionette, 
          DCImageStatusCollection, DCAPStatusCollection,
-         DCItemView, RobotItemView, EdgeItemView, MCAItemView, ActionItemView) {
+         DCItemView, GridItemView, RobotItemView, EdgeItemView, MCAItemView, ActionItemView) {
              
   var EmptyCollectionView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1>No data collections yet</h1></div>' })
   var GettingCollectionView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1><i class="fa fa-spin fa-cog"></i> Retrieving data collections</h1></div>' })
@@ -27,6 +28,7 @@ function(Marionette,
       
     dcViews: {
         data: DCItemView,
+        grid: GridItemView,
         load: RobotItemView,
         mca: MCAItemView,
         edge: EdgeItemView,

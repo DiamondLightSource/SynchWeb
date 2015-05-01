@@ -31,6 +31,7 @@ require.config({
     'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
     
     caman: 'vendor/caman.min',
+    heatmap: 'vendor/heatmap',
     
     three: 'vendor/Three49custom',
     ms: 'vendor/MarchingSquares',
