@@ -21,6 +21,7 @@
                               array('/aps', 'post', '_ap_status'),
                               array('/chi', 'post', '_chk_image'),
                               array('/imq/:id', 'get', '_image_qi'),
+                              array('/grid/:id', 'get', '_grid_info'),
                               array('/ed/:id', 'get', '_edge', array('id' => '\d+'), 'edge'),
                               array('/mca/:id', 'get', '_mca', array('id' => '\d+'), 'mca'),
                               array('/dp/:id', 'get', '_dc_downstream'),
@@ -274,7 +275,7 @@
             # Data collection group
             if ($this->has_arg('dcg')) {
                 $count_field = 'dc.datacollectionid';
-                $fields = "1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dc.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, 1 as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam";
+                $fields = "1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dc.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam";
                 $groupby = '';
 
                 $where .= ' AND dc.datacollectiongroupid=:'.(sizeof($args)+1);
@@ -288,7 +289,7 @@
 
             } else {
                 $count_field = 'distinct dc.datacollectiongroupid';
-                $fields = "count(dc.datacollectionid) as dcc, min(smp.name) as sample, min(smp.blsampleid) as blsampleid, min(ses.visit_number) as vn, min(dc.kappastart) as kappa, min(dc.phistart) as phi, min(dc.startimagenumber) as si, min(dcg.experimenttype) as dct, dc.datacollectiongroupid as dcg, min(dc.runstatus) as runstatus, min(dc.beamsizeatsamplex) as bsx, min(dc.beamsizeatsampley) as bsy, min(dc.overlap) as overlap, 1 as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, min(dc.imageprefix) as imp, min(dc.datacollectionnumber) as run, min(dc.filetemplate) as filetemplate, min(dc.datacollectionid) as id, sum(dc.numberofimages) as ni, min(dc.imagedirectory) as dir, min(dc.resolution) as resolution, min(dc.exposuretime) as exposuretime, min(dc.axisstart) as axisstart, sum(dc.numberofimages) as numimg, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st, min(dc.transmission) as transmission, min(dc.axisrange) as axisrange, min(dc.wavelength) as wavelength, min(dc.comments) as comments, 1 as epk, 1 as ein, min(dc.xtalsnapshotfullpath1) as x1, min(dc.xtalsnapshotfullpath2) as x2, min(dc.xtalsnapshotfullpath3) as x3, min(dc.xtalsnapshotfullpath4) as x4, min(dc.starttime) as sta, min(dc.detectordistance) as det, min(dc.xbeam) as xbeam, min(dc.ybeam) as ybeam";
+                $fields = "count(dc.datacollectionid) as dcc, min(smp.name) as sample, min(smp.blsampleid) as blsampleid, min(ses.visit_number) as vn, min(dc.kappastart) as kappa, min(dc.phistart) as phi, min(dc.startimagenumber) as si, min(dcg.experimenttype) as dct, dc.datacollectiongroupid as dcg, min(dc.runstatus) as runstatus, min(dc.beamsizeatsamplex) as bsx, min(dc.beamsizeatsampley) as bsy, min(dc.overlap) as overlap, max(dc.flux) as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, min(dc.imageprefix) as imp, min(dc.datacollectionnumber) as run, min(dc.filetemplate) as filetemplate, min(dc.datacollectionid) as id, sum(dc.numberofimages) as ni, min(dc.imagedirectory) as dir, min(dc.resolution) as resolution, min(dc.exposuretime) as exposuretime, min(dc.axisstart) as axisstart, sum(dc.numberofimages) as numimg, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st, min(dc.transmission) as transmission, min(dc.axisrange) as axisrange, min(dc.wavelength) as wavelength, min(dc.comments) as comments, 1 as epk, 1 as ein, min(dc.xtalsnapshotfullpath1) as x1, min(dc.xtalsnapshotfullpath2) as x2, min(dc.xtalsnapshotfullpath3) as x3, min(dc.xtalsnapshotfullpath4) as x4, min(dc.starttime) as sta, min(dc.detectordistance) as det, min(dc.xbeam) as xbeam, min(dc.ybeam) as ybeam";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
             }
 
@@ -400,6 +401,8 @@
                     if ($dc['DCT'] == 'Mesh') $dc['DCT'] = 'Grid Scan';
                     if ($dc['DCT'] == 'OSC') $dc['DCT'] = 'Data Collection';
                     
+
+                    if ($dc['AXISRANGE'] == 0 && $dc['NI'] > 1) $dc['TYPE'] = 'grid';
                     //$this->profile('dc');
                     
                 // Edge Scans
@@ -1123,7 +1126,7 @@
         # Image quality indicators from distl
         function _image_qi($id) {
             session_write_close();
-            $iqs = array(array(), array(), array());
+            $iqs = array(array(), array(), array(), array());
 
             #$this->db->set_debug(True);
 
@@ -1154,7 +1157,7 @@
 
             #im.datacollectionid=:1 
             $imqs = $this->db->pq("SELECT * FROM (
-                SELECT rownum as rn, im.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.goodbraggcandidates as b 
+                SELECT rownum as rn, im.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b 
                 FROM image im 
                 INNER JOIN imagequalityindicators imq ON imq.imageid = im.imageid AND (im.datacollectionid IN ($where))
                 ORDER BY imagenumber) outer", $args);
@@ -1163,9 +1166,28 @@
                 array_push($iqs[0], array(intval($imq['NIM']), intval($imq['S'])));
                 array_push($iqs[1], array(intval($imq['NIM']), intval($imq['B'])));
                 array_push($iqs[2], array(intval($imq['NIM']), floatval($imq['RES'])));
+                array_push($iqs[3], array(intval($imq['NIM']), floatval($imq['TOTALINTEGRATEDSIGNAL'])));
             }
 
             $this->_output($iqs);
+        }
+
+        # ------------------------------------------------------------------------
+        # Grid Scan Info
+        function _grid_info() {
+            $info = $this->db->pq("SELECT dc.axisstart, p.x, p.y, p.z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel
+                FROM gridinfo g
+                INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
+                INNER JOIN position p ON dc.positionid = p.positionid
+                WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
+
+            if (!sizeof($info)) $this->_output(array());
+            else {
+                foreach ($info[0] as $k => &$v) {
+                    $v = floatval($v);
+                }    
+                $this->_output($info[0]);
+            }
         }
 
         
