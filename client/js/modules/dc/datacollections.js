@@ -120,6 +120,7 @@ function(Marionette, Pages, DCListView,
     onDomRefresh: function() {
       console.log('dom refresh dclist')
       if (this.sc.hasView()) this.sc.currentView.triggerMethod('dom:refresh')
+      this.dclist.triggerMethod('dom:refresh')
     },
       
   })

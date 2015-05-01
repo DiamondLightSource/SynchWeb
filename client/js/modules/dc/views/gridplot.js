@@ -48,7 +48,8 @@ define(['jquery', 'marionette',
             this.draw = _.debounce(this.draw, 10)
             this.listenTo(options.imagestatuses, 'sync', this.getModel, this)
 
-            this.distl = new DISTL({ id: this.getOption('ID') })
+            var timestamp = utils._date_to_unix(this.getOption('ST'))
+            this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), timestamp: timestamp })
             this.listenTo(this.distl, 'change', this.draw, this)
             this.grid = new GridInfo({ id: this.getOption('ID') })
 
@@ -227,6 +228,10 @@ define(['jquery', 'marionette',
 
             return Math.floor(xa/sw)+(Math.floor(ya/sh)*this.grid.get('STEPS_X'))
 
+        },
+
+        onDestroy: function() {
+            this.distl.stop()
         },
 
     }))

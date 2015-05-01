@@ -75,6 +75,10 @@ function(Marionette,
     onDestroy: function() {
       this.collection.stop()
     },
+
+    onDomRefresh: function() {
+      this.children.each(function(v){ v.triggerMethod('dom:refresh') })
+    },
   })
 
        

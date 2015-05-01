@@ -25,7 +25,7 @@ define(['marionette', 'views/tabs',
     initialize: function(options) {
       this.fullPath = false
 
-      this.gridplot = new GridPlot({ ID: this.model.get('ID'), imagestatuses: this.getOption('imagestatuses') })
+      this.gridplot = new GridPlot({ ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), ST: this.model.get('ST'), imagestatuses: this.getOption('imagestatuses') })
       this.listenTo(this.gridplot, 'current', this.loadImage, this)
     },
 
@@ -44,16 +44,7 @@ define(['marionette', 'views/tabs',
     onShow: function() {
       this.diviewer = new ImageViewer({ model: this.model, embed: true })      
       this.ui.di.append(this.diviewer.render().$el)
-
       this.ui.im.append(this.gridplot.render().$el)
-
-      // poor
-      var self = this
-      setTimeout(function() {
-        self.diviewer.onDomRefresh()
-        self.gridplot.onDomRefresh()
-      }, 2000)
-
 
       Backbone.Validation.unbind(this)
       Backbone.Validation.bind(this)
@@ -63,8 +54,14 @@ define(['marionette', 'views/tabs',
     },
                                       
     onDestroy: function() {
-          
+        this.diviewer.destroy()
+        this.gridplot.destroy()
     },
+
+    onDomRefresh: function() {
+      this.diviewer.triggerMethod('dom:refresh')
+      this.gridplot.triggerMethod('dom:refresh')
+    },  
       
     modelEvents: {
         'change': 'renderFlag',
