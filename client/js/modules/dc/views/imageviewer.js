@@ -2,14 +2,20 @@ define(['jquery', 'marionette',
     
         'utils/canvas',
         'tpl!templates/dc/imageviewer.html',
+        'tpl!templates/dc/imageviewer_embedded.html',
         'caman',
         'utils',
         'jquery-ui',
-    ], function($, Marionette, canvas, template, Caman, utils) {
+    ], function($, Marionette, canvas, template, embed, Caman, utils) {
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
-        className: 'content',
-        template: template,
+        className: function() {
+            return 'content' + (this.getOption('embed') ? ' embed' : '')
+        },
+
+        getTemplate: function() {
+            return this.getOption('embed') ? embed : template
+        },
         
         templateHelpers: function() {
             return {
@@ -20,25 +26,35 @@ define(['jquery', 'marionette',
         resizeThread: null,
             
         ui: {
-            canvas: '#img',
+            canvas: '.img',
             holder: '.image_container .image',
         
-            zoom: '#zoom',
-            brightness: '#brightness',
-            contrast: '#contrast',
+            zoom: '.zoom',
+            brightness: '.brightness',
+            bval: '.bval',
+            contrast: '.contrast',
+            cval: '.cval',
             progress: '.im_progress',
             invert: 'input[name=invert]',
             num: 'input[name=num]',
         
             res: 'input[name=res]',
             ice: 'input[name=ice]',
+
+            resc: '.res',
+            imz: '.im_zoomc',
+            zval: '.zval',
+            high: '.im_highlight',
+
+            xp: '.xprofile',
+            yp: '.yprofile',
         },
             
         events: {
             'click button[name=reset]': 'resetImage',
             'resize document': 'onResize',
         
-            'click #im_zoom': 'imZoomClick',
+            'click @ui.imz': 'imZoomClick',
         
             'touchstart @ui.canvas': 'mouseDown',
             //'touchmove @ui.canvas': 'mouseMove',
@@ -63,7 +79,6 @@ define(['jquery', 'marionette',
         
             'click button[name=next]': 'next',
             'click button[name=prev]': 'prev',
-        
         },
             
             
@@ -102,7 +117,6 @@ define(['jquery', 'marionette',
             this.moved = false
             this.blocks = 0
             this.invert_change = false
-            
         },
             
         
@@ -121,7 +135,7 @@ define(['jquery', 'marionette',
             this.ui.contrast.slider({min: -100, max: 100, step: 5})
             this.ui.progress.progressbar({ value: 0 });
             
-            this.c = Caman('#img')
+            this.c = Caman(this.canvas)
             
             // Bind CamanJS Status
             var self = this
@@ -160,7 +174,8 @@ define(['jquery', 'marionette',
             
             
         onResize: function() {
-            this.ui.holder.height($(window).height()*0.65)
+            var h = this.getOption('embed') ? this.$el.parent().height() -5 : (this.getOption('dialog') ? $(window).height()*0.45 : $(window).height()*0.65)
+            this.ui.holder.height(h)
             
             this.canvas.width = this.ui.holder.width()
             this.canvas.height = this.ui.holder.height()-3
@@ -255,7 +270,7 @@ define(['jquery', 'marionette',
                     setTimeout(function() {
                        if (self.ci < self.model.get('NI')) self.precache(++self.ci)
                     }, 500)
-                    $('.precache').html('Precached '+self.ci+' of '+self.model.get('NI'))
+                    this.$el.find('.precache').html('Precached '+self.ci+' of '+self.model.get('NI'))
                 }
             }
         },
@@ -321,7 +336,7 @@ define(['jquery', 'marionette',
         _calc_zoom: function() {
             this.ui.zoom.slider('option', 'min', 100*this.ui.canvas.width()/this.width)
             this.scalef = this.ui.zoom.slider('value')/100
-            $('#zval').html((this.scalef*100).toFixed(0))
+            this.ui.zval.html((this.scalef*100).toFixed(0))
         },
 
                 
@@ -369,10 +384,10 @@ define(['jquery', 'marionette',
             this.lastx = xp
             this.lasty = yp
           
-            var w = $(window).width() <= 600 ? 20 : 40
+            var w = $(window).width() <= 600 || this.getOption('embed') ? 20 : 40
             var h = 20
           
-            $('.im_highlight').offset({ left: this.ui.canvas.offset().left+xp-(w/2), top: this.ui.canvas.offset().top+yp-(h/2) })
+            this.ui.high.offset({ left: this.ui.canvas.offset().left+xp-(w/2), top: this.ui.canvas.offset().top+yp-(h/2) })
           
             var xdat = this.ctx.getImageData(xp-w/2, yp, w, 1).data
             var ydat = this.ctx.getImageData(xp, yp-h/2, 1, h).data
@@ -403,11 +418,11 @@ define(['jquery', 'marionette',
                 },
             }
           
-            $.plot('.xprofile', [x], options)
-            $.plot('.yprofile', [y], options)
+            $.plot(this.ui.xp, [x], options)
+            $.plot(this.ui.yp, [y], options)
           
-            var zc = $('#im_zoom')[0].getContext('2d')
-            zc.drawImage(this.ctx.canvas,xp-(w/2), yp-(h/2), w, h, 0, 0, 200, 100)
+            var zc = this.ui.imz[0].getContext('2d')
+            zc.drawImage(this.ctx.canvas,xp-(w/2), yp-(h/2), w, h, 0, 0, this.ui.imz[0].width, this.ui.imz[0].height)
             zc.strokeStyle='blue'
             zc.beginPath();
             zc.moveTo(95,50)
@@ -421,7 +436,7 @@ define(['jquery', 'marionette',
             
                 
         imZoomClick: function(e) {
-            var c = utils.get_xy(e, '#im_zoom')
+            var c = utils.get_xy(e, this.ui.imz)
             var newx = Math.round((100-c[0])/5)
             var newy = Math.round((50-c[1])/5)
             this._plot_profiles(this.lastx-newx, this.lasty-newy-1)
@@ -441,7 +456,7 @@ define(['jquery', 'marionette',
             e.preventDefault()
             if (e.originalEvent.touches && e.originalEvent.touches.length >  1) return
             if (e.originalEvent.touches && e.originalEvent.touches.length) e = e.originalEvent.touches[0];
-            var c = utils.get_xy(e, '#img')
+            var c = utils.get_xy(e, this.ui.canvas)
             this._cursor(c[0], c[1])
                          
             if (this.record) {
@@ -465,7 +480,7 @@ define(['jquery', 'marionette',
               this.moved = false
             } else {
               if(e.originalEvent.changedTouches && e.originalEvent.changedTouches.length) e = e.originalEvent.changedTouches[0];
-              var c = this._clamp_z_box(utils.get_xy(e, '#img'))
+              var c = this._clamp_z_box(utils.get_xy(e, this.ui.canvas))
               this._plot_profiles(c[0], c[1]-2)
             }
             this.record = 0
@@ -506,7 +521,7 @@ define(['jquery', 'marionette',
             var o = e.originalEvent
             var delta = o.wheelDelta ? o.wheelDelta : -o.detail
             //this.zoom(utils.get_xy(e, '#img'), e.originalEvent.wheelDelta)
-            this.zoom(utils.get_xy(o, '#img'), delta)
+            this.zoom(utils.get_xy(o, this.ui.canvas), delta)
         },
                          
         zoom: function(xy, delta) {
@@ -525,7 +540,7 @@ define(['jquery', 'marionette',
                          
             this._clamp_offset()
             if (this.scalef < 2) this.ui.zoom.slider('value', this.scalef*100)
-            $('#zval').html((this.scalef*100).toFixed(0))
+            this.ui.zval.html((this.scalef*100).toFixed(0))
                          
             this.draw()
             this.readjust()
@@ -586,7 +601,7 @@ define(['jquery', 'marionette',
           
             var res = this._dist_to_res(this._xy_to_dist(posx,posy))
     
-            $('#res').html(res.toFixed(2))
+            this.ui.resc.html(res.toFixed(2))
         },
                 
                 
@@ -628,7 +643,7 @@ define(['jquery', 'marionette',
         // Bind zoom slider
         slideChangeZoom: function( e, ui ) {
             this.scalef = this.ui.zoom.slider('value')/100.0
-            $('#zval').html((this.scalef*100).toFixed(0))
+            this.ui.zval.html((this.scalef*100).toFixed(0))
             if (e.originalEvent) {
               this._clamp_offset()
               this.draw()
