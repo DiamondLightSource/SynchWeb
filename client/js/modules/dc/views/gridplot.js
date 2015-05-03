@@ -68,7 +68,7 @@ define(['jquery', 'marionette',
             this.offset_w = 0
             this.offset_h = 0
             this.scale = 1
-            this.current = 0
+            this.current = -1
 
             this.heatmapToggle = false
             this.type = 1
@@ -156,17 +156,23 @@ define(['jquery', 'marionette',
 
                     data.push({ x: x, y: y, value: v[1] < 1 ? 0 : v[1], radius: r*2 })
 
-                    if (!this.heatmapToggle) {
-                        this.ctx.globalAlpha = 0.3
+                    //if (!this.heatmapToggle) {
+                    if (this.current == k) {
+                        this.ctx.globalAlpha = 0.8
                         this.ctx.beginPath()
-                        this.ctx.arc(x, y, r, 0, 2*Math.PI, false)
-                        this.ctx.fillStyle = k == this.current ? 'blue' : 'green'
-                        this.ctx.fill()
+                        this.ctx.lineWidth = 2
+                        this.ctx.strokeStyle = 'green'
+                        this.ctx.rect(x-sw/2-2, y-sw/2-1, sw, sh)
+                        this.ctx.stroke()
+                        //this.ctx.arc(x, y, r, 0, 2*Math.PI, false)
+                        //this.ctx.fillStyle = 'green'
+                        //this.ctx.fill()
                     }
                 }, this)
 
-                if (this.heatmapToggle) this.heatmap.setData({ max: max, data: data })
-                else this.heatmap.setData({ data: [] })
+                //if (this.heatmapToggle) 
+                this.heatmap.setData({ max: max, data: data })
+                //else this.heatmap.setData({ data: [] })
             }
         },
 

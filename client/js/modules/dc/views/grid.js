@@ -20,6 +20,7 @@ define(['marionette', 'views/tabs',
       y: '.y',
       z: '.z',
       val: '.val',
+      img: '.img',
     },
 
     initialize: function(options) {
@@ -38,11 +39,12 @@ define(['marionette', 'views/tabs',
       this.ui.y.text(y)
       this.ui.z.text(z)
       this.ui.val.text(val)
+      this.ui.img.text(number+1)
     },
       
 
     onShow: function() {
-      this.diviewer = new ImageViewer({ model: this.model, embed: true })      
+      this.diviewer = new ImageViewer({ model: this.model, embed: true, readyText: 'Click on the grid to load a diffraction image' })      
       this.ui.di.append(this.diviewer.render().$el)
       this.ui.im.append(this.gridplot.render().$el)
 
