@@ -668,6 +668,16 @@ ol.rounded {
     .image, .diviewer {
         width: 40.5%;
         height: 300px;
+
+        @media (max-width: $breakpoint-small) {
+            width: 49.5%;
+        }
+
+        @media (max-width: $breakpoint-vsmall) {
+            width: auto;
+            float: none;
+            height: 150px;
+        }
     }
 
     .image {
@@ -797,6 +807,16 @@ ol.rounded {
             width: 93%;
             @include calc(width, "95.5% - 15px");
             padding: 2.5% 2%;
+        }
+
+        @media (max-width: $breakpoint-small) {
+            width: 100%;
+
+            > li {
+                width: 43%;
+                @include calc(width, "47.5% - 15px");
+                padding: 1.5% 1%;
+            }
         }
     }
 
