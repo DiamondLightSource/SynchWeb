@@ -137,6 +137,8 @@
             if (file_exists($out)) {
                 $this->_browser_cache();
                 $this->app->contentType('image/jpeg');
+                $size = filesize($out);
+                $this->app->response->headers->set("Content-length", $size);
                 readfile($out);
             } else {
                 $this->_error('Not found', 'That image is no longer available');

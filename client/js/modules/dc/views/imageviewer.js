@@ -5,8 +5,9 @@ define(['jquery', 'marionette',
         'tpl!templates/dc/imageviewer_embedded.html',
         'caman',
         'utils',
+        'utils/xhrimage',
         'jquery-ui',
-    ], function($, Marionette, canvas, template, embed, Caman, utils) {
+    ], function($, Marionette, canvas, template, embed, Caman, utils, XHRImage) {
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
         className: function() {
@@ -48,6 +49,8 @@ define(['jquery', 'marionette',
 
             xp: '.xprofile',
             yp: '.yprofile',
+
+            loadprog: 'span.progress',
         },
             
         events: {
@@ -91,7 +94,10 @@ define(['jquery', 'marionette',
             console.log(this.model)
 
             this.n = options.n || 1
-            this.img = new Image()
+            this.img = new XHRImage()
+            this.img.onload = this._onload.bind(this)
+            this.img.onprogress = this.onImageProgress.bind(this)
+
             this.cache = new Image()
             this.width = 0
             this.height = 0
@@ -151,7 +157,11 @@ define(['jquery', 'marionette',
                 self.ui.progress.fadeIn(100)
             })
             
-            this.load(1)
+            if (!this.getOption('embed')) this.load(1)
+            else if (this.getOption('readyText')) {
+                this.ui.loadprog.html(this.getOption('readyText'))
+                this.ui.loadprog.show()
+            }
             this.onResize()
         },
         
@@ -193,27 +203,41 @@ define(['jquery', 'marionette',
         
         // Load image from remote source
         load: function(n) {
-          this.img.src = app.apiurl+'/image/'+(this.low ? 'diff/f/1' : 'di')+'/id/'+this.model.get('ID')+'/n/'+n
-            
-          this.img.onload = this._onload.bind(this)
+          this.showProgressBar()
           this.img.onerror = this._onerror.bind(this,n)
+          this.img.load(app.apiurl+'/image/'+(this.low ? 'diff/f/1' : 'di')+'/id/'+this.model.get('ID')+'/n/'+n)
+        },
+
+        onImageProgress: function(pc) {
+            this.ui.loadprog.html(pc+'% loaded')
+        },
+
+        showProgressBar: function() {
+            this.ui.loadprog.html('0% loaded')
+            this.ui.loadprog.show()
+        },
+
+        hideProgressBar: function() {
+            this.ui.loadprog.hide()
         },
         
         _onload: function() {
-              if (this.img.width == 0) return
+            if (this.img.width == 0) return
         
-              this.width = this.img.width
-              this.height = this.img.height
-              this.imscale = this.width/(this.model.get('BL') == 'i04-1' ? 1679 : 2527);
-              this._calc_zoom()
-              this.draw()
-              this._recache()
-              this.ui.canvas.fadeIn(100);
-              this._plot_profiles(20,10)
+            this.width = this.img.width
+            this.height = this.img.height
+            this.imscale = this.width/(this.model.get('BL') == 'i04-1' ? 1679 : 2527);
+            this._calc_zoom()
+            this.draw()
+            this._recache()
+            this.ui.canvas.fadeIn(100);
+            this._plot_profiles(20,10)
   
-              // Set cache point
-              this.ci = this.n+1
-              this.precache()
+            this.hideProgressBar()
+
+            // Set cache point
+            this.ci = this.n+1
+            this.precache()
         },
                   
         _onerror: function(n,e) {
