@@ -76,13 +76,15 @@ define(['jquery', 'marionette',
 
         getModel: function() {
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
-            if (m.get('SNS').length && this.hasSnapshot == false) {
+            if (m.get('SNS').length)
+                if (m.get('SNS')[2] && this.hasSnapshot == false) {
                 this.snapshot.src = app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/3'
-                this.draw()
+                //this.draw()
             }
         },
 
         snapshotLoaded: function() {
+            console.log('snapshot loaded')
             this.hasSnapshot = true
             this.draw()
         },
@@ -112,8 +114,8 @@ define(['jquery', 'marionette',
 
             // plot cropped snapshot
             if (this.hasSnapshot) {
-                var stx = this.grid.get('SNAPSHOT_OFFSETXPIXEL')+1
-                var sty = this.grid.get('SNAPSHOT_OFFSETYPIXEL')+1
+                var stx = Math.floor(this.grid.get('SNAPSHOT_OFFSETXPIXEL'))+1
+                var sty = Math.floor(this.grid.get('SNAPSHOT_OFFSETYPIXEL'))+1
 
                 var w = bw*this.grid.get('STEPS_X')
                 var h = bh*this.grid.get('STEPS_Y')
@@ -152,7 +154,7 @@ define(['jquery', 'marionette',
 
                     var x = (k % this.grid.get('STEPS_X')) * sw + sw/2 + (this.offset_w*this.scale)/2
                     var y = Math.floor(k / this.grid.get('STEPS_X')) * sh + sh/2 + (this.offset_h*this.scale)/2
-                    var r = ((v[1] < 1 ? 0 : v[1]) / max) * sw / 2
+                    var r = ((v[1] < 1 ? 0 : v[1]) / (max == 0 ? 1 : max)) * sw / 2
 
                     data.push({ x: x, y: y, value: v[1] < 1 ? 0 : v[1], radius: r*2 })
 
@@ -171,7 +173,7 @@ define(['jquery', 'marionette',
                 }, this)
 
                 //if (this.heatmapToggle) 
-                this.heatmap.setData({ max: max, data: data })
+                this.heatmap.setData({ max: max == 0 ? 100 : max, data: data })
                 //else this.heatmap.setData({ data: [] })
             }
         },
