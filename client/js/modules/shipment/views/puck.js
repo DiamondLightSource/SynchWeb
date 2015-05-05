@@ -41,7 +41,7 @@ define(['marionette', 'utils', 'utils/canvas', 'jquery', 'backbone', 'backbone-v
         
         this.puck = new Image()
         
-        this.puck.src = '/client/assets/images/puck.png'
+        this.puck.src = app.appurl+'/assets/images/puck.png'
         this.puck.onload = function() {
             self._draw()
             console.log('puck loaded')
