@@ -496,8 +496,9 @@
                 if ($this->arg('DEWARS') > 0) {
                     $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : '';
                     
+                    $fcs = $this->arg('FCODES');
                     for ($i = 0; $i < $this->arg('DEWARS'); $i++) {
-                        $fc = $i < sizeof($this->arg('FCODES')) ? $this->arg('FCODES')[$i] : ''; 
+                        $fc = $i < sizeof($this->arg('FCODES')) ? $fcs[$i] : ''; 
                         $n = $fc ? $fc : ('Dewar'.($i+1));
                         
                         $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode) 
