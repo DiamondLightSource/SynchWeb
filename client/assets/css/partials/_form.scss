@@ -62,7 +62,7 @@ div.form {
         height: 200px;
     }
     
-    textarea, input[name=title], input[name=TITLE] {
+    textarea, input[name=title], input[name=TITLE], input.full {
         width: 70%;
         
         @media (max-width: $breakpoint-small) {

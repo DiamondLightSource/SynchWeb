@@ -13,6 +13,7 @@
                               'prop' => '\w\w\d+',
                               'term' => '\w+',
                               'pid' => '\d+',
+                              'lid' => '\d+',
                               'sid' => '\d+',
                               'cid' => '\d+',
                               'value' => '.*',
@@ -32,6 +33,7 @@
                               'ACRONYM' => '([\w-])+',
                               'SEQUENCE' => '\w+',
                               'MOLECULARMASS' => '\d+(.\d+)?',
+                              'LIGANDS' => '\d+',
 
                               'NAME' => '\w+',
                               'COMMENTS' => '.*',
@@ -60,6 +62,14 @@
                               array('/pdbs(/pid/:pid)', 'get', '_get_pdbs'),
                               array('/pdbs', 'post', '_add_pdb'),
                               array('/pdbs(/:pdbid)', 'delete', '_remove_pdb'),
+
+                              array('/sequence(/pid/:pid)', 'get', '_get_sequences'),
+                              array('/sequence', 'post', '_add_sequence'),
+                              array('/sequence(/:sid)', 'delete', '_remove_sequence'),
+
+                              array('/ligands(/:lid)(/pid/:pid)', 'get', '_ligands'),
+                              array('/ligands', 'post', '_add_ligand'),
+                              array('/ligands/:lid', 'patch', '_update_ligand'),
         );
         
         # ------------------------------------------------------------------------
@@ -99,6 +109,12 @@
                 array_push($args, $this->arg('pid'));
             }
             
+            # For a specific ligand
+            if ($this->has_arg('lid')) {
+                $where .= ' AND shl.ligandid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('lid'));
+            }
+
             # For a specific container
             if ($this->has_arg('cid')) {
                 $where .= ' AND c.containerid=:'.(sizeof($args)+1);
@@ -183,7 +199,7 @@
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT distinct b.blsampleid, p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  SELECT distinct b.blsampleid, /*string_agg(l.ligandid) as ligandids, string_add(l.acronym) as ligands, */p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   
                                   FROM blsample b
@@ -212,6 +228,9 @@
                                   
                                   
                                   LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
+
+                                  /*LEFT OUTER JOIN sample_has_ligand shl ON shl.blsampleid = b.blsampleid
+                                  LEFT OUTER JOIN ligand l ON l.ligandid = shl.ligandid*/
                                   
                                   WHERE $where
                                   
@@ -382,7 +401,7 @@
             
             
             if ($this->has_arg('sort_by')) {
-                $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' =>'pr.molecularmass', 'HASSEQ' => 'SEQUENCE');
+                $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' =>'pr.molecularmass', 'HASSEQ' => "CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END");
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
@@ -646,6 +665,152 @@
             $this->_output(array('PROTEINID' => $pid));
         }
 
+
+        # ------------------------------------------------------------------------
+        # Sequences
+        function _get_sequences() {
+
+        }
+
+        function _add_sequence() {
+
+        }
+
+        function _remove_sequence() {
+
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Ligands
+        function _ligands() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            
+            $args = array($this->proposalid);
+            $where = 'pr.proposalid=:1';
+            $join = '';
+            $extc = '';
+
+            if ($this->has_arg('pjid')) {
+                $args = array($this->arg('pjid'));
+                $where = 'pj.projectid=:'.sizeof($args);
+                $join .= ' INNER JOIN project_has_ligand pj ON pj.ligandid=pr.ligandid';
+                
+                if (!$this->staff) {
+                    $join .= " INNER JOIN blsession s ON s.proposalid = p.proposalid 
+                    INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number 
+                    INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id 
+                    INNER JOIN user_@DICAT_RO u on u.id = iu.user_id ";
+                    $where .= " AND u.name=:".(sizeof($args)+1);
+                    array_push($args, $this->user);
+                }
+            }
+            
+            if ($this->has_arg('lid')) {
+                $where .= ' AND l.ligandid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('lid'));
+            }
+            
+
+            $tot = $this->db->pq("SELECT count(l.ligandid) as tot 
+              FROM ligand l 
+              INNER JOIN proposal p ON p.proposalid = l.proposalid $join WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            if ($this->has_arg('s')) {
+                $st = sizeof($args) + 1;
+                $where .= " AND (lower(l.acronym) LIKE lower('%'||:".$st."||'%') OR lower(l.iupac) LIKE lower('%'||:".($st+1)."||'%'))";
+                for ($i = 0; $i < 2; $i++) array_push($args, $this->arg('s'));
+            }
+            
+            
+            $start = 0;
+            $end = 10;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+            
+            $order = 'l.ligandid DESC';
+            
+            
+            if ($this->has_arg('sort_by')) {
+                $cols = array('ACRONYM' => 'l.acronym', 'IUPAC' =>'l.iupac', 'SMILES' => "l.smiles");
+                $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+                if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
+            }
+            
+            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
+                                  SELECT l.ligandid, p.proposalcode||p.proposalnumber as prop, l.acronym, l.iupac, l.smiles
+                                  FROM ligand l
+                                  INNER JOIN proposal p ON p.proposalid = l.proposalid
+                                  $join
+                                  WHERE $where
+                                  ORDER BY $order
+                                  ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+            
+            $ids = array();
+            $wcs = array();
+            foreach ($rows as $r) {
+                array_push($ids, $r['LIGANDID']);
+                array_push($wcs, 'l.ligandid=:'.sizeof($ids));
+            }
+            
+            $dcs = array();
+            $scs = array();
+            
+            if (sizeof($ids)) {
+                $dcst = $this->db->pq('SELECT shp.ligandid, count(dc.datacollectionid) as dcount 
+                  FROM datacollection dc 
+                  INNER JOIN blsample s ON s.blsampleid=dc.blsampleid 
+                  INNER JOIN sample_has_protein shp ON shp.blsampleid = s.blsampleid
+                  WHERE '.implode(' OR ', $wcs).' GROUP BY ship.ligandid', $ids);
+
+                
+                foreach ($dcst as $d) {
+                    $dcs[$d['LIGANDID']] = $d['DCOUNT'];
+                }
+
+                $scst = $this->db->pq('SELECT pr.proteinid, count(s.blsampleid) as scount 
+                  FROM blsample s 
+                  INNER JOIN sample_has_protein shp ON shp.blsampleid = s.blsampleid
+                  WHERE '.implode(' OR ', $wcs).' GROUP BY shp.ligandid', $ids);
+
+                foreach ($scst as $d) {
+                    $scs[$d['LIGANDID']] = $d['SCOUNT'];
+                }
+            }
+            
+            foreach ($rows as &$r) {
+                $dcount = array_key_exists($r['LIGANDID'], $dcs) ? $dcs[$r['LIGANDID']] : 0;
+                $r['DCOUNT'] = $dcount;
+                $scount = array_key_exists($r['LIGANDID'], $scs) ? $scs[$r['LIGANDID']] : 0;
+                $r['SCOUNT'] = $scount;
+            }
+            
+            if ($this->has_arg('lid')) {
+                if (sizeof($rows))$this->_output($rows[0]);
+                else $this->_error('No such ligand');
+            } else $this->_output(array('total' => $tot,
+                                 'data' => $rows,
+                           ));   
+        }
+
+        function _add_ligand() {
+          
+        }
+
+        function _update_ligand() {
+
+        }
         
     }
 

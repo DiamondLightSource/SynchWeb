@@ -1,0 +1,35 @@
+<h1>Add Ligand</h1>
+
+<form method="post" id="add_ligand" enctype="multipart/form-data">
+    
+    <div class="form">
+        <ul>
+            
+            <li>
+                <label>Acronym
+                    <span class="small">Short form of the ligand name</span>
+                </label>
+                <span class="ACRONYM"><input type="text" name="ACRONYM" required /></span>
+            </li>
+            
+            
+            <li>
+                <label>IUPAC Name
+                    <span class="small">Full IUPAC name of the ligand</span>
+                </label>
+                <span class="IUPAC"><input class="full" type="text" name="IUPAC" /></span>
+            </li>
+            
+            <li>
+                <label>SMILES String
+                    <span class="small">SMILES string for the ligand</span>
+                </label>
+                <span class="SMILES"><input class="full" type="text" name="SMILES" /></span>
+            </li>
+
+        </ul>
+        
+        <button name="submit" value="1" type="submit" class="button submit">Add Ligand</button>
+    </div>
+    
+</form>
