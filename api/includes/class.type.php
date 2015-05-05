@@ -124,7 +124,7 @@ class ProposalType {
         foreach (array_merge($this->pages, $this->generic_pages) as $i => $p) {
             $app->group('/'.$p, function () use ($app, $db, $p, $cl) {
                 $class = in_array($p, $cl->generic_pages) ? 'includes/pages/class.'.$p.'.php' 
-                                                            : 'includes/pages/'.$this->dir.'/class.'.$p.'.php';
+                                                          : 'includes/pages/'.$cl->dir.'/class.'.$p.'.php';
                 if (file_exists($class)) {
                     require_once($class);
                     $cn = ucfirst($p);
