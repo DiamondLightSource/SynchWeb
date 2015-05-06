@@ -51,6 +51,7 @@
     if ($need_auth) {
         require_once 'lib/CAS/CAS.php';
         phpCAS::client(CAS_VERSION_2_0, 'liveauth.diamond.ac.uk', 443, '/cas');
+        //phpCAS::setCasServerCACert($cacert);
         phpCAS::setNoCasServerValidation();
         phpCAS::forceAuthentication();
     }

@@ -156,7 +156,9 @@ define(['jquery', 'marionette',
                     var y = Math.floor(k / this.grid.get('STEPS_X')) * sh + sh/2 + (this.offset_h*this.scale)/2
                     var r = ((v[1] < 1 ? 0 : v[1]) / (max == 0 ? 1 : max)) * sw / 2
 
-                    data.push({ x: x, y: y, value: v[1] < 1 ? 0 : v[1], radius: r*2 })
+                    data.push({ x: x, y: y, value: v[1] < 1 ? 0 : v[1], 
+                        //radius: r*2 
+                    })
 
                     //if (!this.heatmapToggle) {
                     if (this.current == k) {
