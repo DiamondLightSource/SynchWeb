@@ -8,13 +8,9 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'proteins(/s/:s)(/page/:page)': 'proteinlist',
       'proteins/pid/:pid': 'proteinview',
       'proteins/add': 'proteinadd',
-
-      'ligands(/s/:s)(/page/:page)': 'ligandlist',
-      'ligands/lid/:lid': 'ligandview',
-      'ligands/add': 'ligandadd',
     },
       
-    loadEvents: ['samples:show', 'proteins:show', 'samples:view', 'proteins:view', 'ligands:show', 'ligands:view'],
+    loadEvents: ['samples:show', 'proteins:show', 'samples:view', 'proteins:view'],
       
   })
        

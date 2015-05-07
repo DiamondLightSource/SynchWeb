@@ -10,7 +10,6 @@ define([], function() {
             containers: 'Containers',
             samples: 'Samples',
             proteins: 'Proteins',
-            //ligands: 'Ligands',
             contacts: 'Lab Contacts',
             stats: 'Statistics',
         },

@@ -11,21 +11,12 @@ define(['marionette',
 
         'models/protein',
         'collections/proteins',
-
-        'modules/samples/views/ligandlist',
-        'modules/samples/views/ligandview',
-        'modules/samples/views/ligandadd',
-
-        'models/ligand',
-        'collections/ligands',
     
 ], function(Marionette, SampleList, SampleView, Sample, Samples, 
-  ProteinList, ProteinView, AddProteinView, Protein, Proteins,
-  LigandList, LigandView, AddLigandView, Ligand, Ligands) {
+  ProteinList, ProteinView, AddProteinView, Protein, Proteins) {
     
   var sbc =  { title: 'Samples', url: '/samples' }
   var pbc =  { title: 'Proteins', url: '/proteins' }
-  var lbc =  { title: 'Ligands', url: '/ligands' }
     
   var controller = {
     // Samples
@@ -87,37 +78,6 @@ define(['marionette',
         app.content.show(new AddProteinView())
     },
 
-
-    // Ligands
-    ligandlist: function(s, page) {
-        app.loading()
-        app.bc.reset([lbc])
-        page = page ? parseInt(page) : 1
-        var ligands = new Ligands(null, { state: { currentPage: page }, queryParams: { s : s } })
-        ligands.fetch().done(function() {
-            app.content.show(new LigandList({ collection: ligands, params: { s: s } }))
-        })
-    },
-      
-    ligandview: function(pid) {
-      app.loading()
-        var ligand = new Ligand({ LIGANDID: pid })
-        ligand.fetch({
-            success: function() {
-                app.bc.reset([lbc, { title: ligand.get('NAME') }])
-                app.content.show(new LigandView({ model: protein }))
-            },
-            error: function() {
-                app.bc.reset([lbc])
-                app.message({ title: 'No such ligand', message: 'The specified ligand could not be found'})      
-            },
-        })
-    },
-      
-    ligandadd: function() {
-        app.bc.reset([lbc, { title: 'Add Ligand' }])
-        app.content.show(new AddLigandView())
-    },
   }
        
        
