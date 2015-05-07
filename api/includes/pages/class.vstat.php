@@ -77,7 +77,7 @@
                     foreach (array('WAVELENGTH', 'BEAMSIZEATSAMPLEX', 'BEAMSIZEATSAMPLEY') as $i => $f) {
                         $lines[$i]['label'] = $f;
                         if ($i > 0) $lines[$i]['yaxis'] = $i > 0 ? 2 : 1;
-                        array_push($lines[$i]['data'], array($this->jst($d['ST']), floatval($d[$f])));
+                        array_push($lines[$i]['data'], array($this->jst($d['ST']), floatval(round($d[$f],4))));
                     }
                 }
             }
