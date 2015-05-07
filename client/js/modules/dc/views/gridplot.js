@@ -98,8 +98,6 @@ define(['jquery', 'marionette',
             this.canvas.height = this.$el.parent().height()
 
             this.heatmap = new HeatMap.create({ container: this.$el[0] })
-
-            this.draw()
         },
 
 
@@ -175,7 +173,7 @@ define(['jquery', 'marionette',
                 }, this)
 
                 //if (this.heatmapToggle) 
-                this.heatmap.setData({ max: max == 0 ? 100 : max, data: data })
+                if (max) this.heatmap.setData({ max: max, data: data })
                 //else this.heatmap.setData({ data: [] })
             }
         },
