@@ -17,7 +17,9 @@ define(['marionette', 'modules/cell/collections/datacollections', 'views/pages',
     })
     
     var NoDCs = Marionette.ItemView.extend({
+        className: 'data_collection',
         template: _.template('<div>No data collections found</div>')
+        
     })
     
     return Marionette.CompositeView.extend({
