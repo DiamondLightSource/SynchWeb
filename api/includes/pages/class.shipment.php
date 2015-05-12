@@ -10,6 +10,8 @@
 
                               
                               'visit' => '\w+\d+-\d+',
+                              'all' => '\d',
+                              'ty' => '\w+',
 
 
                               // cache name
@@ -303,18 +305,34 @@
         
         function _get_all_containers() {
             #$this->db->set_debug(True);
-            if (!$this->has_arg('prop') && !$this->has_arg('visit')) $this->_error('No proposal specified');
+            if (!$this->has_arg('prop') && !$this->has_arg('visit') && !$this->staff) $this->_error('No proposal specified');
             
             
             if ($this->has_arg('visit')) {
-                $join = " INNER JOIN proposal p ON p.proposalid = sh.proposalid INNER JOIN blsession ses ON ses.proposalid = p.proposalid";
+                $join = " INNER JOIN blsession ses ON ses.proposalid = p.proposalid";
                 $args = array($this->arg('visit'));
                 $where = "p.proposalcode||p.proposalnumber||'-'||ses.visit_number LIKE :1";
+
+            } else if ($this->has_arg('all') && $this->staff) {
+                $join = '';
+                $args = array();
+                $where = '1=1';
+
             } else {
                 $join = '';
                 $args = array($this->proposalid);
                 $where = 'sh.proposalid=:1';
             }
+
+
+            if ($this->has_arg('ty')) {
+                if ($this->arg('ty') == 'plate') {
+                    $where .= " AND c.containertype NOT LIKE 'Puck'";
+                } else if ($this->arg('ty') == 'puck') {
+                    $where .= " AND c.containertype LIKE 'Puck'";
+                }
+            }
+
             
             if ($this->has_arg('did')) {
                 $where .= ' AND d.dewarid=:'.(sizeof($args)+1);
@@ -356,12 +374,9 @@
             $start = 0;
             $end = 10;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
-            
-            if ($this->has_arg('page')) {
-                $pg = $this->arg('page') - 1;
-                $start = $pg*$pp;
-                $end = $pg*$pp+$pp;
-            }
+            $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
+            $start = $pg*$pp;
+            $end = $pg*$pp+$pp;
             
             $st = sizeof($args)+1;
             $en = $st + 1;
@@ -372,16 +387,24 @@
             
             
             if ($this->has_arg('sort_by')) {
-                $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid');
+                $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)');
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(s.blsampleid) as samples
-                                  FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid INNER JOIN shipping sh ON sh.shippingid = d.shippingid LEFT OUTER JOIN blsample s ON s.containerid = c.containerid $join
+                                  SELECT sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, max(ci.bltimestamp) as lastinspection, count(ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(s.blsampleid) as samples
+                                  FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
+                                  INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
+                                  INNER JOIN proposal p ON p.proposalid = sh.proposalid 
+                                  LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
+                                  LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid
+                                  LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
+                                  LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
+                                  LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
+                                  $join
                                   WHERE $where
-                                  GROUP BY c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
+                                  GROUP BY sch.name, c.scheduleid, c.screenid, sc.name, c.imagerid, i.temperature, i.name, p.proposalcode || '-' || p.proposalnumber, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
                                   ORDER BY $order
                                   ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
 
