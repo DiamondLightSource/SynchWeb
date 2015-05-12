@@ -221,13 +221,18 @@ define(['marionette',
             }, this)
 
             var samples = new Samples(this.samples.filter(function(m) { return m.get('PROTEINID') > - 1 }))
-            samples.save({
-                success: function() {
-                    app.alert({ message: 'New container &quot;'+self.model.get('NAME')+'&quot; created, Click <a href="/containers/cid/'+self.model.get('CONTAINERID')+'">here</a> to view it', persist: 'cadd'+self.model.get('CONTAINERID'), className: 'message notify' })
-                    self.clearPuck()
-                }
+            if (samples.length) {
+                samples.save({
+                    success: function() {
+                        self.finished()
+                    }
+                })
+            } else this.finished()
+        },
 
-            })
+        finished: function() {
+            app.alert({ message: 'New container &quot;'+this.model.get('NAME')+'&quot; created, Click <a href="/containers/cid/'+this.model.get('CONTAINERID')+'">here</a> to view it', persist: 'cadd'+this.model.get('CONTAINERID'), className: 'message notify' })
+            this.clearPuck()
         },
         
         error: function() {
