@@ -9,7 +9,7 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
              drop_offset_x: 0, drop_offset_y: 0,
              well_drop: -1,
              capacity: 96*2
-        },/*
+        },
          { name: 'Greiner 3 Drop', well_per_row: 12,
              drop_per_well_x: 3, drop_per_well_y: 1,
              drop_height: 0.5, drop_width: 1,
@@ -73,7 +73,7 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
              drop_offset_x: 0, drop_offset_y: 0,
              well_drop: -1,
              capacity: 96
-        },
+        },/*
          { name: 'Linbro 24 well', well_per_row: 6,
              drop_per_well_x: 1, drop_per_well_y: 1,
              drop_height: 1, drop_width: 1,
