@@ -1,0 +1,7 @@
+{
+	"apiurl": "/client/api",
+
+	"appurl": "/client",
+
+	"production": false
+}

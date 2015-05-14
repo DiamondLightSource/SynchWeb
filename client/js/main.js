@@ -43,6 +43,10 @@ require.config({
   },
     
   shim: {
+    config: {
+        exports: 'config',
+    },
+
     underscore: {
         exports: '_'
     },
@@ -157,10 +161,6 @@ require.config({
         exports: 'markdown',
     },
   },
-               
-               
-  baseUrl: '/client/js',
-  //baseUrl: '/client/dist',
 });
 
 require(['app'], function(app) {

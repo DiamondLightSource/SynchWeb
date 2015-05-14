@@ -7,19 +7,21 @@ define(['backbone', 'marionette', 'underscore', 'jquery',
     'models/proposal',
     
     'utils',
-    'config',
+    'json!config.json',
     'jquery.cookie', 'jquery-ui',
         ],
 function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Proposal, utils, config) {
 
   window.app = new Marionette.Application()
 
+  console.log('CONFIG', config)
+
   // Base url for the api
-  app.apiurl = '/client/api'
-  //app.apiurl = '/client/api-mysql'
+  app.apiurl = config.apiurl
 
   // Base url for the app
-  app.appurl = '/client'
+  app.appurl = config.appurl
+
 
   // reference to config
   app.config = config
@@ -32,7 +34,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
 
     if (url) {
         options = options || {};
-        options.url = app.apiurl+url.replace('/ajax', '')
+        options.url = app.apiurl+url
     }
       
     return oldSync.call(this, method, model, options);
