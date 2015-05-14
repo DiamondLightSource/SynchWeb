@@ -142,7 +142,6 @@ define(['jquery', 'marionette',
                     if (v[1] > max) max = v[1]
                 })
 
-                var bs = 0.93
                 var sw = (this.canvas.width-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.canvas.height-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
 
@@ -164,7 +163,7 @@ define(['jquery', 'marionette',
                         this.ctx.beginPath()
                         this.ctx.lineWidth = 2
                         this.ctx.strokeStyle = 'green'
-                        this.ctx.rect(x-sw/2-2, y-sw/2-1, sw, sh)
+                        this.ctx.rect(x-sw/2-2, y-sh/2-1, sw, sh)
                         this.ctx.stroke()
                         //this.ctx.arc(x, y, r, 0, 2*Math.PI, false)
                         //this.ctx.fillStyle = 'green'
