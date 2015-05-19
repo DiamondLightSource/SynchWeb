@@ -34,7 +34,8 @@ define(['marionette',
             this.history.fetch()
 
             var columns = [
-                { name: 'VISIT', label: 'Visit', cell: 'string', editable: false },
+                //{ name: 'VISIT', label: 'First Exp', cell: 'string', editable: false },
+                { label: 'First Exp', cell: table.TemplateCell, editable: false, template: '<%=VISIT%> (<%=BL%>)' },
                 { name: 'LOCALCONTACT', label: 'Local Contact', cell: 'string', editable: false },
                 { name: 'ARRIVAL', label: 'Date', cell: 'string', editable: false },
                 { name: 'DEWARSTATUS', label: 'Status', cell: 'string', editable: false },
@@ -60,6 +61,7 @@ define(['marionette',
                 { name: 'CODE', label: 'Name', cell: 'string', editable: false },
                 { label: 'Shipment', cell: table.TemplateCell, editable: false, template: '<a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPPINGNAME%></a>' },
                 { name: 'EXP', label: 'First Exp', cell: 'string', editable: false },
+                { name: 'FIRSTEXPERIMENTST', label: 'First Exp Start', cell: 'string', editable: false },
                 { name: 'DEWARSTATUS', label: 'Status', cell: 'string', editable: false },
                 { name: 'STORAGELOCATION', label: 'Location', cell: 'string', editable: false },
                 { name: 'TRACKINGNUMBERTOSYNCHROTRON', label: 'Track # to', cell: 'string', editable: false },
@@ -67,7 +69,7 @@ define(['marionette',
             ]
         
             if (app.mobile()) {
-                _.each([1,3], function(v) {
+                _.each([0,1,3,6,7], function(v) {
                     columns[v].renderable = false
                 })
             }

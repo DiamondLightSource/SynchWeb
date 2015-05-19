@@ -3,6 +3,7 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
   var ClickableRow = table.ClickableRow.extend({
     event: 'rdewar:show',
     argument: 'FACILITYCODE',
+    cookie: true,
   })
     
   return Marionette.LayoutView.extend({
