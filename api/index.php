@@ -31,22 +31,20 @@
       
     $need_auth = true;
     # Work around to allow beamline sample registration without CAS authentication
-    # For use on the touchscreen computers in the hutch
     if (sizeof($parts) >= 2) {
         if (
+            # For use on the touchscreen computers in the hutch
             (($parts[0] == 'assign') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
             (($parts[0] == 'shipment' && $parts[1] == 'containers') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
-            ($parts[0] == 'cal' && $parts[1] == 'ics' && $parts[2] == 'h')
+            ($parts[0] == 'cal' && $parts[1] == 'ics' && $parts[2] == 'h') || 
+
+            # Allow barcode reader unauthorised access, same as above, certain IPs only
+            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && in_array($_SERVER["REMOTE_ADDR"], $bcr))
             ) {
             $need_auth = false;
         }
-        
-    # Allow barcode reader unauthorised access, same as above, certain IPs only
-    } else if (sizeof($parts) == 1) {
-        if ($parts[0] == 'tracking' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) {
-            $need_auth = false;
-        }
     }
+    
     
     if ($need_auth) {
         require_once 'lib/CAS/CAS.php';
