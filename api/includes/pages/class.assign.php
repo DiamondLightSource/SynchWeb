@@ -33,7 +33,7 @@
                 $this->db->pq("UPDATE dewar SET dewarstatus='processing' WHERE dewarid=:1", array($c['DEWARID']));
                                
                 $this->db->pq("UPDATE container SET beamlinelocation=:1,samplechangerlocation=:2,containerstatus='processing' WHERE containerid=:3", array($c['BEAMLINENAME'], $this->arg('pos'), $c['CONTAINERID']));        
-                $this->_update_history($c['DEWARID'], 'processing');
+                $this->_update_history($c['DEWARID'], 'processing', $c['BEAMLINENAME']);
                                 
                 $this->_output(1);
             }
@@ -100,10 +100,10 @@
         }
                                 
                                 
-        function _update_history($did,$status) {
+        function _update_history($did,$status,$bl=null) {
             # Update history
-            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                VALUES (s_dewartransporthistory.nextval,:1,:2,CURRENT_TIMESTAMP)", array($did, $status));
+            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
+                VALUES (s_dewartransporthistory.nextval,:1,:2,:3,CURRENT_TIMESTAMP)", array($did, $status,$bl));
                                 
             # Update dewar status
             if ($status == 'unprocessing') $status = 'at DLS';
