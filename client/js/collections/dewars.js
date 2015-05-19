@@ -1,11 +1,15 @@
-define(['backbone', 'models/dewar'], function(Backbone, Dewar) {
+define(['backbone.paginator', 'models/dewar'], function(PagableCollection, Dewar) {
        
-  return Backbone.Collection.extend({
+  return PagableCollection.extend({
+  	mode: 'client',
     model: Dewar,
-    url: function() { return '/shipment/dewars/sid/'+this.id },
+    url: function() { return '/shipment/dewars'+(this.id ? '/sid/'+this.id : '')+(this.fc ? '/fc/'+this.fc : '') },
       
     initialize: function(models, options) {
-        if (options) this.id = options.id
+        if (options) {
+        	this.id = options.id
+        	this.fc = options.FACILITYCODE
+     	}
     },      
   })
 })
