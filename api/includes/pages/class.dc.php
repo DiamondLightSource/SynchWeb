@@ -882,7 +882,7 @@
             
             $output = array();
             foreach ($rows as &$r) {
-                if (!array_key_exists($r['AUTOPROCPROGRAMID'], $output)) $output[$r['AUTOPROCPROGRAMID']] = array('SHELLS' => array(), 'CELL' => array());
+                if (!array_key_exists($r['AUTOPROCPROGRAMID'], $output)) $output[$r['AUTOPROCPROGRAMID']] = array('BEAM' => array(), 'SHELLS' => array(), 'CELL' => array());
                 
                 $shell = array();
                 foreach ($r as $k => &$v) {
@@ -903,7 +903,7 @@
                     if ($k == 'ANOMCOMPLETENESS') $v = number_format($v, 1);
                     if ($k == 'ANOMMULTIPLICITY') $v = number_format($v, 1);
                     
-                    if ($k == 'AUTOPROCPROGRAMID' | $k == 'SHELL') {
+                    if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL') {
                         continue;
                     
                     } else if ($k == 'TYPE') {
@@ -918,6 +918,10 @@
                     } else if (in_array(strtolower($k), $dts)) {
                         $v = number_format($v, 2);
                         $output[$r['AUTOPROCPROGRAMID']]['CELL'][$k] = $v;
+                        
+                    } else if (in_array($k, array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM'))) {
+                        $output[$r['AUTOPROCPROGRAMID']]['BEAM'][$k] = $v;
+
                     } else {
                         $shell[$k] = $v;
                     }
