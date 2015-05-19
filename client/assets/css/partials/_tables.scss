@@ -388,9 +388,11 @@ html[xmlns] .dataTables_wrapper { display: block; }
             td:nth-of-type(5):before { content: "Rmeas"; }
             td:nth-of-type(6):before { content: "I/sig(I)"; }
             td:nth-of-type(7):before { content: "Completeness"; }
-            td:nth-of-type(8):before { content: "Multiplicity"; }
-            td:nth-of-type(9):before { content: "Anom Completeness"; }
-            td:nth-of-type(10):before { content: "Anom Multiplicity"; }
+            td:nth-of-type(8):before { content: "CC Half"; }
+            td:nth-of-type(9):before { content: "Multiplicity"; }
+            td:nth-of-type(10):before { content: "Anom Completeness"; }
+            td:nth-of-type(11):before { content: "Anom Multiplicity"; }
+            td:nth-of-type(12):before { content: "CC Anom"; }
         }
         
         &.strat {

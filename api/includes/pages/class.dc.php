@@ -865,7 +865,7 @@
         # Auto processing for a data collection
         function _dc_auto_processing($id) {
         
-            $rows = $this->db->pq('SELECT dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga 
+            $rows = $this->db->pq('SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga 
                 FROM autoprocintegration api 
                 INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
                 INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
@@ -902,6 +902,11 @@
                     if ($k == 'MULTIPLICITY') $v = number_format($v, 1);
                     if ($k == 'ANOMCOMPLETENESS') $v = number_format($v, 1);
                     if ($k == 'ANOMMULTIPLICITY') $v = number_format($v, 1);
+                    if ($k == 'CCHALF') $v = number_format($v, 1);
+                    if ($k == 'CCANOMALOUS') $v = number_format($v, 1);
+
+                    $beam = array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM');
+                    if (in_array($k, $beam)) $v = number_format($v, 2);
                     
                     if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL') {
                         continue;
@@ -919,7 +924,7 @@
                         $v = number_format($v, 2);
                         $output[$r['AUTOPROCPROGRAMID']]['CELL'][$k] = $v;
                         
-                    } else if (in_array($k, array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM'))) {
+                    } else if (in_array($k, $beam)) {
                         $output[$r['AUTOPROCPROGRAMID']]['BEAM'][$k] = $v;
 
                     } else {

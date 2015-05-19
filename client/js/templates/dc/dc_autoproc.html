@@ -9,6 +9,35 @@
     
         <a class="view button" title="Lookup Unit Cell" href="/cell/a/<%=CELL.CELL_A%>/b/<%=CELL.CELL_B%>/c/<%=CELL.CELL_C%>/al/<%=CELL.CELL_AL%>/be/<%=CELL.CELL_BE%>/ga/<%=CELL.CELL_GA%>"><i class="fa fa-search"></i> Lookup Cell</a>
     </p>
+
+    <table class="reflow cell">
+        <thead>
+            <tr>
+                <th>Beam Centre</th>
+                <th>X</th>
+                <th>Y</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Start</td>
+                <td><%=BEAM.XBEAM%></td>
+                <td><%=BEAM.YBEAM%></td>
+            </tr>
+            <!-- these are flipped, not sure why? -->
+            <tr>
+                <td>Refined</td>
+                <td><%=BEAM.REFINEDYBEAM%></td>
+                <td><%=BEAM.REFINEDXBEAM%></td>
+            </tr>
+            <tr>
+                <td>&Delta;</td>
+                <td><%=(BEAM.XBEAM-BEAM.REFINEDYBEAM).toFixed(2)%></td>
+                <td><%=(BEAM.YBEAM-BEAM.REFINEDXBEAM).toFixed(2)%></td>
+            </tr>
+        </tbody>
+    </table>
+
     <table class="reflow cell">
         <thead>
             <tr>
@@ -43,10 +72,12 @@
                 <th>Resolution</th>
                 <th>Rmeas</th>
                 <th>I/sig(I)</th>
+                <th>CC Half</th>
                 <th>Completeness</th>
                 <th>Multiplicity</th>
                 <th>Anom Completeness</th>
                 <th>Anom Multiplicity</th>
+                <th>CC Anom</th>
             </tr>
         </thead>
     <% _.each(SHELLS, function(s, n) { %>
@@ -57,10 +88,12 @@
             <td><%=s.RHIGH%> - <%=s.RLOW%></td>
             <td><% print(TYPE == 'Fast DP' ? s.RMERGE : s.RMEAS)%></td>
             <td><%=s.ISIGI%></td>
+            <td><%=s.CCHALF%></td>
             <td><%=s.COMPLETENESS%></td>
             <td><%=s.MULTIPLICITY%></td>
             <td><%=s.ANOMCOMPLETENESS%></td>
             <td><%=s.ANOMMULTIPLICITY%></td>
+            <td><%=s.CCANOMALOUS%></td>
         </tr>
     <% }) %>
     </table>
