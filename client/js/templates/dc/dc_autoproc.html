@@ -38,6 +38,10 @@
         </tbody>
     </table>
 
+    <% if (BEAM.REFINEDYBEAM > 0 && (Math.abs(BEAM.XBEAM-BEAM.REFINEDYBEAM) > 0.5 || Math.abs(BEAM.YBEAM-BEAM.REFINEDXBEAM) > 0.5)) { %>
+    <p class="message alert">WARNING: Beam centre has moved significantly during refinement! (>0.5mm)</p>
+    <% } %>
+
     <table class="reflow cell">
         <thead>
             <tr>
