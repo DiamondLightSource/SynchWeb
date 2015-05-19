@@ -12,10 +12,18 @@ define(['marionette',
         'modules/shipment/views/container',
         'modules/shipment/views/containeradd',
         'modules/shipment/views/containers',
+
+        'modules/shipment/models/dewarregistry',
+        'modules/shipment/collections/dewarregistry',
+        'modules/shipment/views/dewarreg',
+        'modules/shipment/views/regdewar',
+        'modules/shipment/views/regdewaradd',
     
 ], function(Marionette,
-    Dewar, Shipment, Shipments, ShipmentsView, ShipmentView, ShipmentAddView,
-    Container, Containers, ContainerView, ContainerAddView, ContainersView) {
+    Dewar, Shipment, Shipments, 
+    ShipmentsView, ShipmentView, ShipmentAddView,
+    Container, Containers, ContainerView, ContainerAddView, ContainersView,
+    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
         
@@ -116,6 +124,45 @@ define(['marionette',
             },
         })
     },
+
+
+
+    dewar_list: function(s, page) {
+      console.log('dew list')
+      app.loading()
+      var dewars = new DewarRegistry()
+        
+      page = page ? parseInt(page) : 1
+        
+      dewars.fetch().done(function() {
+        dewars.getPage(page)
+        app.bc.reset([bc, { title: 'Registered Dewars', url: '/dewars' }])
+        app.content.show(new DewarRegView({ collection: dewars, params: { s: s } }))
+      })
+    },
+
+
+    view_dewar: function(fc) {
+      app.log('cont view')
+      var dewar = new RegisteredDewar({ FACILITYCODE: fc })
+        dewar.fetch({
+            success: function() {
+                dewar.fetched = true
+                app.bc.reset([bc, { title: 'Registered Dewars', url: '/dewars' }, { title: dewar.get('FACILITYCODE') }])
+                app.content.show(new RegDewarView({ model: dewar }))
+            },
+            error: function() {
+                app.bc.reset([bc, { title: 'Error' }])
+                app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+            },
+        })
+    },
+
+    add_dewar: function() {
+      app.log('dew add view')
+      app.bc.reset([bc, { title: 'Registered Dewars', url: '/dewars' }, { title: 'Add New Dewar' }])
+      app.content.show(new RegDewarAddView())
+    },
       
   }
        
@@ -134,6 +181,11 @@ define(['marionette',
     app.on('container:show', function(cid) {
       app.navigate('containers/cid/'+cid)
       controller.view_container(cid)
+    })
+
+    app.on('rdewar:show', function(fc) {
+      app.navigate('dewars/fc/'+fc)
+      controller.view_dewar(fc)
     })
   })
        
