@@ -19,11 +19,13 @@
                               'cid' => '\d+',
                               'did' => '\d+',
                               'sid' => '\d+',
+                              'labels' => '[\w-]+',
                               );
 
         var $dispatch = array(array('/sid/:sid', 'get', '_shipment_label'),
                               array('/container(/sid/:sid)(/cid/:cid)(/did/:did)', 'get', '_container_report'),
                               array('/report/visit/:visit', 'get', '_visit_report'),
+                              array('/sheets', 'get', '_generate_sheets'),
         );
         
         
@@ -263,6 +265,21 @@
         }
         
         
+        # ------------------------------------------------------------------------
+        # Generate barcodes for labels
+        function _generate_sheets() {
+            $this->labels = array('i03', 'mx-storage-i03', 'i03-rack', 'mx-storage-i02', 'mx-storage-i04', 'mx-storage-i04-1', 'mx-storage-i24', 'mx-storage-in-in','mx-storage-in-out');
+
+            if ($this->has_arg('labels')) {
+                if (is_array($this->arg('labels'))) $this->labels = $this->arg('labels');
+                else $this->labels = array($this->arg('labels'));
+            }
+
+            $this->_render('sheets', 'L');
+
+
+        }
+
         
         # ------------------------------------------------------------------------
         # Render html template to PDF file
