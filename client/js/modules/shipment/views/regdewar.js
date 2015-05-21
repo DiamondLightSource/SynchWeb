@@ -1,21 +1,26 @@
 define(['marionette',
 
     'modules/shipment/collections/dewarhistory',
+    'modules/shipment/collections/dewarreports',
     'collections/dewars',
     'collections/labcontacts',
 
     'views/table',
     'utils/table',
     'utils/editable',
-    'tpl!templates/shipment/regdewar.html'], function(Marionette,
+    'tpl!templates/shipment/regdewar.html',
+    'jquery',
+    'jquery.mp',
+    ], function(Marionette,
         
     DewarHistory,
+    DewarReports,
     Dewars,
     LabContacts,
 
     TableView,
     table,
-    Editable, template){
+    Editable, template, $){
             
     return Marionette.LayoutView.extend({
         className: 'content',
@@ -24,19 +29,18 @@ define(['marionette',
         regions: {
             hist: '.history',
             dew: '.dewars',
+            rep: '.reports',
         },
-
 
         initialize: function(options) {
             Backbone.Validation.bind(this)
 
-            this.history = new DewarHistory(null, { queryParams: { FACILITYCODE: this.model.get('FACILITYCODE') } })
-            this.history.fetch()
+            this.history = new DewarHistory()
 
             var columns = [
                 //{ name: 'VISIT', label: 'First Exp', cell: 'string', editable: false },
-                { label: 'First Exp', cell: table.TemplateCell, editable: false, template: '<%=VISIT%> (<%=BL%>)' },
-                { name: 'LOCALCONTACT', label: 'Local Contact', cell: 'string', editable: false },
+                //{ label: 'First Exp', cell: table.TemplateCell, editable: false, template: '<%=VISIT%> (<%=BL%>)' },
+                //{ name: 'LOCALCONTACT', label: 'Local Contact', cell: 'string', editable: false },
                 { name: 'ARRIVAL', label: 'Date', cell: 'string', editable: false },
                 { name: 'DEWARSTATUS', label: 'Status', cell: 'string', editable: false },
                 { name: 'STORAGELOCATION', label: 'Location', cell: 'string', editable: false }
@@ -54,14 +58,14 @@ define(['marionette',
             })
 
             this.dewars = new Dewars(null, { FACILITYCODE: this.model.get('FACILITYCODE') })
-            this.dewars.fetch()
-
+            this.dewars.fetch().done(this.getHistory.bind(this))
 
             var columns = [
                 { name: 'CODE', label: 'Name', cell: 'string', editable: false },
                 { label: 'Shipment', cell: table.TemplateCell, editable: false, template: '<a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPPINGNAME%></a>' },
                 { name: 'EXP', label: 'First Exp', cell: 'string', editable: false },
                 { name: 'FIRSTEXPERIMENTST', label: 'First Exp Start', cell: 'string', editable: false },
+                { name: 'LOCALCONTACT', label: 'Local Contact', cell: 'string', editable: false },
                 { name: 'DEWARSTATUS', label: 'Status', cell: 'string', editable: false },
                 { name: 'STORAGELOCATION', label: 'Location', cell: 'string', editable: false },
                 { name: 'TRACKINGNUMBERTOSYNCHROTRON', label: 'Track # to', cell: 'string', editable: false },
@@ -79,6 +83,31 @@ define(['marionette',
                 backgrid: { emptyText: 'No dewars found' }
             })
 
+            this.reports = new DewarReports(null, { queryParams: { FACILITYCODE: this.model.get('FACILITYCODE') } })
+            this.listenTo(this.reports, 'sync', this.setupPopups, this)
+            this.reports.fetch()
+
+            var columns = [
+                { name: 'BLTIMESTAMP', label: 'Time / Date', cell: 'string', editable: false },
+                { name: 'REPORT', label: 'Report', cell: 'string', editable: false },
+                { label: 'Image', test: 'ATTACHMENT', cell: table.TemplateCell, editable: false, template: '<a class="popup" href="'+app.apiurl+'/image/dr/<%=DEWARREPORTID%>"><img class="img" src="'+app.apiurl+'/image/dr/<%=DEWARREPORTID%>" alt="attachment" /></a>' },
+            ]
+
+            this.reptable = new TableView({ collection: this.reports, 
+                columns: columns, tableClass: 'samples', loading: true, 
+                backgrid: { emptyText: 'No reports found' }
+            })
+
+        },
+
+        setupPopups: function() {
+            this.$el.find('td a.popup').magnificPopup({ type: 'image' })
+        },
+
+
+        getHistory: function() {
+            this.history.queryParams.did = this.dewars.at(0).get('DEWARID')
+            this.history.fetch()
         },
 
         
@@ -95,6 +124,7 @@ define(['marionette',
 
             this.hist.show(this.histtable)
             this.dew.show(this.dewtable)
+            this.rep.show(this.reptable)
         },
         
     })

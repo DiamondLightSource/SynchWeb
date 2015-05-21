@@ -33,7 +33,7 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
                      { name: 'FAMILYNAME', label: 'Surname', cell: 'string', editable: false },
                      { name: 'LABNAME', label: 'Lab Name', cell: 'string', editable: false },
                      { name: 'ADDRESS', label: 'Address', cell: 'string', editable: false },
-                     { name: 'DEWARS', label: '# Dewars', cell: 'string', editable: false },
+                     { name: 'DEWARS', label: '# Uses', cell: 'string', editable: false },
                      ]
         
       if (app.mobile()) {
