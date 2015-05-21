@@ -67,11 +67,16 @@
                               array('/dewars(/:did)(/sid/:sid)(/fc/:FACILITYCODE)', 'get', '_get_dewars'),
                               array('/dewars', 'post', '_add_dewar'),
                               array('/dewars/:did', 'patch', '_update_dewar'),
+
                               array('/dewars/history(/did/:did)', 'get', '_get_history'),
                               array('/dewars/history', 'post', '_add_history'),
+
                               array('/dewars/registry(/:FACILITYCODE)', 'get', '_dewar_registry'),
                               array('/dewars/registry/:FACILITYCODE', 'patch', '_update_dewar_registry'),
                               array('/dewars/registry/:FACILITYCODE', 'put', '_add_dewar_registry'),
+
+                              array('/dewars/reports(/:drid)', 'get', '_get_dewar_reports'),
+                              array('/dewars/reports', 'post', '_add_dewar_report'),
 
                               array('/dewars/default', 'get', '_get_default_dewar'),
 
@@ -193,6 +198,18 @@
             $this->db->pq("UPDATE dewar set dewarstatus='at DLS', storagelocation=lower(:2) WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION')));
             $this->db->pq("UPDATE shipping set shippingstatus='at DLS' WHERE shippingid=:1", array($dew['SHIPPINGID']));
 
+
+            // Email
+            // EHCs, local contact(s), labcontact, dh, pa
+            if ($this->arg('LOCATION') == 'stores-in') {
+
+            }
+
+            if ($this->arg('LOCATION') == 'stores-out') {
+              
+            }
+
+
             $this->_output(array('DEWARHISTORYID' => $dhid));
         }
 
@@ -297,11 +314,59 @@
 
 
         function _get_dewar_reports() {
+            if (!$this->has_arg('FACILITYCODE')) $this->_error('No dewar specified');
+
+            $where = 'r.facilitycode=:1';
+            $args = array($this->arg('FACILITYCODE'));
 
 
+            $tot = $this->db->pq("SELECT count(r.dewarreportid) as tot 
+              FROM dewarreport r
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
+            $start = $pg*$pp;
+            $end = $pg*$pp+$pp;
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
+                SELECT r.dewarreportid, r.report, TO_CHAR(r.bltimestamp, 'HH24:MI DD-MM-YYYY') as bltimestamp, r.attachment
+                FROM dewarreport r
+              WHERE $where ORDER BY r.bltimestamp DESC
+              ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+
+            foreach ($rows as $i => &$row) {
+              $row['REPORT'] = $this->db->read($row['REPORT']);
+            }
+
+            $this->_output(array('total' => $tot, 'data' => $rows));
         }
 
         function _add_dewar_report() {
+
+            print_r($_FILES);
+
+            //$this->_get_email_fn("Dr Stuart Fisher");
+
+            // Send Email
+            // labcontact, local contact?
+        }
+
+
+        function _transfer_dewar() {
+
+            // Email
+            // EHCs, local contact(s), labcontact, dh, pa
+        }
+
+
+        function _dispatch_dewar() {
 
         }
 
@@ -324,14 +389,14 @@
             }
             
             
-            $dewars = $this->db->pq("SELECT TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (p.proposalcode||p.proposalnumber||'-'||se.visit_number) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron 
+            $dewars = $this->db->pq("SELECT se.beamlineoperator as localcontact, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (p.proposalcode||p.proposalnumber||'-'||se.visit_number) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron 
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
               INNER JOIN proposal p ON p.proposalid = s.proposalid 
               LEFT OUTER JOIN blsession se ON d.firstexperimentid = se.sessionid 
               WHERE s.proposalid=:1 AND $where 
-              GROUP BY TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (p.proposalcode||p.proposalnumber||'-'||se.visit_number) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
+              GROUP BY se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (p.proposalcode||p.proposalnumber||'-'||se.visit_number) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
               ORDER BY d.dewarid DESC", array($this->proposalid, $arg));
             
             if ($this->has_arg('did')) {
@@ -499,7 +564,7 @@
         
         
         function _get_all_containers() {
-            #$this->db->set_debug(True);
+            //$this->db->set_debug(True);
             if (!$this->has_arg('prop') && !$this->has_arg('visit') && !$this->staff) $this->_error('No proposal specified');
             
             
@@ -556,7 +621,13 @@
             }
                 
 
-            $tot = $this->db->pq("SELECT count(c.containerid) as tot FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid INNER JOIN shipping sh ON sh.shippingid = d.shippingid $join WHERE $where", $args);
+            $tot = $this->db->pq("SELECT count(c.containerid) as tot 
+                FROM container c 
+                INNER JOIN dewar d ON d.dewarid = c.dewarid 
+                INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                INNER JOIN proposal p ON p.proposalid = sh.proposalid
+                $join 
+                WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
             
             if ($this->has_arg('s')) {
