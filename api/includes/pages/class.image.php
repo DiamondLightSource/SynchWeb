@@ -2,7 +2,7 @@
 
     class Image extends Page {
         
-        var $arg_list = array('id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '\w\d\d(-\d)?', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
+        var $arg_list = array('drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '\w\d\d(-\d)?', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
 
         var $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
@@ -12,7 +12,29 @@
                               array('/oav/bl/:bl(/n/:n)', 'get', '_forward_oav'),
                               array('/fa/fid/:id', 'get', '_fault_attachment'),
                               array('/ai/visit/:visit/aid/:aid(/n/:n)(/f/:f)', 'get', '_action_image'),
+                              array('/dr/:drid', 'get', '_dewar_report_image'),
                             );
+
+        # Dewar reports
+        function _dewar_report_image() {
+            $attachment = $this->db->pq("SELECT attachment 
+                FROM dewarreport 
+                WHERE dewarreportid = :1", array($this->arg('drid')));
+            
+            if (!sizeof($attachment)) $this->_error('No such dewar report');
+            else $att = $attachment[0]['ATTACHMENT'];
+            $this->db->close();
+
+            if (file_exists($att)) {
+                $ext = pathinfo($att, PATHINFO_EXTENSION);
+                if (in_array($ext, array('png', 'jpg', 'jpeg', 'gif'))) $head = 'image/'.$ext;
+
+                $this->_browser_cache();
+                $this->app->contentType($head);
+                readfile($att);
+
+            } else $this->_error('No such attachment');
+        }
 
 
         # Fault DB Attachments
