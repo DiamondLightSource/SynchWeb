@@ -335,6 +335,20 @@
             $src = $this->_ldap_search('uid='.$fedid, True);
             return array_key_exists($fedid, $src) ? $src[$fedid] : $fedid;
         }
+
+        function _get_email_fn($name) {
+            $parts = explode(' ', $name);
+            $src = $this->_ldap_search("(|(sn=$parts[2])(givenname=$parts[1]))", true);
+
+            $ret = array();
+            if (sizeof($src)) {
+                foreach ($src as $fedid => $email) {
+                    array_push($ret, $email);
+                }
+
+                return $ret[0];
+            }
+        }
               
 
         # Run an ldap search
