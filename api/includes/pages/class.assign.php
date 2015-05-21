@@ -21,7 +21,7 @@
             if (!$this->has_arg('cid')) $this->_error('No container id specified');
             if (!$this->has_arg('pos')) $this->_error('No position specified');
                                  
-            $cs = $this->db->pq("SELECT d.dewarid,bl.beamlinename,c.containerid FROM container c
+            $cs = $this->db->pq("SELECT d.dewarid,bl.beamlinename,c.containerid,c.code FROM container c
                                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                                 INNER JOIN blsession bl ON bl.proposalid = s.proposalid
@@ -33,7 +33,7 @@
                 $this->db->pq("UPDATE dewar SET dewarstatus='processing' WHERE dewarid=:1", array($c['DEWARID']));
                                
                 $this->db->pq("UPDATE container SET beamlinelocation=:1,samplechangerlocation=:2,containerstatus='processing' WHERE containerid=:3", array($c['BEAMLINENAME'], $this->arg('pos'), $c['CONTAINERID']));        
-                $this->_update_history($c['DEWARID'], 'processing', $c['BEAMLINENAME']);
+                $this->_update_history($c['DEWARID'], 'processing', $c['BEAMLINENAME'], $c['CODE'].' => '.$this->arg('pos'));
                                 
                 $this->_output(1);
             }
@@ -100,10 +100,12 @@
         }
                                 
                                 
-        function _update_history($did,$status,$bl=null) {
+        function _update_history($did,$status,$bl=null,$ext=null) {
             # Update history
+            $st = $status;
+            if ($ext) $st .= ' ('.$ext.')';
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
-                VALUES (s_dewartransporthistory.nextval,:1,:2,:3,CURRENT_TIMESTAMP)", array($did, $status,$bl));
+                VALUES (s_dewartransporthistory.nextval,:1,:2,:3,CURRENT_TIMESTAMP)", array($did, $st,$bl));
                                 
             # Update dewar status
             if ($status == 'unprocessing') $status = 'at DLS';
