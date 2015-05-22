@@ -19,7 +19,7 @@
         function _visit_breakdown() {
             $info = $this->_check_visit();
             
-            $dc = $this->db->pq("SELECT dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, (dc.endtime - dc.starttime)*86400 as dctime, dc.runstatus 
+            $dc = $this->db->pq("SELECT dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, (dc.endtime - dc.starttime)*86400 as dctime, dc.runstatus 
                 FROM datacollection dc 
                 WHERE dc.sessionid=:1 ORDER BY dc.starttime DESC", array($info['SID']));
             
@@ -64,6 +64,8 @@
             $lines = array(array('data' => array()),
                            array('data' => array()),
                            array('data' => array()),
+                           array('data' => array()),
+                           array('data' => array()),
                            );
 
             foreach ($dc as $d) {
@@ -74,9 +76,11 @@
                         array($this->jst($d['ST']), 1, $this->jst($d['ST'])),
                         array($this->jst($d['EN']), 1, $this->jst($d['ST']))), 'color' => 'green', 'id' => intval($d['ID']), 'type' => 'dc'));
 
-                    foreach (array('WAVELENGTH', 'BEAMSIZEATSAMPLEX', 'BEAMSIZEATSAMPLEY') as $i => $f) {
+                    $d['ENERGY'] = (1.98644568e-25/($d['WAVELENGTH']*1e-10))/1.60217646e-19;
+
+                    foreach (array('ENERGY', 'BEAMSIZEATSAMPLEX', 'BEAMSIZEATSAMPLEY', 'KAPPASTART', 'PHISTART') as $i => $f) {
                         $lines[$i]['label'] = $f;
-                        if ($i > 0) $lines[$i]['yaxis'] = $i > 0 ? 2 : 1;
+                        if ($i > 0) $lines[$i]['yaxis'] = $i > 2 ? 3 : ($i > 0 ? 2 : 1);
                         array_push($lines[$i]['data'], array($this->jst($d['ST']), floatval(round($d[$f],4))));
                     }
                 }
