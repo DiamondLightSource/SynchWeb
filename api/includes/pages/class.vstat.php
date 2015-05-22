@@ -343,7 +343,8 @@
                      
             $ehcs = array();
             foreach ($ehc_tmp as $e) {
-                if (strpos($e->title, 'shift') !== False) array_push($ehcs, $e);
+                //if (strpos($e->title, 'shift') !== False) 
+                array_push($ehcs, $e);
             }
                                     
             $this->_output($ehcs);
