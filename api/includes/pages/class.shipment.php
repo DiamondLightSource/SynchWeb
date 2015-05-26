@@ -31,6 +31,7 @@
 
                               'PURCHASEDATE' => '\d+-\d+-\d+',
                               'LABCONTACTID' => '\d+',
+                              'REPORT' => '.*',
                               
                               // Shipment fields
                               'FCODES' => '([\w-])+',
@@ -43,7 +44,7 @@
                               'DELIVERYAGENT_AGENTCODE' => '\w+',
                               'SAFETYLEVEL' => '\w+',
                               'DEWARS' => '\d+',
-                              'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
+                              //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
                               'COMMENTS' => '.*',
                               
                               'assigned' => '\d',
@@ -308,6 +309,7 @@
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE dewarregistry SET $f=:1 WHERE facilitycode=:2", array($this->arg($f), $this->arg('FACILITYCODE')));
                     $this->_output(array($f => $this->arg($f)));
+                    //$this->_dewar_registry();
                 }
             }
         }
@@ -349,13 +351,56 @@
         }
 
         function _add_dewar_report() {
+            if (!$this->has_arg('REPORT')) $this->_error('No report specified');
+            if (!$this->has_arg('FACILITYCODE')) $this->_error('No dewar specified');
 
-            print_r($_FILES);
+            $last_visits = $this->db->pq("SELECT s.beamlineoperator as localcontact, p.proposalcode||p.proposalnumber||'-'||s.visit_number as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
+              FROM dewar d
+              INNER JOIN blsession s ON d.firstexperimentid = s.sessionid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              WHERE d.facilitycode = :1
+              ORDER BY s.startdate DESC", array($this->arg('FACILITYCODE')));
 
-            //$this->_get_email_fn("Dr Stuart Fisher");
+            if (!sizeof($last_visits)) $this->_error('Cant find a visit for that dewar');
+            else $lv = $last_visits[0];
 
-            // Send Email
-            // labcontact, local contact?
+            if (array_key_exists('ATTACHMENT', $_FILES)) {
+                if ($_FILES['ATTACHMENT']['name']) {
+                    $info = pathinfo($_FILES['ATTACHMENT']['name']);
+
+                    if ($info['extension'] == 'jpg') {
+                        $root = '/dls/'.$lv['BEAMLINENAME'].'/data/'.$lv['YEAR'].'/'.$lv['VISIT'].'/.ispyb/';
+                        $file = strftime('%Y-%m-%d_%H%M').'dewarreport.jpg';
+
+                        $this->db->pq("INSERT INTO dewarreport (dewarreportid,facilitycode,report,attachment,bltimestamp) VALUES (s_dewarreport.nextval,:1,:2,:3,SYSDATE) RETURNING dewarreportid INTO :id", 
+                        array($this->arg('FACILITYCODE'), $this->arg('REPORT'), $root.$file));
+                        move_uploaded_file($_FILES['ATTACHMENT']['tmp_name'], $root.$file);
+
+                        $lc = $this->db->pq("SELECT p.emailaddress
+                          FROM dewarregistry r 
+                          INNER JOIN labcontact l ON l.labcontactid = r.labcontactid
+                          INNER JOIN person p ON p.personid = l.personid
+                          WHERE r.facilitycode=:1", array($this->arg('FACILITYCODE')));
+
+                        if (sizeof($lc)) {
+                            $recpts = array($lc[0]['EMAILADDRESS']);
+                            $local = $this->_get_email_fn($lv['LOCALCONTACT']);
+                            if ($local) array_push($recpts, $local);
+
+                            $subject = 'Status Report for Dewar '.$this->arg('FACILITYCODE').' at '.strftime('%d-%m-%Y %H:%M');
+                            $message = 'A new status report was recorded for your dewar: '.$this->arg('FACILITYCODE')."\n\n".$this->arg('REPORT')."\n\nThe full report can be found here:\nhttp://ispyb.diamond.ac.uk/dewars/fc/".$this->arg('FACILITYCODE');
+
+                            mail(implode(', ', $recpts), $subject, $message);
+                        }
+
+
+                        $this->_output(array('DEWARREPORTID' => $this->db->id()));
+
+
+                    }
+                }
+            }
         }
 
 
@@ -502,7 +547,7 @@
                           WHERE s.sessionid=:1", array($this->arg($f)));
 
                         if (sizeof($visit)) {
-                            $this->_output(array($f => $visit[0]['VISIT']));
+                            $this->_output(array($f => $this->arg($f), 'EXP' => $visit[0]['VISIT']));
                         }
 
                     } else $this->_output(array($f => $this->arg($f)));
