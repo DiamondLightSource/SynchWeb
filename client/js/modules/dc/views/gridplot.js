@@ -112,11 +112,13 @@ define(['jquery', 'marionette',
 
             // plot cropped snapshot
             if (this.hasSnapshot) {
-                var stx = Math.floor(this.grid.get('SNAPSHOT_OFFSETXPIXEL'))+1
-                var sty = Math.floor(this.grid.get('SNAPSHOT_OFFSETYPIXEL'))+1
+                var scalef = this.snapshot.width/1024
 
-                var w = bw*this.grid.get('STEPS_X')
-                var h = bh*this.grid.get('STEPS_Y')
+                var stx = (Math.floor(this.grid.get('SNAPSHOT_OFFSETXPIXEL'))+1)*scalef
+                var sty = (Math.floor(this.grid.get('SNAPSHOT_OFFSETYPIXEL'))+1)*scalef
+
+                var w = bw*this.grid.get('STEPS_X')*scalef
+                var h = bh*this.grid.get('STEPS_Y')*scalef
 
                 var cvratio = this.canvas.width / this.canvas.height
                 var snratio = w/h
