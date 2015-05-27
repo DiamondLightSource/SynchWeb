@@ -1,16 +1,12 @@
 define(['backbone', 'marionette', 'jquery',
-        'models/visit', 'collections/visits',
-        'views/assign', 'views/visits',
+        'json!config.json',
         'jquery.mobile',],
-function(Backbone, Marionette, $, Router,
-    Visit, Visits,
-    AssignView, VisitsView
-    ) {
+function(Backbone, Marionette, $, config) {
 
     window.app = new Marionette.Application()
 
-
-    app.apiurl = '/client/api'
+    app.config = config
+    app.apiurl = config.apiurl
     
 
     var oldSync = Backbone.sync;
