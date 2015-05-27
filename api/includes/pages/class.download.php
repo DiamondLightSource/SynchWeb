@@ -219,7 +219,7 @@
             if ($ext == 'mtz') {
                 # convert mtz to map
                 if (!file_exists($out)) {
-                    print './scripts/mtz2map.sh '.$file.'.'.$ext.' '.$this->arg('id').' '.$this->arg('ty').' '.$file.'.pdb';
+                    #print './scripts/mtz2map.sh '.$file.'.'.$ext.' '.$this->arg('id').' '.$this->arg('ty').' '.$file.'.pdb';
                     exec('./scripts/mtz2map.sh '.$file.'.'.$ext.' '.$this->arg('id').' '.$this->arg('ty').' '.$file.'.pdb');
                 }
                 
