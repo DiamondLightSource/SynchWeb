@@ -26,7 +26,7 @@ define(['marionette',
             //this.set({ DISTANCE: 0 }, { silent: true })
             
             this.set({ DELTA: this.get('OVERLAP') != 0 ? (parseFloat(this.get('AXISRANGE'))-parseFloat(this.get('OVERLAP'))): 0}, { silent: true })
-            
+            this.set({ AP: null }, { silent: true })
             /*_.each(this.apertures, function(v,k) {
                 if (this.get('COMMENTS').indexOf(k) > -1) {
                     this.set({ AP: v }, { silent: true })
