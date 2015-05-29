@@ -193,6 +193,11 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                                 if (sample.get(t) > 0) this.ctx.fillStyle = v
                             }, this)
                         }
+
+                        // Show image score
+                        if (sample && this.getOption('showImageStatus')) {
+
+                        }
                         
                         this.ctx.stroke()
           
