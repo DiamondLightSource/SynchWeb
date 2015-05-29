@@ -106,7 +106,16 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                         borderWidth: 0,
                     },
 
-                  yaxes: [{ position: 'right' }, { position: 'right' }],
+                    /*points: {
+                        show: true,
+                        radius: 1,
+                    },
+
+                    lines: {
+                        show: false,
+                    },*/
+
+                    yaxes: [{ position: 'right' }, { position: 'right' }, { position: 'right' }],
                 }
                 this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3);
 
