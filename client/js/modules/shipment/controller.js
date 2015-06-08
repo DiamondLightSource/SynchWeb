@@ -18,12 +18,16 @@ define(['marionette',
         'modules/shipment/views/dewarreg',
         'modules/shipment/views/regdewar',
         'modules/shipment/views/regdewaradd',
+
+        'modules/shipment/views/dispatch',
+        'modules/shipment/views/transfer',
     
 ], function(Marionette,
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView,
     Container, Containers, ContainerView, ContainerAddView, ContainersView,
-    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView) {
+    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
+    DispatchView, TransferView) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
         
@@ -164,6 +168,33 @@ define(['marionette',
       app.content.show(new RegDewarAddView())
     },
       
+    dispatch_dewar: function(did) {
+        var dewar = new Dewar({ DEWARID: did })
+        dewar.fetch({
+            success: function() {
+                app.bc.reset([bc, { title: 'Dispatch Dewar' }, { title: dewar.get('CODE') }])
+                app.content.show(new DispatchView({ dewar: dewar }))
+            },
+            error: function() {
+                app.bc.reset([bc, { title: 'Error' }])
+                app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+            },
+        })
+    },
+
+    transfer_dewar: function(did) {
+        var dewar = new Dewar({ DEWARID: did })
+        dewar.fetch({
+            success: function() {
+                app.bc.reset([bc, { title: 'Transfer Dewar' }, { title: dewar.get('CODE') }])
+                app.content.show(new TransferView({ dewar: dewar }))
+            },
+            error: function() {
+                app.bc.reset([bc, { title: 'Error' }])
+                app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+            },
+        })
+    },
   }
        
         

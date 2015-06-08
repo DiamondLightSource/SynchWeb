@@ -12,5 +12,10 @@
         <span class="deactivate"><a class="button button-notext deact" title="Deactivate Dewar"><i class="fa  fa-power-off"></i> <span>Deactivate Dewar</span></a></span>
         <a class="button button-notext print" title="Click to print dewar contents" href="<%=APIURL%>/pdf/container/did/<%=DEWARID%>"><i class="fa fa-print"></i> <span>Print Dewar Report</span></a>
         <a class="button button-notext add" title="Click to add a container" href="/containers/add/did/<%=DEWARID%>"><i class="fa fa-plus"></i> <span>Add Container</span></a>
+
+        <% if ((DEWARSTATUS == 'at DLS' || DEWARSTATUS == 'processing' ) && STORAGELOCATION != 'stores-out') { %>
+        <a class="button button-notext" title="Click to dispatch dewar back to your lab" href="/dewars/dispatch/<%=DEWARID%>"><i class="fa fa-home"></i> <span>Dispatch Dewar</span></a>
+        <a class="button button-notext" title="Click to transfer dewar to another beamline" href="/dewars/transfer/<%=DEWARID%>"><i class="fa fa-arrows-h"></i> <span>Transfer Dewar</span></a>
+        <% } %>
     </td>
 

@@ -1,0 +1,130 @@
+<h1>Request Internal Dewar Transfer</h1>
+
+<form>
+    
+    <div class="form">
+        <ul>
+            
+            <li>
+                <span class="label">Dewar Name</span>
+                <span class=""><%=DEWAR.CODE%></span>
+            </li>
+
+            <li>
+                <span class="label">Shipment</span>
+                <span class=""><%=DEWAR.SHIPPINGNAME%></span>
+            </li>
+
+            <% if (DEWAR.FACILITYCODE) { %>
+            <li>
+                <span class="label">Dewar Code</span>
+                <span class=""><%=DEWAR.FACILITYCODE%></span>
+            </li>
+            <% } %>
+
+            <li class="head">Contact Details</li>
+            <li>
+                <label>Contact
+                    <span class="small">The contact the dewar relates to</span>
+                </label>
+                <select name="LABCONTACTID"></select>
+            </li>
+
+            <li>
+                <label>Full Name
+                    <span class="small">The persons given &amp; family name</span>
+                </label>
+                <input type="text" name="GIVENNAME" />
+                <input type="text" name="FAMILYNAME" />
+            </li>
+
+            <li>
+                <label>Contact Email
+                    <span class="small">The persons email address</span>
+                </label>
+                <input type="email" name="EMAILADDRESS" />
+            </li>
+
+            <li>
+                <label>Phone Number
+                    <span class="small">The persons phone number</span>
+                </label>
+                <input type="text" name="PHONENUMBER" />
+            </li>
+            
+            <li>
+                <label>Laboratory Name
+                    <span class="small">The contacts laboratory name</span>
+                </label>
+                <input type="text" name="LABNAME" />
+            </li>
+
+
+            <li class="head">Last Visit Details</li>
+            <li>
+                <label>Last Visit
+                    <span class="small">The last visit the dewar was used for</span>
+                </label>
+                <select name="VISIT"></select>
+            </li>
+            
+            <li>
+                <label>Last Local Contact
+                    <span class="small">Beamline local contact</span>
+                </label>
+                <input type="text" name="LOCALCONTACT" />
+            </li>
+
+            <li>
+                <label>Dewar Location
+                    <span class="small">Where the dewar currently is</span>
+                </label>
+                <input type="text" name="LOCATION" />
+            </li>
+
+            <li class="head">Next Visit Details</li>
+            <li>
+                <label>Next Visit
+                    <span class="small">The next visit the dewar is going to be used for</span>
+                </label>
+                <select name="NEXTVISIT"></select>
+            </li>
+            
+            <li>
+                <label>Next Local Contact
+                    <span class="small">Beamline local contact</span>
+                </label>
+                <input type="text" name="NEXTLOCALCONTACT" />
+            </li>
+
+            <li>
+                <label>Next Beamline
+                    <span class="small">Next beamline</span>
+                </label>
+                <input type="text" name="NEXTLOCATION" />
+            </li>
+
+
+            <li>
+                <label>Pickup Date
+                    <span class="small">Date dewar will be ready for transfer</span>
+                </label>
+                <input class="half" type="text" name="DELIVERYAGENT_SHIPPINGDATE" />
+            </li>
+
+
+            <li>
+                <label>Comments
+                    <span class="small">Comment for the shipment</span>
+                </label>
+                <textarea name="COMMENTS"></textarea>
+            </li>
+
+            <button name="submit" value="1" type="submit" class="button submit">Request Dewar Transfer</button>
+            
+            
+        </ul>
+    </div>
+    
+</form>
+
