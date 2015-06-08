@@ -233,22 +233,19 @@
             $dew['INCONTACTS'] = $in_contacts;
             $dew['TRACKINGNUMBERFROMSYNCHROTRON'] = $track;
 
-            if (strtolower($this->arg('LOCATION')) == 'stores-in') {
+            if (strtolower($this->arg('LOCATION')) == 'stores-in' && $dew['LCOUTEMAIL']) {
                 require_once('includes/class.email.php');
                 $email = new Email($dew['PROPOSALCODE'] == 'in' ? 'dewar-stores-in-in' : 'dewar-stores-in', '*** Dewar Received for '.$dew['PROP'].' at '.$dew['NOW'].' ***');
                 $email->data = $dew;
-                $email->send('stuart.fisher@diamond.ac.uk');
-                //$email->send($dew['LCOUTEMAIL'].', '.$tranfer_email);
+                $email->send($dew['LCOUTEMAIL'].', '.$tranfer_email);
             }
 
-            if (strtolower($this->arg('LOCATION')) == 'stores-out') {
+            if (strtolower($this->arg('LOCATION')) == 'stores-out' && $dew['LCRETEMAIL']) {
                 require_once('includes/class.email.php');
                 $email = new Email('dewar-stores-out', '*** Dewar ready to leave Synchrotron ***');
                 $email->data = $dew;
-                $email->send('stuart.fisher@diamond.ac.uk');
-                //$email->send($dew['LCRETEMAIL']);
+                $email->send($dew['LCRETEMAIL']);
             }
-
 
             $this->_output(array('DEWARHISTORYID' => $dhid));
         }
