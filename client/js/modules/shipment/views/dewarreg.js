@@ -27,7 +27,7 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
     },
 
     initialize: function(options) {
-      var columns = [{ name: 'FACILITYCODE', label: 'Facility Code', cell: 'string', editable: false },
+      var columns = [{ name: 'FACILITYCODE', label: 'Dewar Code', cell: 'string', editable: false },
                      { name: 'CARDNAME', label: 'Lab Contact', cell: 'string', editable: false },
                      { name: 'GIVENNAME', label: 'Name', cell: 'string', editable: false },
                      { name: 'FAMILYNAME', label: 'Surname', cell: 'string', editable: false },
