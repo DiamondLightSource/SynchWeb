@@ -1,0 +1,29 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">Dewar ready to leave synchrotron</h1>
+
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+			<p>Dear <?php echo $data['LCRET'] ?>, <br />Your dewar is at stores and ready to leave the synchrotron. <?php if ($data['TRACKINGNUMBERFROMSYNCHROTRON']): ?>Its tracking number is <?php echo $data['TRACKINGNUMBERFROMSYNCHROTRON'] ?><?php endif; ?></p>
+		</div>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Proposal</td>
+					<td><?php echo $data['PROP'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Shipment</td>
+					<td><?php echo $data['SHIPPINGNAME'] ?></td>
+				</tr>
+				<?php if ($data['FACILITYCODE']): ?>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Dewar Code</td>
+					<td><?php echo $data['FACILITYCODE'] ?></td>
+				</tr>
+				<?php endif; ?>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Barcode</td>
+					<td><?php echo $data['BARCODE'] ?></td>
+				</tr>
+			</tbody>
+		</table>

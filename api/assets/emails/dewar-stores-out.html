@@ -1,0 +1,14 @@
+Dear <?php echo $data['LCRET'] ?>, 
+
+Your dewar is at stores and ready to leave the synchrotron. 
+<?php if ($data['TRACKINGNUMBERFROMSYNCHROTRON']): ?>
+Its tracking number is <?php echo $data['TRACKINGNUMBERFROMSYNCHROTRON'] ?>
+<?php endif; ?>
+
+
+Dewar Details: 
+
+Proposal: <?php echo $data['PROP'] ?>
+Shipment: <?php echo $data['SHIPPINGNAME'] ?>
+Dewar Code: <?php echo $data['FACILITYCODE'] ?>
+Barcode: <?php echo $data['BARCODE'] ?>

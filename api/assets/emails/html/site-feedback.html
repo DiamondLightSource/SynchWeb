@@ -1,0 +1,20 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">Site Feedback</h1>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Name</td>
+					<td><?php echo $data['name'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Email</td>
+					<td><?php echo $data['email'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Feedback</td>
+					<td><?php echo nl2br($data['feedback']) ?></td>
+				</tr>
+			</tbody>
+
+		</table>

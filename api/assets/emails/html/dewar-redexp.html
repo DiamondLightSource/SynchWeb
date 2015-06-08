@@ -1,0 +1,40 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">RED Safety Level Shipment Sent</h1>
+
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #f26c4f">
+			RED Safety Level Shipment Sent for <b>for <?php echo $data['PROP'] ?></b>
+		</div>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Shipment Name</td>
+					<td><?php echo $data['SHIPPINGNAME'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Visit(s)</td>
+					<td><?php echo implode('<br />', $data['EXPS']) ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Dispatched</td>
+					<td><?php echo $data['SHIPPINGDATE'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Expected at Synchrotron</td>
+					<td><?php echo $data['DELIVERYDATE'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Courier</td>
+					<td><?php echo $data['DELIVERYAGENT_AGENTNAME'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Lab Contact</td>
+					<td><?php echo $data['LCOUT'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Comments</td>
+					<td><?php echo $data['COMMENTS'] ?></td>
+				</tr>
+			</tbody>
+
+		</table>

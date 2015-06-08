@@ -1,0 +1,81 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">Dewar ready to leave diamond</h1>
+
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+			Stores please book pickup with the following carrier: <b><?php echo $data['DELIVERYAGENT_AGENTNAME'] ?></b>
+		</div>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Visit</td>
+					<td><?php echo $data['VISIT'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Full Name</td>
+					<td><?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Phone No.</td>
+					<td><?php echo $data['PHONENUMBER'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Email Address</td>
+					<td><?php echo $data['EMAILADDRESS'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Lab / Company Name</td>
+					<td><?php echo $data['LABNAME'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Address</td>
+					<td>
+						<?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?><br />
+						<?php echo $data['LABNAME'] ?> <br />
+						<?php echo nl2br($data['ADDRESS']) ?>
+					</td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Dewar Code</td>
+					<td><?php echo $data['FACILITYCODE'] ?></td>
+				</tr>
+				
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Courier</td>
+					<td><?php echo $data['DELIVERYAGENT_AGENTNAME'] ?></td>
+				</tr>
+
+				<?php if (!$data['FACILITYCODE']): ?>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Courier Account No.</td>
+					<td><?php echo $data['DELIVERYAGENT_AGENTCODE'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Airway Bill No.</td>
+					<td><?php echo $data['AWBNUMBER'] ?></td>
+				</tr>
+				<?php endif; ?>
+				
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Collection Date</td>
+					<td><?php echo $data['DELIVERYAGENT_SHIPPINGDATE'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Package Description</td>
+					<td><?php echo $data['DESCRIPTION'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Current Location</td>
+					<td><?php echo $data['LOCATION'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Local Contact</td>
+					<td><?php echo $data['LOCALCONTACT'] ?> <?php echo $data['LCEMAIL'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Comments</td>
+					<td><?php echo $data['COMMENTS'] ?></td>
+				</tr>
+			</tbody>
+
+		</table>

@@ -1,0 +1,75 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">Dewar internal transfer requested</h1>
+
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+			<h2>Local Contact: <?php echo $data['LOCALCONTACT'] ?> <?php echo $data['LCEMAIL'] ?></h2>
+			<p><?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?> requested an internal transfer for his/her dewar(s). Please print this e-mail and affix it on the shipping case and put the dewar for the visit <?php echo $data['VISIT'] ?> on the rack outside the beamline: "to be Stored at Diamond" by the <?php echo $data['DELIVERYAGENT_SHIPPINGDATE'] ?></p>
+			<p>Local contact for next visit: <?php echo $data['NEXTLOCALCONTACT'] ?> <?php echo $data['LCNEXTEMAIL'] ?></p>
+		</div>
+		
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+			<h2>EHCs</h2>
+			<p>Please collect the dewar from visit <?php echo $data['VISIT'] ?> <?php if($data['FACILITYCODE']): ?>(Dewar Code: <?php echo $data['FACILITYCODE'] ?>)<?php endif; ?> currently stored on the rack outside <?php echo $data['LOCATION'] ?> and transfer it to the <?php echo $data['NEXTLOCATION'] ?> rack in the MX storage room</p>
+			<p>The dewar should be ready for internal transfer by the <?php echo $data['DELIVERYAGENT_SHIPPINGDATE'] ?></p>
+		</div>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<?php if ($data['FACILITYCODE']): ?>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Dewar Code</td>
+					<td><?php echo $data['FACILITYCODE'] ?></td>
+				</tr>
+				<?php endif; ?>
+
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Last Visit</td>
+					<td><?php echo $data['VISIT'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Current Location</td>
+					<td><?php echo $data['LOCATION'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Last Local Contact</td>
+					<td><?php echo $data['LOCALCONTACT'] ?></td>
+				</tr>
+
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Next Visit</td>
+					<td><?php echo $data['NEXTVISIT'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">New Location</td>
+					<td><?php echo $data['NEXTLOCATION'] ?></td>
+				</tr>
+
+
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Full Name</td>
+					<td><?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Phone No.</td>
+					<td><?php echo $data['PHONENUMBER'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Email Address</td>
+					<td><?php echo $data['EMAILADDRESS'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Lab / Company Name</td>
+					<td><?php echo $data['LABNAME'] ?></td>
+				</tr>
+				
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Pickup Date</td>
+					<td><?php echo $data['DELIVERYAGENT_SHIPPINGDATE'] ?></td>
+				</tr>
+				
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Comments</td>
+					<td><?php echo nl2br($data['COMMENTS']) ?></td>
+				</tr>
+			</tbody>
+		</table>

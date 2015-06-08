@@ -1,0 +1,46 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">Dewar received at synchrotron</h1>
+
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+			<p>Dear <?php echo $data['LCOUT'] ?>, <br />Your dewar was recieved at <?php echo $data['NOW'] ?>. You can check its location in <a href="http://ispyb.diamond.ac.uk/shipments/sid/<?php echo $data['SHIPPINGID'] ?>">ISPyB</a></p>
+		</div>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Proposal</td>
+					<td><?php echo $data['PROP'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Shipment</td>
+					<td><?php echo $data['SHIPPINGNAME'] ?></td>
+				</tr>
+				<?php if ($data['FACILITYCODE']): ?>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Dewar Code</td>
+					<td><?php echo $data['FACILITYCODE'] ?></td>
+				</tr>
+				<?php endif; ?>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Barcode</td>
+					<td><?php echo $data['BARCODE'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Visit</td>
+					<td><?php echo $data['FIRSTEXP'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Visit Start</td>
+					<td><?php echo $data['FIRSTEXPST'] ?></td>
+				</tr>
+
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Beamline</td>
+					<td><?php echo $data['BEAMLINENAME'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Local Contact</td>
+					<td><?php echo $data['BEAMLINEOPERATOR'] ?></td>
+				</tr>
+			</tbody>
+		</table>

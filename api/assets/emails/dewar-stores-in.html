@@ -1,0 +1,13 @@
+Dear <?php echo $data['LCOUT'] ?>, 
+
+Your dewar was recieved at <?php echo $data['NOW'] ?>. 
+You can check its location in <a href="http://ispyb.diamond.ac.uk/shipments/sid/<?php echo $data['SHIPPINGID'] ?>">ISPyB</a>
+
+Dewar Details: 
+
+Proposal: <?php echo $data['PROP'] ?>
+Shipment: <?php echo $data['SHIPPINGNAME'] ?>
+Dewar Code: <?php echo $data['FACILITYCODE'] ?>
+Barcode: <?php echo $data['BARCODE'] ?>
+Visit: <?php echo $data['FIRSTEXP'] ?> at <?php echo $data['FIRSTEXPST'] ?> on <?php echo $data['BEAMLINENAME'] ?>
+Local Contact: <?php echo $data['BEAMLINEOPERATOR'] ?>

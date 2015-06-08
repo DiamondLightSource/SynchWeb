@@ -28,10 +28,24 @@
 
                               'BARCODE' => '([\w-])+',
                               'LOCATION' => '[\w|\s|-]+',
+                              'NEXTLOCATION' => '[\w|\s|-]+',
 
                               'PURCHASEDATE' => '\d+-\d+-\d+',
                               'LABCONTACTID' => '\d+',
                               'REPORT' => '.*',
+
+                              'ADDRESS' => '.*',
+                              'DESCRIPTION' => '.*',
+                              'EMAILADDRESS' => '.*',
+                              'FAMILYNAME' => '.*',
+                              'GIVENNAME' => '.*',
+                              'LABNAME' => '.*',
+                              'LOCALCONTACT' => '[\w|\s+|-]+',
+                              'NEXTLOCALCONTACT' => '[\w|\s+|-]+',
+                              'PHONENUMBER' => '.*',
+                              'VISIT' => '\w+\d+-\d+',
+                              'NEXTVISIT' => '\w+\d+-\d+',
+                              'AWBNUMBER' => '\w+',
                               
                               // Shipment fields
                               'FCODES' => '([\w-])+',
@@ -80,6 +94,10 @@
                               array('/dewars/reports', 'post', '_add_dewar_report'),
 
                               array('/dewars/default', 'get', '_get_default_dewar'),
+
+                              array('/dewars/transfer', 'post', '_transfer_dewar'),
+                              array('/dewars/dispatch', 'post', '_dispatch_dewar'),
+
 
 
                               array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
@@ -180,34 +198,55 @@
 
 
         function _add_history() {
+            global $in_contacts, $transfer_email;
             if (!$this->bcr()) $this->_error('You need to be on the internal network to add history');
 
             if (!$this->has_arg('BARCODE')) $this->_error('No barcode specified');
             if (!$this->has_arg('LOCATION')) $this->_error('No location specified');
 
-            $dew = $this->db->pq("SELECT d.dewarid,s.shippingid 
+            $dew = $this->db->pq("SELECT pe.givenname || ' ' || pe.familyname as lcout, pe.emailaddress as lcoutemail, pe2.givenname || ' ' || pe2.familyname as lcret, pe2.emailaddress as lcretemail, p.proposalcode || p.proposalnumber || '-' || e.visit_number as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, p.proposalcode || p.proposalnumber as prop, d.barcode, d.facilitycode
               FROM dewar d 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
+              INNER JOIN shipping s ON s.shippingid = d.shippingid
+              LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
+              LEFT OUTER JOIN person pe ON pe.personid = c.personid
+              LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid  
+              LEFT OUTER JOIN person pe2 ON pe2.personid = c2.personid
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              LEFT OUTER JOIN blsession e ON e.sessionid = d.firstexperimentid
               WHERE lower(barcode) LIKE lower(:1)", array($this->arg('BARCODE')));
 
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
+            $track = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : $dew['TRACKINGNUMBERFROMSYNCHROTRON'];
+
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,'at DLS',lower(:2),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $this->arg('LOCATION')));
             $dhid = $this->db->id();
 
-            $this->db->pq("UPDATE dewar set dewarstatus='at DLS', storagelocation=lower(:2) WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq("UPDATE dewar set dewarstatus='at DLS', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track));
             $this->db->pq("UPDATE shipping set shippingstatus='at DLS' WHERE shippingid=:1", array($dew['SHIPPINGID']));
 
 
             // Email
             // EHCs, local contact(s), labcontact, dh, pa
-            if ($this->arg('LOCATION') == 'stores-in') {
+            $dew['NOW'] = strftime('%d-%m-%Y %H:%M');
+            $dew['INCONTACTS'] = $in_contacts;
+            $dew['TRACKINGNUMBERFROMSYNCHROTRON'] = $track;
 
+            if (strtolower($this->arg('LOCATION')) == 'stores-in') {
+                require_once('includes/class.email.php');
+                $email = new Email($dew['PROPOSALCODE'] == 'in' ? 'dewar-stores-in-in' : 'dewar-stores-in', '*** Dewar Received for '.$dew['PROP'].' at '.$dew['NOW'].' ***');
+                $email->data = $dew;
+                $email->send('stuart.fisher@diamond.ac.uk');
+                //$email->send($dew['LCOUTEMAIL'].', '.$tranfer_email);
             }
 
-            if ($this->arg('LOCATION') == 'stores-out') {
-              
+            if (strtolower($this->arg('LOCATION')) == 'stores-out') {
+                require_once('includes/class.email.php');
+                $email = new Email('dewar-stores-out', '*** Dewar ready to leave Synchrotron ***');
+                $email->data = $dew;
+                $email->send('stuart.fisher@diamond.ac.uk');
+                //$email->send($dew['LCRETEMAIL']);
             }
 
 
@@ -370,7 +409,14 @@
                     $info = pathinfo($_FILES['ATTACHMENT']['name']);
 
                     if ($info['extension'] == 'jpg') {
-                        $root = '/dls/'.$lv['BEAMLINENAME'].'/data/'.$lv['YEAR'].'/'.$lv['VISIT'].'/.ispyb/';
+                        # dls_mxweb cant write to visits...
+                        #$root = '/dls/'.$lv['BEAMLINENAME'].'/data/'.$lv['YEAR'].'/'.$lv['VISIT'].'/.ispyb/';
+
+                        $root = '/dls_sw/dasc/ispyb2/uploads/'.$lv['YEAR'].'/'.$lv['VISIT'].'/';
+                        if (!is_dir($root)) {
+                            mkdir($root, 0755, true);
+                        }
+
                         $file = strftime('%Y-%m-%d_%H%M').'dewarreport.jpg';
 
                         $this->db->pq("INSERT INTO dewarreport (dewarreportid,facilitycode,report,attachment,bltimestamp) VALUES (s_dewarreport.nextval,:1,:2,:3,SYSDATE) RETURNING dewarreportid INTO :id", 
@@ -388,10 +434,11 @@
                             $local = $this->_get_email_fn($lv['LOCALCONTACT']);
                             if ($local) array_push($recpts, $local);
 
-                            $subject = 'Status Report for Dewar '.$this->arg('FACILITYCODE').' at '.strftime('%d-%m-%Y %H:%M');
-                            $message = 'A new status report was recorded for your dewar: '.$this->arg('FACILITYCODE')."\n\n".$this->arg('REPORT')."\n\nThe full report can be found here:\nhttp://ispyb.diamond.ac.uk/dewars/fc/".$this->arg('FACILITYCODE');
-
-                            mail(implode(', ', $recpts), $subject, $message);
+                            require_once('includes/class.email.php');
+                            $this->args['NOW'] = strftime('%d-%m-%Y %H:%M');
+                            $email = new Email('dewar-report', '*** Status Report for Dewar '.$this->arg('FACILITYCODE').' at '.$this->arg('NOW').' ***');
+                            $email->data = $this->args;
+                            $email->send(implode(', ', $recpts));
                         }
 
 
@@ -405,14 +452,71 @@
 
 
         function _transfer_dewar() {
+            global $tranfer_email;
+            if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
-            // Email
-            // EHCs, local contact(s), labcontact, dh, pa
+            $dew = $this->db->pq("SELECT d.dewarid,s.shippingid 
+              FROM dewar d 
+              INNER JOIN shipping s ON s.shippingid = d.shippingid 
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
+
+            if (!sizeof($dew)) $this->_error('No such dewar');
+            else $dew = $dew[0];
+
+            
+            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
+              VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+              array($dew['DEWARID'], $this->arg('LOCATION')));
+
+            require_once('includes/class.email.php');
+            $email = new Email('dewar-transfer', '*** Dewar ready for internal transfer ***');
+
+            $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
+            $this->args['LCNEXTEMAIL'] = $this->_get_email_fn($this->arg('NEXTLOCALCONTACT'));
+
+            $email->data = $this->args;
+
+            $recpts = $tranfer_email.', '.$this->arg('EMAILADDRESS');
+            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
+
+            $email->send($recpts);
+
+            $this->_output(1);
         }
 
 
         function _dispatch_dewar() {
+            global $dispatch_email;
+            if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
+            $dew = $this->db->pq("SELECT d.dewarid,s.shippingid 
+              FROM dewar d 
+              INNER JOIN shipping s ON s.shippingid = d.shippingid 
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
+
+            if (!sizeof($dew)) $this->_error('No such dewar');
+            else $dew = $dew[0];
+
+            
+            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
+              VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+              array($dew['DEWARID'], $this->arg('LOCATION')));
+
+            require_once('includes/class.email.php');
+            $email = new Email('dewar-dispatch', '*** Dewar ready for Shipping from Diamond ***');
+
+            $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
+
+            $email->data = $this->args;
+
+            $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
+            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
+
+            $email->send($recpts);
+
+            $this->_output(1);
         }
 
         
@@ -560,6 +664,7 @@
         
         # Update shipping status to sent, email for CL3
         function _send_shipment() {
+            global $cl3_email;
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
             
@@ -570,19 +675,27 @@
             
             $this->db->pq("UPDATE shipping SET shippingstatus='sent to DLS' where shippingid=:1", array($ship['SHIPPINGID']));
             
+            $dewars = $this->db->pq("SELECT s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
+              FROM dewar d INNER JOIN blsession s ON s.sessionid = d.firstexperimentid 
+              WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
+            foreach ($dewars as $d) {
+                $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
+                  VALUES (s_dewartransporthistory.nextval,:1,'sent to DLS',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+                  array($d['DEWARID']));
+            }
+
             # Send email if CL3
             if ($ship['SAFETYLEVEL'] == 'Red') {
-                $dewars = $this->db->pq("SELECT s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate FROM dewar d INNER JOIN blsession s ON s.sessionid = d.firstexperimentid WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
-                
                 $exps = array();
                 foreach ($dewars as $d) {
                     array_push($exps, $ship['PROP'].'-'.$d['VN'].' on '.$d['BL'].' starting '.$d['STARTDATE']);
                 }
+                $ship['EXPS'] = $exps;
                 
-                $subject = "RED safety level shipment sent to DLS for ". $ship['PROP'];
-                $message = "Shipment Name: ". $ship['SHIPPINGNAME']."\nVisit(s): ".implode(', ', $exps)."\nShipment Sent: ".$ship['SHIPPINGDATE']."\nShipment Expected at Synchrotron: ".$ship['DELIVERYDATE']."\nShipment Courier: ".$ship['DELIVERYAGENT_AGENTNAME']."\nShipment Lab Contact: ".$ship['LCOUT']."\nShipment Comments: ".($ship['COMMENTS'] ? $ship['COMMENTS'] : 'None');
-                
-                mail('stuart.fisher@diamond.ac.uk, mark.williams@diamond.ac.uk, katherine.mcauley@diamond.ac.uk, goodshandling@diamond.ac.uk', $subject, $message);
+                require_once('includes/class.email.php');
+                $email = new Email('dewar-redexp', '*** RED safety level shipment sent for '.$ship['PROP'].' ***');
+                $email->data = $ship;
+                $email->send($cl3_email);
             }
             
             $this->_output(1);

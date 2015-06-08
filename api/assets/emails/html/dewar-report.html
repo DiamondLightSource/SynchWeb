@@ -1,0 +1,24 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">New Dewar Report for <?php echo $data['FACILITYCODE'] ?></h1>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Date / Time</td>
+					<td><?php echo $data['NOW'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Facility Code</td>
+					<td><?php echo $data['FACILITYCODE'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Report</td>
+					<td><?php echo $data['GIVENNAME'] ?> <?php echo nl2br($data['REPORT']) ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Link</td>
+					<td><a href="http://ispyb.diamond.ac.uk/dewars/fc/<?php echo $data['FACILITYCODE'] ?>">View Full Report</a></td>
+				</tr>
+			</tbody>
+
+		</table>

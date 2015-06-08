@@ -1,0 +1,54 @@
+Dear Stores, EHC, local contact, and User, 
+Please find below information for your dewar(s) that are ready to leave Diamond:
+
+---------------------------------------------------------------------------------------------------------
+Stores:
+Please book pickup with the carrier: <?php echo $data['DELIVERYAGENT_AGENTNAME'] ?>
+---------------------------------------------------------------------------------------------------------
+
+Visit:
+<?php echo $data['VISIT'] ?>
+
+Full name: 
+<?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?>
+
+Phone Number:
+<?php echo $data['PHONENUMBER'] ?>
+
+E-mail address:
+<?php echo $data['EMAILADDRESS'] ?>
+
+Company / Lab Name:
+<?php echo $data['LABNAME'] ?>
+
+Address:
+<?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?>
+<?php echo $data['LABNAME'] ?>
+<?php echo nl2br($data['ADDRESS']) ?>
+
+Package description:
+<?php echo $data['DESCRIPTION'] ?>
+
+Dewar code:
+<?php echo $data['FACILITYCODE'] ?>
+
+Courier:
+<?php echo $data['DELIVERYAGENT_AGENTNAME'] ?>
+
+Courier account number:
+<?php echo $data['DELIVERYAGENT_AGENTCODE'] ?>
+
+Courer airway bill number:
+<?php echo $data['AWBNUMBER'] ?>
+
+Collection date
+<?php echo $data['DELIVERYAGENT_SHIPPINGDATE'] ?>
+
+Current dewar location
+<?php echo $data['LOCATION'] ?>
+
+Local contact email (in case of problems finding the dewar):
+<?php echo $data['LOCALCONTACT'] ?> <?php echo $data['LCEMAIL'] ?>
+
+Comments:
+<?php echo $data['COMMENTS'] ?>

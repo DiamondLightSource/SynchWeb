@@ -1,0 +1,55 @@
+Dear <?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?>,
+
+Your transfer request has been registered.
+
+
+Dear local contact: <?php echo $data['LOCALCONTACT'] ?> <?php echo $data['LCEMAIL'] ?>,
+
+Your user: <?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?> requested an internal transfer for his/her dewar(s). Please print this e-mail and affix it on the shipping case and put the dewar for the visit <?php echo $data['VISIT'] ?> on the rack outside the beamline: "to be Stored at Diamond" by the <?php echo $data['DELIVERYAGENT_SHIPPINGDATE'] ?>.
+
+Local contact for next visit: <?php echo $data['NEXTLOCALCONTACT'] ?> <?php echo $data['LCNEXTEMAIL'] ?>
+
+
+Dear EHC,
+
+Please collect the dewar from visit <?php echo $data['VISIT'] ?> <?php if($data['FACILITYCODE']): ?>(Dewar Code: <?php echo $data['FACILITYCODE'] ?>)<?php endif; ?> currently stored on the rack outside <?php echo $data['LOCATION'] ?> and transfer it to the <?php echo $data['NEXTLOCATION'] ?> rack in the MX storage room
+The dewar should be ready for internal transfer by the <?php echo $data['DELIVERYAGENT_SHIPPINGDATE'] ?>
+
+
+Information for the transfer: 
+
+Last Visit:
+<?php echo $data['VISIT'] ?>
+
+Next visit:
+<?php echo $data['NEXTVISIT'] ?>
+
+Full name: 
+<?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?>
+
+Phone Number:
+<?php echo $data['PHONENUMBER'] ?>
+
+E-mail address:
+<?php echo $data['EMAILADDRESS'] ?>
+
+Company / establishment name:
+<?php echo $data['LABNAME'] ?>
+
+Dewar Code
+<?php echo $data['FACILITYCODE'] ?>
+
+Current dewar location
+<?php echo $data['LOCATION'] ?>
+
+New Location in storage room
+<?php echo $data['NEXTLOCATION'] ?>
+
+Pickup date:
+<?php echo $data['DELIVERYAGENT_SHIPPINGDATE'] ?>
+
+Local contact email (in case of problems finding the dewar):
+<?php echo $data['LOCALCONTACT'] ?> <?php echo $data['LCEMAIL'] ?>
+
+Comments:
+<?php echo $data['COMMENTS'] ?>
