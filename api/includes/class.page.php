@@ -338,16 +338,14 @@
 
         function _get_email_fn($name) {
             $parts = explode(' ', $name);
-            $src = $this->_ldap_search("(|(sn=$parts[2])(givenname=$parts[1]))", true);
+            $src = $this->_ldap_search("(&(sn=$parts[2])(givenname=$parts[1]))", true);
 
             $ret = array();
-            if (sizeof($src)) {
-                foreach ($src as $fedid => $email) {
-                    array_push($ret, $email);
-                }
-
-                return $ret[0];
+            foreach ($src as $fedid => $email) {
+                array_push($ret, $email);
             }
+
+            if (sizeof($ret)) return $ret[0];
         }
               
 
@@ -359,7 +357,7 @@
                 $r=ldap_bind($ds);
                 $sr=ldap_search($ds, "ou=People,dc=diamond,dc=ac,dc=uk", $search);
                 $info = ldap_get_entries($ds, $sr);
-                
+
                 for ($i=0; $i<$info["count"]; $i++) {
                     if ($email) {
                         $ret[$info[$i]['uid'][0]] = array_key_exists('mail', $info[$i]) ? $info[$i]['mail'][0] : '';
