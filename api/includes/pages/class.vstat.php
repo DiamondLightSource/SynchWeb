@@ -284,7 +284,7 @@
             #    array_push($avgs, sizeof($arr) ? array_sum($arr) / count($arr) : 0);
             #}
                                     
-            if ($this->has_arg('visit')) $this->_output($dc[0]);
+            if ($this->has_arg('visit')) $this->_output(sizeof($dc) ? $dc[0] : array());
             else $this->_output(array('VISITS' => $dc, 'AVERAGE' => $avgs));
         }
         
