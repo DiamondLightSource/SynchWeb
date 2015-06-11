@@ -173,7 +173,7 @@
         # ------------------------------------------------------------------------
         # Get visits for a proposal
         function _get_visits($visit=null) {
-            global $bl_types;
+            global $bl_types, $mx_beamlines;
             
             if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
             
@@ -221,7 +221,8 @@
             
             if ($this->has_arg('ty')) {
                 if ($this->arg('ty') == 'mx') {
-                    $where .= " AND s.beamlinename IN ('i02', 'i03', 'i04', 'i04-1', 'i24', 'i23', 'b21')";
+                    $bls = implodex("', '", $mx_beamlines);
+                    $where .= " AND s.beamlinename IN ('$bls')";
                 }
             }
 
