@@ -73,10 +73,11 @@
         # ------------------------------------------------------------------------
         # List proposals for current user
         function _get_proposals($id=null) {
-            global $prop_types, $bl_types;
+            global $prop_types, $bl_types, $prop_codes;
 
             $args = array();
-            $where = "WHERE p.proposalcode in ('cm', 'mx', 'nt', 'nr', 'sw', 'in', 'mt', 'ee')";
+            $codes = implode("', '", $prop_codes);
+            $where = "WHERE p.proposalcode in ('$codes')";
             
             if ($id) {
                 $where .= " AND p.proposalcode||p.proposalnumber LIKE :".(sizeof($args)+1);
