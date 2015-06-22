@@ -4,8 +4,9 @@ define(['marionette', 'modules/dc/datacollections', 'modules/dc/views/imageviewe
     
     'modules/types/gen/dc/datacollections',
     'modules/types/tomo/dc/datacollections',
+    'modules/types/em/dc/datacollections',
     
-    ], function(Marionette, DCList, ImageViewer, MapModelViewer, Summary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder, GenericDCList, TomoDCList) {
+    ], function(Marionette, DCList, ImageViewer, MapModelViewer, Summary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder, GenericDCList, TomoDCList, EMDCLIst) {
     
     var bc = { title: 'Data Collections', url: '/dc' }
     
@@ -40,6 +41,7 @@ define(['marionette', 'modules/dc/datacollections', 'modules/dc/views/imageviewe
                         mx: DCList,
                         gen: GenericDCList,
                         tomo: TomoDCList,
+                        em: EMDCLIst,
                     }
                     
                     if (model.get('TYPE') in views) view = views[model.get('TYPE')]
