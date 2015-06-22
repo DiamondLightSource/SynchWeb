@@ -11,6 +11,9 @@
         var $profiles = array();
         var $base;
     
+        public static $dispatch = array();
+        public static $arg_list = array();
+
         private $generic_args = array('page' => '\d+',
                                       'per_page' => '\d+',
                                       'sort_by' => '\w+',
@@ -30,6 +33,17 @@
 
         
         function __construct($app, $db, $type) {
+            $this->_arg_list = array();
+            $this->_dispatch = array();
+            $class = $this;
+            while ($class) {
+                $this->_arg_list = array_merge($class::$arg_list, $this->_arg_list);
+                $this->_dispatch = array_merge($class::$dispatch, $this->_dispatch);
+                $class = get_parent_class($class);
+            }
+            //print_r(self::$dispatch);
+            
+
             $this->app = $app;
             $this->ptype = $type;
             
@@ -46,10 +60,10 @@
         
         
         function _setup_routes() {
-            foreach ($this->dispatch as $args) {
+            foreach ($this->_dispatch as $args) {
                 if (sizeof($args) > 4) $this->app->$args[1]($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($args[3])->name($args[4]);
                 if (sizeof($args) > 3) $this->app->$args[1]($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($args[3]);
-                else $this->app->$args[1]($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($this->arg_list);
+                else $this->app->$args[1]($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($this->_arg_list);
             }
         }
         
@@ -152,7 +166,7 @@
                 $pa = array();
                 foreach ($request as $r) {
                     $par = array();
-                    foreach (array_merge($this->generic_args, $this->arg_list) as $k => $v) {
+                    foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v) {
                         if (array_key_exists($k, $r)) {
                             if (preg_match('/^'.$v.'$/m', $r->$k)) {
                                 $par[$k] = $v == '.*' ? $purifier->purify($r->$k) : $r->$k;
@@ -166,7 +180,7 @@
                 
 
             } else {
-                foreach (array_merge($this->generic_args, $this->arg_list) as $k => $v) {
+                foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v) {
                     if (!array_key_exists($k, $parsed)) {
                         if (array_key_exists($k, $request)) {
                             

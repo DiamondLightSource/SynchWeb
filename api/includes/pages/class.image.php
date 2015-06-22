@@ -2,9 +2,9 @@
 
     class Image extends Page {
         
-        var $arg_list = array('drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '\w\d\d(-\d)?', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
+        public static $arg_list = array('drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '\w\d\d(-\d)?', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
 
-        var $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
+        public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
                               array('/dimp/id/:id(/n/:n)', 'get', '_dimple_images'),
                               array('/di/id/:id(/n/:n)', 'get', '_diffraction_viewer'),

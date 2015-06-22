@@ -3,11 +3,11 @@
     class Stats extends Page {
         
 
-        var $arg_list = array('t' => '\w+',
+        public static $arg_list = array('t' => '\w+',
         );
         
 
-        var $dispatch = array(array('/online', 'get', '_online_users'),
+        public static $dispatch = array(array('/online', 'get', '_online_users'),
                               array('/last', 'get', '_last_actions'),
                               array('/logon(/:t)', 'get', '_logons'),
                               array('/bl(/:t)', 'get', '_beamline'),

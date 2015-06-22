@@ -3,7 +3,7 @@
     class Proposal extends Page {
 
 
-        var $arg_list = array('s' => '[\w\s-]+',
+        public static $arg_list = array('s' => '[\w\s-]+',
                               'per_page' => '\d+',
                               'page' => '\d+',
                               'sort_by' => '\w+',
@@ -27,7 +27,7 @@
                                );
         
 
-        var $dispatch = array(array('(/:prop)', 'get', '_get_proposals'),
+        public static $dispatch = array(array('(/:prop)', 'get', '_get_proposals'),
                               array('/visits(/:visit)', 'get', '_get_visits'),
                               array('/user', 'get', '_get_user'),
                               array('/users', 'get', '_get_users'),
@@ -221,7 +221,7 @@
             
             if ($this->has_arg('ty')) {
                 if ($this->arg('ty') == 'mx') {
-                    $bls = implodex("', '", $mx_beamlines);
+                    $bls = implode("', '", $mx_beamlines);
                     $where .= " AND s.beamlinename IN ('$bls')";
                 }
             }

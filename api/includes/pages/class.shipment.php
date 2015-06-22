@@ -3,7 +3,7 @@
     class Shipment extends Page {
         
 
-        var $arg_list = array('did' => '\d+',
+        public static $arg_list = array('did' => '\d+',
                               'cid' => '\d+',
                               'sid' => '\d+',
                               'lcid' => '\d+',
@@ -73,7 +73,7 @@
                               );
         
 
-        var $dispatch = array(array('/shipments(/:sid)', 'get', '_get_shipments'),
+        public static $dispatch = array(array('/shipments(/:sid)', 'get', '_get_shipments'),
                               array('/shipments', 'post', '_add_shipment'),
                               array('/shipments/:sid', 'patch', '_update_shipment'),
                               array('/send/:sid', 'get', '_send_shipment'),

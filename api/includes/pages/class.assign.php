@@ -2,9 +2,9 @@
 
     class Assign extends Page {
         
-        var $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+',);
+        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+',);
 
-        var $dispatch = array(array('/visits(/:visit)', 'get', '_blsr_visits'),
+        public static $dispatch = array(array('/visits(/:visit)', 'get', '_blsr_visits'),
                               array('/assign', 'get', '_assign'),
                               array('/unassign', 'get', '_unassign'),
                               array('/deact', 'get', '_deactivate'),

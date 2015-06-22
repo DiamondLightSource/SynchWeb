@@ -3,7 +3,7 @@
     class Cell extends Page {
 
 
-        var $arg_list = array('page' => '\d+',
+        public static $arg_list = array('page' => '\d+',
                               'a' => '\d+(.\d+)?',
                               'b' => '\d+(.\d+)?',
                               'c' => '\d+(.\d+)?',
@@ -27,7 +27,7 @@
                               );
         
 
-        var $dispatch = array(array('', 'get', '_cells'),
+        public static $dispatch = array(array('', 'get', '_cells'),
                               array('/analysed', 'get', '_analysed'),
                               array('/process', 'post', '_process_pdbs'),
                               array('/pdbs', 'get', '_get_processed'),

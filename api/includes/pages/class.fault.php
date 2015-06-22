@@ -2,7 +2,7 @@
 
     class Fault extends Page {
         
-        var $arg_list = array('time' => '\d+',
+        public static $arg_list = array('time' => '\d+',
                               'bl' => '\w\d\d(-\d)?',
                               'sid' => '\d+',
                               'cid' => '\d+',
@@ -35,7 +35,7 @@
                               );
 
 
-        var $dispatch = array(array('(/:fid)', 'get', '_get_faults'),
+        public static $dispatch = array(array('(/:fid)', 'get', '_get_faults'),
                               array('', 'post', '_add_fault'),
                               array('/:fid', 'patch', '_update_fault'),
 

@@ -3,12 +3,12 @@
     class Vstat extends Page {
     
 
-        var $arg_list = array('visit' => '\w+\d+-\d+',
+        public static $arg_list = array('visit' => '\w+\d+-\d+',
         
         );
 
 
-        var $dispatch = array(array('/breakdown/:visit', 'get', '_visit_breakdown'),
+        public static $dispatch = array(array('/breakdown/:visit', 'get', '_visit_breakdown'),
                               array('/hrs(/:visit)', 'get', '_hourlies'),
                               array('/pies(/:visit)', 'get', '_pies'),
                               array('/ehc/:visit', 'get', '_ehc_log'),

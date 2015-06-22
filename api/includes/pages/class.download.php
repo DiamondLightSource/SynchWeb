@@ -2,7 +2,7 @@
 
     class Download extends Page {
         
-        var $arg_list = array('id' => '\d+',
+        public static $arg_list = array('id' => '\d+',
                               'aid' => '\d+',
                               'run' => '\d+',
                               'visit' => '\w+\d+-\d+',
@@ -16,7 +16,7 @@
                               );
 
     
-        var $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/id/:id)(/map/:map)', 'get', '_map'),
+        public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/id/:id)(/map/:map)', 'get', '_map'),
                               array('/id/:id/aid/:aid(/log/:log/1)', 'get', '_auto_processing'),
                               array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
                               array('/dimple/id/:id(/log/:log)', 'get', '_dimple_mtz'),

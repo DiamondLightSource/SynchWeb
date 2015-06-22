@@ -2,7 +2,7 @@
 
     class Contact extends Page {
 
-        var $arg_list = array('CARDNAME' => '([\w\s-])+',
+        public static $arg_list = array('CARDNAME' => '([\w\s-])+',
                               'FAMILYNAME' => '([\w-])+',
                               'GIVENNAME' => '([\w-])+',
                               'PHONENUMBER' => '.*',
@@ -18,7 +18,7 @@
                               'cid' => '\d+',
                               );
 
-        var $dispatch = array(array('(/:cid)', 'get', '_get_contacts'),
+        public static $dispatch = array(array('(/:cid)', 'get', '_get_contacts'),
                               array('', 'post', '_add_contact'),
                               array('/:cid', 'patch', '_update_contact'),
                               );

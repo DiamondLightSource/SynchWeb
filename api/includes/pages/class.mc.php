@@ -3,7 +3,7 @@
     class Mc extends Page {
     
 
-        var $arg_list = array('visit' => '\w+\d+-\d+', 
+        public static $arg_list = array('visit' => '\w+\d+-\d+', 
             's' => '\w+', 
             'd' => '([\w\/])+', 
             'id' => '\d+', 
@@ -12,7 +12,7 @@
             'sg' => '\w+', 'a' => '\d+(.\d+)?', 'b' => '\d+(.\d+)?', 'c' => '\d+(.\d+)?', 'alpha' => '\d+(.\d+)?', 'beta' => '\d+(.\d+)?', 'gamma' => '\d+(.\d+)?', 'res' => '\d+(.\d+)?', 'rfrac' => '\d+(.\d+)?', 'isigi' => '\d+(.\d+)?', 'run' => '\d+', 'type' => '\d+', 'local' => '\d+', 'user' => '\d+');
 
 
-        var $dispatch = array(array('/ints(/user/:user)', 'post', '_integration_statuses'),
+        public static $dispatch = array(array('/ints(/user/:user)', 'post', '_integration_statuses'),
 
                               array('/users/visit/:visit', 'get', '_get_users'),
 

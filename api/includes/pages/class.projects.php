@@ -3,7 +3,7 @@
     class Projects extends Page {
         
 
-        var $arg_list = array('pid' => '\d+',
+        public static $arg_list = array('pid' => '\d+',
                               'ty' => '\w+',
                               'iid' => '\d+',
                               'rem' => '\d',
@@ -17,7 +17,7 @@
                               );
 
 
-        var $dispatch = array(array('(/:pid)', 'get', '_projects'),
+        public static $dispatch = array(array('(/:pid)', 'get', '_projects'),
                               array('', 'post', '_add_project'),
                               array('/:pid', 'patch', '_update_project'),
 

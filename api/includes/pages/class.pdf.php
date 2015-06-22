@@ -13,7 +13,7 @@
     class Pdf extends Page {
         private $vars  = array();
         
-        var $arg_list = array('visit' => '\w+\d+\-\d+',
+        public static $arg_list = array('visit' => '\w+\d+\-\d+',
                               'sid' => '\d+',
                               'p' => '\d',
                               'cid' => '\d+',
@@ -22,7 +22,7 @@
                               'labels' => '[\w-]+',
                               );
 
-        var $dispatch = array(array('/sid/:sid', 'get', '_shipment_label'),
+        public static $dispatch = array(array('/sid/:sid', 'get', '_shipment_label'),
                               array('/container(/sid/:sid)(/cid/:cid)(/did/:did)', 'get', '_container_report'),
                               array('/report/visit/:visit', 'get', '_visit_report'),
                               array('/sheets', 'get', '_generate_sheets'),

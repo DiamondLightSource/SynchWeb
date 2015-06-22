@@ -3,7 +3,7 @@
     class Sample extends Page {
         
 
-        var $arg_list = array('page' => '\d+',
+        public static $arg_list = array('page' => '\d+',
                               'per_page' => '\d+',
                               'sort_by' => '\w+',
                               'order' => '\w+',
@@ -48,7 +48,7 @@
                                );
         
         
-        var $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
+        public static $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
                               array('/:sid', 'patch', '_update_sample'),
                               array('/:sid', 'put', '_update_sample_full'),
                               array('', 'post', '_add_sample'),

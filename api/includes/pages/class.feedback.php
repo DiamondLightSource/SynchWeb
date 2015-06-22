@@ -2,13 +2,13 @@
 
     class Feedback extends Page {
         
-        var $arg_list = array('name' => '.*',
+        public static $arg_list = array('name' => '.*',
                               'email' => '.*',
                               'feedback' => '.*',
                               'submit' => '\d',
                               );
 
-        var $dispatch = array(array('', 'post', '_feedback'));
+        public static $dispatch = array(array('', 'post', '_feedback'));
         
         # Feedback form
         function _feedback() {

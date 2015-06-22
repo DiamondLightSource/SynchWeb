@@ -3,13 +3,13 @@
     class Robot extends Page {
         
 
-        var $arg_list = array('bl' => '\w\d\d(-\d)?',
+        public static $arg_list = array('bl' => '\w\d\d(-\d)?',
                               'run' => '\d+',
                               'visit' => '\w+\d+-\d+',
                               'year' => '\d\d\d\d',
                               );
             
-        var $dispatch = array(array('/averages', 'get', '_averages'),
+        public static $dispatch = array(array('/averages', 'get', '_averages'),
                               array('/totals', 'get', '_totals'),
                               array('/errors', 'get', '_errors'),
                               array('/profile/:visit', 'get', '_visit_profile'),

@@ -2,14 +2,14 @@
     
     class Status extends Page {
         
-        var $arg_list = array('bl' => '\w\d\d(-\d)?',
+        public static $arg_list = array('bl' => '\w\d\d(-\d)?',
                               'p' => '\d+',
                               'st' => '\d\d-\d\d-\d\d\d\d',
                               'en' => '\d\d-\d\d-\d\d\d\d',
                               'c' => '\d+',
                               );
         
-        var $dispatch = array(array('/pvs/:bl', 'get', '_get_pvs'),
+        public static $dispatch = array(array('/pvs/:bl', 'get', '_get_pvs'),
                               array('/log/:bl', 'get', '_get_server_log'),
                               array('/ep/:bl', 'get', '_epics_pages'),
                               array('/epics/:bl/c/:c', 'get', '_get_component'),
