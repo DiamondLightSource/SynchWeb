@@ -1,24 +1,16 @@
 <?php
 
-    class Dc extends Page {
+    namespace gen;
+    
+    class Dc extends \Page {
         
 
-        var $arg_list = array('id' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 't' => '\w+', 'bl' => '\w\d\d(-\d)?', 'value' => '.*', 'h' => '\d\d',
+        public static $arg_list = array('id' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 't' => '\w+', 'bl' => '\w\d\d(-\d)?', 'value' => '.*', 'h' => '\d\d',
+            'dcg' => '\d+'
                               );
 
-        /*
-        var $dispatch = array('dc' => '_data_collections',
-                              'chi' => '_chk_image',
-                              'dat' => '_plot',
-                              'dl' => '_download',
-                              'comment' => '_set_comment',
-                              'flag' => '_flag',
-                              );
-        
-        var $def = 'dc';
-        */
 
-        var $dispatch = array(array('(/sing:le)(/:id)', 'get', '_data_collections', array('le' => '\w+', 'id' => '\d+')),
+        public static $dispatch = array(array('(/sing:le)(/:id)', 'get', '_data_collections', array('le' => '\w+', 'id' => '\d+')),
                               array('/chi', 'post', '_chk_image'),
                               array('/dat/:id', 'get', '_plot'),
 
@@ -119,9 +111,103 @@
                 for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('s'));
             }
             
+
+            # Data collection group
+            if ($this->has_arg('dcg')) {
+                $count_field = 'dc.datacollectionid';
+                $fields = "1 as dcc,
+                    smp.name as sample,
+                    smp.blsampleid,
+                    ses.visit_number as vn,
+
+                    dc.datacollectionid as id,
+                    dc.datacollectiongroupid as dcg,
+
+                    dc.runstatus,
+                    'data' as type,
+                    TO_CHAR(dc.starttime,
+                    'DD-MM-YYYY HH24:MI:SS') as st,
+                    dc.comments,
+                    dc.starttime as sta,
+
+                    dc.numberofimages as numimg,
+                    dc.imageprefix as imp,
+                    dc.datacollectionnumber as run,
+                    dc.filetemplate,
+                    dc.imagedirectory as dir,
+
+                    dc.resolution,
+                    dc.exposuretime,
+                    dc.transmission,
+                    dc.wavelength,
+                    dc.flux,
+
+                    dc.beamsizeatsamplex as bsx,
+                    dc.beamsizeatsampley as bsy,
+                    dc.detectordistance as det,
+
+                    dc.voltage,
+                    dc.c2aperture,
+                    dc.c2lens,
+                    dc.objaperture,
+                    dc.magnification,
+                    dc.totalabsorbeddose,
+
+                    d.detectorpixelsizehorizontal,
+                    d.detectorpixelsizevertical";
+                $groupby = '';
+
+                $where .= ' AND dc.datacollectiongroupid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('dcg'));
+
+            } else {
+                $count_field = 'distinct dc.datacollectiongroupid';
+                $fields = "count(dc.datacollectionid) as dcc, 
+                    min(smp.name) as sample,
+                    min(smp.blsampleid) as blsampleid,
+                    min(ses.visit_number) as vn,
+
+                    min(dc.datacollectionid) as id,
+                    dc.datacollectiongroupid as dcg,
+
+                    min(dc.runstatus) as runstatus,
+                    'data' as type,
+                    TO_CHAR(min(dc.starttime),
+                    'DD-MM-YYYY HH24:MI:SS') as st,
+                    min(dc.comments) as comments,
+                    min(dc.starttime) as sta,
+
+                    sum(dc.numberofimages) as numimg,
+                    min(dc.imageprefix) as imp,
+                    min(dc.datacollectionnumber) as run,
+                    min(dc.filetemplate) as filetemplate,
+                    min(dc.imagedirectory) as dir,
+
+                    min(dc.resolution) as resolution,
+                    min(dc.exposuretime) as exposuretime,
+                    min(dc.transmission) as transmission,
+                    min(dc.wavelength) as wavelength,
+                    max(dc.flux) as flux,
+
+                    min(dc.beamsizeatsamplex) as bsx,
+                    min(dc.beamsizeatsampley) as bsy,
+                    min(dc.detectordistance) as det,
+
+                    max(dc.voltage) as voltage,
+                    max(dc.c2aperture) as c2aperture,
+                    max(dc.c2lens) as c2lens,
+                    max(dc.objaperture) as objaperture,
+                    max(dc.magnification) as magnification,
+                    sum(dc.totalabsorbeddose) as totaldose,
+
+                    max(d.detectorpixelsizehorizontal) as detectorpixelsizehorizontal,
+                    max(d.detectorpixelsizevertical) as detectorpixelsizevertical";
+                $groupby = "GROUP BY dc.datacollectiongroupid";
+            }
             
-            $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count(dc.datacollectionid) as tot FROM datacollection dc
+            $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count($count_field) as tot FROM datacollection dc
                 INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 $extj[0]
                 WHERE $sess[0] $where
                 
@@ -139,11 +225,15 @@
             $q = "SELECT outer.*
              FROM (SELECT ROWNUM rn, inner.*
              FROM (
-             SELECT $extc ses.visit_number as vn, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.comments, dc.starttime as sta, dc.runstatus, dc.numberofimages as numimg, dc.resolution, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.imagedirectory as dir, dc.exposuretime, dc.transmission, dc.wavelength, dc.datacollectiongroupid as dcg, dc.detectordistance as det
+             SELECT $extc $fields
              FROM datacollection dc
              INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
+             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+             LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
+             LEFT OUTER JOIN detector d ON d.detectorid = dc.detectorid
              $extj[0]
              WHERE $sess[0] $where 
+             $groupby
                    
             ORDER BY sta DESC
              

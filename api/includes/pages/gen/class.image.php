@@ -1,16 +1,12 @@
 <?php
 
-    class Image extends Page {
+    namespace gen;
+
+    class Image extends \Page {
         
-        var $arg_list = array('id' => '\d+', 'n' => '\d+', 'f' => '\d');
+        public static $arg_list = array('id' => '\d+', 'n' => '\d+', 'f' => '\d');
 
-        /*
-        var $dispatch = array('im' => '_image',
-                              );
-        var $def = 'im';
-        */
-
-        var $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_image'),
+        public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_image'),
         );
         
         # Snapshot viewer

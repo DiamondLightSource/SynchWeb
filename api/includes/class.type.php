@@ -127,7 +127,8 @@ class ProposalType {
                                                           : 'includes/pages/'.$cl->dir.'/class.'.$p.'.php';
                 if (file_exists($class)) {
                     require_once($class);
-                    $cn = ucfirst($p);
+                    $ns = $cl->ty == 'mx' || in_array($p, $this->generic_pages) ? '\\' : '\\'.$cl->ty.'\\';
+                    $cn = $ns.ucfirst($p);
                     $pg = new $cn($app, $db, $cl);
                 }
             });
