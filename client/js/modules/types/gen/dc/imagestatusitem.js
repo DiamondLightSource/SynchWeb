@@ -16,7 +16,9 @@ define(['modules/dc/views/imagestatusitem',
                 this.ui.sn.attr('data-src', app.apiurl+'/image/id/'+id).addClass('lazy')
         
                 var sns = ''
-                for (var i = 1; i < this.model.get('SNS').length-1; i++) sns += ('<a href="'+app.apiurl+'/image/id/'+id+'/f/1/n/'+(i+1)+'" title="Sample Snapshot '+(i+1)+'"></a>')
+                for (var i = 1; i < this.model.get('SNS').length-1; i++) {
+                    if (this.model.get('SNS')[i]) sns += ('<a href="'+app.apiurl+'/image/id/'+id+'/f/1/n/'+(i+1)+'" title="Crystal Snapshot '+(i+1)+'"></a>')
+                }
            
                 if (this.ui.sns.find('a').length == 1) this.ui.sns.append(sns)
                 this.ui.sns.magnificPopup({
