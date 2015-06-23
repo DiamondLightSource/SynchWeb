@@ -4,7 +4,24 @@
     require 'lib/Slim/Slim.php';
     \Slim\Slim::registerAutoloader();
 
-    $app = new \Slim\Slim();
+    $app = new \Slim\Slim(array(
+        'mode' => 'production'
+        //'mode' => 'development'
+    ));
+
+    $app->configureMode('production', function () use ($app) {
+        $app->config(array(
+            'log.enable' => true,
+            'debug' => false
+        ));
+    });
+
+    $app->configureMode('development', function () use ($app) {
+        $app->config(array(
+            'log.enable' => false,
+            'debug' => true
+        ));
+    });
 
     //if (substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')) ob_start("ob_gzhandler");
     //else ob_start();
