@@ -28,6 +28,7 @@
     
     <ul class="clearfix">
         <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%=BLSAMPLEID%>"><%=SAMPLE%></a></span></li><% } %>
+        <li>Flux: <%=parseFloat(FLUX).toExponential(2)%></li>
         <li>&Omega; Start: <%=AXISSTART%>&deg;</li>
         <li>&Omega; Osc: <%=AXISRANGE%>&deg;</li>
         <li>&Omega; Overlap: <%=OVERLAP%>&deg;</li>

@@ -568,12 +568,12 @@
                 array_push($wcs, 'd.datacollectionid=:'.sizeof($ids));
             }
 
-            $flxs = $this->db->pq("SELECT d.datacollectionid as id, i.measuredintensity as flux from image i INNER JOIN datacollection d ON d.datacollectionid = i.datacollectionid AND i.imagenumber = d.startimagenumber WHERE ".implode(' OR ', $wcs), $ids);
+            // $flxs = $this->db->pq("SELECT d.datacollectionid as id, i.measuredintensity as flux from image i INNER JOIN datacollection d ON d.datacollectionid = i.datacollectionid AND i.imagenumber = d.startimagenumber WHERE ".implode(' OR ', $wcs), $ids);
             
-            $fluxes = array();
-            foreach ($flxs as $f) {
-                $fluxes[$f['ID']] = $f['FLUX'];
-            }
+            // $fluxes = array();
+            // foreach ($flxs as $f) {
+            //     $fluxes[$f['ID']] = $f['FLUX'];
+            // }
 
             $this->profile('dc query');
             $this->db->close();
@@ -585,8 +585,8 @@
                 #$flx = $this->db->pq("SELECT * FROM (SELECT measuredintensity as flux from image WHERE datacollectionid=:1 ORDER BY imagenumber) WHERE rownum = 1", array($dc['ID']));
                 
                 #$dc['FLUX'] =  sizeof($flx) ? $flx[0]['FLUX'] : 'N/A';
-                $dc['FLUX'] = array_key_exists($dc['ID'], $fluxes) ? $fluxes[$dc['ID']] : 'N/A';
-                $this->profile('flux query');
+                // $dc['FLUX'] = array_key_exists($dc['ID'], $fluxes) ? $fluxes[$dc['ID']] : 'N/A';
+                // $this->profile('flux query');
 
                 $this->profile('qend');
 
@@ -632,7 +632,7 @@
                 if ($dc['OVERLAP'] != 0) for ($i = 0; $i < 5; $i++) array_push($apr, 0);
                 $this->profile('fileend');
                 
-                array_push($out, array($dc['ID'], $apr, array('FLUX' => $dc['FLUX'] ? sprintf('%.2e', $dc['FLUX']) : 'N/A')));
+                array_push($out, array($dc['ID'], $apr));
             }
         
             $this->profile('end');

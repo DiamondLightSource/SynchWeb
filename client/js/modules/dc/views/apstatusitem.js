@@ -27,7 +27,6 @@ define(['marionette', 'jquery'], function(Marionette, $) {
         onRender: function() {
             var id = this.model.get('ID')
             var res = this.model.get('STATES')
-            var dcv = this.model.get('DCV')
             
             var val = ['<i class="fa icon blue fa-question-circle alt="N/A"></i>',
                     '<i class="fa icon grey fa-cog fa-spin alt="Running"></i>',
@@ -41,11 +40,6 @@ define(['marionette', 'jquery'], function(Marionette, $) {
                this.ui.holder.eq(0).html('Fast DP: ' + val[res[2]] +
                          ' Xia2: ' + val[res[3]] + ' ' +val[res[4]] + ' ' +val[res[5]])
                this.ui.holder.eq(1).html('Fast EP: ' + val[res[6]] + ' Dimple: ' + val[res[7]] + ' MrBUMP: ' + val[res[8]])
-           }
-                
-           // Add flux if available
-           if (!this.ui.flux.length && dcv['FLUX'] != '0.00e+0' && dcv['FLUX'] != 'N/A') {
-              this.$el.find('ul').prepend('<li class="flux">Flux: '+dcv['FLUX']+'</li>')
            }
         }
     })

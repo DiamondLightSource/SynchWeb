@@ -80,8 +80,7 @@
 
             $out = array();
             foreach ($statuses as $id => $s) {
-                // Last arg is compat for mx so we can use the same backbone model
-                array_push($out, array(strval($id),$s,array()));
+                array_push($out, array(strval($id),$s));
             }
 
             $this->_output($out);
