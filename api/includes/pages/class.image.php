@@ -259,6 +259,8 @@
             if (!array_key_exists($this->arg('bl'), $webcams)) return;
             
             $n = $this->has_arg('n') ? $this->arg('n') : 0;
+            if ($n >= sizeof($webcams[$this->arg('bl')])) return;
+
             $img = $webcams[$this->arg('bl')][$n];
 
             session_write_close();
