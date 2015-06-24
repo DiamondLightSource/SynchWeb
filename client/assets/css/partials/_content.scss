@@ -1226,6 +1226,13 @@ div.status {
     }
 }
 
+.status.three {
+    .webcam {
+        @include cols(3,0,0.5%);
+        float: left;
+    }
+}
+
 .oav {
     display: block;
     margin: auto;
