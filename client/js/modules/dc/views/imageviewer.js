@@ -205,7 +205,7 @@ define(['jquery', 'marionette',
         load: function(n) {
           this.showProgressBar()
           this.img.onerror = this._onerror.bind(this,n)
-          this.img.load(app.apiurl+'/image/'+(this.low ? 'diff/f/1' : 'di')+'/id/'+this.model.get('ID')+'/n/'+n)
+          this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+n)
         },
 
         onImageProgress: function(pc) {
