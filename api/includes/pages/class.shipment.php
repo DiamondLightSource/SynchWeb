@@ -257,7 +257,7 @@
             $args = array($this->proposalid);
             $where = 'p.proposalid=:1';
 
-            $fields = "p.proposalcode || p.proposalnumber as prop, r.facilitycode, r.purchasedate, (SYSDATE-r.purchasedate)/28 as age, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, count(d.dewarid) as dewars";
+            $fields = "p.proposalcode || p.proposalnumber as prop, r.facilitycode, r.purchasedate, ROUND((SYSDATE-r.purchasedate)/28,1) as age, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, count(d.dewarid) as dewars";
             $group = "p.proposalcode || p.proposalnumber, r.facilitycode, r.purchasedate, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name, l.address";
 
             if ($this->has_arg('all')) {
@@ -343,7 +343,12 @@
             $fields = array('LABCONTACTID', 'PURCHASEDATE');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE dewarregistry SET $f=:1 WHERE facilitycode=:2", array($this->arg($f), $this->arg('FACILITYCODE')));
+                    $fl = ':1';
+                    if (in_array($f, array('PURCHASEDATE'))) {
+                        $fl = "TO_DATE(:1, 'DD-MM-YYYY')"; 
+                    }
+
+                    $this->db->pq("UPDATE dewarregistry SET $f=$fl WHERE facilitycode=:2", array($this->arg($f), $this->arg('FACILITYCODE')));
                     $this->_output(array($f => $this->arg($f)));
                     //$this->_dewar_registry();
                 }
