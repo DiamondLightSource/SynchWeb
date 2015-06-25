@@ -257,7 +257,7 @@
             $args = array($this->proposalid);
             $where = 'p.proposalid=:1';
 
-            $fields = "p.proposalcode || p.proposalnumber as prop, r.facilitycode, r.purchasedate, ROUND((SYSDATE-r.purchasedate)/28,1) as age, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, count(d.dewarid) as dewars";
+            $fields = "p.proposalcode || p.proposalnumber as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND((SYSDATE-r.purchasedate)/28,1) as age, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, count(d.dewarid) as dewars";
             $group = "p.proposalcode || p.proposalnumber, r.facilitycode, r.purchasedate, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name, l.address";
 
             if ($this->has_arg('all')) {
