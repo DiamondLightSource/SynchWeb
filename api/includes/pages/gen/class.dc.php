@@ -331,8 +331,8 @@
 
                 foreach (array_slice($dat,5) as $i => $d) {
                     if ($d) {
-                        list($x, $y, $e) = preg_split('/\s+/', trim($d));
-                        array_push($data, array(floatval($x), floatval($y), floatval($e)));
+                        list($x, $y) = preg_split('/\s+/', trim($d));
+                        array_push($data, array(floatval($x), floatval($y)));
                     }
                 }
             }
