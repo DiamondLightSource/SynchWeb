@@ -438,7 +438,7 @@
                                   
             foreach ($add as $a) {
                 $this->db->pq('INSERT INTO bf_'.$ty[0].'_beamline ('.$ty[0].'_beamlineid, '.$ty[0].'id, beamlinename) 
-                    VALUES (s_bf_'.$ty[0].'_beamline.nextval, :1, :2)', array($this->arg('id'), $a));
+                    VALUES (s_bf_'.$ty[0].'_beamline.nextval, :1, :2)', array($id, $a));
             }
                                   
             $this->db->pq('UPDATE bf_'.$ty[0].' SET name=:1, description=:2 WHERE '.$ty[0].'id=:3', array($this->arg('NAME'), $desc, $id));
