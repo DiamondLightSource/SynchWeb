@@ -69,8 +69,11 @@
             
             $this->info = $info;
             
-            $this->users = $this->db->pq("SELECT u.name,u.fullname FROM investigation@DICAT_RO i INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on u.id = iu.user_id WHERE lower(i.visit_id)=:1", array($info['VISIT']));
-            
+            // $this->users = $this->db->pq("SELECT u.name,u.fullname FROM investigation@DICAT_RO i INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on u.id = iu.user_id WHERE lower(i.visit_id)=:1", array($info['VISIT']));
+            $this->users = $this->db->pq("SELECT p.title, p.familyname, p.givenname FROM person p 
+                    INNER JOIN session_has_person shp ON p.personid = shp.personid 
+                    WHERE shp.sessionid=:1", array($info['SID']));
+
             #$lc = $this->lc_lookup($info['SID']);
             #$this->lc = $lc ? $lc->name : 'N/A';
             

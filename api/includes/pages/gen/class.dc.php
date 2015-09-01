@@ -89,10 +89,14 @@
             
             # If not staff check they have access to data collection
             if (!$this->has_arg('visit') && !$this->staff) {
-                $where .= " AND u.name=:".(sizeof($args)+1);
+                // $where .= " AND u.name=:".(sizeof($args)+1);
                 
-                $extj[0] .= " INNER JOIN proposal p ON p.proposalid = ses.proposalid INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode||p.proposalnumber||'-'||ses.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on u.id = iu.user_id";
-                array_push($args, $this->user);
+                // $extj[0] .= " INNER JOIN proposal p ON p.proposalid = ses.proposalid 
+                // INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode||p.proposalnumber||'-'||ses.visit_number 
+                // INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id
+                //  INNER JOIN user_@DICAT_RO u on u.id = iu.user_id";
+                $extj[0] .= " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
+                array_push($args, $this->user->personid);
             }
             
             

@@ -48,7 +48,7 @@
         #   Its also searchable (A-z0-9-/) and filterable
         function _data_collections($single=null) {
             session_write_close();
-            //$this->db->set_debug(True);
+            // $this->db->set_debug(True);
 
             $this->profile('starting dc page');
             #if (!$this->has_arg('visit') &&
@@ -146,7 +146,7 @@
                  
             # Projects
             } else if ($this->has_arg('pjid')) {
-                $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid WHERE p.projectid=:1 AND (p.owner=:2 or pu.username=:3)', array($this->arg('pjid'), $this->user, $this->user));
+                $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid WHERE p.projectid=:1 AND (p.owner=:2 or pu.username=:3)', array($this->arg('pjid'), $this->user->login, $this->user->login));
                 
                 $tables = array(array('project_has_dcgroup', 'dc', 'datacollectiongroupid'),
                                 array('project_has_energyscan', 'es', 'energyscanid'),
@@ -237,14 +237,19 @@
             
             # If not staff check they have access to data collection
             if (!$this->has_arg('visit') && !$this->staff) {
-                $where .= " AND u.name=:".(sizeof($args)+1);
-                $where2 .= " AND u.name=:".(sizeof($args)+2);
-                $where3 .= " AND u.name=:".(sizeof($args)+3);
-                $where4 .= " AND u.name=:".(sizeof($args)+4);
+                // $where .= " AND u.name=:".(sizeof($args)+1);
+                // $where2 .= " AND u.name=:".(sizeof($args)+2);
+                // $where3 .= " AND u.name=:".(sizeof($args)+3);
+                // $where4 .= " AND u.name=:".(sizeof($args)+4);
                 
                 for ($i = 0; $i < 4; $i++) {
-                    $extj[$i] .= " INNER JOIN proposal p ON p.proposalid = ses.proposalid INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode||p.proposalnumber||'-'||ses.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on u.id = iu.user_id";
-                    array_push($args, $this->user);
+                    // $extj[$i] .= " INNER JOIN proposal p ON p.proposalid = ses.proposalid 
+                    // INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode||p.proposalnumber||'-'||ses.visit_number 
+                    // INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id 
+                    // INNER JOIN user_@DICAT_RO u on u.id = iu.user_id";
+
+                    $extj[$i] .= " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
+                    array_push($args, $this->user->personid);
                 }
             }
             

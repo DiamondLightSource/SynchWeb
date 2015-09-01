@@ -80,9 +80,13 @@
                 $join = ' LEFT OUTER JOIN project_has_blsample pj ON pj.blsampleid=b.blsampleid';
                 
                 if (!$this->staff) {
-                    $join .= " INNER JOIN blsession ses ON ses.proposalid = p.proposalid INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || ses.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id";
-                    $where .= " AND u.name=:".(sizeof($args)+1);
-                    array_push($args, $this->user);
+                    #$join .= " INNER JOIN blsession ses ON ses.proposalid = p.proposalid INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || ses.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id";
+                    #$where .= " AND u.name=:".(sizeof($args)+1);
+
+                    $join .= " INNER JOIN blsession ses ON ses.proposalid = p.proposalid 
+                    INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
+
+                    array_push($args, $this->user->personid);
                 }
                 
                 if ($this->has_arg('imp')) {
@@ -338,12 +342,16 @@
                 $join .= ' INNER JOIN project_has_protein pj ON pj.proteinid=pr.proteinid';
                 
                 if (!$this->staff) {
-                    $join .= " INNER JOIN blsession s ON s.proposalid = p.proposalid 
-                    INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number 
-                    INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id 
-                    INNER JOIN user_@DICAT_RO u on u.id = iu.user_id ";
-                    $where .= " AND u.name=:".(sizeof($args)+1);
-                    array_push($args, $this->user);
+                    // $join .= " INNER JOIN blsession s ON s.proposalid = p.proposalid 
+                    // INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number 
+                    // INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id 
+                    // INNER JOIN user_@DICAT_RO u on u.id = iu.user_id ";
+                    // $where .= " AND u.name=:".(sizeof($args)+1);
+                    // array_push($args, $this->user);
+                    $join .= " INNER JOIN blsession ses ON ses.proposalid = p.proposalid 
+                    INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
+
+                    array_push($args, $this->user->personid);
                 }
             }
             

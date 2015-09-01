@@ -46,7 +46,7 @@
         # ------------------------------------------------------------------------
         # Helpers for backbone application
         function _get_user() {
-            $this->_output(array('user' => $this->user, 'is_staff' => $this->staff, 'visits' => $this->visits));
+            $this->_output(array('user' => $this->user->login, 'permissions' => $this->user->perms, 'is_staff' => $this->staff, 'visits' => $this->visits));
         }
         
         function _login() {
@@ -78,15 +78,16 @@
             $args = array();
             $codes = implode("', '", $prop_codes);
             $where = "WHERE p.proposalcode in ('$codes')";
-            
+
             if ($id) {
                 $where .= " AND p.proposalcode||p.proposalnumber LIKE :".(sizeof($args)+1);
                 array_push($args, $id);
             }
             
             if (!$this->staff) {
-                $where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
-                array_push($args, $this->user);
+                #$where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
+                $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid AND shp.personid=:".(sizeof($args)+1).' '.$where;
+                array_push($args, $this->user->personid);
                 
                 #$where .= " AND s.sessionid in ('".implode("','", $this->sessionids)."')";
             }
@@ -239,8 +240,9 @@
             
             
             if (!$this->staff) {
-                $where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
-                array_push($args, $this->user);
+                // $where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
+                $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid AND shp.personid=:".(sizeof($args)+1).' '.$where;
+                array_push($args, $this->user->personid);
             }
             
             $tot = $this->db->pq("SELECT count(s.sessionid) as tot FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid $where", $args);
@@ -324,16 +326,29 @@
         function _get_users() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             
-            $rows = $this->db->pq("SELECT iu.role, u.name, u.fullname, count(it.id) as visits, TO_CHAR(max(it.startdate), 'DD-MM-YYYY') as last 
-                FROM investigation@DICAT_RO i 
-                INNER JOIN investigationuser@DICAT_RO iu ON i.id = iu.investigation_id 
-                INNER JOIN user_@DICAT_RO u ON u.id = iu.user_id 
-                LEFT OUTER JOIN investigationuser@DICAT_RO iut ON u.id = iut.user_id 
-                LEFT OUTER JOIN investigation@DICAT_RO it ON it.id = iut.investigation_id AND it.startdate < i.startdate 
-                WHERE lower(i.visit_id) LIKE :1 
-                GROUP BY iu.role,u.name, u.fullname 
-                ORDER BY SUBSTR(u.fullname,INSTR(u.fullname,' ',-1,1))", array($this->arg('visit')));
+            // $rows = $this->db->pq("SELECT iu.role, u.name, u.fullname, count(it.id) as visits, TO_CHAR(max(it.startdate), 'DD-MM-YYYY') as last 
+            //     FROM investigation@DICAT_RO i 
+            //     INNER JOIN investigationuser@DICAT_RO iu ON i.id = iu.investigation_id 
+            //     INNER JOIN user_@DICAT_RO u ON u.id = iu.user_id 
+            //     LEFT OUTER JOIN investigationuser@DICAT_RO iut ON u.id = iut.user_id 
+            //     LEFT OUTER JOIN investigation@DICAT_RO it ON it.id = iut.investigation_id AND it.startdate < i.startdate 
+            //     WHERE lower(i.visit_id) LIKE :1 
+            //     GROUP BY iu.role,u.name, u.fullname 
+            //     ORDER BY SUBSTR(u.fullname,INSTR(u.fullname,' ',-1,1))", array($this->arg('visit')));
             
+            $rows = $this->db->pq("SELECT p.givenname || ' ' || p.familyname as fullname, count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last
+                FROM person p
+                INNER JOIN session_has_person shp ON p.personid = shp.personid
+                INNER JOIN blsession s ON s.sessionid = shp.sessionid
+                INNER JOIN proposal pr ON pr.proposalid = s.proposalid
+
+                LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
+                LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate
+
+                WHERE pr.proposalcode||pr.proposalnumber||'-'||s.visit_number LIKE :1
+                GROUP BY p.givenname, p.familyname
+                ORDER BY p.familyname", array($this->arg('visit')));
+
             $this->_output($rows);
         }
 
