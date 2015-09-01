@@ -5,8 +5,8 @@
     \Slim\Slim::registerAutoloader();
 
     $app = new \Slim\Slim(array(
-        'mode' => 'production'
-        //'mode' => 'development'
+        //'mode' => 'production'
+        'mode' => 'development'
     ));
 
     $app->configureMode('production', function () use ($app) {
@@ -71,8 +71,6 @@
         phpCAS::forceAuthentication();
     }
 
-    $user = class_exists('phpCAS') ? phpCAS::getUser() : null;
-
     date_default_timezone_set('Europe/London');
     
     include_once('includes/class.page.php');
@@ -81,10 +79,16 @@
     $db = new Oracle($isb['user'], $isb['pass'], $isb['db'], $app);
     register_shutdown_function(array(&$db, '__destruct'));
     
+
+    require_once('includes/class.user.php');
+    $login = class_exists('phpCAS') ? phpCAS::getUser() : null;
+    $user = new User($login, $db);
+
+
     if ($parts[0] == 'logout') {
         $db->pq("INSERT INTO log4stat (id,priority,log4jtimestamp,msg,detail) 
             VALUES (s_log4stat.nextval, 'ISPYB2_STAT', SYSDATE, 'LOGOFF', :1)", 
-            array($user));
+            array($login));
         phpCAS::logout();
     }
     
