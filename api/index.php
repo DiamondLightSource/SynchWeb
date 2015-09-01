@@ -5,8 +5,8 @@
     \Slim\Slim::registerAutoloader();
 
     $app = new \Slim\Slim(array(
-        //'mode' => 'production'
-        'mode' => 'development'
+        'mode' => 'production'
+        // 'mode' => 'development'
     ));
 
     $app->configureMode('production', function () use ($app) {
