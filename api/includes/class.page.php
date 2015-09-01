@@ -106,14 +106,14 @@
             
             if ($this->user) {
                 $com = 'ISPyB2: '.($com ? $com : $_SERVER['REQUEST_URI']);
-                $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user));
+                $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->login));
                 
                 if (sizeof($chk)) {
-                    $this->db->pq("UPDATE adminactivity SET action=:1, comments=:2, datetime=SYSDATE WHERE username=:3", array($action, $com, $this->user));
+                    $this->db->pq("UPDATE adminactivity SET action=:1, comments=:2, datetime=SYSDATE WHERE username=:3", array($action, $com, $this->user->login));
                     
                     
                 } else {
-                    $this->db->pq("INSERT INTO adminactivity (adminactivityid, username, action, comments, datetime) VALUES (s_adminactivity.nextval, :1, :2, :3, SYSDATE)", array($this->user, $action, $com));
+                    $this->db->pq("INSERT INTO adminactivity (adminactivityid, username, action, comments, datetime) VALUES (s_adminactivity.nextval, :1, :2, :3, SYSDATE)", array($this->user->login, $action, $com));
                 }
                 
             }
@@ -206,7 +206,7 @@
 
             # Retrieve cookie args
             if ($this->user) {
-                if (array_key_exists('ispyb_prop_'.$this->user, $_COOKIE) && !array_key_exists('prop', $parsed)) $parsed['prop'] = $_COOKIE['ispyb_prop_'.$this->user];
+                if (array_key_exists('ispyb_prop_'.$this->user->login, $_COOKIE) && !array_key_exists('prop', $parsed)) $parsed['prop'] = $_COOKIE['ispyb_prop_'.$this->user->login];
             }
             
             $this->args = $parsed;
