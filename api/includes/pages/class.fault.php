@@ -192,7 +192,7 @@
             if (!sizeof($check)) $this->_error('A fault with that id doesnt exists');
             $check = $check[0];
                                 
-            if ($this->user != $check['OWNER'] && $this->user != $check['ASSIGNEE']) $this->_error('You dont own that fault report');
+            if ($this->user->login != $check['OWNER'] && $this->user->login != $check['ASSIGNEE']) $this->_error('You dont own that fault report');
 
 
             $fields = array('TITLE', 'STARTTIME', 'ENDTIME', 'BEAMTIMELOST_STARTTIME', 'BEAMTIMELOST_ENDTIME', 'SESSIONID', 'SUBCOMPONENTID', 'BEAMTIMELOST', 'RESOLVED', 'RESOLUTION', 'DESCRIPTION');
@@ -480,7 +480,7 @@
             
             $this->db->pq("INSERT INTO bf_fault (faultid, sessionid, owner, subcomponentid, starttime, endtime, beamtimelost, beamtimelost_starttime, beamtimelost_endtime, title, description, resolved, resolution, assignee) 
                 VALUES (s_bf_fault.nextval, :1, :2, :3, TO_DATE(:4, 'DD-MM-YYYY HH24:MI'), TO_DATE(:5, 'DD-MM-YYYY HH24:MI'), :6, TO_DATE(:7, 'DD-MM-YYYY HH24:MI'), TO_DATE(:8, 'DD-MM-YYYY HH24:MI'), :9, :10, :11, :12, :13) RETURNING faultid INTO :id", 
-                array($this->arg('SESSIONID'), $this->user, $this->arg('SUBCOMPONENTID'), $this->arg('STARTTIME'), $end, $this->arg('BEAMTIMELOST'), $btlstart, $btlend, $this->arg('TITLE'), $this->arg('DESCRIPTION'), $this->arg('RESOLVED'), $res, $as));
+                array($this->arg('SESSIONID'), $this->user->login, $this->arg('SUBCOMPONENTID'), $this->arg('STARTTIME'), $end, $this->arg('BEAMTIMELOST'), $btlstart, $btlend, $this->arg('TITLE'), $this->arg('DESCRIPTION'), $this->arg('RESOLVED'), $res, $as));
                     
             $newid = $this->db->id();
 
@@ -510,7 +510,7 @@
                           'txtLOGBOOKID'  =>'BL'.strtoupper($info['BEAMLINE']),
                           'txtGROUPID'    => 'GEN',
                           'txtENTRYTYPEID'=> '41',
-                          'txtUSERID'     => $this->user,
+                          'txtUSERID'     => $this->user->login,
                           'txtMANUALAUTO' => 'M',
                           );
             
