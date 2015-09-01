@@ -65,8 +65,8 @@ class ProposalType {
         // check cookie
         } else {
             if ($this->user) {
-                if (array_key_exists('ispyb_prop_'.$this->user, $_COOKIE)) {
-                    $prop = $_COOKIE['ispyb_prop_'.$this->user];
+                if (array_key_exists('ispyb_prop_'.$this->user->login, $_COOKIE)) {
+                    $prop = $_COOKIE['ispyb_prop_'.$this->user->login];
                     if (preg_match('/([A-z]+)\d+/', $prop, $m)) {
                         $prop_code = $m[1];
                         
@@ -143,9 +143,10 @@ class ProposalType {
     
     
     function auth($require_staff, $parent) {
-        $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
-        $this->staff = in_array('mx_staff', $groups) ? True : False;
-        if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
+        $this->staff = $this->user->can('super_admin');
+        // $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
+        // $this->staff = in_array('mx_staff', $groups) ? True : False;
+        // if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
         //if (!$this->staff && in_array('b21_staff', $groups)) $this->staff = True;
         //if (!$this->staff && in_array('i11_staff', $groups)) $this->staff = True;
         

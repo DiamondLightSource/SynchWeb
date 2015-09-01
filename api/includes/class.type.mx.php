@@ -30,11 +30,15 @@ class MX extends ProposalType {
     
     // Authentication method for this type of proposal
     function auth($require_staff, $parent) {
-        $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
-        $this->staff = false;
-        $this->staff = in_array('mx_staff', $groups) ? True : False;
-        if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
+        $this->staff = $this->user->can('mx_admin');
+
+        // $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
+        // $this->staff = false;
+        // $this->staff = in_array('mx_staff', $groups) ? True : False;
+        // if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
         
+        #if ($this->user == 'vxn01537') $this->staff = true;
+
         // Staff only pages
         if ($require_staff) {
             $auth = $this->staff;
@@ -69,8 +73,13 @@ class MX extends ProposalType {
                 
             // Normal users
             } else {
-                $rows = $this->db->pq("SELECT lower(i.visit_id) as vis from investigation@DICAT_RO i inner join investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id where u.name=:1", array($this->user));
-                
+                #$rows = $this->db->pq("SELECT lower(i.visit_id) as vis from investigation@DICAT_RO i inner join investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id where u.name=:1", array($this->user));
+                $rows = $this->db->pq("SELECT p.proposalcode||p.proposalnumber||'-'||s.visit_number as vis
+                    FROM proposal p
+                    INNER JOIN blsession s ON p.proposalid = s.proposalid
+                    INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid
+                    WHERE shp.personid=:1", array($this->user->personid));
+
                 foreach ($rows as $row) {
                     array_push($this->visits, strtolower($row['VIS']));
                 }
