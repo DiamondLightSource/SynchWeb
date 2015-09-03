@@ -18,6 +18,7 @@
                               'year' => '\d\d\d\d',
                               'month' => '\d+',
                               'bl' => '\w\d\d(-\d)?',
+                              'ty' => '\w+',
                               'cm' => '\d',
                               'ty' => '\w+',
                               'next' => '\d',
@@ -34,6 +35,7 @@
                               array('/login', 'get', '_login'),
                               array('/log(/)', 'post', '_log_action'),
                               array('/time', 'get', '_get_time'),
+                              array('/bls/:ty', 'get', '_get_beamlines'),
 
 
                               //array('/set', 'get', '_set_proposal'),
@@ -46,7 +48,7 @@
         # ------------------------------------------------------------------------
         # Helpers for backbone application
         function _get_user() {
-            $this->_output(array('user' => $this->user->login, 'permissions' => $this->user->perms, 'is_staff' => $this->staff, 'visits' => $this->visits));
+            $this->_output(array('user' => $this->user->login, 'permissions' => $this->user->perms, 'is_staff' => $this->staff, 'visits' => $this->visits, 'ty' => $this->ptype->ty));
         }
         
         function _login() {
@@ -57,6 +59,15 @@
             if (!$this->has_arg('location')) $this->_error('No location specified');
             $this->log_action(1, $this->arg('location'));
             print $this->arg('location');
+        }
+
+        function _get_beamlines() {
+            global $bl_types;
+
+            if (!$this->has_arg('ty')) $this->_error('No type specified');
+            if (!array_key_exists($this->arg('ty'), $bl_types)) $this->_error('No such proposal type');
+
+            $this->_output($bl_types[$this->arg('ty')]);
         }
 
 
@@ -237,8 +248,8 @@
             }
             
             if ($this->has_arg('ty')) {
-                if ($this->arg('ty') == 'mx') {
-                    $bls = implode("', '", $mx_beamlines);
+                if (array_key_exists($this->arg('ty'), $bl_types)) {
+                    $bls = implode("', '", $bl_types[$this->arg('ty')]);
                     $where .= " AND s.beamlinename IN ('$bls')";
                 }
             }
