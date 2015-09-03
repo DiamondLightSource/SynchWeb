@@ -288,7 +288,8 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
                         return m < 10 ? ('0'+m) : m
                     },
                     all: options.all,
-                    ty: 'mx',
+                    // ty: 'mx',
+                    ty: app.type,
                 },
                 state: { pageSize: 9999 }
             })
@@ -349,10 +350,11 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
         },
         
         onGenerateMonth: function() {
-            var daysinmonth = new Date(this.year, this.month, 0).getDate()
+            // very confusingly new Date(..,..,0) returns the last day of the previous month...
+            var daysinmonth = new Date(this.year, this.month+1, 0).getDate()
             var startday = new Date(this.year, this.month, 1).getDay()
             var endday = new Date(this.year, this.month, daysinmonth).getDay()
-            
+
             console.log(daysinmonth, startday, endday)
             
             var days = []
@@ -381,6 +383,7 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
             this.generateLinks()
         
             this.days.reset(this.collection.where({ type: 'day' }))
+            console.log(this.days)
         },
     })
 

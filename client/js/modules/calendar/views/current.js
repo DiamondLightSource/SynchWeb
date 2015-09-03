@@ -1,10 +1,11 @@
 define(['marionette', 
         'models/visit', 
         'collections/visits', 
+        'collections/bls', 
         'modules/proposal/views/users', 
         'modules/proposal/models/time', 
         'tpl!templates/calendar/current.html'], 
-        function(Marionette, Visit, Visits, UserView, Time, template) {
+        function(Marionette, Visit, Visits, Beamlines, UserView, Time, template) {
 
 
     var VisitItem = Marionette.ItemView.extend({
@@ -75,16 +76,19 @@ define(['marionette',
                 this.prev = new Visits(null)
                 this.cm = new Visits(null)
                 
-                _.each(['i02', 'i03', 'i04', 'i04-1', 'i24'], function(b, i) {
-                    _.each(['next', 'prev', 'cm'], function(d) {
-                        var p = { bl: b, all: 1 }
-                        p[d] = 1
-                        var v = new Visits(null, { state: { pageSize: 1 }, queryParams: p })
-                        var self = this
-                        var def = v.fetch({ cache: false }).done(function() { self[d].add(v.models, { at: i }) })
-                        this.deferreds.push(def)
-                    }, this)
-                }, this)
+                this.beamlines = new Beamlines(null, { ty: app.type })
+                this.beamlines.fetch()
+                this.listenTo(this.beamlines, 'sync', this.getVisits, this)
+                // _.each(['i02', 'i03', 'i04', 'i04-1', 'i24'], function(b, i) {
+                //     _.each(['next', 'prev', 'cm'], function(d) {
+                //         var p = { bl: b, all: 1 }
+                //         p[d] = 1
+                //         var v = new Visits(null, { state: { pageSize: 1 }, queryParams: p })
+                //         var self = this
+                //         var def = v.fetch({ cache: false }).done(function() { self[d].add(v.models, { at: i }) })
+                //         this.deferreds.push(def)
+                //     }, this)
+                // }, this)
                 
                 
             } else {
@@ -102,6 +106,21 @@ define(['marionette',
         },
 
         
+        getVisits: function() {
+            console.log('get visits', this.beamlines)
+            this.beamlines.each(function(b, i) {
+                _.each(['next', 'prev', 'cm'], function(d) {
+                    var p = { bl: b.get('BEAMLINE'), all: 1 }
+                    p[d] = 1
+                    var v = new Visits(null, { state: { pageSize: 1 }, queryParams: p })
+                    var self = this
+                    var def = v.fetch({ cache: false }).done(function() { self[d].add(v.models, { at: i }) })
+                    this.deferreds.push(def)
+                }, this)
+            }, this)
+        },
+
+
         onRender: function() {  
             $.when.apply($, this.deferreds).then(this.doRender.bind(this))
         },
