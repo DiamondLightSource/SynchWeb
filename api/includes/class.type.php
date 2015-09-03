@@ -5,7 +5,7 @@ class ProposalType {
     var $table;
     var $col;
     
-    var $generic_pages = array('proposal', 'fault', 'cal', 'feedback', 'vstat');
+    var $generic_pages = array('proposal', 'fault', 'cal', 'feedback', 'vstat', 'users');
     
     var $visit_table;
     var $session_column;
@@ -22,11 +22,15 @@ class ProposalType {
     
     var $default = '';
     var $dir = '';
+
+    var $staff_permission = 'super_admin';
     
     function __construct($app, $db, $user) {
         $this->app = $app;
         $this->db = $db;
         $this->user = $user;
+
+        $this->staff = $this->user->has($this->staff_permission);
     }
     
     
@@ -143,7 +147,7 @@ class ProposalType {
     
     
     function auth($require_staff, $parent) {
-        $this->staff = $this->user->can('super_admin');
+        // $this->staff = $this->user->can('super_admin');
         // $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
         // $this->staff = in_array('mx_staff', $groups) ? True : False;
         // if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
