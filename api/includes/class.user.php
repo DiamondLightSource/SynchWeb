@@ -4,9 +4,10 @@
 class User {
 	
 
-	function __construct($login, $db) {
+	function __construct($login, $db, $app) {
 		$this->db = $db;
 		$this->login = $login;
+		$this->app = $app;
 
 		$result = $this->db->pq("SELECT personid, givenname, familyname FROM person p WHERE login=:1", array($login));
 
@@ -33,8 +34,14 @@ class User {
 	}
 
 
-	function can($permission) {
+	function has($permission) {
 		return in_array($permission, $this->perms);
+	}
+
+
+	function can($permission) {
+		if(in_array($permission, $this->perms)) return true;
+		else $this->app->halt(403, json_encode(array('status' => 403, 'message' => 'Access Denied', 'title' => 'You do not have the permission: '.$permission)));
 	}
 
 	function has_group($group) {
