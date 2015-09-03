@@ -7,6 +7,7 @@ define(['marionette', 'views/table', 'collections/proposals'], function(Marionet
     },
     onClick: function() {
       app.cookie(this.model.get('PROPOSALCODE') + this.model.get('PROPOSALNUMBER'))
+      app.type = this.model.get('TYPE')
       app.trigger('visits:show')
     },
   })
