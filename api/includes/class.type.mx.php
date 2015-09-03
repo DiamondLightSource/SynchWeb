@@ -26,18 +26,18 @@ class MX extends ProposalType {
     
     var $visit_table = 'datacollection';
     var $session_column = 'sessionid';
+
+    var $staff_permission = 'mx_admin';
     
     
     // Authentication method for this type of proposal
     function auth($require_staff, $parent) {
-        $this->staff = $this->user->can('mx_admin');
+        // $this->staff = $this->user->has('mx_admin');
 
         // $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
         // $this->staff = false;
         // $this->staff = in_array('mx_staff', $groups) ? True : False;
         // if (!$this->staff && in_array('dls_dasc', $groups)) $this->staff = True;
-        
-        #if ($this->user == 'vxn01537') $this->staff = true;
 
         // Staff only pages
         if ($require_staff) {

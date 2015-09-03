@@ -17,10 +17,11 @@ class GEN extends ProposalType {
     var $visit_table = 'datacollection';
     var $session_column = 'datacollectionid';
     
+    var $staff_permission = 'gen_admin';
     
     // Authentication method for this type of proposal
     function auth($require_staff, $parent) {
-        $this->staff = $this->user->can('gen_admin');
+        // $this->staff = $this->user->has('gen_admin');
 
         // $groups = $this->user ? explode(' ', exec('groups ' . $this->user)) : array();
         // $this->staff = in_array('mx_staff', $groups) ? True : False;

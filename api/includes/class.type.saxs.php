@@ -4,6 +4,8 @@
     
     class SAXS extends GEN {
 
+    	var $staff_permission = 'saxs_admin';
+
     }
 
 ?>

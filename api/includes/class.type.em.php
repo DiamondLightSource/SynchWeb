@@ -10,6 +10,8 @@
 
 		var $default = 'proposal';
 		var $dir = 'em';
+
+		var $staff_permission = 'em_admin';
     }
 
 ?>
