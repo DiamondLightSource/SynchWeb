@@ -130,6 +130,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
         'modules/docs/router',
         'modules/feedback/router',
         'modules/mc/router',
+        'modules/admin/router',
         ], function() {
             
         this.sidebarview = new SideBarView()
