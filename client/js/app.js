@@ -150,7 +150,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
       success: function(resp) {
           app.user = resp.user
           app.staff = resp.is_staff
-          app.type = resp.type
+          app.type = resp.ty
 
           // Breadcrumbs collection
           if (!app.bc) {  
