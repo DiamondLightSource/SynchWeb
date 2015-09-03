@@ -25,6 +25,7 @@ define(['marionette', 'backbone', 'tpl!templates/header.html'], function(Marione
             return {
                 IS_STAFF: app.staff,
                 PROPOSAL: app.prop,
+                APIURL: app.apiurl,
             }
         },
         
