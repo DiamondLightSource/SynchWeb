@@ -84,7 +84,20 @@
                 array_push($args, $id);
             }
             
-            if (!$this->staff) {
+            if ($this->staff) {
+                if (!$this->user->has('asuper_admin')) {
+                    $bls = array();
+                    foreach ($this->user->perms as $p) {
+                        if (strpos($p, '_admin')) {
+                            $parts = explode('_', $p);
+                            $ty = $parts[0];
+                            if (array_key_exists($ty, $bl_types)) $bls = array_merge($bls, $bl_types[$ty]);
+                        }
+                    }
+
+                    $where .= "AND s.beamlinename in ('".implode("','", $bls)."')";
+                }
+            } else {
                 #$where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
                 $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid AND shp.personid=:".(sizeof($args)+1).' '.$where;
                 array_push($args, $this->user->personid);
@@ -126,7 +139,10 @@
             $rows = $this->db->pq("SELECT outer.* FROM (
                 SELECT ROWNUM rn, inner.* FROM (
                     SELECT p.proposalcode || '-' || p.proposalnumber as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid 
-                    FROM proposal p INNER JOIN blsession s ON p.proposalid = s.proposalid $where GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                    FROM proposal p 
+                    INNER JOIN blsession s ON p.proposalid = s.proposalid 
+                    $where 
+                    GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
             
 
             foreach ($rows as &$r) {
