@@ -85,7 +85,7 @@
             }
             
             if ($this->staff) {
-                if (!$this->user->has('asuper_admin')) {
+                if (!$this->user->has('super_admin')) {
                     $bls = array();
                     foreach ($this->user->perms as $p) {
                         if (strpos($p, '_admin')) {
