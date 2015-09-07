@@ -79,17 +79,6 @@ define(['marionette',
                 this.beamlines = new Beamlines(null, { ty: app.type })
                 this.beamlines.fetch()
                 this.listenTo(this.beamlines, 'sync', this.getVisits, this)
-                // _.each(['i02', 'i03', 'i04', 'i04-1', 'i24'], function(b, i) {
-                //     _.each(['next', 'prev', 'cm'], function(d) {
-                //         var p = { bl: b, all: 1 }
-                //         p[d] = 1
-                //         var v = new Visits(null, { state: { pageSize: 1 }, queryParams: p })
-                //         var self = this
-                //         var def = v.fetch({ cache: false }).done(function() { self[d].add(v.models, { at: i }) })
-                //         this.deferreds.push(def)
-                //     }, this)
-                // }, this)
-                
                 
             } else {
                 _.each(['next', 'prev'], function(d) {
@@ -108,14 +97,27 @@ define(['marionette',
         
         getVisits: function() {
             console.log('get visits', this.beamlines)
-            this.beamlines.each(function(b, i) {
+
+            var model = Visit.extend({
+                idAttribute: 'VISIT-TYPE',
+            })
+            var visits = Visits.extend({
+                model: model
+            })
+
+            this.visits = new visits(null, { queryParams: { current: 1 } })
+            var def = this.visits.fetch({
+                success: this.sortVisits.bind(this)
+            })
+            this.deferreds.push(def)
+        },
+
+        sortVisits: function() {
+            console.log('sort visits')
+            this.beamlines.each(function(b,i) {
                 _.each(['next', 'prev', 'cm'], function(d) {
-                    var p = { bl: b.get('BEAMLINE'), all: 1 }
-                    p[d] = 1
-                    var v = new Visits(null, { state: { pageSize: 1 }, queryParams: p })
-                    var self = this
-                    var def = v.fetch({ cache: false }).done(function() { self[d].add(v.models, { at: i }) })
-                    this.deferreds.push(def)
+                    var v = this.visits.findWhere({ BL: b.get('BEAMLINE'), type: d })
+                    this[d].add(v, { at: i })
                 }, this)
             }, this)
         },
