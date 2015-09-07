@@ -367,7 +367,9 @@ define(['marionette',
         },
         
         onRender: function() {
-            var pucks = ['i04-1', 'i24'].indexOf(this.model.get('BL')) > -1 ? 9 : (['i03'].indexOf(this.model.get('BL')) > -1 ? 23 : 10)
+            if (this.model.get('BL') in app.config.pucks) {
+                var pucks = app.config.pucks[this.model.get('BL')]
+            } else var pucks = 10
             
             var positions = new Backbone.Collection(_.map(_.range(1,pucks+1), function(i) { return { id: i } }))
             console.log('on show')
