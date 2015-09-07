@@ -17,14 +17,15 @@
                               'all' => '\d',
                               'year' => '\d\d\d\d',
                               'month' => '\d+',
-                              'bl' => '\w\d\d(-\d)?',
+                              'bl' => '\w+\d+(-\d+)?',
                               'ty' => '\w+',
                               'cm' => '\d',
                               'ty' => '\w+',
                               'next' => '\d',
                               'prev' => '\d',
                               'proposal' => '\w+\d+',
-                              'location' => '(\w|-|\/)+'
+                              'location' => '(\w|-|\/)+',
+                              'current' => '\d',
                                );
         
 
@@ -200,8 +201,13 @@
     
         # ------------------------------------------------------------------------
         # Get visits for a proposal
-        function _get_visits($visit=null) {
+        function _get_visits($visit=null, $output=true) {
             global $bl_types, $mx_beamlines;
+
+            if ($this->has_arg('current')) {
+                $this->_current_visits();
+                return;
+            }
             
             if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
             
@@ -339,14 +345,52 @@
                 if (!$r['TYPE']) $r['TYPE'] = 'gen';
             }
             
-            if ($visit) {
-                if (sizeof($rows))$this->_output($rows[0]);
-                else $this->_error('No such visit');
-            } else $this->_output(array('total' => $tot,
-                                 'data' => $rows,
-                           ));
+            if ($output) {
+                if ($visit) {
+                    if (sizeof($rows))$this->_output($rows[0]);
+                    else $this->_error('No such visit');
+                } else $this->_output(array('total' => $tot,
+                                     'data' => $rows,
+                               ));
+            } else return $rows;
         }
         
+
+
+        function _current_visits() {
+            global $bl_types;
+            unset($this->args['current']);
+
+            if (!array_key_exists($this->ptype->ty, $bl_types)) $this->_error('No such proposal type');
+
+            $beamlines = $bl_types[$this->ptype->ty];
+
+            $this->args['per_page'] = 1;
+            $this->args['page'] = 1;
+            $this->args['all'] = 1;
+
+            $rows = array();
+            foreach (array('next', 'prev', 'cm') as $t) {
+                unset($this->args['order']);
+                unset($this->args['sort_by']);
+                foreach (array('next', 'prev', 'cm') as $r) unset($this->args[$r]); 
+                $this->args[$t] = True;
+
+                foreach ($beamlines as $bl) {
+                    $this->args['bl'] = $bl;
+                    $vis = $this->_get_visits(null, False);
+
+                    if (sizeof($vis)) {
+                        $vis[0]['VISIT-TYPE'] = $vis[0]['VISIT'].'-'.$t;
+                        $vis[0]['type'] = $t;
+                        array_push($rows, $vis[0]);
+                    }
+                }
+            }
+
+            $this->_output(array('total' => sizeof($rows), 'data' => $rows));
+        }
+
         
         # ------------------------------------------------------------------------
         # Get users for a visit
