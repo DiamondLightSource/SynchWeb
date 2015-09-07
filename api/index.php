@@ -82,7 +82,7 @@
 
     require_once('includes/class.user.php');
     $login = class_exists('phpCAS') ? phpCAS::getUser() : null;
-    $user = new User($login, $db);
+    $user = new User($login, $db, $app);
 
 
     if ($parts[0] == 'logout') {
