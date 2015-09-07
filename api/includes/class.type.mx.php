@@ -44,7 +44,7 @@ class MX extends ProposalType {
             $auth = $this->staff;
             
         // Beamline Sample Registration
-        } else if ($this->blsr() && !$this->user) {
+        } else if ($this->blsr() && !$this->user->login) {
             $auth = false;
 
             if ($this->has_arg('visit')) {
