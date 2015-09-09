@@ -13,10 +13,15 @@
                 
                 'views/pages', 'views/filter', 'views/table', 'views/form', 'utils/table',
                 
-                'modules/types/mx/menu', 'modules/types/tomo/menu', 'modules/types/gen/menu', 'modules/types/saxs/menu',
-                
+                'modules/types/mx/menu',
+                'modules/types/tomo/menu', 
+                'modules/types/gen/menu', 
+                'modules/types/saxs/menu',
+                'modules/types/em/menu',
                 
             ],
+
+            exclude: ['json!config.json'],
         },
         {
             name: "modules/dc/controller",
@@ -73,6 +78,11 @@
 
         {
             name: "modules/mc/controller",
+            exclude: ['main'],
+        },
+
+        {
+            name: "modules/admin/controller",
             exclude: ['main'],
         },
     ]    
