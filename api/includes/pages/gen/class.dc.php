@@ -6,7 +6,8 @@
         
 
         public static $arg_list = array('id' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 't' => '\w+', 'bl' => '\w\d\d(-\d)?', 'value' => '.*', 'h' => '\d\d',
-            'dcg' => '\d+'
+            'dcg' => '\d+', 
+            'COMMENTS' => '.*'
                               );
 
 
@@ -382,15 +383,15 @@
         # Update comment for a data collection
         function _set_comment() {
             if (!$this->arg('id')) $this->_error('No data collection id specified');
-            if (!$this->arg('value')) $this->_error('No comment specified');
+            if (!$this->arg('COMMENTS')) $this->_error('No comment specified');
             
             $com = $this->db->pq('SELECT comments from datacollection WHERE datacollectionid=:1', array($this->arg('id')));
             
             if (!sizeof($com)) $this->_error('No such data collection');
             
-            $this->db->pq("UPDATE datacollection set comments=:1 where datacollectionid=:2", array($this->arg('value'), $this->arg('id')));
+            $this->db->pq("UPDATE datacollection set comments=:1 where datacollectionid=:2", array($this->arg('COMMENTS'), $this->arg('id')));
             
-            print $this->arg('value');
+            $this->_output(array('COMMENTS' => $this->arg('COMMENTS')));
         }
                 
     }
