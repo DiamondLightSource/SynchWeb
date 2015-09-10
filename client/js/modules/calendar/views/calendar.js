@@ -280,17 +280,19 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
             this.month = options.m !== undefined ? options.m : d.getMonth()
             
             var self = this
-            this.visits = new Visits(null, {
-                queryParams: {
-                    year: function() { return self.year },
-                    month: function() {
-                        var m = self.month + 1
-                        return m < 10 ? ('0'+m) : m
-                    },
-                    all: options.all,
-                    // ty: 'mx',
-                    ty: app.type,
+            var queryParams = {
+                year: function() { return self.year },
+                month: function() {
+                    var m = self.month + 1
+                    return m < 10 ? ('0'+m) : m
                 },
+                all: options.all,
+            }
+
+            if (options.all) queryParams.ty = app.type
+
+            this.visits = new Visits(null, {
+                queryParams: queryParams,
                 state: { pageSize: 9999 }
             })
             
