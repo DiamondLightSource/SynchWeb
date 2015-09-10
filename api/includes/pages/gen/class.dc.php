@@ -16,7 +16,7 @@
                               array('/dat/:id', 'get', '_plot'),
 
                               array('/single/t/:t/:id', 'patch', '_set_comment'),
-                              array('/dl', 'get', '_download'),
+                              array('/dl/id/:id', 'get', '_download'),
                             );
         
         
@@ -364,7 +364,6 @@
             $info['VISIT'] = $this->arg('prop') .'-'.$info['VISIT_NUMBER'];
             
             $data = str_replace($info['VISIT'], $info['VISIT'].'/.ispyb', $this->ads($info['DIR']).$info['IMP'].'/download/download.zip');
-            
             if (file_exists($data)) {
                 $this->_header($this->arg('id').'_download.zip');
                 readfile($data);
