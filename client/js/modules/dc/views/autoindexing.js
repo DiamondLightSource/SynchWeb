@@ -5,11 +5,9 @@ define(['marionette',
   ], function(Marionette, AutoIndexings, template, xotemplate) {
        
   var AutoIndexingItem = Marionette.ItemView.extend({ 
-      // template: template, 
       modelEvents: { 'change': 'render' },
 
       getTemplate: function(m) {
-        console.log('st type', this.model.get('TYPE'), this.model.get('TYPE') == 'XOAlign')
           return this.model.get('TYPE') == 'XOAlign' ? xotemplate : template
       }
   })
