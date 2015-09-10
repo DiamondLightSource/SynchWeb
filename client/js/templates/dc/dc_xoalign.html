@@ -1,0 +1,22 @@
+
+<h1><%=TYPE%></h1>
+
+
+<table class="reflow cell">
+    <thead>
+        <tr>
+            <th>Axes</th>
+            <th>Kappa</th>
+            <th>Phi</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% _.each(STRATS, function(r, i) { %>
+        <tr>
+            <td><%=r.COMMENTS %></td>
+            <td><%=r.KAPPA %></td>
+            <td><%=r.PHI %></td>
+        </tr>
+        <% }) %>
+    </tbody>
+</table>
