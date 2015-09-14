@@ -8,6 +8,8 @@ class User {
 		$this->db = $db;
 		$this->login = $login;
 		$this->app = $app;
+		$this->perms = array();
+		$this->groups = array();
 
 		$result = $this->db->pq("SELECT personid, givenname, familyname FROM person p WHERE login=:1", array($login));
 
@@ -23,8 +25,6 @@ class User {
 				INNER JOIN usergroup_has_person uhpe ON uhpe.usergroupid = g.usergroupid
 				WHERE uhpe.personid=:1", array($this->personid));
 
-			$this->perms = array();
-			$this->groups = array();
 			foreach ($perms as $p) {
 				array_push($this->perms, $p['TYPE']);
 				if (!in_array($p['USERGROUP'], $this->groups)) array_push($this->groups, $p['USERGROUP']);
