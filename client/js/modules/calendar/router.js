@@ -7,6 +7,7 @@ define(['marionette', 'modules/calendar/controller'], function(Marionette, c) {
             'cal': 'calendar',
             'calendar': 'calendar_prop',
             'log': 'current',
+            'ispyb/ispyb': 'goHome',
             '': 'goHome',
         },
         
