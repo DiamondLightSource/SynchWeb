@@ -59,6 +59,7 @@ define(['jquery', 'marionette',
             this.gridFetched = false
             this.grid.fetch().done(function() {
                 self.gridFetched = true
+                self.vertical = (self.grid.get('STEPS_Y') > self.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
             })
 
             this.hasSnapshot = false
@@ -151,8 +152,15 @@ define(['jquery', 'marionette',
                 _.each(d, function(v,i) {
                     var k = v[0] - 1
 
-                    var x = (k % this.grid.get('STEPS_X')) * sw + sw/2 + (this.offset_w*this.scale)/2
-                    var y = Math.floor(k / this.grid.get('STEPS_X')) * sh + sh/2 + (this.offset_h*this.scale)/2
+                    // Account for vertical grid scans
+                    if (this.vertical) {
+                        var x = Math.floor(k / this.grid.get('STEPS_Y')) * sw + sw/2 + (this.offset_w*this.scale)/2
+                        var y = (k % this.grid.get('STEPS_Y')) * sh + sh/2 + (this.offset_h*this.scale)/2
+
+                    } else {
+                        var x = (k % this.grid.get('STEPS_X')) * sw + sw/2 + (this.offset_w*this.scale)/2
+                        var y = Math.floor(k / this.grid.get('STEPS_X')) * sh + sh/2 + (this.offset_h*this.scale)/2
+                    }
                     var r = ((v[1] < 1 ? 0 : v[1]) / (max == 0 ? 1 : max)) * sw / 2
 
                     data.push({ x: x, y: y, value: v[1] < 1 ? 0 : v[1], 
@@ -193,8 +201,13 @@ define(['jquery', 'marionette',
         },
 
         _getXYZ: function(pos) {
-            var xp = pos % this.grid.get('STEPS_X')
-            var yp = Math.floor(pos / this.grid.get('STEPS_X'))
+            if (this.vertical) {
+                var xp = Math.floor(pos / this.grid.get('STEPS_Y'))
+                var yp = pos % this.grid.get('STEPS_Y')
+            } else {
+                var xp = pos % this.grid.get('STEPS_X')
+                var yp = Math.floor(pos / this.grid.get('STEPS_X'))
+            }
 
             var rad = Math.PI/180
 
@@ -231,11 +244,18 @@ define(['jquery', 'marionette',
         _xyToPos: function(x, y) {
             var sw = (this.canvas.width-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
             var sh = (this.canvas.height-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
+        
 
             var xa = x - ((this.offset_w*this.scale)/2)
             var ya = y - ((this.offset_h*this.scale)/2)
 
-            return Math.floor(xa/sw)+(Math.floor(ya/sh)*this.grid.get('STEPS_X'))
+            if (this.vertical) {
+                var pos = Math.floor(xa/sw) * this.grid.get('STEPS_Y') + Math.floor(ya/sh)
+            } else {
+                var pos = Math.floor(xa/sw) + (Math.floor(ya/sh) * this.grid.get('STEPS_X'))
+            }
+
+            return pos
 
         },
 
