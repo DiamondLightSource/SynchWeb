@@ -1,8 +1,5 @@
 <?php
 
-    ini_set('memory_limit', '256M');
-    require_once('lib/mpdf/mpdf.php');
-
     # ------------------------------------------------------------------------
     # PDF Generation
     # In order to keep things simple, pdfs are rendered from html templates using
@@ -287,6 +284,9 @@
         # ------------------------------------------------------------------------
         # Render html template to PDF file
         function _render($file, $orientation = '') {
+            ini_set('memory_limit', '256M');
+            require_once('lib/mpdf/mpdf.php');
+
             $f = 'assets/pdf/'.$file.'.php';
             
             if (!$this->has_arg('p')) {
