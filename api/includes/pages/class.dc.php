@@ -1146,6 +1146,7 @@
             #$this->db->set_debug(True);
 
             $where = $id;
+            $args = array();
             /*
             $dcg = $this->db->pq("SELECT datacollectiongroupid as dcg FROM datacollection WHERE datacollectionid=:1", array($id));
             if (!sizeof($dcg)) $this->error('No such data collection');
