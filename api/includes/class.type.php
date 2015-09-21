@@ -100,6 +100,17 @@ class ProposalType {
                             }
                         }
                     }
+
+                // get default type from type of admin
+                }
+                else {
+                    foreach ($this->user->perms as $p) {
+                        if (strpos($p, '_admin')) {
+                            $parts = explode('_', $p);
+                            $ty = $parts[0];
+                            break;
+                        }
+                    }
                 }
             }
         }
