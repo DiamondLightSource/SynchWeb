@@ -8,8 +8,15 @@
 </ul>
 
 <a class="icon pull" href="#"><i class="fa fa-bars fa-2x"></i> <span class="icon-label">Menu</span></a>
+
+<% if (PROPOSAL || IS_STAFF) { %>
 <a class="icon" href="/"><i class="fa fa-home fa-2x"></i> <span class="icon-label">Home</span></a>
+<% } %>
+
+<% if (IS_STAFF) { %>
 <a class="icon" href="/cal"><i class="fa fa-calendar fa-2x"></i> <span class="icon-label">Calendar</span></a>
+<% } %>
+
 
 <span class="search-mobile">
     <input type="text" class="search-mobile" placeholder="&#xf002;" />
