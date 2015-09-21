@@ -115,12 +115,12 @@
                 }
             }
             
-            $n = $this->arg('n') ? ($this->arg('n')-1) : 0;
+            $n = $this->has_arg('n') ? ($this->arg('n')-1) : 0;
             if ($n < sizeof($images)) {
                 if (file_exists($images[$n])) {
                     $this->_browser_cache();
                     $this->app->contentType('image/png');
-                    readfile($this->arg('f') ? $images[$n] : str_replace('.png', 't.png', $images[$n]));
+                    readfile($this->has_arg('f') ? $images[$n] : str_replace('.png', 't.png', $images[$n]));
 
                 } else {
                     $this->_error('Not found', 'That image is no longer available');
@@ -186,7 +186,7 @@
                 if (file_exists($im)) {
                     $this->_browser_cache();
                     $this->app->contentType('image/jpeg');
-                    readfile($this->arg('f') ? $im : str_replace('.jpeg', '.thumb.jpeg', $im));
+                    readfile($this->has_arg('f') ? $im : str_replace('.jpeg', '.thumb.jpeg', $im));
                     
                 } else {
                     $this->app->contentType('image/png');
