@@ -19,7 +19,9 @@ define(['underscore', 'marionette',
     },
       
     goHome: function() {
-        if (!app.prop) app.trigger('proposals:show')
+        console.log('home', app.ty)
+        // if (!app.prop) app.trigger('proposals:show')
+        if (!app.type) app.trigger('proposals:show')
         else app.trigger('current:show')
     }
   }
