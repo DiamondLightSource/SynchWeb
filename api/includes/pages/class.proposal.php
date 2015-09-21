@@ -211,15 +211,15 @@
             
             if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
             
-            $props = $this->db->pq('SELECT proposalid as id FROM proposal WHERE proposalcode || proposalnumber LIKE :1', array($this->arg('prop')));
-            
-            if (!sizeof($props)) $this->_error('No such proposal');
-            else $p = $props[0]['ID'];
-            
             if ($this->has_arg('all') && $this->staff) {
                 $args = array();
                 $where = 'WHERE 1=1';
+                
             } else {
+                $props = $this->db->pq('SELECT proposalid as id FROM proposal WHERE proposalcode || proposalnumber LIKE :1', array($this->arg('prop')));
+                if (!sizeof($props)) $this->_error('No such proposal');
+                else $p = $props[0]['ID'];
+
                 $args = array($p);
                 $where = 'WHERE s.proposalid = :1';
             }
