@@ -36,11 +36,13 @@
             
             $this->db->close();
 
+            // print_r($rows);
+
             if (!sizeof($rows)) $this->_error('No such auto processing');
-            else $r = $rows[0];
+            // else $r = $rows[0];
         
 
-            //foreach ($rows as $r) {
+            foreach ($rows as $r) {
                 if ($this->has_arg('log')) {
                     if ($r['FILETYPE'] == 'Log') {
                         if ($this->has_arg('LogFiles')) {
@@ -78,7 +80,7 @@
                         } $this->_error('No such file', 'The specified auto processing file doesnt exist');
                     }
                 }
-            //}
+            }
         }
         
         
