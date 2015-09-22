@@ -439,7 +439,8 @@
                 $r['DCOUNT'] = $dcount;
                 $scount = array_key_exists($r['PROTEINID'], $scs) ? $scs[$r['PROTEINID']] : 0;
                 $r['SCOUNT'] = $scount;
-                $r['SEQUENCE'] = $this->db->read($r['SEQUENCE']);
+                
+                if ($this->has_arg('pid')) $r['SEQUENCE'] = $this->db->read($r['SEQUENCE']);
             }
             
             if ($this->has_arg('pid')) {
