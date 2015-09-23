@@ -54,7 +54,7 @@
                               'SHIPPINGNAME' => '([\w\s-])+',
                               'DELIVERYAGENT_SHIPPINGDATE' => '\d+-\d+-\d+',
                               'DELIVERYAGENT_DELIVERYDATE' => '\d+-\d+-\d+',
-                              'DELIVERYAGENT_AGENTNAME' => '\w+',
+                              'DELIVERYAGENT_AGENTNAME' => '[\s|\w]+',
                               'DELIVERYAGENT_AGENTCODE' => '\w+',
                               'SAFETYLEVEL' => '\w+',
                               'DEWARS' => '\d+',
