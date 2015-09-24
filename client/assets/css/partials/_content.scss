@@ -939,6 +939,28 @@ ol.rounded {
 }
 
 
+ul.bubbles {
+    li {
+        border-radius: 5px;
+        border: 1px solid $content-border;
+        padding: 1%;
+        margin-bottom: 5px;
+
+        h1 {
+            border-radius: 3px;
+            padding: 0.7%;
+            background: $content-main-background;
+        }
+    }
+}
+
+ul.comments {
+    @extend ul.bubbles;
+}
+
+
+
+
 ul.status {
     //text-align: left;
     font-size: 10px;

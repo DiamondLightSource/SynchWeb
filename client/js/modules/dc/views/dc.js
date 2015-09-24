@@ -1,10 +1,10 @@
-define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/autoindexing', 'modules/dc/views/autointegration', 'modules/dc/views/downstream',
+define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/views/distl', 'modules/dc/views/autoindexing', 'modules/dc/views/autointegration', 'modules/dc/views/downstream',
     'modules/projects/views/addto',
     'utils/editable',
     'backbone',
     'modules/dc/views/imagestatusitem',
     'modules/dc/views/apstatusitem',
-    'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, TabView, DCDISTLView, DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, template) {
+    'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, TabView, DCCommentsView, DCDISTLView, DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, template) {
 
   return Marionette.ItemView.extend({
     template: template,
@@ -39,6 +39,18 @@ define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/
         
       this.imagestatus = new (this.getOption('imageStatusItem'))({ ID: this.model.get('ID'), TYPE: this.model.get('DCT'), statuses: this.getOption('imagestatuses'), el: this.$el })
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), SCREEN: (this.model.get('OVERLAP') != 0 && this.model.get('AXISRANGE')), statuses: this.getOption('apstatuses'), el: this.$el })
+      this.listenTo(this.apstatus, 'status', this.updateAP, this)
+
+    },
+
+    updateAP: function(e) {
+        setTimeout(this.doUpdateAP.bind(this), 1000)
+    },
+
+    doUpdateAP: function() {
+        if (this.ap) this.ap.fetch()
+        if (this.strat) this.strat.fetch()
+        if (this.dp) this.dp.fetch()
     },
                                       
     onDestroy: function() {
@@ -57,6 +69,8 @@ define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/
     renderFlag: function() {
       this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
       this.$el.find('.COMMENTS').html(this.model.get('COMMENTS'))
+
+      this.ui.cc.html(this.model.get('DCCC'))
     },
       
     events: {
@@ -67,6 +81,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/
       'click .diffraction': 'diViewer',
       'click .atp': 'addToProject',
       'click .flag': 'flag',
+      'click .comments': 'showComments',
       'click a.dl': 'showDistl',
       'click a.sn': 'showSnapshots',
       'click li.sample a': 'setProposal',
@@ -76,6 +91,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/
     ui: {
       temp: 'span.temp',
       exp: 'i.expand',
+      cc: '.dcc',
     },
 
     expandPath: function(e) {
@@ -126,6 +142,11 @@ define(['marionette', 'views/tabs', 'modules/dc/views/distl', 'modules/dc/views/
     showDistl: function(e) {
       e.preventDefault()
       app.dialog.show(new DialogView({ title: 'DISTL Plot', view: new DCDISTLView({ parent: this.model }), autoSize: true }))
+    },
+
+    showComments: function(e) {
+      e.preventDefault()
+      app.dialog.show(new DialogView({ title: 'Data Collection Comments', view: new DCCommentsView({ model: this.model }), autoSize: true }))
     },
       
     

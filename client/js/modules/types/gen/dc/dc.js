@@ -2,7 +2,8 @@ define([
     'modules/dc/views/dc',
     'modules/types/gen/dc/datplot',
     'modules/types/gen/dc/imagestatusitem',
-    'tpl!templates/types/gen/dc/dc.html'], function(DCItemView, DatPlot, DCImageStatusItem, template) {
+    'modules/dc/views/dccomments', 
+    'tpl!templates/types/gen/dc/dc.html'], function(DCItemView, DatPlot, DCImageStatusItem, DCCommentsView, template) {
 
     return DCItemView.extend({
         template: template,
@@ -14,6 +15,7 @@ define([
             'click .diffraction': 'showDiff',
             'click .atp': 'addToProject',
             'click .flag': 'flag',
+            'click .comments': 'showComments',
             'click a.dl': 'showPlot',
             'click a.sn': 'showSnapshots',
         },
@@ -27,7 +29,6 @@ define([
             e.preventDefault()
             this.$el.find('.diffraction a').eq(0).trigger('click')
         },
-        
         
     })
 

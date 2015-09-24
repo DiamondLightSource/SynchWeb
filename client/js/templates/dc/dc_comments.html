@@ -1,0 +1,27 @@
+<h1>
+	Comments for <span class="date"><%=DC.ST%></span><span class="spacer"> - </span> <span class="temp"><%=DC.DIR%><%=DC.FILETEMPLATE%></span>
+</h1>
+
+<div class="comments"></div>
+
+
+<h1>Add a Comment</h1>
+<form method="post" id="add_comment" enctype="multipart/form-data">
+
+<div class="form">
+    <ul>
+
+        <li>
+            <label>Comment
+            	<br />
+	            <span><a href="http://daringfireball.net/projects/markdown/">Markdown Supported</a></span>
+            </label>
+            <textarea name="COMMENTS"></textarea>
+        </li>
+
+        <button name="submit" value="1" type="submit" class="button submit">Add Comment</button>
+
+    </ul>
+</div>
+
+</form>
