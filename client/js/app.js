@@ -149,6 +149,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
       url: app.apiurl+'/proposal/user',
       success: function(resp) {
           app.user = resp.user
+          app.personid = resp.personid
           app.staff = resp.is_staff
           app.type = resp.ty
 
