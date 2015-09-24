@@ -18,6 +18,8 @@ class User {
 				$this->$f = $result[0][strtoupper($f)];
 			}
 
+			$this->personid = intval($this->personid);
+
 			$perms = $this->db->pq("SELECT p.type, g.name as usergroup 
 				FROM permission p
 				INNER JOIN usergroup_has_permission uhp ON uhp.permissionid = p.permissionid
