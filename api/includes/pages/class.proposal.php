@@ -49,7 +49,7 @@
         # ------------------------------------------------------------------------
         # Helpers for backbone application
         function _get_user() {
-            $this->_output(array('user' => $this->user->login, 'permissions' => $this->user->perms, 'is_staff' => $this->staff, 'visits' => $this->visits, 'ty' => $this->ptype->ty));
+            $this->_output(array('personid' => $this->user->personid, 'user' => $this->user->login, 'permissions' => $this->user->perms, 'is_staff' => $this->staff, 'visits' => $this->visits, 'ty' => $this->ptype->ty));
         }
         
         function _login() {
