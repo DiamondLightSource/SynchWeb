@@ -7,7 +7,11 @@
 
         public static $arg_list = array('id' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 't' => '\w+', 'bl' => '\w\d\d(-\d)?', 'value' => '.*', 'h' => '\d\d',
             'dcg' => '\d+', 
-            'COMMENTS' => '.*'
+            'COMMENTS' => '.*',
+
+            'dcid' => '\d+',
+            'DATACOLLECTIONID' => '\d+',
+            'PERSONID' => '\d+',
                               );
 
 
@@ -17,6 +21,9 @@
 
                               array('/single/t/:t/:id', 'patch', '_set_comment'),
                               array('/dl/id/:id', 'get', '_download'),
+
+                              array('/comments(/:dcid)', 'get', '_get_comments'),
+                              array('/comments', 'post', '_add_comment'),
                             );
         
         
@@ -159,7 +166,9 @@
                     dc.totalabsorbeddose,
 
                     d.detectorpixelsizehorizontal,
-                    d.detectorpixelsizevertical";
+                    d.detectorpixelsizevertical,
+                    count(dcc.datacollectioncommentid) as dccc
+                    ";
                 $groupby = '';
 
                 $where .= ' AND dc.datacollectiongroupid=:'.(sizeof($args)+1);
@@ -206,7 +215,9 @@
                     sum(dc.totalabsorbeddose) as totaldose,
 
                     max(d.detectorpixelsizehorizontal) as detectorpixelsizehorizontal,
-                    max(d.detectorpixelsizevertical) as detectorpixelsizevertical";
+                    max(d.detectorpixelsizevertical) as detectorpixelsizevertical,
+
+                    count(dcc.datacollectioncommentid) as dccc";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
             }
             
@@ -236,6 +247,7 @@
              INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
              LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
              LEFT OUTER JOIN detector d ON d.detectorid = dc.detectorid
+             LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
              $extj[0]
              WHERE $sess[0] $where 
              $groupby
@@ -391,6 +403,85 @@
             $this->db->pq("UPDATE datacollection set comments=:1 where datacollectionid=:2", array($this->arg('COMMENTS'), $this->arg('id')));
             
             $this->_output(array('COMMENTS' => $this->arg('COMMENTS')));
+        }
+
+
+
+
+
+
+        function _get_comments() {
+            $where = '1=1';
+            $args = array();
+            // $this->db->set_debug(True);
+
+            if ($this->has_arg('dcid')) {
+                $where .= ' AND dcc.datacollectioncommentid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('dcid'));
+            }
+
+            if ($this->has_arg('id')) {
+                $where .= ' AND dc.datacollectionid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('id'));
+            }
+
+            $tot = $this->db->pq("SELECT count(dcc.datacollectioncommentid) as tot
+                FROM datacollectioncomment dcc
+                INNER JOIN datacollection dc ON dc.datacollectionid = dcc.datacollectionid
+                WHERE $where", $args);
+
+            $tot = intval($tot[0]['TOT']);
+
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+            
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+            
+            $st = sizeof($args)+1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+
+            $comments = $this->db->pq("SELECT outer.*
+                FROM (SELECT ROWNUM rn, inner.*
+                FROM (
+
+                    SELECT dcc.datacollectioncommentid, dcc.datacollectionid, dcc.personid, dcc.comments, TO_CHAR(dcc.createtime, 'DD-MM-YYYY HH24:MI:SS') as createtime, TO_CHAR(dcc.modtime, 'DD-MM-YYYY HH24:MI:SS') as modtime, p.givenname, p.familyname
+                    FROM datacollectioncomment dcc
+                    INNER JOIN datacollection dc ON dc.datacollectionid = dcc.datacollectionid
+                    INNER JOIN person p ON p.personid = dcc.personid
+                    WHERE $where
+                    ORDER BY dcc.createtime ASC
+                ) inner) outer
+                WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+
+
+            if ($this->has_arg('dcid')) {
+                if (sizeof($comments)) $this->_output($comments[0]);
+                else $this->_error('No such comment');
+            } else $this->_output(array('total' => $tot, 'data' => $comments));
+        }
+
+
+        function _add_comment() {
+            if (!$this->has_arg('DATACOLLECTIONID')) $this->_error('No datacollection specified');
+            if (!$this->has_arg('PERSONID')) $this->_error('No person specified');
+            if (!$this->has_arg('COMMENTS')) $this->_error('No comment specified');
+
+            $this->db->pq("INSERT INTO datacollectioncomment (datacollectioncommentid, datacollectionid, personid, comments, createtime) 
+                VALUES (s_datacollectioncomment.nextval, :1, :2, :3, CURRENT_TIMESTAMP) RETURNING datacollectioncommentid INTO :id", 
+                array($this->arg('DATACOLLECTIONID'), $this->arg('PERSONID'), $this->arg('COMMENTS')));
+
+            $this->_output(array('DATACOLLECTIONCOMMENTID' => $this->db->id(), 
+                'GIVENNAME' => $this->user->givenname, 
+                'FAMILYNAME' => $this->user->familyname,
+                'CREATETIME' => date('d-m-Y H:i:s')
+            ));
         }
                 
     }
