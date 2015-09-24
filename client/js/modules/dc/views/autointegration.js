@@ -50,11 +50,21 @@ define(['marionette',
         
         initialize: function(options) {
             this.collection = new AutoIntegrations(null, { id: options.id })
-            this.collection.fetch().done(this.render)
+            this.collection.fetch().done(this.render.bind(this))
+        },
+
+        fetch: function() {
+            this.collection.fetch()
         },
         
         onRender: function() {
+            this.update()
+            this.listenTo(this.collection, 'sync', this.update, this)
+        },
+
+        update: function() {
             if (this.collection.length) {
+                this.$el.removeClass('ui-tabs')
                 this.wrap.show(new DCAPTabView({
                     collection: this.collection,
                     id: this.getOption('id'),
@@ -64,9 +74,10 @@ define(['marionette',
                 this.$el.addClass('ui-tabs')
                 this.wrap.show(new EmptyAP())
             }
-            
+
             this.$el.slideDown()
-        },
+        }
+
     })
 
 })

@@ -45,8 +45,18 @@ define(['marionette',
             this.collection.fetch().done(this.render.bind(this))
         },
         
+        fetch: function() {
+            this.collection.fetch()
+        },
+
         onRender: function() {
+            this.update()
+            this.listenTo(this.collection, 'sync', this.update, this)
+        },
+
+        update: function() {
             if (this.collection.length) {
+                this.$el.removeClass('ui-tabs')
                 this.wrap.show(new DCDSTabView({
                     collection: this.collection,
                     id: this.getOption('id'),

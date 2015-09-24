@@ -25,6 +25,10 @@ define(['marionette',
       this.collection.fetch().done(function() { self.$el.slideDown() } )
     },
 
+    fetch: function() {
+      this.collection.fetch()
+    },
+
   })
        
 })

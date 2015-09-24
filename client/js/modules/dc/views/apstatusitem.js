@@ -25,6 +25,8 @@ define(['marionette', 'jquery'], function(Marionette, $) {
         },
         
         onRender: function() {
+            this.trigger('status')
+
             var id = this.model.get('ID')
             var res = this.model.get('STATES')
             

@@ -35,10 +35,22 @@ define(['underscore', 'backbone', 'backbone.paginator', 'models/datacollection']
     parseState: function(r, q, state, options) {
       return { totalRecords: r[0]*state.pageSize }
     },
+
+    doFetch: function() {
+        clearTimeout(this.refresh_thread)
+
+        var self = this
+        this.refresh_thread = setTimeout(function() {
+            self.fetch({
+                error: function(resp) {
+                    self.doFetch()
+                }
+            })
+        }, 5000)
+    },
   
     parseRecords: function(r, options) {
-      clearTimeout(this.refresh_thread)
-      if (this.running) this.refresh_thread = setTimeout(this.fetch.bind(this), 5000)
+      this.doFetch()
       return r[1]
     },
 
