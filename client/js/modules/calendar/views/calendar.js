@@ -309,7 +309,7 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
             Backbone.ajax({
                 url: app.apiurl+'/cal/ext',
                 success: function(resp) {
-                    self.ui.purl.html('<a class="button export" href="'+resp+'"><i class="fa fa-external-link"></i> Export (Private URL)</a>')
+                    self.ui.purl.html('<a class="button export" href="'+app.apiurl+resp+'"><i class="fa fa-external-link"></i> Export (Private URL)</a>')
                 }
             })
         },

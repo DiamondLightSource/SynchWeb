@@ -21,7 +21,7 @@
                     $h = md5(uniqid());
                     $this->db->pq("INSERT INTO genericdata (genericdataid,parametervaluestring,parametercomments) VALUES (s_genericdata.nextval, :1, :2)", array($arg, $h));
                     
-                    $this->_output('/api/cal/ics/h/'.$h.'/calendar.ics');
+                    $this->_output('/cal/ics/h/'.$h.'/calendar.ics');
                 }
             }
         }
