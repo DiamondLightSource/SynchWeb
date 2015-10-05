@@ -17,7 +17,7 @@
 
     
         public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/id/:id)(/map/:map)', 'get', '_map'),
-                              array('/id/:id/aid/:aid(/log/:log/1)', 'get', '_auto_processing'),
+                              array('/id/:id/aid/:aid(/log/:log)(/1)(/LogFiles/:LogFiles)', 'get', '_auto_processing'),
                               array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
                               array('/dimple/id/:id(/log/:log)', 'get', '_dimple_mtz'),
                               array('/mrbump/id/:id(/log/:log)', 'get', '_mrbump_mtz'),
