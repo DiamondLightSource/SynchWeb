@@ -289,7 +289,8 @@
             if ($this->has_arg('dcg')) {
                 $count_field = 'dc.datacollectionid';
                 $fields = "count(dcc.datacollectioncommentid) as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dc.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam";
-                $groupby = '';
+                $groupby = 'GROUP BY smp.name,smp.blsampleid,ses.visit_number,dc.kappastart,dc.phistart, dc.startimagenumber, dc.experimenttype, dc.datacollectiongroupid, dc.runstatus, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.overlap, dc.flux, dc.imageprefix, dc.datacollectionnumber, dc.filetemplate, dc.datacollectionid, dc.numberofimages, dc.imagedirectory, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages, TO_CHAR(dc.starttime, \'DD-MM-YYYY HH24:MI:SS\'), dc.transmission, dc.axisrange, dc.wavelength, dc.comments, dc.xtalsnapshotfullpath1, dc.xtalsnapshotfullpath2, dc.xtalsnapshotfullpath3, dc.xtalsnapshotfullpath4, dc.starttime, dc.detectordistance, dc.xbeam, dc.ybeam';
+                // $this->db->set_debug(True);
 
                 $where .= ' AND dc.datacollectiongroupid=:'.(sizeof($args)+1);
 
@@ -304,6 +305,7 @@
                 $count_field = 'distinct dc.datacollectiongroupid';
                 $fields = "count(dcc.datacollectioncommentid) as dccc, count(dc.datacollectionid) as dcc, min(smp.name) as sample, min(smp.blsampleid) as blsampleid, min(ses.visit_number) as vn, min(dc.kappastart) as kappa, min(dc.phistart) as phi, min(dc.startimagenumber) as si, min(dcg.experimenttype) as dct, dc.datacollectiongroupid as dcg, min(dc.runstatus) as runstatus, min(dc.beamsizeatsamplex) as bsx, min(dc.beamsizeatsampley) as bsy, min(dc.overlap) as overlap, max(dc.flux) as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, min(dc.imageprefix) as imp, min(dc.datacollectionnumber) as run, min(dc.filetemplate) as filetemplate, min(dc.datacollectionid) as id, sum(dc.numberofimages) as ni, min(dc.imagedirectory) as dir, min(dc.resolution) as resolution, min(dc.exposuretime) as exposuretime, min(dc.axisstart) as axisstart, sum(dc.numberofimages) as numimg, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st, min(dc.transmission) as transmission, min(dc.axisrange) as axisrange, min(dc.wavelength) as wavelength, min(dc.comments) as comments, 1 as epk, 1 as ein, min(dc.xtalsnapshotfullpath1) as x1, min(dc.xtalsnapshotfullpath2) as x2, min(dc.xtalsnapshotfullpath3) as x3, min(dc.xtalsnapshotfullpath4) as x4, min(dc.starttime) as sta, min(dc.detectordistance) as det, min(dc.xbeam) as xbeam, min(dc.ybeam) as ybeam";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
+
             }
 
 
