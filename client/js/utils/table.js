@@ -8,7 +8,7 @@ define(['marionette', 'backgrid', 'modules/projects/views/addto'], function(Mari
             },
             
             onClick: function(e) {
-                if ($(e.target).is('i') || $(e.target).is('a')) return
+                if ($(e.target).is('i') || $(e.target).is('a') || $(e.target).hasClass('editable')) return
                 if (this.cookie && this.model.get('PROP')) app.cookie(this.model.get('PROP'))
                 app.trigger(this.event, this.model.get(this.argument))
             },
