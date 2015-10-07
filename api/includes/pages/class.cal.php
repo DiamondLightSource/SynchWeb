@@ -13,13 +13,17 @@
         function _external_link() {
             if ($this->has_arg('prop') || $this->has_arg('bl')) {
                 $arg = $this->has_arg('bl') ? $this->arg('bl') : $this->arg('prop');
-                $args = $this->db->pq("SELECT parametercomments as p FROM genericdata WHERE parametervaluestring LIKE :1", array($arg));
+
+                // $args = $this->db->pq("SELECT parametercomments as p FROM genericdata WHERE parametervaluestring LIKE :1", array($arg));
+                $args = $this->db->pq("SELECT hash FROM calendarhash WHERE key LIKE :1", array($arg));
                 
                 if (sizeof($args)) {
-                    $this->_output('/api/cal/ics/h/'.$args[0]['P'].'/calendar.ics');
+                    $this->_output('/cal/ics/h/'.$args[0]['HASH'].'/calendar.ics');
                 } else {
                     $h = md5(uniqid());
-                    $this->db->pq("INSERT INTO genericdata (genericdataid,parametervaluestring,parametercomments) VALUES (s_genericdata.nextval, :1, :2)", array($arg, $h));
+                    // $this->db->pq("INSERT INTO genericdata (genericdataid,parametervaluestring,parametercomments) VALUES (s_genericdata.nextval, :1, :2)", array($arg, $h));
+                    $this->db->pq("INSERT INTO calendarhash (calendarhashid,key,hash) 
+                        VALUES (s_calendarhash.nextval, :1, :2)", array($arg, $h));
                     
                     $this->_output('/cal/ics/h/'.$h.'/calendar.ics');
                 }
@@ -35,11 +39,12 @@
             $args = array(date('Y'));
             
             if (!$this->has_arg('h')) $this->_error('No proposal specified', 'You must specify a proposal to view a calendar');
-            $hash = $this->db->pq("SELECT parametervaluestring as p FROM genericdata WHERE parametercomments LIKE :1", array($this->arg('h')));
+            // $hash = $this->db->pq("SELECT parametervaluestring as p FROM genericdata WHERE parametercomments LIKE :1", array($this->arg('h')));
+            $hash = $this->db->pq("SELECT key FROM calendarhash WHERE hash LIKE :1", array($this->arg('h')));
             
             
             if (!sizeof($hash)) $this->_error('No proposal specified', 'The specified proposal doesnt appear to exist');
-            $arg = $hash[0]['P'];
+            $arg = $hash[0]['KEY'];
             
             if (in_array($arg, $mx_beamlines)) {
                 $where .= ' AND s.beamlinename LIKE :'.(sizeof($args)+1);
