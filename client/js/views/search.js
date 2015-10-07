@@ -133,7 +133,7 @@ define(['backbone'], function(Backbone) {
       else collection.fetch({data: data, reset: true});
         if (this.url) {
             if (this.urlFragment) {
-                var url = window.location.pathname.replace(new RegExp('\\/'+this.urlFragment+'\\/\\w+'), '')+(this.value ? '/'+this.urlFragment+'/'+this.value : '')
+                var url = window.location.pathname.replace(new RegExp('\\/'+this.urlFragment+'\\/(\\w|-)+'), '')+(this.value ? '/'+this.urlFragment+'/'+this.value : '')
             } else {
                 var url = window.location.pathname.replace(/\/\w+$/, '')+(this.value ? '/'+this.value : '')
             }
