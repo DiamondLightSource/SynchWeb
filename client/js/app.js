@@ -84,11 +84,11 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
                     console.log('logged in', loc)
                     $('#login').dialog('close')
                     app.getuser()
-                    //if (xhr) Backbone.ajax(xhr)
-                } catch (e) {
+                    if (xhr) Backbone.ajax(xhr)
 
+                } catch (e) {
+                    refresh_thread = setTimeout(refresh, 1000)
                 }
-                refresh_thread = setTimeout(refresh, 1000)
             }
             
         }
@@ -152,6 +152,11 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
           app.personid = resp.personid
           app.staff = resp.is_staff
           app.type = resp.ty
+
+          // Should put this somewhere else...
+          app.user_can = function(perm) {
+            return resp.permissions.indexOf(perm) > -1
+          }
 
           // Breadcrumbs collection
           if (!app.bc) {  
