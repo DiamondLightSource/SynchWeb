@@ -1,12 +1,19 @@
-define(['backbone'], function(Backbone) {
+define(['backbone', 'backbone-validation'], function(Backbone) {
 
-  return Backbone.Model.extend({
+  var Visit = Backbone.Model.extend({
     idAttribute: 'VISIT',
     urlRoot: '/proposal/visits',
       
     initialize: function(options) {
       this.on('change', this.addDate, this)
       this.addDate()
+    },
+
+    validation: {
+        COMMENTS: {
+            required: false,
+            pattern: 'wwsdash',
+        }
     },
       
     addDate: function() {
@@ -17,5 +24,8 @@ define(['backbone'], function(Backbone) {
     }
       
   })
+
+  _.extend(Visit.prototype, Backbone.Validation.mixin)
+  return Visit
     
 })
