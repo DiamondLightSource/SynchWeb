@@ -26,11 +26,14 @@
                               'proposal' => '\w+\d+',
                               'location' => '(\w|-|\/)+',
                               'current' => '\d',
+
+                              'COMMENTS' => '(\w|\s|-)+',
                                );
         
 
         public static $dispatch = array(array('(/:prop)', 'get', '_get_proposals'),
                               array('/visits(/:visit)', 'get', '_get_visits'),
+                              array('/visits/:visit', 'patch', '_update_visit'),
                               array('/user', 'get', '_get_user'),
                               array('/users', 'get', '_get_users'),
                               array('/login', 'get', '_login'),
@@ -389,6 +392,26 @@
             }
 
             $this->_output(array('total' => sizeof($rows), 'data' => $rows));
+        }
+
+
+
+
+        function _update_visit() {
+            if (!$this->has_arg('visit')) $this->_error('No visit specified');
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $vis = $this->db->pq("SELECT s.sessionid from blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid 
+                WHERE p.proposalid = :1 AND p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :2", array($this->proposalid, $this->arg('visit')));
+            
+            if (!sizeof($vis)) $this->_error('No such visit');
+            
+            foreach (array('COMMENTS') as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE blsession set $f=:1 where sessionid=:2", array($this->arg($f), $vis[0]['SESSIONID']));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
         }
 
         
