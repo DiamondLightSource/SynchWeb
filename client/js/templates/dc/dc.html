@@ -4,10 +4,14 @@
         <a href="#" class="button button-notext flag <% if (FLAG) { %>button-highlight<% } %>" title="Click to add this data collection to the list of favourite data collections"><i class="fa fa-star-o"></i> <span>Favourite</span></a>
         <% if (DCC > 1) { %>
             <a href="/dc/visit/<%=VIS_LINK%>/dcg/<%=DCG%>" class="perm button button-notext" title="Permalink"><i class="fa fa-link"></i> <span>Permalink</span></a>
+
+            <a href="#" class="button button-notext" title-"Comments"><i class="fa fa-comments"></i> <b class="dcc"><%=DCCC%></b> <span>Comment(s)</span></a>
         <% } else { %>
             <a href="/dc/visit/<%=VIS_LINK%>/id/<%=ID%>" class="perm button button-notext" title="Permalink"><i class="fa fa-link"></i> <span>Permalink</span></a>
+
+            <a href="#" class="comments button button-notext" title-"Comments"><i class="fa fa-comments"></i> <b class="dcc"><%=DCCC%></b> <span>Comment(s)</span></a>
         <% } %>
-        <a href="#" class="comments button button-notext" title-"Comments"><i class="fa fa-comments"></i> <b class="dcc"><%=DCCC%></b> <span>Comment(s)</span></a>
+        
         
         <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%=VIS_LINK%>"><%=VIS_LINK%></a>]<% } %> <%=ST%></span><span class="spacer"> - </span><i class="button fa fa-caret-right expand"></i> <span class="temp"><%=DIR%><%=FILETEMPLATE%></span>
         
