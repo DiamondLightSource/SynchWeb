@@ -192,7 +192,7 @@
             if (!sizeof($check)) $this->_error('A fault with that id doesnt exists');
             $check = $check[0];
                                 
-            if ($this->user->login != $check['OWNER'] && $this->user->login != $check['ASSIGNEE']) $this->_error('You dont own that fault report');
+            if ($this->user->login != $check['OWNER'] && $this->user->login != $check['ASSIGNEE'] && !$this->user->can('fault_global')) $this->_error('You dont own that fault report');
 
 
             $fields = array('TITLE', 'STARTTIME', 'ENDTIME', 'BEAMTIMELOST_STARTTIME', 'BEAMTIMELOST_ENDTIME', 'SESSIONID', 'SUBCOMPONENTID', 'BEAMTIMELOST', 'RESOLVED', 'RESOLUTION', 'DESCRIPTION');
@@ -200,7 +200,7 @@
                 if ($this->has_arg($f)) {
                     $fl = ':1';
                     if (in_array($f, array('STARTTIME', 'ENDTIME', 'BEAMTIMELOST_STARTTIME', 'BEAMTIMELOST_ENDTIME'))) {
-                        $fl = "TO_DATE(:1, 'DD-MM-YYYY')"; 
+                        $fl = "TO_DATE(:1, 'DD-MM-YYYY HH24:MI')"; 
                     }
 
                     $this->db->pq("UPDATE bf_fault SET $f=$fl WHERE faultid=:2", array($this->arg($f), $this->arg('fid')));
