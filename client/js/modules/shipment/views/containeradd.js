@@ -85,6 +85,28 @@ define(['marionette',
             'change @ui.type': 'setType',
 
             'click @ui.ext': 'toggleExtra',
+
+            'keypress .ui-combobox input': 'excelNavigate',
+            'keypress input.sname': 'excelNavigate',
+            'keypress select.sg': 'excelNavigate',
+            'keypress input.barcode': 'excelNavigate',
+            'keypress input.comments': 'excelNavigate',
+        },
+
+
+        excelNavigate: function(e) {
+            console.log(e, arguments)
+            var cl = '.'+e.target.className.replace(' fvalid', '').replace(' ferror', '').replace(/\s/g, '.')
+            var group = $(cl)
+            var cur = e.target
+            var idx = group.index(cur)
+            console.log(typeof(cl), cl, group,cur,idx)
+            if(e.which == 13) {
+                var dir = e.shiftKey ? -1 : 1
+                if (idx < group.length) group.eq(idx+dir).focus()
+                                   
+                e.preventDefault()
+            }
         },
 
 
