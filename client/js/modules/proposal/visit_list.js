@@ -34,7 +34,7 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
                      { name: 'VIS', label: 'Number', cell: 'string', editable: false },
                      { name: 'BL', label: 'Beamline', cell: 'string', editable: false },
                      { name: 'LC', label: 'Local Contact', cell: 'string', editable: false },
-                     { name: 'COMMENT', label: 'Comment', cell: 'string', editable: false },
+                     { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
                      { name: 'DCCOUNT', label: 'Data Collections', cell: 'string', editable: false },
                      { name: 'LINKS', label: '', cell: this.getOption('linksCell'), template: this.getOption('linksTemplate'), test: 'DCCOUNT', editable: false }]
         
@@ -48,9 +48,17 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
       var bgopts = {}
       if (this.getOption('clickable')) bgopts.row = ClickableRow
 
+      this.listenTo(this.collection, 'change:COMMENTS', this.saveComment, this)
+
       this.table = new TableView({ collection: options.collection, columns: columns, filter: 's', search: options.params.s, tableClass: 'proposals', loading: true, backgrid: bgopts })
     },
-                                      
+      
+
+    saveComment: function(m, v) {
+      console.log('model changed', arguments)
+      m.save(m.changedAttributes(), { patch: true })
+    },
+
     onRender: function() {
       this.wrap.show(this.table)
     }
