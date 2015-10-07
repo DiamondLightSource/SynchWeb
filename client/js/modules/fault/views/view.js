@@ -47,7 +47,7 @@ Editable, utils, template, Backbone) {
         },
         
         onRender: function() {
-            if (app.user == this.model.get('OWNER')) {
+            if (app.user == this.model.get('OWNER') || app.user_can('fault_global')) {
                 var self = this
             
                 this.beamlines = new Beamlines()
