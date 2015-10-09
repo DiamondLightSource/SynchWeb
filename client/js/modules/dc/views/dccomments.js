@@ -17,9 +17,15 @@ define(['marionette', 'modules/dc/collections/dccomments',
         },
     })
 
+    var NoCommentsView = Marionette.ItemView.extend({
+        tagName: 'li',
+        template: _.template('No comments yet')
+    })
+
 
     var CommentsView = Marionette.CollectionView.extend({
         childView: CommentView,
+        emptyView: NoCommentsView,
         tagName: 'ul',
         className: 'comments',
     })
