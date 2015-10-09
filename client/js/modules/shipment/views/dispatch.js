@@ -81,7 +81,7 @@ define(['marionette', 'views/form',
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE]')
 
             var d = new Date()
-            var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 11 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
+            var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
 
             if (this.model.get('FACILITYCODE')) {
