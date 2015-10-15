@@ -677,7 +677,7 @@
             
             $this->db->pq("UPDATE shipping SET shippingstatus='sent to DLS' where shippingid=:1", array($ship['SHIPPINGID']));
             
-            $dewars = $this->db->pq("SELECT s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
+            $dewars = $this->db->pq("SELECT d.dewarid, s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
               FROM dewar d INNER JOIN blsession s ON s.sessionid = d.firstexperimentid 
               WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
             foreach ($dewars as $d) {
@@ -823,7 +823,7 @@
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, max(ci.bltimestamp) as lastinspection, count(ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(s.blsampleid) as samples
+                                  SELECT sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(s.blsampleid) as samples
                                   FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
