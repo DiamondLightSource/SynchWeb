@@ -54,7 +54,7 @@
                               'SHIPPINGNAME' => '([\w\s-])+',
                               'DELIVERYAGENT_SHIPPINGDATE' => '\d+-\d+-\d+',
                               'DELIVERYAGENT_DELIVERYDATE' => '\d+-\d+-\d+',
-                              'DELIVERYAGENT_AGENTNAME' => '[\s|\w]+',
+                              'DELIVERYAGENT_AGENTNAME' => '[\s|\w|-]+',
                               'DELIVERYAGENT_AGENTCODE' => '\w+',
                               'SAFETYLEVEL' => '\w+',
                               'DEWARS' => '\d+',
@@ -70,6 +70,7 @@
                               'CAPACITY' => '\d+',
                               'CONTAINERTYPE' => '\w+',
                               'NAME' => '([\w-])+',
+                              'SCHEDULEID' => '\d+',
                               );
         
 
@@ -828,7 +829,7 @@
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
                                   LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
-                                  LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid
+                                  LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
                                   LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
                                   LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
@@ -893,13 +894,23 @@
         
             
             $cap = $this->has_arg('CAPACITY') ? $this->arg('CAPACITY') : 16;
+            $sch = $this->has_arg('SCHEDULEID') ? $this->arg('SCHEDULEID') : null;
 
-            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype) 
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4) RETURNING containerid INTO :id", 
-              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE')));
+            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid) 
+              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5) RETURNING containerid INTO :id", 
+              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch));
                                  
             $cid = $this->db->id();
             
+            if ($this->has_arg('SCHEDULEID')) {
+                include_once('class.imaging.shared.php');
+                $sh = new ImagingShared($this->db);
+                $sh->_generate_schedule(array(
+                    'CONTAINERID' => $cid,
+                    'SCHEDULEID' => $this->arg('SCHEDULEID'),
+                ));
+            }
+
             //unset($_SESSION['container']);
             $this->_output(array('CONTAINERID' => $cid));
         }
