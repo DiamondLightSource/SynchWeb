@@ -32,6 +32,7 @@ define(['backbone'], function(Backbone) {
       
       DELIVERYAGENT_AGENTNAME: {
         required: true,
+        pattern: 'wwsdash'
       },
     },
       
