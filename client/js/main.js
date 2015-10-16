@@ -11,6 +11,7 @@ require.config({
     
     'jquery': 'vendor/jquery/jquery-1.9.1.min',
     'jquery.cookie': 'vendor/jquery/jquery.cookie',
+    'jquery.touchswipe': 'vendor/jquery/jquery.touchSwipe',
     
     'jquery-ui': 'vendor/jquery/jquery-ui.min',
     'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
@@ -97,6 +98,10 @@ require.config({
     
     'jquery.cookie': {
         deps: ['jquery'],
+    },
+
+    'jquery.touchswipe': {
+        deps: ['jquery']
     },
     
     'jquery-ui': {
