@@ -18,6 +18,10 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
         },
 
         validation: {
+            NAME: {
+                required: false,
+                pattern: 'wwsbdash',
+            },
             ACRONYM: {
                 required: true,
                 pattern: 'wwdash',

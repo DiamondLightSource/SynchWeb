@@ -2,6 +2,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
 
     _.extend(Backbone.Validation.patterns, {
         wwsdash: /^(\w|\s|\-)+$/,
+        wwsbdash: /^(\w|\s|\-|\(|\))+$/,
         wwdash: /^(\w|\-)+$/,
         datetime: /^\d\d-\d\d-\d\d\d\d \d\d:\d\d$/,
         edate: /^\d\d-\d\d-\d\d\d\d$/,
