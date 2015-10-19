@@ -8,7 +8,7 @@ define(['marionette', 'utils', 'utils/canvas', 'jquery', 'backbone', 'backbone-v
     return Marionette.ItemView.extend(_.extend({}, CanvasUtils, Backbone.Validation.mixin, {
     tagName: 'canvas',
     template: false,
-    collectionEvents: { 'reset change add delete': 'onRender' },
+    collectionEvents: { 'sync reset change add delete': 'onRender' },
       
     centres: [
         [150,100],
