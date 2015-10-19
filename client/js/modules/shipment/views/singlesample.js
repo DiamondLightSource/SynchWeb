@@ -41,9 +41,12 @@ define(['marionette',
             'click a.clear-col': 'clearCol',
             'click a.clear-row': 'clearRow',
             'click a.clear': 'clearSample',
+
+            'click a.extrainfo': 'toggleExtra',
         },
 
-        toggleExtra: function() {
+        toggleExtra: function(e) {
+            if (e) e.preventDefault()
             this.extra = !this.extra
 
             if (this.extra) this.$el.find('.extra').addClass('show')
