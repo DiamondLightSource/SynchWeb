@@ -18,6 +18,11 @@ define(['backbone'], function(Backbone) {
             CONTAINERTYPE: {
                 required: true,
                 pattern: 'word',
+            },
+
+            SCHEDULEID: {
+                required: false,
+                pattern: 'number',
             }
         },
         
