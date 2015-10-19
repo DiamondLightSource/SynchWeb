@@ -24,8 +24,9 @@ define(['views/dialog',
         },
         
         updateShipments: function() {
-            var opts = this.shipments.map(function(s) { return '<option value="'+s.get('SHIPPINGID')+'">'+s.get('SHIPPINGNAME')+'</option>' })
-            this.ui.shipment.html(opts.join(''))
+            // var opts = this.shipments.map(function(s) { return '<option value="'+s.get('SHIPPINGID')+'">'+s.get('SHIPPINGNAME')+'</option>' })
+            // this.ui.shipment.html(opts.join(''))
+            this.ui.shipment.html(this.shipments.opts())
             this.refreshDewars()
         },
         
@@ -37,8 +38,9 @@ define(['views/dialog',
         },
         
         updateDewars: function() {
-            var opts = this.dewars.map(function(d) { return '<option value="'+d.get('DEWARID')+'">'+d.get('CODE')+'</option>' })
-            this.ui.dewar.html(opts.join(''))
+            // var opts = this.dewars.map(function(d) { return '<option value="'+d.get('DEWARID')+'">'+d.get('CODE')+'</option>' })
+            // this.ui.dewar.html(opts.join(''))
+            this.ui.dewar.html(this.dewars.opts())
         },
                     
         moveContainer: function() {
