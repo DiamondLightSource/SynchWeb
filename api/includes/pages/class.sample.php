@@ -46,6 +46,7 @@
                               'CELL_GAMMA' => '\d+(.\d+)?',
                               'REQUIREDRESOLUTION' => '\d+(.\d+)?',
                               'ANOMALOUSSCATTERER' => '\w+',
+                              'BLSUBSAMPLEID' => '\d+',
 
                               'BLSAMPLEID' => '\d+',
                               'X' => '\d+(.\d+)?',
@@ -90,10 +91,12 @@
                 array_push($args, $this->arg('ssid'));
             }
 
-            $subs = $this->db->pq("SELECT ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, p.x, p.y, p.z
+            $subs = $this->db->pq("SELECT pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, p.x, p.y, p.z
               FROM blsubsample ss
               LEFT OUTER JOIN position p ON p.positionid = ss.positionid
               INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+              INNER JOIN crystal cr ON cr.crystalid = s.crystalid
+              INNER JOIN protein pr ON pr.proteinid = cr.proteinid
               INNER JOIN container c ON c.containerid = s.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
@@ -304,7 +307,7 @@
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT distinct count(distinct si.blsampleimageid) as inspections, b.blsampleid, p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  SELECT distinct b.blsampleid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   
                                   FROM blsample b
@@ -333,12 +336,15 @@
 
                                   LEFT OUTER JOIN blsampleimage si ON b.blsampleid = si.blsampleid
                                   
+                                  LEFT OUTER JOIN blsubsample ss ON b.blsubsampleid = ss.blsubsampleid
+                                  LEFT OUTER JOIN blsample ssp ON ss.blsampleid = ssp.blsampleid
+                                  
                                   
                                   LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
                                   
                                   WHERE $where
                                   
-                                  GROUP BY b.blsampleid, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname,s.shippingid,d.dewarid,d.code, c.code, c.containerid, c.samplechangerlocation, p.proposalcode||p.proposalnumber, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  GROUP BY ssp.blsampleid, ssp.name, b.blsubsampleid, b.blsampleid, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname,s.shippingid,d.dewarid,d.code, c.code, c.containerid, c.samplechangerlocation, p.proposalcode||p.proposalnumber, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   $having
                                   
@@ -418,7 +424,7 @@
                 }
             }
             
-            foreach (array('COMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA') as $f) {
+            foreach (array('BLSUBSAMPLEID', 'COMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : '';
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
 
@@ -437,8 +443,8 @@
                 array($a['PROTEINID'], $a['SPACEGROUP'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA']));
             $crysid = $this->db->id();
                              
-            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7) RETURNING blsampleid INTO :id", 
-                array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE']));
+            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8) RETURNING blsampleid INTO :id", 
+                array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID']));
                 
             return $this->db->id();
         }
