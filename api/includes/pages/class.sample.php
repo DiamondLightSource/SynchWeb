@@ -14,6 +14,7 @@
                               'term' => '\w+',
                               'pid' => '\d+',
                               'sid' => '\d+',
+                              'ssid' => '\d+',
                               'cid' => '\d+',
                               'value' => '.*',
                               'ty' => '\w+',
@@ -45,6 +46,12 @@
                               'CELL_GAMMA' => '\d+(.\d+)?',
                               'REQUIREDRESOLUTION' => '\d+(.\d+)?',
                               'ANOMALOUSSCATTERER' => '\w+',
+
+                              'BLSAMPLEID' => '\d+',
+                              'X' => '\d+(.\d+)?',
+                              'Y' => '\d+(.\d+)?',
+                              'Z' => '\d+(.\d+)?'
+
                                );
         
         
@@ -52,6 +59,11 @@
                               array('/:sid', 'patch', '_update_sample'),
                               array('/:sid', 'put', '_update_sample_full'),
                               array('', 'post', '_add_sample'),
+
+                              array('/sub(/:ssid)(/sid/:sid)', 'get', '_sub_samples'),
+                              array('/sub/:ssid', 'patch', '_update_sub_sample'),
+                              array('/sub', 'post', '_add_sub_sample'),
+                              array('/sub/:ssid', 'delete', '_delete_sub_sample'),
 
                               array('/proteins(/:pid)', 'get', '_proteins'),
                               array('/proteins', 'post', '_add_protein'),
@@ -63,6 +75,110 @@
                               array('/pdbs(/:pdbid)', 'delete', '_remove_pdb'),
         );
         
+
+        function _sub_samples() {
+            $where = '';
+            $args = array($this->proposalid);
+
+            if ($this->has_arg('sid')) {
+                $where .= ' AND s.blsampleid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('sid'));
+            }
+
+            if ($this->has_arg('ssid')) {
+                $where .= ' AND ss.blsubsampleid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('ssid'));
+            }
+
+            $subs = $this->db->pq("SELECT ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, p.x, p.y, p.z
+              FROM blsubsample ss
+              LEFT OUTER JOIN position p ON p.positionid = ss.positionid
+              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+              INNER JOIN container c ON c.containerid = s.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              WHERE p.proposalid=:1 $where", $args);
+
+            $this->_output($subs);
+        }
+
+        function _update_sub_sample() {
+            if (!$this->has_arg('ssid')) $this->_error('No subsample specified');
+            
+            $samp = $this->db->pq("SELECT s.blsampleid,s.positionid FROM blsubsample ss
+              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+              INNER JOIN container c ON c.containerid = s.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              WHERE p.proposalid=:1 AND ss.blsubsampleid=:2", array($this->proposalid, $this->arg('ssid')));
+
+            if (!sizeof($samp)) $this->_error('No such sub sample');
+            
+            foreach(array('COMMENTS') as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq('UPDATE blsubsample SET '.$f.'=:1 WHERE blsubsampleid=:2', array($this->arg($f), $this->arg('ssid')));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
+
+            foreach(array('X', 'Y', 'Z') as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq('UPDATE position SET '.$f.'=:1 WHERE positionid=:2', array($this->arg($f), $samp[0]['POSITIONID']));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
+        }
+
+        function _add_sub_sample() {
+            if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
+            if (!$this->has_arg('X')) $this->_error('No x position specified');
+            if (!$this->has_arg('Y')) $this->_error('No y position specified');
+
+            $z = $this->has_arg('Z') ? $this->arg('Z') : null;
+
+            $samp = $this->db->pq("SELECT s.blsampleid FROM blsample s
+              INNER JOIN container c ON c.containerid = s.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              WHERE p.proposalid=:1 AND s.blsampleid=:2", array($this->proposalid, $this->arg('BLSAMPLEID')));
+
+            if (!sizeof($samp)) $this->_error('No such sample');
+
+            $this->db->pq("INSERT INTO position (positionid, x, y, z) 
+              VALUES (s_position.nextval, :1, :2, :3) RETURNING positionid INTO :id", array($this->arg('X'), $this->arg('Y'), $z));
+            $pid = $this->db->id();
+
+            $this->db->pq("INSERT INTO blsubsample (blsubsampleid, blsampleid, positionid) 
+              VALUES (s_blsubsample.nextval, :1, :2) RETURNING blsubsampleid INTO :id", array($this->arg('BLSAMPLEID'), $pid));
+
+            $this->_output(array('BLSUBSAMPLEID' => $this->db->id()));
+        }
+
+
+        function _delete_sub_sample() {
+            if (!$this->has_arg('ssid')) $this->_error('No subsample specified');
+
+            $ssamp = $this->db->pq("SELECT ss.blsubsampleid FROM blsubsample ss
+              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+              INNER JOIN container c ON c.containerid = s.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              WHERE p.proposalid=:1 AND ss.blsubsampleid=:2", array($this->proposalid, $this->arg('ssid')));
+
+            if (!sizeof($ssamp)) $this->_error('No such subsample');
+
+            $this->db->pq("DELETE FROM blsubsample WHERE blsubsampleid=:1", array($this->arg('ssid')));
+            $this->_output(1);
+        }
+
+
+
+
+
         # ------------------------------------------------------------------------
         # List of samples for a proposal
         function _samples() {
@@ -188,7 +304,7 @@
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT distinct b.blsampleid, p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  SELECT distinct count(distinct si.blsampleimageid) as inspections, b.blsampleid, p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   
                                   FROM blsample b
@@ -214,6 +330,8 @@
                                   
                                   LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
                                   LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
+
+                                  LEFT OUTER JOIN blsampleimage si ON b.blsampleid = si.blsampleid
                                   
                                   
                                   LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
