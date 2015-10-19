@@ -36,12 +36,21 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
         
         initialize: function(options) {
             this.pt = this.getOption('type')
+            this.inspectionimages = options.inspectionimages
+            if (this.inspectionimages) this.listenTo(this.inspectionimages, 'sync', this.render, this)
             
             this.hover = {}
+            this.showImageStatus = this.getOption('showImageStatus')
             
             Backbone.Validation.bind(this, {
                 collection: this.collection
             });
+        },
+
+        setInspectionImages: function(imgs) {
+            this.inspectionimages = imgs
+            this.showImageStatus = true
+            if (this.inspectionimages) this.listenTo(this.inspectionimages, 'sync', this.render, this)
         },
         
         
@@ -61,6 +70,8 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
         },
 
         keyPress: function(e) {
+            if ($(e.target).is('input') || $(e.target).is('select') || $(e.target).is('textarea')) return
+                
             var current = this.collection.findWhere({ isSelected: true })
             var pos = parseInt(current.get('LOCATION'))
             
@@ -148,14 +159,23 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
         
                         var sampleid = i*this.pt.dropTotal()+did+1
                         var sample = this.collection.findWhere({ LOCATION: sampleid.toString() })
+
+                        if (this.showImageStatus && this.inspectionimages) var im = this.inspectionimages.findWhere({ BLSAMPLEID: sample.get('BLSAMPLEID') })
+                        else var im = null
                         
                         this.ctx.beginPath()
                         this.ctx.lineWidth = 1;
                         if (sample && sample.get('isSelected')) {
                             this.ctx.strokeStyle = 'cyan'
                             
-                        } else if (sample && sample.get('PROTEINID') > -1) this.ctx.strokeStyle = '#000'
-                        else this.ctx.strokeStyle = '#ccc'
+                        } else if (sample && sample.get('PROTEINID') > -1) {
+                            if (this.getOption('showImageStatus')) {
+                                if (im) this.ctx.strokeStyle = '#000'
+                                else this.ctx.strokeStyle = '#ccc'
+
+                            } else this.ctx.strokeStyle = '#000'
+
+                        } else this.ctx.strokeStyle = '#ccc'
           
                         this.ctx.rect(this.pt.get('drop_offset_x')+this.pt.get('offset_x')+row*(this.pt.get('well_width')+this.pt.get('well_pad'))+(j*this.pt.get('drop_widthpx')+this.pt.get('drop_pad')), this.pt.get('drop_offset_y')+this.pt.get('offset_y')+col*(this.pt.get('well_height')+this.pt.get('well_pad'))+(k*this.pt.get('drop_heightpx')+this.pt.get('drop_pad')), this.pt.get('drop_widthpx'), this.pt.get('drop_heightpx'))
                             
@@ -195,7 +215,14 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                         }
 
                         // Show image score
-                        if (sample && this.getOption('showImageStatus')) {
+                        if (sample && this.showImageStatus) {
+                            if (im) {
+                                var isc = im.get('SCORECOLOUR')
+                                if (isc){
+                                    this.ctx.fillStyle = isc
+                                    this.ctx.fill()  
+                                } 
+                            }
 
                         }
                         
