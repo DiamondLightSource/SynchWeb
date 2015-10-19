@@ -9,6 +9,14 @@ define(['backbone'], function(Backbone) {
             CODE: '',
             COMMENTS: '',
             SPACEGROUP: '',
+            REQUIREDRESOLUTION: '',
+            ANOMALOUSSCATTERER: '',
+            CELL_A: '',
+            CELL_B: '',
+            CELL_C: '',
+            CELL_ALPHA: '',
+            CELL_BETA: '',
+            CELL_GAMMA: '',
         },
         
         validation: {
