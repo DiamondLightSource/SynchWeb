@@ -5,6 +5,9 @@ define(['marionette',
     'modules/dc/datacollections',
     'collections/samples',
     'modules/samples/views/list',
+
+    'collections/containers',
+    'modules/shipment/views/containers',
     
     'modules/samples/collections/pdbs',
     'modules/samples/views/pdbs',
@@ -12,7 +15,7 @@ define(['marionette',
     
     'tpl!templates/samples/protein.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, Editable, DCCol, DCView, Samples, SamplesView, PDBs, PDBView, AddPDBView, template, Backbone) {
+    ], function(Marionette, Editable, DCCol, DCView, Samples, SamplesView, Containers, ContainersView, PDBs, PDBView, AddPDBView, template, Backbone) {
     
     
         
@@ -24,6 +27,7 @@ define(['marionette',
             pdb: '.pdb',
             smp: '.samples',
             dc: '.datacollections',
+            cont: '.conts',
         },
         
         events: {
@@ -53,6 +57,10 @@ define(['marionette',
             
             this.pdbs = new PDBs(null, { pid: this.model.get('PROTEINID') })
             this.getPDBs()
+
+            this.containers = new Containers()
+            this.containers.queryParams.pid = this.model.get('PROTEINID')
+            this.containers.fetch()
         },
         
         
@@ -66,7 +74,7 @@ define(['marionette',
             this.pdb.show(new PDBView({ collection: this.pdbs }))
             this.smp.show(new SamplesView({ collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
             this.dc.show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
-            
+            this.cont.show(new ContainersView({ collection: this.containers, params: {} }))
         },
         
     })
