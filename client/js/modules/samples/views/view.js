@@ -60,7 +60,7 @@ define(['marionette',
             
             this.history.show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
 
-            this.imh.show(new ImageHistoryView({ historyimages: this.inspectionimages, embed: true }))
+            if (this.model.get('INSPECTIONS') > 0) this.imh.show(new ImageHistoryView({ historyimages: this.inspectionimages, embed: true }))
         },
         
     })
