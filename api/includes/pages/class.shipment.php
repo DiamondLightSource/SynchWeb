@@ -7,6 +7,7 @@
                               'cid' => '\d+',
                               'sid' => '\d+',
                               'lcid' => '\d+',
+                              'pid' => '\d+',
 
                               
                               'visit' => '\w+\d+-\d+',
@@ -767,6 +768,12 @@
                 $where .= ' AND c.containerid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('cid'));
             }
+
+            if ($this->has_arg('pid')) {
+                // $this->db->set_debug(True);
+                $where .= ' AND pr.proteinid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('pid'));
+            }
             
             if ($this->has_arg('assigned')) {
                 $where .= " AND d.dewarstatus LIKE 'processing' AND c.samplechangerlocation > 0";
@@ -786,11 +793,14 @@
             }
                 
 
-            $tot = $this->db->pq("SELECT count(c.containerid) as tot 
+            $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
                 FROM container c 
                 INNER JOIN dewar d ON d.dewarid = c.dewarid 
                 INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = sh.proposalid
+                LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
+                LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
+                LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                 $join 
                 WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
@@ -824,11 +834,13 @@
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(s.blsampleid) as samples
+                                  SELECT sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples
                                   FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
                                   LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
+                                  LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
+                                  LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                                   LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
                                   LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
