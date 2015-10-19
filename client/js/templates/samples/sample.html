@@ -4,6 +4,13 @@
 
 <div class="form">
     <ul>
+
+        <% if (PARENTSAMPLEID) { %>
+        <li>
+            <span class="label">Parent</span>
+            <span><%=PARENTSAMPLE%> <a href="/samples/sid/<%=PARENTSAMPLEID%>" class="button"><i class="fa fa-search"></i> View</a></span>
+        </li>
+        <% } %>
         
         <li>
             <span class="label">Name</span>
