@@ -12,7 +12,7 @@
         
         <li>
             <span class="label">Protein Acronym</span>
-            <span class="ACRONYM"><%=ACRONYM%></span> [<a href="/proteins/pid/<%=PROTEINID%>">View All</a>]
+            <span class="ACRONYM"><%=ACRONYM%></span> <a href="/proteins/pid/<%=PROTEINID%>" class="button"><i class="fa fa-search"></i> View All</a>
         </li>
         
         <li>
@@ -44,13 +44,6 @@
                         </tr> 
                     </tbody>    
                 </table>
-                <!--A: <span class="CELL_A"><%=CELL_A%></span>
-                B: <span class="CELL_B"><%=CELL_B%></span>
-                C: <span class="CELL_C"><%=CELL_C%></span>
-                &alpha;: <span class="CELL_ALPHA"><%=CELL_ALPHA%></span>
-                &beta;: <span class="CELL_BETA"><%=CELL_BETA%></span>
-                &gamma;: <span class="CELL_GAMMA"><%=CELL_GAMMA%></span>-->
-                
             </div>
             <span class="label">Unit Cell</span>
         </li>
@@ -101,6 +94,13 @@
             <span class="label">Snapshots</span>
             <span class="snapshots sample"></span>
         </li>
+
+        <% if (INSPECTIONS > 0) { %>
+        <li class="clearfix reorder">
+            <div class="text im_history"></div>
+            <span class="label">Inspections</span>
+        </li>
+        <% } %>
         
     </ul>
 </div>

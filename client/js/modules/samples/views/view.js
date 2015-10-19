@@ -5,9 +5,15 @@ define(['marionette',
     'utils/editable',
     'collections/datacollections',
     'modules/dc/datacollections',
+
+    'modules/imaging/collections/inspectionimages',
+    'modules/imaging/views/imagehistory',
+
     'tpl!templates/samples/sample.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, DistinctProteins, SG, Anom, Editable, DCCol, DCView, template, Backbone) {
+    ], function(Marionette, DistinctProteins, SG, Anom, Editable, DCCol, DCView, 
+        InspectionImages, ImageHistoryView,
+        template, Backbone) {
     
     
         
@@ -17,6 +23,7 @@ define(['marionette',
         
         regions: {
             history: '.history',
+            imh: '.im_history',
         },
         
         initialize: function(options) {
@@ -24,6 +31,10 @@ define(['marionette',
           
             this.dcs = new DCCol(null, { queryParams: { sid: this.model.get('BLSAMPLEID'), pp: 5 } })
             this.dcs.fetch()
+
+            this.inspectionimages = new InspectionImages()
+            this.inspectionimages.queryParams.sid = this.model.get('BLSAMPLEID')
+            this.inspectionimages.fetch()
         },
         
         
@@ -48,6 +59,8 @@ define(['marionette',
             })
             
             this.history.show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
+
+            this.imh.show(new ImageHistoryView({ historyimages: this.inspectionimages, embed: true }))
         },
         
     })
