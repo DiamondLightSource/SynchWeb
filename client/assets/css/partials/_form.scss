@@ -6,6 +6,14 @@ div.form {
         
         li {
             //clear: both;
+
+            &.extra {
+            display: none;
+
+                &.show {
+                    display: block;
+                }
+            }
         }
     }
     
