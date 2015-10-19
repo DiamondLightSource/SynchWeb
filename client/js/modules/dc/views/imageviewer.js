@@ -228,6 +228,10 @@ define(['jquery', 'marionette',
             this.height = this.img.height
             this.imscale = this.width/(this.model.get('BL') == 'i04-1' ? 1679 : 2527);
             this._calc_zoom()
+
+            if (this.width*this.scalef > this.canvas.width) this.offsetx = -(this.width*this.scalef - this.canvas.width) / 2
+            if (this.height*this.scalef > this.canvas.height) this.offsety = -(this.height*this.scalef - this.canvas.height) / 2
+
             this.draw()
             this._recache()
             this.ui.canvas.fadeIn(100);
@@ -553,6 +557,7 @@ define(['jquery', 'marionette',
 
             this.scalef += delta > 0 ? 0.1 : -0.1
             if (this.scalef < (this.ui.canvas.width()/this.width)) this.scalef = this.ui.canvas.width()/this.width
+            if (this.scalef < (this.ui.canvas.height()/this.height)) this.scalef = this.ui.canvas.height()/this.height
               
             var curp = -this.offsetx + xy[0]
             var newp = curp*(this.scalef/(last_scale))
