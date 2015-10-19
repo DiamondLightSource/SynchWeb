@@ -1,6 +1,6 @@
-define(['underscore', 'backbone.paginator', 'models/container'], function(_, PageableCollection, Container) {
+define(['underscore', 'backbone.paginator', 'models/container', 'utils/kvcollection'], function(_, PageableCollection, Container, KVCollection) {
     
-    return PageableCollection.extend({
+    return PageableCollection.extend(_.extend({}, KVCollection, {
         dewarID: null,
         model: Container,
         mode: 'server',
@@ -11,6 +11,9 @@ define(['underscore', 'backbone.paginator', 'models/container'], function(_, Pag
         state: {
             pageSize: 15,
         },
+
+        keyAttribute: 'NAME',
+        valueAttribute: 'CONTAINERID',
             
         parseState: function(r, q, state, options) {
             return { totalRecords: r.total }
@@ -19,5 +22,5 @@ define(['underscore', 'backbone.paginator', 'models/container'], function(_, Pag
         parseRecords: function(r, options) {
             return r.data
         },
-    })
+    }))
 })
