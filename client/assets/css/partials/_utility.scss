@@ -17,6 +17,10 @@
 .left {
     float: left;
     @include cols(2,0 1% 0 0);
+
+    &.third {
+        @include cols(3,0 1% 0 0);
+    }
     
     @media (max-width: $breakpoint-vsmall) {
         @include cols(1,0);
@@ -54,6 +58,9 @@
     font-weight: bold;
 }
 
+.nowrap {
+    white-space: nowrap;
+}
 
 
 
