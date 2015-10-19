@@ -3,23 +3,25 @@ define(['marionette',
     'views/form',
     'utils/sgs',
     'utils/editable',
+
+    'models/protein',
+    'utils/anoms',
     
     'tpl!templates/shipment/singlesample.html',
     'tpl!templates/shipment/singlesamplee.html',
     
     'jquery-ui'], function(Marionette, utils,
-        FormView, SG, Editable,
+        FormView, SG, Editable, Protein, Anom,
         templatenew, template) {
 
     return FormView.extend({
-        //template: template,
         getTemplate: function() {
             return this.model ? (this.model.get('new') ? templatenew : template) : templatenew
         },
         
         storeOnValidate: true,
         setupOnConstruct: false,
-        className: 'left',
+        className: 'single',
         
         ui: {
             prot: 'select[name=PROTEINID]',
@@ -39,6 +41,13 @@ define(['marionette',
             'click a.clear-col': 'clearCol',
             'click a.clear-row': 'clearRow',
             'click a.clear': 'clearSample',
+        },
+
+        toggleExtra: function() {
+            this.extra = !this.extra
+
+            if (this.extra) this.$el.find('.extra').addClass('show')
+            else this.$el.find('.extra').removeClass('show')
         },
         
         clearPlate: function(e) {
@@ -134,6 +143,12 @@ define(['marionette',
             
             start.set({ NAME: this.sampleName(sp.pos, start.get('NAME')) })
         },
+
+        success: function(e) {
+            var p = this.getOption('proteins').findWhere({ PROTEINID: this.model.get('PROTEINID') })
+            this.model.set({ new: false, ACRONYM: p.get('ACRONYM') })
+            this.render()
+        },
         
         
         sampleName: function(p, name) {
@@ -146,6 +161,7 @@ define(['marionette',
         
         templateHelpers: function() {
             return {
+                existingContainer: this.getOption('existingContainer')
             }
         },
         
@@ -155,6 +171,7 @@ define(['marionette',
         
         initialize: function(options) {
             this.ready = []
+            this.extra = false
         },
         
         onRender: function() {
@@ -181,17 +198,51 @@ define(['marionette',
                     edit.create('NAME', 'text')
                     edit.create('COMMENTS', 'textarea')
                     edit.create('SPACEGROUP', 'select', { data: SG.list })
+
+                    edit.create('REQUIREDRESOLUTION', 'text')
+                    edit.create('ANOMALOUSSCATTERER', 'select', { data: Anom.list })
+
+                    edit.create('CELL_A', 'text')
+                    edit.create('CELL_B', 'text')
+                    edit.create('CELL_C', 'text')
+                    edit.create('CELL_ALPHA', 'text')
+                    edit.create('CELL_BETA', 'text')
+                    edit.create('CELL_GAMMA', 'text')
                 }
             }
         },
         
-        addProtein: function(e, val) {
+        addProtein: function(ui, val) {
+            var safe = val.replace(/\W/g, '')
+
+            var exists = this.getOption('proteins').findWhere({ ACRONYM: safe })
+            if (exists) {
+                ui.combobox('value', exists.get('PROTEINID')).trigger('change')
+                return
+            }
+
             utils.confirm({
                 title: 'Add New Protein',
-                message: 'Are you sure you want to add a protein called: '+safe,
-                callback: this.doAddProtein.bind(this, safe)
+                content: 'Are you sure you want to add a protein called: "'+safe+'"',
+                callback: this.doAddProtein.bind(this, safe, ui)
             })
         },
+
+        doAddProtein: function(name, ui) {
+            var protein = new Protein({ ACRONYM: name })
+            var self = this
+            protein.save({}, {
+                success: function() {
+                    self.getOption('proteins').add(protein)
+                    self.updateProteins()
+                    ui.combobox('value', protein.get('PROTEINID')).trigger('change')
+                },
+                error: function(message, xhr, options) {
+                
+                },
+            })
+        },
+
         
         updateProteins: function() {
             this.ui.prot.html(this.getOption('proteins').opts())

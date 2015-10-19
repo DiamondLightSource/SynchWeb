@@ -1,5 +1,7 @@
 
     <h2>Sample</h2>
+
+    <% if (!existingContainer) { %>
     <div class="ra">
         <a href="#" class="button clone-plate"><i class="fa fa-plus"></i> Plate</a>
         <a href="#" class="button clone-col"><i class="fa fa-plus"></i> Column</a>
@@ -11,6 +13,9 @@
         
         <a href="#" class="button clear" title="Clear Sample"><i class="fa fa-times"></i></a>
     </div>
+    <% } %>
+
+    <form method="post" id="add_contact">
 
     <div class="form">
         <ul>
@@ -32,3 +37,11 @@
             </li>
         </ul>
     </div>
+
+    <% if (existingContainer) { %>
+    <div class="form">
+        <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Sample</button>
+    </div>
+    <% } %>
+
+    </form>

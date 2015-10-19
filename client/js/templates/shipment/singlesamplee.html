@@ -1,15 +1,16 @@
 
     <h2>Sample</h2>
 
+    <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
     <div class="form">
-        <ul>
+        <ul class="clearfix">
             <li>
                 <span class="label">Protein</span>
                 <span class="PROTEINID"><%=ACRONYM%></span>
             </li>
             <li>
                 <span class="label">Sample Name</span>
-                <span class="NAME"><%=NAME%></span>
+                <span><span class="NAME"><%=NAME%></span> <a href="/samples/sid/<%=BLSAMPLEID%>" class="button"><i class="fa fa-search"></i> View</a></span>
             </li>
             <li>
                 <span class="label">Spacegroup</span>
@@ -19,5 +20,42 @@
                 <div class="COMMENTS text"><%=COMMENTS%></div>
                 <span class="label">Comments</span>
             </li>
+
+            <li class="extra">
+                <span class="label">Required Res</span>
+                <span class="REQUIREDRESOLUTION"><%=REQUIREDRESOLUTION%></span>
+            </li>
+            <li class="extra">
+                <span class="label">Anom Scatterer</span>
+                <span class="ANOMALOUSSCATTERER"><%=ANOMALOUSSCATTERER%></span>
+            </li>
+            <li class="extra clearifx reorder">
+                <div class="text_table table">
+                    <table class="reflow cell">      
+                        <thead>            
+                            <tr>
+                                <th>A</th>
+                                <th>B</th>
+                                <th>C</th>
+                                <th>&alpha;</th>
+                                <th>&beta;</th>
+                                <th>&gamma;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>                                
+                                <td><span class="CELL_A"><%=CELL_A%></span></td>
+                                <td><span class="CELL_B"><%=CELL_B%></span></td>
+                                <td><span class="CELL_C"><%=CELL_C%></span></td>
+                                <td><span class="CELL_ALPHA"><%=CELL_ALPHA%></span></td>
+                                <td><span class="CELL_BETA"><%=CELL_BETA%></span></td> 
+                                <td><span class="CELL_GAMMA"><%=CELL_GAMMA%></span></td>
+                            </tr> 
+                        </tbody>    
+                    </table>
+                </div>
+                <span class="label">Unit Cell</span>
+            </li>
+
         </ul>
     </div>
