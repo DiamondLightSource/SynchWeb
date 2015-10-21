@@ -9,6 +9,10 @@
     float: right;
     @include cols(2,0 0 0 1%);
     
+    &.third {
+        @include cols(3,0 1% 0 0);
+    }
+
     @media (max-width: $breakpoint-vsmall) {
         @include cols(1,0);
     }
@@ -120,6 +124,13 @@
     
     &:hover {
         @include background(linear-gradient(top, $content-dark-background, $content-page-background));
+    }
+
+    &.active {
+        @include background(linear-gradient(top, lighten($content-active,10%), $content-active));
+        &:hover {
+            @include background(linear-gradient(top, $content-active, lighten($content-active,10%)));
+        }
     }
     
     span {
