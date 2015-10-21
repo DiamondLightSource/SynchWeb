@@ -14,6 +14,14 @@ define(['marionette',
     'modules/shipment/collections/platetypes',
     'modules/shipment/views/plate',
     'modules/shipment/views/singlesample',
+
+    'modules/imaging/collections/schedules',
+    'modules/imaging/views/scheduleview',
+
+    'modules/imaging/collections/screens',
+    'modules/imaging/collections/screencomponentgroups',
+    'modules/imaging/collections/screencomponents',
+    'modules/imaging/views/screencomponentgroup',
     
     'tpl!templates/shipment/containeradd.html',
     'tpl!templates/shipment/sampletablenew.html',
@@ -32,6 +40,14 @@ define(['marionette',
     PlateTypes,
     PlateView,
     SingleSample,
+
+    Schedules,
+    ScheduleView,
+
+    Screens,
+    ScreenComponentGroups,
+    ScreenComponents,
+    ScreenGroupView,
         
     template, table, row){
     
@@ -50,6 +66,7 @@ define(['marionette',
             table: '.table',
             puck: '.puck',
             single: '.singlesamp',
+            grp: '.group',
         },
         
         templateHelpers: function() {
@@ -65,6 +82,8 @@ define(['marionette',
             type: 'select[name=CONTAINERTYPE]',
             pc: '.puck_controls',
             ext: '.extrainfo',
+            schedule: 'select[name=SCHEDULEID]',
+            screen: 'select[name=SCREENID]',
         },
         
         
@@ -91,6 +110,33 @@ define(['marionette',
             'keypress select.sg': 'excelNavigate',
             'keypress input.barcode': 'excelNavigate',
             'keypress input.comments': 'excelNavigate',
+
+            'click a.view_sch': 'viewSchedule',
+            'change @ui.screen': 'selectScreen',
+        },
+
+        getScreen: function() {
+            return this.ui.screen.val()
+        },
+
+        selectScreen: function(e) {
+            this.screencomponents.fetch()
+            this.screencomponentgroups.fetch().done(this.assignScreen.bind(this))
+        },
+
+        assignScreen: function(e) {
+            this.samples.each(function(s) {
+                var w = this.type.getWell(s.get('LOCATION'))
+                var g = this.screencomponentgroups.findWhere({ POSITION: (w+1).toString() })
+                if (g) s.set({ SCREENCOMPONENTGROUPID: g.get('SCREENCOMPONENTGROUPID') }, { silent: true })
+                    else s.set({ SCREENCOMPONENTGROUPID: null }, { silent: true })
+            }, this)
+        },
+
+        viewSchedule: function(e) {
+            e.preventDefault()
+            var m = this.schedules.findWhere({ SCHEDULEID: this.ui.schedule.val() })
+            if (m) app.dialog.show(new DialogView({ title: 'View Schedule', className: 'content', view: new ScheduleView({ dialog: true, model: m }), autoSize: true }))
         },
 
 
@@ -131,15 +177,20 @@ define(['marionette',
                 this.puck.show(new PuckView({ collection: this.samples }))
                 this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, childTemplate: row, template: table }))
                 this.single.empty()
+                this.grp.empty()
                 this.ui.pc.show()
+                this.$el.find('li.plate').hide()
 
             } else {
                 if (!app.mobile()) this.puck.$el.css('width', '50%')
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.table.empty()
                 this.single.show(this.singlesample)
+                this.group = new ScreenGroupView({ components: this.screencomponents, editable: false })
+                this.grp.show(this.group)
                 this.ui.pc.hide()
                 this.buildCollection()
+                this.$el.find('li.plate').show()
             }
             console.log('samples', this.samples)
         },
@@ -274,6 +325,11 @@ define(['marionette',
                 if (s) {
                     this.singlesample.setModel(s)
                     console.log('select sample', s)
+
+                    var w = this.type.getWell(s.get('LOCATION'))
+                    var g = this.screencomponentgroups.findWhere({ POSITION: (w+1).toString() })
+                    if (g) this.group.setModel(g)
+                        else this.group.setModel(null)
                 }
             }
         },
@@ -295,6 +351,23 @@ define(['marionette',
             this.ctypes = PlateTypes
             
             this.cacheContainer = _.debounce(this.cacheContainer, 3000)
+
+            var self = this
+            this.schedules = new Schedules()
+            this.schedules.fetch().done(function() {
+                self.ui.schedule.html('<option value=""> - </option>'+self.schedules.opts())
+            })
+
+            this.screens = new Screens()
+            this.screens.fetch().done(function() {
+                self.ui.screen.html('<option value=""> - </option>'+self.screens.opts())
+            })
+
+            this.screencomponentgroups = new ScreenComponentGroups()
+            this.screencomponentgroups.queryParams.scid = this.getScreen.bind(this)
+
+            this.screencomponents = new ScreenComponents()
+            this.screencomponents.queryParams.scid = this.getScreen.bind(this)
             
         },
 
