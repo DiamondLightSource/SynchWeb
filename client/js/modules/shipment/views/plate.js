@@ -36,7 +36,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
         
         initialize: function(options) {
             this.pt = this.getOption('type')
-            this.inspectionimages = options.inspectionimages
+            this.inspectionimages = options && options.inspectionimages
             if (this.inspectionimages) this.listenTo(this.inspectionimages, 'sync', this.render, this)
             
             this.hover = {}
