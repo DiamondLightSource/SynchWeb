@@ -47,11 +47,17 @@
                               'REQUIREDRESOLUTION' => '\d+(.\d+)?',
                               'ANOMALOUSSCATTERER' => '\w+',
                               'BLSUBSAMPLEID' => '\d+',
+                              'SCREENCOMPONENTGROUPID' => '\d+',
 
                               'BLSAMPLEID' => '\d+',
                               'X' => '\d+(.\d+)?',
                               'Y' => '\d+(.\d+)?',
-                              'Z' => '\d+(.\d+)?'
+                              'Z' => '\d+(.\d+)?',
+
+                              'EXPERIMENTKIND' => '\w+',
+                              'EXPOSURETIME' => '\d+(.\d+)?',
+                              'PREFERREDBEAMSIZEX' => '\d+(.\d+)?',
+                              'PREFERREDBEAMSIZEY' => '\d+(.\d+)?',
 
                                );
         
@@ -91,9 +97,15 @@
                 array_push($args, $this->arg('ssid'));
             }
 
-            $subs = $this->db->pq("SELECT pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, p.x, p.y, p.z
+            if ($this->has_arg('cid')) {
+                $where .= ' AND c.containerid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('cid'));
+            }
+
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, p.x, p.y, p.z
               FROM blsubsample ss
               LEFT OUTER JOIN position p ON p.positionid = ss.positionid
+              LEFT OUTER JOIN blsample sss on ss.blsubsampleid = sss.blsubsampleid
               INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
               INNER JOIN crystal cr ON cr.crystalid = s.crystalid
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid
@@ -101,7 +113,12 @@
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = sh.proposalid
-              WHERE p.proposalid=:1 $where", $args);
+
+              LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
+
+              WHERE p.proposalid=:1 $where
+              GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, p.x, p.y, p.z
+              ORDER BY ss.blsubsampleid", $args);
 
             $this->_output($subs);
         }
@@ -109,7 +126,7 @@
         function _update_sub_sample() {
             if (!$this->has_arg('ssid')) $this->_error('No subsample specified');
             
-            $samp = $this->db->pq("SELECT s.blsampleid,s.positionid FROM blsubsample ss
+            $samp = $this->db->pq("SELECT ss.diffractionplanid,s.blsampleid,ss.positionid FROM blsubsample ss
               INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
               INNER JOIN container c ON c.containerid = s.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -126,10 +143,21 @@
                 }
             }
 
-            foreach(array('X', 'Y', 'Z') as $f) {
-                if ($this->has_arg($f)) {
-                    $this->db->pq('UPDATE position SET '.$f.'=:1 WHERE positionid=:2', array($this->arg($f), $samp[0]['POSITIONID']));
-                    $this->_output(array($f => $this->arg($f)));
+            if ($samp[0]['DIFFRACTIONPLANID']) {
+                foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME') as $f) {
+                    if ($this->has_arg($f)) {
+                        $this->db->pq('UPDATE diffractionplan SET '.$f.'=:1 WHERE diffractionplanid=:2', array($this->arg($f), $samp[0]['DIFFRACTIONPLANID']));
+                        $this->_output(array($f => $this->arg($f)));
+                    }
+                }
+            }
+
+            if ($samp[0]['POSITIONID']) {
+                foreach(array('X', 'Y', 'Z') as $f) {
+                    if ($this->has_arg($f)) {
+                        $this->db->pq('UPDATE position SET '.$f.'=:1 WHERE positionid=:2', array($this->arg($f), $samp[0]['POSITIONID']));
+                        $this->_output(array($f => $this->arg($f)));
+                    }
                 }
             }
         }
@@ -154,8 +182,12 @@
               VALUES (s_position.nextval, :1, :2, :3) RETURNING positionid INTO :id", array($this->arg('X'), $this->arg('Y'), $z));
             $pid = $this->db->id();
 
-            $this->db->pq("INSERT INTO blsubsample (blsubsampleid, blsampleid, positionid) 
-              VALUES (s_blsubsample.nextval, :1, :2) RETURNING blsubsampleid INTO :id", array($this->arg('BLSAMPLEID'), $pid));
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid) 
+              VALUES (s_diffractionplan.nextval) RETURNING diffractionplanid INTO :id");
+            $did = $this->db->id();
+
+            $this->db->pq("INSERT INTO blsubsample (blsubsampleid, blsampleid, positionid, diffractionplanid) 
+              VALUES (s_blsubsample.nextval, :1, :2, :3) RETURNING blsubsampleid INTO :id", array($this->arg('BLSAMPLEID'), $pid, $did));
 
             $this->_output(array('BLSUBSAMPLEID' => $this->db->id()));
         }
@@ -307,7 +339,7 @@
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT distinct b.blsampleid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  SELECT distinct b.blsampleid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   
                                   FROM blsample b
@@ -335,7 +367,7 @@
                                   LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
 
                                   LEFT OUTER JOIN blsampleimage si ON b.blsampleid = si.blsampleid
-                                  
+
                                   LEFT OUTER JOIN blsubsample ss ON b.blsubsampleid = ss.blsubsampleid
                                   LEFT OUTER JOIN blsample ssp ON ss.blsampleid = ssp.blsampleid
                                   
@@ -344,7 +376,7 @@
                                   
                                   WHERE $where
                                   
-                                  GROUP BY ssp.blsampleid, ssp.name, b.blsubsampleid, b.blsampleid, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname,s.shippingid,d.dewarid,d.code, c.code, c.containerid, c.samplechangerlocation, p.proposalcode||p.proposalnumber, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  GROUP BY b.screencomponentgroupid, ssp.blsampleid, ssp.name, b.blsubsampleid, b.blsampleid, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname,s.shippingid,d.dewarid,d.code, c.code, c.containerid, c.samplechangerlocation, p.proposalcode||p.proposalnumber, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   $having
                                   
@@ -424,7 +456,7 @@
                 }
             }
             
-            foreach (array('BLSUBSAMPLEID', 'COMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA') as $f) {
+            foreach (array('SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : '';
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
 
@@ -443,8 +475,8 @@
                 array($a['PROTEINID'], $a['SPACEGROUP'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA']));
             $crysid = $this->db->id();
                              
-            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8) RETURNING blsampleid INTO :id", 
-                array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID']));
+            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid, screencomponentgroupid) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9) RETURNING blsampleid INTO :id", 
+                array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID']));
                 
             return $this->db->id();
         }
@@ -456,7 +488,7 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             
             $args = array($this->proposalid);
-            $where = 'pr.proposalid=:1';
+            $where = '(pr.proposalid=:1 or pr.global=1)';
             $join = '';
             $extc = '';
 
@@ -589,10 +621,11 @@
                 array_push($args, $this->arg('term'));
             }
             
-            $rows = $this->db->pq("SELECT distinct pr.acronym, max(pr.proteinid) as proteinid 
+            $rows = $this->db->pq("SELECT distinct pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as unit, 1 as hasph
               FROM protein pr 
-              WHERE pr.acronym is not null AND pr.proposalid=:1 $where 
-              GROUP BY pr.acronym 
+              LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
+              WHERE pr.acronym is not null AND (pr.proposalid=:1 OR pr.global=1) $where 
+              GROUP BY ct.symbol, pr.acronym, pr.name
               ORDER BY lower(pr.acronym)", $args);
                                  
             $this->_output($rows);
