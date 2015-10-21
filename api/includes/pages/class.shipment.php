@@ -72,6 +72,7 @@
                               'CONTAINERTYPE' => '\w+',
                               'NAME' => '([\w-])+',
                               'SCHEDULEID' => '\d+',
+                              'SCREENID' => '\d+',
                               );
         
 
@@ -106,6 +107,7 @@
                               array('/containers/', 'post', '_add_container'),
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
+                              array('/containers/queue', 'get', '_queue_container'),
                               
 
                               array('/cache/:name', 'put', '_session_cache'),
@@ -834,7 +836,7 @@
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples
+                                  SELECT case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, 0 as queued, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples
                                   FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
@@ -845,6 +847,8 @@
                                   LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
                                   LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
+                                  LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != 'Completed' AND ci2.manual!=1 AND ci2.schedulecomponentid IS NULL
+                                  --LEFT OUTER JOIN containerdataschedule as cs ON cs.containerid = c.containerid
                                   $join
                                   WHERE $where
                                   GROUP BY sch.name, c.scheduleid, c.screenid, sc.name, c.imagerid, i.temperature, i.name, p.proposalcode || '-' || p.proposalnumber, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
@@ -861,6 +865,29 @@
         }
         
         
+
+        function _queue_container() {
+            if (!$this->has_arg('cid')) $this->_error('No container specified');
+
+            $chkc = $this->db->pq("SELECT c.containerid 
+              FROM container c 
+              INNER JOIN dewar d ON c.dewarid = d.dewarid 
+              INNER JOIN shipping s ON s.shippingid = d.shippingid 
+              INNER JOIN proposal p ON p.proposalid = s.proposalid 
+              WHERE c.containerid=:1 AND p.proposalid=:2", array($this->arg('cid'), $this->proposalid));
+
+            $chkq = $this->db->pq("SELECT containerid FROM containerdataschedule WHERE containerid=:1", $this->arg('cid'));
+
+            if (sizeof($chkc) && !sizeof($chkq)) {
+                if (!sizeof($chkq)) {
+                  $this->db->pq("INSERT INTO containerdataschedule (containerdatascheduleid, containerid, bltimestamp)
+                    VALUE (s_containerdataschedule.nextval, :1, CURRENT_TIMESTAMP)", array($this->arg('cid')));
+                  $this->_output(1);
+
+                } else $this->_error('That container is already in the queue');
+            }
+        }
+
         
         # Move Container
         function _move_container() {
@@ -907,10 +934,11 @@
             
             $cap = $this->has_arg('CAPACITY') ? $this->arg('CAPACITY') : 16;
             $sch = $this->has_arg('SCHEDULEID') ? $this->arg('SCHEDULEID') : null;
+            $scr = $this->has_arg('SCREENID') ? $this->arg('SCREENID') : null;
 
-            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid) 
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5) RETURNING containerid INTO :id", 
-              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch));
+            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid, screenid) 
+              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6) RETURNING containerid INTO :id", 
+              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr));
                                  
             $cid = $this->db->id();
             
