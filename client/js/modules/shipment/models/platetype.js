@@ -11,10 +11,18 @@ define(['backbone'], function(Backbone) {
         wellTotal: function() {
             return this.get('capacity') / this.dropTotal()
         },
+
+        getWell: function(pos) {
+            return Math.floor( (parseInt(pos)-1) / this.dropTotal() )
+        },
         
         getName: function(pos) {
             var p = this.getRowColDrop(pos)
             return String.fromCharCode(p.row+65)+(p.col+1)
+        },
+
+        getDrop: function(pos) {
+            return ((pos-1) % this.dropTotal())+1
         },
 
         getRowColDrop: function(pos) {
