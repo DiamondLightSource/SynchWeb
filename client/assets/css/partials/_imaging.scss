@@ -1,0 +1,215 @@
+// Crystal Imaging
+
+.inspect {
+    > .left {
+        width: 29%;
+    }
+    
+    > .right {
+        width: 69%;
+    }
+    
+    @media (max-width: $breakpoint-vsmall) {
+        > .left, > .right {
+            float: none;
+            width: auto;
+        }
+    }
+}
+
+.image_large {
+    position: relative;
+    background: $table-body-background-odd;
+    
+    .score {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+    }
+    
+    .COMMENTS {
+        bottom: 10px;
+        left: 5px;
+        position: absolute;
+    }
+    
+    .controls {
+        right: 5px;
+        bottom: 15px;
+        position: absolute;
+        width: 150px;
+    }
+    
+    .objects {
+        top: 5px;
+        right: 5px;
+        position: absolute;
+        
+        .table {
+            margin: 0;
+        }
+    }
+    
+    .scorebybutton {
+        display: none;
+    }
+
+    .help_pane {
+	    border-radius: 5px;
+	    display: none; 
+	    position: absolute;
+	    background: $content-help-background;
+	    color: $content-help-color;
+	    top: 35px;
+	    right: 5px;
+	    padding: 0.7%;
+
+		&.enable {
+			display: block;
+		}
+
+		ul.keys {
+			li {
+				.hkey {
+					border-radius: 2px;
+				    box-shadow: 2px 2px 0px 1px #666;
+				    background: #eee;
+				    padding: 5px;
+				    display: inline-block;
+				    width: 20px;
+				    margin: 3px;
+				    margin-right: 8px;
+				    color: #000;
+				    text-align: center;
+				}
+			}
+		}
+	}
+    
+    @media (max-width: $breakpoint-vsmall) {
+        .controls, .scoresel, .COMMENTS {
+            display: none;
+        }
+        
+        .scorebybutton {
+            display: block;
+            bottom: 5px;
+            left: 5px;
+            position: absolute;
+
+            .current {
+            	font-weight: bold;
+            }
+        }
+    }
+}
+
+
+div.img_history {
+    position: absolute;
+    bottom: 40px;
+    width: 98%; //calc(100%-10px);
+    padding: 5px;
+    overflow-x: scroll;
+    text-align: center;
+
+    &.embed {
+    	position: static;
+    	width: auto;
+    }
+    
+    columns {
+        padding: 0 25px;
+    }
+    
+    div {
+        white-space: nowrap;
+    }
+    
+    figure {
+        display: inline-block;
+        padding: 0;
+        margin: 0 2px;
+        background: #cdcdcd;
+        opacity: 0.65;
+        height: 100px;
+        
+        &.selected {
+            opacity: 1;
+        }
+        
+        figcaption {
+            background: #cdcdcd;
+        }
+        
+        img {
+            height: 100%;
+            width: auto;
+        }
+    }
+    
+    .nav {
+        position: absolute;
+        width: 99%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+
+        a {
+            background: #cdcdcd;
+            display: inline-block;
+            font-size: 30px;
+            height: 100%;
+            width: 25px;
+            text-decoration: none;
+            opacity: 0.5;
+            
+            &:hover {
+                opacity: 0.8;
+            }
+            
+            i {
+                display: block;
+                top: 50%;
+                transform: translateY(-50%);
+                position: relative;
+            }
+            
+            &.previous {
+                float: left;
+            }
+            
+            &.next {
+                float: right
+            }
+
+        }
+    }
+}
+
+.add_image {
+	display: none;
+
+	&.enable {
+		display: block;
+	}
+
+	.dropimage {
+		color: $content-search-background;
+	    padding: 5%;
+	    border: 2px dashed $content-search-background;
+	    margin: 2% 0;
+	    text-align: center;
+	    border-radius: 5px;
+
+	    &.active {
+	    	color: $content-header-color;
+			background: $content-dark-background;
+			text-decoration: italic;
+	    }
+	}
+}
+
+input[name=gap] {
+	width: 30px;
+}
