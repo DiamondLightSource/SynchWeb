@@ -176,7 +176,7 @@
     }
 
     
-    table.subsamples, table.schedules, table.groups, table.proposals,table.dewars, table.ehc, table.proteins.flt, table.samples.flt,table.blended_table, table.integrated, table.projects, table.shipments, table.visits, table.contacts, table.proteins, table.samples, table.peaks, table.containers, table.systems, table.components {
+    table.imagers, table.inspections, table.subsamples, table.schedules, table.groups, table.proposals,table.dewars, table.ehc, table.proteins.flt, table.samples.flt,table.blended_table, table.integrated, table.projects, table.shipments, table.visits, table.contacts, table.proteins, table.samples, table.peaks, table.containers, table.systems, table.components {
         @extend table.hover-row;
     }
     
