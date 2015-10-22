@@ -25,29 +25,7 @@
             <span><%=CONTAINERTYPE%></span>
         </li>
 
-        <% if (IMAGERID) { %>
-        <li>
-            <span class="label">Current Imager Location</span>
-            <span class="IMAGERID"><%=IMAGER%></span>
-        </li>
-        <% } %>
-
-        <% if (SCHEDULEID) { %>
-        <li>
-            <span class="label">Imaging Schedule</span>
-            <span class="SCHEDULEID"><%=SCHEDULE%></span>
-        </li>
-        <% } %>
-        
-        <% if (INSPECTIONS > 0) { %>
-        <li>
-            <span class="label">Last Inspection</span>
-            <span><%=LASTINSPECTION%> (<%=INSPECTIONS%> inspections)</span>
-        </li>
-        <% } %>
-
     </ul>
-    <div class="singlesamp"></div>
 </div>
 
 <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>

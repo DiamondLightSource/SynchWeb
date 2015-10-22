@@ -1,0 +1,126 @@
+<h1 class="no_mobile">Container: <span class="NAME"><%=NAME%></span></h1>
+
+<a name="top"></a>
+<p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
+
+<% if (CONTAINERSTATUS == 'processing') { %>
+<p class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
+<% } %>
+
+<div class="inspect clearfix">
+    <div class="img right"></div>
+    <div class="left">
+        <div class="plate"></div>
+        <div class="form">
+            <ul>
+                <li class="nowrap">
+                    <span class="label">Inspections</span>
+                    <select name="inspection"></select>
+                    <a href="#" class="button button-notext add_inspection"><i class="fa fa-plus"></i> <span>Add</span></a>
+                </li>
+                <li>
+                    <span class="label">Movie</span>
+                    Gap: <input type="number" step="0.1" name="gap" value="0.5" />s
+                    <a href="#" class="button play_inspection"><i class="fa fa-play"></i> <span>Play</span></a> 
+                </li>
+            </ul>
+        </div>
+
+        <div>
+            
+        </div>
+
+        <div class="add_image">
+            <h2>Upload Image</h2>
+            <div class="dropimage">
+                <i class="fa fa-2x fa-cloud-upload"></i> Drop Image Here
+                <div class="progress"></div>
+            </div>
+        </div>
+
+        <div class="singlesamp"></div>
+        <div class="startend"></div>
+        <div class="group"></div>
+
+        <div>
+            <h2>Marked Sub Samples</h2>
+            <div class="ra">
+                <a href="#" class="button add_sub"><i class="fa fa-plus"></i> <span>Mark Sub Sample</span></a>
+            </div>
+            <div class="subs"></div>
+        </div>
+    </div>
+</div>
+
+<h1 class="no_mobile">Plate Details</h1>
+<div class="form clearfix">
+    <ul>
+        <li>
+            <span class="label">Shipment</span>
+            <span><a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a></span>
+        </li>
+        
+        <li>
+            <span class="label">Dewar</span>
+            <span><%=DEWAR%></span>
+        </li>
+        <li>
+            <span class="label">Container Type</span>
+            <span><%=CONTAINERTYPE%></span>
+        </li>
+
+        <% if (IMAGERID) { %>
+        <li>
+            <span class="label">Current Imager Location</span>
+            <span class="IMAGERID"><%=IMAGER%></span>
+        </li>
+        <% } %>
+
+        <% if (SCHEDULEID) { %>
+        <li>
+            <span class="label">Imaging Schedule</span>
+            <span><span class="SCHEDULEID"><%=SCHEDULE%></span> <a href="#" class="button view_sched"><i class="fa fa-search"></i> <span>View</span></a></span>
+        </li>
+        <% } %>
+
+        <% if (SCREENID) { %>
+        <li>
+            <span class="label">Crystallisation Screen</span>
+            <span><span class="SCREENID"><%=SCREEN%></span> <a href="/imaging/screen/<%=SCREENID%>" class="button view_scr"><i class="fa fa-search"></i> <span>View</span></a></span>
+        </li>
+        <% } %>
+        
+        <% if (INSPECTIONS > 0) { %>
+        <li>
+            <span class="label">Last Inspection</span>
+            <span><%=LASTINSPECTION%> (<%=INSPECTIONS%> inspections)</span>
+        </li>
+        <% } %>
+
+        <% if (IMAGERID) { %>
+        <li class="clearfix reorder">
+            
+            <div class="text_table">
+                <div class="adhoc">
+                    <% if (ALLOW_ADHOC == 1) { %>
+                        <select name="INSPECTIONTYPEID"></select>
+                        <a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>
+                    <% } else { %>
+                        <p>An adhoc inspection of this container has been requested</p>
+                    <% } %>
+                </div>
+
+                <div class="queue">
+                    <% if (QUEUED == 1) { %>
+                        <p>This container was queued for data collection on: <%=QUEUEDTIMESTAMP%></p>
+                    <% } else { %>
+                    <a href="#" class="button queue"><i class="fa fa-arrow-up"></i> <span>Queue for Data Collection</span></a>
+                    <% } %>
+                </div>
+            </div>
+            <span class="label">Actions</span>
+        </li>
+        <% } %>
+
+    </ul>
+</div>

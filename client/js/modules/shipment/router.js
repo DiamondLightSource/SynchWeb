@@ -7,7 +7,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'shipments/add': 'add',
       'shipments(/sid/:sid)': 'view',
 
-      'containers/cid/:cid': 'view_container',
+      'containers/cid/:cid(/iid/:iid)(/sid/:sid)': 'view_container',
       'containers/add/did/:did': 'add_container',
       'containers/add/visit/:visit': 'add_container_visit',
       'containers(/s/:s)(/ty/:ty)(/page/:page)': 'container_list',

@@ -1,0 +1,61 @@
+<h1>Container: <span class="NAME"><%=NAME%></span></h1>
+
+<a name="top"></a>
+<p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
+
+<% if (CONTAINERSTATUS == 'processing') { %>
+<p class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
+<% } %>
+
+<div class="form clearfix puck_wrap">
+    <div class="plate right"></div>
+    
+    <div class="left">
+        <ul>
+            <li>
+                <span class="label">Shipment</span>
+                <span><a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a></span>
+            </li>
+            
+            <li>
+                <span class="label">Dewar</span>
+                <span><%=DEWAR%></span>
+            </li>
+            <li>
+                <span class="label">Container Type</span>
+                <span><%=CONTAINERTYPE%></span>
+            </li>
+
+            <% if (IMAGERID) { %>
+            <li>
+                <span class="label">Current Imager Location</span>
+                <span class="IMAGERID"><%=IMAGER%></span>
+            </li>
+            <% } %>
+
+            <% if (SCHEDULEID) { %>
+            <li>
+                <span class="label">Imaging Schedule</span>
+                <span><span class="SCHEDULEID"><%=SCHEDULE%></span> <a href="#" class="button view_sched"><i class="fa fa-search"></i> <span>View</span></a></span>
+            </li>
+            <% } %>
+
+            <% if (SCREENID) { %>
+            <li>
+                <span class="label">Crystallisation Screen</span>
+                <span><span class="SCREENID"><%=SCREEN%></span> <a href="/imaging/screen/<%=SCREENID%>" class="button view_scr"><i class="fa fa-search"></i> <span>View</span></a></span>
+            </li>
+            <% } %>
+            
+            <li>
+                <span class="label">Last Inspection</span>
+                <span>
+                    <a href="#" class="button add_inspection"><i class="fa fa-plus"></i> <span>Add Manual Inspection</span></a>
+                </span>
+            </li>
+
+        </ul>
+        <div class="singlesamp"></div>
+        <div class="group"></div>
+    </div>
+</div>

@@ -10,6 +10,7 @@ define(['marionette',
         'models/container',
         'collections/containers',
         'modules/shipment/views/container',
+        'modules/shipment/views/containerplate',
         'modules/shipment/views/containeradd',
         'modules/shipment/views/containers',
 
@@ -25,7 +26,7 @@ define(['marionette',
 ], function(Marionette,
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView,
-    Container, Containers, ContainerView, ContainerAddView, ContainersView,
+    Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
     DispatchView, TransferView) {
     
@@ -81,13 +82,16 @@ define(['marionette',
     },
       
       
-    view_container: function(cid) {
-      app.log('cont view')
+    view_container: function(cid, iid, sid) {
+      app.log('cont view', cid, iid, sid)
       var container = new Container({ CONTAINERID: cid })
         container.fetch({
             success: function() {
                 app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }])
-                app.content.show(new ContainerView({ model: container }))
+                var is_plate = !(['Puck', null].indexOf(container.get('CONTAINERTYPE')) > -1)
+                console.log('is plate', is_plate)
+                if (is_plate) app.content.show(new ContainerPlateView({ model: container, params: { iid: iid, sid: sid } }))
+                  else app.content.show(new ContainerView({ model: container }))
             },
             error: function() {
                 app.bc.reset([bc, { title: 'Error' }])
@@ -209,9 +213,9 @@ define(['marionette',
       controller.view(sid)
     })
       
-    app.on('container:show', function(cid) {
-      app.navigate('containers/cid/'+cid)
-      controller.view_container(cid)
+    app.on('container:show', function(cid, iid, sid) {
+      app.navigate('containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
+      controller.view_container(cid, iid, sid)
     })
 
     app.on('rdewar:show', function(fc) {
