@@ -19,6 +19,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
                      { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
                      { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
                      { name: 'LASTINSPECTION', label: 'Last', cell: 'string', editable: false },
+                     { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
                      ]
         
       if (app.mobile()) {
