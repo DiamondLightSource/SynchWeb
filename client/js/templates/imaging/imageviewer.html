@@ -1,0 +1,44 @@
+<div class="score">
+    <span class="scoresel">
+        <abbr title="Hotkey: 0-9 to score image">Score</abbr>: <select name="score"></select>
+    </span>
+    <span class="scoreval"></span>
+</div>
+
+<div class="COMMENTS" title="Image Comment, Hotkey: c"></div>
+
+<div class="controls">
+    <abbr title="Hotkey: Z zooms in, z zooms out">Z<abbr>oom: <span id="zval">0</span>% <div id="zoom"></div>
+</div>
+
+<div class="objects">
+	<span class="progress"></span>
+    <a href="#" class="button button-notext history" title="View Drop History, Hotkey: h"><i class="fa fa-history"></i> <span>Drop History</span></a>
+    <a href="#" class="button button-notext help" title="View Help"><i class="fa fa-question"></i> <span>Help</span></a>
+    <!-- <a href="#" class="button button-notext add_object" title="Add Object, Hotkey: o"><i class="fa fa-plus"></i> <span>Add Object</span></a> -->
+    <!-- <a href="#"  class="button button-notext rem_object" title="Remove Object, Hotkey: r"><i class="fa fa-times"></i> <span>Remove Object</span></a> -->
+    <!-- <a href="#"  class="button button-notext measure" title="Measure Object, Hotkey: m"><i class="fa fa-expand"></i> <span>Measure</span></a> -->
+
+</div>
+
+<div class="help_pane">
+    <ul class="keys">
+        <li><span class="hkey">h</span> Toggle history</li>
+        <li><span class="hkey">a</span> Previous image</li>
+        <li><span class="hkey">d</span> Next image</li>
+        <li><span class="hkey">q</span> Goto first image</li>
+        <li><span class="hkey">e</span> Goto last image</li>
+        <li><span class="hkey">s</span> Toggle Movie Mode</li>
+        <li><span class="hkey">z</span> Zoom out</li>
+        <li><span class="hkey">x</span> Zoom to 100%</li>
+        <li><span class="hkey">c</span> Zoom In</li>
+        <li><span class="hkey">v</span> Zoom to fit</li>
+        <li><span class="hkey">1-9</span> Score Image</li>
+        <li><span class="hkey">?</span> Toggle help</li>
+    </ul>
+</div>
+
+
+<div class="hist"></div>
+<canvas class="full"></canvas>
+<div class="scorebybutton filter filter-nohide"></div>

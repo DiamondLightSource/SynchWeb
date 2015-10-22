@@ -1,0 +1,10 @@
+    <td class="COMPONENTID"><%=COMPONENT%></td>
+    <td><%=CONCENTRATION%></td>
+    <td><%=UNIT%></td>
+    <td class="PH"><%=PH%></td>
+    <td>
+    	<% if (editable) { %>
+        <a class="button button-notext edit"><i class="fa fa-pencil"></i> <span>Edit</span></a>
+        <a class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>
+        <% } %>
+    </td>

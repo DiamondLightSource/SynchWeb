@@ -1,0 +1,36 @@
+
+    <h2>Screen Components</h2>
+
+    <% if (editable) { %>
+    <div class="form">
+        <ul>
+            <li>
+                <span class="label">Add Component</span>
+                <input type="text" name="addcomp" />
+            </li>
+        </ul>
+    </div>
+    <% } %>
+
+    <div class="table">
+
+        <table class="sccomponents">
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th colspan="2">Concentration</th>
+                    <th>pH</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            
+            <tbody></tbody>
+        </table>
+
+    </div>
+
+    <% if (canSave && editable) { %>
+    <div class="form">
+        <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Group</button>
+    </div>
+    <% } %>
