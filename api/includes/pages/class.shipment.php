@@ -8,11 +8,14 @@
                               'sid' => '\d+',
                               'lcid' => '\d+',
                               'pid' => '\d+',
+                              'iid' => '\d+',
 
                               
                               'visit' => '\w+\d+-\d+',
                               'all' => '\d',
                               'ty' => '\w+',
+                              'imager' => '\d',
+                              'imid' => '\d+',
 
 
                               // cache name
@@ -793,6 +796,16 @@
                 $this->args['sort_by'] = 'SHIPPINGID';
                 $this->args['order'] = 'desc';
             }
+
+            if ($this->has_arg('imager')) {
+                $where .= ' AND c.imagerid IS NOT NULL';
+            }
+
+
+            if ($this->has_arg('iid')) {
+                $where .= ' AND c.imagerid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('iid'));
+            }
                 
 
             $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
@@ -836,7 +849,7 @@
             }
             
             $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, 0 as queued, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples
+                                  SELECT round((SYSDATE - min(ci.bltimestamp)),1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, 0 as queued, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples
                                   FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
