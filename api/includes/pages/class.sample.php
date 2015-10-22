@@ -120,7 +120,11 @@
               GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, p.x, p.y, p.z
               ORDER BY ss.blsubsampleid", $args);
 
-            $this->_output($subs);
+            if ($this->has_arg('ssid')) {
+                if (!sizeof($subs)) $this->_error('No such sub sample');
+                else $this->_output($subs[0]);
+
+            } else $this->_output($subs);
         }
 
         function _update_sub_sample() {
@@ -189,7 +193,9 @@
             $this->db->pq("INSERT INTO blsubsample (blsubsampleid, blsampleid, positionid, diffractionplanid) 
               VALUES (s_blsubsample.nextval, :1, :2, :3) RETURNING blsubsampleid INTO :id", array($this->arg('BLSAMPLEID'), $pid, $did));
 
-            $this->_output(array('BLSUBSAMPLEID' => $this->db->id()));
+            // $this->_output(array('BLSUBSAMPLEID' => $this->db->id()));
+            $this->args['ssid'] = $this->db->id();
+            $this->_sub_samples();
         }
 
 
