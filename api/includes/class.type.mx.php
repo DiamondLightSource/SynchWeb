@@ -18,6 +18,8 @@ class MX extends ProposalType {
         'contact',
         'projects',      
         'stats',
+        
+        'imaging',
         //'tracking',
     );
     
