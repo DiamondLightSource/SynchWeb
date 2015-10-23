@@ -40,6 +40,7 @@
                                         'COMPONENTID' => '\d+',
                                         'GLOBAL' => '\d',
                                         'SCREENCOMPONENTGROUPID' => '\d+',
+                                        'SCREENCOMPONENTID' => '\d+',
                                         'CONCENTRATION' => '\d+(.\d+)?',
                                         'PH' => '\d+(.\d+)?',
                                );
@@ -764,17 +765,19 @@
             if (!$this->has_arg('collection')) $this->_error('No groups specified');
 
             foreach ($this->arg('collection') as $g) {
-                if (array_key_exists('SCREENID', $c)) $this->args['SCREENID'] = $c['SCREENID'];
+                if (array_key_exists('SCREENID', $g)) $this->args['SCREENID'] = $g['SCREENID'];
                 else unset($this->args['SCREENID']);
 
-                if (array_key_exists('POSITION', $c)) $this->args['POSITION'] = $c['POSITION'];
+                if (array_key_exists('SCREENCOMPONENTGROUPID', $g)) continue;
+
+                if (array_key_exists('POSITION', $g)) $this->args['POSITION'] = $g['POSITION'];
                 else unset($this->args['POSITION']);
 
                 $this->_do_add_screen_componentgroup();
             }
 
             $this->args['scid'] = $this->arg('SCREENID');
-            $this->_get_screen_components();
+            $this->_get_screen_componentgroups();
         }
 
         function _do_add_screen_componentgroup() {
@@ -862,6 +865,8 @@
             if (!$this->has_arg('collection')) $this->_error('No collection specified');
 
             foreach ($this->arg('collection') as $c) {
+                if (array_key_exists('SCREENCOMPONENTID', $c)) continue;
+
                 $this->args['SCREENCOMPONENTGROUPID'] = $c['SCREENCOMPONENTGROUPID'];
                 $this->args['COMPONENTID'] = $c['COMPONENTID'];
 
@@ -874,8 +879,12 @@
                 $this->_do_add_screen_component();
             }
 
-            $this->args['scgid'] = $c['SCREENCOMPONENTGROUPID'];
-            $this->_get_screen_components();
+            $scids = $this->db->pq("SELECT screenid FROM screencomponentgroup WHERE screencomponentgroupid=:1", array($c['SCREENCOMPONENTGROUPID']));
+
+            if (sizeof($scids)) {
+                $this->args['scid'] = $scids[0]['SCREENID'];
+                $this->_get_screen_components();
+            }
         }
 
 
