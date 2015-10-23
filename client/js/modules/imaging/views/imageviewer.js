@@ -71,6 +71,7 @@ define(['marionette',
             progress: 'span.progress',
             help: '.help_pane',
             hb: 'a.help',
+            meas: 'a.measure',
         },
         
         events: {
@@ -85,15 +86,26 @@ define(['marionette',
         
             'change @ui.score': 'updateScore',
             'click @ui.hist': 'toggleHistory',
+            'click @ui.meas': 'toggleMeasure',
 
             'click @ui.hb': 'toggleHelp',
+        },
+
+        toggleMeasure: function(e) {
+            e.preventDefault()
+
+            if (this.ui.meas.hasClass('button-highlight')) this.ui.meas.removeClass('button-highlight')
+            else this.ui.meas.addClass('button-highlight')
         },
 
         toggleHelp: function(e) {
             e.preventDefault()
 
-            if (this.ui.help.hasClass('enable')) this.ui.help.removeClass('enable')
-            else this.ui.help.addClass('enable')
+            if (this.ui.hb.hasClass('button-highlight')) this.ui.hb.removeClass('button-highlight')
+            else this.ui.hb.addClass('button-highlight')
+
+            if (this.ui.hb.hasClass('button-highlight')) this.ui.help.addClass('enable')
+            else this.ui.help.removeClass('enable')
         },
         
         toggleHistory: function(e) {
@@ -142,7 +154,6 @@ define(['marionette',
                     },
                 })
             }
-            
         },
 
         setAddSubsample: function(state) {
@@ -195,6 +206,11 @@ define(['marionette',
             
             this.first = false
             this.start = []
+
+            this.drawingLine = false
+            this.hasLine = false
+            this.lineStart = {}
+            this.lineEnd = {}
         },
 
         selectSubSample: function(e) {
@@ -292,6 +308,11 @@ define(['marionette',
                 // h - history
                 case 104:
                     this.ui.hist.trigger('click')
+                    break
+
+                // m - measure
+                case 109:
+                    this.ui.meas.trigger('click')
                     break
 
                 // s - start / stop
@@ -449,6 +470,7 @@ define(['marionette',
             this.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
             this.ctx.clearRect(0,0,this.width,this.height)
             this.ctx.drawImage(this.img, 0, 0, this.width, this.height)
+            this.drawLines()
         },
         
 
@@ -513,10 +535,27 @@ define(['marionette',
         mouseDownCanvas: function(e) {
             e.preventDefault()
             if(e.originalEvent.touches && e.originalEvent.touches.length) e = e.originalEvent.touches[0];
-            this.record = true
-            this.startx = e.clientX
-            this.starty = e.clientY
+
+            if (this.ui.meas.hasClass('button-highlight')) {
+                this.drawingLine = true
+                this.lineStart = this.getScaledXY(e)
+
+            } else {
+                this.record = true
+                this.startx = e.clientX
+                this.starty = e.clientY
+            }
         },
+
+        getScaledXY: function(e) {
+            var xy = utils.get_xy(e, this.ui.canvas)
+            var x = parseInt(xy[0]/this.scalef-this.offsetx/this.scalef)
+            var y = parseInt(xy[1]/this.scalef-this.offsety/this.scalef)
+
+            console.log(x,y)
+            return { x: x, y: y }
+        },
+
                 
         mouseMoveCanvas: function(e) {
             e.preventDefault()
@@ -536,18 +575,55 @@ define(['marionette',
                 this.starty = e.clientY
             }
 
+            if (this.drawingLine) {
+                this.moved = true
+                this.lineEnd = this.getScaledXY(e)
+                this.drawDebounce()
+            }
+
         },
                 
         mouseUpCanvas: function(e) {
             e.preventDefault()
+
+            if (!this.moved && this.lineStart.x) {
+                this.lineStart = {}
+                this.lineEnd = {}
+                this.draw()
+                this.plotObjects()
+            }
+
             if (this.moved) {
                 this.draw()
                 this.plotObjects()
                 this.moved = false
             }
             this.record = false
+            this.drawingLine = false
         },
                 
+
+        drawLines: function() {
+            if (!this.lineStart || !this.lineEnd) return
+
+            this.ctx.beginPath()
+            this.ctx.moveTo(this.lineStart.x, this.lineStart.y)
+            this.ctx.lineTo(this.lineEnd.x, this.lineEnd.y)
+
+            this.ctx.stroke()
+            this.ctx.closePath()
+
+            var mppx = this.model.get('MICRONSPERPIXELX') || 3
+            var mppy = this.model.get('MICRONSPERPIXELY') || 3
+
+            var xmid = (this.lineEnd.x - this.lineStart.x) / 2
+            var ymid = (this.lineEnd.y - this.lineStart.y) / 2
+            var dist = Math.sqrt(Math.pow((this.lineEnd.x - this.lineStart.x)*mppx, 2)+Math.pow((this.lineEnd.y - this.lineStart.y)*mppy, 2))
+
+            this.ctx.font = '14px Arial';
+            this.ctx.fillText(dist.toFixed(0)+'\u03BCm',this.lineStart.x+xmid+5,this.lineStart.y+ymid+5);
+        },
+
         
         plotObjects: function() {
             this.subsamples.each(function(o) {
