@@ -1,0 +1,89 @@
+<h1>Add Diffraction Plan Preset</h1>
+
+<p class="help">This page lets you save the current experimental parameters as a preset for future use</p>
+
+<form>
+<div class="form">
+    <ul>
+
+        <li>
+            <span class="label">Name</span>
+            <input type="text" name="COMMENTS" />
+        </li>
+
+        <li>
+            <span class="label">Public</span>
+            <input type="checkbox" name="GLOBAL" value="1" />
+        </li>
+
+
+        <li>
+            <span class="label">Experiment Type</span>
+            <select name="EXPERIMENTKIND">
+                <option value="MESH">Grid Scan</option>
+                <option value="OSC">Data Collection</option>
+            </select>
+        </li>
+
+        <li>
+            <span class="label">Wavelength</span>
+            <input type="text" name="WAVELENGTH" />&#197;
+        </li>
+
+        <li>
+            <span class="label">Transmission</span>
+            <input type="text" name="TRANSMISSION" />%
+        </li>
+
+
+        <li>
+            <span class="label">Exposure Time</span>
+            <input type="text" name="EXPOSURETIME" />s
+        </li>
+
+        <li>
+            <span class="label">Resolution</span>
+            <input type="text" name="REQUIREDRESOLUTION" />&#197;
+        </li>
+
+        <li>
+            <span class="label">Beam Size</span>
+            
+            X: <input type="text" name="PREFERREDBEAMSIZEX" /> &micro;m
+            Y: <input type="text" name="PREFERREDBEAMSIZEY" /> &micro;m
+        </li>
+
+
+        <li class="grid">
+            <span class="label">Box Size</span>
+            
+            Width: <input type="text" name="BOXSIZEX" /> &micro;m
+            Height: <input type="text" name="BOXSIZEY" /> &micro;m
+        </li>
+
+
+        <li class="data">
+            <span class="label">Number of Images</span>
+            <input type="text" name="NUMBEROFIMAGES" />
+        </li>
+
+        <li class="data">
+            <span class="label">Omega Start</span>
+            <input type="text" name="AXISSTART" /> &deg;
+        </li>
+
+        <li class="data">
+            <span class="label">Omega Range</span>
+            <input type="text" name="AXISRANGE" /> &deg;
+        </li>
+
+        <li class="data">
+            <span class="label">Kappa Start</span>
+            <input type="text" name="KAPPASTART" /> &deg;
+        </li>
+
+    </ul>
+
+    <button name="submit" value="1" type="submit" class="button submit">Add Preset</button>
+</div>
+</form>

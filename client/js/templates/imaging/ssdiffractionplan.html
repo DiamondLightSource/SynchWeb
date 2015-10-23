@@ -30,7 +30,8 @@
             <span class="label">Preset</span>
             <span>
                 <select name="preset"></select> 
-                <a href="#" class="button"><i class="fa fa-plus"></i> <span>Apply</span></a>
+                <a href="#" class="button apply"><i class="fa fa-plus"></i> <span>Apply</span></a>
+                <a href="#" class="button save"><i class="fa fa-save"></i> <span>Save As</span></a>
             </span>
         </li>
 
@@ -41,30 +42,30 @@
 
         <li>
             <span class="label">Wavelength</span>
-            <span class="WAVELENGTH"><%=WAVELENGTH%></span>
+            <span class="WAVELENGTH"><%=WAVELENGTH%></span>&#197;
         </li>
 
         <li>
             <span class="label">Transmission</span>
-            <span class="TRANSMISSION"><%=TRANSMISSION%></span>
+            <span class="TRANSMISSION"><%=TRANSMISSION%></span>%
         </li>
 
 
         <li>
             <span class="label">Exposure Time</span>
-            <span class="EXPOSURETIME"><%=EXPOSURETIME%></span>
+            <span class="EXPOSURETIME"><%=EXPOSURETIME%></span>s
         </li>
 
         <li>
             <span class="label">Resolution</span>
-            <span class="REQUIREDRESOLUTION"><%=REQUIREDRESOLUTION%></span>
+            <span class="REQUIREDRESOLUTION"><%=REQUIREDRESOLUTION%></span>&#197;
         </li>
 
         <li>
             <span class="label">Beam Size</span>
             
-            X: <span class="PREFERREDBEAMSIZEX"><%=PREFERREDBEAMSIZEX%></span>
-            Y: <span class="PREFERREDBEAMSIZEY"><%=PREFERREDBEAMSIZEY%></span>
+            X: <span class="PREFERREDBEAMSIZEX"><%=PREFERREDBEAMSIZEX%></span>&micro;m
+            Y: <span class="PREFERREDBEAMSIZEY"><%=PREFERREDBEAMSIZEY%></span>&micro;m
         </li>
 
 
@@ -83,17 +84,17 @@
 
         <li class="data">
             <span class="label">Omega Start</span>
-            <span class="AXISSTART"><%=AXISSTART%></span>
+            <span class="AXISSTART"><%=AXISSTART%></span>&deg;
         </li>
 
         <li class="data">
             <span class="label">Omega Range</span>
-            <span class="AXISRANGE"><%=AXISRANGE%></span>
+            <span class="AXISRANGE"><%=AXISRANGE%></span>&deg;
         </li>
 
         <li class="data">
             <span class="label">Kappa Start</span>
-            <span class="KAPPASTART"><%=KAPPASTART%></span>
+            <span class="KAPPASTART"><%=KAPPASTART%></span>&deg;
         </li>
 
     </ul>

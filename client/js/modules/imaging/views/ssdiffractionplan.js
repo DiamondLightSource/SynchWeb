@@ -1,9 +1,16 @@
 define(['marionette',
     
+    'modules/imaging/models/plan',
+    'modules/imaging/collections/plans',
+
+    'modules/imaging/views/presetadd',
+
     'utils/editable',
     'tpl!templates/imaging/ssdiffractionplan.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, Editable, template, Backbone) {
+    ], function(Marionette, 
+        DiffractionPlan, DiffractionPlans, PresetAddView,
+        Editable, template, Backbone) {
     
     
         
@@ -14,6 +21,47 @@ define(['marionette',
         modelEvents: {
             'change:EXPERIMENTKIND': 'toggleType',
         },
+
+        ui: {
+            plan: 'select[name=preset]',
+        },
+
+        events: {
+            'click a.save': 'savePreset',
+            'click a.apply': 'applyPreset',
+        },
+
+        savePreset: function(e) {
+            e.preventDefault()
+
+            var preset = new DiffractionPlan()
+
+            _.each(['EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'REQUIREDRESOLUTION'], function(k) {
+                preset.set(k, this.model.get(k))
+            }, this)
+
+            app.dialog.show(new DialogView({ 
+                title: 'Add Diffraction Plan Preset',
+                className: 'content', 
+                view: new PresetAddView({ dialog: true, model: preset }),
+                autoSize: true 
+            })) 
+        },
+
+        applyPreset: function(e) {
+            e.preventDefault()
+
+            var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.plan.val() })
+            console.log(p)
+            if (p) {
+                _.each(['EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'REQUIREDRESOLUTION'], function(k) {
+                    this.model.set(k, p.get(k))
+                }, this)
+                this.model.save({})
+                this.render()
+            }
+        },
+
 
 
         toggleType: function(e) {
@@ -30,6 +78,13 @@ define(['marionette',
 
         initialize: function(options) {
             Backbone.Validation.bind(this);
+
+            this.plans = new DiffractionPlans()
+            this._ready = this.plans.fetch()
+        },
+
+        updatePlans: function(e) {
+            this.ui.plan.html(this.plans.opts())
         },
         
         
@@ -53,6 +108,8 @@ define(['marionette',
             edit.create('KAPPASTART', 'text');
             
             this.toggleType()
+
+            $.when(this._ready).done(this.updatePlans.bind(this))
         },
         
     })
