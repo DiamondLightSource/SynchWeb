@@ -69,8 +69,14 @@
 
                               array('/sub(/:ssid)(/sid/:sid)', 'get', '_sub_samples'),
                               array('/sub/:ssid', 'patch', '_update_sub_sample'),
+                              array('/sub/:ssid', 'put', '_update_sub_sample_full'),
                               array('/sub', 'post', '_add_sub_sample'),
                               array('/sub/:ssid', 'delete', '_delete_sub_sample'),
+
+                              array('/plan', 'get', '_get_diffraction_plans'),
+                              array('/plan', 'post', '_add_diffraction_plan'),
+                              array('/plan/:pid', 'delete', '_delete_diffraction_plan'),
+
 
                               array('/proteins(/:pid)', 'get', '_proteins'),
                               array('/proteins', 'post', '_add_protein'),
@@ -165,6 +171,35 @@
                 }
             }
         }
+
+
+        function _update_sub_sample_full() {
+            if (!$this->arg('ssid')) $this->_error('No sub sample specified');
+
+            $samp = $this->db->pq("SELECT ss.diffractionplanid,s.blsampleid,ss.positionid FROM blsubsample ss
+              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+              INNER JOIN container c ON c.containerid = s.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              WHERE p.proposalid=:1 AND ss.blsubsampleid=:2", array($this->proposalid, $this->arg('ssid')));
+
+            if (!sizeof($samp)) $this->_error('No such sub sample');
+
+            if ($samp[0]['DIFFRACTIONPLANID']) {
+                $args = array($samp[0]['DIFFRACTIONPLANID']);
+                foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME') as $f) {
+                    array_push($args, $this->has_arg($f) ? $this->arg($f) : null);
+                }
+                $this->db->pq('UPDATE diffractionplan 
+                  SET requiredresolution=:2, experimentkind=:3, preferredbeamsizex=:4, preferredbeamsizey=:5, exposuretime=:6 
+                  WHERE diffractionplanid=:1', $args);
+
+                $this->_output(array('BLSUBSAMPLEID' => $this->arg('ssid')));
+            }
+        }
+
+
 
         function _add_sub_sample() {
             if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
@@ -818,6 +853,50 @@
             
             $this->_output(array('PROTEINID' => $pid));
         }
+
+
+        function _get_diffraction_plans() {
+            $where = '';
+            $args = array();//$this->proposalid);
+
+            if ($this->has_arg('did')) {
+                $where .= ' AND dp.diffractionplanid = :'.(sizeof($args)+1);
+                array_push($args, $this->arg('did'));
+            }
+
+            $dps = $this->db->pq("SELECT dp.diffractionplanid, dp.comments, dp.complexity,
+              dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, rtrim(to_char(dp.exposuretime, 'FM90.99'), '.') as exposuretime, rtrim(to_char(dp.requiredresolution, 'FM90.99'), '.') as requiredresolution
+              FROM diffractionplan dp
+              WHERE dp.complexity = 'PRESET' $where
+            ", $args);
+
+            if ($this->has_arg('did')) {
+                if (sizeof($dps)) $this->_output($dps[0]);
+                else $this->_error('No such diffraction plan');
+
+            } else $this->_output($dps);
+        }
+
+
+        function _add_diffraction_plan() {
+            if (!$this->has_arg('COMMENTS')) $this->_error('No name specified');
+
+            $args = array('PRESET', $this->arg('COMMENTS'));
+            foreach(array('EXPERIMENTKIND', 'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME') as $f) {
+                array_push($args, $this->has_arg($f) ? $this->arg($f) : null);
+            } 
+
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, complexity, comments, experimentkind, requiredresolution, preferredbeamsizex, preferredbeamsizey, exposuretime)
+              VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7) RETURNING diffractionplanid INTO :id", $args);
+
+            $this->_output(array('DIFFRACTIONPLANID' => $this->db->id()));
+        }
+
+
+        function _delete_diffraction_plan() {
+
+        }
+
         
     }
 
