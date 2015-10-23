@@ -6,6 +6,7 @@ define(['backbone'], function(Backbone) {
           
         defaults: {
             COMPONENTS: 0,
+            GROUPS: 0,
         },
 
         validation: {

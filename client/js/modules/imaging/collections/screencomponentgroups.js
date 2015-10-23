@@ -22,6 +22,21 @@ define(['backbone.paginator', 'modules/imaging/models/screencomponentgroup'], fu
             })
             this.trigger('selected:change')
         },
+
+
+        save: function(options) {
+            options = _.extend({}, options)
+            
+            var col = this
+            var success = options.success;
+            options.success = function(resp) {
+                col.reset(resp)
+                if (success) success(col, resp, options);
+                col.trigger('sync', col, resp, options);
+            };
+            
+            return Backbone.sync('update', this, options)
+        },
       
   	})
 })

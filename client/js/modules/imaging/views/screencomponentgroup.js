@@ -5,13 +5,15 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
         'utils/editable',
         'tpl!templates/imaging/screencomponentgroup.html',
         'tpl!templates/imaging/screencomprow.html',
-        'tpl!templates/imaging/screencomprownew.html'
+        'tpl!templates/imaging/screencomprownew.html',
+        'jquery',
+        'jquery-ui.combobox',
         ], function(Marionette, Backbone, 
         	TableView, ValidatedRow, utils,
         	DistinctProteins,
         	ScreenComponents, ScreenComponent,
         	Editable, 
-        	template, rowtemplate, rowtemplatenew) {
+        	template, rowtemplate, rowtemplatenew, $) {
 
     var ComponentGridRow = ValidatedRow.extend({
     	editable: true,
@@ -76,9 +78,9 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
     	},
 
     	onRender: function() {
-    		if (this.model.get('edit')) {
+    		if (this.model.get('edit') || this.model.get('new')) {
     			_.each(['CONCENTRATION', 'PH'], function(f, i) {
-                if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
+                	if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             	}, this)
     		}
     	}
@@ -139,7 +141,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 					m.set('SCREENCOMPONENTGROUPID', this.model.get('SCREENCOMPONENTGROUPID'))
 				}, this)
 
-				this.collection.save({
+				this.components.save({
 					success: this.onSaveCollection.bind(this),
 					failure: function() {
 						app.alert({ message: 'Something went wrong registering the group components' })
@@ -150,11 +152,9 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 		},
 
 		onSaveCollection: function() {
-			this.collection.each(function(m,i) {
+			this.components.each(function(m,i) {
 				m.set({ new: false })
 			})
-
-			this.components.fetch()
 
 			this.render()
 		},
@@ -164,7 +164,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 			this.collection = new ScreenComponents()
 
 			this.components = options && options.components
-			this.listenTo(this.components, 'add remove', this.selectComponents, this)
+			this.listenTo(this.components, 'add remove sync', this.selectComponents, this)
 
 
 			this.componentlist = new DistinctProteins()
@@ -190,6 +190,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 					COMPONENT: component.get('NAME') || component.get('ACRONYM'),
 					UNIT: component.get('UNIT'),
 					HASPH: component.get('HASPH'),
+					POSITION: this.model.get('POSITION'),
 
 					new: true,
 					canSave: this.model.get('SCREENCOMPONENTGROUPID') > 0
@@ -210,7 +211,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
         },
 
         selectComponents: function() {
-        	if (this.model) var cs = this.components.where({ SCREENCOMPONENTGROUPID: this.model.get('SCREENCOMPONENTGROUPID') })
+        	if (this.model) var cs = this.components.where({ POSITION: this.model.get('POSITION') })
         		else var cs = []
         	this.collection.reset(cs)
         }

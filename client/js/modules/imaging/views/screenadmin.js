@@ -28,7 +28,7 @@ define(['marionette', 'backbone',
         
         ui: {
             name: 'input[name=NAME]',
-            global: 'input[name=GLOBAL]',
+            global: 'select[name=GLOBAL]',
         },
         
         cancelScreen: function(e) {
