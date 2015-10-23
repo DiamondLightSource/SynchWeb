@@ -332,7 +332,8 @@ div.log {
     }
 
     .fixed li {
-        width: 4.5%;
+        /*width: 4.5%;*/
+        @include cols(12,2% 3%, 0.2%);
         margin-bottom: 0.5%;
     }
 }
