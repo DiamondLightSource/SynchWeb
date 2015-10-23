@@ -15,6 +15,7 @@
                                         'scgid' => '\d+',
                                         'sid' => '\d+',
                                         'f' => '\d',
+                                        'did' => '\d+',
                                         'all' => '\d',
                                         'allStates' => '\d',
 
@@ -80,6 +81,7 @@
 
                                         array('/screen/groups(/:scgid)', 'get', '_get_screen_componentgroups'),
                                         array('/screen/groups', 'post', '_add_screen_componentgroup'),
+                                        array('/screen/groups', 'put', '_add_screen_componentgroups'),
                                         array('/screen/groups/:scgid', 'patch', '_update_screen_componentgroup'),
 
                                         array('/screen/components(/:sccid)', 'get', '_get_screen_components'),
@@ -754,6 +756,28 @@
         }
 
         function _add_screen_componentgroup() {
+            $id = $this->_do_add_screen_componentgroup();
+            $this->_output(array('SCREENCOMPONENTGROUPID' => $id));
+        }
+
+        function _add_screen_componentgroups() {
+            if (!$this->has_arg('collection')) $this->_error('No groups specified');
+
+            foreach ($this->arg('collection') as $g) {
+                if (array_key_exists('SCREENID', $c)) $this->args['SCREENID'] = $c['SCREENID'];
+                else unset($this->args['SCREENID']);
+
+                if (array_key_exists('POSITION', $c)) $this->args['POSITION'] = $c['POSITION'];
+                else unset($this->args['POSITION']);
+
+                $this->_do_add_screen_componentgroup();
+            }
+
+            $this->args['scid'] = $this->arg('SCREENID');
+            $this->_get_screen_components();
+        }
+
+        function _do_add_screen_componentgroup() {
             if (!$this->has_arg('SCREENID')) $this->_error('No screen specified');
             if (!$this->has_arg('POSITION')) $this->_error('No position specified');
 
@@ -766,8 +790,9 @@
             $this->db->pq("INSERT INTO screencomponentgroup (screencomponentgroupid, screenid, position) 
               VALUES (s_screencomponentgroup.nextval, :1, :2) RETURNING screencomponentgroupid INTO :id", array($this->arg('SCREENID'), $this->arg('POSITION')));
 
-            $this->_output(array('SCREENCOMPONENTGROUPID' => $this->db->id()));
+            return $this->db->id();
         }
+
 
 
         function _update_screen_componentgroup() {
