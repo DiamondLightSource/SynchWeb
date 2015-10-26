@@ -287,7 +287,7 @@ define(['marionette',
             this.hist.show(this.history)
             this.hist.$el.hide()
             
-            $(document).unbind('keypress', this.keyPress.bind(this)).bind('keypress', this.keyPress.bind(this))
+            $(document).unbind('keypress.imviewer').bind('keypress.imviewer', this.keyPress.bind(this))
         },
         
         keyPress: function(e) {
@@ -410,7 +410,7 @@ define(['marionette',
         },
         
         onDestroy: function() {
-            $(document).unbind('keypress', this.keyPress)
+            $(document).unbind('keypress.imviewer')
         },
 
         drawLarge: function(options) {
