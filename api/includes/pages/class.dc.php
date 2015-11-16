@@ -1184,10 +1184,10 @@
 
             #im.datacollectionid=:1 
             $imqs = $this->db->pq("SELECT * FROM (
-                SELECT rownum as rn, im.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b 
-                FROM image im 
-                INNER JOIN imagequalityindicators imq ON imq.imageid = im.imageid AND (im.datacollectionid IN ($where))
-                ORDER BY im.imagenumber) outer", $args);
+                SELECT rownum as rn, imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b 
+                FROM imagequalityindicators imq 
+            	WHERE imq.datacollectionid IN ($where)
+                ORDER BY imq.imagenumber) outer", $args);
 
             foreach ($imqs as $imq) {
                 array_push($iqs[0], array(intval($imq['NIM']), intval($imq['S'])));
