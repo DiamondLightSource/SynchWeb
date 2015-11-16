@@ -499,7 +499,7 @@
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE p.proposalid = :1 $where
               GROUP BY i.containerid, si.containerinspectionid, i.bltimestamp, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI'), sc.name, sc.score, sc.colour
-              ORDER BY i.bltimestamp DESC", $args);
+              ORDER BY i.bltimestamp", $args);
 
 
             if ($this->has_arg('imid')) {
