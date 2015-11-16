@@ -58,6 +58,10 @@ class MX extends ProposalType {
             } else {
                 $auth = true;
             }
+
+        // Barcode Scanners
+        } else if ($this->bcr() && !$this->user->login) {
+            $auth = true;
             
         // Normal validation
         } else {
@@ -172,6 +176,13 @@ class MX extends ProposalType {
         global $blsr;
         
         return in_array($_SERVER['REMOTE_ADDR'], $blsr);
+    }
+
+
+    # Scanners
+    function bcr() {
+        global $bcr;
+        return in_array($_SERVER['REMOTE_ADDR'], $bcr);
     }
     
 }
