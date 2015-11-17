@@ -29,6 +29,7 @@
                               'PROTEINID' => '\d+',
                               'CONTAINERID' => '\d+',
                               'LOCATION' => '\d+',
+                              'CODE' => '\w+',
                               // 'NAME' => '.*',
                               'ACRONYM' => '([\w-])+',
                               'SEQUENCE' => '\w+',
