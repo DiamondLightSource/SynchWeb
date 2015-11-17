@@ -1202,7 +1202,7 @@
         # ------------------------------------------------------------------------
         # Grid Scan Info
         function _grid_info() {
-            $info = $this->db->pq("SELECT dc.axisstart, p.x, p.y, p.z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel
+            $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.x, p.y, p.z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation
                 FROM gridinfo g
                 INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
                 INNER JOIN position p ON dc.positionid = p.positionid
@@ -1211,6 +1211,7 @@
             if (!sizeof($info)) $this->_output(array());
             else {
                 foreach ($info[0] as $k => &$v) {
+                    if ($k == 'ORIENTATION') continue;
                     $v = floatval($v);
                 }    
                 $this->_output($info[0]);
