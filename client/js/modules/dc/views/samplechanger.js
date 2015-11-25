@@ -57,7 +57,10 @@ define(['marionette', 'utils/canvas', 'utils',
             this.listenTo(this.collection, 'change', this.drawStatus, this)
             this.ready = this.collection.fetch()
             
-            this.positions = options.bl == 'i24' || options.bl == 'i04-1' ? 9 : (options.bl ==  'i03' ? 23 : 10)
+            if (this.model.get('BL') in app.config.pucks) {
+                this.positions = app.config.pucks[this.model.get('BL')]
+            } else this.positions = 10
+            
             if (this.positions > 10) this.$el.addClass('wide')
             
             this.sc = 16
