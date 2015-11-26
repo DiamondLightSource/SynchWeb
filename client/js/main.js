@@ -111,7 +111,7 @@ require.config({
     },
 
     'jquery.editable.datepicker': {
-        deps: ['jquery.editable', 'jquery-ui'],
+        deps: ['jquery.editable'],
     },
     
     
