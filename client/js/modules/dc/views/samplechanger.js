@@ -57,8 +57,8 @@ define(['marionette', 'utils/canvas', 'utils',
             this.listenTo(this.collection, 'change', this.drawStatus, this)
             this.ready = this.collection.fetch()
             
-            if (this.model.get('BL') in app.config.pucks) {
-                this.positions = app.config.pucks[this.model.get('BL')]
+            if (options.bl in app.config.pucks) {
+                this.positions = app.config.pucks[options.bl]
             } else this.positions = 10
             
             if (this.positions > 10) this.$el.addClass('wide')
