@@ -69,10 +69,13 @@ define(['marionette', 'utils/canvas', 'utils',
             this.rpad = 0 //pad - 25
             
             var sw = 18
-            this.aspectratio = sw/this.positions
-            this.contwidth = (this.positions * sw) + this.pad + this.rpad
-            this.$el.css('width', this.contwidth)
-            this.$el.css('right', -this.contwidth+15)
+            this.aspectratio = (sw/this.positions) - (this.positions <= 10 ? 0.3 : 0)
+            this.contwidth = (this.positions * sw) + this.pad + this.rpad + 15
+            console.log('sc width', this.contwidth, this.aspectratio)
+            if (!this.getOption('fullScreen')) {
+                this.$el.css('width', this.contwidth)
+                this.$el.css('right', -this.contwidth+15)
+            }
 
             this.current_sample = null
             this.selected_protein = -1
