@@ -1,46 +1,5 @@
 define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.datepicker', 'jquery-ui.timepicker'], function($, markdown) {
     
-    
-    // Autocomplete
-    $.editable.addInputType('autocomplete', {               
-      element: function(settings, original) {
-        $(this).append('<input type="text"/>');
-        var hidden = $('<input id="prac" type="hidden"/>');
-        $(this).append(hidden);
-        return(hidden);
-      },
-                          
-      plugin : function(settings, original) {
-        var set = $.extend({ select: function(e,ui) { $('#prac').val(ui.item.id) } }, settings.autocomplete)
-        $('input[type=text]', this).autocomplete(set);
-      },
-                          
-      submit: function(settings, original) {
-        if (!$('input[type=hidden]', this).val()) {
-          original.reset()
-          return false
-        }
-     
-      },
-    })
-    
-    
-    // Datetimepicker
-    $.editable.addInputType('datetime', {
-        element : function(settings, original) {
-            settings.onblur = function(e) {
-            };
-                              
-            var ele = $('<input value="'+original+'" />')
-            $(this).append(ele)
-            $(this).children('input').datetimepicker({ dateFormat: "dd-mm-yy" })
-                              
-            return ele
-        },
-    });
-    
-    
-    
     var defaults = {
         submit: 'Ok',
         style: 'display: inline',
@@ -113,6 +72,48 @@ define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.d
         initialize: function(options) {
             this.model = options.model
             this.el = options.el
+            this.addTypes()
+        },
+
+
+        addTypes: function() {
+            // Autocomplete
+            $.editable.addInputType('autocomplete', {               
+              element: function(settings, original) {
+                $(this).append('<input type="text"/>');
+                var hidden = $('<input id="prac" type="hidden"/>');
+                $(this).append(hidden);
+                return(hidden);
+              },
+                                  
+              plugin : function(settings, original) {
+                var set = $.extend({ select: function(e,ui) { $('#prac').val(ui.item.id) } }, settings.autocomplete)
+                $('input[type=text]', this).autocomplete(set);
+              },
+                                  
+              submit: function(settings, original) {
+                if (!$('input[type=hidden]', this).val()) {
+                  original.reset()
+                  return false
+                }
+             
+              },
+            })
+            
+            
+            // Datetimepicker
+            $.editable.addInputType('datetime', {
+                element : function(settings, original) {
+                    settings.onblur = function(e) {
+                    };
+                                      
+                    var ele = $('<input value="'+original+'" />')
+                    $(this).append(ele)
+                    $(this).children('input').datetimepicker({ dateFormat: "dd-mm-yy" })
+                                      
+                    return ele
+                },
+            })
         },
         
         
