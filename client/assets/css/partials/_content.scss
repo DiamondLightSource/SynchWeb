@@ -1069,7 +1069,7 @@ li:last-child .visit_users {
     }
 
     &.in, &:hover {
-        right: 0;
+        right: 0 !important;
     }
     
     &.in {
