@@ -92,9 +92,6 @@ require.config({
     'jquery.editable': {
         deps: ['jquery'],
     },
-    'jquery.editable.datepicker': {
-        deps: ['jquery.editable'],
-    },
     
     'jquery.cookie': {
         deps: ['jquery'],
@@ -111,6 +108,10 @@ require.config({
     
     'jquery-ui.timepicker': {
         deps: ['jquery-ui'],
+    },
+
+    'jquery.editable.datepicker': {
+        deps: ['jquery.editable', 'jquery-ui'],
     },
     
     
