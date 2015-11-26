@@ -59,7 +59,10 @@ define(['jquery', 'marionette',
             this.gridFetched = false
             this.grid.fetch().done(function() {
                 self.gridFetched = true
+                // if (self.grid.get('ORIENTATION')) self.vertical = self.grid.get('ORIENTATION') == 'vertical'
+                // else 
                 self.vertical = (self.grid.get('STEPS_Y') > self.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
+                console.log('grid', self.grid.get('DATACOLLECTIONID'), self.grid.get('ORIENTATION'), 'vertical', self.vertical)
             })
 
             this.hasSnapshot = false
