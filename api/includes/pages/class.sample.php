@@ -36,7 +36,7 @@
                               'MOLECULARMASS' => '\d+(.\d+)?',
                               'LIGANDS' => '\d+',
 
-                              'NAME' => '[\w|\s|-|(|)]+',
+                              'NAME' => '[\w\s-()]+',
                               'COMMENTS' => '.*',
                               'SPACEGROUP' => '\w+',
                               'CELL_A' => '\d+(.\d+)?',
