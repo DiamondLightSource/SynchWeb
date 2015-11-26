@@ -126,9 +126,6 @@ define(['jquery', 'marionette',
         },
             
         
-        onDestroy: function() {
-        
-        },
         
         onDomRefresh: function() {
             this.canvas = this.ui.canvas[0]
@@ -163,7 +160,83 @@ define(['jquery', 'marionette',
                 this.ui.loadprog.show()
             }
             this.onResize()
+
+            $(document).unbind('keypress.diviewer').bind('keypress.diviewer', this.keyPress.bind(this))
         },
+
+
+        keyPress: function(e) {
+            //console.log(e)
+            switch (e.which) {
+              // ,
+              case 44:
+                this.prev()
+                break
+                  
+              // .
+              case 46:
+                this.next()
+                break
+                     
+              // i
+              case 105:
+                this.ui.invert.prop('checked', !this.ui.invert.is(':checked'))
+                this.doInvert()
+                break
+                    
+              // w
+              case 119:
+                this.ui.ice.prop('checked', !this.ui.ice.is(':checked'))
+                this._dra()
+                break
+                  
+              // r
+              case 114:
+                this.ui.res.prop('checked', !this.ui.res.is(':checked'))
+                this._dra()
+                break
+                               
+              // z / Z
+              case 122:
+                this.ui.zoom.slider('value', this.ui.zoom.slider('value')+5)
+                this._clamp_offset()
+                this._dra()
+                break
+
+              case 90:
+                this.ui.zoom.slider('value', this.ui.zoom.slider('value')-5)
+                this._clamp_offset()
+                this._dra()
+                break
+                               
+              // c / C
+              case 99:
+                this.ui.contrast.slider('value', this.ui.contrast.slider('value')+5)
+                break
+                               
+              case 67:
+                this.ui.contrast.slider('value', this.ui.contrast.slider('value')-5)
+                break
+            
+              // b / B
+              case 98:
+                this.ui.brightness.slider('value', this.ui.brightness.slider('value')+5)
+                break
+                               
+              case 66:
+                this.ui.brightness.slider('value', this.ui.brightness.slider('value')-5)
+                break
+                               
+              default: return;
+            }
+        },
+
+
+        onDestroy: function() {
+            clearTimeout(this.cache_thread)
+            $(document).unbind('keypress.diviewer')
+        },
+
         
             
         resetImage: function(e) {
@@ -174,11 +247,12 @@ define(['jquery', 'marionette',
             this.ui.zoom.slider('value', 0)
             this.ui.invert.prop('checked', false)
             
+            var self = this
             setTimeout(function() {
-                this._clamp_offset()
-                this.draw()
-                this._recache()
-                this.adjust()
+                self._clamp_offset()
+                self.draw()
+                self._recache()
+                self.adjust()
             },300)
         },
             
@@ -203,6 +277,7 @@ define(['jquery', 'marionette',
         
         // Load image from remote source
         load: function(n) {
+          this.n = n
           this.showProgressBar()
           this.img.onerror = this._onerror.bind(this,n)
           this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+n)
@@ -226,7 +301,8 @@ define(['jquery', 'marionette',
         
             this.width = this.img.width
             this.height = this.img.height
-            this.imscale = this.width/(this.model.get('BL') == 'i04-1' ? 1679 : 2527);
+            this.imscale = this.width/2527
+            // (this.model.get('BL') == 'i04-1' ? 1679 : 2527);
             this._calc_zoom()
 
             if (this.width*this.scalef > this.canvas.width) this.offsetx = -(this.width*this.scalef - this.canvas.width) / 2
@@ -241,6 +317,7 @@ define(['jquery', 'marionette',
 
             // Set cache point
             this.ci = this.n+1
+            this.cistart = this.ci
             this.precache()
         },
                   
@@ -291,15 +368,19 @@ define(['jquery', 'marionette',
         
         // Start precaching images
         precache: function() {
+            clearTimeout(this.cache_thread)
             var self = this
-            if ($(window).width() > 800) {
-                var pro = function() {
-                    console.log('loaded', self.ci)
-                    setTimeout(function() {
-                       if (self.ci < self.model.get('NI')) self.precache(++self.ci)
-                    }, 500)
-                    this.$el.find('.precache').html('Precached '+self.ci+' of '+self.model.get('NI'))
-                }
+            if (!app.mobile() && ((this.ci - this.cistart) < 10)) {
+                var url = app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+self.ci
+                require(['image!'+url], function(image) {
+                    self.ui.loadprog.html('Cached Image '+self.ci)
+                    self.ui.loadprog.show()
+                    if (self.ci < self.model.get('NI')) {
+                        self.ci++
+                        self.cache_thread = setTimeout(self.precache.bind(self), 500)
+                    }
+
+                })
             }
         },
         
@@ -658,13 +739,13 @@ define(['jquery', 'marionette',
         // Bind image adjustments
         slideChangeContrast: function( e, ui ) {
             this.contrast = this.ui.contrast.slider('value')
-            this.ui.contrast.prev('#cval').text(this.contrast)
+            this.ui.cval.text(this.contrast)
             this._dra()
         },
           
         slideChangeBrightness: function( e, ui ) {
             this.brightness = this.ui.brightness.slider('value')
-            this.ui.brightness.prev('#bval').text(this.brightness)
+            this.ui.bval.text(this.brightness)
             this._dra()
         },
           
