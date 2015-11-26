@@ -85,5 +85,10 @@
             name: "modules/admin/controller",
             exclude: ['main'],
         },
+
+        {
+            name: "modules/imaging/controller",
+            exclude: ['main'],
+        },
     ]    
 })
