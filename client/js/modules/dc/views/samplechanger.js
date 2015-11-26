@@ -61,13 +61,19 @@ define(['marionette', 'utils/canvas', 'utils',
                 this.positions = app.config.pucks[options.bl]
             } else this.positions = 10
             
-            if (this.positions > 10) this.$el.addClass('wide')
+            // if (this.positions > 10) this.$el.addClass('wide')
             
             this.sc = 16
             this.tpad = 30
             this.pad = 30
             this.rpad = 0 //pad - 25
             
+            var sw = 18
+            this.aspectratio = sw/this.positions
+            this.contwidth = (this.positions * sw) + this.pad + this.rpad
+            this.$el.css('width', this.contwidth)
+            this.$el.css('right', -this.contwidth+15)
+
             this.current_sample = null
             this.selected_protein = -1
             
@@ -91,7 +97,7 @@ define(['marionette', 'utils/canvas', 'utils',
             //this.canvas.width = this.$el.width() - this.$el.find('.handle').width()
             //this.canvas.height = this.$el.width() * 1.5
             this.canvas.width = this.ui.wrap.width() - (this.getOption('fullScreen') ? 0 : this.$el.find('.handle').width())
-            this.canvas.height = this.ui.wrap.width() * (this.positions > 10 ? 0.8 : 1.5)
+            this.canvas.height = this.ui.wrap.width() * this.aspectratio
             
             this.sw = (this.canvas.width - this.pad - this.rpad) / this.positions
             this.sh = (this.canvas.height-this.tpad-15) / (this.sc-1)
