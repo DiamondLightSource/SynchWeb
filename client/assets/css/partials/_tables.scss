@@ -509,6 +509,13 @@ html[xmlns] .dataTables_wrapper { display: block; }
                 }
             }
         }
+
+        &.bc {
+            td:nth-of-type(1):before { content: "Beam Centre"; }
+            td:nth-of-type(2):before { content: "X"; }
+            td:nth-of-type(3):before { content: "Y"; }
+
+        }
     }
 }
 
