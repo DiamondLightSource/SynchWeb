@@ -91,7 +91,7 @@
             global $prop_types, $bl_types, $prop_codes;
 
             $args = array();
-            $codes = implode("', '", $prop_codes);
+            $codes = implode("', '", (array)$prop_codes);
             $where = "WHERE p.proposalcode in ('$codes')";
 
             if ($id) {
