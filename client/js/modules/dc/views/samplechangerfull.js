@@ -13,12 +13,27 @@ define(['marionette',
         regions: {
             dcl: '.dcl',
         },
+
+        templateHelpers: function() {
+            return {
+                BL: this.getOption('bl')
+            }
+        },
         
         onRender: function() {
-            if (!app.mobile()) {
+            var bl = this.getOption('bl')
+            var large = bl in app.config.pucks && app.config.pucks[bl] > 10
+            console.log('sc large', large)
+            if (!app.mobile() && !large) {
                 this.$el.find('.left').css('width', '25%')
                 this.$el.find('.right').css('width', '73%')
             }
+
+            if (large) {
+                this.$el.find('.left').removeClass('left')
+                this.$el.find('.right').removeClass('right')
+            }
+
             this.$el.find('.key').show().css('float', 'none')
             
             this.dcs = new DCs(null, { running: false, state: { pageSize: 5 } })
