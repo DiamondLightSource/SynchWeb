@@ -4,9 +4,11 @@
     require 'lib/Slim/Slim.php';
     \Slim\Slim::registerAutoloader();
 
+    session_cache_limiter(false);
+
     $app = new \Slim\Slim(array(
-        'mode' => 'production'
-        // 'mode' => 'development'
+        //'mode' => 'production'
+        'mode' => 'development'
     ));
 
     $app->configureMode('production', function () use ($app) {
@@ -75,8 +77,8 @@
     
     include_once('includes/class.page.php');
     include_once('includes/class.db.php');
-    
-    $db = new Oracle($isb['user'], $isb['pass'], $isb['db'], $app);
+    $db = Database::get($app);
+
     register_shutdown_function(array(&$db, '__destruct'));
     
 

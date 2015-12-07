@@ -1,6 +1,5 @@
 <?php
     include_once('includes/class.db.php');
-    include_once('config.php');
     
     class OracleSessionHandler {
         private $db;
@@ -10,9 +9,9 @@
         }
 
         public function _open(){
-            global $isb;
+            $this->db = Database::get();
             
-            $this->db = new Oracle($isb['user'], $isb['pass'], $isb['db']);
+            // $this->db = new $dbclass($isb['user'], $isb['pass'], $isb['db']);
             if($this->db){
                 return true;
             }
