@@ -20,9 +20,11 @@
 
     session_cache_limiter(false);
 
+    require_once('config.php');
+
     $app = new \Slim\Slim(array(
-        //'mode' => 'production'
-        'mode' => 'development'
+        'mode' => $mode == 'production' ? 'production' : 'development'
+        // 'mode' => 'development'
     ));
 
     $app->configureMode('production', function () use ($app) {
@@ -55,8 +57,6 @@
     
     // the following prevents unexpected effects when using objects as save handlers
     register_shutdown_function('session_write_close');
-    
-    require_once('config.php');
 
 
     $parts = explode('/', $app->request->getResourceUri()); 
