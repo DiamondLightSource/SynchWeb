@@ -76,7 +76,10 @@
                               'NAME' => '([\w-])+',
                               'SCHEDULEID' => '\d+',
                               'SCREENID' => '\d+',
-                              );
+        		
+        					  // Plate shipment fields
+        					  'json' => '.*',
+        );
         
 
         public static $dispatch = array(array('/shipments(/:sid)', 'get', '_get_shipments'),
@@ -119,8 +122,11 @@
 
                               array('/terms', 'get', '_get_terms'),
                               array('/termsaccept', 'get', '_accept_terms'),
-        );
 
+        					  array('/shoot_crosshairs', 'post', '_shoot_crosshairs'),
+        					  array('/shoot_crosshairs', 'get', '_shoot_crosshairs_get'),
+        );
+                		
         // Keep session open so we can cache data
         var $session_close = False;
         
@@ -1038,7 +1044,75 @@
             $this->_output(array('SHIPPINGID' => $sid));
         }
         
+        function _select_container($proposalid, $code) {
+        	return $this->db->pq("SELECT max(c.containerid) \"CONTAINERID\"
+					FROM Container c INNER JOIN Dewar d on d.dewarid = c.dewarid INNER JOIN Shipping s on s.shippingid = d.shippingid
+					WHERE s.proposalid=:1 and c.code=:2", array($proposalid, $code));
+        }
         
+        function _update_container_status($containerid, $status) {
+        	$this->db->pq("UPDATE Container set containerstatus=:1 WHERE containerid=:2", array($status, $containerid));
+        }
+        
+        function _update_sample_comments($sampleid, $comments) {
+        	$this->db->pq("UPDATE BLSample set comments=:1 WHERE blsampleid=:2", array($comments, $sampleid));
+        }
+        
+        function _shoot_crosshairs() {
+        	if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
+        	if (!$this->has_arg('json')) $this->_error('No json specified');
+        	 
+        	$json = json_decode($this->arg('json'));
+        	$plate = $json->plate;
+        	 
+        	$barcode = $plate->barcode;
+        
+        	$cid = $this->_select_container($this->proposalid, $barcode);
+        	if (!sizeof($cid)) $this->_error('No such plate with barcode '.$barcode .' for proposalid '. $this->proposalid);
+        	$cid = $cid[0]['CONTAINERID'];
+        		
+        	$drops = $plate->drop;
+        	foreach ($drops as $drop) {
+        		$id = $drop->id;
+        		$imageurl = $drop->imageUrl;
+        		$crystalurl = $drop->crystalUrl;
+        
+        		$row = ord($id[0]) - ord('A');
+        		$col = $id[1].$id[2];
+        		$subpos = $id[4];
+        		$location = ($row * 24) + ($col * 2) - 2 + $subpos;
+        
+        		$sampleid = $this->db->pq("SELECT blsampleid FROM BLSample WHERE containerid=:1 and location=:2", array($cid, $location));
+        		if (!sizeof($sampleid)) $this->_error('No such drop');
+        		$sampleid = $sampleid[0]['BLSAMPLEID'];
+        		$this->_update_sample_comments($sampleid, $imageurl .' '. $crystalurl);
+        		 
+        		$crosshairs = $drop->crossHair;
+        		foreach ($crosshairs as $crosshair) {
+        			$x = $crosshair->x;
+        			$y = $crosshair->y;
+        			$r = $crosshair->r;
+        
+        			# Create cross hair only if corrdinates don't already exist for this drop
+        			$pid = $this->db->pq("SELECT p.positionid
+        					FROM Position p INNER JOIN BLSubSample ss ON ss.positionid = p.positionid WHERE ss.blsampleid=:1 AND p.x=:2 AND p.y=:3",
+                					array($sampleid, $x, $y));
+        			 
+        			if (!sizeof($pid)) {
+        				$this->db->pq("INSERT INTO Position (positionid, x, y)
+              				VALUES (s_position.nextval, :1, :2) RETURNING positionid INTO :id", array($x, $y));
+        				$pid = $this->db->id();
+        				$this->db->pq("INSERT INTO BLSubSample (blsubsampleid, blsampleid, positionid)
+              				VALUES (s_blsubsample.nextval, :1, :2) RETURNING blsubsampleid INTO :id", array($sampleid, $pid));
+        			}
+        		}
+        	}
+        	$this->_update_container_status($cid, 'dc requested');
+        }
+        
+        function _shoot_crosshairs_get() {
+        	$this->_error("This service only accepts POST requests.", "If you just logged in, please try queuing the plate again.");
+        }
         
         function _get_default_dewar() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
