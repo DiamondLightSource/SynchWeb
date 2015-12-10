@@ -11,8 +11,18 @@ export root=$CCP4_MASTER/ccp4-6.4.0/bin
 if [ $3 == 'dimple' -o $3 == 'mrbump' ]; then
 
 if [ $3 == 'dimple' ]; then
-	fofc2="F1=F SIG1=SIGF PHI=PH2FOFCWT W=FOM"
-	fofc="F1=F SIG1=SIGF PHI=PHFOFCWT W=FOM"
+	# fofc2="F1=F SIG1=SIGF PHI=PH2FOFCWT W=FOM"
+	# fofc="F1=F SIG1=SIGF PHI=PHFOFCWT W=FOM"
+	# fofc2="F1=F SIG1=SIGF PHI=PHWT W=FOM"
+	# fofc="F1=F SIG1=SIGF PHI=PHDELWT W=FOM"
+
+	if mtzinfo $1 | grep -q PH2FOFCWT; then
+		fofc2="F1=2FOFCWT SIG1=SIGF PHI=PH2FOFCWT"
+		fofc="F1=F SIG1=SIGF PHI=PHFOFCWT W=FOM"
+	else
+		fofc2="F1=FWT SIG1=SIGF PHI=PHWT"
+		fofc="F1=F SIG1=SIGF PHI=PHDELWT W=FOM"
+	fi
 else
 	fofc2="F1=F SIG1=SIGF PHI=PHWT W=FOM"
 	fofc="F1=F SIG1=SIGF PHI=PHDELWT W=FOM"

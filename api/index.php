@@ -18,8 +18,12 @@
     require 'lib/Slim/Slim.php';
     \Slim\Slim::registerAutoloader();
 
+    session_cache_limiter(false);
+
+    require_once('config.php');
+
     $app = new \Slim\Slim(array(
-        'mode' => 'production'
+        'mode' => $mode == 'production' ? 'production' : 'development'
         // 'mode' => 'development'
     ));
 
@@ -53,8 +57,6 @@
     
     // the following prevents unexpected effects when using objects as save handlers
     register_shutdown_function('session_write_close');
-    
-    require_once('config.php');
 
 
     $parts = explode('/', $app->request->getResourceUri()); 
@@ -89,8 +91,8 @@
     
     include_once('includes/class.page.php');
     include_once('includes/class.db.php');
-    
-    $db = new Oracle($isb['user'], $isb['pass'], $isb['db'], $app);
+    $db = Database::get($app);
+
     register_shutdown_function(array(&$db, '__destruct'));
     
 

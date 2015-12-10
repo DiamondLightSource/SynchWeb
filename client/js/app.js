@@ -100,7 +100,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
                     console.log('logged in', loc)
                     $('#login').dialog('close')
                     app.getuser()
-                    if (xhr) Backbone.ajax(xhr)
+                    // if (xhr) Backbone.ajax(xhr)
 
                 } catch (e) {
                     refresh_thread = setTimeout(refresh, 1000)
