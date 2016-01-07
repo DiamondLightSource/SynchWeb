@@ -83,7 +83,7 @@ define(['views/form',
             
             this.visits = new Visits(null, {
                 queryParams: {
-                    prev: 1,
+                    started: 1,
                     all: 1,
                     bl: function() {
                         return self.ui.bl.val()

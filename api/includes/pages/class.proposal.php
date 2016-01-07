@@ -23,6 +23,7 @@
                               'ty' => '\w+',
                               'next' => '\d',
                               'prev' => '\d',
+        					  'started' => '\d',
                               'proposal' => '\w+\d+',
                               'location' => '(\w|-|\/)+',
                               'current' => '\d',
@@ -241,6 +242,10 @@
                 $where .= " AND s.enddate < SYSDATE";
             }
 
+            if ($this->has_arg('started')) {
+            	$where .= " AND s.startdate < SYSDATE";
+            }
+            
             if ($this->has_arg('next')) {
                 $where .= " AND s.enddate > SYSDATE AND TO_CHAR(s.startdate,'YYYY') > 2009";
                 $this->args['order'] = 'asc';
