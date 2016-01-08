@@ -212,7 +212,7 @@
                         }
 
                     } else if ($f == 'SUBCOMPONENTID') {
-                        $sc = $this->db->pq('SELECT nameFROM bf_subcomponent WHERE subcomponentid=:1', array($this->arg($f)));
+                        $sc = $this->db->pq('SELECT name FROM bf_subcomponent WHERE subcomponentid=:1', array($this->arg($f)));
                         if (sizeof($sc)) {
                             $this->_output(array('SUBCOMPONENT' => $sc[0]['NAME']));
                         }
