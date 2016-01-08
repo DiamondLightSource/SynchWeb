@@ -47,7 +47,7 @@ Editable, utils, template, Backbone) {
         },
         
         onRender: function() {
-            if (app.user == this.model.get('OWNER') || app.user_can('fault_global')) {
+            if (app.user == this.model.get('OWNER') || app.user == this.model.get('ASSIGNEE') || app.user_can('fault_global')) {
                 var self = this
             
                 this.beamlines = new Beamlines()
@@ -55,7 +55,7 @@ Editable, utils, template, Backbone) {
                 
                 this.visits = new Visits(null, {
                     queryParams: {
-                        prev: 1,
+                        started: 1,
                         all: 1,
                         bl: function() {
                             return self.model.get('BEAMLINE')
