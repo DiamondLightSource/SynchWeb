@@ -312,7 +312,7 @@
             
             # For a visit
             if ($this->has_arg('visit')) {
-                $info = $this->db->pq("SELECT s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+                $info = $this->db->pq("SELECT s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
             
                 if (!sizeof($info)) $this->_error('No such visit');
                 else $info = $info[0];
@@ -327,7 +327,7 @@
             // Search
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(b.name) LIKE lower('%'||:".$st."||'%') OR lower(pr.acronym) LIKE lower('%'||:".($st+1)."||'%') OR lower(b.comments) LIKE lower('%'||:".($st+2)."||'%'))";
+                $where .= " AND (lower(b.name) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(b.comments) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
                 for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('s'));
             }
             
@@ -380,8 +380,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT distinct b.blsampleid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, p.proposalcode||p.proposalnumber as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+            $rows = $this->db->paginate("SELECT distinct b.blsampleid, /*b.screencomponentgroupid,*/ ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   
                                   FROM blsample b
@@ -418,12 +417,11 @@
                                   
                                   WHERE $where
                                   
-                                  GROUP BY b.screencomponentgroupid, ssp.blsampleid, ssp.name, b.blsubsampleid, b.blsampleid, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname,s.shippingid,d.dewarid,d.code, c.code, c.containerid, c.samplechangerlocation, p.proposalcode||p.proposalnumber, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  GROUP BY /*b.screencomponentgroupid,*/ ssp.blsampleid, ssp.name, b.blsubsampleid, b.blsampleid, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname,s.shippingid,d.dewarid,d.code, c.code, c.containerid, c.samplechangerlocation, p.proposalcode||p.proposalnumber, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   $having
                                   
-                                  ORDER BY $order
-                                  ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                                  ORDER BY $order", $args);
             
             if ($this->has_arg('sid')) {
                 if (sizeof($rows))$this->_output($rows[0]);
@@ -528,7 +526,7 @@
         # List of proteins for a proposal
         function _proteins() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-            
+
             $args = array($this->proposalid);
             $where = '(pr.proposalid=:1 or pr.global=1)';
             $join = '';
@@ -565,7 +563,7 @@
 
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(pr.name) LIKE lower('%'||:".$st."||'%') OR lower(pr.acronym) LIKE lower('%'||:".($st+1)."||'%'))";
+                $where .= " AND (lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
                 for ($i = 0; $i < 2; $i++) array_push($args, $this->arg('s'));
             }
             
@@ -594,8 +592,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT /*distinct*/ $extc CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, p.proposalcode||p.proposalnumber as prop, pr.name,pr.acronym,pr.molecularmass/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
+            $rows = $this->db->paginate("SELECT /*distinct*/ $extc CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
                                   FROM protein pr
                                   /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
                                   LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
@@ -603,9 +600,8 @@
                                   INNER JOIN proposal p ON p.proposalid = pr.proposalid
                                   $join
                                   WHERE $where
-                                  /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, p.proposalcode||p.proposalnumber*/
-                                  ORDER BY $order
-                                  ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                                  /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, CONCAT(p.proposalcode,p.proposalnumber)*/
+                                  ORDER BY $order", $args);
             
             $ids = array();
             $wcs = array();
@@ -659,7 +655,7 @@
             $where = '';
             
             if ($this->has_arg('term')) {
-                $where = " AND lower(pr.acronym) LIKE lower('%'||:2||'%')";
+                $where = " AND lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:2), '%'))";
                 array_push($args, $this->arg('term'));
             }
             
@@ -704,7 +700,7 @@
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
               INNER JOIN proposal p ON pr.proposalid = p.proposalid 
-              WHERE p.proposalcode || p.proposalnumber LIKE :1 AND b.blsampleid = :2", array($this->arg('prop'),$this->arg('sid')));
+              WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1 AND b.blsampleid = :2", array($this->arg('prop'),$this->arg('sid')));
             
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
@@ -768,7 +764,7 @@
             $prot = $this->db->pq("SELECT pr.proteinid 
               FROM protein pr 
               INNER JOIN proposal p ON pr.proposalid = p.proposalid 
-              WHERE p.proposalcode || p.proposalnumber LIKE :1 AND pr.proteinid = :2", array($this->arg('prop'),$this->arg('PROTEINID')));
+              WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1 AND pr.proteinid = :2", array($this->arg('prop'),$this->arg('PROTEINID')));
             
             if (!sizeof($prot)) $this->_error('No such protein');
             
@@ -837,7 +833,7 @@
         
         function _add_protein() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-            $pids = $this->db->pq("SELECT p.proposalid FROM blsession bl INNER JOIN proposal p ON bl.proposalid = p.proposalid WHERE p.proposalcode || p.proposalnumber LIKE :1", array($this->arg('prop')));
+            $pids = $this->db->pq("SELECT p.proposalid FROM blsession bl INNER JOIN proposal p ON bl.proposalid = p.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
             
             if (!sizeof($pids) > 0) $this->_error('No such proposal');
             else $pid = $pids[0]['PROPOSALID'];

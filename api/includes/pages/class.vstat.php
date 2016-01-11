@@ -34,7 +34,7 @@
             
             $ai = $this->db->pq("SELECT dc.datacollectionid as id, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(max(s.bltimestamp), 'DD-MM-YYYY HH24:MI:SS') as en, (max(s.bltimestamp) - dc.endtime)*86400 as dctime FROM datacollection dc INNER JOIN screening s ON s.datacollectionid = dc.datacollectionid WHERE dc.sessionid=:1 GROUP BY dc.datacollectionid, dc.endtime ORDER BY dc.endtime DESC", array($info['SID']));
             
-            $cent = $this->db->pq("SELECT * FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*86400 as dctime FROM robotaction r INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) WHERE dctime < 1000", array($info['SID']));
+            $cent = $this->db->pq("SELECT * FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*86400 as dctime FROM robotaction r INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) inq WHERE dctime < 1000", array($info['SID']));
             
             #$cent = $this->db->pq("SELECT distinct en,st,dctime FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*86400 as dctime FROM robotaction r INNER JOIN datacollection dc ON r.endtimestamp < dc.starttime WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) WHERE dctime < 1000", array($info['SID']));
             
@@ -192,9 +192,9 @@
             
             $ai = $this->db->pq("SELECT SUM(ai) as aitime, visit FROM (
                     SELECT (max(sc.bltimestamp) - dc.endtime)*24 as ai, s.visit_number as visit FROM datacollection dc INNER JOIN screening sc ON sc.datacollectionid = dc.datacollectionid INNER JOIN blsession s ON s.sessionid = dc.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid $where GROUP BY dc.datacollectionid, s.visit_number, dc.endtime
-                ) GROUP BY visit", $args);
+                ) inq GROUP BY visit", $args);
             
-            $cent = $this->db->pq("SELECT SUM(cent) as centtime, visit FROM (SELECT (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*24 as cent, s.visit_number as visit FROM robotaction r INNER JOIN datacollection dc ON (r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime) INNER JOIN blsession s ON s.sessionid = dc.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid $where GROUP BY r.endtimestamp, s.visit_number) WHERE cent < 0.25 GROUP BY visit", $args);
+            $cent = $this->db->pq("SELECT SUM(cent) as centtime, visit FROM (SELECT (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*24 as cent, s.visit_number as visit FROM robotaction r INNER JOIN datacollection dc ON (r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime) INNER JOIN blsession s ON s.sessionid = dc.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid $where GROUP BY r.endtimestamp, s.visit_number) inq WHERE cent < 0.25 GROUP BY visit", $args);
                                     
             $fault = $this->db->pq("SELECT SUM((f.beamtimelost_endtime-f.beamtimelost_starttime)*24) as lost, s.visit_number as visit FROM bf_fault f INNER JOIN blsession s ON f.sessionid = s.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where GROUP BY s.visit_number", $args);
             
@@ -300,14 +300,14 @@
             }
                                     
             # Data Collections / Hour
-            $dch_tmp = $this->db->pq("SELECT AVG(datacollections) as dcs, TO_CHAR(dh, 'HH24') as hour FROM (
-                    SELECT count(dc.datacollectionid) as datacollections, TRUNC(dc.starttime, 'HH24') as dh
+            $dch_tmp = $this->db->pq("SELECT AVG(datacollections) as dcs, dh as hour FROM (
+                    SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'HH24') as dh
                     FROM datacollection dc
                     INNER JOIN blsession s ON s.sessionid = dc.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     WHERE dc.axisrange > 0 AND dc.overlap = 0 AND p.proposalid=:1 $where
-                    GROUP BY TRUNC(dc.starttime, 'HH24')
-                ) GROUP BY TO_CHAR(dh, 'HH24') ORDER BY hour
+                    GROUP BY TO_CHAR(dc.starttime, 'HH24')
+                ) inq GROUP BY dh ORDER BY hour
             ", $args);
             $dch = array();
             foreach ($dch_tmp as $d) {
@@ -316,14 +316,14 @@
             
                                     
             # Samples Loaded / Hour
-            $slh_tmp = $this->db->pq("SELECT AVG(samples) as SLH, TO_CHAR(dh, 'HH24') as hour FROM (
-                    SELECT count(r.robotactionid) as samples, TRUNC(r.starttimestamp, 'HH24') as dh
+            $slh_tmp = $this->db->pq("SELECT AVG(samples) as SLH, dh as hour FROM (
+                    SELECT count(r.robotactionid) as samples, TO_CHAR(r.starttimestamp, 'HH24') as dh
                     FROM robotaction r
                     INNER JOIN blsession s ON s.sessionid = r.blsessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     WHERE r.actiontype='LOAD' AND p.proposalid=:1 $where
-                    GROUP BY TRUNC(r.starttimestamp, 'HH24')
-                ) GROUP BY TO_CHAR(dh, 'HH24') ORDER BY hour
+                    GROUP BY TO_CHAR(r.starttimestamp, 'HH24')
+                ) inq GROUP BY dh ORDER BY hour
             ", $args);
             $slh = array();
             foreach ($slh_tmp as $d) {
@@ -375,7 +375,7 @@
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             
             $args = array($this->arg('visit'));
-            $where = "WHERE p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1";
+            $where = "WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1";
             
             if (!$this->staff) {
                 if (!$this->has_arg('prop')) $this->_error('No proposal selected', 'You need to select a proposal before viewing this page');
@@ -384,7 +384,7 @@
                 array_push($args, $this->proposalid);
             }
             
-            $info = $this->db->pq("SELECT p.proposalcode || p.proposalnumber as prop, s.beamlinename as bl, s.sessionid as sid, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en, round((s.enddate - s.startdate)*24,1) as len FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where", $args);
+            $info = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename as bl, s.sessionid as sid, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en, round((s.enddate - s.startdate)*24,1) as len FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where", $args);
             
             if (!sizeof($info)) {
                 $this->_error('No such visit');

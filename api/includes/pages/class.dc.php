@@ -135,7 +135,7 @@
             $info = array();
             # Visits
             if ($this->has_arg('visit')) {
-                $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+                $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
             
                 if (!sizeof($info)) {
                     $this->_error('No such visit');
@@ -146,7 +146,7 @@
                 
             # Samples
             } else if ($this->has_arg('sid') && $this->has_arg('prop')) {
-                $info = $this->db->pq("SELECT s.blsampleid FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE s.blsampleid=:1 AND p.proposalcode || p.proposalnumber LIKE :2", array($this->arg('sid'), $this->arg('prop')));
+                $info = $this->db->pq("SELECT s.blsampleid FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE s.blsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('sid'), $this->arg('prop')));
                 
                 $tables2 = array('dc', 'bes', 'r', 'xrf');
                 foreach ($tables2 as $i => $t) $sess[$i] = $t.'.blsampleid=:'.($i+1);
@@ -162,8 +162,8 @@
                                 array('project_has_xfefspectrum', 'xrf', 'xfefluorescencespectrumid'),
                                 );
 
-                $extc = "prop.proposalcode||prop.proposalnumber||'-'||ses.visit_number as vis, prop.proposalcode||prop.proposalnumber as prop, ";
-                $extcg = "max(prop.proposalcode||prop.proposalnumber||'-'||ses.visit_number) as vis, max(prop.proposalcode||prop.proposalnumber) as prop, ";
+                $extc = "CONCAT(CONCAT(CONCAT(prop.proposalcode,prop.proposalnumber), '-'), ses.visit_number) as vis, CONCAT(prop.proposalcode, prop.proposalnumber) as prop, ";
+                $extcg = "max(CONCAT(CONCAT(CONCAT(prop.proposalcode,prop.proposalnumber), '-'), ses.visit_number)) as vis, max(CONCAT(prop.proposalcode, prop.proposalnumber)) as prop, ";
                 if ($this->has_arg('dcg')) $extcg = $extc;
 
                 foreach ($tables as $i => $t) {
@@ -199,7 +199,7 @@
                 
             # Proposal
             } else if ($this->has_arg('prop')) {
-                $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE p.proposalcode || p.proposalnumber LIKE :1', array($this->arg('prop')));
+                $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
                 
                 for ($i = 0; $i < 4; $i++) {
                     $sess[$i] = 'ses.proposalid=:'.($i+1);
@@ -276,10 +276,10 @@
                 $s = str_replace('_', '$_', $this->arg('s'));
 
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(dc.filetemplate) LIKE lower('%'||:$st||'%') ESCAPE '$' OR lower(dc.imagedirectory) LIKE lower('%'||:".($st+1)."||'%') ESCAPE '$' OR lower(smp.name) LIKE lower('%'||:".($st+2)."||'%') ESCAPE '$')";
-                $where2 .= " AND (lower(es.comments) LIKE lower('%'||:".($st+3)."||'%') ESCAPE '$' OR lower(es.element) LIKE lower('%'||:".($st+4)."||'%') ESCAPE '$' OR lower(smp.name) LIKE lower('%'||:".($st+5)."||'%') ESCAPE '$')";
+                $where .= " AND (lower(dc.filetemplate) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) ESCAPE '$' OR lower(dc.imagedirectory) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) ESCAPE '$' OR lower(smp.name) LIKE lower(CONCAT(CONCAT('%', :".($st+2)."), '%')) ESCAPE '$')";
+                $where2 .= " AND (lower(es.comments) LIKE lower(CONCAT(CONCAT('%',:".($st+3)."), '%')) ESCAPE '$' OR lower(es.element) LIKE lower(CONCAT(CONCAT('%',:".($st+4)."), '%')) ESCAPE '$' OR lower(smp.name) LIKE lower(CONCAT(CONCAT('%',:".($st+5)."), '%')) ESCAPE '$')";
                 $where3 .= ' AND r.robotactionid < 0';
-                $where4 .= " AND (lower(xrf.filename) LIKE lower('%'||:".($st+6)."||'%') ESCAPE '$' OR lower(smp.name) LIKE lower('%'||:".($st+7)."||'%') ESCAPE '$')";
+                $where4 .= " AND (lower(xrf.filename) LIKE lower(CONCAT(CONCAT('%',:".($st+6)."), '%')) ESCAPE '$' OR lower(smp.name) LIKE lower(CONCAT(CONCAT('%',:".($st+7)."), '%')) ESCAPE '$')";
                 
                 for ($i = 0; $i < 8; $i++) array_push($args, $s);
             }
@@ -332,7 +332,7 @@
                 INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
                 LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
                 $extj[2]
-                WHERE $sess[2]  $where3)", $args);
+                WHERE $sess[2]  $where3) inq", $args);
             $tot = $tot[0]['T'];
             
             $this->profile('after page count');
@@ -345,11 +345,7 @@
             array_push($args, $end);
 
 
-            $q = "SELECT outer.*
-             FROM (SELECT ROWNUM rn, inner.*
-             FROM (
-                           
-             SELECT $extcg $fields FROM datacollection dc
+            $q = "SELECT $extcg $fields FROM datacollection dc
              INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
              INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
              LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
@@ -381,12 +377,9 @@
             WHERE $sess[2] $where3
                  
                    
-            ORDER BY sta DESC
-             
-            ) inner) outer
-            WHERE outer.rn > :$st AND outer.rn <= :".($st+1);
+            ORDER BY sta DESC";
             
-            $dcs = $this->db->pq($q, $args);
+            $dcs = $this->db->paginate($q, $args);
             $this->profile('main query');            
             
             foreach ($dcs as $i => &$dc) {
@@ -483,7 +476,7 @@
                 return;
             }
             
-            $dct = $this->db->pq("SELECT p.proposalcode||p.proposalnumber||'-'||s.visit_number as vis, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $ids);
+            $dct = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $ids);
             
             $this->db->close();
             $this->profile('dc query');
@@ -965,11 +958,11 @@
                         'Dimple' => array('fast_dp', array('dimple/final.pdb', 'dimple/final.mtz'))
                         );
             
-            list($info) = $this->db->pq('SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis
+            list($info) = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
              FROM datacollection dc
              INNER JOIN blsession s ON s.sessionid=dc.sessionid 
              INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
-             WHERE dc.datacollectionid=:1', array($id));
+             WHERE dc.datacollectionid=:1", array($id));
             
             $this->db->close();
             $info['DIR'] = $this->ads($info['DIR']);
@@ -1183,11 +1176,10 @@
             array_push($args, $int);*/
 
             #im.datacollectionid=:1 
-            $imqs = $this->db->pq("SELECT * FROM (
-                SELECT rownum as rn, imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b 
+            $imqs = $this->db->pq("SELECT imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b 
                 FROM imagequalityindicators imq 
             	WHERE imq.datacollectionid IN ($where)
-                ORDER BY imq.imagenumber) outer", $args);
+                ORDER BY imq.imagenumber", $args);
 
             foreach ($imqs as $imq) {
                 array_push($iqs[0], array(intval($imq['NIM']), intval($imq['S'])));
@@ -1352,18 +1344,12 @@
             array_push($args, $end);
 
 
-            $comments = $this->db->pq("SELECT outer.*
-                FROM (SELECT ROWNUM rn, inner.*
-                FROM (
-
-                    SELECT dcc.datacollectioncommentid, dcc.datacollectionid, dcc.personid, dcc.comments, TO_CHAR(dcc.createtime, 'DD-MM-YYYY HH24:MI:SS') as createtime, TO_CHAR(dcc.modtime, 'DD-MM-YYYY HH24:MI:SS') as modtime, p.givenname, p.familyname
+            $comments = $this->db->paginate("SELECT dcc.datacollectioncommentid, dcc.datacollectionid, dcc.personid, dcc.comments, TO_CHAR(dcc.createtime, 'DD-MM-YYYY HH24:MI:SS') as createtime, TO_CHAR(dcc.modtime, 'DD-MM-YYYY HH24:MI:SS') as modtime, p.givenname, p.familyname
                     FROM datacollectioncomment dcc
                     INNER JOIN datacollection dc ON dc.datacollectionid = dcc.datacollectionid
                     INNER JOIN person p ON p.personid = dcc.personid
                     WHERE $where
-                    ORDER BY dcc.createtime ASC
-                ) inner) outer
-                WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                    ORDER BY dcc.createtime ASC", $args);
 
 
             if ($this->has_arg('dcid')) {

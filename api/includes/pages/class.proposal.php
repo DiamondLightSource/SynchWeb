@@ -96,7 +96,7 @@
             $where = "WHERE p.proposalcode in ('$codes')";
 
             if ($id) {
-                $where .= " AND p.proposalcode||p.proposalnumber LIKE :".(sizeof($args)+1);
+                $where .= " AND CONCAT(p.proposalcode,p.proposalnumber) LIKE :".(sizeof($args)+1);
                 array_push($args, $id);
             }
             
@@ -115,7 +115,8 @@
                 }
             } else {
                 #$where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
-                $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid AND shp.personid=:".(sizeof($args)+1).' '.$where;
+                $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid  ".$where;
+                $where .= " AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
                 
                 #$where .= " AND s.sessionid in ('".implode("','", $this->sessionids)."')";
@@ -123,7 +124,7 @@
             
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(p.title) LIKE lower('%'||:".$st."||'%') OR lower(p.proposalcode || p.proposalnumber) LIKE lower('%'||:".($st+1)."||'%'))";
+                $where .= " AND (lower(p.title) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(CONCAT(p.proposalcode, p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
                 for ($i = 0; $i < 2; $i++) array_push($args, $this->arg('s'));
             }
 
@@ -152,13 +153,11 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->pq("SELECT outer.* FROM (
-                SELECT ROWNUM rn, inner.* FROM (
-                    SELECT p.proposalcode || '-' || p.proposalnumber as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid 
+            $rows = $this->db->paginate("SELECT CONCAT(CONCAT(p.proposalcode,'-'),p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid 
                     FROM proposal p 
                     INNER JOIN blsession s ON p.proposalid = s.proposalid 
                     $where 
-                    GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                    GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order", $args);
             
 
             foreach ($rows as &$r) {
@@ -220,7 +219,7 @@
                 $where = 'WHERE 1=1';
                 
             } else {
-                $props = $this->db->pq('SELECT proposalid as id FROM proposal WHERE proposalcode || proposalnumber LIKE :1', array($this->arg('prop')));
+                $props = $this->db->pq('SELECT proposalid as id FROM proposal WHERE CONCAT(proposalcode, proposalnumber) LIKE :1', array($this->arg('prop')));
                 if (!sizeof($props)) $this->_error('No such proposal');
                 else $p = $props[0]['ID'];
 
@@ -275,14 +274,15 @@
             
             
             if ($visit) {
-                $where .= " AND p.proposalcode||p.proposalnumber||'-'||s.visit_number LIKE :".(sizeof($args)+1);
+                $where .= " AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
                 array_push($args, $visit);
             }
             
             
             if (!$this->staff) {
                 // $where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
-                $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid AND shp.personid=:".(sizeof($args)+1).' '.$where;
+                $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid ".$where;
+                $where .= " AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
             }
             
@@ -312,16 +312,13 @@
             }
             
             
-            $rows = $this->db->pq("SELECT outer.* FROM (
-                SELECT ROWNUM rn, inner.* FROM (
-                    SELECT case when sysdate between s.startdate and s.enddate then 1 else 0 end as active, case when sysdate between s.startdate-0.4 and s.enddate+0.4 then 1 else 0 end as cams, p.proposalcode||p.proposalnumber||'-'||s.visit_number as visit, TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as st, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as en, TO_CHAR(s.startdate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as stiso, TO_CHAR(s.enddate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as eniso,  s.sessionid, s.visit_number as vis, s.beamlinename as bl, s.beamlineoperator as lc, s.comments/*, count(dc.datacollectionid) as dcount*/ 
+            $rows = $this->db->paginate("SELECT case when SYSDATE between s.startdate and s.enddate then 1 else 0 end as active, case when SYSDATE between s.startdate-0.4 and s.enddate+0.4 then 1 else 0 end as cams, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as st, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as en, TO_CHAR(s.startdate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as stiso, TO_CHAR(s.enddate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as eniso,  s.sessionid, s.visit_number as vis, s.beamlinename as bl, s.beamlineoperator as lc, s.comments/*, count(dc.datacollectionid) as dcount*/ 
                     FROM blsession s 
                     INNER JOIN proposal p ON p.proposalid = s.proposalid 
                     /*LEFT OUTER JOIN datacollection dc ON s.sessionid = dc.sessionid*/ 
                     $where 
                     /*GROUP BY TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY'),TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY'), s.sessionid, s.visit_number,s.beamlinename,s.beamlineoperator,s.comments,s.startdate*/ 
-                    ORDER BY $order) inner) outer 
-                    WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                    ORDER BY $order", $args);
             
             $ids = array();
             $wcs = array();
@@ -407,7 +404,7 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
             $vis = $this->db->pq("SELECT s.sessionid from blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid 
-                WHERE p.proposalid = :1 AND p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :2", array($this->proposalid, $this->arg('visit')));
+                WHERE p.proposalid = :1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
             
             if (!sizeof($vis)) $this->_error('No such visit');
             
@@ -435,7 +432,7 @@
             //     GROUP BY iu.role,u.name, u.fullname 
             //     ORDER BY SUBSTR(u.fullname,INSTR(u.fullname,' ',-1,1))", array($this->arg('visit')));
             
-            $rows = $this->db->pq("SELECT p.givenname || ' ' || p.familyname as fullname, count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last
+            $rows = $this->db->pq("SELECT CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last
                 FROM person p
                 INNER JOIN session_has_person shp ON p.personid = shp.personid
                 INNER JOIN blsession s ON s.sessionid = shp.sessionid
@@ -444,7 +441,7 @@
                 LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
                 LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate
 
-                WHERE pr.proposalcode||pr.proposalnumber||'-'||s.visit_number LIKE :1
+                WHERE CONCAT(CONCAT(CONCAT(pr.proposalcode, pr.proposalnumber), '-'), s.visit_number) LIKE :1
                 GROUP BY p.givenname, p.familyname
                 ORDER BY p.familyname", array($this->arg('visit')));
 
@@ -469,7 +466,7 @@
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             if (!$this->arg('value')) $this->_error('No comment specified');
             
-            $com = $this->db->pq("SELECT s.comments,s.sessionid from blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE p.proposalcode||p.proposalnumber||'-'||s.visit_number LIKE :1", array($this->arg('visit')));
+            $com = $this->db->pq("SELECT s.comments,s.sessionid from blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
             
             if (!sizeof($com)) $this->_error('No such data collection');
             else $com = $com[0];
