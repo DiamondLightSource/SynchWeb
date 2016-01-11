@@ -43,7 +43,7 @@ class GEN extends ProposalType {
                 $auth = True;
                 
                 if ($this->has_arg('prop')) {
-                    $prop = $this->db->pq('SELECT p.proposalid FROM proposal p WHERE p.proposalcode || p.proposalnumber LIKE :1', array($this->arg('prop')));
+                    $prop = $this->db->pq('SELECT p.proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
                     
                     if (sizeof($prop)) $this->proposalid = $prop[0]['PROPOSALID'];
                 }
@@ -51,7 +51,7 @@ class GEN extends ProposalType {
             // Normal users
             } else {
                 // $rows = $this->db->pq("SELECT lower(i.visit_id) as vis from investigation@DICAT_RO i inner join investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id where u.name=:1", array($this->user));
-                $rows = $this->db->pq("SELECT p.proposalcode||p.proposalnumber||'-'||s.visit_number as vis
+                $rows = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
                     FROM proposal p
                     INNER JOIN blsession s ON p.proposalid = s.proposalid
                     INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid
@@ -65,20 +65,20 @@ class GEN extends ProposalType {
                     
                     // Check user is in this visit
                     if ($this->has_arg('id')) {
-                        $vis = $this->db->pq('SELECT p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN datacollection dc ON s.sessionid = dc.sessionid WHERE dc.datacollectionid = :1', array($this->arg('id')));
+                        $vis = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN datacollection dc ON s.sessionid = dc.sessionid WHERE dc.datacollectionid = :1", array($this->arg('id')));
                         
                         $vis = sizeof($vis) ? $vis[0]['VIS'] : '';
                         
                     } else if ($this->has_arg('visit')) {
                         $vis = $this->arg('visit');
                         
-                        $visp = $this->db->pq("SELECT p.proposalid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+                        $visp = $this->db->pq("SELECT p.proposalid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
                         
                         if (sizeof($visp)) $this->proposalid = $visp[0]['PROPOSALID'];
                         
                     // Check user is in this proposal
                     } else if ($this->has_arg('prop')) {
-                        $viss = $this->db->pq('SELECT p.proposalid, p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode || p.proposalnumber LIKE :1', array($this->arg('prop')));
+                        $viss = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
                         
                         $vis = array();
                         foreach ($viss as $v) array_push($vis, $v['VIS']);

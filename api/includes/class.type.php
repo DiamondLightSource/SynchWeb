@@ -49,7 +49,7 @@ class ProposalType {
             $bl = $this->db->pq("SELECT s.beamlinename 
                 FROM blsession s 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
-                WHERE p.proposalcode||p.proposalnumber||'-'||s.visit_number LIKE :1", array($m[0]));
+                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($m[0]));
             
             if (sizeof($bl)) {
                 $bl = $bl[0]['BEAMLINENAME'];
@@ -85,7 +85,7 @@ class ProposalType {
                         
                         // Proposal code didnt match, work out what beamline the visits are on
                         if (!$found) {
-                            $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE p.proposalcode||p.proposalnumber LIKE :1", array($m[0]));
+                            $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode,p.proposalnumber) LIKE :1", array($m[0]));
                             
                             if (sizeof($bls)) {
                                 foreach ($bls as $bl) {
