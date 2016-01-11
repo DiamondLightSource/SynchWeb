@@ -884,7 +884,7 @@
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
                 WHERE api.datacollectionid = :1 ORDER BY apss.scalingstatisticstype DESC', array($id));
             
-            $types = array('fast_dp' => 'Fast DP', '-3da ' => 'XIA2 3da', '-2d ' => 'XIA2 2d', '-3d ' => 'XIA2 3d', '-2da ' => 'XIA2 2da', '-3daii ' => 'XIA2 3daii', '-3dii ' => 'XIA2 3dii', '-dials ' => 'DIALS');
+            $types = array('fast_dp' => 'Fast DP', '-3da ' => 'XIA2 3da', '-2d ' => 'XIA2 2d', '-3d ' => 'XIA2 3d', '-2da ' => 'XIA2 2da', '-3daii ' => 'XIA2 3daii', '-3dii ' => 'XIA2 3dii', '-dials ' => 'DIALS', 'autoPROC' => 'autoPROC');
             
             $dts = array('cell_a', 'cell_b', 'cell_c', 'cell_al', 'cell_be', 'cell_ga');
             $dts2 = array('rlow', 'rhigh');
