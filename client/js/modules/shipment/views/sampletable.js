@@ -68,6 +68,9 @@ define(['marionette',
         },
             
         success: function(m,r,o) {
+            var p = this.proteins.findWhere({ PROTEINID: parseInt(this.model.get('PROTEINID')) })
+            if (p) this.model.set('ACRONYM', p.get('ACRONYM'))
+
             this.model.set('new', false)
             this.template = sampletablerow
             this.render()

@@ -7,6 +7,10 @@ define(['underscore', 'backbone.paginator', 'models/sample'], function(_, Pageab
         url: function() {
             return '/sample'+(this.containerID ? ('/cid/' + this.containerID) : '')
         },
+
+        comparator: function(s) {
+            return parseInt(s.get('LOCATION'))
+        },
             
         state: {
             pageSize: 15,
