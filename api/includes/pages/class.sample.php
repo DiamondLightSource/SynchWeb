@@ -441,8 +441,8 @@
               INNER JOIN protein pr ON cr.proteinid = pr.proteinid 
               INNER JOIN proposal p ON pr.proposalid = p.proposalid 
               LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = sp.diffractionplanid 
-              WHERE p.proposalcode || p.proposalnumber LIKE :1 AND sp.blsampleid=:2", 
-              array($this->arg('prop'),$this->arg('sid')));
+              WHERE p.proposalid = :1 AND sp.blsampleid=:2", 
+              array($this->proposalid,$this->arg('sid')));
                 
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
@@ -528,7 +528,7 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
             $args = array($this->proposalid);
-            $where = '(pr.proposalid=:1 or pr.global=1)';
+            $where = '(pr.proposalid=:1 /*or pr.global=1*/)';
             $join = '';
             $extc = '';
 
@@ -662,7 +662,7 @@
             $rows = $this->db->pq("SELECT distinct pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as unit, 1 as hasph
               FROM protein pr 
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
-              WHERE pr.acronym is not null AND (pr.proposalid=:1 OR pr.global=1) $where 
+              WHERE pr.acronym is not null AND (pr.proposalid=:1 /*OR pr.global=1*/) $where 
               GROUP BY ct.symbol, pr.acronym, pr.name
               ORDER BY lower(pr.acronym)", $args);
                                  
@@ -676,7 +676,8 @@
         function _update_protein() {
             if (!$this->has_arg('pid')) $this->_error('No proteinid specified');
             
-            $prot = $this->db->pq("SELECT pr.proteinid FROM protein pr INNER JOIN proposal p ON pr.proposalid = p.proposalid WHERE p.proposalcode || p.proposalnumber LIKE :1 AND pr.proteinid = :2", array($this->arg('prop'),$this->arg('pid')));
+            $prot = $this->db->pq("SELECT pr.proteinid FROM protein pr 
+              WHERE pr.proposalid = :1 AND pr.proteinid = :2", array($this->proposalid,$this->arg('pid')));
             
             if (!sizeof($prot)) $this->_error('No such protein');
             
@@ -699,8 +700,7 @@
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
-              INNER JOIN proposal p ON pr.proposalid = p.proposalid 
-              WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1 AND b.blsampleid = :2", array($this->arg('prop'),$this->arg('sid')));
+              WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid,$this->arg('sid')));
             
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
@@ -763,8 +763,7 @@
 
             $prot = $this->db->pq("SELECT pr.proteinid 
               FROM protein pr 
-              INNER JOIN proposal p ON pr.proposalid = p.proposalid 
-              WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1 AND pr.proteinid = :2", array($this->arg('prop'),$this->arg('PROTEINID')));
+              WHERE pr.proposalid = :1 AND pr.proteinid = :2", array($this->proposalid,$this->arg('PROTEINID')));
             
             if (!sizeof($prot)) $this->_error('No such protein');
             
@@ -833,18 +832,13 @@
         
         function _add_protein() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-            $pids = $this->db->pq("SELECT p.proposalid FROM blsession bl INNER JOIN proposal p ON bl.proposalid = p.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
-            
-            if (!sizeof($pids) > 0) $this->_error('No such proposal');
-            else $pid = $pids[0]['PROPOSALID'];
-            
             if (!$this->has_arg('ACRONYM')) $this->_error('No protein acronym');
             
             $name = $this->has_arg('NAME') ? $this->arg('NAME') : '';
             $seq = $this->has_arg('SEQUENCE') ? $this->arg('SEQUENCE') : '';
             $mass = $this->has_arg('MOLECULARMASS') ? $this->arg('MOLECULARMASS') : '';
             
-            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp) VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP) RETURNING proteinid INTO :id',array($pid, $name, $this->arg('ACRONYM'), $seq, $mass));
+            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp) VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP) RETURNING proteinid INTO :id',array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass));
             
             $pid = $this->db->id();
             
