@@ -28,7 +28,7 @@ define(['backbone'], function(Backbone) {
       
       DELIVERYAGENT_AGENTCODE: {
         required: true,
-        pattern: 'word'
+        pattern: 'wwdash'
       },
       
       DELIVERYAGENT_AGENTNAME: {
