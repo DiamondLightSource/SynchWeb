@@ -82,7 +82,7 @@
                         array($this->jst($d['ST']), 1, $this->jst($d['ST'])),
                         array($this->jst($d['EN']), 1, $this->jst($d['ST']))), 'color' => 'green', 'id' => intval($d['ID']), 'type' => 'dc'));
 
-                    $d['ENERGY'] = (1.98644568e-25/($d['WAVELENGTH']*1e-10))/1.60217646e-19;
+                    $d['ENERGY'] = $d['WAVELENGTH'] ? (1.98644568e-25/($d['WAVELENGTH']*1e-10))/1.60217646e-19 : '';
 
                     foreach (array('ENERGY', 'BEAMSIZEATSAMPLEX', 'BEAMSIZEATSAMPLEY', 'KAPPASTART', 'PHISTART') as $i => $f) {
                         $lines[$i]['label'] = $f;
