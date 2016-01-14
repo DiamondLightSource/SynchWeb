@@ -1,22 +1,45 @@
 /* Oracle Stored Proceedures */
 
 /* TIMEDIFF - Define a function like MySQL */
-CREATE OR REPLACE FUNCTION TIMEDIFF (date1 IN DATE, date2 IN DATE)
+CREATE OR REPLACE FUNCTION TIMEDIFF (date1 DATE, date2 DATE)
 	RETURN NUMBER
 IS
 BEGIN
-	RETURN CAST(date1 as DATE) - CAST(date2 as DATE)
+	RETURN (date1 - date2);
 END;
 /
 
 /* TIME_TO_SEC - For MySQL compatability */
-CREATE OR REPLACE FUNCTION TIME_TO_SEC (diff IN NUMBER)
+CREATE OR REPLACE FUNCTION TIME_TO_SEC (days NUMBER)
 	RETURN NUMBER
 IS
 BEGIN
-	RETURN diff*60*60*24
+	RETURN (days*60*60*24);
 END;
 /
+
+/* TIMESTAMPDIFF - Define a function like MySQL - For large time differences */
+CREATE OR REPLACE FUNCTION TIMESTAMPDIFF (type VARCHAR2, date1 DATE, date2 DATE)
+	RETURN NUMBER
+IS
+	multiplier NUMBER;
+BEGIN
+	IF type = 'SECOND' THEN
+		multiplier := 24*3600;
+	ELSIF type = 'MINUTE' THEN
+		multiplier := 24*60;
+	ELSIF type = 'HOUR' THEN
+		multiplier := 24;
+	ELSIF type = 'MONTH' THEN
+		multiplier := 1/30.42;
+	ELSE
+		multiplier := 1;
+	END IF;
+
+	RETURN ROUND((date2-date1)*multiplier, 0);
+END;
+/
+show errors
 
 /* String aggregation string_agg(column) */
 CREATE OR REPLACE TYPE t_string_agg AS OBJECT
