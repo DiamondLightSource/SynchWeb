@@ -59,7 +59,7 @@
                               'DELIVERYAGENT_SHIPPINGDATE' => '\d+-\d+-\d+',
                               'DELIVERYAGENT_DELIVERYDATE' => '\d+-\d+-\d+',
                               'DELIVERYAGENT_AGENTNAME' => '[\s|\w|-]+',
-                              'DELIVERYAGENT_AGENTCODE' => '\w+',
+                              'DELIVERYAGENT_AGENTCODE' => '[\w-]+',
                               'SAFETYLEVEL' => '\w+',
                               'DEWARS' => '\d+',
                               //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
@@ -129,7 +129,7 @@
         # List of shipments for a proposal
         function _get_shipments() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
-            $args = array($this->arg('prop'));
+            $args = array($this->proposalid);
             $where = '';
             
             if ($this->has_arg('sid')) {
@@ -143,7 +143,7 @@
               LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
               LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
               LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid 
-              WHERE p.proposalcode || p.proposalnumber = :1 $where 
+              WHERE p.proposalid = :1 $where 
               GROUP BY s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode, s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'), s.isstorageshipping, s.shippingtype, s.comments, s.creationdate ORDER BY s.creationdate DESC", $args);
             
             if ($this->has_arg('sid')) {
@@ -190,15 +190,13 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-              SELECT s.shippingid, s.shippingname as shipment, p.proposalcode || p.proposalnumber || '-' || b.visit_number as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.dewarid, h.dewarstatus,h.storagelocation,TO_CHAR(h.arrivaldate, 'DD-MM-YYYY HH24:MI') as arrival 
+            $rows = $this->db->paginate("SELECT s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.dewarid, h.dewarstatus,h.storagelocation,TO_CHAR(h.arrivaldate, 'DD-MM-YYYY HH24:MI') as arrival 
               FROM dewartransporthistory h 
               INNER JOIN dewar d ON d.dewarid = h.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
               INNER JOIN proposal p ON p.proposalid = s.proposalid 
               LEFT OUTER JOIN blsession b ON b.sessionid = d.firstexperimentid
-              WHERE $where ORDER BY h.arrivaldate DESC
-              ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+              WHERE $where ORDER BY h.arrivaldate DESC", $args);
             
             $this->_output(array('total' => $tot, 'data' => $rows));
         }
@@ -211,7 +209,7 @@
             if (!$this->has_arg('BARCODE')) $this->_error('No barcode specified');
             if (!$this->has_arg('LOCATION')) $this->_error('No location specified');
 
-            $dew = $this->db->pq("SELECT pe.givenname || ' ' || pe.familyname as lcout, pe.emailaddress as lcoutemail, pe2.givenname || ' ' || pe2.familyname as lcret, pe2.emailaddress as lcretemail, p.proposalcode || p.proposalnumber || '-' || e.visit_number as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, p.proposalcode || p.proposalnumber as prop, d.barcode, d.facilitycode
+            $dew = $this->db->pq("SELECT CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
@@ -264,16 +262,16 @@
             $args = array($this->proposalid);
             $where = 'p.proposalid=:1';
 
-            $fields = "p.proposalcode || p.proposalnumber as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND((SYSDATE-r.purchasedate)/28,1) as age, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, count(d.dewarid) as dewars";
-            $group = "p.proposalcode || p.proposalnumber, r.facilitycode, r.purchasedate, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name, l.address";
+            $fields = "CONCAT(p.proposalcode, p.proposalnumber) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, count(d.dewarid) as dewars";
+            $group = "CONCAT(p.proposalcode, p.proposalnumber), r.facilitycode, r.purchasedate, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name, l.address";
 
             if ($this->has_arg('all')) {
                 $args = array();
                 $where = '1=1';
 
                 if (!$this->bcr() && !$this->staff) {
-                    $fields = "p.proposalcode || p.proposalnumber as prop, r.facilitycode";
-                    $group = "p.proposalcode || p.proposalnumber, r.facilitycode";
+                    $fields = "CONCAT(p.proposalcode, p.proposalnumber) as prop, r.facilitycode";
+                    $group = "CONCAT(p.proposalcode, p.proposalnumber), r.facilitycode";
                 }
             }
 
@@ -283,7 +281,7 @@
             }
 
             if ($this->has_arg('s')) {
-                $where .= " AND lower(r.facilitycode) LIKE lower('%'||:".(sizeof($args)+1)."||'%')";
+                $where .= " AND lower(r.facilitycode) LIKE lower(CONCAT(CONCAT('%', :".(sizeof($args)+1)."), '%'))";
                 array_push($args, $this->arg('s'));
             }
 
@@ -303,8 +301,7 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-              SELECT $fields
+            $rows = $this->db->paginate("SELECT $fields
               FROM dewarregistry r 
               INNER JOIN proposal p ON p.proposalid = r.proposalid 
               INNER JOIN labcontact lc ON r.labcontactid = lc.labcontactid
@@ -316,9 +313,7 @@
               WHERE $where 
               GROUP BY $group
 
-              ORDER BY r.facilitycode DESC
-
-              ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+              ORDER BY r.facilitycode DESC", $args);
             
             if ($this->has_arg('FACILITYCODE')) {
                 if (sizeof($rows)) $this->_output($rows[0]);
@@ -342,7 +337,7 @@
         function _update_dewar_registry() {
             if (!$this->has_arg('FACILITYCODE')) $this->_error('No dewar code specified');
 
-            $dew = $this->db->pq("SELECT facilitycode FROM dewarregistry WHERE facilitycode LIKE :1 AND proposalid LIKE :2", array($this->arg('FACILITYCODE'), $this->proposalid));
+            $dew = $this->db->pq("SELECT facilitycode FROM dewarregistry WHERE facilitycode LIKE :1 AND proposalid = :2", array($this->arg('FACILITYCODE'), $this->proposalid));
 
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
@@ -385,11 +380,9 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                SELECT r.dewarreportid, r.report, TO_CHAR(r.bltimestamp, 'HH24:MI DD-MM-YYYY') as bltimestamp, r.attachment
+            $rows = $this->db->paginate("SELECT r.dewarreportid, r.report, TO_CHAR(r.bltimestamp, 'HH24:MI DD-MM-YYYY') as bltimestamp, r.attachment
                 FROM dewarreport r
-              WHERE $where ORDER BY r.bltimestamp DESC
-              ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+              WHERE $where ORDER BY r.bltimestamp DESC", $args);
 
             foreach ($rows as $i => &$row) {
               $row['REPORT'] = $this->db->read($row['REPORT']);
@@ -402,7 +395,7 @@
             if (!$this->has_arg('REPORT')) $this->_error('No report specified');
             if (!$this->has_arg('FACILITYCODE')) $this->_error('No dewar specified');
 
-            $last_visits = $this->db->pq("SELECT s.beamlineoperator as localcontact, p.proposalcode||p.proposalnumber||'-'||s.visit_number as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
+            $last_visits = $this->db->pq("SELECT s.beamlineoperator as localcontact, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
               FROM dewar d
               INNER JOIN blsession s ON d.firstexperimentid = s.sessionid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
@@ -547,7 +540,7 @@
             }
             
             
-            $dewars = $this->db->pq("SELECT p.proposalcode||p.proposalnumber||'-'||se.visit_number as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (p.proposalcode||p.proposalnumber||'-'||se.visit_number) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron 
+            $dewars = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron 
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -555,7 +548,7 @@
               LEFT OUTER JOIN blsession se ON d.firstexperimentid = se.sessionid 
               LEFT OUTER JOIN dewarregistry r ON r.facilitycode = d.facilitycode
               WHERE s.proposalid=:1 AND $where 
-              GROUP BY p.proposalcode||p.proposalnumber||'-'||se.visit_number, r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (p.proposalcode||p.proposalnumber||'-'||se.visit_number) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
+              GROUP BY CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
               ORDER BY d.dewarid DESC", array($this->proposalid, $arg));
             
             if ($this->has_arg('did')) {
@@ -574,8 +567,7 @@
             
             $ship = $this->db->pq("SELECT s.shippingid 
               FROM shipping s 
-              INNER JOIN proposal p ON s.proposalid = p.proposalid 
-              WHERE p.proposalcode || p.proposalnumber LIKE :1 AND s.shippingid = :2", array($this->arg('prop'),$this->arg('SHIPPINGID')));
+              WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('SHIPPINGID')));
             
             if (!sizeof($ship)) $this->_error('No such shipment');
             
@@ -583,7 +575,7 @@
             $from = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : '';
             $fc = $this->has_arg('FACILITYCODE') ? $this->arg('FACILITYCODE') : '';
             
-            $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : '';
+            $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : null;
             
             $this->db->pq("INSERT INTO dewar (dewarid,code,trackingnumbertosynchrotron,trackingnumberfromsynchrotron,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode) 
               VALUES (s_dewar.nextval,:1,:2,:3,:4,CURRENT_TIMESTAMP,'opened',:5,:6) RETURNING dewarid INTO :id", 
@@ -611,7 +603,7 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
             
-            $ship = $this->db->pq("SELECT s.shippingid FROM shipping s INNER JOIN proposal p ON s.proposalid = p.proposalid WHERE p.proposalcode || p.proposalnumber LIKE :1 AND s.shippingid = :2", array($this->arg('prop'),$this->arg('sid')));
+            $ship = $this->db->pq("SELECT s.shippingid FROM shipping s WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
             
             if (!sizeof($ship)) $this->_error('No such shipment');
             
@@ -645,7 +637,9 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('did')) $this->_error('No dewar id specified');
             
-            $dewar = $this->db->pq("SELECT d.dewarid FROM dewar d INNER JOIN shipping s ON d.shippingid = s.shippingid INNER JOIN proposal p ON s.proposalid = p.proposalid WHERE p.proposalcode || p.proposalnumber LIKE :1 AND d.dewarid = :2", array($this->arg('prop'),$this->arg('did')));
+            $dewar = $this->db->pq("SELECT d.dewarid FROM dewar d 
+              INNER JOIN shipping s ON d.shippingid = s.shippingid 
+              WHERE s.proposalid = :1 AND d.dewarid = :2", array($this->proposalid,$this->arg('did')));
             
             if (!sizeof($dewar)) $this->_error('No such dewar');
             
@@ -655,7 +649,7 @@
                     $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
 
                     if ($f == 'FIRSTEXPERIMENTID') {
-                        $visit = $this->db->pq("SELECT p.proposalcode||p.proposalnumber||'-'||s.visit_number as visit 
+                        $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit 
                           FROM blsession s 
                           INNER JOIN proposal p ON p.proposalid = s.proposalid 
                           WHERE s.sessionid=:1", array($this->arg($f)));
@@ -677,15 +671,17 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
             
-            $ship = $this->db->pq("SELECT p.proposalcode || p.proposalnumber as prop, s.safetylevel, s.shippingid, s.deliveryagent_agentname, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliverydate, s.shippingname, s.comments, c.cardname as lcout FROM shipping s INNER JOIN proposal p ON s.proposalid = p.proposalid LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid WHERE p.proposalcode || p.proposalnumber LIKE :1 AND s.shippingid = :2", array($this->arg('prop'),$this->arg('sid')));
+            $ship = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, s.safetylevel, s.shippingid, s.deliveryagent_agentname, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliverydate, s.shippingname, s.comments, c.cardname as lcout FROM shipping s INNER JOIN proposal p ON s.proposalid = p.proposalid LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid WHERE p.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
             
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
             
             $this->db->pq("UPDATE shipping SET shippingstatus='sent to DLS' where shippingid=:1", array($ship['SHIPPINGID']));
+            $this->db->pq("UPDATE dewar SET dewarstatus='sent to DLS' where shippingid=:1", array($ship['SHIPPINGID']));
             
             $dewars = $this->db->pq("SELECT d.dewarid, s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
-              FROM dewar d INNER JOIN blsession s ON s.sessionid = d.firstexperimentid 
+              FROM dewar d 
+              LEFT OUTER JOIN blsession s ON s.sessionid = d.firstexperimentid 
               WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
             foreach ($dewars as $d) {
                 $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
@@ -742,7 +738,7 @@
             if ($this->has_arg('visit')) {
                 $join = " INNER JOIN blsession ses ON ses.proposalid = p.proposalid";
                 $args = array($this->arg('visit'));
-                $where = "p.proposalcode||p.proposalnumber||'-'||ses.visit_number LIKE :1";
+                $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) LIKE :1";
 
             } else if ($this->has_arg('all') && $this->staff) {
                 $join = '';
@@ -847,9 +843,8 @@
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-            
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                  SELECT round((SYSDATE - min(ci.bltimestamp)),1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, 0 as queued, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, p.proposalcode || '-' || p.proposalnumber as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples
+            // $this->db->set_debug(True);
+            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, 0 as queued, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples
                                   FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
@@ -861,12 +856,11 @@
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
                                   LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
                                   LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != 'Completed' AND ci2.manual!=1 AND ci2.schedulecomponentid IS NULL
-                                  --LEFT OUTER JOIN containerdataschedule as cs ON cs.containerid = c.containerid
+                                  /*LEFT OUTER JOIN containerdataschedule as cs ON cs.containerid = c.containerid*/
                                   $join
                                   WHERE $where
-                                  GROUP BY sch.name, c.scheduleid, c.screenid, sc.name, c.imagerid, i.temperature, i.name, p.proposalcode || '-' || p.proposalnumber, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
-                                  ORDER BY $order
-                                  ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                                  GROUP BY sch.name, c.scheduleid, c.screenid, sc.name, c.imagerid, i.temperature, i.name, CONCAT(p.proposalcode, p.proposalnumber), c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
+                                  ORDER BY $order", $args);
 
             if ($this->has_arg('cid')) {
                 if (sizeof($rows))$this->_output($rows[0]);
@@ -1011,7 +1005,7 @@
             
             if ($this->has_arg('DEWARS')) {
                 if ($this->arg('DEWARS') > 0) {
-                    $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : '';
+                    $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : null;
                     
                     $fcs = $this->arg('FCODES');
                     for ($i = 0; $i < $this->arg('DEWARS'); $i++) {
@@ -1043,7 +1037,7 @@
         function _get_default_dewar() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             
-            $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE p.proposalcode||p.proposalnumber||'-'||s.visit_number LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
+            $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
             
             if (!sizeof($sids)) $this->_error('No such visit');
             else $sid = $sids[0]['SESSIONID'];
