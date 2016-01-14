@@ -2,7 +2,7 @@
     
     class Status extends Page {
         
-        public static $arg_list = array('bl' => '\w\d\d(-\d)?',
+        public static $arg_list = array('bl' => '[\w-]+',
                               'p' => '\d+',
                               'st' => '\d\d-\d\d-\d\d\d\d',
                               'en' => '\d\d-\d\d-\d\d\d\d',

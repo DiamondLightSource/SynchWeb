@@ -66,8 +66,8 @@
                               'COMMENTS' => '.*',
                               
                               'assigned' => '\d',
-                              'bl' => '\w\d\d(-\d)?',
-                              'unassigned' => '\w\d\d(-\d)?',
+                              'bl' => '[\w-]+',
+                              'unassigned' => '[\w-]+',
                               
                               // Container fields
                               'DEWARID' => '\d+',

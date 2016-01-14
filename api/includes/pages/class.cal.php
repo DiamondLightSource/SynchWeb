@@ -2,7 +2,7 @@
     
     class Cal extends Page {
         
-        public static $arg_list = array('mon' => '\w+', 'year' => '\d\d\d\d', 'bl' => '\w\d\d(-\d)?', 'h' => '\w+');
+        public static $arg_list = array('mon' => '\w+', 'year' => '\d\d\d\d', 'bl' => '[\w-]+', 'h' => '\w+');
         
         public static $dispatch = array(array('/ics/h/:h/calendar.ics', 'get', '_export_ics'),
                               array('/ext', 'get', '_external_link'),

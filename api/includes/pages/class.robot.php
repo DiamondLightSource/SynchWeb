@@ -3,7 +3,7 @@
     class Robot extends Page {
         
 
-        public static $arg_list = array('bl' => '\w\d\d(-\d)?',
+        public static $arg_list = array('bl' => '[\w-]+',
                               'run' => '\d+',
                               'visit' => '\w+\d+-\d+',
                               'year' => '\d\d\d\d',

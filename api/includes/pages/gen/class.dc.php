@@ -5,7 +5,7 @@
     class Dc extends \Page {
         
 
-        public static $arg_list = array('id' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 't' => '\w+', 'bl' => '\w\d\d(-\d)?', 'value' => '.*', 'h' => '\d\d',
+        public static $arg_list = array('id' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 'h' => '\d\d',
             'dcg' => '\d+', 
             'COMMENTS' => '.*',
 
