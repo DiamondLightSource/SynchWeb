@@ -26,7 +26,7 @@
                                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                                 INNER JOIN blsession bl ON bl.proposalid = s.proposalid
                                 INNER JOIN proposal p ON s.proposalid = p.proposalid
-                                WHERE p.proposalcode || p.proposalnumber || '-' || bl.visit_number LIKE :1 AND c.containerid=:2", array($this->arg('visit'), $this->arg('cid')));
+                                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), bl.visit_number) LIKE :1 AND c.containerid=:2", array($this->arg('visit'), $this->arg('cid')));
                                
             if (sizeof($cs) > 0) {
                 $c = $cs[0];
@@ -52,7 +52,7 @@
                                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                                 INNER JOIN blsession bl ON bl.proposalid = s.proposalid
                                 INNER JOIN proposal p ON s.proposalid = p.proposalid
-                                WHERE p.proposalcode || p.proposalnumber || '-' || bl.visit_number LIKE :1 AND c.containerid=:2", array($this->arg('visit'), $this->arg('cid')));
+                                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), bl.visit_number) LIKE :1 AND c.containerid=:2", array($this->arg('visit'), $this->arg('cid')));
                                
             if (sizeof($cs) > 0) {
                 $c = $cs[0];
@@ -73,7 +73,7 @@
             if (!$this->has_arg('did')) $this->_error('No dewar id specified');
                             
             if ($this->has_arg('visit')) {
-                $where = "p.proposalcode || p.proposalnumber || '-' || bl.visit_number LIKE :1";
+                $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), bl.visit_number) LIKE :1";
                 $arg = $this->arg('visit');
             } else {
                 $where = "p.proposalid=:1";
