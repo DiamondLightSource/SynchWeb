@@ -18,23 +18,32 @@
         
         function _visit_breakdown() {
             $info = $this->_check_visit();
-            
-            $dc = $this->db->pq("SELECT dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, (dc.endtime - dc.starttime)*86400 as dctime, dc.runstatus 
+
+            $dc = $this->db->pq("SELECT dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, dc.runstatus 
                 FROM datacollection dc 
                 WHERE dc.sessionid=:1 ORDER BY dc.starttime DESC", array($info['SID']));
             
             $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count FROM datacollection dc WHERE dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0", array($info['SID']));
             $dcs = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count FROM datacollection dc WHERE dc.sessionid=:1 AND dc.overlap != 0", array($info['SID']));
             
-            $robot = $this->db->pq("SELECT r.status, r.actiontype, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as en, (CAST(r.endtimestamp AS DATE)-CAST(r.starttimestamp AS DATE))*86400 as dctime FROM robotaction r WHERE r.blsessionid=:1 AND r.actiontype='LOAD' ORDER BY r.endtimestamp DESC", array($info['SID']));
+            $robot = $this->db->pq("SELECT r.status, r.actiontype, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as en
+                FROM robotaction r WHERE r.blsessionid=:1 AND r.actiontype='LOAD' ORDER BY r.endtimestamp DESC", array($info['SID']));
 
-            $edge = $this->db->pq("SELECT e.energyscanid as id, TO_CHAR(e.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(e.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, (e.endtime - e.starttime)*86400 as dctime FROM energyscan e WHERE e.sessionid=:1 ORDER BY e.endtime DESC", array($info['SID']));
+            $edge = $this->db->pq("SELECT e.energyscanid as id, TO_CHAR(e.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(e.endtime, 'DD-MM-YYYY HH24:MI:SS') as en
+                FROM energyscan e WHERE e.sessionid=:1 ORDER BY e.endtime DESC", array($info['SID']));
 
-            $fl = $this->db->pq("SELECT f.xfefluorescencespectrumid as id, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, (f.endtime - f.starttime)*86400 as dctime FROM xfefluorescencespectrum f WHERE f.sessionid=:1 ORDER BY f.endtime DESC", array($info['SID']));
+            $fl = $this->db->pq("SELECT f.xfefluorescencespectrumid as id, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI:SS') as en
+                FROM xfefluorescencespectrum f WHERE f.sessionid=:1 ORDER BY f.endtime DESC", array($info['SID']));
             
-            $ai = $this->db->pq("SELECT dc.datacollectionid as id, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(max(s.bltimestamp), 'DD-MM-YYYY HH24:MI:SS') as en, (max(s.bltimestamp) - dc.endtime)*86400 as dctime FROM datacollection dc INNER JOIN screening s ON s.datacollectionid = dc.datacollectionid WHERE dc.sessionid=:1 GROUP BY dc.datacollectionid, dc.endtime ORDER BY dc.endtime DESC", array($info['SID']));
+            $ai = $this->db->pq("SELECT dc.datacollectionid as id, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(max(s.bltimestamp), 'DD-MM-YYYY HH24:MI:SS') as en
+                FROM datacollection dc 
+                INNER JOIN screening s ON s.datacollectionid = dc.datacollectionid 
+                WHERE dc.sessionid=:1 GROUP BY dc.datacollectionid, dc.endtime ORDER BY dc.endtime DESC", array($info['SID']));
             
-            $cent = $this->db->pq("SELECT * FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*86400 as dctime FROM robotaction r INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) inq WHERE dctime < 1000", array($info['SID']));
+            $cent = $this->db->pq("SELECT * FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, TIMESTAMPDIFF('SECOND', CAST(r.endtimestamp as DATE), min(dc.starttime)) as dctime
+                FROM robotaction r 
+                INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime 
+                WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) inq WHERE dctime < 1000", array($info['SID']));
             
             #$cent = $this->db->pq("SELECT distinct en,st,dctime FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*86400 as dctime FROM robotaction r INNER JOIN datacollection dc ON r.endtimestamp < dc.starttime WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) WHERE dctime < 1000", array($info['SID']));
             
@@ -42,12 +51,9 @@
             
 
             # Get Faults
-            $faultl = $this->db->pq("SELECT f.faultid, bl.beamlinename as beamline, f.owner, s.name as system, c.name as component, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, f.beamtimelost, round((f.beamtimelost_endtime-f.beamtimelost_starttime)*24,2) as lost, f.title, f.resolved, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI:SS') as en
+            $faultl = $this->db->pq("SELECT f.faultid, f.beamtimelost, f.title, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI:SS') as en
                 FROM bf_fault f INNER JOIN blsession bl ON f.sessionid = bl.sessionid
-                INNER JOIN bf_subcomponent sc ON f.subcomponentid = sc.subcomponentid
-                INNER JOIN bf_component c ON sc.componentid = c.componentid
-                INNER JOIN bf_system s ON c.systemid = s.systemid
-                WHERE f.sessionid = :1", array($info['SID']));
+                WHERE f.sessionid = :1 and f.beamtimelost = 1", array($info['SID']));
             
             $info['DC_FULL'] = sizeof($dcf) ? $dcf[0]['COUNT'] : 0;
             $info['DC_SCREEN'] = sizeof($dcs) ? $dcs[0]['COUNT'] : 0;
@@ -105,12 +111,9 @@
             }
                                     
             foreach ($faultl as $f) {
-                if ($f['BEAMTIMELOST']) {
                     array_push($data, array('data' => array(
                         array($this->jst($f['ST']), 4, $this->jst($f['ST'])),
                         array($this->jst($f['EN']), 4, $this->jst($f['ST']))), 'color' => 'grey', 'type' => 'fault', 'status' => ' Fault: '.$f['TITLE']));
-                    
-                }
             }
                                     
             foreach ($ai as $d) {
@@ -184,19 +187,30 @@
                 array_push($args, $info['SID']);
             }
             
-            $dc = $this->db->pq("SELECT max(p.title) as title, TO_CHAR(MAX(dc.endtime), 'DD-MM-YYYY HH24:MI') as last, SUM(dc.endtime - dc.starttime)*24 as dctime, GREATEST((min(dc.starttime)-min(s.startdate))*24,0) as sup, GREATEST((max(s.enddate)-max(dc.endtime))*24,0) as rem, s.visit_number as visit, TO_CHAR(min(s.startdate), 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(max(s.enddate), 'DD-MM-YYYY HH24:MI') as en, (max(s.enddate) - min(s.startdate))*24 as len FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN datacollection dc ON (dc.sessionid = s.sessionid) $where GROUP BY s.visit_number ORDER BY min(s.startdate) DESC", $args);
+            $dc = $this->db->pq("SELECT max(p.title) as title, TO_CHAR(MAX(dc.endtime), 'DD-MM-YYYY HH24:MI') as last, SUM(TIMESTAMPDIFF('SECOND', dc.starttime, dc.endtime))/3600 as dctime, GREATEST(TIMESTAMPDIFF('SECOND', min(s.startdate), min(dc.starttime))/3600,0) as sup, GREATEST(TIMESTAMPDIFF('SECOND', max(dc.endtime), max(s.enddate))/3600,0) as rem, s.visit_number as visit, TO_CHAR(min(s.startdate), 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(max(s.enddate), 'DD-MM-YYYY HH24:MI') as en, TIMESTAMPDIFF('SECOND', min(s.startdate), max(s.enddate))/3600 as len 
+                FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                INNER JOIN datacollection dc ON (dc.sessionid = s.sessionid) $where GROUP BY s.visit_number ORDER BY min(s.startdate) DESC", $args);
             
-            $robot = $this->db->pq("SELECT SUM(CAST(r.endtimestamp AS DATE)-CAST(r.starttimestamp AS DATE))*24 as dctime, s.visit_number as visit FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) $where GROUP BY s.visit_number", $args);
+            $robot = $this->db->pq("SELECT SUM(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)))/3600 as dctime, s.visit_number as visit FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) $where GROUP BY s.visit_number", $args);
 
-            $edge = $this->db->pq("SELECT SUM(e.endtime-e.starttime)*24 as dctime, s.visit_number as visit FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN energyscan e ON (e.sessionid = s.sessionid) $where GROUP BY s.visit_number", $args);
+            $edge = $this->db->pq("SELECT SUM(TIMESTAMPDIFF('SECOND', e.starttime, e.endtime))/3600 as dctime, s.visit_number as visit FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN energyscan e ON (e.sessionid = s.sessionid) $where GROUP BY s.visit_number", $args);
             
             $ai = $this->db->pq("SELECT SUM(ai) as aitime, visit FROM (
-                    SELECT (max(sc.bltimestamp) - dc.endtime)*24 as ai, s.visit_number as visit FROM datacollection dc INNER JOIN screening sc ON sc.datacollectionid = dc.datacollectionid INNER JOIN blsession s ON s.sessionid = dc.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid $where GROUP BY dc.datacollectionid, s.visit_number, dc.endtime
+                    SELECT TIMESTAMPDIFF('SECOND', dc.endtime, max(sc.bltimestamp))/3600 as ai, s.visit_number as visit 
+                    FROM datacollection dc INNER JOIN screening sc ON sc.datacollectionid = dc.datacollectionid 
+                    INNER JOIN blsession s ON s.sessionid = dc.sessionid 
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid $where GROUP BY dc.datacollectionid, s.visit_number, dc.endtime
                 ) inq GROUP BY visit", $args);
             
-            $cent = $this->db->pq("SELECT SUM(cent) as centtime, visit FROM (SELECT (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*24 as cent, s.visit_number as visit FROM robotaction r INNER JOIN datacollection dc ON (r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime) INNER JOIN blsession s ON s.sessionid = dc.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid $where GROUP BY r.endtimestamp, s.visit_number) inq WHERE cent < 0.25 GROUP BY visit", $args);
+            $cent = $this->db->pq("SELECT SUM(cent) as centtime, visit FROM (
+                    SELECT TIMESTAMPDIFF('SECOND', CAST(r.endtimestamp AS DATE), min(dc.starttime))/3600 as cent, s.visit_number as visit 
+                    FROM robotaction r 
+                    INNER JOIN datacollection dc ON (r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime) 
+                    INNER JOIN blsession s ON s.sessionid = dc.sessionid 
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid $where 
+                    GROUP BY r.endtimestamp, s.visit_number) inq WHERE cent < 0.25 GROUP BY visit", $args);
                                     
-            $fault = $this->db->pq("SELECT SUM((f.beamtimelost_endtime-f.beamtimelost_starttime)*24) as lost, s.visit_number as visit FROM bf_fault f INNER JOIN blsession s ON f.sessionid = s.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where GROUP BY s.visit_number", $args);
+            $fault = $this->db->pq("SELECT SUM(TIMESTAMPDIFF('SECOND', f.beamtimelost_starttime, f.beamtimelost_endtime))/3600 as lost, s.visit_number as visit FROM bf_fault f INNER JOIN blsession s ON f.sessionid = s.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where GROUP BY s.visit_number", $args);
             
             foreach ($robot as $r) {
                 foreach ($dc as &$d) {
