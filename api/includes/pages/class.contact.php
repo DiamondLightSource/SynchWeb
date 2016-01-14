@@ -28,13 +28,8 @@
         # Get List of Lab Contacts
         function _get_contacts() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-
-            $props = $this->db->pq('SELECT proposalid as id FROM proposal WHERE proposalcode || proposalnumber LIKE :1', array($this->arg('prop')));
             
-            if (!sizeof($props)) $this->_error('No such proposal');
-            else $p = $props[0]['ID'];
-            
-            $args = array($p);
+            $args = array($this->proposalid);
             $where = 'WHERE c.proposalid = :1';
             
             if ($this->has_arg('cid')) {
@@ -63,14 +58,12 @@
             
             $order = 'c.labcontactid DESC';
         
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                                 SELECT c.labcontactid, c.cardname, pe.givenname, pe.familyname, pe.phonenumber, l.name as labname, l.address, l.city, l.country, c.courieraccount,  c.billingreference, c.defaultcourriercompany, c.dewaravgcustomsvalue, c.dewaravgtransportvalue, pe.emailaddress 
+            $rows = $this->db->paginate("SELECT c.labcontactid, c.cardname, pe.givenname, pe.familyname, pe.phonenumber, l.name as labname, l.address, l.city, l.country, c.courieraccount,  c.billingreference, c.defaultcourriercompany, c.dewaravgcustomsvalue, c.dewaravgtransportvalue, pe.emailaddress 
                                  FROM labcontact c 
                                  INNER JOIN person pe ON c.personid = pe.personid 
                                  INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
                                  INNER JOIN proposal p ON p.proposalid = c.proposalid 
-                                 $where ORDER BY $order
-                                  ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                                 $where ORDER BY $order", $args);
             
             if ($this->has_arg('cid')) {
                 if (sizeof($rows))$this->_output($rows[0]);
@@ -91,7 +84,7 @@
                 FROM labcontact c 
                 INNER JOIN person p ON p.personid = c.personid 
                 INNER JOIN laboratory l ON l.laboratoryid = p.laboratoryid 
-                WHERE c.labcontactid=:1", array($this->arg('cid')));
+                WHERE c.labcontactid=:1 and c.proposalid=:2", array($this->arg('cid'), $this->proposalid));
             
             if (!sizeof($cont)) $this->_error('The specified contact doesnt exist');
             else $cont = $cont[0];
