@@ -41,7 +41,6 @@
             if (!sizeof($rows)) $this->_error('No such auto processing');
             // else $r = $rows[0];
         
-
             foreach ($rows as $r) {
                 if ($this->has_arg('log')) {
                     if ($r['FILETYPE'] == 'Log') {
@@ -53,6 +52,7 @@
                         
                             $f = $r['FILEPATH'].'/'.$r['FILENAME'];
                             if ($r['FILENAME'] == 'fast_dp.log') $this->app->contentType("text/plain");
+                            if ($r['FILENAME'] == 'autoPROC.log') $this->app->contentType("text/plain");
                         }
                             
                         readfile($f);
