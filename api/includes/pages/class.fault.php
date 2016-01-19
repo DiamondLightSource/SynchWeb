@@ -3,21 +3,21 @@
     class Fault extends Page {
         
         public static $arg_list = array('time' => '\d+',
-                              'bl' => '\w\d\d(-\d)?',
+                              'bl' => '[\w-]+',
                               'sid' => '\d+',
                               'cid' => '\d+',
                               'scid' => '\d+',
                               'fid' => '\d+',
 
                               'NAME' => '[A-Za-z0-9_\- ]+',
-                              'BLS' => '\w\d\d(-\d)?',
+                              'BLS' => '[\w-]+',
                               'SYSTEMID' => '\d+',
                               'COMPONENTID' => '\d+',
 
                               'term' => '\w+',
                               'visit' => '\w+\d+-\d+',
                               
-                              'BEAMLINE' => '\w\d\d(-\d)?',
+                              'BEAMLINE' => '[\w-]+',
                               'STARTTIME' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
                               'ENDTIME' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
                               'BEAMTIMELOST_STARTTIME' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
@@ -65,7 +65,7 @@
             
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                array_push($where, "(lower(f.title) LIKE lower('%'||:".$st."||'%') OR lower(f.description) LIKE lower('%'||:".($st+1)."||'%') OR lower(s.name) LIKE lower('%'||:".($st+2)."||'%') OR lower(c.name) LIKE lower('%'||:".($st+3)."||'%') OR lower(sc.name) LIKE lower('%'||:".($st+4)."||'%'))");
+                array_push($where, "(lower(f.title) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(f.description) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."),'%')) OR lower(s.name) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."),'%')) OR lower(c.name) LIKE lower(CONCAT(CONCAT('%',:".($st+3)."),'%')) OR lower(sc.name) LIKE lower(CONCAT(CONCAT('%',:".($st+4)."),'%')))");
                 for ($i = 0; $i < 5; $i++) array_push($args, $this->arg('s'));
             }
             
@@ -77,7 +77,7 @@
             }
 
             if ($this->has_arg('visit')) {
-                array_push($where, "p.proposalcode||p.proposalnumber||'-'||bl.visit_number LIKE :".(sizeof($args)+1));
+                array_push($where, "CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) LIKE :".(sizeof($args)+1));
                 array_push($args, $this->arg('visit'));
             }
             
@@ -141,10 +141,7 @@
             array_push($args, $start);
             array_push($args, $end);
             
-            $rows = $this->db->pq("SELECT outer.*
-             FROM (SELECT ROWNUM rn, inner.*
-               FROM (
-                SELECT $ext_columns f.faultid, f.sessionid, f.elogid, f.assignee, f.attachment, p.proposalcode || p.proposalnumber || '-' || bl.visit_number as visit, bl.beamlinename as beamline, f.owner, s.systemid, s.name as system, c.componentid, c.name as component, f.subcomponentid, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round((f.beamtimelost_endtime-f.beamtimelost_starttime)*24,2) as lost, f.title, f.resolved, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime
+            $rows = $this->db->paginate("SELECT $ext_columns f.faultid, f.sessionid, f.elogid, f.assignee, f.attachment, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit, bl.beamlinename as beamline, f.owner, s.systemid, s.name as system, c.componentid, c.name as component, f.subcomponentid, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE',f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime
                 FROM bf_fault f
                 INNER JOIN bf_subcomponent sc ON f.subcomponentid = sc.subcomponentid
                 INNER JOIN bf_component c ON sc.componentid = c.componentid
@@ -152,10 +149,7 @@
                 INNER JOIN blsession bl ON f.sessionid = bl.sessionid
                 INNER JOIN proposal p on p.proposalid = bl.proposalid
                 $where
-                ORDER BY f.starttime DESC
-             
-               ) inner) outer
-             WHERE outer.rn > :".$st." AND outer.rn <= :".($st+1), $args);
+                ORDER BY f.starttime DESC", $args);
                
             foreach ($rows as &$r) {
                 $r['NAME'] = $this->_get_name($r['OWNER']);
@@ -206,7 +200,7 @@
                     $this->db->pq("UPDATE bf_fault SET $f=$fl WHERE faultid=:2", array($this->arg($f), $this->arg('fid')));
 
                     if ($f == 'SESSIONID') {
-                        $v = $this->db->pq("SELECT p.proposalcode || p.proposalnumber || '-' || bl.visit_number as visit FROM blsession bl INNER JOIN proposal p ON bl.proposalid = p.proposalid WHERE bl.sessionid=:1", array($this->arg($f)));
+                        $v = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit FROM blsession bl INNER JOIN proposal p ON bl.proposalid = p.proposalid WHERE bl.sessionid=:1", array($this->arg($f)));
                         if (sizeof($v)) {
                             $this->_output(array('VISIT' => $v[0]['VISIT']));
                         }
@@ -227,9 +221,13 @@
         # ------------------------------------------------------------------------
         # Return a list of beamlines with ids
         function _get_beamlines() {       
-            #$rows = $this->db->pq("SELECT distinct beamlinename as name FROM blsession WHERE beamlinename NOT LIKE 'i04 1' ORDER BY beamlinename");
-                                  
-            $rows = array(array('NAME' => 'i02'), array('NAME' => 'i03'), array('NAME' => 'i04'), array('NAME' => 'i04-1'), array('NAME' => 'i24'));
+            $row_tmp = $this->db->pq("SELECT distinct beamlinename as name FROM blsession WHERE beamlinename NOT LIKE 'i04 1' ORDER BY beamlinename");
+            $rows = array();
+            foreach ($row_tmp as $r) {
+                array_push($rows, array('NAME' => $r['NAME']));
+            }
+
+            // $rows = array(array('NAME' => 'i02'), array('NAME' => 'i03'), array('NAME' => 'i04'), array('NAME' => 'i04-1'), array('NAME' => 'i24'));
                                  
             $bls = array();
             foreach ($rows as $r) $bls[$r['NAME']] = $r['NAME'];
@@ -484,7 +482,7 @@
                     
             $newid = $this->db->id();
 
-            $info = $this->db->pq("SELECT p.proposalcode || p.proposalnumber || '-' || bl.visit_number as visit, bl.beamlinename as beamline, s.name as system, c.name as component, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round((f.beamtimelost_endtime-f.beamtimelost_starttime)*24,2) as lost, f.title, f.resolved, f.resolution, f.description, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime, f.owner
+            $info = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit, bl.beamlinename as beamline, s.name as system, c.name as component, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE', f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, f.resolution, f.description, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime, f.owner
                 FROM bf_fault f
                 INNER JOIN bf_subcomponent sc ON f.subcomponentid = sc.subcomponentid
                 INNER JOIN bf_component c ON sc.componentid = c.componentid
