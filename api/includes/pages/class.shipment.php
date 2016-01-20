@@ -478,6 +478,7 @@
             $this->args['LCNEXTEMAIL'] = $this->_get_email_fn($this->arg('NEXTLOCALCONTACT'));
 
             $email->data = $this->args;
+            if (!array_key_exists('FACILITYCODE', $email->data)) $email->data['FACILITYCODE'] = '';
 
             $recpts = $tranfer_email.', '.$this->arg('EMAILADDRESS');
             if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
@@ -512,6 +513,7 @@
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
 
             $email->data = $this->args;
+            if (!array_key_exists('FACILITYCODE', $email->data)) $email->data['FACILITYCODE'] = '';
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
             if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
