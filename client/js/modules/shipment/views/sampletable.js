@@ -62,8 +62,8 @@ define(['marionette',
         setData: function() {
             var data = {}
             _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP'], function(f) {
-                data[f] = $('[name='+f+']').val()
-            })
+                data[f] = this.$el.find('[name='+f+']').val()
+            }, this)
             this.model.set(data)
         },
             
