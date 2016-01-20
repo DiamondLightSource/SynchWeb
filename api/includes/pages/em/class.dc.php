@@ -53,6 +53,9 @@
                     $ids = implode(',', $this->arg('ids'));
                     $args = $this->arg('ids');
                 }
+            } else {
+                $this->_output(array());
+                return;
             }
 
             $tmp = $this->db->pq("SELECT api.datacollectionid, app.processingprograms, app.processingstatus 
