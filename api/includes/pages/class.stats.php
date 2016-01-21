@@ -19,7 +19,9 @@
         
         # Whos online list
         function _online_users() {
-            $rows = $this->db->pq("SELECT username, comments, TO_CHAR(datetime, 'DD-MM-YYYY HH24:MI:SS') as time FROM adminactivity WHERE datetime > SYSDATE-((1/24/60)*15) ORDER BY datetime DESC");
+            $rows = $this->db->pq("SELECT username, comments, TO_CHAR(datetime, 'DD-MM-YYYY HH24:MI:SS') as time 
+                FROM adminactivity 
+                WHERE TIMESTAMPDIFF('MINUTE', datetime, CURRENT_TIMESTAMP) < 15 ORDER BY datetime DESC");
             
             foreach ($rows as &$r) {
                 $r['NAME'] = $this->_get_name($r['USERNAME']);
@@ -30,7 +32,10 @@
         
         
         function _last_actions() {
-            $rows = $this->db->pq("SELECT * FROM (SELECT username, comments, TO_CHAR(datetime, 'DD-MM-YYYY HH24:MI:SS') as time FROM adminactivity WHERE comments LIKE 'ISPyB2%' ORDER BY datetime DESC) WHERE rownum < 25");
+            $rows = $this->db->paginate("SELECT username, comments, TO_CHAR(datetime, 'DD-MM-YYYY HH24:MI:SS') as time 
+                FROM adminactivity 
+                WHERE comments LIKE 'ISPyB2%' 
+                ORDER BY datetime DESC", array(0,25));
             
             foreach ($rows as &$r) {
                 $r['NAME'] = $this->_get_name($r['USERNAME']);
@@ -111,14 +116,14 @@
             $where = $all ? '1=1' : $where;
             
             $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, run, bl FROM (
-                    SELECT count(dc.datacollectionid) as datacollections, TRUNC(dc.starttime, 'HH24') as dh, vr.run, ses.beamlinename as bl
+                    SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'HH24') as dh, vr.run, ses.beamlinename as bl
                     FROM datacollection dc
                     INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
                     INNER JOIN proposal p ON p.proposalid = ses.proposalid
                     WHERE $where AND p.proposalcode not in ('cm', 'nt') AND ses.beamlinename not in ('i12', 'i13')
-                    GROUP BY TRUNC(dc.starttime, 'HH24'), run, ses.beamlinename
-                ) GROUP BY run, bl ORDER BY run, bl
+                    GROUP BY TO_CHAR(dc.starttime, 'HH24'), run, ses.beamlinename
+                ) inq GROUP BY run, bl ORDER BY run, bl
             ");
             
             $json = $this->_format_data($dcs, 'RUN', 'BL', array('AVG'), array('Average (Phase I)' => 'lines', 'Average' => 'lines'), array('Average (Phase I)' => array('i02', 'i03', 'i04'), 'Average' => array()));
@@ -136,14 +141,14 @@
         // Images / Hour
         function _images() {
             $dcs = $this->db->pq("SELECT AVG(images) as avg, run, bl FROM (
-                    SELECT sum(dc.numberofimages) as images, TRUNC(dc.starttime, 'HH24') as dh, vr.run, ses.beamlinename as bl
+                    SELECT sum(dc.numberofimages) as images, TO_CHAR(dc.starttime, 'HH24') as dh, vr.run, ses.beamlinename as bl
                     FROM datacollection dc
                     INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
                     INNER JOIN proposal p ON p.proposalid = ses.proposalid
                     WHERE p.proposalcode not in ('cm', 'nt') AND ses.beamlinename not in ('i12', 'i13')
-                    GROUP BY TRUNC(dc.starttime, 'HH24'), run, ses.beamlinename
-                ) GROUP BY run, bl ORDER BY run, bl
+                    GROUP BY TO_CHAR(dc.starttime, 'HH24'), run, ses.beamlinename
+                ) inq GROUP BY run, bl ORDER BY run, bl
             ");
             
             $json = $this->_format_data($dcs, 'RUN', 'BL', array('AVG'), array('Average (Phase I)' => 'lines', 'Average' => 'lines'), array('Average (Phase I)' => array('i02', 'i03', 'i04'), 'Average' => array()));
@@ -157,7 +162,7 @@
         
         // Data collection times
         function _data_collection_time() {
-            $dcs = $this->db->pq("SELECT avg(dc.endtime-dc.starttime)*1440 as dctime, vr.run, ses.beamlinename as bl
+            $dcs = $this->db->pq("SELECT avg(TIMESTAMPDIFF('SECOND', dc.starttime, dc.endtime)/60) as dctime, vr.run, ses.beamlinename as bl
                                  FROM datacollection dc
                                  INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                                  INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
@@ -182,16 +187,16 @@
         // Samples Loaded / Hour
         function _samples_loaded() {
             $dcs = $this->db->pq("SELECT AVG(count) as avg, count(count) as count, run, bl FROM (
-                    SELECT count(r.robotactionid) as count, TRUNC(r.starttimestamp, 'HH24') as dh, vr.run, ses.beamlinename as bl
+                    SELECT count(r.robotactionid) as count, TO_CHAR(r.starttimestamp, 'HH24') as dh, vr.run, ses.beamlinename as bl
                     FROM robotaction r
                     INNER JOIN blsession ses ON r.blsessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
                     INNER JOIN proposal p ON p.proposalid = ses.proposalid
                     WHERE r.actiontype = 'LOAD'
                     AND p.proposalcode not in ('cm', 'nt')
-                    AND TO_NUMBER(TO_CHAR(vr.startdate, 'YYYY')) > 2010
-                    GROUP BY TRUNC(r.starttimestamp, 'HH24'), run, ses.beamlinename
-                ) WHERE count > 0 GROUP BY run, bl ORDER BY run, bl
+                    /*AND CAST(TO_CHAR(vr.startdate, 'YYYY') as NUMBER) > 2010*/
+                    GROUP BY TO_CHAR(r.starttimestamp, 'HH24'), run, ses.beamlinename
+                ) inq WHERE count > 0 GROUP BY run, bl ORDER BY run, bl
             ");
             
             $json = $this->_format_data($dcs, 'RUN', 'BL', array('AVG'), array('Average (Phase I)' => 'lines', 'Average (Phase II)' => 'lines'), array('Average (Phase I)' => array('i02', 'i03', 'i04'), 'Average (Phase II)' => array('i04-1', 'i24')));
@@ -207,7 +212,7 @@
                                  
         function _daily_usage() {
             $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, TO_CHAR(dh, 'HH24') as hour, bl FROM (
-                    SELECT count(dc.datacollectionid) as datacollections, TRUNC(dc.starttime, 'HH24') as dh, ses.beamlinename as bl
+                    SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'HH24') as dh, ses.beamlinename as bl
                     FROM datacollection dc
                     INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
@@ -215,8 +220,8 @@
                     WHERE dc.axisrange > 0 AND dc.overlap = 0
                     AND p.proposalcode not in ('cm', 'nt')
                     AND ses.beamlinename not in ('i12', 'i13')
-                    GROUP BY TRUNC(dc.starttime, 'HH24'), run, ses.beamlinename
-                ) WHERE datacollections > 0 GROUP BY TO_CHAR(dh, 'HH24'), bl ORDER BY hour, bl
+                    GROUP BY TO_CHAR(dc.starttime, 'HH24'), run, ses.beamlinename
+                ) inq WHERE datacollections > 0 GROUP BY TO_CHAR(dh, 'HH24'), bl ORDER BY hour, bl
             ");
             
             $json = $this->_format_data($dcs, 'HOUR', 'BL', array('AVG'), array('Average' => 'lines'), array('Average' => array()));
@@ -244,12 +249,12 @@
                                  
                                  
         function _auto_indexing() {
-            $dcs = $this->db->pq("SELECT avg((s.bltimestamp-dc.endtime)*86400) as duration, count(s.screeningid) as count, s.shortcomments as ty, vr.run
+            $dcs = $this->db->pq("SELECT avg(TIMESTAMPDIFF('SECOND', dc.endtime, s.bltimestamp)) as duration, count(s.screeningid) as count, s.shortcomments as ty, vr.run
                 FROM screening s
                 INNER JOIN datacollection dc ON dc.datacollectionid = s.datacollectionid
                 INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                 INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
-                WHERE s.shortcomments LIKE 'EDNA%' AND (s.bltimestamp-dc.endtime)*86400 < 10000
+                WHERE s.shortcomments LIKE 'EDNA%' AND TIMESTAMPDIFF('SECOND', dc.endtime, s.bltimestamp) < 10000
                 GROUP BY s.shortcomments, vr.run
                 ORDER BY vr.run
             ");
@@ -263,25 +268,25 @@
                
                                  
         function _auto_integration() {
+            global $ap_types;
+
+            $ty_tmp = array();
+            foreach ($ap_types as $search => $replace) {
+                array_push($ty_tmp, "WHEN app.processingcommandline LIKE '%$search%' THEN '$replace'");
+            }
+            $whens = implode("\n", $ty_tmp);
+
             $dcs = $this->db->pq("SELECT AVG(duration) as avg, AVG(numberofimages) as nimg, count(duration) as count, type as ty, run FROM (
-                    SELECT((ap.recordtimestamp-dc.endtime)*86400) as duration, vr.run, dc.numberofimages, (CASE
-                    WHEN app.processingcommandline LIKE '%fast_dp%' THEN 'Fast DP'
-                    WHEN app.processingcommandline LIKE '%-3da %' THEN 'XIA2 3da'
-                    WHEN app.processingcommandline LIKE '%-2d %' THEN 'XIA2 2d'
-                    WHEN app.processingcommandline LIKE '%-2dr %' THEN 'XIA2 2dr'
-                    WHEN app.processingcommandline LIKE '%-2da %' THEN 'XIA2 2da'
-                    WHEN app.processingcommandline LIKE '%-3d %' THEN 'XIA2 3d'
-                    WHEN app.processingcommandline LIKE '%-3dii %' THEN 'XIA2 3dii'
-                    WHEN app.processingcommandline LIKE '%-3daii %' THEN 'XIA2 3daii'
-                    WHEN app.processingcommandline LIKE '%-blend %' THEN 'MultiXIA2'
+                    SELECT TIMESTAMPDIFF('SECOND', dc.endtime, ap.recordtimestamp) as duration, vr.run, dc.numberofimages, (CASE
+                    $whens
                     ELSE 'N/A' END) as type
                     FROM autoprocintegration ap
                     INNER JOIN autoprocprogram app ON ap.autoprocprogramid = app.autoprocprogramid
                     INNER JOIN datacollection dc ON dc.datacollectionid = ap.datacollectionid
                     INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
-                    WHERE (ap.recordtimestamp-dc.endtime)*86400 < 3500
-                )
+                    WHERE TIMESTAMPDIFF('SECOND', dc.endtime, ap.recordtimestamp) < 3500
+                ) inq
                 GROUP BY type, run
                 ORDER BY run
             ");
