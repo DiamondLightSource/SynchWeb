@@ -124,7 +124,7 @@ class Users extends Page {
 
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
-            $where .= " AND (lower(p.familyname) LIKE lower('%'||:".$st."||'%') OR lower(p.givenname) LIKE lower('%'||:".($st+1)."||'%') OR lower(p.login) LIKE lower('%'||:".($st+2)."||'%'))";
+            $where .= " AND (lower(p.familyname) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(p.givenname) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."),'%')) OR lower(p.login) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."),'%')))";
             for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('s'));
         }
 
@@ -138,7 +138,7 @@ class Users extends Page {
             $join = 'INNER JOIN session_has_person shp ON shp.personid = p.personid
                      INNER JOIN blsession s ON shp.sessionid = s.sessionid
                      INNER JOIN proposal pr ON pr.proposalid = s.proposalid';
-            $where = "AND pr.proposalcode||pr.proposalnumber||'-'||s.visit_number LIKE :".(sizeof($args)+1);
+            $where = "AND CONCAT(CONCAT(CONCAT(pr.proposalcode,pr.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
             array_push($args, $this->arg('visit'));
         }        
 
@@ -172,13 +172,11 @@ class Users extends Page {
             if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
         }
         
-        $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                               SELECT p.personid, p.givenname, p.familyname, p.givenname || ' ' || p.familyname as fullname, p.login
+        $rows = $this->db->paginate("SELECT p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login
                                FROM person p
                                $join
                                WHERE 1=1 $where
-                               ORDER BY $order
-                               ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                               ORDER BY $order", $args);
 
         $this->_output(array('total' => $tot,
                              'data' => $rows,
@@ -238,7 +236,7 @@ class Users extends Page {
 
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
-            $where .= " AND (lower(p.type) LIKE lower('%'||:".$st."||'%'))";
+            $where .= " AND (lower(p.type) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')))";
             array_push($args, $this->arg('s'));
         }
 
@@ -264,13 +262,11 @@ class Users extends Page {
         array_push($args, $end);
         
         
-        $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                               SELECT p.permissionid, p.type, p.description
+        $rows = $this->db->paginate("SELECT p.permissionid, p.type, p.description
                                FROM permission p
                                $join
                                WHERE 1=1 $where
-                               ORDER BY p.type
-                               ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                               ORDER BY p.type", $args);
 
 
         if ($this->has_arg('pid')) {
