@@ -873,6 +873,7 @@
         # ------------------------------------------------------------------------
         # Auto processing for a data collection
         function _dc_auto_processing($id) {
+            global $ap_types;
         
             $rows = $this->db->pq('SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga 
                 FROM autoprocintegration api 
@@ -884,8 +885,6 @@
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
                 WHERE api.datacollectionid = :1 ORDER BY apss.scalingstatisticstype DESC', array($id));
             
-            $types = array('fast_dp' => 'Fast DP', '-3da ' => 'XIA2 3da', '-2d ' => 'XIA2 2d', '-3d ' => 'XIA2 3d', '-2da ' => 'XIA2 2da', '-3daii ' => 'XIA2 3daii', '-3dii ' => 'XIA2 3dii', '-dials ' => 'DIALS', 'autoPROC' => 'autoPROC');
-            
             $dts = array('cell_a', 'cell_b', 'cell_c', 'cell_al', 'cell_be', 'cell_ga');
             $dts2 = array('rlow', 'rhigh');
             
@@ -896,7 +895,7 @@
                 $shell = array();
                 foreach ($r as $k => &$v) {
                     if ($k == 'TYPE') {
-                        foreach ($types as $id => $name) {
+                        foreach ($ap_types as $id => $name) {
                             if (strpos($v, $id)) {
                                 $v = $name;
                                 break;
