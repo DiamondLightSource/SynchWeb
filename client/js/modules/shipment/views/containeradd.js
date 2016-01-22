@@ -258,9 +258,11 @@ define(['marionette',
             
             console.log('caching', hasData)
             if (!hasData) return
+
+            var populated_samples = new Samples(this.samples.filter(function(s) { return s.get('PROTEINID') > -1 }))
                 
             var data = {
-                samples: this.samples.toJSON(),
+                samples: populated_samples.toJSON(),
                 title: this.ui.name.val(),
                 time: new Date(),
             }
@@ -274,6 +276,8 @@ define(['marionette',
         },
         
         loadContainerCache: function() {
+            if (!this.cache.get('data')) return
+
             var samples = _.map(this.cache.get('data').samples, function(s) { return new LocationSample(s) })
             this.samples.set(samples, { remove: false })
             this.table.currentView.render()
