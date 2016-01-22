@@ -18,7 +18,7 @@ class User {
 				$this->$f = $result[0][strtoupper($f)];
 			}
 
-			$this->_cache = $result[0]['CACHE'] ? unserialize($result[0]['CACHE']) : array();
+			$this->_cache = $result[0]['CACHE'] ? unserialize($this->db->read($result[0]['CACHE'])) : array();
 			$this->personid = intval($this->personid);
 
 			$perms = $this->db->pq("SELECT p.type, g.name as usergroup 
