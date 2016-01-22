@@ -960,7 +960,6 @@
                 ));
             }
 
-            //unset($_SESSION['container']);
             $this->_output(array('CONTAINERID' => $cid));
         }
         
@@ -969,23 +968,15 @@
         function _session_cache() {
             $data = array_key_exists('data', $this->request) ? $this->request['data'] : null;
             if (!$this->has_arg('name') || !$data) $this->_error('No key and data specified');
-            $caches = array('container', 'shipment');
-            if (!in_array($this->arg('name'), $caches)) $this->_error('No such cache');
-            
-            $_SESSION[$this->arg('name')] = $data;
-            
+
+            $this->user->set_cache($this->arg('name'), $data);
             $this->_output(array('data' => $data));
         }
         
         
         function _get_session_cache() {
             if (!$this->has_arg('name')) $this->_error('No key specified');
-            
-            if (array_key_exists($this->arg('name'), $_SESSION)) {
-                if ($_SESSION[$this->arg('name')])
-                    $this->_output($_SESSION[$this->arg('name')]);
-            }
-            
+            $this->_output($this->user->cache($this->arg('name')));
         }
         
         

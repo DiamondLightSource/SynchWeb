@@ -471,7 +471,7 @@
                     }
                 }
 
-                unset($_SESSION['container']);
+                $this->user->set_cache('container', array());
                 $this->_output($col);
 
             // Register single sample

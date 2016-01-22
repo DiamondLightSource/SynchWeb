@@ -11,13 +11,14 @@ class User {
 		$this->perms = array();
 		$this->groups = array();
 
-		$result = $this->db->pq("SELECT personid, givenname, familyname FROM person p WHERE login=:1", array($login));
+		$result = $this->db->pq("SELECT cache, personid, givenname, familyname FROM person p WHERE login=:1", array($login));
 
 		if (sizeof($result)) {
 			foreach(array('personid', 'givenname', 'familyname') as $f) {
 				$this->$f = $result[0][strtoupper($f)];
 			}
 
+			$this->_cache = $result[0]['CACHE'] ? unserialize($result[0]['CACHE']) : array();
 			$this->personid = intval($this->personid);
 
 			$perms = $this->db->pq("SELECT p.type, g.name as usergroup 
@@ -36,6 +37,7 @@ class User {
 	}
 
 
+	// Check what user can do
 	function has($permission) {
 		return in_array($permission, $this->perms);
 	}
@@ -49,6 +51,28 @@ class User {
 	function has_group($group) {
 		return in_array($group, $this->groups);
 	}
+
+
+
+	// User cache - for saving partially filled forms, etc
+	function cache($key) {
+		return array_key_exists($key, $this->_cache) ? $this->_cache[$key] : null;
+	}
+
+
+	function set_cache($key, $data) {
+		$allowed_caches = array('shipment', 'container');
+
+		if (in_array($key, $allowed_caches)) {
+			$this->_cache[$key] = $data;
+			$this->db->pq("UPDATE person SET cache=:1 WHERE personid=:2", array(serialize($this->_cache), $this->personid));
+
+			return true;
+		}
+
+		return false;
+	}
+
 
 
 	# TODO
