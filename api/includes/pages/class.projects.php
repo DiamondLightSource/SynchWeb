@@ -43,7 +43,9 @@
             $args = array($this->user->login, $this->user->login);
             $where = "WHERE (p.owner LIKE :1 OR pu.username LIKE :2)";
             
-            $tot = $this->db->pq("SELECT count(distinct p.projectid) as tot FROM project p LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid $where", $args);
+            $tot = $this->db->pq("SELECT count(distinct p.projectid) as tot 
+                FROM project p 
+                LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid $where", $args);
             $tot = intval($tot[0]['TOT']);
             
             if ($this->has_arg('pid')) {
@@ -66,7 +68,10 @@
             array_push($args, $start);
             array_push($args, $end);
             
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (SELECT p.title, p.projectid, p.acronym, p.owner FROM project p LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid $where ORDER BY p.projectid) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+            $rows = $this->db->paginate("SELECT p.title, p.projectid, p.acronym, p.owner 
+                FROM project p 
+                LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid $where 
+                ORDER BY p.projectid", $args);
             
             foreach ($rows as &$ro) {
                 $ro['OWNER_NAME'] = $this->_get_name($ro['OWNER']);
