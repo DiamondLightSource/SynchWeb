@@ -48,10 +48,12 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
   Backbone.sync = function(method, model, options) {
     var url = _.isFunction(model.url) ? model.url() : model.url;
 
-    if (url) {
-        options = options || {};
-        options.url = app.apiurl+url
-    }
+    options = options || {};
+    if (url) options.url = app.apiurl+url
+
+    // Pass cookied proposal to API
+    if (!options.data) options.data = {}
+    options.data.prop = $.cookie('ispyb_prop_'+app.user)
       
     return oldSync.call(this, method, model, options);
   }
@@ -220,7 +222,12 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
                     app.trigger('proposal:change', proposal)
                     if (callback) callback()
                 })
-            }
+            },
+
+            // error: function() {
+            //     $.removeCookie('ispyb_prop_'+app.user)
+            //     app.trigger('proposals:show')
+            // }
         })
     } else if (callback) callback()
     //app.trigger('proposal:change', prop)
@@ -314,6 +321,13 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
                   if (is_routable(href)) {
                       e.preventDefault();
                       Backbone.history.navigate(href, true);
+
+                  // Append proposal to links to api
+                  } else {
+                    if (href.indexOf(app.apiurl) == 0) {
+                      e.preventDefault()
+                      window.location.href = href + '?prop='+app.prop
+                    }
                   }
               });
           }

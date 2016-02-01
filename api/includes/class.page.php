@@ -206,9 +206,9 @@
             }
 
             # Retrieve cookie args
-            if ($this->user) {
-                if (array_key_exists('ispyb_prop_'.$this->user->login, $_COOKIE) && !array_key_exists('prop', $parsed)) $parsed['prop'] = $_COOKIE['ispyb_prop_'.$this->user->login];
-            }
+            // if ($this->user) {
+            //     if (array_key_exists('ispyb_prop_'.$this->user->login, $_COOKIE) && !array_key_exists('prop', $parsed)) $parsed['prop'] = $_COOKIE['ispyb_prop_'.$this->user->login];
+            // }
             
             $this->args = $parsed;
         }
