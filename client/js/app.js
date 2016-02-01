@@ -50,12 +50,27 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
 
     options = options || {};
     if (url) options.url = app.apiurl+url
-
-    // Pass cookied proposal to API
-    if (!options.data) options.data = {}
-    options.data.prop = $.cookie('ispyb_prop_'+app.user)
       
     return oldSync.call(this, method, model, options);
+  }
+
+  // Pass prop to Backbone.ajax
+  var oldAjax = Backbone.ajax
+  Backbone.ajax = function(options) {
+      var prop = $.cookie('ispyb_prop_'+app.user)
+      if (options.contentType == 'application/json') {
+          if (options.data) var tmp = JSON.parse(options.data)
+          else var tmp = {}
+
+          tmp.prop = prop
+          options.data = JSON.stringify(tmp)
+
+      } else {
+          if (!options.data) options.data = {}
+          options.data.prop = prop
+      }
+
+      return oldAjax.call(this, options)
   }
 
 
