@@ -169,28 +169,3 @@
         <p>No fluorescence spectra for this visit</p>
         <?php endif; ?>
 
-
-        <pagebreak />
-
-        <h1>Visit Statistics</h1>
-        <table class="small border">
-            <thead>
-                <tr class="head">
-                    <th>&nbsp;</th>
-                    <th>Time (Hours)</th>
-                    <th>Percentage</th>
-                </td>
-            </thead>
-
-            <tbody>
-            <?php foreach ($br as $n => $t): ?>
-                <tr>
-                    <td><?php echo $n ?></td>
-                    <td><?php echo number_format($t,1) ?></td>
-                    <td><?php echo number_format(($t/$info['LEN'])*100,1) ?></td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-
-

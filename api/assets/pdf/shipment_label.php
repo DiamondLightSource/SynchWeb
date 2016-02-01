@@ -94,17 +94,7 @@
             <div>
                 <div class="left large bold" style="width: 70px">TO:</div>
                 <div class="pad-left">
-                    <p class="large bold">
-                        The Experimental Hall Coordinators<br />
-                        Diamond Light Source Limited<br />
-                        Chilton<br />
-                        Didcot<br />
-                        Oxfordshire<br />
-                        OX11 0DE<br />
-                        UNITED KINGDOM<br />
-                        <span class="normal">Tel: +44 (0)1235 778787</span><br />
-                        <span class="normal">Fax: +44 (0)1235 778499</span>
-                    </p>
+                    <p class="large bold"><?php echo $ship['FACILITYADDRESS'] ?></p>
                 </div>
             </div>
 
