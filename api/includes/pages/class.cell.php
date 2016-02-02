@@ -41,6 +41,7 @@
         # ------------------------------------------------------------------------
         # List data collections / visits for a particular cell
         function _cells($output=true) {
+            global $ap_types;
             session_write_close();
             
             $tol = $this->has_arg('tol') ? $this->arg('tol') : 0.01;
@@ -83,17 +84,25 @@
             
             $nostafft = '';
             if (!$this->staff) {
-                // $nostaff = "INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) = p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on (u.id = iu.user_id AND u.name=:".(sizeof($args)+1).")";
                 $nostaff = "INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
                 
-                // $nostafft = "INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) = p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on (u.id = iu.user_id AND u.name=:".(sizeof($tot_args)+1).")";
                 $nostafft = "INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid AND shp.personid=:".(sizeof($tot_args)+1);
                 array_push($tot_args, $this->user->personid);
             } else $nostaff = '';
             
             
-            $tot = $this->db->pq("SELECT count(ap.refinedcell_a) as tot FROM autoprocintegration api INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid INNER JOIN blsession s ON s.sessionid = dc.sessionid INNER JOIN proposal p ON s.proposalid = p.proposalid $nostafft WHERE p.proposalcode != 'in' AND apss.scalingstatisticstype LIKE 'overall' AND (ap.refinedcell_a BETWEEN :1 AND :2) AND (ap.refinedcell_b BETWEEN :3 AND :4) AND (ap.refinedcell_c BETWEEN :5 AND :6) AND (ap.refinedcell_alpha BETWEEN :7 AND :8) AND (ap.refinedcell_beta BETWEEN :9 AND :10) AND (ap.refinedcell_gamma BETWEEN :11 AND :12) AND to_date(:13, 'HH24:MI YYYY-MM-DD') >= dc.starttime $rest $sgt", $tot_args);
+            $tot = $this->db->pq("SELECT count(ap.refinedcell_a) as tot 
+                FROM autoprocintegration api 
+                INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
+                INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+                INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
+                INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid 
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid 
+                INNER JOIN proposal p ON s.proposalid = p.proposalid $nostafft 
+                WHERE p.proposalcode != 'in' AND apss.scalingstatisticstype LIKE 'overall' AND (ap.refinedcell_a BETWEEN :1 AND :2) AND (ap.refinedcell_b BETWEEN :3 AND :4) AND (ap.refinedcell_c BETWEEN :5 AND :6) AND (ap.refinedcell_alpha BETWEEN :7 AND :8) AND (ap.refinedcell_beta BETWEEN :9 AND :10) AND (ap.refinedcell_gamma BETWEEN :11 AND :12) AND TO_DATE(:13, 'HH24:MI YYYY-MM-DD') >= dc.starttime $rest $sgt", $tot_args);
             
             if (sizeof($tot)) $tot = $tot[0]['TOT'];
             else $tot = 0;
@@ -116,9 +125,7 @@
             $pgs = intval($tot/$pp);
             if ($tot % $pp != 0) $pgs++;
             
-            $rows = $this->db->pq("SELECT outer.* FROM (
-                SELECT ROWNUM rn, inner.* FROM (
-                    SELECT s.sessionid, api.autoprocprogramid, api.autoprocintegrationid, sqrt(power(ap.refinedcell_a-:13,2)+power(ap.refinedcell_b-:14,2)+power(ap.refinedcell_c-:15,2)+power(ap.refinedcell_alpha-:16,2)+power(ap.refinedcell_beta-:17,2)+power(ap.refinedcell_gamma-:18,2)) as dist, s.beamlinename as bl, app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmerge, apss.completeness, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.imagedirectory as dir, dc.filetemplate, p.proposalcode || p.proposalnumber || '-' || s.visit_number as visit, dc.numberofimages as numimg, dc.axisrange, dc.axisstart, dc.wavelength, dc.transmission, dc.exposuretime 
+            $rows = $this->db->paginate("SELECT s.sessionid, api.autoprocprogramid, api.autoprocintegrationid, sqrt(power(ap.refinedcell_a-:13,2)+power(ap.refinedcell_b-:14,2)+power(ap.refinedcell_c-:15,2)+power(ap.refinedcell_alpha-:16,2)+power(ap.refinedcell_beta-:17,2)+power(ap.refinedcell_gamma-:18,2)) as dist, s.beamlinename as bl, app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmerge, apss.completeness, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.imagedirectory as dir, dc.filetemplate, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, dc.numberofimages as numimg, dc.axisrange, dc.axisstart, dc.wavelength, dc.transmission, dc.exposuretime 
                     FROM autoprocintegration api 
                     INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
                     INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
@@ -128,28 +135,24 @@
                     INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid 
                     INNER JOIN blsession s ON s.sessionid = dc.sessionid 
                     INNER JOIN proposal p ON s.proposalid = p.proposalid $nostaff 
-                    WHERE p.proposalcode != 'in' AND apss.scalingstatisticstype LIKE 'overall' AND (ap.refinedcell_a BETWEEN :1 AND :2) AND (ap.refinedcell_b BETWEEN :3 AND :4) AND (ap.refinedcell_c BETWEEN :5 AND :6) AND (ap.refinedcell_alpha BETWEEN :7 AND :8) AND (ap.refinedcell_beta BETWEEN :9 AND :10) AND (ap.refinedcell_gamma BETWEEN :11 AND :12) AND to_date(:19, 'HH24:MI YYYY-MM-DD') >= dc.starttime $res $sg 
-                    ORDER BY dist) inner) outer 
-                    WHERE outer.rn > :$st AND outer.rn <= :$en", $args);
-                        
-            $types = array('fast_dp' => 'Fast DP', '-3d' => 'XIA2 3d', '-3dii' => 'XIA2 3dii', '-3da ' => 'XIA2 3da', '-2da ' => 'XIA2 2da', '-2d' => 'XIA2 2d', '-2dr' => 'XIA2 2dr', '-3daii ' => 'XIA2 3daii', '-blend' => 'MultiXIA2');
+                    WHERE p.proposalcode != 'in' AND apss.scalingstatisticstype LIKE 'overall' AND (ap.refinedcell_a BETWEEN :1 AND :2) AND (ap.refinedcell_b BETWEEN :3 AND :4) AND (ap.refinedcell_c BETWEEN :5 AND :6) AND (ap.refinedcell_alpha BETWEEN :7 AND :8) AND (ap.refinedcell_beta BETWEEN :9 AND :10) AND (ap.refinedcell_gamma BETWEEN :11 AND :12) AND TO_DATE(:19, 'HH24:MI YYYY-MM-DD') >= dc.starttime $res $sg 
+                    ORDER BY dist", $args);
                                   
             foreach ($rows as &$dc) {
-                foreach ($types as $id => $name) {
+                foreach ($ap_types as $id => $name) {
                     if (strpos($dc['TYPE'], $id) !== false) {
                         $dc['TYPE'] = $name;
                         break;
                     }
                 }
                 
-                // $users = $this->db->pq("SELECT u.name,u.fullname FROM investigation@DICAT_RO i INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id INNER JOIN user_@DICAT_RO u on u.id = iu.user_id WHERE lower(i.visit_id)=:1", array($dc['VISIT']));
+
                 $users = $this->db->pq("SELECT p.title, p.familyname, p.givenname FROM person p 
                     INNER JOIN session_has_person shp ON p.personid = shp.personid 
                     WHERE shp.sessionid=:1", array($dc['SESSIONID']));
 
                 $dc['USERS'] = array();
                 foreach ($users as $u) {
-                    // array_push($dc['USERS'], $u['FULLNAME']);
                     array_push($dc['USERS'], $u['TITLE'].' '.$u['GIVENNAME'].' '.$u['FAMILYNAME']);
                 }
                 
@@ -192,7 +195,7 @@
         # State stats
         function _state() {
             $stats = $this->db->pq("SELECT 
-                count(case when (beamlinematch=1) then 1 end) as match, 
+                count(case when (beamlinematch=1) then 1 end) as matched, 
                 count(case when (autoproccount>0 and beamlinematch != 1 and authormatch!=1) then 1 end) as nomatch, 
                 count(case when (autoproccount=0) then 1 end) as noresults, 
                 count(case when (autoproccount>0 and beamlinematch!=1 and authormatch=1) then 1 end) as mismatch 
@@ -212,19 +215,24 @@
         # ------------------------------------------------------------------------
         # Beamline stats
         function _beamlines() {
-            $pdb = $this->db->pq("SELECT TO_CHAR(p.pdbdate, 'YYYY') as year, REPLACE(REPLACE(p.pdbbeamlinename, 'DIAMOND LIGHT SOURCE BEAMLINE ', ''), 'DIAMOND BEAMLINE ', '') as bl, count(p.pdbentryid) as count
+            global $facility_pdb_ident;
+
+            $replace = 'p.pdbbeamlinename';
+            foreach ($facility_pdb_ident as $i) $replace = "REPLACE($replace, '$i ', '')";
+
+            $pdb = $this->db->pq("SELECT TO_CHAR(p.pdbdate, 'YYYY') as year, $replace as bl, count(p.pdbentryid) as count
                 FROM pdbentry p
                 WHERE p.pdbdate > TO_DATE('2010-05', 'YYYY-MM')
-                GROUP BY REPLACE(REPLACE(p.pdbbeamlinename, 'DIAMOND LIGHT SOURCE BEAMLINE ', ''), 'DIAMOND BEAMLINE ', ''), TO_CHAR(p.pdbdate, 'YYYY')
+                GROUP BY $replace, TO_CHAR(p.pdbdate, 'YYYY')
                 ORDER BY TO_CHAR(p.pdbdate, 'YYYY')");
 
-            $isp = $this->db->pq("SELECT TO_CHAR(p.pdbdate, 'YYYY') as year, CASE WHEN p.autoprocprogramid > 0 THEN UPPER(s.beamlinename) ELSE REPLACE(REPLACE(p.pdbbeamlinename, 'DIAMOND LIGHT SOURCE BEAMLINE ', ''), 'DIAMOND BEAMLINE ', '') END as bl, count(p.pdbentryid) as count
+            $isp = $this->db->pq("SELECT TO_CHAR(p.pdbdate, 'YYYY') as year, CASE WHEN p.autoprocprogramid > 0 THEN UPPER(s.beamlinename) ELSE $replace END as bl, count(p.pdbentryid) as count
                 FROM pdbentry p
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = p.autoprocprogramid
                 LEFT OUTER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                 LEFT OUTER JOIN blsession s ON s.sessionid = dc.sessionid
                 WHERE p.pdbdate > TO_DATE('2010-05', 'YYYY-MM')
-                GROUP BY CASE WHEN p.autoprocprogramid > 0 THEN UPPER(s.beamlinename) ELSE REPLACE(REPLACE(p.pdbbeamlinename, 'DIAMOND LIGHT SOURCE BEAMLINE ', ''), 'DIAMOND BEAMLINE ', '') END, TO_CHAR(p.pdbdate, 'YYYY')
+                GROUP BY CASE WHEN p.autoprocprogramid > 0 THEN UPPER(s.beamlinename) ELSE $replace END, TO_CHAR(p.pdbdate, 'YYYY')
                 ORDER BY TO_CHAR(p.pdbdate, 'YYYY')");
 
             foreach ($pdb as $i => &$s) {
@@ -268,7 +276,7 @@
                 $s = str_replace('_', '$_', $this->arg('s'));
 
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(p.code) LIKE lower('%'||:$st||'%') ESCAPE '$' OR lower(p.pdbauthors) LIKE lower('%'||:".($st+1)."||'%') ESCAPE '$' OR lower(p.pdbbeamlinename) LIKE lower('%'||:".($st+2)."||'%') ESCAPE '$')";
+                $where .= " AND (lower(p.code) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) ESCAPE '$' OR lower(p.pdbauthors) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) ESCAPE '$' OR lower(p.pdbbeamlinename) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')) ESCAPE '$')";
 
                 for ($i = 0; $i < 3; $i++) array_push($args, $s);
             }
@@ -290,15 +298,13 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                SELECT p.pdbentryid, p.autoprocprogramid, p.code, p.resolution, p.pdbbeamlinename, p.beamlines, p.distance, p.autoproccount, p.beamlinematch, p.authormatch, dc.datacollectionid, s.beamlinename, TO_CHAR(p.pdbdate, 'YYYY-MM-DD') as pdbdate
+            $rows = $this->db->paginate("SELECT p.pdbentryid, p.autoprocprogramid, p.code, p.resolution, p.pdbbeamlinename, p.beamlines, p.distance, p.autoproccount, p.beamlinematch, p.authormatch, dc.datacollectionid, s.beamlinename, TO_CHAR(p.pdbdate, 'YYYY-MM-DD') as pdbdate
                 FROM pdbentry p 
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = p.autoprocprogramid
                 LEFT OUTER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                 LEFT OUTER JOIN blsession s ON s.sessionid = dc.sessionid
                 WHERE 1=1 $where
-                ORDER BY p.pdbdate DESC
-                ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                ORDER BY p.pdbdate DESC", $args);
 
             foreach ($rows as $i => &$r) {
                 $r['BEAMLINEMATCH'] = intval($r['BEAMLINEMATCH']);
@@ -312,6 +318,7 @@
         # ------------------------------------------------------------------------
         # Process a pdb from RCSB
         function _process_pdbs() {
+            global $facility_pdb_ident;
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
 
             list($tot, $rows) = $this->_cells(false);
@@ -322,7 +329,9 @@
             foreach ($rows as $r) {
                 $bls[$r['BL']] = 1;
                 
-                if (str_replace('DIAMOND BEAMLINE ', '', $this->arg('bl')) ==  strtoupper($r['BL'])) $blmatch = 1;
+                $bl_to_match = $this->arg('bl');
+                foreach ($facility_pdb_ident as $i) $bl_to_match = str_replace($i.' ', '', $bl_to_match);
+                if ($bl_to_match ==  strtoupper($r['BL'])) $blmatch = 1;
                 
                 foreach ($r['USERS'] as $u) {
                     $parts = explode(' ', $u);
@@ -340,7 +349,9 @@
             $title = $this->has_arg('title') ? $this->arg('title') : '';
             $author = $this->has_arg('author') ? $this->arg('author') : '';
 
-            $this->db->pq("INSERT INTO pdbentry (pdbentryid, autoprocprogramid, code, cell_a, cell_b, cell_c, cell_alpha, cell_beta, cell_gamma, resolution, pdbtitle, pdbauthors, pdbdate, pdbbeamlinename, beamlines, distance, autoproccount, beamlinematch, authormatch) VALUES (s_pdbentry.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, TO_DATE(:12, 'YYYY-MM-DD'), :13, :14, :15, :16, :17, :18)", array($aid, $this->arg('pdb'), $this->arg('a'), $this->arg('b'), $this->arg('c'), $this->arg('al'), $this->arg('be'), $this->arg('ga'), $this->arg('res')/1.25, $title, $author, $this->arg('year'), $this->arg('bl'), $bls, $dist, $tot, $blmatch, $umatch));
+            $this->db->pq("INSERT INTO pdbentry (pdbentryid, autoprocprogramid, code, cell_a, cell_b, cell_c, cell_alpha, cell_beta, cell_gamma, resolution, pdbtitle, pdbauthors, pdbdate, pdbbeamlinename, beamlines, distance, autoproccount, beamlinematch, authormatch) 
+                VALUES (s_pdbentry.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, TO_DATE(:12, 'YYYY-MM-DD'), :13, :14, :15, :16, :17, :18)", 
+                array($aid, $this->arg('pdb'), $this->arg('a'), $this->arg('b'), $this->arg('c'), $this->arg('al'), $this->arg('be'), $this->arg('ga'), $this->arg('res')/1.25, $title, $author, $this->arg('year'), $this->arg('bl'), $bls, $dist, $tot, $blmatch, $umatch));
                 
             $this->_output(1);
         }
