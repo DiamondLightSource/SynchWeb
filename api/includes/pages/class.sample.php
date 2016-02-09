@@ -459,6 +459,8 @@
 
 
         function _add_sample() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
             // Register entire container
             if ($this->has_arg('collection')) {
                 $col = array();
