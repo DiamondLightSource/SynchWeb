@@ -20,9 +20,28 @@
         
         # Show list of beamlines & runs
         function _averages() {
-            $rows = $this->db->pq("SELECT vr.run || '-' || s.beamlinename as rbl, min(vr.run) as run, min(vr.runid) as runid, min(s.beamlinename) as bl, count(r.robotactionid) as num, MEDIAN(CAST(r.endtimestamp AS DATE)-CAST(r.starttimestamp AS DATE))*86400 as avgt FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) WHERE r.robotactionid > 1 AND p.proposalcode <> 'cm' AND r.status='SUCCESS' AND (r.actiontype = 'LOAD') GROUP BY vr.run || '-' || s.beamlinename ORDER BY min(s.beamlinename), min(vr.runid)");
+
+            // The only case switch in the entire migration :(
+            $median = $this->db->type() == 'mysql' ?
+                "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) ORDER BY TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE))), ',', COUNT(*)/2 ), ',', -1) as avgt"
+              : "MEDIAN(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE))) as avgt";
+
+
+            $rows = $this->db->pq("SELECT CONCAT(CONCAT(vr.run, '-'), s.beamlinename) as rbl, min(vr.run) as run, min(vr.runid) as runid, min(s.beamlinename) as bl, count(r.robotactionid) as num, 
+                    $median
+                FROM v_run vr 
+                INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
+                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
+                WHERE /*r.robotactionid > 1 AND*/ p.proposalcode <> 'cm' AND r.status='SUCCESS' AND (r.actiontype = 'LOAD') 
+                GROUP BY CONCAT(CONCAT(vr.run, '-'), s.beamlinename)
+                ORDER BY min(s.beamlinename), min(vr.runid)");
             
-            $tvs = $this->db->pq("SELECT distinct vr.run,vr.runid FROM v_run vr INNER JOIN blsession bl ON (bl.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN robotaction r ON (r.blsessionid = bl.sessionid) WHERE robotactionid != 1 ORDER BY vr.runid");
+            $tvs = $this->db->pq("SELECT distinct vr.run,vr.runid 
+                FROM v_run vr 
+                INNER JOIN blsession bl ON (bl.startdate BETWEEN vr.startdate AND vr.enddate) 
+                INNER JOIN robotaction r ON (r.blsessionid = bl.sessionid) 
+                /*WHERE robotactionid != 1*/ ORDER BY vr.runid");
             
             $rids = array();$rvl = array();
             $ticks = array();
@@ -67,11 +86,11 @@
                 array_push($args, $this->arg('run'));
             }
             if ($this->has_arg('visit')) {
-                array_push($where, "p.proposalcode||p.proposalnumber||'-'||s.visit_number LIKE :" . (sizeof($args)+1));
+                array_push($where, "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :" . (sizeof($args)+1));
                 array_push($args, $this->arg('visit'));
             }
             if ($this->has_arg('s')) {
-                array_push($where, "(lower(r.status) LIKE lower('%'||:".(sizeof($args)+1)."||'%') OR lower(r.message) LIKE lower('%'||:".(sizeof($args)+2)."||'%'))");
+                array_push($where, "(lower(r.status) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+1)."), '%')) OR lower(r.message) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+2)."), '%')))");
                 array_push($args, $this->arg('s'));
                 array_push($args, $this->arg('s'));
             }
@@ -79,7 +98,12 @@
             $where = implode(' AND ', $where);
             if ($where) $where = 'AND '.$where;
 
-            $tot = $this->db->pq("SELECT count(r.robotactionid) as tot FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) WHERE r.status != 'SUCCESS' AND  (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where ORDER BY r.starttimestamp DESC", $args);
+            $tot = $this->db->pq("SELECT count(r.robotactionid) as tot 
+                FROM v_run vr 
+                INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
+                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
+                WHERE r.status != 'SUCCESS' AND  (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where ORDER BY r.starttimestamp DESC", $args);
             
             $start = 0;
             $end = 10;
@@ -94,7 +118,12 @@
             array_push($args, $start);
             array_push($args, $end);
             
-            $errors = $this->db->pq("SELECT outer.* FROM (SELECT rownum rn, inner.* FROM (SELECT r.samplebarcode, r.actiontype, r.dewarlocation, r.containerlocation, r.message, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, p.proposalcode || p.proposalnumber || '-' || s.visit_number as vis, s.beamlinename as bl, r.status, (CAST(r.endtimestamp AS DATE)-CAST(r.starttimestamp AS DATE))*86400 as time FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) WHERE r.status != 'SUCCESS' AND (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where ORDER BY r.starttimestamp DESC) inner) outer WHERE outer.rn > :".(sizeof($args)-1)." AND outer.rn <= :".sizeof($args), $args);
+            $errors = $this->db->paginate("SELECT r.samplebarcode, r.actiontype, r.dewarlocation, r.containerlocation, r.message, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, s.beamlinename as bl, r.status, TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) as time 
+                FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
+                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
+                WHERE r.status != 'SUCCESS' AND (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where 
+                ORDER BY r.starttimestamp DESC", $args);
             
             foreach ($errors as $i => &$e) {
                 $e['TIME'] = number_format($e['TIME'], 1);
@@ -107,7 +136,13 @@
         
         # Dewar profile for visit
         function _visit_profile() {
-            $dp = $this->db->pq("SELECT count(case when r.status='CRITICAL' then 1 end) as ccount, count(case when r.status!='SUCCESS' then 1 end) as ecount, count(case when r.status!='SUCCESS' then 1 end)/count(r.status)*100 as epc, count(case when r.status='CRITICAL' then 1 end)/count(r.status)*100 as cpc, count(r.status) as total, r.dewarlocation FROM robotaction r INNER JOIN blsession s on r.blsessionid=s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE p.proposalcode||p.proposalnumber||'-'||s.visit_number LIKE :1 AND r.actiontype LIKE 'LOAD' AND r.dewarlocation != 99 GROUP BY r.dewarlocation ORDER BY r.dewarlocation", array($this->arg('visit')));
+            $dp = $this->db->pq("SELECT count(case when r.status='CRITICAL' then 1 end) as ccount, count(case when r.status!='SUCCESS' then 1 end) as ecount, count(case when r.status!='SUCCESS' then 1 end)/count(r.status)*100 as epc, count(case when r.status='CRITICAL' then 1 end)/count(r.status)*100 as cpc, count(r.status) as total, r.dewarlocation 
+                FROM robotaction r 
+                INNER JOIN blsession s on r.blsessionid=s.sessionid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid 
+                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) LIKE :1 AND r.actiontype LIKE 'LOAD' AND r.dewarlocation != 99 
+                GROUP BY r.dewarlocation 
+                ORDER BY r.dewarlocation", array($this->arg('visit')));
             
             
             $profile = array(array(
@@ -152,9 +187,26 @@
 
             $where = implode(' AND ', $where);
 
-            $totals = $this->db->pq("SELECT 'TOTAL' as vis, count(r.robotactionid) as num, count(CASE WHEN r.status='SUCCESS' then 1 end) as success, count(CASE WHEN r.status='ERROR' then 1 end) as error, count(CASE WHEN r.status='CRITICAL' then 1 end) as critical, count(CASE WHEN r.status='WARNING' then 1 end) as warning, count(CASE WHEN r.status='EPICSFAIL' then 1 end) as epicsfail, count(CASE WHEN r.status='COMMANDNOTSENT' then 1 end) as commandnotsent, ROUND(MEDIAN(CASE WHEN r.status='SUCCESS' then CAST(r.endtimestamp AS DATE)-CAST(r.starttimestamp AS DATE) end)*86400,1) as avgt FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) WHERE p.proposalcode <> 'cm' AND $where AND r.actiontype = 'LOAD'", $args);
+            $median = $this->db->type() == 'mysql' ?
+                "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END ORDER BY CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END), ',', COUNT(*)/2 ), ',', -1) as avgt"
+              : "ROUND(MEDIAN(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END),1) as avgt";
 
-            $tot = $this->db->pq("SELECT count(num) as tot FROM (SELECT count(r.robotactionid) as num FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) WHERE p.proposalcode <> 'cm' AND $where AND (r.actiontype = 'LOAD') GROUP BY p.proposalcode || p.proposalnumber || '-' || s.visit_number)", $args);
+            $totals = $this->db->pq("SELECT 'TOTAL' as vis, count(r.robotactionid) as num, count(CASE WHEN r.status='SUCCESS' then 1 end) as success, count(CASE WHEN r.status='ERROR' then 1 end) as error, count(CASE WHEN r.status='CRITICAL' then 1 end) as critical, count(CASE WHEN r.status='WARNING' then 1 end) as warning, count(CASE WHEN r.status='EPICSFAIL' then 1 end) as epicsfail, count(CASE WHEN r.status='COMMANDNOTSENT' then 1 end) as commandnotsent, 
+                    $median
+                FROM v_run vr 
+                INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
+                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
+                WHERE p.proposalcode <> 'cm' AND $where AND r.actiontype = 'LOAD'", $args);
+
+            $tot = $this->db->pq("SELECT count(num) as tot FROM (
+                SELECT count(r.robotactionid) as num 
+                FROM v_run vr 
+                INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
+                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
+                WHERE p.proposalcode <> 'cm' AND $where AND (r.actiontype = 'LOAD') 
+                GROUP BY CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number)) inq", $args);
             $tot = intval($tot[0]['TOT']);
 
             $start = 0;
@@ -172,11 +224,20 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $q = "SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                    SELECT TO_CHAR(min(r.starttimestamp), 'DD-MM-YYYY HH24:MI:SS') as st, p.proposalcode || p.proposalnumber || '-' || s.visit_number as vis, s.beamlinename as bl, count(r.robotactionid) as num, count(CASE WHEN r.status='SUCCESS' then 1 end) as success, count(CASE WHEN r.status='ERROR' then 1 end) as error, count(CASE WHEN r.status='CRITICAL' then 1 end) as critical, count(CASE WHEN r.status='WARNING' then 1 end) as warning, count(CASE WHEN r.status='EPICSFAIL' then 1 end) as epicsfail, count(CASE WHEN r.status='COMMANDNOTSENT' then 1 end) as commandnotsent, ROUND(MEDIAN(CASE WHEN r.status='SUCCESS' then CAST(r.endtimestamp AS DATE)-CAST(r.starttimestamp AS DATE) end)*86400,1) as avgt FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) WHERE p.proposalcode <> 'cm' AND $where AND r.actiontype = 'LOAD' GROUP BY p.proposalcode || p.proposalnumber || '-' || s.visit_number, s.beamlinename ORDER BY min(r.starttimestamp) DESC
-                ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :".($st+1);
+            $median = $this->db->type() == 'mysql' ?
+                "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END ORDER BY CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END), ',', COUNT(*)/2 ), ',', -1) as avgt"
+              : "ROUND(MEDIAN(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END),1) as avgt";
+
+            $q = "SELECT TO_CHAR(min(r.starttimestamp), 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) as vis, s.beamlinename as bl, count(r.robotactionid) as num, count(CASE WHEN r.status='SUCCESS' then 1 end) as success, count(CASE WHEN r.status='ERROR' then 1 end) as error, count(CASE WHEN r.status='CRITICAL' then 1 end) as critical, count(CASE WHEN r.status='WARNING' then 1 end) as warning, count(CASE WHEN r.status='EPICSFAIL' then 1 end) as epicsfail, count(CASE WHEN r.status='COMMANDNOTSENT' then 1 end) as commandnotsent, 
+                        $median
+                    FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
+                    INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                    INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
+                    WHERE p.proposalcode <> 'cm' AND $where AND r.actiontype = 'LOAD' 
+                    GROUP BY CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number), s.beamlinename 
+                    ORDER BY min(r.starttimestamp) DESC";
             
-            $rows = $this->db->pq($q, $args);
+            $rows = $this->db->paginate($q, $args);
             $this->_output(array($totals[0], $tot, $rows));
         }
         
