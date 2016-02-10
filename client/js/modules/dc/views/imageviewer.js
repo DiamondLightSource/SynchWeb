@@ -347,21 +347,21 @@ define(['jquery', 'marionette',
         
         // Next / prev image functions
         prev: function() {
-            val = this.ui.num.val()
+            val = parseInt(this.ui.num.val())
             if (val > 1) {
-              if (val > this.model.get('NI')) val = ni
+              if (val > parseInt(this.model.get('NI'))) val = ni
               val--
               this.change(val)
-              val = this.ui.num.val(val)
+              this.ui.num.val(val)
             }
         },
           
         next: function() {
-            val = this.ui.num.val()
-            if (val < this.model.get('NI')) {
+            val = parseInt(this.ui.num.val())
+            if (val < parseInt(this.model.get('NI'))) {
               val++
               this.change(val)
-              val = this.ui.num.val(val)
+              this.ui.num.val(val)
             }
         },
         
