@@ -44,6 +44,7 @@ class ProposalType {
         
         
         $vis = $this->app->request->params('visit');
+        $prop = $this->app->request->params('prop');
         // check if there is a visit in the address args
         if (preg_match('/([A-z]+)\d+-\d+/', $vis, $m)) {
             $bl = $this->db->pq("SELECT s.beamlinename 
@@ -66,35 +67,32 @@ class ProposalType {
             $ty = 'mx';
             
             
-        // check cookie
+        // check if we have a proposal
         } else {
             if ($this->user) {
-                if (array_key_exists('ispyb_prop_'.$this->user->login, $_COOKIE)) {
-                    $prop = $_COOKIE['ispyb_prop_'.$this->user->login];
-                    if (preg_match('/([A-z]+)\d+/', $prop, $m)) {
-                        $prop_code = $m[1];
-                        
-                        // See if proposal code matches list in config
-                        $found = False;
-                        foreach ($prop_types as $pty) {
-                            if ($prop_code == $pty) {
-                                $ty = $pty;
-                                $found = True;
-                            }
+                if (preg_match('/([A-z]+)\d+/', $prop, $m)) {
+                    $prop_code = $m[1];
+                    
+                    // See if proposal code matches list in config
+                    $found = False;
+                    foreach ($prop_types as $pty) {
+                        if ($prop_code == $pty) {
+                            $ty = $pty;
+                            $found = True;
                         }
+                    }
+                    
+                    // Proposal code didnt match, work out what beamline the visits are on
+                    if (!$found) {
+                        $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode,p.proposalnumber) LIKE :1", array($m[0]));
                         
-                        // Proposal code didnt match, work out what beamline the visits are on
-                        if (!$found) {
-                            $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode,p.proposalnumber) LIKE :1", array($m[0]));
-                            
-                            if (sizeof($bls)) {
-                                foreach ($bls as $bl) {
-                                    $b = $bl['BEAMLINENAME'];
-                                    foreach ($bl_types as $tty => $bls) {
-                                        if (in_array($b, $bls)) {
-                                            $ty = $tty;
-                                            break;
-                                        }
+                        if (sizeof($bls)) {
+                            foreach ($bls as $bl) {
+                                $b = $bl['BEAMLINENAME'];
+                                foreach ($bl_types as $tty => $bls) {
+                                    if (in_array($b, $bls)) {
+                                        $ty = $tty;
+                                        break;
                                     }
                                 }
                             }
@@ -142,7 +140,8 @@ class ProposalType {
                                                           : 'includes/pages/'.$cl->dir.'/class.'.$p.'.php';
                 if (file_exists($class)) {
                     require_once($class);
-                    $ns = $cl->ty == 'mx' || in_array($p, $cl->generic_pages) ? '\\' : '\\'.$cl->dir.'\\';
+                    // $ns = $cl->ty == 'mx' || $cl->ty == 'sm' || in_array($p, $cl->generic_pages) ? '\\' : '\\'.$cl->dir.'\\';
+                    $ns = $cl->dir && !in_array($p, $cl->generic_pages) ? '\\'.$cl->dir.'\\' : '\\';
                     $cn = $ns.ucfirst($p);
                     $pg = new $cn($app, $db, $cl);
                 }
