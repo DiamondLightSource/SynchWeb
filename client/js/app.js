@@ -58,7 +58,13 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
   var oldAjax = Backbone.ajax
   Backbone.ajax = function(options) {
       var prop = $.cookie('ispyb_prop_'+app.user)
-      if (options.contentType == 'application/json') {
+
+      // FormData
+      if (options.data instanceof FormData) {
+          options.data.append('prop', prop)
+
+      // JSON content
+      } else if (options.contentType == 'application/json' || options.type == 'DELETE') {
           if (options.data) var tmp = JSON.parse(options.data)
           else var tmp = {}
 
@@ -66,6 +72,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
           else tmp.prop = prop
           options.data = JSON.stringify(tmp)
 
+      // Append to object for anything else
       } else {
           if (!options.data) options.data = {}
           options.data.prop = prop
