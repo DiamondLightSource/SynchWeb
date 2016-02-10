@@ -16,7 +16,7 @@ if [ $3 == 'dimple' ]; then
 	# fofc2="F1=F SIG1=SIGF PHI=PHWT W=FOM"
 	# fofc="F1=F SIG1=SIGF PHI=PHDELWT W=FOM"
 
-	if mtzinfo $1 | grep -q PH2FOFCWT; then
+	if $root/mtzinfo $1 | grep -q PH2FOFCWT; then
 		fofc2="F1=2FOFCWT SIG1=SIGF PHI=PH2FOFCWT"
 		fofc="F1=F SIG1=SIGF PHI=PHFOFCWT W=FOM"
 	else
