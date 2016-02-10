@@ -336,14 +336,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
                   if (is_routable(href)) {
                       e.preventDefault();
                       Backbone.history.navigate(href, true);
-
-                  // Append proposal to links to api
-                  } else {
-                    if (href.indexOf(app.apiurl) == 0) {
-                      e.preventDefault()
-                      window.location.href = href + '?prop='+app.prop
-                    }
-                  }
+                  } 
               });
           }
           
