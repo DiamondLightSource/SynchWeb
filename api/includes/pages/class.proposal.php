@@ -420,19 +420,28 @@
         # ------------------------------------------------------------------------
         # Get users for a visit
         function _get_users() {
-            if (!$this->has_arg('visit')) $this->_error('No visit specified');
+            $where = 'p.login IS NOT NULL';
+            $args = array();
+
+            if ($this->has_arg('visit')) {
+                $where .= " AND CONCAT(CONCAT(CONCAT(pr.proposalcode, pr.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('visit'));
+            }
+
+            if ($this->has_arg('term')) {
+                $st = sizeof($args)+1;
+                $st2 = sizeof($args)+2;
+                $where .= " AND lower(p.givenname) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) OR lower(p.familyname) LIKE lower(CONCAT(CONCAT('%',:$st2),'%'))";
+                for ($i = 0; $i < 2; $i++) array_push($args, $this->arg('term'));
+            }
             
-            // $rows = $this->db->pq("SELECT iu.role, u.name, u.fullname, count(it.id) as visits, TO_CHAR(max(it.startdate), 'DD-MM-YYYY') as last 
-            //     FROM investigation@DICAT_RO i 
-            //     INNER JOIN investigationuser@DICAT_RO iu ON i.id = iu.investigation_id 
-            //     INNER JOIN user_@DICAT_RO u ON u.id = iu.user_id 
-            //     LEFT OUTER JOIN investigationuser@DICAT_RO iut ON u.id = iut.user_id 
-            //     LEFT OUTER JOIN investigation@DICAT_RO it ON it.id = iut.investigation_id AND it.startdate < i.startdate 
-            //     WHERE lower(i.visit_id) LIKE :1 
-            //     GROUP BY iu.role,u.name, u.fullname 
-            //     ORDER BY SUBSTR(u.fullname,INSTR(u.fullname,' ',-1,1))", array($this->arg('visit')));
-            
-            $rows = $this->db->pq("SELECT CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last
+            $start = 0;
+            $end = 50;
+
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, p.login
                 FROM person p
                 INNER JOIN session_has_person shp ON p.personid = shp.personid
                 INNER JOIN blsession s ON s.sessionid = shp.sessionid
@@ -441,9 +450,9 @@
                 LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
                 LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate
 
-                WHERE CONCAT(CONCAT(CONCAT(pr.proposalcode, pr.proposalnumber), '-'), s.visit_number) LIKE :1
-                GROUP BY p.givenname, p.familyname
-                ORDER BY p.familyname", array($this->arg('visit')));
+                WHERE $where
+                GROUP BY p.givenname, p.familyname, p.login
+                ORDER BY p.familyname", $args);
 
             $this->_output($rows);
         }

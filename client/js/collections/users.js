@@ -1,12 +1,13 @@
-define(['backbone'], function(Backbone) {
+define(['backbone', 'backbone.paginator'], function(Backbone, PageableCollection) {
     
-    return Backbone.Collection.extend({
-        //model: PV,
-        url: function() { return '/proposal/users?visit='+this.visit },
+	var User = Backbone.Model.extend({
+		idAttribute: 'LOGIN',
+	})
+
+    return PageableCollection.extend({
+    	model: User,
+        url: function() { return '/proposal/users' },
             
-        initialize: function(models, options) {
-            this.visit = options.visit
-        },
         
     })
 })

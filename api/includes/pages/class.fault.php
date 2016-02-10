@@ -39,8 +39,6 @@
                               array('', 'post', '_add_fault'),
                               array('/:fid', 'patch', '_update_fault'),
 
-                              array('/names', 'get', '_name_lookup'),
-
                               array('/bls', 'get', '_get_beamlines'),
 
                               array('/sys', 'get', '_get_systems'),
@@ -442,21 +440,6 @@
             $this->db->pq('UPDATE bf_'.$ty[0].' SET name=:1, description=:2 WHERE '.$ty[0].'id=:3', array($this->arg('NAME'), $desc, $id));
                                   
             $this->_output(1);
-        }
-                                  
-                                  
-        # ------------------------------------------------------------------------
-        # Return feed of fedid / name combinations for search
-        function _name_lookup() {
-            if (!$this->has_arg('term')) $this->_error('No name specified');
-                                  
-            $vals = array();
-            # |(cn=*'.$this->arg('term').'*)(uid=*'.$this->arg('term').'*)
-            foreach ($this->_ldap_search('cn=*'.$this->arg('term').'*') as $fid => $n) {
-                array_push($vals, array('label' => $n, 'value' => $fid));
-            }
-            $this->_output($vals);
-                                  
         }
 
                                   

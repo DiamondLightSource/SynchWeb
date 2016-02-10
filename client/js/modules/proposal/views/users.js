@@ -23,7 +23,8 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
         className: 'visit_users',
         
         initialize: function(options) {
-            this.collection = new Users(null, { visit: options.visit })
+            this.collection = new Users()
+            this.collection.queryParams.visit = options.visit
             this.collection.fetch()
         }
     })

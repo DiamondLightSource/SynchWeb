@@ -4,6 +4,7 @@ define(['marionette',
     'collections/proteins',
     'collections/samples',
     'collections/datacollections',
+    'collections/users',
     
     'modules/projects/models/user',
     'modules/projects/collections/users',
@@ -16,7 +17,7 @@ define(['marionette',
     
     'tpl!templates/projects/projectview.html',
     'backbone', 'jquery', 'jquery-ui.combobox', 'backbone-validation'
-    ], function(Marionette, Editable, Proteins, Samples, DCCol, ProjectUser, ProjectUsers, DCView, SampleList, ProteinList, ProjectUserView, template, Backbone, $) {
+    ], function(Marionette, Editable, Proteins, Samples, DCCol, Users, ProjectUser, ProjectUsers, DCView, SampleList, ProteinList, ProjectUserView, template, Backbone, $) {
     
     
         
@@ -65,6 +66,7 @@ define(['marionette',
         initialize: function(options) {
             Backbone.Validation.bind(this);
 
+            this.allusers = new Users()
             this.users = new ProjectUsers(null, { pid: this.model.get('PROJECTID') })
             this.users.fetch()
             
@@ -95,8 +97,24 @@ define(['marionette',
         },
         
         
+        getUsers: function(req, resp) {
+            var self = this
+            this.allusers.queryParams.term = req.term
+            this.allusers.fetch({
+                success: function(data) {
+                    resp(self.allusers.map(function(m) {
+                        return {
+                            label: m.get('FULLNAME'),
+                            value: m.get('LOGIN'),
+                        }
+                    }))
+                }
+            })
+        },
+
+
         onRender: function() {
-            this.ui.user.autocomplete({source: app.apiurl+'/fault/names'})
+            this.ui.user.autocomplete({ source: this.getUsers.bind(this) })
             
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('TITLE', 'text')

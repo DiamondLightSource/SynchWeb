@@ -2,6 +2,7 @@ define(['views/form',
     'modules/fault/models/fault',
     
     'collections/visits',
+    'collections/users',
     
     'modules/fault/collections/bls',
     'modules/fault/collections/systems',
@@ -17,7 +18,7 @@ define(['views/form',
     'backbone-validation',
     
     ], function(FormView,
-        Fault, Visits, Beamlines, Systems, Components, SubComponents,
+        Fault, Visits, Users, Beamlines, Systems, Components, SubComponents,
         template, $_, Backbone) {
 
 
@@ -133,7 +134,23 @@ define(['views/form',
             this.ui.btl.html(_.map(this.model.btlOptions, function(v,k) { return '<option value="'+k+'">'+v+'</option>' }))
             this.ui.res.html(_.map(this.model.resolvedOptions, function(v,k) { return '<option value="'+k+'">'+v+'</option>' }))
 
-            this.ui.assignee.autocomplete({source: app.apiurl+'/fault/names'})
+            this.allusers = new Users()
+            this.ui.assignee.autocomplete({source: this.getUsers.bind(this) })
+        },
+
+        getUsers: function(req, resp) {
+            var self = this
+            this.allusers.queryParams.term = req.term
+            this.allusers.fetch({
+                success: function(data) {
+                    resp(self.allusers.map(function(m) {
+                        return {
+                            label: m.get('FULLNAME'),
+                            value: m.get('LOGIN'),
+                        }
+                    }))
+                }
+            })
         },
         
         
