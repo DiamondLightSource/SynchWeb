@@ -4,7 +4,7 @@ define(['marionette',
     'collections/proteins',
     'collections/samples',
     'collections/datacollections',
-    'collections/users',
+    'modules/admin/collections/users',
     
     'modules/projects/models/user',
     'modules/projects/collections/users',
@@ -99,7 +99,7 @@ define(['marionette',
         
         getUsers: function(req, resp) {
             var self = this
-            this.allusers.queryParams.term = req.term
+            this.allusers.queryParams.s = req.term
             this.allusers.fetch({
                 success: function(data) {
                     resp(self.allusers.map(function(m) {

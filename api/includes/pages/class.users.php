@@ -110,15 +110,17 @@ class Users extends Page {
 
 
     function _get_users() {
-        $this->user->can('manage_groups');
+        // $this->user->can('manage_groups');
 
         $args = array();
-        $where = '';
+        $where = 'p.login IS NOT NULL';
         $join = '';
+        $extc = '';
+        $group = '';
 
         if ($this->has_arg('gid')) {
             $join = 'INNER JOIN usergroup_has_person uhp ON uhp.personid = p.personid';
-            $where = 'AND uhp.usergroupid=:'.(sizeof($args)+1);
+            $where .= ' AND uhp.usergroupid=:'.(sizeof($args)+1);
             array_push($args, $this->arg('gid'));
         }
 
@@ -130,28 +132,33 @@ class Users extends Page {
 
         if ($this->has_arg('sid')) {
             $join = 'INNER JOIN blsession_has_person shp ON shp.personid = p.personid';
-            $where = 'AND shp.sessionid=:'+(sizeof($args)+1);
+            $where .= ' AND shp.sessionid=:'+(sizeof($args)+1);
             array_push($args, $this->arg('sid'));
         }
 
         if ($this->has_arg('visit')) {
+            $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last,";
             $join = 'INNER JOIN session_has_person shp ON shp.personid = p.personid
                      INNER JOIN blsession s ON shp.sessionid = s.sessionid
-                     INNER JOIN proposal pr ON pr.proposalid = s.proposalid';
-            $where = "AND CONCAT(CONCAT(CONCAT(pr.proposalcode,pr.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
+                     INNER JOIN proposal pr ON pr.proposalid = s.proposalid
+
+                     LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
+                     LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate';
+            $where .= " AND CONCAT(CONCAT(CONCAT(pr.proposalcode,pr.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
+            $group = 'GROUP BY p.personid, p.givenname, p.familyname, p.login';
             array_push($args, $this->arg('visit'));
         }        
 
 
-        $tot = $this->db->pq("SELECT count(p.personid) as tot
+        $tot = $this->db->pq("SELECT count(distinct p.personid) as tot
             FROM person p
             $join
-            WHERE 1=1 $where", $args);
+            WHERE $where", $args);
         $tot = intval($tot[0]['TOT']);
         
         
         $start = 0;
-        $end = 10;
+        $end = 50;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
         
         if ($this->has_arg('page')) {
@@ -165,17 +172,18 @@ class Users extends Page {
         array_push($args, $end);
         
 
-        $order = 'p.familyname';
+        $order = 'p.familyname,p.givenname';
         if ($this->has_arg('sort_by')) {
             $cols = array('LOGIN' => 'p.login', 'GIVENNAME' => 'p.givenname', 'FAMILYNAME' => 'p.familyname');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
         }
         
-        $rows = $this->db->paginate("SELECT p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login
+        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login
                                FROM person p
                                $join
-                               WHERE 1=1 $where
+                               WHERE $where
+                               $group
                                ORDER BY $order", $args);
 
         $this->_output(array('total' => $tot,

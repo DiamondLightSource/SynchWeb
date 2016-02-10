@@ -36,7 +36,6 @@
                               array('/visits(/:visit)', 'get', '_get_visits'),
                               array('/visits/:visit', 'patch', '_update_visit'),
                               array('/user', 'get', '_get_user'),
-                              array('/users', 'get', '_get_users'),
                               array('/login', 'get', '_login'),
                               array('/log(/)', 'post', '_log_action'),
                               array('/time', 'get', '_get_time'),
@@ -416,57 +415,6 @@
             }
         }
 
-        
-        # ------------------------------------------------------------------------
-        # Get users for a visit
-        function _get_users() {
-            $where = 'p.login IS NOT NULL';
-            $args = array();
-
-            if ($this->has_arg('visit')) {
-                $where .= " AND CONCAT(CONCAT(CONCAT(pr.proposalcode, pr.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
-                array_push($args, $this->arg('visit'));
-            }
-
-            if ($this->has_arg('term')) {
-                $st = sizeof($args)+1;
-                $st2 = sizeof($args)+2;
-                $where .= " AND lower(p.givenname) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) OR lower(p.familyname) LIKE lower(CONCAT(CONCAT('%',:$st2),'%'))";
-                for ($i = 0; $i < 2; $i++) array_push($args, $this->arg('term'));
-            }
-            
-            $start = 0;
-            $end = 50;
-
-            array_push($args, $start);
-            array_push($args, $end);
-
-            $rows = $this->db->paginate("SELECT CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, p.login
-                FROM person p
-                INNER JOIN session_has_person shp ON p.personid = shp.personid
-                INNER JOIN blsession s ON s.sessionid = shp.sessionid
-                INNER JOIN proposal pr ON pr.proposalid = s.proposalid
-
-                LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
-                LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate
-
-                WHERE $where
-                GROUP BY p.givenname, p.familyname, p.login
-                ORDER BY p.familyname", $args);
-
-            $this->_output($rows);
-        }
-
-        
-    // Deprecated
-        # ------------------------------------------------------------------------
-        # Cookie selected proposal
-        function _set_proposal() {
-            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-            $this->cookie($this->arg('prop'));          
-            print $this->arg('prop');
-        }
-    
         
         
         # ------------------------------------------------------------------------

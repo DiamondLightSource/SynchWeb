@@ -2,7 +2,7 @@ define(['views/form',
     'modules/fault/models/fault',
     
     'collections/visits',
-    'collections/users',
+    'modules/admin/collections/users',
     
     'modules/fault/collections/bls',
     'modules/fault/collections/systems',
@@ -140,7 +140,7 @@ define(['views/form',
 
         getUsers: function(req, resp) {
             var self = this
-            this.allusers.queryParams.term = req.term
+            this.allusers.queryParams.s = req.term
             this.allusers.fetch({
                 success: function(data) {
                     resp(self.allusers.map(function(m) {
