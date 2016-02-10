@@ -159,7 +159,7 @@
             $bbreq = (array)json_decode($this->app->request()->getBody());
             $request = array_merge($_REQUEST, $bbreq);
             $this->request = $request;
-            
+
             $parsed = array();
             
             // Array of arguments
@@ -171,6 +171,7 @@
                         if (array_key_exists($k, $r)) {
                             if (preg_match('/^'.$v.'$/m', $r->$k)) {
                                 $par[$k] = $v == '.*' ? $purifier->purify($r->$k) : $r->$k;
+                                if ($k == 'prop') $parsed[$k] = $par[$k];
                             }
                         }
                     }

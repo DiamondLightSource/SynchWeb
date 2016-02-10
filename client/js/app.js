@@ -62,7 +62,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
           if (options.data) var tmp = JSON.parse(options.data)
           else var tmp = {}
 
-          tmp.prop = prop
+          if (Array.isArray(tmp)) tmp[0].prop = prop
+          else tmp.prop = prop
           options.data = JSON.stringify(tmp)
 
       } else {
