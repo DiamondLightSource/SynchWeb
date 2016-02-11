@@ -2,7 +2,7 @@ define(['views/form',
     'modules/fault/models/fault',
     
     'collections/visits',
-    'modules/admin/collections/users',
+    'collections/users',
     
     'modules/fault/collections/bls',
     'modules/fault/collections/systems',

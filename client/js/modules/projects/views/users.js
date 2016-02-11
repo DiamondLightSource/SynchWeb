@@ -2,7 +2,7 @@ define(['marionette'], function(Marionette) {
 
 
     var UserItem = Marionette.ItemView.extend({
-        template: _.template('<%=NAME%><% if (IS_OWNER) { %><span class="r"><a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a></span><% } %>'),
+        template: _.template('<%=FULLNAME%><% if (IS_OWNER) { %><span class="r"><a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a></span><% } %>'),
         tagName: 'li',
         
         events: {

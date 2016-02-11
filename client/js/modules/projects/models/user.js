@@ -1,7 +1,7 @@
 define(['backbone'], function(Backbone) {
     
     return Backbone.Model.extend({
-        idAttribute: 'PUID',
+        idAttribute: 'PPID',
         urlRoot: '/projects/users',
         
         validation: {
@@ -10,9 +10,9 @@ define(['backbone'], function(Backbone) {
                 pattern: 'number',
             },
         
-            USERNAME: {
+            PERSONID: {
                 required: true,
-                pattern: 'word',
+                pattern: 'number',
             },
         },
     })

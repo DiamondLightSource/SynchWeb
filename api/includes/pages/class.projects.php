@@ -13,7 +13,8 @@
 
                               'PROJECTID' => '\d+',
                               'USERNAME' => '\w+\d+',
-                              'PUID' => '\d+',
+                              'PERSONID' => '\d+',
+                              'PPID' => '\d+-\d+',
                               );
 
 
@@ -21,12 +22,13 @@
                               array('', 'post', '_add_project'),
                               array('/:pid', 'patch', '_update_project'),
 
-                              array('/users/pid/:pid', 'get', '_project_users'),
                               array('/users', 'post', '_add_user'),
-                              array('/users/:PUID', 'delete', '_del_user'),
+                              array('/users/:PPID', 'delete', '_del_user'),
 
                               array('/check/ty/:ty/pid/:pid/iid/:iid', 'get', '_check_project'),
                               array('/addto/pid/:pid/ty/:ty/iid/:iid(/rem/:rem)', 'get', '_add_to_project'),
+
+                              #array('/migrate', 'get', '_migrate'),
         );
     
 
@@ -40,12 +42,12 @@
         
         # List of projects
         function _projects() {
-            $args = array($this->user->login, $this->user->login);
-            $where = "WHERE (p.owner LIKE :1 OR pu.username LIKE :2)";
+            $args = array($this->user->personid, $this->user->personid);
+            $where = "WHERE (p.personid LIKE :1 OR php.personid LIKE :2)";
             
             $tot = $this->db->pq("SELECT count(distinct p.projectid) as tot 
                 FROM project p 
-                LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid $where", $args);
+                LEFT OUTER JOIN project_has_person php ON php.projectid = p.projectid $where", $args);
             $tot = intval($tot[0]['TOT']);
             
             if ($this->has_arg('pid')) {
@@ -68,14 +70,14 @@
             array_push($args, $start);
             array_push($args, $end);
             
-            $rows = $this->db->paginate("SELECT p.title, p.projectid, p.acronym, p.owner 
+            $rows = $this->db->paginate("SELECT p.title, p.projectid, p.acronym, p.personid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as person 
                 FROM project p 
-                LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid $where 
+                INNER JOIN person pe ON p.personid = pe.personid
+                LEFT OUTER JOIN project_has_person php ON php.projectid = p.projectid $where 
                 ORDER BY p.projectid", $args);
             
             foreach ($rows as &$ro) {
-                $ro['OWNER_NAME'] = $this->_get_name($ro['OWNER']);
-                $ro['IS_OWNER'] = $ro['OWNER'] == $this->user->login;
+                $ro['IS_OWNER'] = $ro['PERSONID'] == $this->user->personid;
             }
             
             if ($this->has_arg('pid')) {
@@ -94,14 +96,14 @@
             if (!$this->has_arg('TITLE')) $this->_error('No title specified');
             if (!$this->has_arg('ACRONYM')) $this->_error('No acronym specified');
             
-            $this->db->pq("INSERT INTO project (projectid,title,acronym,owner) 
+            $this->db->pq("INSERT INTO project (projectid,title,acronym,personid) 
                 VALUES (s_project.nextval, :1, :2, :3) RETURNING projectid INTO :id", 
-                array($this->arg('TITLE'), $this->arg('ACRONYM'), $this->user->login));
-            
+                array($this->arg('TITLE'), $this->arg('ACRONYM'), $this->user->personid));
+
             $this->_output(array('PROJECTID' => $this->db->id(), 
                 'IS_OWNER' => True, 
-                'OWNER_NAME' => $this->_get_name($this->user->login), 
-                'OWNER' => $this->user->login));
+                'PERSON' => $this->user->givenname.' '.$this->user->familyname
+            ));
         }
         
         
@@ -155,7 +157,7 @@
         function _update_project() {
             if (!$this->has_arg('pid')) $this->_error('No project id specified');
             
-            $proj = $this->db->pq("SELECT p.projectid FROM project p WHERE p.owner LIKE :1 AND p.projectid=:2", array($this->user->login,$this->arg('pid')));
+            $proj = $this->db->pq("SELECT p.projectid FROM project p WHERE p.personid LIKE :1 AND p.projectid=:2", array($this->user->personid,$this->arg('pid')));
             if (!sizeof($proj)) $this->_error('No such project');
             
             $fields = array('ACRONYM', 'TITLE');
@@ -166,52 +168,67 @@
                 }
             }
         }
-        
-        
-        # Users on project
-        function _project_users() {
-            if (!$this->has_arg('pid')) $this->_error('No project id specified');
-            
-            $pu = $this->db->pq("SELECT projectid,username,projecthasuserid as puid FROM project_has_user WHERE projectid=:1", array($this->arg('pid')));
-            
-            foreach ($pu as &$p) {
-                $p['NAME'] = $this->_get_name($p['USERNAME']);
-            }
-            
-            $this->_output($pu);
-        }
-        
-    
+
+
         # Add a user to a project
         function _add_user() {
             if (!$this->has_arg('PROJECTID')) $this->_error('No project id specified');
-            if (!$this->has_arg('USERNAME')) $this->_error('No user specified');
+            if (!$this->has_arg('PERSONID')) $this->_error('No user specified');
             
-            $proj = $this->db->pq("SELECT p.projectid FROM project p WHERE p.owner LIKE :1 AND p.projectid=:2", array($this->user->login,$this->arg('PROJECTID')));
+            $proj = $this->db->pq("SELECT p.projectid FROM project p WHERE p.personid LIKE :1 AND p.projectid=:2", array($this->user->personid,$this->arg('PROJECTID')));
             
             if (!sizeof($proj)) $this->_error('No such project');
             $proj = $proj[0];
             
-            $this->db->pq("INSERT INTO project_has_user (projecthasuserid, projectid, username) VALUES (s_project_has_user.nextval, :1, :2) RETURNING projecthasuserid INTO :id", array($this->arg('PROJECTID'), $this->arg('USERNAME')));
-            
-            $this->_output(array('PUID' => $this->db->id(), 'NAME' => $this->_get_name($this->arg('USERNAME'))));
+            $person = $this->db->pq("SELECT CONCAT(CONCAT(givenname, ' '), familyname) as fullname FROM person WHERE personid=:1", array($this->arg('PERSONID')));
+            if (!sizeof($person)) $this->_error('No such person');
+            $person = $person[0];
+
+            $this->db->pq("INSERT INTO project_has_person (projectid, personid) VALUES (:1, :2)", array($this->arg('PROJECTID'), $this->arg('PERSONID')));            
+
+            $this->_output(array('FULLNAME' => $person['FULLNAME']));
         }
         
         
         # Remove a user
         function _del_user() {
-            if (!$this->has_arg('PUID')) $this->_error('No user specified');
+            if (!$this->has_arg('PPID')) $this->_error('No project id specified');
+            list($pid, $pjid) = explode('-', $this->arg('PPID'));
             
             $proj = $this->db->pq("SELECT p.projectid 
                 FROM project p 
-                INNER JOIN project_has_user pu ON pu.projectid = p.projectid
-                WHERE p.owner LIKE :1 AND pu.projecthasuserid=:2", array($this->user->login,$this->arg('PUID')));
+                INNER JOIN project_has_person php ON php.projectid = p.projectid
+                WHERE p.personid LIKE :1 AND php.personid=:2 AND p.projectid=:3", array($this->user->personid, $pid, $pjid));
             if (!sizeof($proj)) $this->_error('No such project');
             $proj = $proj[0];
             
-            $this->db->pq("DELETE FROM project_has_user WHERE projecthasuserid=:1", array($this->arg('PUID')));
+            $this->db->pq("DELETE FROM project_has_person WHERE personid=:1 AND projectid=:2", array($pid, $pjid));
             
             $this->_output(1);
+        }
+
+
+
+        function _migrate() {
+            $projects = $this->db->pq("SELECT owner,projectid FROM project");
+            foreach($projects as $p) {
+                $person = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($p['OWNER']));
+                if (sizeof($person)) {
+                    $person = $person[0];
+                    $this->db->pq("UPDATE project SET personid=:1 WHERE projectid=:2", array($person['PERSONID'], $p['PROJECTID']));
+                    print_r(array('Migrated Project', $p['PROJECTID'], 'owner', $p['OWNER'], 'to person', $person['PERSONID']));
+                }
+            }
+
+            $pu = $this->db->pq("SELECT projectid, username FROM project_has_user");
+            foreach ($pu as $u) {
+                $person = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($u['USERNAME']));
+                if (sizeof($person)) {
+                    $person = $person[0];
+                    $this->db->pq('INSERT INTO project_has_person (projectid, personid) VALUES (:1, :2)', array($u['PROJECTID'], $person['PERSONID']));
+                    print_r(array('Migrated Project_has_user', $u['PROJECTID'], 'username', $u['USERNAME'], 'to person', $person['PERSONID']));
+                }
+            }
         }
 
     

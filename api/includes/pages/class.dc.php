@@ -154,7 +154,7 @@
                  
             # Projects
             } else if ($this->has_arg('pjid')) {
-                $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_user pu ON pu.projectid = p.projectid WHERE p.projectid=:1 AND (p.owner=:2 or pu.username=:3)', array($this->arg('pjid'), $this->user->login, $this->user->login));
+                $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_person php ON php.projectid = p.projectid WHERE p.projectid=:1 AND (p.personid=:2 or php.personid=:3)', array($this->arg('pjid'), $this->user->personid, $this->user->personid));
                 
                 $tables = array(array('project_has_dcgroup', 'dc', 'datacollectiongroupid'),
                                 array('project_has_energyscan', 'es', 'energyscanid'),

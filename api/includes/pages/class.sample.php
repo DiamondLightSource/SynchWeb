@@ -268,6 +268,9 @@
             
             # For a specific project
             if ($this->has_arg('pjid')) {
+                $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_person php ON php.projectid = p.projectid WHERE p.projectid=:1 AND (p.personid=:2 or php.personid=:3)', array($this->arg('pjid'), $this->user->personid, $this->user->personid));
+                if (!sizeof($info)) $this->_error('No such project');
+
                 $args = array($this->arg('pjid'));
                 $where = '(pj.projectid=:'.sizeof($args).')';
                 $join = ' LEFT OUTER JOIN project_has_blsample pj ON pj.blsampleid=b.blsampleid';
@@ -539,6 +542,9 @@
             $extc = '';
 
             if ($this->has_arg('pjid')) {
+                $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_person php ON php.projectid = p.projectid WHERE p.projectid=:1 AND (p.personid=:2 or php.personid=:3)', array($this->arg('pjid'), $this->user->personid, $this->user->personid));
+                if (!sizeof($info)) $this->_error('No such project');
+
                 $args = array($this->arg('pjid'));
                 $where = 'pj.projectid=:'.sizeof($args);
                 $join .= ' INNER JOIN project_has_protein pj ON pj.proteinid=pr.proteinid';

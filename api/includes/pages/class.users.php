@@ -5,6 +5,7 @@ class Users extends Page {
 
     public static $arg_list = array('gid' => '\d+',
                                     'pid' => '\d+',
+                                    'pjid' => '\d+',
                                     'peid' => '\d+',
                                     'uid' => '\d+',
                                     'sid' => '\d+',
@@ -147,7 +148,14 @@ class Users extends Page {
             $where .= " AND CONCAT(CONCAT(CONCAT(pr.proposalcode,pr.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
             $group = 'GROUP BY p.personid, p.givenname, p.familyname, p.login';
             array_push($args, $this->arg('visit'));
-        }        
+        }
+
+        if ($this->has_arg('pjid')) {
+            $join = ' INNER JOIN project_has_person php ON p.personid = php.personid';
+            $where .= ' AND php.projectid=:'.(sizeof($args)+1);
+            $extc = "CONCAT(CONCAT(p.personid, '-'), php.projectid) as ppid,";
+            array_push($args, $this->arg('pjid'));
+        }
 
 
         $tot = $this->db->pq("SELECT count(distinct p.personid) as tot

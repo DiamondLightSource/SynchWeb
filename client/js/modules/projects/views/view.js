@@ -4,10 +4,10 @@ define(['marionette',
     'collections/proteins',
     'collections/samples',
     'collections/datacollections',
-    'modules/admin/collections/users',
+    'collections/users',
     
     'modules/projects/models/user',
-    'modules/projects/collections/users',
+    'collections/users',
     
     'modules/dc/datacollections',
     'modules/samples/views/list',
@@ -47,7 +47,7 @@ define(['marionette',
             if (e.which == 13) {
                 var user = new ProjectUser({
                     PROJECTID: this.model.get('PROJECTID'),
-                    USERNAME: this.ui.user.val()
+                    PERSONID: this.ui.user.val()
                 })
                 
                 var self = this
@@ -67,7 +67,8 @@ define(['marionette',
             Backbone.Validation.bind(this);
 
             this.allusers = new Users()
-            this.users = new ProjectUsers(null, { pid: this.model.get('PROJECTID') })
+            this.users = new Users(null, { model: ProjectUser })
+            this.users.queryParams.pjid = this.model.get('PROJECTID')
             this.users.fetch()
             
             this.implicit = 1
@@ -105,7 +106,7 @@ define(['marionette',
                     resp(self.allusers.map(function(m) {
                         return {
                             label: m.get('FULLNAME'),
-                            value: m.get('LOGIN'),
+                            value: m.get('PERSONID'),
                         }
                     }))
                 }
@@ -116,9 +117,11 @@ define(['marionette',
         onRender: function() {
             this.ui.user.autocomplete({ source: this.getUsers.bind(this) })
             
-            var edit = new Editable({ model: this.model, el: this.$el })
-            edit.create('TITLE', 'text')
-            edit.create('ACRONYM', 'text')
+            if (this.model.get('IS_OWNER')) {
+                var edit = new Editable({ model: this.model, el: this.$el })
+                edit.create('TITLE', 'text')
+                edit.create('ACRONYM', 'text')
+            }
 
             this.dc.show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
             this.smp.show(new SampleList({ collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
