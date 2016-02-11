@@ -25,7 +25,6 @@
                               'prev' => '\d',
         					  'started' => '\d',
                               'proposal' => '\w+\d+',
-                              'location' => '(\w|-|\/)+',
                               'current' => '\d',
 
                               'COMMENTS' => '(\w|\s|-)+',
@@ -33,37 +32,14 @@
         
 
         public static $dispatch = array(array('(/:prop)', 'get', '_get_proposals'),
-                              array('/visits(/:visit)', 'get', '_get_visits'),
-                              array('/visits/:visit', 'patch', '_update_visit'),
-                              array('/user', 'get', '_get_user'),
-                              array('/login', 'get', '_login'),
-                              array('/log(/)', 'post', '_log_action'),
-                              array('/time', 'get', '_get_time'),
-                              array('/bls/:ty', 'get', '_get_beamlines'),
-
-
-                              //array('/set', 'get', '_set_proposal'),
-                              //array('/comment', 'get', '_set_comment'),
+                                        array('/visits(/:visit)', 'get', '_get_visits'),
+                                        array('/visits/:visit', 'patch', '_update_visit'),
+                                        array('/bls/:ty', 'get', '_get_beamlines'),
                              );
         
         
         
         
-        # ------------------------------------------------------------------------
-        # Helpers for backbone application
-        function _get_user() {
-            $this->_output(array('personid' => $this->user->personid, 'user' => $this->user->login, 'permissions' => $this->user->perms, 'is_staff' => $this->staff, 'visits' => $this->visits, 'ty' => $this->ptype->ty));
-        }
-        
-        function _login() {
-        }
-        
-
-        function _log_action() {
-            if (!$this->has_arg('location')) $this->_error('No location specified');
-            $this->log_action(1, $this->arg('location'));
-            print $this->arg('location');
-        }
 
         function _get_beamlines() {
             global $bl_types;
@@ -73,16 +49,6 @@
 
             $this->_output($bl_types[$this->arg('ty')]);
         }
-
-
-
-        # ------------------------------------------------------------------------
-        # List proposals for current user
-        function _get_time() {
-            $d = new DateTime("now");
-            $this->_output(array('TIME' => $d->format('D M d Y H:i:s (\G\M\TO)')));
-        }
-
 
 
         # ------------------------------------------------------------------------
@@ -415,23 +381,6 @@
             }
         }
 
-        
-        
-        # ------------------------------------------------------------------------
-        # Update comment for a visit
-        function _set_comment() {
-            if (!$this->has_arg('visit')) $this->_error('No visit specified');
-            if (!$this->arg('value')) $this->_error('No comment specified');
-            
-            $com = $this->db->pq("SELECT s.comments,s.sessionid from blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
-            
-            if (!sizeof($com)) $this->_error('No such data collection');
-            else $com = $com[0];
-            
-            $this->db->pq("UPDATE blsession set comments=:1 where sessionid=:2", array($this->arg('value'), $com['SESSIONID']));
-            
-            print $this->arg('value');
-        }
     
     }
 

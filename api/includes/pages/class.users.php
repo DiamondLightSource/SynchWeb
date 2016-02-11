@@ -10,6 +10,7 @@ class Users extends Page {
                                     'uid' => '\d+',
                                     'sid' => '\d+',
                                     'visit' => '\w+\d+-\d+',
+                                    'location' => '(\w|-|\/)+',
 
                                     'NAME' => '\w+',
 
@@ -19,6 +20,11 @@ class Users extends Page {
         
 
     public static $dispatch = array(array('(/:gid)', 'get', '_get_users'),
+                                    array('/current', 'get', '_get_current_user'),
+
+                                    array('/login', 'get', '_login'),
+                                    array('/log(/)', 'post', '_log_action'),
+                                    array('/time', 'get', '_get_time'),
 
                                     array('/groups(/:gid)', 'get', '_get_groups'),
                                     array('/groups', 'post', '_add_group'),
@@ -34,6 +40,31 @@ class Users extends Page {
                                     array('/permissions', 'post', '_add_permission'),
                                     array('/permissions/:pid', 'put', '_update_permission'),
                               );
+
+
+    # ------------------------------------------------------------------------
+    # Helpers for backbone application
+    function _get_current_user() {
+            $this->_output(array('personid' => $this->user->personid, 'user' => $this->user->login, 'permissions' => $this->user->perms, 'is_staff' => $this->staff, 'visits' => $this->visits, 'ty' => $this->ptype->ty));
+    }
+
+    function _login() {
+    }
+    
+    function _log_action() {
+        if (!$this->has_arg('location')) $this->_error('No location specified');
+        $this->log_action(1, $this->arg('location'));
+        print $this->arg('location');
+    }
+
+
+    # ------------------------------------------------------------------------
+    # Get current time
+    function _get_time() {
+        $d = new DateTime("now");
+        $this->_output(array('TIME' => $d->format('D M d Y H:i:s (\G\M\TO)')));
+    }
+
 
 
     function _get_groups() {

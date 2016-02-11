@@ -1,7 +1,7 @@
 define(['backbone'], function(Backbone) {
 
 	return Backbone.Model.extend({
-		urlRoot: '/proposal/time',
+		urlRoot: '/users/time',
 
 		time: function() {
 			return this.get('TIME')

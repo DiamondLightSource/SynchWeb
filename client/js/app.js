@@ -108,7 +108,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
    and the user is logged in.
   */
   app.login = function(xhr) {
-    $('iframe').attr('src', app.apiurl+'/proposal/login').load(function() {
+    $('iframe').attr('src', app.apiurl+'/users/login').load(function() {
         $('#login').dialog('open')
         var poll = true
         var refresh_thread = null
@@ -188,7 +188,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
   */
   app.getuser = function() {
     Backbone.ajax({
-      url: app.apiurl+'/proposal/user',
+      url: app.apiurl+'/users/current',
+      // data: { prop: app.prop },
       success: function(resp) {
           app.user = resp.user
           app.personid = resp.personid
@@ -238,6 +239,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
         var proposal = new Proposal({ PROPOSAL: prop })
         proposal.fetch({
             success: function() {
+                app.type = proposal.get('TYPE'),
                 require(['modules/types/'+proposal.get('TYPE')+'/menu'], function(menus) {
                     proposal.set('MENUS', menus)
                     app.prop = prop
@@ -365,7 +367,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
   function log() {
       var data = { location: window.location.pathname }
       Backbone.ajax({ 
-          url: app.apiurl+'/proposal/log/',
+          url: app.apiurl+'/users/log/',
           type: 'POST',
           data: data
       })
