@@ -19,27 +19,21 @@
         
         # Whos online list
         function _online_users() {
-            $rows = $this->db->pq("SELECT username, comments, TO_CHAR(datetime, 'DD-MM-YYYY HH24:MI:SS') as time 
-                FROM adminactivity 
-                WHERE TIMESTAMPDIFF('MINUTE', datetime, CURRENT_TIMESTAMP) < 15 ORDER BY datetime DESC");
-            
-            foreach ($rows as &$r) {
-                $r['NAME'] = $this->_get_name($r['USERNAME']);
-            }
-            
+            $rows = $this->db->pq("SELECT a.username, a.comments, TO_CHAR(a.datetime, 'DD-MM-YYYY HH24:MI:SS') as time, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as name  
+                FROM adminactivity a
+                LEFT OUTER JOIN person p ON p.login = a.username
+                WHERE TIMESTAMPDIFF('MINUTE', a.datetime, CURRENT_TIMESTAMP) < 15 ORDER BY a.datetime DESC");
+
             $this->_output($rows);
         }
         
         
         function _last_actions() {
-            $rows = $this->db->paginate("SELECT username, comments, TO_CHAR(datetime, 'DD-MM-YYYY HH24:MI:SS') as time 
-                FROM adminactivity 
+            $rows = $this->db->paginate("SELECT a.username, a.comments, TO_CHAR(a.datetime, 'DD-MM-YYYY HH24:MI:SS') as time, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as name 
+                FROM adminactivity a 
+                LEFT OUTER JOIN person p ON p.login = a.username
                 WHERE comments LIKE 'ISPyB2%' 
-                ORDER BY datetime DESC", array(0,25));
-            
-            foreach ($rows as &$r) {
-                $r['NAME'] = $this->_get_name($r['USERNAME']);
-            }
+                ORDER BY a.datetime DESC", array(0,25));
             
             $this->_output($rows);            
         }
