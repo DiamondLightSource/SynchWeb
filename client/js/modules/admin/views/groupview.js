@@ -4,7 +4,7 @@ define(['marionette',
     'utils/table',
 
     'modules/admin/collections/permissions',
-    'modules/admin/collections/users',
+    'collections/users',
 
     'tpl!templates/admin/viewgroup.html',
     'backbone', 'backbone-validation'

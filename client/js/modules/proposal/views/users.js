@@ -1,4 +1,4 @@
-define(['marionette', 'modules/admin/collections/users'], function(Marionette, Users) {
+define(['marionette', 'collections/users'], function(Marionette, Users) {
 
     
     var UserItem = Marionette.ItemView.extend({

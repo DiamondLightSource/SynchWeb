@@ -1,13 +1,19 @@
-define(['backbone', 'backbone.paginator'], function(Backbone, PageableCollection) {
+define(['backbone.paginator', 'utils/kvcollection', 'models/user'], function(PageableCollection, KVCollection, User) {
     
-	var User = Backbone.Model.extend({
-		idAttribute: 'LOGIN',
-	})
-
-    return PageableCollection.extend({
-    	model: User,
-        url: function() { return '/proposal/users' },
-            
+    return PageableCollection.extend(_.extend({}, KVCollection, {
+        model: User,
+        url: '/users',
         
-    })
+        keyAttribute: 'FULLNAME',
+        valueAttribute: 'PERSONID',
+
+        parseState: function(r, q, state, options) {
+            return { totalRecords: r.total }
+        },
+            
+        parseRecords: function(r, options) {                
+            return r.data
+        },
+    }))
+
 })
