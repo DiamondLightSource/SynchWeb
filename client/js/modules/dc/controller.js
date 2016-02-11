@@ -39,6 +39,7 @@ define(['marionette', 'modules/dc/datacollections', 'modules/dc/views/imageviewe
                 dcs.fetch().done(function() {
                     var views = {
                         mx: DCList,
+                        sm: DCList,
                         gen: GenericDCList,
                         tomo: TomoDCList,
                         em: EMDCLIst,
