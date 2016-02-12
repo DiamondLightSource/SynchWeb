@@ -868,7 +868,7 @@
             }
 
             $dps = $this->db->pq("SELECT dp.diffractionplanid, dp.comments, dp.complexity,
-              dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, rtrim(to_char(dp.exposuretime, 'FM90.99'), '.') as exposuretime, rtrim(to_char(dp.requiredresolution, 'FM90.99'), '.') as requiredresolution
+              dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 1) as exposuretime, ROUND(dp.requiredresolution, 1) as requiredresolution
               FROM diffractionplan dp
               WHERE dp.complexity = 'PRESET' $where
             ", $args);
