@@ -54,7 +54,7 @@ define(['marionette', 'backbone',
         },
         
         setData: function() {
-            var ty = this.getOption('types').findWhere({ INSPECTIONTYPEID: parseInt(this.ui.type.val()) })
+            var ty = this.getOption('types').findWhere({ INSPECTIONTYPEID: this.ui.type.val() })
             this.model.set({
                 INSPECTIONTYPEID: this.ui.type.val(),
                 INSPECTIONTYPE: ty.get('NAME')
