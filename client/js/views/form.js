@@ -110,6 +110,8 @@ define(['marionette', 'backbone',
         },
         
         onSubmit: function(e) {
+            if ($(e.target).closest('.editable').length) return
+
             e.preventDefault()
             var data = Backbone.Syphon.serialize(this)
             this.model.set(data)
