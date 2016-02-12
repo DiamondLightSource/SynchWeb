@@ -58,12 +58,18 @@ define(['marionette', 'backbone',
             app.trigger('screen:view', this.model.get('SCREENID'))
         },
     })
+
+    var EmptyView = Marionette.ItemView.extend({
+        tagName: 'tr',
+        template: _.template('<td colspan="5">No crystallisation screens found</td>')
+    })
     
     
     return GridView = Backbone.Marionette.CompositeView.extend({
         className: 'content',
         template: template,
         childView: GridRow,
+        emptyView: EmptyView,
         childViewContainer: 'tbody',
         
         events: {
