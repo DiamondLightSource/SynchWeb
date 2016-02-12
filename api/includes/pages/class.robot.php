@@ -99,8 +99,7 @@
             if ($where) $where = 'AND '.$where;
 
             $tot = $this->db->pq("SELECT count(r.robotactionid) as tot 
-                FROM v_run vr 
-                INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
+                FROM blsession s 
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                 INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
                 WHERE r.status != 'SUCCESS' AND  (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where ORDER BY r.starttimestamp DESC", $args);
@@ -119,7 +118,7 @@
             array_push($args, $end);
             
             $errors = $this->db->paginate("SELECT r.samplebarcode, r.actiontype, r.dewarlocation, r.containerlocation, r.message, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, s.beamlinename as bl, r.status, TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) as time 
-                FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
+                FROM blsession s 
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                 INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
                 WHERE r.status != 'SUCCESS' AND (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where 
