@@ -119,7 +119,7 @@
                 array_push($args, $this->arg('igid'));
             }
 
-            $imagers = $this->db->pq("SELECT i.capacity, i.imagerid, i.name, i.temperature, i.serial, count(c.containerid) as containers, count(c.containerid)/i.capacity as usage
+            $imagers = $this->db->pq("SELECT i.capacity, i.imagerid, i.name, i.temperature, i.serial, count(c.containerid) as containers, ROUND(COUNT(c.containerid)/i.capacity*100,1) as pusage
               FROM imager i 
               LEFT OUTER JOIN container c ON c.imagerid = i.imagerid
               WHERE $where
@@ -352,7 +352,7 @@
             }
 
             if ($this->has_arg('s')) {
-                $where .= " AND (LOWER(p.proposalcode || p.proposalnumber) LIKE LOWER('%'||:".(sizeof($args)+1)."||'%') OR LOWER(c.code) LIKE LOWER('%'||:".(sizeof($args)+2)."||'%'))";
+                $where .= " AND (LOWER(CONCAT(p.proposalcode, p.proposalnumber)) LIKE LOWER(CONCAT(CONCAT('%', :".(sizeof($args)+1)."), '%')) OR LOWER(c.code) LIKE LOWER(CONCAT(CONCAT('%', :".(sizeof($args)+2)."), '%')))";
                 array_push($args, $this->arg('s'));
                 array_push($args, $this->arg('s'));
             }
@@ -365,23 +365,21 @@
                 if ($this->arg('ty') == 'MANUAL') $where .= " AND i.manual=1";
             }
 
-            $inspections = $this->db->pq("SELECT outer.* FROM (SELECT ROWNUM rn, inner.* FROM (
-                SELECT round(SYSDATE - i.bltimestamp,1) as age, round(i.bltimestamp - i.scheduledtimestamp,2) as dwell, c.code as container, p.proposalcode || p.proposalnumber as prop, TO_CHAR(min(im.modifiedtimestamp), 'DD-MM-YYYY HH24:MI') as imagesscoredtimestamp, case when count(im.blsampleimageid) > 0 then 1 else 0 end as imagesscored,
-                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, ROUND((i.bltimestamp - min(i2.bltimestamp))*24,1) as delta, TO_CHAR(i.bltimestamp, 'HH24:MI DD-MM-YYYY') || ' (+' || ROUND(i.bltimestamp - min(i2.bltimestamp),1) || 'd) ' || (case when i.manual=1 then '[Manual]' else (case when i.schedulecomponentid is null then '[Adhoc]' end) end) as title, im.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid 
+            $inspections = $this->db->paginate("SELECT ROUND(TIMESTAMPDIFF('HOUR', i.bltimestamp, CURRENT_TIMESTAMP)/24,1) as age, ROUND(TIMESTAMPDIFF('HOUR', i.scheduledtimestamp, i.bltimestamp)/24,2) as dwell, c.code as container, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(min(im.modifiedtimestamp), 'DD-MM-YYYY HH24:MI') as imagesscoredtimestamp, case when count(im.blsampleimageid) > 0 then 1 else 0 end as imagesscored,
+                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, ROUND(TIMESTAMPDIFF('MINUTE', min(i2.bltimestamp), i.bltimestamp)/60,1) as delta, CONCAT(CONCAT(CONCAT(CONCAT(TO_CHAR(i.bltimestamp, 'HH24:MI DD-MM-YYYY'), ' (+'), ROUND(TIMESTAMPDIFF('HOUR', case when min(i2.bltimestamp) is not null then min(i2.bltimestamp) else i.bltimestamp end, i.bltimestamp)/24,1)), 'd) '), (case when i.manual=1 then '[Manual]' else (case when i.schedulecomponentid is null then '[Adhoc]' end) end)) as title, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid 
                 FROM containerinspection i
                 LEFT OUTER JOIN containerinspection i2 ON i.containerid = i2.containerid AND i2.schedulecomponentid IS NOT NULL
                 LEFT OUTER JOIN schedulecomponent sc ON sc.schedulecomponentid = i.schedulecomponentid
                 LEFT OUTER JOIN blsampleimage im ON im.containerinspectionid = i.containerinspectionid
                 INNER JOIN inspectiontype it ON it.inspectiontypeid = i.inspectiontypeid
                 INNER JOIN container c ON c.containerid = i.containerid
-                LEFT OUTER JOIN imager im ON im.imagerid = i.imagerid
+                LEFT OUTER JOIN imager img ON img.imagerid = i.imagerid
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where
-                GROUP BY c.code, i.bltimestamp, i.scheduledtimestamp, p.proposalcode || p.proposalnumber, TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI'), sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, im.name, it.name, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI'), i.imagerid, i.bltimestamp
-                ORDER BY $order
-              ) inner) outer WHERE outer.rn > :$st AND outer.rn <= :$en", $args);
+                GROUP BY c.code, i.bltimestamp, i.scheduledtimestamp, CONCAT(p.proposalcode, p.proposalnumber), TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI'), sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, img.name, it.name, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI'), i.imagerid, i.bltimestamp
+                ORDER BY $order", $args);
 
 
             if ($this->has_arg('iid')) {
@@ -487,7 +485,7 @@
             }
 
 
-            $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(i.bltimestamp - min(i2.bltimestamp),1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour
+            $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour
               FROM blsampleimage si
               LEFT OUTER JOIN blsampleimagescore sc ON sc.blsampleimagescoreid = si.blsampleimagescoreid
               INNER JOIN containerinspection i ON i.containerinspectionid = si.containerinspectionid
@@ -510,6 +508,7 @@
 
 
         function _add_inspection_image() {
+            global $upload_directory;
             if (!$this->has_arg('CONTAINERINSPECTIONID')) $this->_error('No inspection specified');
             if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
 
@@ -519,7 +518,7 @@
                     
                     if (in_array($info['extension'], array('jpg', 'png'))) {
                         # Where are we gonna put these images? dls_mxweb cant write to /dls/i0x
-                        $root = '/dls/tmp/synchweb/'.$this->arg('CONTAINERINSPECTIONID').'/'.$this->arg('BLSAMPLEID');
+                        $root = $upload_directory.'/'.date('Y').'/imaging/'.$this->arg('CONTAINERINSPECTIONID').'/'.$this->arg('BLSAMPLEID');
                         if (!file_exists($root)) mkdir($root, 0777, true);
                         $file = $root.'/'.$this->arg('CONTAINERINSPECTIONID').'_'.$this->arg('BLSAMPLEID').'_'.time().'_ef.'.$info['extension'];
                         move_uploaded_file($_FILES['IMAGE']['tmp_name'], $file);
@@ -618,7 +617,7 @@
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
-              WHERE si.blsampleimageid=:1 and p.proposalid=:2", array($this->arg('imid'), $this->proposalid));
+              WHERE si.blsampleimageid=:1", array($this->arg('imid')));
 
             if (!sizeof($im)) $this->_error('No such image');
             else {
@@ -682,13 +681,13 @@
                 array_push($args, $this->arg('scid'));
             }
 
-            $screens = $this->db->pq("SELECT 96 as capacity, p.proposalcode || p.proposalnumber as prop, s.global, s.name, s.screenid, s.proposalid, count(distinct sg.screencomponentgroupid) as groups, count(distinct sc.screencomponentid) as components
+            $screens = $this->db->pq("SELECT 96 as capacity, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.global, s.name, s.screenid, s.proposalid, count(distinct sg.screencomponentgroupid) as groups, count(distinct sc.screencomponentid) as components
               FROM screen s
               LEFT OUTER JOIN screencomponentgroup sg ON sg.screenid = s.screenid
               LEFT OUTER JOIN screencomponent sc ON sc.screencomponentgroupid = sg.screencomponentgroupid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE $where
-              GROUP BY p.proposalcode || p.proposalnumber, s.global, s.name, s.screenid, s.proposalid", $args);
+              GROUP BY CONCAT(p.proposalcode, p.proposalnumber), s.global, s.name, s.screenid, s.proposalid", $args);
 
             if ($this->has_arg('scid')) {
                 if (sizeof($screens)) $this->_output($screens[0]);
