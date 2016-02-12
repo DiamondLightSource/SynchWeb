@@ -146,7 +146,7 @@
                             foreach ($bl_types as $tty => $bls) {
                                 if (in_array($b, $bls)) {
                                     $ty = $tty;
-                                    break;
+                                    break 2;
                                 }
                             }
                         }
