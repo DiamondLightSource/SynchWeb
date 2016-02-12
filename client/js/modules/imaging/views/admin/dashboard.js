@@ -83,7 +83,7 @@ define(['marionette',
                          { name: 'TEMPERATURE', label: 'Temperature', cell: 'string', editable: false },
                          { name: 'SERIAL', label: 'Serial', cell: 'string', editable: false },
                          { name: 'CAPACITY', label: 'Capacity', cell: 'string', editable: false },
-                         { name: 'USAGE', label: 'Usage (%)', cell: 'string', editable: false },
+                         { name: 'PUSAGE', label: 'Usage (%)', cell: 'string', editable: false },
             ]
                         
             this.imgrs.show(new TableView({ 
