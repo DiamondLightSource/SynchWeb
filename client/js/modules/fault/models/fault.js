@@ -77,6 +77,10 @@ define(['backbone', 'markdown', 'models/wfile'], function(Backbone, markdown, Fi
                 required: true,
                 pattern: 'number',
             },
+            ASSIGNEEID: {
+                required: false,
+                pattern: 'number',
+            },
         },
         
     }, File))

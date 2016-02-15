@@ -31,7 +31,7 @@
                               'DESCRIPTION' => '.*',
                               'RESOLUTION' => '.*',
                               
-                              'ASSIGNEE' => '\w+\d+',
+                              'ASSIGNEEID' => '\d+',
                               );
 
 
@@ -52,7 +52,27 @@
                               array('/scom', 'get', '_get_subcomponents'),
                               array('/scom', 'post', '_add_subcomponent'),
                               array('/scom/:scid', 'put', '_update_subcomponent'),
+
+                              // array('/migrate', 'get', '_migrate'),
         );
+
+
+        function _migrate() {
+            $faults = $this->db->pq("SELECT faultid, owner, assignee FROM bf_fault WHERE personid IS NULL");
+            foreach ($faults as $f) {
+                $owner = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($f['OWNER']));
+                if (sizeof($owner)) {
+                    $this->db->pq("UPDATE bf_fault SET personid=:1 WHERE faultid=:2", array($owner[0]['PERSONID'], $f['FAULTID']));
+                }
+
+                if ($f['ASSIGNEE']) {
+                    $assignee = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($f['ASSIGNEE']));
+                    if (sizeof($assignee)) {
+                        $this->db->pq("UPDATE bf_fault SET assigneeid=:1 WHERE faultid=:2", array($assignee[0]['PERSONID'], $f['FAULTID']));
+                    }
+                }
+            }
+        }
 
         
         # ------------------------------------------------------------------------
@@ -139,8 +159,10 @@
             array_push($args, $start);
             array_push($args, $end);
             
-            $rows = $this->db->paginate("SELECT $ext_columns f.faultid, f.sessionid, f.elogid, f.assignee, f.attachment, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit, bl.beamlinename as beamline, f.owner, s.systemid, s.name as system, c.componentid, c.name as component, f.subcomponentid, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE',f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime
+            $rows = $this->db->paginate("SELECT $ext_columns f.personid, f.assigneeid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as name, CONCAT(CONCAT(asi.givenname, ' '), asi.familyname) as assignee, f.faultid, f.sessionid, f.elogid, f.attachment, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit, bl.beamlinename as beamline, s.systemid, s.name as system, c.componentid, c.name as component, f.subcomponentid, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE',f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime
                 FROM bf_fault f
+                INNER JOIN person pe ON pe.personid = f.personid
+                LEFT OUTER JOIN person asi ON asi.personid = f.assigneeid
                 INNER JOIN bf_subcomponent sc ON f.subcomponentid = sc.subcomponentid
                 INNER JOIN bf_component c ON sc.componentid = c.componentid
                 INNER JOIN bf_system s ON c.systemid = s.systemid
@@ -150,13 +172,9 @@
                 ORDER BY f.starttime DESC", $args);
                
             foreach ($rows as &$r) {
-                $r['NAME'] = $this->_get_name($r['OWNER']);
-                if ($r['ASSIGNEE']) $r['ASSIGNEENAME'] = $this->_get_name($r['ASSIGNEE']);
                 foreach (array('DESCRIPTION', 'RESOLUTION') as $k) {
                     if (array_key_exists($k, $r)) {
-                        #if ($r[$k]) {
                         $r[$k] = $this->db->read($r[$k]);
-                        #}
                     }
                 }
 
@@ -180,11 +198,11 @@
         # ------------------------------------------------------------------------
         # Update fields for a fault
         function _update_fault() {
-            $check = $this->db->pq('SELECT owner,assignee FROM bf_fault WHERE faultid=:1', array($this->arg('fid')));
+            $check = $this->db->pq('SELECT personid,assigneeid FROM bf_fault WHERE faultid=:1', array($this->arg('fid')));
             if (!sizeof($check)) $this->_error('A fault with that id doesnt exists');
             $check = $check[0];
                                 
-            if ($this->user->login != $check['OWNER'] && $this->user->login != $check['ASSIGNEE'] && !$this->user->can('fault_global')) $this->_error('You dont own that fault report');
+            if ($this->user->personid != $check['PERSONID'] && $this->user->personid != $check['ASSIGNEEID'] && !$this->user->can('fault_global')) $this->_error('You cant edit that fault report');
 
 
             $fields = array('TITLE', 'STARTTIME', 'ENDTIME', 'BEAMTIMELOST_STARTTIME', 'BEAMTIMELOST_ENDTIME', 'SESSIONID', 'SUBCOMPONENTID', 'BEAMTIMELOST', 'RESOLVED', 'RESOLUTION', 'DESCRIPTION');
@@ -330,7 +348,7 @@
                 }
             }
                                   
-            $this->_output($sysid);
+            $this->_output(array('SYSTEMID' => $sysid));
         }
                                  
         # ------------------------------------------------------------------------
@@ -343,17 +361,17 @@
                 VALUES (s_bf_component.nextval, :1, :2, :3) RETURNING componentid INTO :id', 
                 array($this->arg('SYSTEMID'), $this->arg('NAME'), $this->has_arg('DESCRIPTION') ? $this->arg('DESCRIPTION') : ''));
                             
-            $sysid = $this->db->id();
+            $comid = $this->db->id();
 
             if ($this->has_arg('BLS')) {                 
                 foreach ($this->arg('BLS') as $b) {
                     $this->db->pq('INSERT INTO bf_component_beamline (component_beamlineid, componentid, beamlinename) 
                         VALUES (s_bf_component_beamline.nextval,:1, :2)', 
-                        array($sysid, $b));
+                        array($comid, $b));
                 }
             }
                                   
-            $this->_output($sysid);                                  
+            $this->_output(array('COMPONENTID' => $comid));
         }
                                  
         # ------------------------------------------------------------------------
@@ -366,17 +384,17 @@
                 VALUES (s_bf_subcomponent.nextval, :1, :2, :3) RETURNING subcomponentid INTO :id', 
                 array($this->arg('COMPONENTID'), $this->arg('NAME'), $this->has_arg('DESCRIPTION') ? $this->arg('DESCRIPTION') : ''));
                             
-            $sysid = $this->db->id();
+            $scomid = $this->db->id();
                                   
             if ($this->has_arg('BLS')) {                 
                 foreach ($this->arg('BLS') as $b) {
                     $this->db->pq('INSERT INTO bf_subcomponent_beamline (subcomponent_beamlineid, subcomponentid, beamlinename) 
                         VALUES (s_bf_subcomponent_beamline.nextval,:1, :2)', 
-                        array($sysid, $b));
+                        array($scomid, $b));
                 }
             }
                                   
-            $this->_output($sysid);    
+            $this->_output(array('SUBCOMPONENTID' => $scomid));
         }
                                  
                                  
@@ -456,22 +474,23 @@
             $btlstart = $this->has_arg('BEAMTIMELOST_STARTTIME') ? $this->arg('BEAMTIMELOST_STARTTIME') : '';
             $btlend = $this->has_arg('BEAMTIMELOST_ENDTIME') ? $this->arg('BEAMTIMELOST_ENDTIME') : '';
             $end = $this->has_arg('ENDTIME') ? $this->arg('ENDTIME') : '';
-            $as = $this->has_arg('ASSIGNEE') ? $this->arg('ASSIGNEE') : '';
+            $as = $this->has_arg('ASSIGNEEID') ? $this->arg('ASSIGNEEID') : null;
             $res = $this->has_arg('RESOLUTION') ? $this->arg('RESOLUTION') : '';
             
-            $this->db->pq("INSERT INTO bf_fault (faultid, sessionid, owner, subcomponentid, starttime, endtime, beamtimelost, beamtimelost_starttime, beamtimelost_endtime, title, description, resolved, resolution, assignee) 
+            $this->db->pq("INSERT INTO bf_fault (faultid, sessionid, personid, subcomponentid, starttime, endtime, beamtimelost, beamtimelost_starttime, beamtimelost_endtime, title, description, resolved, resolution, assigneeid) 
                 VALUES (s_bf_fault.nextval, :1, :2, :3, TO_DATE(:4, 'DD-MM-YYYY HH24:MI'), TO_DATE(:5, 'DD-MM-YYYY HH24:MI'), :6, TO_DATE(:7, 'DD-MM-YYYY HH24:MI'), TO_DATE(:8, 'DD-MM-YYYY HH24:MI'), :9, :10, :11, :12, :13) RETURNING faultid INTO :id", 
-                array($this->arg('SESSIONID'), $this->user->login, $this->arg('SUBCOMPONENTID'), $this->arg('STARTTIME'), $end, $this->arg('BEAMTIMELOST'), $btlstart, $btlend, $this->arg('TITLE'), $this->arg('DESCRIPTION'), $this->arg('RESOLVED'), $res, $as));
+                array($this->arg('SESSIONID'), $this->user->personid, $this->arg('SUBCOMPONENTID'), $this->arg('STARTTIME'), $end, $this->arg('BEAMTIMELOST'), $btlstart, $btlend, $this->arg('TITLE'), $this->arg('DESCRIPTION'), $this->arg('RESOLVED'), $res, $as));
                     
             $newid = $this->db->id();
 
-            $info = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit, bl.beamlinename as beamline, s.name as system, c.name as component, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE', f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, f.resolution, f.description, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime, f.owner
+            $info = $this->db->pq("SELECT CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as name, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit, bl.beamlinename as beamline, s.name as system, c.name as component, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE', f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, f.resolution, f.description, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime, f.owner
                 FROM bf_fault f
                 INNER JOIN bf_subcomponent sc ON f.subcomponentid = sc.subcomponentid
                 INNER JOIN bf_component c ON sc.componentid = c.componentid
                 INNER JOIN bf_system s ON c.systemid = s.systemid
                 INNER JOIN blsession bl ON f.sessionid = bl.sessionid
                 INNER JOIN proposal p ON bl.proposalid = p.proposalid
+                INNER JOIN person pe ON pe.personid = f.personid
 
                 WHERE f.faultid=:1", array($newid));
             
@@ -484,7 +503,7 @@
                 #}
             }
                                   
-            $report = '<b>'.$info['TITLE'].'</b><br/><br/>Reported By: '.$this->_get_name($info['OWNER']).'<br/><br/>System: '.$info['SYSTEM'].'<br/>Component: '.$info['COMPONENT'].' &raquo; '.$info['SUBCOMPONENT'].'<br/><br/>Start: '.$info['STARTTIME'].' End: '.($info['RESOLVED'] == 1 ? $info['ENDTIME'] : 'N/A') .'<br/>Resolved: '.($info['RESOLVED']  == 2 ? 'Partial' : ($info['RESOLVED'] ? 'Yes' : 'No')).'<br/>Beamtime Lost: '.($info['BEAMTIMELOST'] ? ('Yes ('.$info['LOST'].'h between '.$info['BEAMTIMELOST_STARTTIME'].' and '.$info['BEAMTIMELOST_ENDTIME'].')') : 'No').'<br/><br/><b>Description</b><br/>'.$info['DESCRIPTION'].'<br/><br/>'.($info['RESOLVED'] ? ('<b>Resolution</b><br/>'.$info['RESOLUTION']):'').'<br/><br/><a href="http://ispyb.diamond.ac.uk/fault/fid/'.$this->db->id().'">Fault Report Link</a>';
+            $report = '<b>'.$info['TITLE'].'</b><br/><br/>Reported By: '.$info['NAME'].'<br/><br/>System: '.$info['SYSTEM'].'<br/>Component: '.$info['COMPONENT'].' &raquo; '.$info['SUBCOMPONENT'].'<br/><br/>Start: '.$info['STARTTIME'].' End: '.($info['RESOLVED'] == 1 ? $info['ENDTIME'] : 'N/A') .'<br/>Resolved: '.($info['RESOLVED']  == 2 ? 'Partial' : ($info['RESOLVED'] ? 'Yes' : 'No')).'<br/>Beamtime Lost: '.($info['BEAMTIMELOST'] ? ('Yes ('.$info['LOST'].'h between '.$info['BEAMTIMELOST_STARTTIME'].' and '.$info['BEAMTIMELOST_ENDTIME'].')') : 'No').'<br/><br/><b>Description</b><br/>'.$info['DESCRIPTION'].'<br/><br/>'.($info['RESOLVED'] ? ('<b>Resolution</b><br/>'.$info['RESOLUTION']):'').'<br/><br/><a href="http://ispyb.diamond.ac.uk/fault/fid/'.$this->db->id().'">Fault Report Link</a>';
                                   
             $data = array('txtTITLE'      => 'Fault Report: '. $info['TITLE'],
                           'txtCONTENT'    => $report,

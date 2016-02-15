@@ -54,6 +54,8 @@ define(['marionette', 'backbone',
         rowClick: function(e) {
         	if (this.model.get('new') || this.model.get('edit')) return
         	this.trigger('row:click', this.model)
+            this.$el.siblings('tr').removeClass('selected')
+            this.$el.addClass('selected')
 
         },
         

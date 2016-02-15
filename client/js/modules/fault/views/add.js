@@ -38,7 +38,7 @@ define(['views/form',
             system: 'select[name=SYSTEMID]',
             component: 'select[name=COMPONENTID]',
             subcomponent: 'select[name=SUBCOMPONENTID]',
-            assignee: 'input[name=ASSIGNEE]',
+            assignee: 'input[name=ASSIGNEEID]',
         },
         
         events: {
@@ -146,7 +146,7 @@ define(['views/form',
                     resp(self.allusers.map(function(m) {
                         return {
                             label: m.get('FULLNAME'),
-                            value: m.get('LOGIN'),
+                            value: m.get('PERSONID'),
                         }
                     }))
                 }
