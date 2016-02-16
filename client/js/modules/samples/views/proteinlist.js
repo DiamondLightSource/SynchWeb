@@ -1,4 +1,7 @@
-define(['marionette', 'views/table', 'collections/proposals', 'modules/projects/views/addto', 'utils/table'], function(Marionette, TableView, Proposals, AddToProjectView, table) {
+define(['marionette', 'views/table', 'views/filter', 
+  'collections/componenttypes', 
+  'modules/projects/views/addto', 'utils/table'], 
+  function(Marionette, TableView, FilterView, ComponentTypes, AddToProjectView, table) {
     
     
   var ClickableRow = table.ClickableRow.extend({
@@ -20,8 +23,8 @@ define(['marionette', 'views/table', 'collections/proposals', 'modules/projects/
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: '<div><h1>Proteins</h1><p class="help">This page lists all proteins associated with the currently selected proposal</p><div class="ra"><a class="button" href="/proteins/add"><i class="fa fa-plus"></i> Add Protein</a></div><div class="wrapper"></div></div>',
-    regions: { 'wrap': '.wrapper' },
+    template: '<div><h1>Proteins</h1><p class="help">This page lists all proteins associated with the currently selected proposal</p><div class="ra"><a class="button" href="/proteins/add"><i class="fa fa-plus"></i> Add Protein</a></div><div class="filter type"></div><div class="wrapper"></div></div>',
+    regions: { 'wrap': '.wrapper', type: '.type' },
     
     initialize: function(options) {
       var columns = [
@@ -29,6 +32,7 @@ define(['marionette', 'views/table', 'collections/proposals', 'modules/projects/
         { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false },
         { name: 'MOLECULARMASS', label: 'Mass', cell: 'string', editable: false },
         { name: 'HASSEQ', label: 'Sequence', cell: 'string', editable: false },
+        { name: 'COMPONENTTYPE', label: 'Type', cell: 'string', editable: false },
         { name: 'SCOUNT', label: 'Samples', cell: 'string', editable: false },
         { name: 'DCOUNT', label: 'Data Collections', cell: 'string', editable: false },
         { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
@@ -42,10 +46,25 @@ define(['marionette', 'views/table', 'collections/proposals', 'modules/projects/
         
       var self = this
       this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params && options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: function() { return self.collection.fetched ? 'No proteins found' : 'Retrieving proteins' } }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
+
+      this.types = new ComponentTypes()
+      this.tr = this.types.fetch()
     },
                                       
     onRender: function() {
       this.wrap.show(this.table)
+      this.tr.done(this.showFilter.bind(this))
+    },
+
+    showFilter: function() {
+        this.ty = new FilterView({
+            url: !this.getOption('noFilterUrl'),
+            collection: this.getOption('collection'),
+            value: this.getOption('params') && this.getOption('params').ty,
+            name: 'type',
+            filters: this.types.map(function(m) { return { id: m.get('COMPONENTTYPEID'), name: m.get('NAME') } })
+        })
+        this.type.show(this.ty)
     },
       
     onShow: function() {

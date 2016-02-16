@@ -12,10 +12,16 @@ define(['marionette',
     'modules/samples/collections/pdbs',
     'modules/samples/views/pdbs',
     'modules/samples/views/addpdb',
+
+    'collections/componenttypes',
+    'collections/concentrationtypes',
     
     'tpl!templates/samples/protein.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, Editable, DCCol, DCView, Samples, SamplesView, Containers, ContainersView, PDBs, PDBView, AddPDBView, template, Backbone) {
+    ], function(Marionette, Editable, DCCol, DCView, Samples, SamplesView, Containers, ContainersView, 
+        PDBs, PDBView, AddPDBView, 
+        ComponentTypes, ConcentrationTypes,
+        template, Backbone) {
     
     
         
@@ -47,6 +53,12 @@ define(['marionette',
         initialize: function(options) {
             Backbone.Validation.bind(this);
             
+            this.types = new ComponentTypes()
+            this.tr = this.types.fetch()
+
+            this.concs = new ConcentrationTypes()
+            this.cr = this.concs.fetch()
+
             this.samples = new Samples()
             this.samples.state.pageSize = 5
             this.samples.queryParams.pid = this.model.get('PROTEINID')
@@ -65,11 +77,20 @@ define(['marionette',
         
         
         onRender: function() {
+            var self = this
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
             edit.create('ACRONYM', 'text')
             edit.create('SEQUENCE', 'markdown')
             edit.create('MOLECULARMASS', 'text')
+            edit.create('GLOBAL', 'select', { data: { 1: 'Yes', 0: 'No' } })
+
+            this.tr.done(function() {
+                edit.create('COMPONENTTYPEID', 'select', { data: self.types.kv({ empty: true }) })
+            })
+            this.cr.done(function() {
+                edit.create('CONCENTRATIONTYPEID', 'select', { data: self.concs.kv({ empty: true }) })  
+            })
 
             this.pdb.show(new PDBView({ collection: this.pdbs }))
             this.smp.show(new SamplesView({ collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))

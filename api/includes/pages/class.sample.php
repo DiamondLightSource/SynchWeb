@@ -25,6 +25,7 @@
                               'pdb_code' => '\w\w\w\w',
                               'pdbid' => '\d+',
                               'visit' => '\w+\d+-\d+',
+                              'type' => '\d+',
 
                               'PROTEINID' => '\d+',
                               'CONTAINERID' => '\d+',
@@ -49,6 +50,10 @@
                               'ANOMALOUSSCATTERER' => '\w+',
                               'BLSUBSAMPLEID' => '\d+',
                               'SCREENCOMPONENTGROUPID' => '\d+',
+
+                              'COMPONENTTYPEID' => '\d+',
+                              'CONCENTRATIONTYPEID' => '\d+',
+                              'GLOBAL' => '\d+',
 
                               'BLSAMPLEID' => '\d+',
                               'X' => '\d+(.\d+)?',
@@ -87,6 +92,9 @@
                               array('/pdbs(/pid/:pid)', 'get', '_get_pdbs'),
                               array('/pdbs', 'post', '_add_pdb'),
                               array('/pdbs(/:pdbid)', 'delete', '_remove_pdb'),
+
+                              array('/concentrationtypes', 'get', '_concentration_types'),
+                              array('/componenttypes', 'get', '_component_types'),
         );
         
 
@@ -568,6 +576,12 @@
                 array_push($args, $this->arg('pid'));
                 $extc = 'pr.sequence, ';
             }
+
+
+            if ($this->has_arg('type')) {
+                $where .= ' AND pr.componenttypeid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('type'));
+            }
             
 
             $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr INNER JOIN proposal p ON p.proposalid = pr.proposalid $join WHERE $where", $args);
@@ -604,8 +618,10 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT /*distinct*/ $extc CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
+            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype, CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass,pr.global/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
                                   FROM protein pr
+                                  LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
+                                  LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
                                   /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
                                   LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
                                   LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid*/
@@ -671,7 +687,7 @@
                 array_push($args, $this->arg('term'));
             }
             
-            $rows = $this->db->pq("SELECT distinct pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as unit, 1 as hasph
+            $rows = $this->db->pq("SELECT distinct pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as concentrationtype, 1 as hasph
               FROM protein pr 
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
               WHERE pr.acronym is not null AND (pr.proposalid=:1 /*OR pr.global=1*/) $where 
@@ -693,7 +709,7 @@
             
             if (!sizeof($prot)) $this->_error('No such protein');
             
-            foreach(array('NAME', 'SEQUENCE', 'ACRONYM', 'MOLECULARMASS') as $f) {
+            foreach(array('NAME', 'SEQUENCE', 'ACRONYM', 'MOLECULARMASS', 'CONCENTRATIONTYPEID', 'COMPONENTTYPEID', 'GLOBAL') as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq('UPDATE protein SET '.$f.'=:1 WHERE proteinid=:2', array($this->arg($f), $this->arg('pid')));
                     $this->_output(array($f => $this->arg($f)));
@@ -848,9 +864,14 @@
             
             $name = $this->has_arg('NAME') ? $this->arg('NAME') : '';
             $seq = $this->has_arg('SEQUENCE') ? $this->arg('SEQUENCE') : '';
-            $mass = $this->has_arg('MOLECULARMASS') ? $this->arg('MOLECULARMASS') : '';
+            $mass = $this->has_arg('MOLECULARMASS') ? $this->arg('MOLECULARMASS') : null;
+            $ct = $this->has_arg('CONCENTRATIONTYPEID') ? $this->arg('CONCENTRATIONTYPEID') : null;
+            $cmt = $this->has_arg('COMPONENTTYPEID') ? $this->arg('COMPONENTTYPEID') : null;
+            $global = $this->has_arg('GLOBAL') ? $this->arg('GLOBAL') : null;
             
-            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp) VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP) RETURNING proteinid INTO :id',array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass));
+            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global) 
+              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8) RETURNING proteinid INTO :id',
+              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global));
             
             $pid = $this->db->id();
             
@@ -899,6 +920,28 @@
         function _delete_diffraction_plan() {
 
         }
+
+
+
+
+        function _concentration_types() {
+            $rows = $this->db->pq("SELECT concentrationtypeid, symbol, name FROM concentrationtype");
+            $this->_output($rows);
+        }
+
+
+        function _component_types() {
+            $rows = $this->db->pq("SELECT componenttypeid, name FROM componenttype");
+            $this->_output($rows);
+        }
+
+
+        function _component_sub_types() {
+            $rows = $this->db->pq("SELECT componentsubtypeid, name FROM componentsubtype");
+            $this->_output($rows);
+        }
+
+
 
         
     }

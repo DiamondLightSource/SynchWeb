@@ -34,6 +34,18 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
                 required: false,
                 pattern: 'number',
             },
+            CONCENTRATIONTYPEID: {
+                required: false,
+                pattern: 'number',
+            },
+            COMPONENTTYPEID: {
+                required: false,
+                pattern: 'number',  
+            },
+            COMPONENTSUBTYPEID: {
+                required: false,
+                pattern: 'number',  
+            }
         },
     })
     
