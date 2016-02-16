@@ -32,7 +32,8 @@ define(['marionette',
         //modelEvents: { 'change': 'render' },
         
         templateHelpers: {
-            APIURL: app.apiurl
+            APIURL: app.apiurl,
+            PROP: app.prop,
         },
 
         events: {

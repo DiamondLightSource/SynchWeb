@@ -14,7 +14,8 @@ define(['marionette', 'modules/shipment/views/movecontainer', 'tpl!templates/shi
         },
 
         templateHelpers: {
-            APIURL: app.apiurl
+            APIURL: app.apiurl,
+            PROP: app.prop,
         },
         
         moveContainer: function(e) {

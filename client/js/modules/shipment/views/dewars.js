@@ -19,7 +19,8 @@ define(['marionette', 'backbone',
         tagName: 'tr',
         
         templateHelpers: {
-            APIURL: app.apiurl
+            APIURL: app.apiurl,
+            PROP: app.prop,
         },
 
         events: {
