@@ -4,6 +4,9 @@
     // require_once('lib/SqlFormatter.php');
     
     class Oracle extends DatabaseParent implements DatabaseInterface {
+
+        protected $type = 'oracle';
+
         protected $id;
         public $explain = False;
         public $plan = '';
