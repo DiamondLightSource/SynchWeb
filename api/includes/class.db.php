@@ -33,6 +33,10 @@
         public $stats = False;
         public $stat;
 
+        function type() {
+            return $this->type;
+        }
+
 
         public function set_app($app) {
             $this->app = $app;
@@ -49,7 +53,7 @@
 
         public function error($title, $msg) {
             header('HTTP/1.1 400 Bad Request');
-            header('Content-type:application/json');
+            // header('Content-type:application/json');
             print json_encode(array('title' => $title, 'msg' => $msg));
             exit();
         }
