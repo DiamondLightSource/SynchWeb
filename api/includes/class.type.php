@@ -42,9 +42,17 @@ class ProposalType {
         // default to use (none)
         $ty = '';
         
-        
-        $vis = $this->app->request->params('visit');
-        $prop = $this->app->request->params('prop');
+        $bbreq = (array)json_decode($this->app->request()->getBody());
+        $request = array_merge($_REQUEST, $bbreq);
+
+        $vis = array_key_exists('visit', $request) ? $request['visit'] : null;
+        $prop = array_key_exists('prop', $request) ? $request['prop'] : null;
+
+        if (sizeof($request) && !$this->is_assoc($request)) {
+            $first = $request[0];
+            if (property_exists($first, 'prop')) $prop = $first->prop;
+        }
+
         // check if there is a visit in the address args
         if (preg_match('/([A-z]+)\d+-\d+/', $vis, $m)) {
             $bl = $this->db->pq("SELECT s.beamlinename 
@@ -195,6 +203,11 @@ class ProposalType {
     function pid() {
         return $this->proposalid;
     }
+
+    function is_assoc(array $array) {
+            $keys = array_keys($array);
+            return array_keys($keys) !== $keys;
+        }
 }
     
 ?>
