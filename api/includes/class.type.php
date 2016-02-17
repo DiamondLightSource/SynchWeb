@@ -53,6 +53,10 @@ class ProposalType {
             if (property_exists($first, 'prop')) $prop = $first->prop;
         }
 
+        $path = $this->app->request->getResourceUri();
+        if (preg_match('/\/prop\/(\w+)/', $path, $m)) $prop = $m[1];
+
+
         // check if there is a visit in the address args
         if (preg_match('/([A-z]+)\d+-\d+/', $vis, $m)) {
             $bl = $this->db->pq("SELECT s.beamlinename 
