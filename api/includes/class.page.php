@@ -137,12 +137,12 @@
         
         # Error messages as json object, should probably return a different
         # http code as well
-        function _error($msg) {
+        function _error($msg, $code=400) {
             //header('HTTP/1.1 400 Bad Request');
             //header('Content-type:application/json');
             //print 
 
-            $this->app->halt(400, json_encode(array('status' => 400, 'message' => $msg)));
+            $this->app->halt($code, json_encode(array('status' => $code, 'message' => $msg)));
             //exit();
         }
         
