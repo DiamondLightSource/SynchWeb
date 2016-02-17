@@ -618,6 +618,12 @@ ol.rounded {
                 height: 100px;
                 float: none;
             }
+            
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
         }
         
         .plot_dimple {
@@ -627,6 +633,12 @@ ol.rounded {
             @media (max-width: $breakpoint-vsmall) {
                 height: 100px;
                 float: none;
+            }
+            
+            .legend {
+                > table {
+                    width: auto;
+                }
             }
         }
         
