@@ -1019,12 +1019,12 @@
                             
                             if (sizeof($gvals) > 0) {
                                 $x = array_map('floatval', array_slice(explode(' - ', $gvals[1]), 1));
-                                $y = array_map('floatval', array_slice(preg_split('/\s+/', $gvals[2]), 1));
-                                $y2 = array_map('floatval', array_slice(preg_split('/\s+/', $gvals[3]), 1));
+                                $y = array_map('floatval', array_slice(preg_split('/\s+/', $gvals[2]), 2));
+                                $y2 = array_map('floatval', array_slice(preg_split('/\s+/', $gvals[3]), 2));
 
                                 foreach ($x as $i => $v) {
-                                    array_push($p1, array($v, $y[$i]));
-                                    array_push($p2, array($v, $y2[$i]));
+                                    array_push($p1, array(1.0/pow($v, 2), $y[$i]));
+                                    array_push($p2, array(1.0/pow($v, 2), $y2[$i]));
                                 }
                             }
                             
