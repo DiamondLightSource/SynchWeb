@@ -111,6 +111,8 @@
 
 
         function _get_imagers() {
+            if (!$this->staff) $this->_error('Access Denied', 403);
+
             $where = '1=1';
             $args = array();
 

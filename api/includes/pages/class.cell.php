@@ -171,6 +171,8 @@
         # ------------------------------------------------------------------------
         # Autoprocesing stats
         function _autoproc() {
+            if (!$this->staff) $this->_error('Access Denied', 403);
+
             $stats = $this->db->pq("SELECT TO_CHAR(pdbdate, 'YYYY') as year, count(pdbentryid) as tot, count(case when (beamlinematch=1 OR (autoproccount > 0 and authormatch=1)) and distance < :1 then 1 end) as ap
                 FROM pdbentry
                 WHERE pdbdate > TO_DATE('2010-05', 'YYYY-MM')
@@ -194,6 +196,8 @@
         # ------------------------------------------------------------------------
         # State stats
         function _state() {
+            if (!$this->staff) $this->_error('Access Denied', 403);
+
             $stats = $this->db->pq("SELECT 
                 count(case when (beamlinematch=1) then 1 end) as matched, 
                 count(case when (autoproccount>0 and beamlinematch != 1 and authormatch!=1) then 1 end) as nomatch, 
@@ -215,6 +219,8 @@
         # ------------------------------------------------------------------------
         # Beamline stats
         function _beamlines() {
+            if (!$this->staff) $this->_error('Access Denied', 403);
+
             global $facility_pdb_ident;
 
             $replace = 'p.pdbbeamlinename';
@@ -250,6 +256,8 @@
         # ------------------------------------------------------------------------
         # List pdb codes that have been analysed
         function _analysed() {
+            if (!$this->staff) $this->_error('Access Denied', 403);
+
             $args = array();
             $where = '';
 
@@ -318,6 +326,8 @@
         # ------------------------------------------------------------------------
         # Process a pdb from RCSB
         function _process_pdbs() {
+            if (!$this->staff) $this->_error('Access Denied', 403);
+            
             global $facility_pdb_ident;
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
 

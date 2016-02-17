@@ -20,6 +20,7 @@
         
         # Show list of beamlines & runs
         function _averages() {
+            if (!$this->staff) $this->_error('Access Denied', 403);
 
             // The only case switch in the entire migration :(
             $median = $this->db->type() == 'mysql' ?
@@ -77,6 +78,8 @@
             $args = array();
             $where = array();
             
+            if (!$this->staff && !$this->has_arg('visit')) $this->_error('Access Denied', 403);
+
             if ($this->has_arg('bl')) {
                 array_push($where, 's.beamlinename LIKE :'. (sizeof($args)+1));
                 array_push($args, $this->arg('bl'));
@@ -165,6 +168,8 @@
         
         # Show totals for beamline / run / year
         function _totals() {
+            if (!$this->staff) $this->_error('Access Denied', 403);
+
             $where = array('1=1');
             $args = array();
             
