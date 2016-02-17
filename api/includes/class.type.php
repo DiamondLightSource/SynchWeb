@@ -55,6 +55,30 @@ class ProposalType {
 
         $path = $this->app->request->getResourceUri();
         if (preg_match('/\/prop\/(\w+)/', $path, $m)) $prop = $m[1];
+        if (preg_match('/\/visit\/([\w-]+)/', $path, $m)) $vis = $m[1];
+
+        if (preg_match('/\/id\/(\d+)/', $path, $m)) {
+            $id = $m[1];
+            $t = null;
+            if (preg_match('/\/t\/(\w)+/', $path, $m)) $t = $m[1];
+            
+            $types = array('data' => array('datacollection', 'datacollectionid'),
+                                           'edge' => array('energyscan', 'energyscanid'),
+                                           'mca' => array('xfefluorescencespectrum', 'xfefluorescencespectrumid'),
+                                           );
+                        
+            $table = 'datacollection';
+            $col = 'datacollectionid';
+            if ($t) {
+                if (array_key_exists($t, $types)) {
+                    $table = $types[$t][0];
+                    $col = $types[$t][1];
+                }
+            }
+            
+            $props = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN $table dc ON s.sessionid = dc.sessionid WHERE dc.$col = :1", array($id));
+            if (sizeof($props)) $prop = $props[0]['PROP'];
+        }
 
 
         // check if there is a visit in the address args
