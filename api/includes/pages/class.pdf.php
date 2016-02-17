@@ -19,8 +19,8 @@
                               'labels' => '[\w-]+',
                               );
 
-        public static $dispatch = array(array('/sid/:sid', 'get', '_shipment_label'),
-                              array('/container(/sid/:sid)(/cid/:cid)(/did/:did)', 'get', '_container_report'),
+        public static $dispatch = array(array('/sid/:sid/prop/:prop', 'get', '_shipment_label'),
+                              array('/container(/sid/:sid)(/cid/:cid)(/did/:did)/prop/:prop', 'get', '_container_report'),
                               array('/report/visit/:visit', 'get', '_visit_report'),
                               array('/sheets', 'get', '_generate_sheets'),
         );
