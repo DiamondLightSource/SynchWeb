@@ -26,6 +26,7 @@
                               'pdbid' => '\d+',
                               'visit' => '\w+\d+-\d+',
                               'type' => '\d+',
+                              'global' => '\d+',
 
                               'PROTEINID' => '\d+',
                               'CONTAINERID' => '\d+',
@@ -54,6 +55,9 @@
                               'COMPONENTTYPEID' => '\d+',
                               'CONCENTRATIONTYPEID' => '\d+',
                               'GLOBAL' => '\d+',
+
+                              'COMPONENTIDS' => '\d+',
+                              'COMPONENTAMOUNTS' => '\d+(.\d+)?',
 
                               'BLSAMPLEID' => '\d+',
                               'X' => '\d+(.\d+)?',
@@ -284,9 +288,6 @@
                 $join = ' LEFT OUTER JOIN project_has_blsample pj ON pj.blsampleid=b.blsampleid';
                 
                 if (!$this->staff) {
-                    #$join .= " INNER JOIN blsession ses ON ses.proposalid = p.proposalid INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || ses.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id";
-                    #$where .= " AND u.name=:".(sizeof($args)+1);
-
                     $join .= " INNER JOIN blsession ses ON ses.proposalid = p.proposalid 
                     INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
 
@@ -304,7 +305,9 @@
             
             # For a specific protein
             if ($this->has_arg('pid')) {
-                $where .= ' AND pr.proteinid=:'.(sizeof($args)+1);
+                $where .= ' AND (pr.proteinid=:'.(sizeof($args)+1).' OR chc2.componentid=:'.(sizeof($args)+2).')';
+                $join .= ' LEFT OUTER JOIN blsampletype_has_component chc2 ON chc2.blsampletypeid=b.crystalid';
+                array_push($args, $this->arg('pid'));
                 array_push($args, $this->arg('pid'));
             }
 
@@ -360,6 +363,7 @@
               FROM blsample b 
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
+              LEFT OUTER JOIN blsampletype_has_component chc ON b.crystalid = chc.blsampletypeid
               INNER JOIN proposal p ON p.proposalid = pr.proposalid 
               INNER JOIN container c ON c.containerid = b.containerid 
               INNER JOIN dewar d ON d.dewarid = c.dewarid $join WHERE $where", $args);
@@ -391,12 +395,17 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
-                                  
+            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, min(st.rankingresolution) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, min(apss.resolutionlimithigh) as dcresolution, max(apss.completeness) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols
                                   
                                   FROM blsample b
                                   INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                                   INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+
+                                  LEFT OUTER JOIN blsampletype_has_component chc ON b.crystalid = chc.blsampletypeid
+                                  LEFT OUTER JOIN protein cpr ON cpr.proteinid = chc.componentid
+                                  LEFT OUTER JOIN concentrationtype ct ON cpr.concentrationtypeid = ct.concentrationtypeid
+
                                   INNER JOIN container c ON b.containerid = c.containerid
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid
                                   INNER JOIN shipping s ON s.shippingid = d.shippingid
@@ -428,12 +437,14 @@
                                   
                                   WHERE $where
                                   
-                                  GROUP BY b.screencomponentgroupid, ssp.blsampleid, ssp.name, b.blsubsampleid, b.blsampleid, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname,s.shippingid,d.dewarid,d.code, c.code, c.containerid, c.samplechangerlocation, CONCAT(p.proposalcode,p.proposalnumber), dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  GROUP BY b.crystalid, b.screencomponentgroupid, ssp.blsampleid, ssp.name, b.blsubsampleid, b.blsampleid, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname,s.shippingid,d.dewarid,d.code, c.code, c.containerid, c.samplechangerlocation, CONCAT(p.proposalcode,p.proposalnumber), dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
                                   
                                   $having
                                   
                                   ORDER BY $order", $args);
             
+
+
             if ($this->has_arg('sid')) {
                 if (sizeof($rows))$this->_output($rows[0]);
                 else $this->_error('No such sample');
@@ -446,13 +457,15 @@
         function _update_sample_full() {           
             $a = $this->_prepare_sample_args();
 
-            $samp = $this->db->pq("SELECT sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid 
+            $samp = $this->db->pq("SELECT sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid, string_agg(chc.componentid) as componentids
               FROM blsample sp 
               INNER JOIN crystal cr ON sp.crystalid = cr.crystalid 
               INNER JOIN protein pr ON cr.proteinid = pr.proteinid 
+              LEFT OUTER JOIN blsampletype_has_component chc ON sp.crystalid = chc.blsampletypeid
               INNER JOIN proposal p ON pr.proposalid = p.proposalid 
               LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = sp.diffractionplanid 
-              WHERE p.proposalid = :1 AND sp.blsampleid=:2", 
+              WHERE p.proposalid = :1 AND sp.blsampleid=:2
+              GROUP BY sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid", 
               array($this->proposalid,$this->arg('sid')));
                 
             if (!sizeof($samp)) $this->_error('No such sample');
@@ -465,7 +478,26 @@
             $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2 WHERE diffractionplanid=:3", 
               array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $samp['DIFFRACTIONPLANID']));
 
+            $init_comps = explode(',', $samp['COMPONENTIDS']);
+            $fin_comps = $a['COMPONENTIDS'] ? $a['COMPONENTIDS'] : array();
+            $amounts = $a['COMPONENTAMOUNTS'] ? $a['COMPONENTAMOUNTS'] : null;
+            $this->_update_sample_components($init_comps, $fin_comps, $amounts, $samp['CRYSTALID']);
+
             $this->_output(array('BLSAMPLEID' => $samp['BLSAMPLEID']));
+        }
+
+        function _update_sample_components($initial, $final, $amounts, $crystalid) {
+            $rem = array_diff($initial, $final);
+            $add = array_diff($final, $initial);
+
+            foreach ($rem as $r) $this->db->pq("DELETE FROM blsampletype_has_component WHERE blsampletypeid=:1 AND componentid=:2", array($crystalid, $r));
+            foreach ($add as $a) $this->db->pq("INSERT INTO blsampletype_has_component (blsampletypeid, componentid) VALUES (:1,:2)", array($crystalid, $a));
+
+            if ($amounts) {
+                foreach($final as $i => $f) {
+                    $this->db->pq("UPDATE blsampletype_has_component SET abundance=:1 WHERE blsampletypeid=:2 AND componentid=:3", array($amounts[$i], $crystalid, $f));
+                }
+            }
         }
 
 
@@ -514,7 +546,7 @@
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
             }
 
-            foreach (array('SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID') as $f) {
+            foreach (array('SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
             }
@@ -534,8 +566,11 @@
                              
             $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid, screencomponentgroupid) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9) RETURNING blsampleid INTO :id", 
                 array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID']));
-                
-            return $this->db->id();
+            $sid = $this->db->id();
+
+            if ($a['COMPONENTIDS']) $this->_update_sample_components(array(), $a['COMPONENTIDS'], $a['COMPONENTAMOUNTS'], $crysid);
+
+            return $sid;
         }
         
         
@@ -558,12 +593,6 @@
                 $join .= ' INNER JOIN project_has_protein pj ON pj.proteinid=pr.proteinid';
                 
                 if (!$this->staff) {
-                    // $join .= " INNER JOIN blsession s ON s.proposalid = p.proposalid 
-                    // INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number 
-                    // INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id 
-                    // INNER JOIN user_@DICAT_RO u on u.id = iu.user_id ";
-                    // $where .= " AND u.name=:".(sizeof($args)+1);
-                    // array_push($args, $this->user);
                     $join .= " INNER JOIN blsession ses ON ses.proposalid = p.proposalid 
                     INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
 
@@ -680,17 +709,22 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             
             $args = array($this->proposalid);
-            $where = '';
-            
+            $where = '(pr.proposalid=:1)';
+
+            if ($this->has_arg('global')) {
+                $where = '(pr.proposalid=:1 OR pr.global=1)';
+            }
+
             if ($this->has_arg('term')) {
-                $where = " AND lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:2), '%'))";
+                $where .= " AND (lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+1)."), '%')) OR lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+2)."), '%')))";
+                array_push($args, $this->arg('term'));
                 array_push($args, $this->arg('term'));
             }
             
             $rows = $this->db->pq("SELECT distinct pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as concentrationtype, 1 as hasph
               FROM protein pr 
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
-              WHERE pr.acronym is not null AND (pr.proposalid=:1 /*OR pr.global=1*/) $where 
+              WHERE pr.acronym is not null AND $where 
               GROUP BY ct.symbol, pr.acronym, pr.name
               ORDER BY lower(pr.acronym)", $args);
                                  
