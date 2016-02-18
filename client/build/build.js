@@ -18,6 +18,7 @@
                 'modules/types/gen/menu', 
                 'modules/types/saxs/menu',
                 'modules/types/em/menu',
+                'modules/types/sm/menu',
                 
             ],
 
