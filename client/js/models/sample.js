@@ -1,9 +1,51 @@
-define(['backbone'], function(Backbone) {
+define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
     
     return Backbone.Model.extend({
         idAttribute: 'BLSAMPLEID',
         urlRoot: '/sample',
         
+
+        initialize: function(attrs) {
+            var comps = new Proteins()
+            // if (attrs) {
+            //     comps.reset(attrs.components)
+            //     delete attrs.components
+            // }
+            this.set('components', comps)
+            this.listenTo(comps, 'change add remove reset', this.updateComponentIds)
+            this.on('sync', this._add_components, this)
+            this._add_components()
+        },
+
+        updateComponentIds: function() {
+            this.set({ 
+                COMPONENTIDS: this.get('components').pluck('PROTEINID'),
+                COMPONENTAMOUNTS: this.get('components').pluck('ABUNDANCE')
+            })
+            // console.log('updated sample', this, this.get('COMPONENTAMOUNTS'))
+        },
+
+        _add_components: function() {
+            var ids = this.get('COMPONENTIDS') || []
+            var acs = this.get('COMPONENTACRONYMS') || []
+            var concs = this.get('COMPONENTTYPESYMBOLS') || []
+            var abs = this.get('COMPONENTAMOUNTS') || []
+            var gls = this.get('COMPONENTGLOBALS') || []
+
+            // console.log('add comps', ids, acs)
+
+            var comps = _.map(ids, function(id, i) { 
+                return { 
+                    PROTEINID: id, 
+                    ACRONYM: acs[i], 
+                    ABUNDANCE: i < abs.length ? abs[i] : 0,  
+                    CONCENTRATIONTYPE: i < concs.length ? concs[i] : '',
+                    GLOBAL: i < gls.length ? parseInt(gls[i]) : 0,
+                } 
+            })
+            this.get('components').reset(comps)
+        },
+
         defaults: {
             NAME: '',
             CODE: '',
@@ -71,6 +113,16 @@ define(['backbone'], function(Backbone) {
             REQUIREDRESOLUTION: {
                 required: false,
                 pattern: 'number'
+            },
+
+            COMPONENTAMOUNTS: function(from_ui, attr, all_values) {
+                var values = all_values.components.pluck('ABUNDANCE')
+                var valid = true
+                _.each(values, function(v) {
+                    if (isNaN(v)) valid = false
+                })
+
+                return valid ? null : 'Invalid amount specified'
             },
         },
     })
