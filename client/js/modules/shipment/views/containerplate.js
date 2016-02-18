@@ -432,6 +432,8 @@ define(['marionette',
             this.proteins = new DistinctProteins()
             this.proteins.fetch()
             this.ctypes = PlateTypes
+
+            this.gproteins = new DistinctProteins()
             
             this.inspections = new ContainerInspections()
             this.inspections.queryParams.cid = this.model.get('CONTAINERID')
@@ -574,7 +576,7 @@ define(['marionette',
             this.type = this.ctypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
             this.plateView = new PlateView({ collection: this.samples, type: this.type, showImageStatus: this.model.get('INSPECTIONS') > 0 })
             this.plate.show(this.plateView)
-            this.singlesample = new SingleSample({ proteins: this.proteins, existingContainer: true })
+            this.singlesample = new SingleSample({ proteins: this.proteins, existingContainer: true, gproteins: this.gproteins })
 
             var total = _.map(_.range(1, parseInt(this.model.get('CAPACITY'))+1), function(e) { return e.toString() })
             var diff = _.difference(total, this.samples.pluck('LOCATION'))

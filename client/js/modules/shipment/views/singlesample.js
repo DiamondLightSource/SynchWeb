@@ -6,12 +6,15 @@ define(['marionette',
 
     'models/protein',
     'utils/anoms',
+
+    'modules/samples/views/componentsview',
     
     'tpl!templates/shipment/singlesample.html',
     'tpl!templates/shipment/singlesamplee.html',
     
     'jquery-ui'], function(Marionette, utils,
         FormView, SG, Editable, Protein, Anom,
+        ComponentsView,
         templatenew, template) {
 
     return FormView.extend({
@@ -31,6 +34,8 @@ define(['marionette',
             cp: 'a.clone-plate',
             cc: 'a.clone-col',
             cr: 'a.clone-row',
+            comps: '.components',
+            comp: 'input[name=COMPONENTID]',
         },
         
         events: {
@@ -135,6 +140,7 @@ define(['marionette',
                     })
                     
                     if (match) {
+                        s.get('components').reset(start.get('components').toJSON())
                         s.set({
                             PROTEINID: start.get('PROTEINID'),
                             NAME: this.sampleName(p.pos, start.get('NAME')),
@@ -173,8 +179,10 @@ define(['marionette',
         },
         
         initialize: function(options) {
+            console.log('init single', options)
             this.ready = []
             this.extra = false
+            this.gproteins = options.gproteins
         },
         
         onRender: function() {
@@ -212,8 +220,51 @@ define(['marionette',
                     edit.create('CELL_BETA', 'text')
                     edit.create('CELL_GAMMA', 'text')
                 }
+
+
+                this.ui.comp.autocomplete({ 
+                    source: this.getGlobalProteins.bind(this),
+                    select: this.selectGlobalProtein.bind(this)
+                })
+
+                console.log('render single', this.model)
+                this.compview = new ComponentsView({ CRYSTALID: this.model.get('CRYSTALID'), collection: this.model.get('components'), editable: this.model.get('new'), editinline: this.getOption('existingContainer') })
+                this.ui.comps.append(this.compview.render().$el)
             }
         },
+
+        selectGlobalProtein: function(e, ui) {
+            e.preventDefault()
+            var prot = this.gproteins.findWhere({ PROTEINID: ui.item.value })
+            if (prot) {
+                console.log('add comp', prot)
+                var clone = prot.clone()
+                var comps = this.model.get('components')
+                clone.collection = comps
+                clone.set('new', true)
+                comps.add(clone)
+            }
+            this.ui.comp.val('')
+        },
+
+        getGlobalProteins: function(req, resp) {
+            var self = this
+            this.gproteins.fetch({
+                data: {
+                    term: req.term,
+                    global: 1,
+                },
+                success: function(data) {
+                    resp(self.gproteins.map(function(m) {
+                        return {
+                            label: m.get('ACRONYM'),
+                            value: m.get('PROTEINID'),
+                        }
+                    }))
+                }
+            })
+        },
+
         
         addProtein: function(ui, val) {
             var safe = val.replace(/\W/g, '')

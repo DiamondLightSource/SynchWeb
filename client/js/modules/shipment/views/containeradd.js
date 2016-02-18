@@ -2,6 +2,7 @@ define(['marionette',
     'views/form',
     'models/container',
     'models/protein',
+    'collections/proteins',
     'models/sample',
     'collections/samples',
     'modules/shipment/views/puck',
@@ -30,6 +31,7 @@ define(['marionette',
     FormView,
     Container,
     Protein,
+    Proteins,
     Sample,
     Samples,
     PuckView,
@@ -141,7 +143,6 @@ define(['marionette',
 
 
         excelNavigate: function(e) {
-            console.log(e, arguments)
             var cl = '.'+e.target.className.replace(' fvalid', '').replace(' ferror', '').replace(/\s/g, '.')
             var group = $(cl)
             var cur = e.target
@@ -175,7 +176,7 @@ define(['marionette',
                 this.buildCollection()
                 this.puck.$el.css('width', '25%')
                 this.puck.show(new PuckView({ collection: this.samples }))
-                this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, childTemplate: row, template: table }))
+                this.table.show(new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table }))
                 this.single.empty()
                 this.grp.empty()
                 this.ui.pc.show()
@@ -278,8 +279,13 @@ define(['marionette',
         loadContainerCache: function() {
             if (!this.cache.get('data')) return
 
-            var samples = _.map(this.cache.get('data').samples, function(s) { return new LocationSample(s) })
-            this.samples.set(samples, { remove: false })
+            _.each(this.cache.get('data').samples, function(s) {
+                var samp = this.samples.findWhere({ LOCATION: s.LOCATION })
+                samp.get('components').reset(s.components)
+                delete s.components
+                samp.set(s)
+            }, this)
+
             this.table.currentView.render()
             
             this.ui.name.val(this.cache.get('data').title)
@@ -349,6 +355,8 @@ define(['marionette',
             
             this.proteins = new DistinctProteins()
             this.ready.push(this.proteins.fetch())
+
+            this.gproteins = new DistinctProteins()
             
             this.cache = new Cache({ name: 'container' })
             this.ready2 = this.cache.fetch()
@@ -396,7 +404,7 @@ define(['marionette',
             //this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, childTemplate: row, template: table }))
             this.ui.type.html(this.ctypes.opts())
             this.setType()
-            this.singlesample = new SingleSample({ proteins: this.proteins, platetypes: this.ctypes, samples: this.samples })
+            this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples })
             
             this.ready2.done(this.loadContainerCache.bind(this))
         }

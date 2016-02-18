@@ -1,8 +1,10 @@
 define(['marionette',
         'models/protein',
+        'collections/proteins',
     
         'views/validatedrow',
         'modules/shipment/collections/distinctproteins',
+        'modules/samples/views/componentsview',
     
         'tpl!templates/shipment/sampletable.html',
         'tpl!templates/shipment/sampletablerow.html',
@@ -15,8 +17,9 @@ define(['marionette',
     
         'jquery',
         'jquery-ui.combobox',
-    ], function(Marionette, Protein, ValidatedRow, DistinctProteins, sampletable, sampletablerow, sampletablerowedit, forms, SG, Anom, utils, $) {
-
+    ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
+        sampletable, sampletablerow, sampletablerowedit, 
+        forms, SG, Anom, utils, $) {
 
         
     // A Sample Row
@@ -30,8 +33,14 @@ define(['marionette',
             'click a.clear': 'clearSample',
         },
 
+        ui: {
+            comp: 'input[name=COMPONENTID]',
+            comps: 'td.components',
+        },
+
         modelEvents: {
             'change:isSelected': 'setSelected',
+            'cloned': 'render',
         },
 
         setSelected: function(e) {
@@ -47,6 +56,7 @@ define(['marionette',
         },
         
         editSample: function(e) {
+            this.editing = true
             e.preventDefault()
             this.template = sampletablerowedit
             this.render()
@@ -54,6 +64,7 @@ define(['marionette',
         },
         
         cancelEditSample: function(e) {
+            this.editing = false
             e.preventDefault()
             this.template = sampletablerow
             this.render()
@@ -64,6 +75,10 @@ define(['marionette',
             _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP'], function(f) {
                 data[f] = this.$el.find('[name='+f+']').val()
             }, this)
+
+            data['COMPONENTIDS'] = this.model.get('components').pluck('PROTEINID')
+            data['COMPONENTAMOUNTS'] = this.model.get('components').pluck('ABUNDANCE')
+            // data['COMPONENTACRONYMS'] = this.model.get('components').pluck('ACRONYM')
             this.model.set(data)
         },
             
@@ -72,43 +87,40 @@ define(['marionette',
             if (p) this.model.set('ACRONYM', p.get('ACRONYM'))
 
             this.model.set('new', false)
+            this.editing = false
             this.template = sampletablerow
             this.render()
-            /*var self = this
-            this.model.fetch().done(function() {
-                self.render()
-            })*/
         },
         
         cloneSample: function(e) {
             e.preventDefault()
-            
-            var target = $(e.target).is('i') ? $(e.target).parent() : $(e.target)
-            var sidx = $('a.clone').index(target)
-            var sn = $('input.sname').eq(sidx)
-            
-            if (sn.val()) {
-                var snt = sn.val().replace(/\d+$/, '')
-                var nx = $('input.sname').filter(function(i) { return i > sidx && !$(this).val() }).first()
-                var rx = new RegExp(snt)
-                var nxn = $('input.sname').filter(function() { return snt == ""  ? $(this).val() : $(this).val().match(rx) }).last().val()
-              
-                var no = nxn.match(/\d+$/)
-          
+
+            var cm = this.model
+            console.log('pre clone', cm)
+            var empty = this.model.collection.filter(function(m) { return m.get('LOCATION') > cm.get('LOCATION') && !m.get('NAME') })
+            if (empty.length) {
+                var newm = this.model.clone()
+                console.log('clone', 'old', this.model, 'new', newm)
+                newm.get('components').reset(this.model.get('components').toJSON())
+
+                var next = empty[0]
+                var name_base = this.model.get('NAME').replace(/\d+$/, '')
+                var name_regexp = new RegExp(name_base)
+                var similar = this.model.collection.filter(function(m) { return m.get('NAME').match(name_regexp) })
+                if (similar.length) no = similar[similar.length-1].get('NAME').match(/\d+$/)
+
                 if (no) no = no.length > 0 ? parseInt(no[0]) : 1
                 else no = 1
-              
-                var nidx = $('input.sname').index(nx)
-                $('select[name=PROTEINID]').eq(nidx).combobox('value', $('select[name=PROTEINID]').eq(sidx).combobox('value'))
-                $('select[name=PROTEINID]').eq(nidx).trigger('change')
-                nx.val(snt+(no+1)).trigger('change')
-                $('select[name=SPACEGROUP]').eq(nidx).val($('select[name=SPACEGROUP]').eq(sidx).val()).trigger('change')
-                $('select[name=ANOMALOUSSCATTERER]').eq(nidx).val($('select[name=ANOMALOUSSCATTERER]').eq(sidx).val()).trigger('change')
-                _.each(['CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO'], function(f, i) {
-                    $('input[name='+f+']').eq(nidx).val($('input[name='+f+']').eq(sidx).val())
-                })
+
+                newm.set('NAME', name_base+(no+1))
+                newm.set('LOCATION', empty[0].get('LOCATION'))
+
+                console.log('new', newm)
+                empty[0].attributes = newm.attributes
+                empty[0].trigger('cloned')
             }
         },
+
         
         clearSample: function(e) {
             e.preventDefault()
@@ -116,21 +128,22 @@ define(['marionette',
                 PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: ''
             })
+            this.model.get('components').reset()
             this.render()
-            //this.$el.find('select[name=PROTEINID]').combobox('value', '-1').trigger('change')
-            //this.$el.find('input').val('').trigger('keyup')
-            //this.$el.find('select[name=SPACEGROUP]').val('').trigger('keyup')
         },
         
         initialize: function(options) {
             GridRow.__super__.initialize.apply(this, options)
             
-            if (options && options.proteins) {
-                this.proteins = options.proteins
-            } else {
+            if (options && options.proteins) this.proteins = options.proteins
+            else {
                 this.proteins = new DistinctProteins()
                 this.proteins.fetch()
             }
+
+            if (options && options.gproteins) this.gproteins = options.gproteins
+            else this.gproteins = new DistinctProteins()
+
             this.listenTo(this.proteins, 'reset add change', this.updateProteins, this)
             
             var st = ''
@@ -157,7 +170,47 @@ define(['marionette',
             }, this)
 
             if (this.getOption('extra').show) this.$el.find('.extra').addClass('show')
+            this.ui.comp.autocomplete({ 
+                source: this.getGlobalProteins.bind(this),
+                select: this.selectGlobalProtein.bind(this)
+            })
+
+            this.compview = new ComponentsView({ collection: this.model.get('components'), editable: this.editing || this.model.get('new') })
+            this.ui.comps.append(this.compview.render().$el)
         },
+
+        selectGlobalProtein: function(e, ui) {
+            e.preventDefault()
+            var prot = this.gproteins.findWhere({ PROTEINID: ui.item.value })
+            if (prot) {
+                console.log('add comp', prot)
+                var clone = prot.clone()
+                var comps = this.model.get('components')
+                clone.collection = comps
+                comps.add(clone)
+            }
+            this.ui.comp.val('')
+        },
+
+        getGlobalProteins: function(req, resp) {
+            var self = this
+            this.gproteins.fetch({
+                data: {
+                    term: req.term,
+                    global: 1,
+                },
+                success: function(data) {
+                    resp(self.gproteins.map(function(m) {
+                        return {
+                            label: m.get('ACRONYM'),
+                            value: m.get('PROTEINID'),
+                        }
+                    }))
+                }
+            })
+        },
+
+        
         
         addProtein: function(ui, val) {
             console.log(ui, val)
@@ -220,8 +273,8 @@ define(['marionette',
         
         initialize: function(options) {
             this.proteins = options.proteins
+            this.gproteins = options.gproteins
 
-            //var self = this
             this.in_use = options.in_use
             
             this.options.childViewOptions = {
@@ -230,7 +283,8 @@ define(['marionette',
                         IN_USE: options.in_use
                     }
                 },
-                proteins: this.proteins
+                proteins: this.proteins,
+                gproteins: this.gproteins,
             }
             if (options.childTemplate) this.options.childViewOptions.template = options.childTemplate
 
