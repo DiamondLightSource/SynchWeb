@@ -58,6 +58,10 @@
 
                               'COMPONENTIDS' => '\d+',
                               'COMPONENTAMOUNTS' => '\d+(.\d+)?',
+                              'ABUNDANCE' => '\d+(.\d+)?',
+                              'COMPONENTID' => '\d+',
+                              'BLSAMPLETYPEID' => '\d+',
+                              'scid' => '\d+-\d+',
 
                               'BLSAMPLEID' => '\d+',
                               'X' => '\d+(.\d+)?',
@@ -76,6 +80,9 @@
                               array('/:sid', 'patch', '_update_sample'),
                               array('/:sid', 'put', '_update_sample_full'),
                               array('', 'post', '_add_sample'),
+
+                              array('/components', 'post', '_add_sample_component'),
+                              array('/components/:scid', 'delete', '_remove_sample_component'),
 
                               array('/sub(/:ssid)(/sid/:sid)', 'get', '_sub_samples'),
                               array('/sub/:ssid', 'patch', '_update_sub_sample'),
@@ -100,6 +107,38 @@
                               array('/concentrationtypes', 'get', '_concentration_types'),
                               array('/componenttypes', 'get', '_component_types'),
         );
+
+
+        function _add_sample_component() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('ABUNDANCE')) $this->_error('No amount specified');
+            if (!$this->has_arg('COMPONENTID')) $this->_error('No component specified');
+            if (!$this->has_arg('BLSAMPLETYPEID')) $this->_error('No crystal specified');
+
+            $check = $this->db->pq("SELECT crystalid FROM crystal c
+              INNER JOIN protein pr ON pr.proteinid = c.proteinid
+              WHERE pr.proposalid=:1 AND c.crystalid=:2", array($this->proposalid, $this->arg('BLSAMPLETYPEID')));
+            if (!sizeof($check)) $this->_error('No suck blsampletype');
+
+            $this->_update_sample_components(array(), array($this->arg('COMPONENTID')), array($this->arg('ABUNDANCE')), $this->arg('BLSAMPLETYPEID'));
+            $this->_output(1);
+        }
+
+
+        function _remove_sample_component() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('scid')) $this->_error('No crystal/component specified');
+
+            list($crystalid, $componentid) = explode('-', $this->arg('scid'));
+
+            $check = $this->db->pq("SELECT crystalid FROM crystal c
+              INNER JOIN protein pr ON pr.proteinid = c.proteinid
+              WHERE pr.proposalid=:1 AND c.crystalid=:2", array($this->proposalid, $crystalid));
+            if (!sizeof($check)) $this->_error('No suck blsampletype');
+
+            $this->_update_sample_components(array($componentid), array(), array(), $crystalid);
+            $this->_output(1);
+        }
         
 
         function _sub_samples() {
@@ -443,6 +482,11 @@
                                   
                                   ORDER BY $order", $args);
             
+            foreach ($rows as &$r) {
+                foreach (array('COMPONENTIDS', 'COMPONENTAMOUNTS', 'COMPONENTACRONYMS', 'COMPONENTTYPESYMBOLS', 'COMPONENTGLOBALS') as $k) {
+                    if ($r[$k]) $r[$k] = explode(',', $r[$k]);
+                }
+            }
 
 
             if ($this->has_arg('sid')) {
@@ -721,7 +765,7 @@
                 array_push($args, $this->arg('term'));
             }
             
-            $rows = $this->db->pq("SELECT distinct pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as concentrationtype, 1 as hasph
+            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as concentrationtype, 1 as hasph
               FROM protein pr 
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
               WHERE pr.acronym is not null AND $where 
