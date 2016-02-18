@@ -5,15 +5,15 @@ define(['marionette', 'backbone', 'vendor/backbone/backbone.syphon'], function(M
         tagName: 'tr',
             
         _baseEvents: {
-            'change input':  'validateField',
-            'change select':  'validateField',
-            'change textarea': 'validateField',
-            'blur input':  'validateField',
-            'blur select':  'validateField',
-            'blur textarea':   'validateField',
-            'keyup input':  'validateField',
-            'keyup select':  'validateField',
-            'keyup textarea':  'validateField',
+            'change td > input':  'validateField',
+            'change td > select':  'validateField',
+            'change td > textarea': 'validateField',
+            'blur td > input':  'validateField',
+            'blur td > select':  'validateField',
+            'blur td > textarea':   'validateField',
+            'keyup td > input':  'validateField',
+            'keyup td > select':  'validateField',
+            'keyup td > textarea':  'validateField',
             'click a.save': 'onSubmit'
             },
             
@@ -26,7 +26,6 @@ define(['marionette', 'backbone', 'vendor/backbone/backbone.syphon'], function(M
             // Dont validate if we're in editable mode
             if ($(e.target).closest('.editable').length) return
                 
-            console.log('validatefield')
             var attr = $(e.target).attr('name')
             var val = $(e.target).val()
             
