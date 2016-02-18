@@ -1,6 +1,7 @@
-define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
+define(['backbone', 'utils/kvcollection', 'models/protein'], function(Backbone, KVCollection, Protein) {
     
     return Backbone.Collection.extend(_.extend({}, KVCollection, {
+        model: Protein,
         idAttribute: 'PROTEINID',
         url: '/sample/proteins/distinct',
         
