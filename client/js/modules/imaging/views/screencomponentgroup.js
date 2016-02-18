@@ -168,20 +168,34 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 
 
 			this.componentlist = new DistinctProteins()
-			this._ready = []
-			this._ready.push(this.componentlist.fetch())
+			// this._ready = []
+			// this._ready.push(this.componentlist.fetch())
 		},
 
 		onRender: function() {
-			$.when.apply($, this._ready).done(this.doOnRender.bind(this))
+            this.ui.add.autocomplete({ source: this.getComponentList.bind(this), select: this.addComponent.bind(this) })
 		},
 
-		doOnRender: function() {
-			var opts = this.componentlist.map(function(m) { return { id: m.get('PROTEINID'), value: m.get('NAME') || m.get('ACRONYM') } })
-			this.ui.add.autocomplete({ source: opts, select: this.addComponent.bind(this) })
-		},
+        getComponentList: function(req, resp) {
+            var self = this
+            this.componentlist.fetch({
+                data: {
+                    term: req.term,
+                    global: 1,
+                },
+                success: function(data) {
+                    resp(self.componentlist.map(function(m) {
+                        return {
+                            value: m.get('NAME') || m.get('ACRONYM'),
+                            id: m.get('PROTEINID'),
+                        }
+                    }))
+                }
+            })
+        },
 
 		addComponent: function(e, ui) {
+            e.preventDefault()
 			var component = this.componentlist.findWhere({ PROTEINID: ui.item.id })
 			if (component) {
 				this.components.add(new ScreenComponent({
@@ -197,7 +211,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 				}))
 			}
 
-			$(e.target).autocomplete('option', 'value', '')
+            this.ui.add.val('')
 		},
 
 
