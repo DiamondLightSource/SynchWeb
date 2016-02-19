@@ -9,6 +9,12 @@ define(['marionette', 'views/form',
     
     return FormView.extend({
         template: template,
+
+        templateHelpers: function() {
+            return {
+                IS_STAFF: app.staff
+            }
+        },
         
         createModel: function() {
             this.model = new Protein()

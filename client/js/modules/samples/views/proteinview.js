@@ -83,7 +83,7 @@ define(['marionette',
             edit.create('ACRONYM', 'text')
             edit.create('SEQUENCE', 'markdown')
             edit.create('MOLECULARMASS', 'text')
-            edit.create('GLOBAL', 'select', { data: { 1: 'Yes', 0: 'No' } })
+            if (app.staff) edit.create('GLOBAL', 'select', { data: { 1: 'Yes', 0: 'No' } })
 
             this.tr.done(function() {
                 edit.create('COMPONENTTYPEID', 'select', { data: self.types.kv({ empty: true }) })

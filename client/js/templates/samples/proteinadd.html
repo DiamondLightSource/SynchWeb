@@ -55,6 +55,7 @@
                 <select name="CONCENTRATIONTYPEID"></select>
             </li>
 
+            <% if (IS_STAFF) { %>
             <li>
                 <label>Global
                     <span class="small">Make this component visible to all users</span>
@@ -64,6 +65,7 @@
                     <option value="1">Yes</option>
                 </select>
             </li>
+            <% } %>
             
             <li>
                 <label>PDB File</label>
