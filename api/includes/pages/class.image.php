@@ -2,7 +2,7 @@
 
     class Image extends Page {
         
-        public static $arg_list = array('drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '\w\d\d(-\d)?', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
+        public static $arg_list = array('drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '[\w-]+', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
 
         public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
@@ -70,7 +70,7 @@
                 FROM robotaction r 
                 INNER JOIN blsession s ON r.blsessionid = s.sessionid 
                 INNER JOIN proposal p ON s.proposalid = p.proposalid 
-                WHERE r.robotactionid=:1 AND p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :2", array($this->arg('aid'), $this->arg('visit')));
+                WHERE r.robotactionid=:1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->arg('aid'), $this->arg('visit')));
             
             //print_r($image);
 
@@ -170,8 +170,15 @@
         
         # Small diffraction image viewer
         function _diffraction_image() {
-            $first = $this->db->pq("SELECT startimagenumber as si FROM datacollection WHERE datacollectionid=:1", array($this->arg('id')));
+            // global $jpeg_location, $jpeg_thumb_location;
+
+            $first = $this->db->pq("SELECT dc.startimagenumber as si, s.beamlinename, TO_CHAR(dc.starttime, 'YYYY') as year, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, dc.imagedirectory, dc.imagesuffix, dc.filetemplate
+                FROM datacollection dc 
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE dc.datacollectionid=:1", array($this->arg('id')));
             
+            // $info = $first[0];
             if (!sizeof($first)) $this->_error('No such data collection');
             else $first = $first[0]['SI'];
             
@@ -180,6 +187,15 @@
             $rows = $this->db->pq('SELECT jpegfilefullpath as im FROM image WHERE datacollectionid=:1 AND imagenumber=:2', array($this->arg('id'), $n));
             
             $this->db->close();
+
+            // $jpeg = $this->interpolate($this->has_arg('f') ? $jpeg_location : $jpeg_thumb_location, array(
+            //     'VISITDIR' => $this->visit_dir($info),
+            //     'DIR' => $this->relative($info['IMAGEDIRECTORY'], $info),
+            //     'FILE' => $this->filetemplate($info['FILETEMPLATE'], array('IMAGENUMBER' => $info['SI'], 'NOSUFFIX' => true, 'IMAGESUFFIX' => $info['IMAGESUFFIX']))
+            // ));
+
+            // print_r(array('jpeg' => $jpeg, 'imd' => $info['IMAGEDIRECTORY'], 'db' => $rows[0]));
+            // return;
             
             if (sizeof($rows) > 0) {
                 $im = $rows[0]['IM'];
@@ -203,11 +219,11 @@
         function _dimple_images() {
             $n = $this->has_arg('n') ? $this->arg('n') : 1;
             
-            list($info) = $this->db->pq('SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis 
+            list($info) = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
                 FROM datacollection dc 
                 INNER JOIN blsession s ON s.sessionid=dc.sessionid 
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
-                WHERE dc.datacollectionid=:1', array($this->arg('id')));
+                WHERE dc.datacollectionid=:1", array($this->arg('id')));
             
             $this->db->close();
             
