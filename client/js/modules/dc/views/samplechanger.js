@@ -14,6 +14,7 @@ define(['marionette', 'utils/canvas', 'utils',
             'click @ui.clear': 'clearFilter',
             'mousemove canvas': 'mouseMoveCanvas',
             'click canvas': 'clickCanvas',
+            'click @ui.gbc': 'drawStatus',
         },
         
         ui: {
@@ -22,6 +23,7 @@ define(['marionette', 'utils/canvas', 'utils',
             param: 'select[name=param]',
             rank: 'input[name=rank]',
             wrap: '.wrap',
+            gbc: 'input[name=components]',
         },
         
         toggle: function(e) {
@@ -61,8 +63,6 @@ define(['marionette', 'utils/canvas', 'utils',
                 this.positions = app.config.pucks[options.bl]
             } else this.positions = 10
             
-            // if (this.positions > 10) this.$el.addClass('wide')
-            
             this.sc = 16
             this.tpad = 30
             this.pad = 30
@@ -79,9 +79,6 @@ define(['marionette', 'utils/canvas', 'utils',
 
             this.current_sample = null
             this.selected_protein = -1
-            
-            //this.numbers = new Image()
-            //this.numbers.src = '/templates/images/numbers'+(this.positions == 9 ? '2' : '')+'.png'
         },
         
         onDestroy: function() {
@@ -132,6 +129,7 @@ define(['marionette', 'utils/canvas', 'utils',
                 var s = this.current_sample
                 this.$el.find('.details .sname').html('<a href="/samples/sid/'+s.get('BLSAMPLEID')+'">'+s.get('NAME')+'</a>')
                 this.$el.find('.details .pname').html('<a href="/proteins/pid/'+s.get('PROTEINID')+'">'+s.get('ACRONYM')+'</a>')
+                this.$el.find('.details .comps').html(s.get('COMPONENTACRONYMS') ? s.get('COMPONENTACRONYMS').join(',') : 'No Components')
                 this.$el.find('.details .cname').html('<a href="/shipment/cid/'+s.get('CONTAINERID')+'">'+s.get('CONTAINER')+'</a>')
                 this.$el.find('.details .loaded').html(s.get('R') > 0 ? 'Yes': 'No')
                 this.$el.find('.details .screened').html((s.get('SC') > 0 ? 'Yes': 'No') + (s.get('AI') > 0 ? ' (Indexed: ' + s.get('SCRESOLUTION') + '&#8491;)' : ''))
@@ -144,8 +142,13 @@ define(['marionette', 'utils/canvas', 'utils',
         drawStatus: function() {
             this.ui.wrap.removeClass('loading')
             console.log('drawing sc')
-            // Get protein acronyms
-            var proteins = _.uniq(this.collection.pluck('PROTEINID'))
+
+            // Get group
+            var proteins = _.uniq(this.ui.gbc.is(':checked')
+                ? this.collection.map(function(m) {
+                    return m.get('COMPONENTIDS') ? m.get('COMPONENTIDS').join(',') : null
+                })
+                : this.collection.pluck('PROTEINID'))
             
             if (this.ui.rank.is(':checked')) {
                 var param = this.ui.param.val()
@@ -201,7 +204,8 @@ define(['marionette', 'utils/canvas', 'utils',
                         this.ctx.fillStyle = (this.selected_protein == -1 || this.selected_protein == s.get('PROTEINID')) ? c : '#fff'
                         this.ctx.fill()
           
-                        var cst = utils.rainbow(proteins.indexOf(s.get('PROTEINID'))/proteins.length)
+                        var gval = this.ui.gbc.is(':checked') ? (s.get('COMPONENTIDS') ? s.get('COMPONENTIDS').join(',') : null) : s.get('PROTEINID')
+                        var cst = utils.rainbow(proteins.indexOf(gval)/proteins.length)
                   
                         if (this.selected_protein == -1 || this.selected_protein == s.get('PROTEINID')) {
                             this.ctx.beginPath()
