@@ -31,12 +31,12 @@
         # ------------------------------------------------------------------------
         # Find out how many jobs are running
         function _get_status() {
-            if ($this->has_arg('local')) {
-                $jobs = exec('ps aux | grep blend.sh | wc -l') - 2;
+            #if ($this->has_arg('local')) {
+            #    $jobs = exec('ps aux | grep blend.sh | wc -l') - 2;
                 
-            } else {
-                $jobs = exec('module load global/cluster;qstat -u vxn01537 | grep x2 | wc -l') - 0;
-            }
+            #} else {
+                $jobs = exec('. /etc/profile.d/modules.sh;module load global/cluster;qstat -u dls_mxweb | grep x2 | wc -l') - 0;
+            #}
 
             $this->_output(array('NUMBER' => $jobs));
         }
@@ -165,10 +165,12 @@
                     $sg = $this->has_arg('sg') ? "-spacegroup ".$this->arg('sg') : '';
                     
                     # /4479
-                    $remote = "module load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 -failover -3dii $sg $cell $res -xinfo xia.xinfo -phil spot.phil";
+                    $envs = "export CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data";
+                    $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nprintenv > env.txt\nxia2 -failover -3dii $sg $cell $res -xinfo xia.xinfo -phil spot.phil";
                     file_put_contents($root.'/x2'.$r['ID'].'.sh', $remote);
                     
-                    $ret = exec('module load global/cluster;qsub x2'.$r['ID'].'.sh');
+                    #export networkTEMP=/dls/tmp/dls_mxweb;export localTEMP=/tmp/dls_mxweb;export HOME=/tmp/dls_mxweb;
+                    $ret = exec('. /etc/profile.d/modules.sh;module load global/cluster;qsub x2'.$r['ID'].'.sh');
                     
                     
                 }
@@ -256,14 +258,15 @@
                 $cmd = "blend -a files.dat 2> blend.elog";
                 if ($this->arg('type') == 0) $cmd .= "\nblend -c ".implode(' ', $sets)." 2>> blend.elog";
                 
-                file_put_contents($blend.'/blend.sh', "#!/bin/sh\nmodule load blend\n".$cmd);
+                $envs = "export CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data\nexport CCP4_SCR=/dls/tmp/dls_mxweb\nexport CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport R_HOME=/dls_sw/apps/R/3.0.0/RHEL6/x86_64/lib64/R\nexport BLEND_HOME=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/share/blend";
+                file_put_contents($blend.'/blend.sh', "#!/bin/sh\n$envs\n. /etc/profile.d/modules.sh\nmodule load blend\n".$cmd);
                 
                 $sg = $this->has_arg('sg')  ? ("CHOOSE SPACEGROUP ".$this->arg('sg')) : '';
                 file_put_contents($blend.'/BLEND_KEYWORDS.dat', "BLEND KEYWORDS\nNBIN	  20\nRADFRAC   $radfrac\nISIGI     $isigi\nCPARWT    1.000\nPOINTLESS KEYWORDS\n$sg\nAIMLESS KEYWORDS\n$res");
                 
                 # no x11 on cluster
-                #$ret = exec("module load global/cluster;qsub blend.sh");
-                $ret = exec("chmod +x blend.sh;./blend.sh &");
+                $ret = exec(". /etc/profile.d/modules.sh;module load global/cluster;qsub blend.sh");
+                #$ret = exec("chmod +x blend.sh;./blend.sh &");
                 
             } else $ret = 'No data sets specified';
             
