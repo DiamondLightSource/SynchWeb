@@ -769,7 +769,7 @@
               FROM protein pr 
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
               WHERE pr.acronym is not null AND $where 
-              GROUP BY ct.symbol, pr.acronym, pr.name
+              GROUP BY ct.symbol, pr.acronym, pr.name, pr.global
               ORDER BY lower(pr.acronym)", $args);
                                  
             $this->_output($rows);
