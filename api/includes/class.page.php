@@ -169,9 +169,21 @@
                     $par = array();
                     foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v) {
                         if (array_key_exists($k, $r)) {
-                            if (preg_match('/^'.$v.'$/m', $r->$k)) {
-                                $par[$k] = $v == '.*' ? $purifier->purify($r->$k) : $r->$k;
-                                if ($k == 'prop') $parsed[$k] = $par[$k];
+
+                            if (is_array($r->$k)) {
+                                $tmp = array();
+                                foreach ($r->$k as $val) {
+                                    if (preg_match('/^'.$v.'$/m', $val)) {
+                                        array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
+                                    }
+                                }
+                                $par[$k] = $tmp;
+                                
+                            } else {
+                                if (preg_match('/^'.$v.'$/m', $r->$k)) {
+                                    $par[$k] = $v == '.*' ? $purifier->purify($r->$k) : $r->$k;
+                                    if ($k == 'prop') $parsed[$k] = $par[$k];
+                                }
                             }
                         }
                     }
