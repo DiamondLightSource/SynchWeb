@@ -5,6 +5,8 @@
 
     class MySQL extends DatabaseParent implements DatabaseInterface {
         
+        protected $type = 'mysql';
+
         var $debug = False;
         var $stat = '';
         var $stats = False;
@@ -66,16 +68,27 @@
             $query = preg_replace('/"T"/', 'T', $query);
 
             // String aggregation
-            $query = preg_replace('/string_agg\(.?\)/', "GROUP_CONCAT(\1 SEPARATOR ',')", $query);
+            $query = preg_replace('/string_agg\((.+?)\)/', 'GROUP_CONCAT(\1 SEPARATOR \',\')', $query);
 
             // Timestamps
-            $query = preg_replace('/SYSDATE/i', 'CURDATE()', $query);
+            $query = preg_replace('/SYSDATE/i', 'CURRENT_TIMESTAMP', $query);
 
             // Replace sequences with auto increments
             $query = preg_replace('/s_\w+\.nextval/', 'NULL', $query);
 
             // Replace Returning, mysql provides last insert id
             $query = preg_replace('/ RETURNING \w+ INTO :id/', '', $query);
+
+            // Replace Oracle CAST to Date to DateTime
+            $query = preg_replace('/CAST\((.+?) as DATE\)/i', 'CAST(\1 AS DATETIME)', $query);
+
+            // Months between
+            // $query = preg_replace('/MONTHS_BETWEEN\((.+?),(.+?)\)/', 'TIMESTAMPDIFF(MONTH, \2, \1)', $query);
+            $query = preg_replace('/TIMESTAMPDIFF\(\'(\w+)\'/', 'TIMESTAMPDIFF(\1', $query);
+
+            // Replace TO_NUMBER to CAST
+            $query = preg_replace('/TO_NUMBER\(([\w|\.]+)\)/', 'CAST(\1 AS SIGNED)', $query);
+
 
             return array($query, $args);
         }
@@ -104,44 +117,106 @@
                             'DataCollectionGroup',
                             'DataCollectionComment',
                             'ImageQualityIndicators',
-                            '',
+                            
                             'AutoProcIntegration',
                             'AutoProcScaling_has_Int',
                             'AutoProcScaling',
                             'AutoProc',
                             'AutoProcScalingStatistics',
                             'AutoProcProgram',
-                            '',
+                            
                             'Screening',
                             'ScreeningOutput',
                             'ScreeningStrategy',
                             'ScreeningStrategyWedge',
-                            '',
-                            '',
+                            'ScreeningStrategySubWedge',
+                            'ScreeningOutputLattice',
 
                             'BLSample',
+                            'Position',
                             'DiffractionPlan',
-                            'BLSampleImage',
                             'Protein',
                             'Crystal',
                             'Container',
                             'Dewar',
                             'Shipping',
-                            '',
+                            'DewarTransportHistory',
+                            'DewarRegistry',
+                            'DewarReport',
+                            
                             'BLSubSample',
-                            '',
+                            'PDB',
+                            'Protein_has_PDB',
+
+                            // Stat Views
+                            'v_logonByHour',
+                            'v_logonByMonthDay',
+                            'v_logonByWeek',
+                            'v_logonByWeekDay',
+                            'v_logonByHour2',
+                            'v_logonByMonthDay2',
+                            'v_logonByWeek2',
+                            'v_logonByWeekDay2',
+
+                            // Projects
+                            'Project',
+                            'Project_has_User',
+                            'Project_has_Person',
+                            'Project_has_DCGroup',
+                            'Project_has_EnergyScan',
+                            'Project_has_XFEFSpectrum',
+                            'Project_has_Protein',
+                            'Project_has_BLSample',
+                            'Project_has_Session',
+
+                            // Calendar
+                            'CalendarHash',
+
+                            // Faults
                             'BF_fault',
                             'BF_component',
                             'BF_subcomponent',
                             'BF_system',
-                            '',
-                            '',
-                            '',
+                            'BF_system_beamline',
+                            'BF_component_beamline',
+                            'BF_subcomponent_beamline',
+
+                            // Lab Contact
+                            'LabContact',
+                            'Laboratory',
+
+                            // PDBStats
+                            'PDBEntry',
+                            'PDBEntry_has_AutoProcProgram',
+
+                            // Protein -> Component
+                            'ConcentrationType',
+                            'ComponentType',
+                            'Component_has_SubType',
+                            'ComponentSubType',
+                            'BLSampleType_has_Component',
+
+                            // VMXi
+                            'ContainerInspection',
+                            'Imager',
+                            'Screen',
+                            'ScreenComponentGroup',
+                            'ScreenComponent',
+                            'Schedule',
+                            'ScheduleComponent',
+                            'InspectionType',
+                            'BLSampleImage',
+                            'BLSampleImageScore',
+
+
+                            // To be removed
+                            'Image',
                 );
 
             foreach ($tables as $table) {
                 $query = str_replace(" ".strtolower($table)." ", " $table ", $query);
                 $query = str_replace(" ".strtolower($table)."\n", " $table\n", $query);
+                $query = preg_replace("/ ".strtolower($table).'$/', " $table", $query);
             }
 
             return $query;
@@ -196,7 +271,8 @@
 
                 while ($stmt->fetch()) {
                     $c = array();
-                    foreach ($row as $key => $val) $c[strtoupper($key)] = $val;
+                    // Oracle returns all values as strings - Need to be consistent :(
+                    foreach ($row as $key => $val) $c[strtoupper($key)] = strval($val);
                     $data[] = $c;
                 }
             }
