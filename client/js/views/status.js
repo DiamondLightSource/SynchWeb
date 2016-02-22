@@ -33,7 +33,7 @@ define(['marionette',
                 this.pvs.show(new PVView({ bl: this.getOption('bl') }))
                 var self = this
                 this.$el.find('.webcam img').each(function(i,w) {
-                    $(w).attr('src', app.apiurl+'/image/cam/bl/'+self.getOption('bl')+'/n/'+i)
+                    $(w).attr('src', app.apiurl+'/image/cam/bl/'+self.getOption('bl')+'/n/'+i+'?prop='+app.prop)
                 })
                 
             } else {
