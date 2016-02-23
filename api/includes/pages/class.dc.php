@@ -561,7 +561,7 @@
                          array('xia2/3dii-run/', 'xia2.txt' , 'I/sigma'),
                          
                          array('fast_ep/', 'fast_ep.log', 'Best spacegroup'),
-                         array('fast_dp/dimple/', 'refmac5_restr.log', 'Cruickshanks'),
+                         array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
                          array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
                          );
             
