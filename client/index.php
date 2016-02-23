@@ -33,7 +33,7 @@
         <link rel="stylesheet" type="text/css" href="<?php echo $config->appurl ?>/assets/css/stylesheets/main.css">
         <link rel="stylesheet" href="<?php echo $config->appurl ?>/assets/font-awesome/css/font-awesome.min.css">
 
-        <script type="text/javascript" data-main="<?php echo $config->appurl ?>/<?php echo $config->production ? 'dist' : 'js' ?>/main" src="<?php echo $config->appurl ?>/<?php echo $config->production ? 'dist' : 'js' ?>/vendor/require/require.js"></script>
+        <script type="text/javascript" data-main="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/main" src="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/vendor/require/require.js"></script>
 
         <title></title>
                 
