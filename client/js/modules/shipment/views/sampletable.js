@@ -97,7 +97,6 @@ define(['marionette',
 
             var cm = this.model
             var empty = this.model.collection.filter(function(m) { return parseInt(m.get('LOCATION')) > parseInt(cm.get('LOCATION')) && !m.get('NAME') })
-            console.log('next empty', empty)
             if (empty.length) {
                 var newm = this.model.clone()
                 newm.get('components').reset(this.model.get('components').toJSON())
