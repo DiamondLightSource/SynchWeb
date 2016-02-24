@@ -96,11 +96,10 @@ define(['marionette',
             e.preventDefault()
 
             var cm = this.model
-            console.log('pre clone', cm)
-            var empty = this.model.collection.filter(function(m) { return m.get('LOCATION') > cm.get('LOCATION') && !m.get('NAME') })
+            var empty = this.model.collection.filter(function(m) { return parseInt(m.get('LOCATION')) > parseInt(cm.get('LOCATION')) && !m.get('NAME') })
+            console.log('next empty', empty)
             if (empty.length) {
                 var newm = this.model.clone()
-                console.log('clone', 'old', this.model, 'new', newm)
                 newm.get('components').reset(this.model.get('components').toJSON())
 
                 var next = empty[0]
@@ -115,9 +114,8 @@ define(['marionette',
                 newm.set('NAME', name_base+(no+1))
                 newm.set('LOCATION', empty[0].get('LOCATION'))
 
-                console.log('new', newm)
                 empty[0].attributes = newm.attributes
-                empty[0].trigger('cloned')
+                empty[0].trigger('change').trigger('cloned')
             }
         },
 
