@@ -43,7 +43,7 @@ define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
                     GLOBAL: i < gls.length ? parseInt(gls[i]) : 0,
                 } 
             })
-            this.get('components').reset(comps)
+            this.get('components').reset(comps, { silent: true })
         },
 
         defaults: {
