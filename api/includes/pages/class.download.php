@@ -90,7 +90,7 @@
             if (!$this->has_arg('visit')) $this->_error('No visit specified', 'No visit was specified');
             if (!$this->has_arg('run')) $this->_error('No run specified', 'No blend run number was specified');            
             
-            $visit = $this->db->pq("SELECT TO_CHAR(startdate, 'YYYY') as y, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON p.proposalid=s.proposalid WHERE p.proposalcode || p.proposalnumber || '-' ||s.visit_number LIKE :1", array($this->arg('visit')));
+            $visit = $this->db->pq("SELECT TO_CHAR(startdate, 'YYYY') as y, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON p.proposalid=s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
 
             if (!sizeof($visit)) $this->_error('No such visit', 'The specified visit does not exist');
             else $visit = $visit[0];
@@ -136,7 +136,7 @@
             if (!array_key_exists($type, $types)) $this->_error('No such downstream type');
             else $t = $types[$type];
 
-            $info = $this->db->pq('SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1', array($this->arg('id')));
+            $info = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1", array($this->arg('id')));
             
             if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
             else $info = $info[0];
@@ -182,8 +182,8 @@
         function _map() {
             if (!$this->has_arg('id')) $this->_error('No id specified', 'No id was specified');
             if (!$this->has_arg('ty')) $this->_error('No type specified', 'No type was specified');
-            
-            $info = $this->db->pq('SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || \'-\' || s.visit_number as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1', array($this->arg('id')));
+
+            $info = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1", array($this->arg('id')));
             
             if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
             else $info = $info[0];
@@ -255,7 +255,7 @@
         function _csv_report() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified', 'You must specify a visit to download a report for');
             
-            $vis = $this->db->pq("SELECT s.sessionid,s.beamlinename,TO_CHAR(s.startdate, 'DD_MM_YYYY') as st FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE p.proposalcode||p.proposalnumber||'-'||s.visit_number LIKE :1", array($this->arg('visit')));
+            $vis = $this->db->pq("SELECT s.sessionid,s.beamlinename,TO_CHAR(s.startdate, 'DD_MM_YYYY') as st FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
             
             if (!sizeof($vis)) $this->_error('No such visit', 'The specified visit doesnt exist');
             else $vis = $vis[0];
