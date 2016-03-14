@@ -50,7 +50,7 @@
         ));
     });
 
-    $app->get('/options', function() use ($options, $app) {
+    $app->get('/options', function() use ($app) {
         global $motd;
         $app->contentType('application/json');
         $app->response()->body(json_encode(array('motd' => $motd)));
