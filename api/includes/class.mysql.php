@@ -89,7 +89,6 @@
             // Replace TO_NUMBER to CAST
             $query = preg_replace('/TO_NUMBER\(([\w|\.]+)\)/', 'CAST(\1 AS SIGNED)', $query);
 
-
             return array($query, $args);
         }
 
@@ -124,6 +123,7 @@
                             'AutoProc',
                             'AutoProcScalingStatistics',
                             'AutoProcProgram',
+                            'AutoProcProgramAttachment',
                             
                             'Screening',
                             'ScreeningOutput',
@@ -140,6 +140,7 @@
                             'Container',
                             'Dewar',
                             'Shipping',
+                            'ShippingHasSession',
                             'DewarTransportHistory',
                             'DewarRegistry',
                             'DewarReport',
@@ -338,7 +339,7 @@
         
         function close() {
             // if (!$this->conn->connect_error) $this->conn->close();
-            if ($this->conn) $this->conn->close();
+            // if ($this->conn) $this->conn->close();
         }
 
         
