@@ -398,7 +398,7 @@
                 array_push($args, $this->proposalid);
             }
             
-            $info = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename as bl, s.sessionid as sid, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en, round((s.enddate - s.startdate)*24,1) as len FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where", $args);
+            $info = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename as bl, s.sessionid as sid, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en, TIMESTAMPDIFF('HOUR', s.startdate, s.enddate) as len FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where", $args);
             
             if (!sizeof($info)) {
                 $this->_error('No such visit');
