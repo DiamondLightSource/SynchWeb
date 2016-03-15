@@ -793,6 +793,8 @@
                             unset($r[$k]);
                         }
                         
+                        if (!$v) continue;
+
                         if ($k == 'TRAN') $v = number_format($v, 1);
                         if ($k == 'TIME') $v = number_format($v, 3);
                         if ($k == 'OSCRAN') $v = number_format($v, 2);
