@@ -67,7 +67,7 @@
             </div>
         
             <div id="footer">
-                <p><a href="http://diamond.ac.uk">Diamond Light Source</a> &copy;2014</p>
+                <p><a href="http://diamond.ac.uk">Diamond Light Source</a> &copy;2013-<?php echo date('Y') ?></p>
             </div>
         
         </div>
