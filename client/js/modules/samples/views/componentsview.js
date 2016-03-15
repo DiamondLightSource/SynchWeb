@@ -107,8 +107,12 @@ define(['marionette', 'utils/editable'], function(Marionette) {
         	if (this.getOption('viewLink')) return 'visits'
         },
 
+        initialize: function(options) {
+            console.log('cv opts', options)
+        },
+
         getEmptyView: function() {
-        	return this.getOption('viewLink') && !this.getOption('editable') ? EmptyView : null
+        	return this.getOption('showEmpty') ? EmptyView : null
         },
 
         childViewOptions: function() {

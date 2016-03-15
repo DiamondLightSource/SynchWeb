@@ -228,7 +228,7 @@ define(['marionette',
                 })
 
                 console.log('render single', this.model)
-                this.compview = new ComponentsView({ CRYSTALID: this.model.get('CRYSTALID'), collection: this.model.get('components'), editable: this.model.get('new'), editinline: this.getOption('existingContainer') })
+                this.compview = new ComponentsView({ showEmpty: true, CRYSTALID: this.model.get('CRYSTALID'), collection: this.model.get('components'), editable: this.model.get('new'), editinline: this.getOption('existingContainer') })
                 this.ui.comps.append(this.compview.render().$el)
             }
         },
