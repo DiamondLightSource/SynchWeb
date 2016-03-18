@@ -1,6 +1,6 @@
 <?php
 
-    require_once('includes/class.db.php');
+    require_once(dirname(__FILE__).'/class.db.php');
     // require_once('lib/SqlFormatter.php');
     
     class Oracle extends DatabaseParent implements DatabaseInterface {

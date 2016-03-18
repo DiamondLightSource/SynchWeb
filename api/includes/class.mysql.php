@@ -1,7 +1,7 @@
 <?php
     // phpinfo();
 
-    require_once('includes/class.db.php');
+    require_once(dirname(__FILE__).'/class.db.php');
 
     class MySQL extends DatabaseParent implements DatabaseInterface {
         
@@ -219,6 +219,8 @@
                 $query = str_replace(" ".strtolower($table)."\n", " $table\n", $query);
                 $query = preg_replace("/ ".strtolower($table).'$/', " $table", $query);
             }
+
+            // print_r(array($query));
 
             return $query;
         }

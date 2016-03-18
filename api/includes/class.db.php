@@ -1,7 +1,7 @@
 <?php
 
-    require_once('config.php');
-    require_once('lib/SqlFormatter.php');
+    require_once(dirname(__FILE__).'/../config.php');
+    require_once(dirname(__FILE__).'/../lib/SqlFormatter.php');
 
     class Database {
 
@@ -9,10 +9,11 @@
 
         public static function get($app=null) {
             // if (self::$instance === null) {
-                global $dbtype, $isb;
+                // global $dbtype, $isb;
+                include(dirname(__FILE__).'/../config.php');
                 if (!$dbtype) $dbtype = 'oracle';
 
-                $dbclassfile = 'includes/class.'.$dbtype.'.php';
+                $dbclassfile = dirname(__FILE__).'/class.'.$dbtype.'.php';
                 $dbclass = ucwords($dbtype);
                 if (file_exists($dbclassfile)) include_once($dbclassfile);
 
