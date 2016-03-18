@@ -792,8 +792,6 @@
                             $output[$t]['CELL'][$k] = $v;
                             unset($r[$k]);
                         }
-                        
-                        if (!$v) continue;
 
                         if ($k == 'TRAN') $v = number_format($v, 1);
                         if ($k == 'TIME') $v = number_format($v, 3);
@@ -1222,6 +1220,8 @@
                            'edge' => array('energyscan', 'energyscanid'),
                            'mca' => array('xfefluorescencespectrum', 'xfefluorescencespectrumid'),
                            );
+
+            $types['grid'] = $types['data'];
             
             if (!array_key_exists($this->arg('t'), $types)) $this->_error('No such data type');
             $t = $types[$this->arg('t')];
