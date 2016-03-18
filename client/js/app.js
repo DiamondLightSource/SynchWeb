@@ -21,12 +21,13 @@ define(['backbone', 'marionette', 'underscore', 'jquery',
     'views/dialogregion',
     
     'models/proposal',
+    'models/options',
     
     'utils',
     'json!config.json',
     'jquery.cookie', 'jquery-ui',
         ],
-function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Proposal, utils, config) {
+function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Proposal, Options, utils, config) {
 
   window.app = new Marionette.Application()
 
@@ -88,6 +89,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
     header: '#header',
     sidebar: '#sidebar',
     dialog: DialogRegion,
+    motd: '#motd',
   })
     
     
@@ -258,6 +260,27 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
     //app.trigger('proposal:change', prop)
   },
     
+
+  /*
+   Load client side options and show MOTD
+  */
+  app.loadopts = function() {
+      app.options = new Options()
+      app.options.fetch({
+          success: function() {
+              if (app.options.get('motd')) {
+                  var options = {
+                      persist: 'motd',
+                      dismissible: true,
+                      notify: true,
+                      message: app.options.get('motd')
+                  }
+                  app.motd.show(new utils.alert(options))
+              }
+          }
+      })
+  }
+
     
   /*
    Log message to console
@@ -361,6 +384,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
             //else app.trigger('current:show')
           }
       }
+
+      app.loadopts()
   }
 
 

@@ -58,6 +58,7 @@
             <div id="sidebar"></div>
 
             <div class="cont_wrap">
+                <div id="motd" class="content"></div>
                 <div id="container">
                     <!--[if lte IE 11]>
                         <div class="content">
