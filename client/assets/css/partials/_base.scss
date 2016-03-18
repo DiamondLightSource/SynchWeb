@@ -46,12 +46,21 @@ a {
 }
 
 
-#container {
+#container, #motd {
     width: 80%;
     margin: 0 auto;
     padding-top: 20px;
     
     @media (max-width: $breakpoint-large) {
         width: 96%;
+    }
+}
+
+#motd {
+    padding-top: 0;
+    padding-bottom: 0;
+
+    p {
+        margin-top: 20px;
     }
 }
