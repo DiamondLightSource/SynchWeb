@@ -275,7 +275,7 @@
                 while ($stmt->fetch()) {
                     $c = array();
                     // Oracle returns all values as strings - Need to be consistent :(
-                    foreach ($row as $key => $val) $c[strtoupper($key)] = strval($val);
+                    foreach ($row as $key => $val) $c[strtoupper($key)] = $val == null ? null : strval($val);
                     $data[] = $c;
                 }
             }
