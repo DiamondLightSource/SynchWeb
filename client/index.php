@@ -17,6 +17,8 @@
     limitations under the License.
     */
 
+    date_default_timezone_set('Europe/London');
+
     $file = file_get_contents('js/config.json');
     $config = json_decode($file);
 
