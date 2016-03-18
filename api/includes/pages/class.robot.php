@@ -24,7 +24,8 @@
 
             // The only case switch in the entire migration :(
             $median = $this->db->type() == 'mysql' ?
-                "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) ORDER BY TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE))), ',', COUNT(*)/2 ), ',', -1) as avgt"
+                // "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) ORDER BY TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE))), ',', COUNT(*)/2 ), ',', -1) as avgt"
+                "AVG(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE))) as avgt"
               : "MEDIAN(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE))) as avgt";
 
 
@@ -192,7 +193,8 @@
             $where = implode(' AND ', $where);
 
             $median = $this->db->type() == 'mysql' ?
-                "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END ORDER BY CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END), ',', COUNT(*)/2 ), ',', -1) as avgt"
+                // "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END ORDER BY CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END), ',', COUNT(*)/2 ), ',', -1) as avgt"
+                "AVG(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END) as avgt"
               : "ROUND(MEDIAN(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END),1) as avgt";
 
             $totals = $this->db->pq("SELECT 'TOTAL' as vis, count(r.robotactionid) as num, count(CASE WHEN r.status='SUCCESS' then 1 end) as success, count(CASE WHEN r.status='ERROR' then 1 end) as error, count(CASE WHEN r.status='CRITICAL' then 1 end) as critical, count(CASE WHEN r.status='WARNING' then 1 end) as warning, count(CASE WHEN r.status='EPICSFAIL' then 1 end) as epicsfail, count(CASE WHEN r.status='COMMANDNOTSENT' then 1 end) as commandnotsent, 
@@ -229,7 +231,8 @@
             array_push($args, $end);
 
             $median = $this->db->type() == 'mysql' ?
-                "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END ORDER BY CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END), ',', COUNT(*)/2 ), ',', -1) as avgt"
+                // "SUBSTRING_INDEX( SUBSTRING_INDEX( GROUP_CONCAT(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END ORDER BY CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END), ',', COUNT(*)/2 ), ',', -1) as avgt"
+                "ROUND(AVG(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END),1) as avgt"
               : "ROUND(MEDIAN(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END),1) as avgt";
 
             $q = "SELECT TO_CHAR(min(r.starttimestamp), 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) as vis, s.beamlinename as bl, count(r.robotactionid) as num, count(CASE WHEN r.status='SUCCESS' then 1 end) as success, count(CASE WHEN r.status='ERROR' then 1 end) as error, count(CASE WHEN r.status='CRITICAL' then 1 end) as critical, count(CASE WHEN r.status='WARNING' then 1 end) as warning, count(CASE WHEN r.status='EPICSFAIL' then 1 end) as epicsfail, count(CASE WHEN r.status='COMMANDNOTSENT' then 1 end) as commandnotsent, 
