@@ -47,7 +47,7 @@
         function _get_users() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
 
-            $info = $this->db->pq("SELECT s.beamlinename as bl, TO_CHAR(s.startdate, 'YYYY') as yr FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+            $info = $this->db->pq("SELECT s.beamlinename as bl, TO_CHAR(s.startdate, 'YYYY') as yr FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-') s.visit_number) LIKE :1", array($this->arg('visit')));
 
             if (!sizeof($info)) $this->_error('No such visit');
             else $info = $info[0];
@@ -74,7 +74,7 @@
 
             $where = '('.implode(' OR ', $where).')';
 
-            $rows = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.beamlinename as bl, dc.datacollectionid as id, dc.filetemplate as prefix, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || '-' || s.visit_number as visit 
+            $rows = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.beamlinename as bl, dc.datacollectionid as id, dc.filetemplate as prefix, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit 
                 FROM datacollection dc 
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
@@ -143,7 +143,7 @@
             if (sizeof($where)) {
                 $where = implode(' OR ', $where);
                 
-                $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || '-' || s.visit_number as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
+                $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
                                       
                 foreach ($rows as $i => $r) {
                     $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.$this->user->login,$r['DIR']) . str_replace('####.cbf', '', $r['PREFIX']);
@@ -205,7 +205,7 @@
                 
                 $where = implode(' OR ', $where);
                 
-                $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || '-' || s.visit_number as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
+                $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
                 
                 $files = array();
                 $ids = array();
@@ -280,7 +280,7 @@
         function _blended() {
             session_write_close();
             
-            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
             
             if (!sizeof($info)) $this->_error('No such visit');
             $info = $info[0];
@@ -361,7 +361,7 @@
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             if (!$this->has_arg('run')) $this->_error('No run specified');
                                   
-            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
             
             if (!sizeof($info)) $this->_error('No such visit');
             $info = $info[0];
@@ -389,7 +389,7 @@
         function _dendrogram() {
             session_write_close();
             
-            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.sessionid, s.beamlinename as bl, vr.run, vr.runid FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.sessionid, s.beamlinename as bl, vr.run, vr.runid FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
             
             if (!sizeof($info)) $this->_error('No such visit');
             $info = $info[0];
@@ -484,7 +484,7 @@
             if (sizeof($where)) {
                 $where = implode(' OR ', $where);
                 
-                $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, p.proposalcode || p.proposalnumber || '-' || s.visit_number as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
+                $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
                 
                 $files = array();
                 $xscale = '';
@@ -542,7 +542,7 @@
         function _cluster() {
             session_write_close();
             
-            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.sessionid, s.beamlinename as bl, vr.run, vr.runid FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.sessionid, s.beamlinename as bl, vr.run, vr.runid FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
             
             if (!sizeof($info)) $this->_error('No such visit');
             $info = $info[0];
