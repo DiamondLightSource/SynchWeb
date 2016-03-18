@@ -2,11 +2,11 @@
 
 	class ImagingShared {
 	
-		function __construct($db) {
+		function __construct($db=null) {
+            global $isp;
 			if (!$db) {
-				include_once('class.db.php');
-				include_once('config.php');
-				$db = new Oracle($isb['user'], $isb['pass'], $isb['db']);
+				include_once(dirname(__FILE__).'/../class.db.php');
+				$db = Database::get();
 			}
 
 			$this->db = $db;
@@ -116,6 +116,98 @@
 
         		$this->_do_update_inspection($upd);
         	}
+        }
+
+
+
+        // ------------------------------------------------------------------------------------------------------
+        // Functions for formulatrix
+        // Return plate info from barcode
+        function _get_plate_info($args) {
+            if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
+
+            $cont = $this->db->pq("SELECT c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI'), d.code as dewar CONCAT(p.proposalcode, p.proposalnumber) as prop
+                FROM container c
+                LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping s ON s.shippingid = d.shippingid
+                INNER JOIN proposal p on p.proposalid = s.proposalid
+                WHERE c.code=:1", array($args['BARCODE']));
+            if (!sizeof($cont)) $this->error('No such container');
+            $cont = $cont[0];
+
+
+            // Set the imager the first time the plate is read
+            if (array_key_exists('SERIAL', $args)) {
+                if ($args['SERIAL'] != $cont['SERIAL']) $this->_set_imager(array('BARCODE' => $args['BARCODE'], 'SERIAL' => $args['SERIAL']));
+            }
+
+            return $cont;
+        }
+
+
+
+        // Duplication from imaging, but somewhat simplified
+        // Only return inspections that have been scheduled.
+        function _get_plate_inspections($args) {
+            if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
+
+            $inspections = $this->db->pq("SELECT ci.bltimestamp > CURRENT_TIMESTAMP as completed, TO_CHAR(ci.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as datetoimage, TO_CHAR(ci.bltimestamp, 'DD-MM-YYYY HH24:MI') as dateimaged, ci.state, ci.priority, ci.containerinspectionid, c.containerid
+                FROM containerinspection ci
+                INNER JOIN container c ON c.containerid = ci.containerid
+                WHERE c.code = :1 AND ci.scheduledtimestamp IS NOT NULL AND ci.schedulecomponentid IS NOT NULL AND ci.manual != 1", array($args['BARCODE']));
+
+            return $inspections;
+        }
+
+
+        // Updates an inspection based on barcode and scheduletimestamp, thanks formulatrix
+        function _update_inspection($args) {
+            // Urgh
+            $inspections = $this->db->pq("SELECT ci.containerinspectionid 
+                FROM containerinspection ci
+                INNER JOIN container c ON c.containerid = ci.containerid
+                WHERE c.code = :1 AND ci.scheduledtimestamp IS NOT NULL AND ci.schedulecomponentid IS NOT NULL AND ci.manual != 1 AND ci.scheduledtimestamp <= TO_DATE(:2, 'DD-MM-YYYY HH24:MI')
+                ORDER BY ci.scheduledtimestamp DESC", array($args['BARCODE'], $args['DATETOIMAGE']));
+
+            if (!sizeof($inspections)) $this->error('No inspection found');
+            $inspection = $inspections[0];
+
+            $this->_do_update_inspection(array(
+                'CONTAINERINSPECTIONID' => $inspection['CONTAINERINSPECTIONID'],
+                'VALUES' => $args['VALUES']
+            ));
+
+            return $inspection['CONTAINERINSPECTIONID'];
+        }
+
+
+        // If theres only one task scheduled, we assume this is the first imaging on site,
+        // now schedule the rest of them from this "zero" time
+        function _check_schedule_from_zero($args) {
+            $inspections = $this->_get_plate_inspections($args);
+
+            // more than one, we've already scheduled them
+            if (sizeof($inspections) > 1) return;
+            $inspection = $inspections[0];
+
+            // Need a bltimestamp for the first one to act as time "zero"
+            if ($inspection['DATETOIMAGE']) {
+                $this->_schedule_from_zero(array('CONTAINERID' => $inspection['CONTAINERID']));
+            }
+        }
+
+
+        // Sets the imagerid for the specified container
+        function _set_imager($args) {
+            if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
+            if (!array_key_exists('SERIAL', $args)) $this->error('No serial specified');
+
+            $imager = $this->db->pq("SELECT imagerid FROM imager WHERE serial=:1", array($args['SERIAL']));
+            if (!sizeof($imager)) $this->error('No such imager');
+            $imager = $imager[0];
+
+            $this->db->pq("UPDATE container SET imagerid=:1 WHERE code=:2", array($imager['IMAGERID'], $args['BARCODE']));
         }
 
 	}
