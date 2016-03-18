@@ -59,16 +59,34 @@ define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
     alert: Marionette.ItemView.extend({
         persist: false,
         scrollTo: true,
+        dismissible: false,
         
-        className: 'message alert',
+        className: function() {
+            return 'message ' + (this.getOption('notify') ? 'notify' : 'alert')
+        },
         tagName: 'p',
-        template: _.template('<%=msg%>'),
+
+        getTemplate: function() {
+            return this.getOption('dismissible') ? _.template('<span class="r"><a href="#" class="dismiss"><i class="fa fa-times"></i></a></span><%=msg%>')
+                : _.template('<%=msg%>')
+        },
+
         templateHelpers: function() {        
             return {
                 msg: this.getOption('message'),
             }
         },
         
+        events: {
+            'click a.dismiss': 'disimss',
+        },
+
+        disimss: function(e) { 
+            e.preventDefault()
+            this.destroy()
+        },
+
+
         onRender: function() {
             var self = this
             
