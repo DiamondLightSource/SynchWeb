@@ -76,7 +76,7 @@
                         }
                     }
 
-                    $where .= "AND s.beamlinename in ('".implode("','", $bls)."')";
+                    $where .= " AND s.beamlinename in ('".implode("','", $bls)."')";
                 }
             } else {
                 #$where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
