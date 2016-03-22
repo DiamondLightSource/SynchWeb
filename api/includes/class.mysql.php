@@ -16,6 +16,7 @@
 
             list($host, $dbn) = explode('/', $db);
             $this->conn = new mysqli($host, $user, $pass, $dbn);
+            mysqli_set_charset($this->conn, "utf8");
             
             if (mysqli_connect_errno()) {
                 $this->error('There was an error connecting to MySQL: ', htmlentities(mysqli_connect_errno()));
