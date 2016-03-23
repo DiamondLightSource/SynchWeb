@@ -117,6 +117,7 @@
                             'DataCollectionGroup',
                             'DataCollectionComment',
                             'ImageQualityIndicators',
+                            'GridInfo',
                             
                             'AutoProcIntegration',
                             'AutoProcScaling_has_Int',
