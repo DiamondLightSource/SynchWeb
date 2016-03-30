@@ -99,7 +99,7 @@
         		FROM containerinspection i 
         		INNER JOIN schedulecomponent sc ON sc.schedulecomponentid = i.schedulecomponentid
         		WHERE containerid=:1
-        		ORDER BY bltimestamp, offset_hours", array($args['CONTAINERID']));
+        		ORDER BY bltimestamp DESC, offset_hours", array($args['CONTAINERID']));
 
         	if (!$insps[0]['BLTIMESTAMP']) $this->error('No inspections completed yet for that container');
 
@@ -126,7 +126,7 @@
         function _get_plate_info($args) {
             if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
 
-            $cont = $this->db->pq("SELECT c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI'), d.code as dewar CONCAT(p.proposalcode, p.proposalnumber) as prop
+            $cont = $this->db->pq("SELECT s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop
                 FROM container c
                 LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -135,7 +135,6 @@
                 WHERE c.code=:1", array($args['BARCODE']));
             if (!sizeof($cont)) $this->error('No such container');
             $cont = $cont[0];
-
 
             // Set the imager the first time the plate is read
             if (array_key_exists('SERIAL', $args)) {
@@ -162,13 +161,16 @@
 
 
         // Updates an inspection based on barcode and scheduletimestamp, thanks formulatrix
+        // DATETOIMAGE comes back as UTC, we need to get MySQL to convert to UTC too
         function _update_inspection($args) {
             // Urgh
             $inspections = $this->db->pq("SELECT ci.containerinspectionid 
                 FROM containerinspection ci
                 INNER JOIN container c ON c.containerid = ci.containerid
-                WHERE c.code = :1 AND ci.scheduledtimestamp IS NOT NULL AND ci.schedulecomponentid IS NOT NULL AND ci.manual != 1 AND ci.scheduledtimestamp <= TO_DATE(:2, 'DD-MM-YYYY HH24:MI')
-                ORDER BY ci.scheduledtimestamp DESC", array($args['BARCODE'], $args['DATETOIMAGE']));
+                WHERE c.code = :1 AND ci.scheduledtimestamp IS NOT NULL AND ci.schedulecomponentid IS NOT NULL AND ci.manual != 1 AND CONVERT_TZ(ci.scheduledtimestamp, @@session.time_zone, :3) <= TO_DATE(:2, 'DD-MM-YYYY HH24:MI')
+                ORDER BY ci.scheduledtimestamp DESC", array($args['BARCODE'], $args['DATETOIMAGE'], '+00:00'));
+
+            
 
             if (!sizeof($inspections)) $this->error('No inspection found');
             $inspection = $inspections[0];
@@ -204,7 +206,7 @@
             if (!array_key_exists('SERIAL', $args)) $this->error('No serial specified');
 
             $imager = $this->db->pq("SELECT imagerid FROM imager WHERE serial=:1", array($args['SERIAL']));
-            if (!sizeof($imager)) $this->error('No such imager');
+            if (!sizeof($imager)) return;
             $imager = $imager[0];
 
             $this->db->pq("UPDATE container SET imagerid=:1 WHERE code=:2", array($imager['IMAGERID'], $args['BARCODE']));
