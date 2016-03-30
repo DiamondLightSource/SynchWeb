@@ -1,0 +1,1408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://www.oppf.ox.ac.uk/WSPlate/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://www.oppf.ox.ac.uk/WSPlate/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/">
+  <wsdl:types>
+    <xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://www.oppf.ox.ac.uk/WSPlate/">
+			<xsd:complexType name="Point">
+				<xsd:sequence>
+					<xsd:element name="x" type="xsd:float"/>
+					<xsd:element name="y" type="xsd:float"/>
+					<xsd:element name="z" type="xsd:float"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="Size">
+				<xsd:sequence>
+					<xsd:element name="height" type="xsd:float"/>
+					<xsd:element name="width" type="xsd:float"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="PlateInfo">
+				<xsd:sequence>
+					<xsd:element name="dateDispensed" type="xsd:dateTime"/>
+					<xsd:element name="experimentName" type="xsd:string"/>
+					<xsd:element name="plateNumber" type="xsd:int"/>
+					<xsd:element name="plateTypeID" type="xsd:string"/>
+					<xsd:element name="projectName" type="xsd:string"/>
+					<xsd:element name="userEmail" type="xsd:string"/>
+					<xsd:element name="userName" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="PlateType">
+				<xsd:sequence>
+					<xsd:element name="iD" type="xsd:string"/>
+					<xsd:element name="name" type="xsd:string"/>
+					<xsd:element name="numColumns" type="xsd:int"/>
+					<xsd:element name="numDrops" type="xsd:int"/>
+					<xsd:element name="numRows" type="xsd:int"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="Property">
+				<xsd:sequence>
+					<xsd:element name="name" type="xsd:string"/>
+					<xsd:element name="value" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="Robot">
+				<xsd:sequence>
+					<xsd:element name="iD" type="xsd:string"/>
+					<xsd:element name="name" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ImagingTask">
+				<xsd:sequence>
+					<xsd:element name="state" type="xsd:int"/>
+					<xsd:element name="dateImaged" nillable="true" type="xsd:dateTime"/>
+					<xsd:element name="priority" type="xsd:int"/>
+					<xsd:element name="dateToImage" type="xsd:dateTime"/>
+					<xsd:element name="inQueue" type="xsd:boolean"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="CapturePoint">
+				<xsd:sequence>
+					<xsd:element name="center" type="tns:Point"/>
+					<xsd:element name="isAbsolute" type="xsd:boolean"/>
+					<xsd:element name="regionType" type="xsd:int"/>
+					<xsd:element name="regionID" type="xsd:string"/>
+					<xsd:element name="captureProfiles" type="tns:ArrayCaptureProfile"/>
+					<xsd:element name="size" type="tns:Size"/>
+					<xsd:element name="dropNumber" type="xsd:int"/>
+					<xsd:element name="wellNumber" type="xsd:int"/>
+					<xsd:element name="parent" nillable="true" type="tns:CapturePoint"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="CapturePointList">
+				<xsd:sequence>
+					<xsd:element name="plateCaptureProfile" type="tns:CaptureProfile"/>
+					<xsd:element name="capturePoints" type="tns:ArrayCapturePoint"/>
+					<xsd:element name="dropLocationProfile" type="tns:CaptureProfile"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="CaptureProfile">
+				<xsd:sequence>
+					<xsd:element name="profileID" type="xsd:string"/>
+					<xsd:element name="properties" type="tns:ArrayProperty"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="GetFirstDropReturn">
+				<xsd:sequence>
+					<xsd:element name="wellNumber" type="xsd:int"/>
+					<xsd:element name="dropNumber" type="xsd:int"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="CaptureInfo">
+				<xsd:sequence>
+					<xsd:element name="center" type="tns:Point"/>
+					<xsd:element name="focalPoints" type="tns:ArrayFocalPoint"/>
+					<xsd:element name="size" type="tns:Size"/>
+					<xsd:element name="properties" type="tns:ArrayProperty"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="FocalPoint">
+				<xsd:sequence>
+					<xsd:element name="focus" type="xsd:int"/>
+					<xsd:element name="z" type="xsd:float"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ImageInfo">
+				<xsd:sequence>
+					<xsd:element name="image" type="xsd:string"/>
+					<xsd:element name="imageIndex" type="xsd:int"/>
+					<xsd:element name="imageType" type="xsd:int"/>
+					<xsd:element name="isZNull" type="xsd:boolean"/>
+					<xsd:element name="z" type="xsd:float"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ProcessingInfo">
+				<xsd:sequence>
+					<xsd:element name="regionType" type="xsd:int"/>
+					<xsd:element name="profileID" type="xsd:string"/>
+					<xsd:element name="regionID" type="xsd:string"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+					<xsd:element name="dropNumber" type="xsd:int"/>
+					<xsd:element name="wellNumber" type="xsd:int"/>
+					<xsd:element name="imagingID" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:simpleType name="ImageType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="composite"/>
+					<xsd:enumeration value="slice"/>
+					<xsd:enumeration value="zoomed"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:complexType name="UploadImage">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="imagingID" type="xsd:string"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+					<xsd:element name="well" type="xsd:string"/>
+					<xsd:element name="url" type="xsd:string"/>
+					<xsd:element name="image" type="tns:Size"/>
+					<xsd:element name="pixel" type="tns:Size"/>
+					<xsd:element name="colourDepth" type="xsd:int"/>
+					<xsd:element name="dateImaged" type="xsd:dateTime"/>
+					<xsd:element name="type" type="tns:ImageType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="UploadImageResponse">
+				<xsd:sequence>
+					<xsd:element name="ok" type="xsd:boolean"/>
+					<xsd:element name="url" type="xsd:string"/>
+					<xsd:element name="reason" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+            <xsd:complexType name="Sample">
+                <xsd:sequence>
+                    <xsd:element name="sampleID" type="xsd:string"/>
+                    <xsd:element name="sampleName" type="xsd:string"/>
+                    <xsd:element name="sampleDetails" type="xsd:string"/>
+                    <xsd:element name="constructID" type="xsd:string"/>
+                    <xsd:element name="constructName" type="xsd:string"/>
+                    <xsd:element name="constructDetails" type="xsd:string"/>
+                    <xsd:element name="projectID" type="xsd:string"/>
+                    <xsd:element name="projectName" type="xsd:string"/>
+                    <xsd:element name="projectDetails" type="xsd:string"/>
+                    <xsd:element name="projectLeader" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="Project">
+                <xsd:sequence>
+                    <xsd:element name="projectID" type="xsd:string"/>
+                    <xsd:element name="projectName" type="xsd:string"/>
+                    <xsd:element name="projectDetails" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+			<xsd:complexType name="WSPlateError">
+				<xsd:sequence>
+					<xsd:element name="ErrorCode" type="xsd:int"/>
+					<xsd:element name="Message" type="xsd:string"/>
+					<xsd:element name="Details" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ArrayPlateType">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:PlateType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ArrayProperty">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:Property"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ArrayImagingTask">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:ImagingTask"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ArrayCapturePoint">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:CapturePoint"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ArrayCaptureProfile">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:CaptureProfile"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ArrayFocalPoint">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:FocalPoint"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ArrayUploadImage">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:UploadImage"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ArrayUploadImageResponse">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:UploadImageResponse"/>
+				</xsd:sequence>
+			</xsd:complexType>
+            <xsd:complexType name="ArraySample">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:Sample"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ArrayProject">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="item" type="tns:Project"/>
+                </xsd:sequence>
+            </xsd:complexType>
+			<xsd:complexType name="getPlateID">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="barcode" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getPlateIDResponse">
+				<xsd:sequence>
+					<xsd:element name="getPlateIDReturn" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getPlateInfo">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getPlateInfoResponse">
+				<xsd:sequence>
+					<xsd:element name="getPlateInfoReturn" type="tns:PlateInfo"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getPlateType">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateTypeID" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getPlateTypeResponse">
+				<xsd:sequence>
+					<xsd:element name="getPlateTypeReturn" type="tns:PlateType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getPlateTypes">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getPlateTypesResponse">
+				<xsd:sequence>
+					<xsd:element name="wrapper" type="tns:ArrayPlateType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getImagingTasks">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getImagingTasksResponse">
+				<xsd:sequence>
+					<xsd:element name="wrapper" type="tns:ArrayImagingTask"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="supportsPriority">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="supportsPriorityResponse">
+				<xsd:sequence>
+					<xsd:element name="supportsPriorityReturn" type="xsd:boolean"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="updatedPriority">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+					<xsd:element name="dateToImage" type="xsd:dateTime"/>
+					<xsd:element name="priority" type="xsd:int"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="updatedPriorityResponse">
+				<xsd:sequence>
+					<xsd:element name="updatedPriorityReturn" type="xsd:boolean"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="imagingPlate">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+					<xsd:element name="scheduled" type="xsd:boolean"/>
+					<xsd:element name="dateToImage" type="xsd:dateTime"/>
+					<xsd:element name="dateImaged" type="xsd:dateTime"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="imagingPlateResponse">
+				<xsd:sequence>
+					<xsd:element name="imagingPlateReturn" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="imagedPlate">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+					<xsd:element name="imagingID" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="imagedPlateResponse">
+				<xsd:sequence>
+					<xsd:element name="imagedPlateReturn" type="xsd:boolean"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="skippedImaging">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+					<xsd:element name="dateToImage" type="xsd:dateTime"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="skippedImagingResponse">
+				<xsd:sequence>
+					<xsd:element name="skippedPlateReturn" type="xsd:boolean"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getCapturePoints">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+					<xsd:element name="imagingID" type="xsd:string"/>
+					<xsd:element name="includeOverview" type="xsd:boolean"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getCapturePointsResponse">
+				<xsd:sequence>
+					<xsd:element name="getCapturePointsReturn" type="tns:CapturePointList"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getDefaultCaptureProfile">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getDefaultCaptureProfileResponse">
+				<xsd:sequence>
+					<xsd:element name="getDefaultCaptureProfileReturn" type="tns:CaptureProfile"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getFirstDrop">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+					<xsd:element name="plateID" type="xsd:string"/>
+					<xsd:element name="wellNumber" type="xsd:int"/>
+					<xsd:element name="dropNumber" type="xsd:int"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getFirstDropResponse">
+				<xsd:sequence>
+					<xsd:element name="getFirstDropReturn" type="tns:GetFirstDropReturn"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getImageProcessor">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="getImageProcessorResponse">
+				<xsd:sequence>
+					<xsd:element name="wrapper" type="tns:ArrayPlateType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="uploadImages">
+				<xsd:sequence>
+					<xsd:element name="wrapper" type="tns:ArrayUploadImage"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="uploadImagesResponse">
+				<xsd:sequence>
+					<xsd:element name="wrapper" type="tns:ArrayUploadImageResponse"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="listSamples">
+				<xsd:sequence>
+					<xsd:element name="robot" type="tns:Robot"/>
+				</xsd:sequence>
+			</xsd:complexType>
+            <xsd:complexType name="listSamplesResponse">
+                <xsd:sequence>
+                    <xsd:element name="wrapper" type="tns:ArraySample"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="listProjects">
+                <xsd:sequence>
+                    <xsd:element name="robot" type="tns:Robot"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="listProjectsResponse">
+                <xsd:sequence>
+                    <xsd:element name="wrapper" type="tns:ArrayProject"/>
+                </xsd:sequence>
+            </xsd:complexType>
+			<xsd:element name="getPlateIDElement" type="tns:getPlateID"/>
+			<xsd:element name="getPlateIDResponseElement" type="tns:getPlateIDResponse"/>
+			<xsd:element name="getPlateInfoElement" type="tns:getPlateInfo"/>
+			<xsd:element name="getPlateInfoResponseElement" type="tns:getPlateInfoResponse"/>
+			<xsd:element name="getPlateTypeElement" type="tns:getPlateType"/>
+			<xsd:element name="getPlateTypeResponseElement" type="tns:getPlateTypeResponse"/>
+			<xsd:element name="getPlateTypesElement" type="tns:getPlateTypes"/>
+			<xsd:element name="getPlateTypesResponseElement" type="tns:getPlateTypesResponse"/>
+			<xsd:element name="getImagingTasksElement" type="tns:getImagingTasks"/>
+			<xsd:element name="getImagingTasksResponseElement" type="tns:getImagingTasksResponse"/>
+			<xsd:element name="supportsPriorityElement" type="tns:supportsPriority"/>
+			<xsd:element name="supportsPriorityResponseElement" type="tns:supportsPriorityResponse"/>
+			<xsd:element name="updatedPriorityElement" type="tns:updatedPriority"/>
+			<xsd:element name="updatedPriorityResponseElement" type="tns:updatedPriorityResponse"/>
+			<xsd:element name="imagingPlateElement" type="tns:imagingPlate"/>
+			<xsd:element name="imagingPlateResponseElement" type="tns:imagingPlateResponse"/>
+			<xsd:element name="imagedPlateElement" type="tns:imagedPlate"/>
+			<xsd:element name="imagedPlateResponseElement" type="tns:imagedPlateResponse"/>
+			<xsd:element name="skippedImagingElement" type="tns:skippedImaging"/>
+			<xsd:element name="skippedImagingResponseElement" type="tns:skippedImagingResponse"/>
+			<xsd:element name="getCapturePointsElement" type="tns:getCapturePoints"/>
+			<xsd:element name="getCapturePointsResponseElement" type="tns:getCapturePointsResponse"/>
+			<xsd:element name="getDefaultCaptureProfileElement" type="tns:getDefaultCaptureProfile"/>
+			<xsd:element name="getDefaultCaptureProfileResponseElement" type="tns:getDefaultCaptureProfileResponse"/>
+			<xsd:element name="getFirstDropElement" type="tns:getFirstDrop"/>
+			<xsd:element name="getFirstDropResponseElement" type="tns:getFirstDropResponse"/>
+			<xsd:element name="getImageProcessorElement" type="tns:getImageProcessor"/>
+			<xsd:element name="getImageProcessorResponseElement" type="tns:getImageProcessorResponse"/>
+			<xsd:element name="uploadImagesElement" type="tns:uploadImages"/>
+			<xsd:element name="uploadImagesResponseElement" type="tns:uploadImagesResponse"/>
+			<xsd:element name="listSamplesElement" type="tns:listSamples"/>
+            <xsd:element name="listSamplesResponseElement" type="tns:listSamplesResponse"/>
+            <xsd:element name="listProjectsElement" type="tns:listProjects"/>
+            <xsd:element name="listProjectsResponseElement" type="tns:listProjectsResponse"/>
+			<xsd:element name="CanListSamplesResponse" type="xsd:boolean"/>
+			<xsd:element name="GetPlateIDFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getPlateID"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetPlateInfoFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getPlateInfo"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetPlateTypeFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getPlateType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetPlateTypesFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getPlateTypes"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetImagingTasksFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getImagingTasks"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SupportsPriorityFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:supportsPriority"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UpdatedPriorityFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:updatedPriority"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ImagingPlateFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:imagingPlate"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ImagedPlateFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:imagedPlate"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SkippedImagingFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:skippedImaging"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetCapturePointsFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getCapturePoints"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetDefaultCaptureProfileFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getDefaultCaptureProfile"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetFirstDropFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getFirstDrop"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetImageProcessorFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:getImageProcessor"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UploadImagesFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+						<xsd:element name="Arguments" type="tns:uploadImages"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+            <xsd:element name="ListSamplesFault">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+                        <xsd:element name="Arguments" type="tns:listSamples"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="ListProjectsFault">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+			<xsd:element name="CanListSamplesFault">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="WSPlateError" type="tns:WSPlateError"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="getFirstDropRequest">
+    <wsdl:part name="part1" element="tns:getFirstDropElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updatedPriorityRequest">
+    <wsdl:part name="part1" element="tns:updatedPriorityElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="canListSamplesError">
+    <wsdl:part name="part1" element="tns:CanListSamplesFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getImagingTasksError">
+    <wsdl:part name="part1" element="tns:GetImagingTasksFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updatedPriorityResponse">
+    <wsdl:part name="part1" element="tns:updatedPriorityResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getImageProcessorError">
+    <wsdl:part name="part1" element="tns:GetImageProcessorFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateInfoRequest">
+    <wsdl:part name="part1" element="tns:getPlateInfoElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getFirstDropError">
+    <wsdl:part name="part1" element="tns:GetFirstDropFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="imagingPlateResponse">
+    <wsdl:part name="part1" element="tns:imagingPlateResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="uploadImagesResponse">
+    <wsdl:part name="part1" element="tns:uploadImagesResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getImageProcessorResponse">
+    <wsdl:part name="part1" element="tns:getImageProcessorResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="uploadImagesError">
+    <wsdl:part name="part1" element="tns:UploadImagesFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getImagingTasksResponse">
+    <wsdl:part name="part1" element="tns:getImagingTasksResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateTypeRequest">
+    <wsdl:part name="part1" element="tns:getPlateTypeElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="supportsPriorityError">
+    <wsdl:part name="part1" element="tns:SupportsPriorityFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getCapturePointsError">
+    <wsdl:part name="part1" element="tns:GetCapturePointsFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listSamplesError">
+    <wsdl:part name="part1" element="tns:ListSamplesFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getCapturePointsRequest">
+    <wsdl:part name="part1" element="tns:getCapturePointsElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateInfoError">
+    <wsdl:part name="part1" element="tns:GetPlateInfoFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="supportsPriorityRequest">
+    <wsdl:part name="part1" element="tns:supportsPriorityElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="uploadImagesRequest">
+    <wsdl:part name="part1" element="tns:uploadImagesElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getImagingTasksRequest">
+    <wsdl:part name="part1" element="tns:getImagingTasksElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDefaultCaptureProfileError">
+    <wsdl:part name="part1" element="tns:GetDefaultCaptureProfileFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="skippedImagingError">
+    <wsdl:part name="part1" element="tns:SkippedImagingFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listSamplesRequest">
+    <wsdl:part name="part1" element="tns:listSamplesElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updatedPriorityError">
+    <wsdl:part name="part1" element="tns:UpdatedPriorityFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateTypesRequest">
+    <wsdl:part name="part1" element="tns:getPlateTypesElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="imagingPlateError">
+    <wsdl:part name="part1" element="tns:ImagingPlateFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateInfoResponse">
+    <wsdl:part name="part1" element="tns:getPlateInfoResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateTypeError">
+    <wsdl:part name="part1" element="tns:GetPlateTypeFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listProjectsResponse">
+    <wsdl:part name="part1" element="tns:listProjectsResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="skippedImagingRequest">
+    <wsdl:part name="part1" element="tns:skippedImagingElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listSamplesResponse">
+    <wsdl:part name="part1" element="tns:listSamplesResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="skippedImagingResponse">
+    <wsdl:part name="part1" element="tns:skippedImagingResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getFirstDropResponse">
+    <wsdl:part name="part1" element="tns:getFirstDropResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateTypesError">
+    <wsdl:part name="part1" element="tns:GetPlateTypesFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getCapturePointsResponse">
+    <wsdl:part name="part1" element="tns:getCapturePointsResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateTypesResponse">
+    <wsdl:part name="part1" element="tns:getPlateTypesResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateTypeResponse">
+    <wsdl:part name="part1" element="tns:getPlateTypeResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDefaultCaptureProfileRequest">
+    <wsdl:part name="part1" element="tns:getDefaultCaptureProfileElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="supportsPriorityResponse">
+    <wsdl:part name="part1" element="tns:supportsPriorityResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDefaultCaptureProfileResponse">
+    <wsdl:part name="part1" element="tns:getDefaultCaptureProfileResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="canListSamplesRequest">
+  </wsdl:message>
+  <wsdl:message name="getPlateIDRequest">
+    <wsdl:part name="part1" element="tns:getPlateIDElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="imagedPlateResponse">
+    <wsdl:part name="part1" element="tns:imagedPlateResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getImageProcessorRequest">
+    <wsdl:part name="part1" element="tns:getImageProcessorElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listProjectsError">
+    <wsdl:part name="part1" element="tns:ListProjectsFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateIDError">
+    <wsdl:part name="part1" element="tns:GetPlateIDFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlateIDResponse">
+    <wsdl:part name="part1" element="tns:getPlateIDResponseElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="imagingPlateRequest">
+    <wsdl:part name="part1" element="tns:imagingPlateElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="imagedPlateRequest">
+    <wsdl:part name="part1" element="tns:imagedPlateElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="imagedPlateError">
+    <wsdl:part name="part1" element="tns:ImagedPlateFault">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listProjectsRequest">
+    <wsdl:part name="part1" element="tns:listProjectsElement">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="canListSamplesResponse">
+    <wsdl:part name="part1" element="tns:CanListSamplesResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="WSPlatePortType">
+    <wsdl:operation name="getPlateID">
+      <wsdl:input message="tns:getPlateIDRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getPlateIDResponse">
+    </wsdl:output>
+      <wsdl:fault name="getPlateIDError" message="tns:getPlateIDError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getCapturePoints">
+      <wsdl:input message="tns:getCapturePointsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getCapturePointsResponse">
+    </wsdl:output>
+      <wsdl:fault name="getCapturePointsError" message="tns:getCapturePointsError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDefaultCaptureProfile">
+      <wsdl:input message="tns:getDefaultCaptureProfileRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getDefaultCaptureProfileResponse">
+    </wsdl:output>
+      <wsdl:fault name="getDefaultCaptureProfileError" message="tns:getDefaultCaptureProfileError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="updatedPriority">
+      <wsdl:input message="tns:updatedPriorityRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:updatedPriorityResponse">
+    </wsdl:output>
+      <wsdl:fault name="updatedPriorityError" message="tns:updatedPriorityError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateInfo">
+      <wsdl:input message="tns:getPlateInfoRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getPlateInfoResponse">
+    </wsdl:output>
+      <wsdl:fault name="getPlateInfoError" message="tns:getPlateInfoError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateTypes">
+      <wsdl:input message="tns:getPlateTypesRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getPlateTypesResponse">
+    </wsdl:output>
+      <wsdl:fault name="getPlateTypesError" message="tns:getPlateTypesError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="imagingPlate">
+      <wsdl:input message="tns:imagingPlateRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:imagingPlateResponse">
+    </wsdl:output>
+      <wsdl:fault name="imagingPlateError" message="tns:imagingPlateError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="imagedPlate">
+      <wsdl:input message="tns:imagedPlateRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:imagedPlateResponse">
+    </wsdl:output>
+      <wsdl:fault name="imagedPlateError" message="tns:imagedPlateError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getImagingTasks">
+      <wsdl:input message="tns:getImagingTasksRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getImagingTasksResponse">
+    </wsdl:output>
+      <wsdl:fault name="getImagingTasksError" message="tns:getImagingTasksError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getImageProcessor">
+      <wsdl:input message="tns:getImageProcessorRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getImageProcessorResponse">
+    </wsdl:output>
+      <wsdl:fault name="getImageProcessorError" message="tns:getImageProcessorError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateType">
+      <wsdl:input message="tns:getPlateTypeRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getPlateTypeResponse">
+    </wsdl:output>
+      <wsdl:fault name="getPlateTypeError" message="tns:getPlateTypeError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="supportsPriority">
+      <wsdl:input message="tns:supportsPriorityRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:supportsPriorityResponse">
+    </wsdl:output>
+      <wsdl:fault name="supportsPriorityError" message="tns:supportsPriorityError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getFirstDrop">
+      <wsdl:input message="tns:getFirstDropRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getFirstDropResponse">
+    </wsdl:output>
+      <wsdl:fault name="getFirstDropError" message="tns:getFirstDropError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="skippedImaging">
+      <wsdl:input message="tns:skippedImagingRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:skippedImagingResponse">
+    </wsdl:output>
+      <wsdl:fault name="skippedImagingError" message="tns:skippedImagingError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="uploadImages">
+      <wsdl:input message="tns:uploadImagesRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:uploadImagesResponse">
+    </wsdl:output>
+      <wsdl:fault name="uploadImagesError" message="tns:uploadImagesError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listSamples">
+      <wsdl:input message="tns:listSamplesRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:listSamplesResponse">
+    </wsdl:output>
+      <wsdl:fault name="listSamplesError" message="tns:listSamplesError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listProjects">
+      <wsdl:input message="tns:listProjectsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:listProjectsResponse">
+    </wsdl:output>
+      <wsdl:fault name="listProjectsError" message="tns:listProjectsError">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="canListSamples">
+      <wsdl:input message="tns:canListSamplesRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:canListSamplesResponse">
+    </wsdl:output>
+      <wsdl:fault name="canListSamplesError" message="tns:canListSamplesError">
+    </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="WSPlateSOAP11Binding" type="tns:WSPlatePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getPlateID">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/PlateInfoProvider/getPlateID" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getPlateIDError">
+        <soap:fault name="getPlateIDError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getCapturePoints">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/CaptureProvider/getCapturePoints" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getCapturePointsError">
+        <soap:fault name="getCapturePointsError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDefaultCaptureProfile">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/CaptureProvider/getDefaultCaptureProfile" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getDefaultCaptureProfileError">
+        <soap:fault name="getDefaultCaptureProfileError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="updatedPriority">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/updatedPriority" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="updatedPriorityError">
+        <soap:fault name="updatedPriorityError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateInfo">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/PlateInfoProvider/getPlateInfo" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getPlateInfoError">
+        <soap:fault name="getPlateInfoError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateTypes">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/PlateInfoProvider/getPlateTypes" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getPlateTypesError">
+        <soap:fault name="getPlateTypesError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="imagingPlate">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/imagingPlate" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="imagingPlateError">
+        <soap:fault name="imagingPlateError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="imagedPlate">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/imagedPlate" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="imagedPlateError">
+        <soap:fault name="imagedPlateError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getImagingTasks">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/getImagingTasks" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getImagingTasksError">
+        <soap:fault name="getImagingTasksError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getImageProcessor">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImageProcessorProvider/getImageProcessor" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getImageProcessorError">
+        <soap:fault name="getImageProcessorError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateType">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/PlateInfoProvider/getPlateType" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getPlateTypeError">
+        <soap:fault name="getPlateTypeError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="supportsPriority">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/supportsPriority" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="supportsPriorityError">
+        <soap:fault name="supportsPriorityError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getFirstDrop">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/CaptureProvider/getFirstDrop" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getFirstDropError">
+        <soap:fault name="getFirstDropError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="skippedImaging">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/skippedImaging" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="skippedImagingError">
+        <soap:fault name="skippedImagingError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="uploadImages">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/uploadImages" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="uploadImagesError">
+        <soap:fault name="uploadImagesError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listSamples">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/SampleProvider/listSamples" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="listSamplesError">
+        <soap:fault name="listSamplesError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listProjects">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/SampleProvider/listProjects" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="listProjectsError">
+        <soap:fault name="listProjectsError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="canListSamples">
+      <soap:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/canListSamples" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="canListSamplesError">
+        <soap:fault name="canListSamplesError" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="WSPlateSOAP12Binding" type="tns:WSPlatePortType">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getPlateID">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/PlateInfoProvider/getPlateID" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getPlateIDError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getCapturePoints">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/CaptureProvider/getCapturePoints" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getCapturePointsError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDefaultCaptureProfile">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/CaptureProvider/getDefaultCaptureProfile" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getDefaultCaptureProfileError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="updatedPriority">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/updatedPriority" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="updatedPriorityError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateInfo">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/PlateInfoProvider/getPlateInfo" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getPlateInfoError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateTypes">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/PlateInfoProvider/getPlateTypes" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getPlateTypesError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="imagingPlate">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/imagingPlate" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="imagingPlateError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="imagedPlate">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/imagedPlate" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="imagedPlateError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getImagingTasks">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/getImagingTasks" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getImagingTasksError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getImageProcessor">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImageProcessorProvider/getImageProcessor" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getImageProcessorError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPlateType">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/PlateInfoProvider/getPlateType" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getPlateTypeError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="supportsPriority">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/supportsPriority" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="supportsPriorityError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getFirstDrop">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/CaptureProvider/getFirstDrop" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="getFirstDropError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="skippedImaging">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/skippedImaging" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="skippedImagingError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="uploadImages">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/ImagingTaskProvider/uploadImages" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="uploadImagesError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listSamples">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/SampleProvider/listSamples" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="listSamplesError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listProjects">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/SampleProvider/listProjects" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="listProjectsError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="canListSamples">
+      <soap12:operation soapAction="http://www.oppf.ox.ac.uk/WSPlate/canListSamples" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="canListSamplesError">
+    <soap12:body use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="WSPlate">
+    <wsdl:port name="WSPlateSOAP12port_http" binding="tns:WSPlateSOAP12Binding">
+      <soap12:address location="http://plate.strubi.ox.ac.uk:8080/axis2/services/WSPlate"/>
+    </wsdl:port>
+    <wsdl:port name="WSPlateSOAP11port_http" binding="tns:WSPlateSOAP11Binding">
+      <soap:address location="http://plate.strubi.ox.ac.uk:8080/axis2/services/WSPlate"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
