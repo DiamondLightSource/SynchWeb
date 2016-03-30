@@ -53,7 +53,7 @@
         }
 
         public function error($title, $msg) {
-            header('HTTP/1.1 400 Bad Request');
+            header('HTTP/1.1 503 Service Unavailable');
             // header('Content-type:application/json');
             print json_encode(array('title' => $title, 'msg' => $msg));
             exit();
