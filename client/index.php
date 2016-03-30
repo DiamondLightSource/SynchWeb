@@ -35,7 +35,9 @@
         <link rel="stylesheet" type="text/css" href="<?php echo $config->appurl ?>/assets/css/stylesheets/main.css">
         <link rel="stylesheet" href="<?php echo $config->appurl ?>/assets/font-awesome/css/font-awesome.min.css">
 
+        <?php if (!$config->maintenance): ?>
         <script type="text/javascript" data-main="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/main" src="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/vendor/require/require.js"></script>
+        <?php endif; ?>
 
         <title></title>
                 
@@ -54,6 +56,9 @@
                 <!--[if lte IE 11]>
                  <a class="icon"><i class="fa fa-2x fa-home"></i>&nbsp;</a>
                 <![endif]-->
+                <?php if ($config->maintenance): ?>
+                    <a class="icon"><i class="fa fa-2x fa-home"></i>&nbsp;</a>
+                <?php endif; ?>
             </div>
             <div id="sidebar"></div>
 
@@ -66,6 +71,13 @@
                             <p>Internet Explorer versions less than 11 are not supported. Please consider using <a href="http://www.mozilla.org/en-GB/firefox/new">Firefox</a> or <a href="http://www.google.co.uk/chrome">Chrome</a></p>
                         </div>
                     <![endif]-->
+                    <?php if ($config->maintenance): ?>
+                        <div class="content">
+                            <h1>Scheduled Maintenance</h1>
+                            <p><?php echo $config->maintenance_message ?></p>
+                            <br />
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         
