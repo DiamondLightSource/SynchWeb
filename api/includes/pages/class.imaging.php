@@ -337,7 +337,7 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $order = 'i.bltimestamp DESC, sc.offset_hours DESC';
+            $order = 'sc.offset_hours, i.bltimestamp';
             
             if ($this->has_arg('sort_by')) {
                 $cols = array(
@@ -368,7 +368,7 @@
             }
 
             $inspections = $this->db->paginate("SELECT ROUND(TIMESTAMPDIFF('HOUR', i.bltimestamp, CURRENT_TIMESTAMP)/24,1) as age, ROUND(TIMESTAMPDIFF('HOUR', i.scheduledtimestamp, i.bltimestamp)/24,2) as dwell, c.code as container, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(min(im.modifiedtimestamp), 'DD-MM-YYYY HH24:MI') as imagesscoredtimestamp, case when count(im.blsampleimageid) > 0 then 1 else 0 end as imagesscored,
-                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, ROUND(TIMESTAMPDIFF('MINUTE', min(i2.bltimestamp), i.bltimestamp)/60,1) as delta, CONCAT(CONCAT(CONCAT(CONCAT(TO_CHAR(i.bltimestamp, 'HH24:MI DD-MM-YYYY'), ' (+'), ROUND(TIMESTAMPDIFF('HOUR', case when min(i2.bltimestamp) is not null then min(i2.bltimestamp) else i.bltimestamp end, i.bltimestamp)/24,1)), 'd) '), (case when i.manual=1 then '[Manual]' else (case when i.schedulecomponentid is null then '[Adhoc]' end) end)) as title, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid 
+                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, ROUND(TIMESTAMPDIFF('MINUTE', min(i2.bltimestamp), i.bltimestamp)/(60*24),1) as delta, CONCAT(CONCAT(CONCAT(CONCAT(TO_CHAR(i.bltimestamp, 'HH24:MI DD-MM-YYYY'), ' (+'), ROUND(TIMESTAMPDIFF('HOUR', case when min(i2.bltimestamp) is not null then min(i2.bltimestamp) else i.bltimestamp end, i.bltimestamp)/24,1)), 'd) '), (case when i.manual=1 then '[Manual]' else (case when i.schedulecomponentid is null then '[Adhoc]' else '' end) end)) as title, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid 
                 FROM containerinspection i
                 LEFT OUTER JOIN containerinspection i2 ON i.containerid = i2.containerid AND i2.schedulecomponentid IS NOT NULL
                 LEFT OUTER JOIN schedulecomponent sc ON sc.schedulecomponentid = i.schedulecomponentid
