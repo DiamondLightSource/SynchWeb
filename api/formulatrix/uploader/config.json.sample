@@ -1,0 +1,8 @@
+{
+	"user":	"username",
+	"pw":	"password",
+	"db":	"database",
+	"host":	"hostname",
+	"holding_dir":	"/dls/holding/directory",
+	"upload_dir":	"/dls/i02-2/data"
+}
