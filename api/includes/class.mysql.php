@@ -118,6 +118,7 @@
                             'DataCollectionComment',
                             'ImageQualityIndicators',
                             'GridInfo',
+                            'Detector',
                             
                             'AutoProcIntegration',
                             'AutoProcScaling_has_Int',
@@ -146,6 +147,7 @@
                             'DewarTransportHistory',
                             'DewarRegistry',
                             'DewarReport',
+                            'DHLTermsAccepted',
                             
                             'BLSubSample',
                             'PDB',
