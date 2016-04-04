@@ -52,14 +52,14 @@
             $info = array();
             # Visits
             if ($this->has_arg('visit')) {
-                list($info,) = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  p.proposalcode || p.proposalnumber || '-' || s.visit_number LIKE :1", array($this->arg('visit')));
+                list($info,) = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
                 
                 $sess = array('dc.sessionid=:1');
                 array_push($args, $info['SESSIONID']);
                 
             # Proposal
             } else if ($this->has_arg('prop')) {
-                $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE p.proposalcode || p.proposalnumber LIKE :1', array($this->arg('prop')));
+                $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
                 
                 $sess[0] = 'ses.proposalid=:1';
                 array_push($args, $this->proposalid);
@@ -97,12 +97,6 @@
             
             # If not staff check they have access to data collection
             if (!$this->has_arg('visit') && !$this->staff) {
-                // $where .= " AND u.name=:".(sizeof($args)+1);
-                
-                // $extj[0] .= " INNER JOIN proposal p ON p.proposalid = ses.proposalid 
-                // INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode||p.proposalnumber||'-'||ses.visit_number 
-                // INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id
-                //  INNER JOIN user_@DICAT_RO u on u.id = iu.user_id";
                 $extj[0] .= " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
             }
@@ -119,10 +113,9 @@
             # Search terms
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(dc.filetemplate) LIKE lower('%'||:$st||'%') OR lower(dc.imagedirectory) LIKE lower('%'||:".($st+1)."||'%') OR lower(dc.comments) LIKE lower('%'||:".($st+2)."||'%'))";
+                $where .= " AND (lower(dc.filetemplate) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) OR lower(dc.imagedirectory) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."),'%')) OR lower(dc.comments) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."),'%')))";
                 for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('s'));
             }
-            
 
             # Data collection group
             if ($this->has_arg('dcg')) {
@@ -227,7 +220,7 @@
                 $extj[0]
                 WHERE $sess[0] $where
                 
-                )", $args);
+                ) inq", $args);
             
             $tot = $tot[0]['T'];
             
@@ -238,10 +231,7 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $q = "SELECT outer.*
-             FROM (SELECT ROWNUM rn, inner.*
-             FROM (
-             SELECT $extc $fields
+            $q = "SELECT $extc $fields
              FROM datacollection dc
              INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
              INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
@@ -252,12 +242,9 @@
              WHERE $sess[0] $where 
              $groupby
                    
-            ORDER BY sta DESC
-             
-            ) inner) outer
-            WHERE outer.rn > :$st AND outer.rn <= :".($st+1);
+            ORDER BY sta DESC";
             
-            $dcs = $this->db->pq($q, $args);
+            $dcs = $this->db->paginate($q, $args);
             
             $nf = array(5 => array('WAVELENGTH'), 4 => array('RESOLUTION'), 3 => array('RESOLUTION'));
             foreach ($dcs as $i => &$dc) {
@@ -447,18 +434,12 @@
             array_push($args, $end);
 
 
-            $comments = $this->db->pq("SELECT outer.*
-                FROM (SELECT ROWNUM rn, inner.*
-                FROM (
-
-                    SELECT dcc.datacollectioncommentid, dcc.datacollectionid, dcc.personid, dcc.comments, TO_CHAR(dcc.createtime, 'DD-MM-YYYY HH24:MI:SS') as createtime, TO_CHAR(dcc.modtime, 'DD-MM-YYYY HH24:MI:SS') as modtime, p.givenname, p.familyname
+            $comments = $this->db->paginate("SELECT dcc.datacollectioncommentid, dcc.datacollectionid, dcc.personid, dcc.comments, TO_CHAR(dcc.createtime, 'DD-MM-YYYY HH24:MI:SS') as createtime, TO_CHAR(dcc.modtime, 'DD-MM-YYYY HH24:MI:SS') as modtime, p.givenname, p.familyname
                     FROM datacollectioncomment dcc
                     INNER JOIN datacollection dc ON dc.datacollectionid = dcc.datacollectionid
                     INNER JOIN person p ON p.personid = dcc.personid
                     WHERE $where
-                    ORDER BY dcc.createtime ASC
-                ) inner) outer
-                WHERE outer.rn > :$st AND outer.rn <= :".($st+1), $args);
+                    ORDER BY dcc.createtime ASC", $args);
 
 
             if ($this->has_arg('dcid')) {
