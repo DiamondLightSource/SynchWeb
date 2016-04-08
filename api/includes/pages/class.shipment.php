@@ -242,7 +242,7 @@
                 require_once('includes/class.email.php');
                 $email = new Email($dew['PROPOSALCODE'] == 'in' ? 'dewar-stores-in-in' : 'dewar-stores-in', '*** Dewar Received for '.$dew['PROP'].' at '.$dew['NOW'].' ***');
                 $email->data = $dew;
-                $email->send($dew['LCOUTEMAIL'].', '.$tranfer_email);
+                $email->send($dew['LCOUTEMAIL'].', '.$transfer_email);
             }
 
             if (strtolower($this->arg('LOCATION')) == 'stores-out' && $dew['LCRETEMAIL']) {
