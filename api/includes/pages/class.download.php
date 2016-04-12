@@ -54,8 +54,8 @@
                             if ($r['FILENAME'] == 'fast_dp.log') $this->app->contentType("text/plain");
                             if ($r['FILENAME'] == 'autoPROC.log') $this->app->contentType("text/plain");
                         }
-                            
-                        readfile($f);
+                        
+                        if (file_exists($f)) readfile($f);
                     }
                 
                 } else {
