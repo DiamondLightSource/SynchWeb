@@ -328,10 +328,10 @@
             
             if (!$b) return array();
             
-            $visits = $this->db->pq('SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), \'-\'), s.visit_number) as visit, TO_CHAR(s.startdate, \'DD-MM-YYYY HH24:MI\') as st, TO_CHAR(s.enddate, \'DD-MM-YYYY HH24:MI\') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE s.startdate > SYSDATE-1 AND s.enddate <= SYSDATE+2 AND s.beamlinename LIKE :1 ORDER BY s.startdate', array($b));
+            $visits = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array($b));
                 
             //if (!sizeof($visits)) {
-            $v = $this->db->pq('SELECT * FROM (SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), \'-\'), s.visit_number) as visit, TO_CHAR(s.startdate, \'DD-MM-YYYY HH24:MI\') as st, TO_CHAR(s.enddate, \'DD-MM-YYYY HH24:MI\') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE \'cm\' AND s.beamlinename LIKE :1 AND s.enddate <= SYSDATE ORDER BY s.startdate DESC) inq WHERE rownum < 2', array($b));
+            $v = $this->db->paginate("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array($b,0,1));
             $visits = array_merge($visits, $v);
             //}
             
