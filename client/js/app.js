@@ -98,7 +98,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
    is disconnected from the interwebs
   */
   $(document).ajaxError(function(event, xhr, settings, error) {
-    console.log('ajax error', 'status', xhr.status, 'code', xhr.statusCode())
+    console.log('ajax error', 'status', xhr.status, 'code', xhr.statusCode(), settings, error)
+
     if (xhr.status == 0) app.login(xhr)
   })
     
@@ -124,9 +125,16 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
                 try {
                     var loc = $('#login iframe').contents().get(0).location.href
                     poll = false
-                    console.log('logged in', loc)
-                    $('#login').dialog('close')
-                    app.getuser()
+                    var content = $('#login iframe').contents()[0].body.innerHTML
+                    if (content.indexOf('CAS') > -1) {
+                        $('#login').dialog('close')
+                        app.message({ title: 'Authentication Failure', message: 'We couldnt log you in. Please try clearing your cookies, and / or restarting your browser' })
+                        return
+                    } else {
+                        console.log('logged in', loc)
+                        $('#login').dialog('close')
+                        app.getuser()
+                    }
                     // if (xhr) Backbone.ajax(xhr)
 
                 } catch (e) {
@@ -180,6 +188,13 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
         this.sidebarview = new SideBarView()
         app.sidebar.show(this.sidebarview)
           
+        // Breadcrumbs collection
+        if (!app.bc) {  
+          app.bc = new Backbone.Collection()
+          if (!this.headerview) this.headerview = new HeaderView({ bc: app.bc })
+          app.header.show(this.headerview)
+        }
+
         app.getuser()
     })
   })
@@ -201,13 +216,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
           // Should put this somewhere else...
           app.user_can = function(perm) {
             return resp.permissions.indexOf(perm) > -1
-          }
-
-          // Breadcrumbs collection
-          if (!app.bc) {  
-            app.bc = new Backbone.Collection()
-            if (!this.headerview) this.headerview = new HeaderView({ bc: app.bc })
-            app.header.show(this.headerview)
           }
         
           app.cookie(null, function() {
