@@ -104,7 +104,7 @@
     if ($need_auth) {
         require_once 'lib/CAS/CAS.php';
         phpCAS::client(CAS_VERSION_2_0, 'liveauth.diamond.ac.uk', 443, '/cas');
-        //phpCAS::setCasServerCACert($cacert);
+        // phpCAS::setCasServerCACert($cacert);
         phpCAS::setNoCasServerValidation();
         phpCAS::forceAuthentication();
     }
@@ -127,6 +127,12 @@
             array($login));
         phpCAS::logout();
     }
+
+    $chk = $db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($user->login));
+    if (sizeof($chk)) {
+        $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
+    }
+    
     
     include_once('includes/class.type.php');
     $type = new ProposalType($app, $db, $user);
