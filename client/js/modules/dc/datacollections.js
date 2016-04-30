@@ -75,6 +75,14 @@ function(Marionette, Pages, DCListView,
     },
     
     initialize: function(options) {
+        if (this.model && this.model.get('ACTIVE') == "0") {
+            console.log('MIGHT STOP?')
+            var vis = this.getOption('params').visit
+            if (vis) {
+                if (vis.search('cm') == -1 && vis.search('nt') == -1 && vis.search('nr') == -1) options.collection.stop()
+            } else options.collection.stop()
+        }
+
         this.dclist = new (this.getOption('dcListView'))({ collection: options.collection, params: options.params, model: this.model })
         this.paginator = new Pages({ collection: options.collection, noUrl: options.noPageUrl })
         this.filter = new Search({ value: options.params.search, collection: options.collection, url: !options.noSearchUrl })
