@@ -139,7 +139,7 @@ define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.d
                     }
                 })
                     
-                return refetch ? '' : value
+                return refetch ? '' : _.escape(value)
             }
                 
             var onsubmit = function(settings, td) {
