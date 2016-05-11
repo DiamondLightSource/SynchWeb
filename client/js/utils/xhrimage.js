@@ -9,7 +9,9 @@ define(['marionette'], function() {
 		this.completedPercentage = 0
 
 		var xhr = new XMLHttpRequest()
+
 		xhr.open('GET', url, true)
+		if (app.token) xhr.setRequestHeader('Authorization','Bearer ' + app.token);
 		xhr.responseType = 'arraybuffer'
 
 		xhr.onload = function(e) {
