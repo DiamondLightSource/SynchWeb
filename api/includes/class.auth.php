@@ -3,6 +3,8 @@
 	include_once('config.php');
 
 	require_once('lib/jwt/JWT.php');
+	require_once('lib/jwt/ExpiredException.php');
+	require_once('lib/jwt/SignatureInvalidException.php');
     use \Firebase\JWT\JWT;
 
 
@@ -52,6 +54,10 @@
 		        }
 		    }
 
+		    if (sizeof($parts) > 0) {
+		    	if ($parts[0] == 'authenticate') $need_auth = false;
+		    }
+
 		    if ($need_auth) $this->check_auth();
 		}
 
@@ -73,8 +79,8 @@
 		        'iat'  => $now,
 		        'jti'  => sha1($login . microtime(true)),//base64_encode(mcrypt_create_iv(32)), 
 		        'iss'  => 'http://'.$_SERVER['HTTP_HOST'],
-		        'nbf'  => $now + 10,
-		        'exp'  => $now + 10 + 60*24,
+		        'nbf'  => $now,
+		        'exp'  => $now + 10 + 60*60*24,
 		        'data' => array(
 		            'login' => $login,
 		        )
@@ -90,13 +96,17 @@
 			global $jwt_key;
 			$key = base64_decode($jwt_key);
 
-			$auth_header = $this->app->request->headers->get('authorization');
+			// $auth_header = $this->app->request->headers->get('authorization');
+			$headers = getallheaders();
+			if (array_key_exists('Authorization', $headers)) {
+				$auth_header = $headers['Authorization'];
+			} else $auth_header = '';
 
 			if ($auth_header) {
-				list($jwt) = sscanf($auth_header, 'Authorization: Bearer %s');
+				list($jwt) = sscanf($auth_header, 'Bearer %s');
 
 				try {
-					$token = JWT::decode($jwt, $secretKey, array('HS512'));
+					$token = JWT::decode($jwt, $jwt_key, array('HS512'));
 					$this->user = $token->data->login;
 
 				// Invalid token
@@ -137,6 +147,12 @@
 			$login = $this->app->request->post('login');
 			$password = $this->app->request->post('password');
 
+			if (!$login) {
+				$bbreq = (array)json_decode($this->app->request()->getBody());
+				$login = $bbreq['login'];
+				$password = $bbreq['password'];
+			}
+
 			if (!$login) $this->_error(400, 'No login specified');
 			if (!$password) $this->_error(400, 'No password specified');
 
@@ -150,7 +166,7 @@
 				if ($auth_handler->authenticate($login, $password)) {
 					$this->_output(200, $this->generate_jwt($login));
 				} else {
-					$this->_error(401, 'Invalid Credentials');
+					$this->_error(400, 'Invalid Credentials');
 				}
 			}
 
