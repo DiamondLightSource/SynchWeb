@@ -31,6 +31,10 @@ define(['underscore', 'marionette',
     app.on('current:show', function() {
         controller.current()
     })
+
+    app.on('go:home', function() {
+        controller.goHome()
+    })
   })
        
   return controller
