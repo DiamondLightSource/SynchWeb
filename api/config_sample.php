@@ -1,0 +1,181 @@
+<?php
+
+    # SynchWeb API Configuration Sample
+    # - Many of the parameters in this file will in due course move into the
+    #   database
+
+
+    # Production / Dev Mode Switch
+    # - Dev mode enabled debugging to stdout in addition to httpd error_log
+    #   Values: dev | production
+    $mode = 'dev';
+
+    # Database credentials, db = hostname/database
+    $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
+    $dbtype = 'mysql';
+
+
+    # Encoded JWT key, used to sign and check validaty of jwt tokens
+    # - Create one of these using /api/authentication/key
+    #   This can be changed to invalidate all currently active tokens
+    $jwt_key = '';
+
+
+    # CAS url (if using cas)
+    $cas_url = 'https://cas.server.ac.uk';
+
+    # ldap server
+    $ldap_server = 'altfed.cclrc.ac.uk';
+    $ldap_search = 'dc=fed,dc=cclrc,dc=ac,dc=uk';
+
+    # Upload directory
+    # - used for user image uploads
+    $upload_directory = '/path/to/ispyb2/uploads';
+
+    # MOTD
+    # - Show at the top of every page on first load
+    $motd = 'This is the message of the day.';
+
+    # Maintainance Mode
+    # - Disables site access, showing a message
+    $maintenance = true;
+    $maintenance_message = "This is the maintenance message";
+
+
+    # String replacements for autoprocessing types
+    # First part is searched for in the processing command line
+    $ap_types = array(
+        'fast_dp' => 'Fast DP',
+        '-3da ' => 'XIA2 3da',
+        '-2d ' => 'XIA2 2d',
+        '-2dr ' => 'XIA2 2dr',
+        '-2da ' => 'XIA2 3da',
+        '-3d ' => 'XIA2 3d',
+        '-3dr ' => 'XIA2 3dr',
+        '-3dii ' => 'XIA2 3dii',
+        '-3daii ' => 'XIA2 3daii',
+        '-3diir ' => 'XIA2 3diir',
+        '-dials ' => 'DIALS',
+        'autoPROC' => 'autoPROC',
+    );
+
+
+
+    # Paths
+    # - These map files to physical locations on disk (Currently unused)
+    #   For diffraction images, snapshots, and thumbnails
+
+    # Visit directory on disk
+    $visit_directory = '/dls/<%=BEAMLINENAME%>/data/<%=YEAR%>/<%=VISIT%>';
+
+    # Diffraction image snapshots
+    $jpeg_location = '<%=VISITDIR%>/jpegs/<%=DIR%>/<%=FILE%>.jpeg';
+    $jpeg_thumb_location = '<%=VISITDIR%>/jpegs/<%=DIR%>/<%=FILE%>.thumb.jpeg';
+
+
+    # Email addresses, comma separate for multiple recepients
+    # - Email templates in assets/emails in plain and html/ format
+
+    # From field for emails
+    $email_from  = 'no-reply@server.ac.uk';
+
+    # Site admin
+    # - The feedback form uses this address
+    $email_admin = 'webmaster@server.ac.uk';
+
+    # Recepients for dewar Dispatch / Transfers Emails
+    $dispatch_email = 'ehc@server.ac.uk, goods@server.ac.uk';
+    $transfer_email = 'ehc@server.ac.uk';
+
+    # and for RED experiments
+    $cl3_email = 'cl3team@server.ac.uk, goods@server.ac.uk';
+
+
+    # Industrial Contacts
+    # - Industrial users get a personalised email with in contact details, 
+    #   template in assets/emails/dewar-stores-in-in.html
+    $in_contacts = array('Ind Contact' => 'in@server.ac.uk'
+                        );
+
+
+
+    # Beamline Sample Registration Machines
+    # - Used for touchscreen application (unauthenticated)
+    $blsr = array('1.2.3.4', # my touchscreen computer
+                  );
+
+    # Beamline Sample Registration IP -> Beamline mapping
+    # - Third part of ip is used to identify beamline
+    #   x.x.103.x => i03
+    $ip2bl = array(103 => 'i03',
+                   );
+    
+    # Barcode readers
+    # - These clients use the android app (unauthenticated)
+    $bcr = array('1.2.3.4', # my android device
+                 );
+  
+    
+
+    # Facility Name for statuses, emails, etc
+    # - Used throughout the app for labels
+    $facility_name = 'Diamond Light Source';
+    $facility_short = 'DLS';
+
+    # These idents are used when searching the RCSB for PDBs
+    $facility_pdb_ident = array('DIAMOND BEAMLINE', 'DIAMOND LIGHT SOURCE BEAMLINE');
+
+
+    # Shipping Address for Labels
+    # - This is added to all shipment label PDFs
+    $address = "The Experimental Hall Coordinators\nDiamond Light Source Limited\nChilton\nDidcot\nOxfordshire\nOX11 0DE\nUNITED KINGDOM\nTel: +44 (0)1235 778787\nFax: +44 (0)1235 778499";
+    
+  
+    # Proposal codes to list
+    $prop_codes = array('lb', 'cm', 'mx', 'nt', 'nr', 'sw', 'in', 'mt', 'ee', 'em', 'sm');
+
+
+    # These map proposal types to their proposalcode
+    # - If these are not defined for a proposal type, the api then uses bl_types below
+    $prop_types = array('mx', 'em');
+    
+    # This maps beamlinename in blsession to a proposal type
+    # - Internal maps a beamline to an api "type", there are currently:
+    #     mx, gen, em
+    $bl_types = array('mx' => array('i02', 'i03', 'i04'),
+                      'gen' => array('i11'),
+                      );
+    
+    
+    # Webcam IPs
+    # - These are show on the beamline status and active datacollection lists
+    $webcams = array('i03' => array('1.2.3.4'),
+                     );
+
+    # On-axis viewing (OAV) camera addresses
+    # - Shown on beamline status page for staff, for remote debugging
+    #   Diamond uses mostly axis cameras which provide an mjpeg stream
+    $oavs = array('i03' => 'http://1.2.3.4:8080/OAV.MJPG.mjpg',
+                 );
+
+
+    # Beamline Parameter Type
+    # - Defines what type of system the beamline parameters use
+    #   For future implementation of Tango, currently only support EPICS
+    $bl_pv_type = 'EPICS';
+
+    # PVs for beamline status
+    # - These are displayed on an active visit so remote users can see beamline status
+    #   In future these could be Tango variables
+    $bl_pvs = array(
+                            'i02' => array('Hutch' => 'BL02I-PS-IOC-01:M14:LOP',
+                                           'Port Shutter' => 'FE02I-PS-SHTR-01:STA',
+                                           'Expt Shutter' => 'BL02I-PS-SHTR-01:STA',
+                                           'Fast Shutter' => 'BL02I-EA-SHTR-01:SHUTTER_STATE',
+                                           'Wavelength' => 'BL02I-OP-DCM-01:WLRB',
+                                           'Transmission' => 'BL02I-EA-ATTN-01:CONV_TRANS_RBV',
+                                           ),
+    );
+
+
+?>
