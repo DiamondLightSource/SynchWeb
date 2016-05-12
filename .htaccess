@@ -1,2 +1,10 @@
+# Disable access to .git folders
+RewriteRule ^(.*/)?\.git+ - [F,L]
+ErrorDocument 403 "Access denied"
+
+# Disable trace
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+RewriteRule .* - [F]
+
 RewriteEngine on
-RewriteRule ^(.*)$ /client/client/$1 [L]
+RewriteRule ^(.*)$ /client/$1 [L]
