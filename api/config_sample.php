@@ -38,8 +38,7 @@
 
     # Maintainance Mode
     # - Disables site access, showing a message
-    $maintenance = true;
-    $maintenance_message = "This is the maintenance message";
+    # - This is defined in client/js/config.json
 
 
     # String replacements for autoprocessing types
