@@ -11,8 +11,9 @@
 	class Authenticate {
 		private $user;
 
-		function __construct($app) {
+		function __construct($app, $db) {
 			$this->app = $app;
+			$this->db = $db;
 
 			$this->app->post('/authenticate', array(&$this, 'authenticate'))->conditions(array(
 				'login' => '[A-z0-9]+',
@@ -56,6 +57,27 @@
 
 		    if (sizeof($parts) > 0) {
 		    	if ($parts[0] == 'authenticate') $need_auth = false;
+		    }
+
+
+		    # One time use tokens
+		    $once = $this->app->request->get('token');
+		    if ($once) {
+		    	$token = $this->db->pq("SELECT o.validity, pe.personid, pe.login, CONCAT(p.proposalcode, p.proposalnumber) as prop 
+		    		FROM SW_onceToken o
+		    		INNER JOIN proposal p ON p.proposalid = o.proposalid
+		    		INNER JOIN person pe ON pe.personid = o.personid
+		    		WHERE token=:1", array($once));
+		    	if (sizeof($token)) {
+		    		$token = $token[0];
+
+		    		if ($this->app->request->getResourceUri() == $token['VALIDITY']) {
+		    			$_REQUEST['prop'] = $token['PROP'];
+		    			$this->user = $token['LOGIN'];
+		    			$need_auth = false;
+		    			$this->db->pq("DELETE FROM SW_onceToken WHERE token=:1", array($once));
+		    		}
+		    	}
 		    }
 
 		    if ($need_auth) $this->check_auth();
