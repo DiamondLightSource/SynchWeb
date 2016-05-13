@@ -1,17 +1,13 @@
 define(['marionette',
+        'utils/xhrimage',
         'tpl!templates/imaging/imagehistory.html',
         'tpl!templates/imaging/imagehistorymin.html'
-    ], function(Marionette, template, templatemin) {
+    ], function(Marionette, XHRImage, template, templatemin) {
     
         
     var ThumbView = Marionette.ItemView.extend({
         tagName: 'figure',
-        template: _.template('<a href="/containers/cid/<%=CONTAINERID%>/iid/<%=CONTAINERINSPECTIONID%>/sid/<%=BLSAMPLEID%>"><img src="<%=URL%>"/></a><figcaption>+<%=DELTA%>d</figcaption>'),
-        templateHelpers: function() {
-            return {
-                URL: this.model.urlFor()
-            }
-        },
+        template: _.template('<a href="/containers/cid/<%=CONTAINERID%>/iid/<%=CONTAINERINSPECTIONID%>/sid/<%=BLSAMPLEID%>"><img /></a><figcaption>+<%=DELTA%>d</figcaption>'),
         
         events: {
             'mouseover': 'hover',
@@ -25,6 +21,14 @@ define(['marionette',
         
         initialize: function(options) {
             this.model.on('change:isSelected', this.onSelectedChanged.bind(this))
+            
+            var self = this
+            this.img = new XHRImage()
+            this.img.onload = function() {
+                self.$el.find('img').attr('src', self.img.src)
+            }
+            this.img.load(this.model.urlFor())
+
         },
             
         onSelectedChanged: function() {

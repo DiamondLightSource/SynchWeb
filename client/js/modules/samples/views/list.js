@@ -1,4 +1,6 @@
-define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/addto', 'utils/table'], function(Marionette, TableView, FilterView, AddToProjectView, table) {
+define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/addto', 'utils/table',
+  'utils/xhrimage'], 
+  function(Marionette, TableView, FilterView, AddToProjectView, table, XHRImage) {
 
     
   var ClickableRow = table.ClickableRow.extend({
@@ -32,6 +34,32 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
         return this;
     }
   });
+
+  var SnapshotCell = Backgrid.Cell.extend({
+      render: function() {
+          this.$el.empty()
+
+          if (this.model.get('DCID')) {
+              this.$el.html('<img class="img img1" /> <img class="img img2" />')
+
+              var self = this
+              var img1 = new XHRImage()
+              var img2 = new XHRImage()
+              img1.onload = function() {
+                  self.$el.find('.img1').attr('src', img1.src)
+              }
+
+              img2.onload = function() {
+                  self.$el.find('.img2').attr('src', img2.src)
+              }
+
+              img1.load(app.apiurl+'/image/id/'+this.model.get('DCID')+'/n/2')
+              img2.load(app.apiurl+'/image/id/'+this.model.get('DCID'))
+          }
+
+          return this
+      }
+  })
     
   return Marionette.LayoutView.extend({
     className: 'content',
@@ -50,7 +78,8 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
         { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
 
         { name: 'CONTAINER', label: 'Container', cell: 'string', editable: false },
-        { label: 'Snapshot', cell: table.TemplateCell, test: 'DCID', editable: false, template: '<img class="img" src="'+app.apiurl+'/image/id/<%=DCID%>" /> <img class="img" src="'+app.apiurl+'/image/id/<%=DCID%>/n/2" />' },
+        // { label: 'Snapshot', cell: table.TemplateCell, test: 'DCID', editable: false, template: '<img class="img" src="'+app.apiurl+'/image/id/<%=DCID%>" /> <img class="img" src="'+app.apiurl+'/image/id/<%=DCID%>/n/2" />' },
+        { label: 'Snapshot', cell: SnapshotCell, editable: false },
         { name: 'SC', label: 'SCs', cell: 'string', editable: false },
         { name: 'SCRESOLUTION', label: 'Res', cell: 'string', editable: false },
         { name: 'DC', label: 'DCs', cell: 'string', editable: false },
