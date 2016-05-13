@@ -41,8 +41,15 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
         */
         download: function() {
             console.log('downloading map')
+            if (this.getOption('ty') == 'bigep') {
+        	var pdb_url = app.apiurl+'/download/map/pdb/1/ty/'+this.getOption('ty')+
+                                         '/dt/'+this.getOption('dt')+'/ppl/'+this.getOption('ppl')+
+                                         '/id/'+this.model.get('ID')
+            } else {
+                var pdb_url = app.apiurl+'/download/map/pdb/1/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID')
+            }
             Backbone.ajax({
-                url: app.apiurl+'/download/map/pdb/1/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID'),
+                url: pdb_url,
                 type: 'GET',
                 xhr: this.xhrWithStatus.bind(this, 'Downloading Model'),
                 success: this.onDownload.bind(this)
@@ -89,7 +96,14 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
                }
             }
           
-            xhr.open('GET', app.apiurl+'/download/map/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID'));
+            if (this.getOption('ty') == 'bigep') {
+        	var map_url = app.apiurl+'/download/map/ty/'+this.getOption('ty')+
+                                         '/dt/'+this.getOption('dt')+'/ppl/'+this.getOption('ppl')+
+                                         '/id/'+this.model.get('ID')
+            } else {
+                var map_url = app.apiurl+'/download/map/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID')
+            }
+            xhr.open('GET', map_url);
             xhr.responseType = 'arraybuffer';
             xhr.send();
         },
@@ -301,7 +315,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
         
         defineRepFromController: function() {
             var all = this.getAllAtoms();
-            if (this.ty == 'dimple' || this.ty == 'mrbump') {
+            if (this.ty == 'dimple' || this.ty == 'mrbump'|| this.ty == 'bigep') {
                 this.colorByAtom(all, {});
                 var asu = new THREE.Object3D();
                 this.drawBondsAsLine(asu, all, this.lineWidth * 2);

@@ -1,0 +1,69 @@
+<% if (typeof SETTINGS !== 'undefined') { %>
+	<section class='bigep-settings'>
+		<h2>Settings</h2>
+		<table class='bepm_stats'>
+			<thead>
+				<tr>
+					<th>Processed</th>
+					<th>Anom. scatterer</th>
+					<th>Space group</th>
+					<th>Num. scatterers</th>
+					<th>Dataset type</th>
+					<th>Compound</th>
+					<th>Sequence</th>
+				</tr>
+			</thead>
+			<% _.each(SETTINGS, function(ppl, key) { %>
+				<tr>
+					<td><%=key%></td>
+					<td><%=ppl.atom%></td>
+					<td><%=ppl.spacegroup%></td>
+					<td><%=ppl.nsites%></td>
+					<td><%=ppl.dataset%></td>
+					<td><%=ppl.compound%></td>
+					<td><div class="SEQUENCE bepm-seq seq text"><%=ppl.sequence%></div></td>
+				</tr>
+			<% }) %>
+		</table>
+		<!-- div>
+			<ul>
+				<li><h2>Sequence</h2></li>
+				<li><div class="SEQUENCE seq text"><%=SETTINGS.sequence%></div></li>
+			</ul>
+		</div-->
+	</section>
+<% } %>
+<% if (typeof SHELXC !== 'undefined') { %>
+	<% _.each(SHELXC.PLOTS, function(ppl, key) { %>
+		<section class='bigep-stats clearfix'>
+			<h2><%=key%></h2>
+			<div class="plot_shelx-<%=key%>"></div>
+			<% if (typeof PROC !== 'undefined' && PROC.hasOwnProperty(key)) { %>
+			<section class='bigep-models clearfix'>
+				<table class='bepm_stats'>
+					<thead>
+						<tr>
+							<th>Pipeline</th>
+							<th>Resid. / Frag / Max. Frag.</th>
+							<th>Best MapCC (Resol.)</th>
+							<th></th>
+						</tr>
+					</thead>
+					<% _.each(PROC[key], function(val, prop) { %>
+					<tr>
+						<td><%=prop%></td>
+						<td><%=val.RESID%>&nbsp&nbsp&nbsp/&nbsp&nbsp&nbsp<%=val.FRAGM%>&nbsp&nbsp&nbsp/&nbsp&nbsp&nbsp<%=val.MAXLEN%>&nbsp&nbsp&nbsp</td>
+						<td><%=val.MAPCC%>&nbsp&nbsp&nbsp(<%=val.MAPRESOL%>)&nbsp&nbsp&nbsp </td>
+						<td><p class="r">
+							<a class="view button" href="/dc/map/id/<%=DCID%>/ty/bigep/dt/<%=TAG%>/ppl/<%=prop%>"><i class="fa fa-search"></i> Map / Model Viewer</a>
+							<a class="dll button" href="<%=APIURL%>/download/bigep/id/<%=DCID%>/dt/<%=TAG%>/ppl/<%=prop%>"><i class="fa fa-download"></i> PDB/MTZ file</a>
+							<a class="view button logf" href="<%=APIURL%>/download/bigep/id/<%=DCID%>/dt/<%=TAG%>/ppl/<%=prop%>/log/1"><i class="fa fa-search"></i> Log file</a>
+						</p></td>
+					</tr>
+					<% }) %>
+				</table>
+			</section>
+			<% } %>
+		</section>
+	<% }) %>
+<% } %>

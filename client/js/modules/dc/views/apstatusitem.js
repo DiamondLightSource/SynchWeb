@@ -41,7 +41,10 @@ define(['marionette', 'jquery'], function(Marionette, $) {
            } else {
                this.ui.holder.eq(0).html('Fast DP: ' + val[res[2]] +
                          ' Xia2: ' + val[res[3]] + ' ' +val[res[4]] + ' ' +val[res[5]])
-               this.ui.holder.eq(1).html('Fast EP: ' + val[res[6]] + ' Dimple: ' + val[res[7]] + ' MrBUMP: ' + val[res[8]])
+               this.ui.holder.eq(1).html('Fast EP: ' + val[res[6]] +
+                       ' Dimple: ' + val[res[7]] +
+                       ' MrBUMP: ' + val[res[8]] +
+                       ' Big EP: ' + val[Math.max(res[9], res[10])])
            }
         }
     })

@@ -603,6 +603,10 @@ ol.rounded {
                 font-weight: bold;
                 background: $content-filter-current-background;
             }
+            &.bepm_stats td {
+                padding: 5px;
+                text-align: center;
+            }
 
         }
 
@@ -613,6 +617,50 @@ ol.rounded {
             width: 48%;
             height: 150px;
             float: right;
+            
+            @media (max-width: $breakpoint-vsmall) {
+                height: 100px;
+                float: none;
+            }
+            
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+        
+        .bigep-settings {
+            width: 95%;
+            float: left;
+            padding: 2%;
+        }
+        
+        .bigep-stats {
+            width: 95%;
+            float: left;
+            padding: 2%;
+        }
+        
+        .bigep-models {
+            width: 45%;
+            float: right;
+            padding: 2%;
+        }
+        
+        .bigep-seq {
+        
+            li {
+                span.label {
+                    width: 20%;
+                }
+             }
+         }
+        .plot_shelx-XDS,
+        .plot_shelx-DIALS {
+            width: 45%;
+            height: 250px;
+            float: inherit;
             
             @media (max-width: $breakpoint-vsmall) {
                 height: 100px;

@@ -6,7 +6,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
             'dc': 'dc_list',
             'dc(/visit/:visit)(/dcg/:dcg)(/page/:page)(/s/:search)(/ty/:ty)(/id/:id)': 'dc_list',
             'dc/view/id/:id': 'di_viewer',
-            'dc/map/id/:id(/ty/:ty)': 'mapmodelviewer',
+            'dc/map/id/:id(/ty/:ty)(/dt/:dt)(/ppl/:ppl)': 'mapmodelviewer',
             'dc/summary/visit/:visit': 'summary',
             'dc/sc/visit/:visit': 'sampleChanger',
             'dc/queue/visit/:visit': 'queue',

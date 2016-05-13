@@ -563,7 +563,9 @@
                          array('fast_ep/', 'fast_ep.log', 'Best spacegroup'),
                          array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
                          array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
-                         );
+                         array('big_ep/', '/xia2/3dii-run/big_ep*.log', 'Results for'),
+                         array('big_ep/', '/xia2/dials-run/big_ep_*.log', 'Results for', 'Residues'),
+            );
             
             $out = array();
             
@@ -602,9 +604,7 @@
                 $dc['VIS'] = $this->arg('prop').'-'.$dc['VISIT_NUMBER'];
                 
                 $dc['DIR'] = $this->ads($dc['DIR']);
-                #$root = str_replace($dc['VIS'], $dc['VIS'].'/processed', $dc['DIR']).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
-                $root = preg_replace('/'.$dc['VIS'].'/', $dc['VIS'].'/processed', $dc['DIR'], 1).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
-            
+
                 $this->profile('filestart');
                 if ($dc['OVERLAP'] == 0) {
                     $aps = $aps2;
@@ -617,23 +617,35 @@
                     # 0: didnt run, 1: running, 2: success, 3: failed
                     $val = 0;
 
-                    $rt = $root.$ap[0];
-                    if (file_exists($rt)) {
-                        $val = 1;
-                        $logs = glob($root.$ap[0].'*'.$ap[1]);
-                        
-                        if (sizeof($logs)) $log = $logs[0];
-                        else $log = '';
-                        
-                        if (is_readable($log) && filesize($log) > 0) {
-                            //$file = file_get_contents($log);
-                            $val = 3;
-                            //if (strpos($file, $ap[2]) !== False) $val = 2;
-                            exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
-                            if ($ret == 0) $val = 2;
-                        }
-                    } //else $val = 3;
-                    
+                    foreach (array('/processed', '/tmp') as $loc) {
+                        #$root = str_replace($dc['VIS'], $dc['VIS'].'/processed', $dc['DIR']).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
+                        $root = preg_replace('/'.$dc['VIS'].'/', $dc['VIS'].$loc, $dc['DIR'], 1).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
+                        if (file_exists($root.$ap[0])) {
+                            $val = 1;
+                            $logs = glob($root.$ap[0].'*'.$ap[1]);
+                            
+                            if (sizeof($logs)) $log = $logs[0];
+                            else $log = '';
+                            if (is_readable($log) && filesize($log) > 0) {
+                                //$file = file_get_contents($log);
+                                $val = 3;
+                                //if (strpos($file, $ap[2]) !== False) $val = 2;
+                                exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
+                                if ($ret == 0) $val = 2;
+                                if (sizeof($ap) > 3) {
+                                    $val = 1;
+                                    exec('grep -q -i "'.$ap[3].'" '.$log, $out,$ret);
+                                    if ($ret == 0) {
+                                        $val = 2;
+                                    } else {
+                                        exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
+                                        if ($ret == 0) $val = 3;
+                                    }
+                                }
+                            }
+                            break;
+                        } //else $val = 3;
+                    }
                     array_push($apr, $val);
                     
                 }
@@ -954,7 +966,8 @@
         function _dc_downstream($id) {
             $ap = array('Fast EP' => array('fast_ep', array('sad.mtz', 'sad_fa.pdb')),
                         'MrBUMP' => array('auto_mrbump', array('PostMRRefine.pdb', 'PostMRRefine.mtz')),
-                        'Dimple' => array('fast_dp', array('dimple/final.pdb', 'dimple/final.mtz'))
+                        'Dimple' => array('fast_dp', array('dimple/final.pdb', 'dimple/final.mtz')),
+                        'Big EP' => array('shelxc', array('', ''))
                         );
             
             list($info) = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
@@ -1071,7 +1084,6 @@
                             if (sizeof($stats)) array_push($data, $dat);
                         }
 
-
                     # MrBUMP
                     } else if ($n == 'MrBUMP') {
                         $lf = $root.'/MRBUMP.log';
@@ -1080,11 +1092,12 @@
                             $dat['PLOTS'] = $plots;
                             $dat['STATS'] = $stats;
                         }
-
                         array_push($data, $dat);
+
+                    # BigEP
+                    } else if ($n == 'Big EP') {
+                        $this->_bigep_downstream($root, $data, $info);
                     }
-                    
-                    
                 }
                 
             }
@@ -1092,6 +1105,112 @@
             $this->_output($data);
         }
 
+
+        function _bigep_downstream($root, &$data, $info) {
+            
+            $sg_patterns = array('XDS' => 'xia2/3dii-run*',
+                                 'DIALS' => 'xia2/dials-run*');
+            
+            foreach ($sg_patterns as $name => $sgpt) {
+                $proc_paths = glob($root.$sgpt);
+                if (sizeof($proc_paths)) {
+                    foreach ($proc_paths as $i => $pth) {
+                        
+                        $dat = array('TYPE' => 'Big EP/'.$name.":".$i);
+                        
+                        # Read SHELXC logs
+                        $graph_patterns = array('CHISQ' => array('Chi-sq', 2),
+                                                'ISIGI' => array('<I/sig>', 2),
+                                                'DSIG' => array('<d"/sig>', 2),
+                                                'CC12' => array('CC(1/2)', 2),
+                                                'RESO' => array('Resl.', 3));
+                        $shx_logs = glob($pth.'/*_shelxc.log');
+                        if (sizeof($shx_logs)) {
+                            $shx_log = $shx_logs[0];
+                            if (file_exists($shx_log)) {
+                                $lst = explode("\n", file_get_contents($shx_log));
+                                $graphs = array();
+                                foreach ($lst as $l) {
+                                    foreach ($graph_patterns as $k => $gr) {
+                                        if (strpos($l, $gr[0]) == 1) {
+                                            $graphs[$k] = array_map('floatval', array_slice(preg_split('/\s+/', $l), $gr[1]));
+                                        }
+                                    }
+                                }
+                            }
+                            if ($graphs) {
+                                $dat['SHELXC']['PLOTS'][$name] = array();
+                            } else {
+                                continue;
+                            }
+                            foreach (array_keys($graph_patterns) as $k) {
+                                if ($k != 'RESO' and array_key_exists($k, $graphs)) {
+                                    $dat['SHELXC']['PLOTS'][$name][$k] = array();
+                                }
+                            }
+                            if (array_key_exists('RESO', $graphs)) {
+                                foreach ($graphs['RESO'] as $i => $r) {
+                                    foreach (array_keys($dat['SHELXC']['PLOTS'][$name]) as $k) {
+                                        if (array_key_exists($i, $graphs[$k])) {
+                                            array_push($dat['SHELXC']['PLOTS'][$name][$k], array(1.0/pow($r, 2), $graphs[$k][$i]));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        # Read model building results
+                        $bigep_patterns = array (
+                                'AUTOSHARP' => '/big_ep*/*/autoSHARP/',
+                                'AUTOBUILD' => '/big_ep*/*/AutoSol/',
+                                'CRANK2' => '/big_ep*/*/crank2/' 
+                        );
+                        preg_match('/\/xia2\/(3dii|dials)\-run\w*/', $pth, $sgmatch);
+                        $dtpt = 'big_ep/*'.$sgmatch[0];
+                        foreach ( array ('/processed',
+                                        '/tmp') as $loc ) {
+                            $settings_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt;
+                            $bigep_settings_glob = glob($settings_root.'/big_ep*/*/big_ep_settings.json');
+                            if (sizeof($bigep_settings_glob)) {
+                                preg_match('/\/big_ep\/(?P<tag>\w+)\/xia2\/(3dii|dials)\-run\w*/', $bigep_settings_glob[0], $tagmatch);
+                                $dat['TAG'] = $tagmatch['tag'];
+                                $bigep_settings_json = $bigep_settings_glob[0];
+                                $json_str = file_get_contents($bigep_settings_json);
+                                $dat['SETTINGS'][$name] = json_decode($json_str, true);
+                                break;
+                            }
+                        }
+                        foreach ( $bigep_patterns as $ppl => $pplpt ) {
+                            foreach ( array ('/processed', '/tmp' ) as $loc ) {
+                                $bigep_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt . $pplpt;
+                                $bigep_mdl_glob = glob($bigep_root.'big_ep_model_ispyb.json');
+                                if (sizeof($bigep_mdl_glob)) {
+                                    $bigep_mdl_json = $bigep_mdl_glob[0];
+                                    $json_str = file_get_contents($bigep_mdl_json);
+                                    $json_data = json_decode($json_str, true);
+                                    foreach ( array('RESID' => array('total', 0),
+                                                    'FRAGM' => array('fragments', 0),
+                                                   'MAXLEN' => array('max', 0),
+                                                    'MAPCC' => array('mapcc', 2),
+                                                 'MAPRESOL' => array('mapcc_dmin', 2)) as $k => $v) {
+                                        if (array_key_exists($v[0], $json_data)) {
+                                            $dat['PROC'][$name][$ppl][$k] = number_format($json_data[$v[0]], $v[1]);
+                                        } else {
+                                            $dat['PROC'][$name][$ppl][$k] = null;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (array_key_exists('PROC',$dat) && array_intersect(array_keys($dat['PROC']), array_keys($sg_patterns))) {
+                            array_push( $data, $dat );
+                        }
+                    }
+                }
+            }
+        }
 
         function _parse_ccp4_log($log) {
             $refmac = 0;
