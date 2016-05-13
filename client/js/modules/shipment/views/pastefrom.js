@@ -27,6 +27,9 @@ define(['views/dialog',
         insertContent: function() {
             var data = { samples: [] }
             var lines = this.ui.content.val().split('\n')
+
+            var newp = []
+
             _.each(lines, function(l, i) {
                 var cols = l.split('\t')
                 
@@ -38,15 +41,11 @@ define(['views/dialog',
                         
                         cols[2] = cols[2].replace(/\W/g, '')
                         var p = this.getOption('proteins').findWhere({ ACRONYM: cols[2] })
-                        
-                        if (!p) {
-                            console.log('generating protein', cols[2])
-                            var p = new Protein({ ACRONYM: cols[2] })
-                            p.save({}, { async: false })
-                            this.getOption('proteins').fetch()
-                        }
-                        sample.PROTEINID = p.get('PROTEINID')
+
+                        if (!p)
+                            if (newp.indexOf(cols[2]) == -1) newp.push(cols[2])
             
+                        sample.ACRONYM = cols[2]
                         sample.SPACEGROUP = cols[3]
                         sample.NAME = cols[4]
                         sample.CODE = cols[5]
@@ -58,8 +57,28 @@ define(['views/dialog',
                 }
             }, this)
             
-            this.trigger('content:parsed', data)
-            this.closeDialog()
+            var self = this
+            _ready = []
+            _.each(newp, function(acr, i) {
+                var p = new Protein({ ACRONYM: acr })
+                _ready.push(p.save({}, {
+                    success: function() {
+                        self.getOption('proteins').add(p)
+                    }
+                }))
+            })
+
+            
+            $.when.apply($, _ready).done(function() {
+                _.each(data.samples, function(s,i) {
+                    var p = self.getOption('proteins').findWhere({ ACRONYM: s.get('ACRONYM') })
+                    if (p) s.set('PROTEINID', p.get('PROTEINID'))
+                    else console.log('Could not find protein for acronym:'+s.get('ACRONYM'))
+                })
+
+                self.trigger('content:parsed', data)
+                self.closeDialog()
+            })
         },
         
     })
