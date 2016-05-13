@@ -15,5 +15,8 @@
 	},
 
 	"_gsMajorAxisOrientation" : "Determines whether the major grid scan axis determines the orientation of the view",
-	"gsMajorAxisOrientation"  : true
+	"gsMajorAxisOrientation"  : true,
+
+	"maintenance_message": "This is the maintenance message",
+	"maintenance": false
 }
