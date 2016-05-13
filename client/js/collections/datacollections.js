@@ -40,13 +40,15 @@ define(['underscore', 'backbone', 'backbone.paginator', 'models/datacollection']
         clearTimeout(this.refresh_thread)
 
         var self = this
-        this.refresh_thread = setTimeout(function() {
-            self.fetch({
-                error: function(resp) {
-                    self.doFetch()
-                }
-            })
-        }, 5000)
+        if (this.running) {
+            this.refresh_thread = setTimeout(function() {
+                self.fetch({
+                    error: function(resp) {
+                        self.doFetch()
+                    }
+                })
+            }, 5000)
+        }
     },
   
     parseRecords: function(r, options) {
