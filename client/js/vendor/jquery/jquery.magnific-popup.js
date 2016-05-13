@@ -4,7 +4,7 @@
 ;(function (factory) { 
 if (typeof define === 'function' && define.amd) { 
  // AMD. Register as an anonymous module. 
- define(['jquery'], factory); 
+ define(['jquery', 'utils/xhrimage'], factory); 
  } else if (typeof exports === 'object') { 
  // Node/CommonJS 
  factory(require('jquery')); 
@@ -12,7 +12,7 @@ if (typeof define === 'function' && define.amd) {
  // Browser globals 
  factory(window.jQuery || window.Zepto); 
  } 
- }(function($) { 
+ }(function($, XHRImage) { 
 
 /*>>core*/
 /**
@@ -1126,7 +1126,6 @@ var _imgInterval,
 		return '';
 	};
 
-var XHRImage = require('utils/xhrimage')
 $.magnificPopup.registerModule('image', {
 
 	options: {
