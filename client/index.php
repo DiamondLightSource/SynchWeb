@@ -65,19 +65,19 @@
             <div class="cont_wrap">
                 <div id="motd" class="content"></div>
                 <div id="container">
+                    <div class="content">
                     <!--[if lte IE 11]>
                         <div class="content">
                             <h1>Unsupported Browser</h1>
                             <p>Internet Explorer versions less than 11 are not supported. Please consider using <a href="http://www.mozilla.org/en-GB/firefox/new">Firefox</a> or <a href="http://www.google.co.uk/chrome">Chrome</a></p>
                         </div>
                     <![endif]-->
-                    <?php if ($config->maintenance): ?>
-                        <div class="content">
+                        <?php if ($config->maintenance): ?>
                             <h1>Scheduled Maintenance</h1>
                             <p><?php echo $config->maintenance_message ?></p>
                             <br />
-                        </div>
-                    <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         
