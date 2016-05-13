@@ -176,7 +176,7 @@ define(['marionette', 'views/form',
         checkFCodes: function() {
             var fc = this.$el.find('input[name^=FCODES]').eq(0)
 
-            if (!this.model.preValidate('FCODES[]', fc.val()) && fc.val() && !this.model.preValidate('SHIPPINGNAME', this.ui.name.val())) this.$el.find('button[name="dls"]').fadeIn()
+            if (!this.model.preValidate('FCODES[]', fc.val()) && fc.val() && fc.val().search('MX') > -1 && !this.model.preValidate('SHIPPINGNAME', this.ui.name.val())) this.$el.find('button[name="dls"]').fadeIn()
             else this.$el.find('button[name="dls"]').hide()
         },
         
