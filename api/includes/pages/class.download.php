@@ -13,6 +13,7 @@
                               'ty' => '\w+',
                               'pdb' => '\d',
                               'map' => '\d',
+                              'validity' => '.*',
                               );
 
     
@@ -23,9 +24,21 @@
                               array('/mrbump/id/:id(/log/:log)', 'get', '_mrbump_mtz'),
                               array('/csv/visit/:visit', 'get', '_csv_report'),
                               array('/bl/visit/:visit/run/:run', 'get', '_blend_mtz'),
+                              array('/sign', 'post', '_sign_url'),
             );
 
         
+        # ------------------------------------------------------------------------
+        # Generate a one time token for access to downloads
+        function _sign_url() {
+            if (!$this->has_arg('validity')) $this->_error('No validity specified');
+            $token = md5(uniqid());
+
+            $this->db->pq("INSERT INTO SW_onceToken (token, validity, proposalid, personid) VALUES (:1, :2, :3, :4)", array($token, $this->arg('validity'), $this->proposalid, $this->user->personid));
+            $this->_output(array('token' => $token));
+        }
+
+
         # ------------------------------------------------------------------------
         # Download mtz/log file for Fast DP / XIA2
         function _auto_processing() {
