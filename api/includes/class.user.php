@@ -2,12 +2,13 @@
 
 
 class User {
-	
 
 	function __construct($login, $db, $app) {
 		$this->db = $db;
 		$this->login = $login;
 		$this->app = $app;
+
+		$this->personid = 0;
 		$this->perms = array();
 		$this->groups = array();
 
