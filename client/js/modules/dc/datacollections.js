@@ -75,7 +75,7 @@ function(Marionette, Pages, DCListView,
     },
     
     initialize: function(options) {
-        if (this.model && this.model.get('ACTIVE') == "0") {
+        if (this.model && this.model.get('ACTIVE') != "1") {
             var vis = this.getOption('params').visit
             if (vis) {
                 if (vis.search('cm') == -1 && vis.search('nt') == -1 && vis.search('nr') == -1) options.collection.stop()
