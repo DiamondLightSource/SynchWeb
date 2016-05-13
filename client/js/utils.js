@@ -162,7 +162,20 @@ define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
         
         return (eb >= wt - th && et <= wb + th)
     },
-      
+
+
+    sign: function(options) {
+        Backbone.ajax({
+            url: app.apiurl+'/download/sign',
+            method: 'POST',
+            data: {
+                validity: options.url.replace(app.apiurl, ''),
+            },
+            success: function(resp) {
+                if (options && options.callback) options.callback(resp)
+            }
+        })  
+    }
   }
     
 })
