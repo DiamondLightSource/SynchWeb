@@ -1,4 +1,4 @@
-define(['marionette', 'utils', 'tpl!templates/dc/action.html'], function(Marionette, utils, template) {
+define(['marionette', 'utils', 'utils/xhrimage', 'tpl!templates/dc/action.html'], function(Marionette, utils, XHRImage, template) {
 
     return Marionette.ItemView.extend({
         template: template,
@@ -14,11 +14,19 @@ define(['marionette', 'utils', 'tpl!templates/dc/action.html'], function(Marione
             })
             
             inview.each(function(j,i) {
-                $(i).attr('src', $(i).attr('data-src')).addClass('enabled').load(function() {
-                    $(this).addClass('show')
-                })
-                
+                var image = new XHRImage()
+                image.onload = function() {
+                    $(i).attr('src', this.src)
+                    // Give small amount of time for the image to be replaced
+                    setTimeout(function() {
+                        $(i).addClass('show')
+                    }, 100)
+                }
+                $(i).addClass('enabled')
+                image.load($(i).attr('data-src'))
             })
+
+
         },
     })
        
