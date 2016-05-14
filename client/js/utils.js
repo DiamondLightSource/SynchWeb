@@ -1,6 +1,6 @@
 define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
 
-  return {
+  var utils = {
        
     // Convert timestamp string into javascript date object
     _date_to_unix: function(strtime) {
@@ -175,7 +175,24 @@ define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
                 if (options && options.callback) options.callback(resp)
             }
         })  
+    },
+
+    signHandler: function(e) {
+        e.preventDefault()
+        var target = $(e.target)
+        if (target.is('i') || target.is('img')) target = target.closest('a')
+
+        var url = target.attr('href')
+        utils.sign({
+            url: url,
+            callback: function(resp) {
+                window.location = url+'?token='+resp.token
+            }
+        })
     }
+    
   }
+
+  return utils
     
 })
