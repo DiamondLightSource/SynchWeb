@@ -55,7 +55,16 @@
                 
                 $this->_browser_cache();
                 $this->app->contentType($head);
-                readfile('http://rdb.pri.diamond.ac.uk/php/elog/files/'.$year.'/'.$attachment);
+
+                $ch = curl_init(); 
+                curl_setopt($ch, CURLOPT_URL, 'http://rdb.pri.diamond.ac.uk/php/elog/files/'.$year.'/'.$attachment); 
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+                curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1); 
+                $file = curl_exec($ch); 
+                curl_close($ch);
+
+                echo $file;
             }
             else return;
         
