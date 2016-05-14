@@ -37,6 +37,7 @@ define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
         },
 
         onDestroy: function() {
+            this.model.stop()
             if (this.plot) this.plot.shutdown()
         }
     })       
