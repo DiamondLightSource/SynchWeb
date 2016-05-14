@@ -1,4 +1,4 @@
-define(['marionette', 'views/log', 'tpl!templates/dc/dc_dimple.html', 'utils'], function(Marionette, LogView, template, utils) {
+define(['marionette', 'views/log', 'tpl!templates/dc/dc_dimple.html', 'utils', 'utils/xhrimage'], function(Marionette, LogView, template, utils, XHRImage) {
     
     return Marionette.ItemView.extend({
         template: template,
@@ -12,15 +12,25 @@ define(['marionette', 'views/log', 'tpl!templates/dc/dc_dimple.html', 'utils'], 
         
         events: {
             'click .logf': 'showLog',
+            'click .dll': utils.signHandler,
         },
-
 
         showLog: function(e) {
             e.preventDefault()
-            app.dialog.show(new LogView({ title: this.model.get('TYPE') + ' Log File', url: $(e.target).attr('href') }))
-            return false
+            var url = $(e.target).attr('href')
+            var self = this
+            utils.sign({
+                url: url,
+                callback: function(resp) {
+                    app.dialog.show(new LogView({ title: self.model.get('TYPE') + ' Log File', url: url+'?token='+resp.token }))
+                }
+            })
         },
         
+        showBlob: function() {
+            this.$el.find('.blobs img').attr('src', this.blob.src)
+        },
+
         onDomRefresh: function() {
             console.log('showing dimple')
             this.$el.find('.blobs').magnificPopup({
@@ -31,6 +41,12 @@ define(['marionette', 'views/log', 'tpl!templates/dc/dc_dimple.html', 'utils'], 
                 }
             })
             
+            if (this.model.get('BLOBS') > 0) {
+                this.blob = new XHRImage()
+                this.blob.onload = this.showBlob.bind(this)
+                this.blob.load(app.apiurl+'/image/dimp/id/'+this.getOption('DCID'))
+            }
+
             if (app.mobile()) this.ui.plot.width(0.93*(this.options.holderWidth-14))
             else {
                 this.ui.plot.width(0.67*(this.options.holderWidth-14))

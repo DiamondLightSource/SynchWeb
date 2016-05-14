@@ -8,7 +8,11 @@ define(['marionette',
     'collections/datacollections',
     'modules/mc/collections/intstatuses',
 
-    'views/table', 'utils/table', 'tpl!templates/mc/blend.html'], function(Marionette, JobStatus, Users, Blended, Integrated, StatsView, DCs, IntegrationStatuses, TableView, table, template) {
+    'views/table', 'utils/table', 'utils', 'tpl!templates/mc/blend.html'], 
+    function(Marionette, JobStatus, Users, Blended, Integrated, StatsView, 
+        DCs, IntegrationStatuses, 
+        TableView, table, utils,
+        template) {
 
     var ClickableRow = table.ClickableRow.extend({
         event: 'mc:select',
@@ -104,6 +108,7 @@ define(['marionette',
             'click .blend': 'blend',
             'click @ana': 'analyse',
             'change @ui.user': 'setUser',
+            'click a.mtz': utils.signHandler,
         },
 
 

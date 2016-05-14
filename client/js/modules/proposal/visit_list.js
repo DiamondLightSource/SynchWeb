@@ -1,9 +1,9 @@
 define(['marionette', 'views/table', 'collections/visits', 'utils/table',
-    
+    'utils',
     'tpl!templates/proposal/visitlinks.html',
     'tpl!templates/types/saxs/proposal/visitlinks.html',
     
-    ], function(Marionette, TableView, Visits, table, visitlinks, saxsvisitlinks) {
+    ], function(Marionette, TableView, Visits, table, utils, visitlinks, saxsvisitlinks) {
 
 
     var ClickableRow = table.ClickableRow.extend({
@@ -13,9 +13,13 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
     
 
     var LinksCell = table.TemplateCell.extend({
-      getTemplate: function() {
-        return this.model.get('TYPE') == 'saxs' ? saxsvisitlinks : visitlinks
-      }
+        events: {
+            'click a.dll': utils.signHandler,
+        },
+
+        getTemplate: function() {
+            return this.model.get('TYPE') == 'saxs' ? saxsvisitlinks : visitlinks
+        }
     })
 
        

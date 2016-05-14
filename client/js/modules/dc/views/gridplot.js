@@ -6,8 +6,9 @@ define(['jquery', 'marionette',
         'caman',
         'heatmap',
         'utils',
+        'utils/xhrimage',
         'jquery-ui',
-    ], function($, Marionette, DISTL, GridInfo, canvas, template, Caman, HeatMap, utils) {
+    ], function($, Marionette, DISTL, GridInfo, canvas, template, Caman, HeatMap, utils, XHRImage) {
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
         template: template,
@@ -65,7 +66,7 @@ define(['jquery', 'marionette',
             })
 
             this.hasSnapshot = false
-            this.snapshot = new Image()
+            this.snapshot = new XHRImage()
             this.snapshot.onload = this.snapshotLoaded.bind(this)
 
             this.offset_w = 0
@@ -81,7 +82,7 @@ define(['jquery', 'marionette',
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
             if (m.get('SNS').length)
                 if (m.get('SNS')[2] && this.hasSnapshot == false) {
-                this.snapshot.src = app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/3'
+                this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/3')
                 //this.draw()
             }
         },
@@ -100,7 +101,10 @@ define(['jquery', 'marionette',
             this.canvas.width = this.$el.parent().width()
             this.canvas.height = this.$el.parent().height()
 
-            this.heatmap = new HeatMap.create({ container: this.$el[0] })
+            this.heatmap = new HeatMap.create({ 
+                container: this.$el[0],
+                maxOpacity: .4,
+            })
         },
 
 
@@ -110,6 +114,8 @@ define(['jquery', 'marionette',
 
             var bw = 1000*this.grid.get('DX_MM')/this.grid.get('PIXELSPERMICRONX')
             var bh = 1000*this.grid.get('DY_MM')/this.grid.get('PIXELSPERMICRONY')
+
+            var radius = bw * 1.1
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -166,7 +172,7 @@ define(['jquery', 'marionette',
                     var r = ((v[1] < 1 ? 0 : v[1]) / (max == 0 ? 1 : max)) * sw / 2
 
                     data.push({ x: x, y: y, value: v[1] < 1 ? 0 : v[1], 
-                        //radius: r*2 
+                        radius: radius
                     })
 
                     //if (!this.heatmapToggle) {

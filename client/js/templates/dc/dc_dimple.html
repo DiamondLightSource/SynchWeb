@@ -4,7 +4,7 @@
         <% _.each(_.range(BLOBS), function(i) { %>
         <a href="<%=APIURL%>/image/dimp/id/<%=DCID%>/n/<% print(i+1) %>" title="Dimple Blob <% print(i+1) %>">
             <% if (i == 0) { %>
-                <img src="<%=APIURL%>/image/dimp/id/<%=DCID%>" alt="Dimple Blob 1" />
+                <img alt="Dimple Blob 1" />
             <% } %>
         </a>
         <% }) %>

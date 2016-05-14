@@ -1,4 +1,7 @@
-define(['marionette', 'modules/shipment/views/movecontainer', 'tpl!templates/shipment/containerli.html'], function(Marionette, MoveContainerView, template) {
+define(['marionette', 'modules/shipment/views/movecontainer', 
+    'utils',
+    'tpl!templates/shipment/containerli.html'], function(Marionette, MoveContainerView, 
+        utils, template) {
     
     var EmptyDewar = Marionette.ItemView.extend({
         tagName: 'li',
@@ -11,6 +14,7 @@ define(['marionette', 'modules/shipment/views/movecontainer', 'tpl!templates/shi
         
         events: {
             'click a.move': 'moveContainer',
+            'click a.print': utils.signHandler,
         },
 
         templateHelpers: {

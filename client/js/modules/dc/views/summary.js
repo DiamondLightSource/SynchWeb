@@ -1,4 +1,12 @@
-define(['marionette', 'views/table', 'models/datacollection', 'modules/dc/collections/apstatuses', 'modules/dc/collections/autointegrations', 'tpl!templates/dc/summary.html'], function(Marionette, TableView, DataCollection, APStatuses, AutoIntegrations, template) {
+define(['marionette', 'views/table', 
+    'models/datacollection', 
+    'modules/dc/collections/apstatuses', 
+    'modules/dc/collections/autointegrations', 
+    'utils',
+    'tpl!templates/dc/summary.html'], 
+    function(Marionette, TableView, DataCollection, APStatuses, AutoIntegrations, 
+        utils,
+        template) {
 
     
     var APDataCollection = DataCollection.extend({
@@ -50,6 +58,7 @@ define(['marionette', 'views/table', 'models/datacollection', 'modules/dc/collec
         
         events: {
             'click a[name=update]': 'scoreAPS',
+            'click a.dll': utils.signHandler,
         },
         
         ui: {

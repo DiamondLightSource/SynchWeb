@@ -2,7 +2,8 @@ define(['marionette',
     'views/tabs', 'modules/dc/collections/autointegrations',
     'modules/dc/views/rdplot',
     'views/log',
-    'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, AutoIntegrations, RDPlotView, LogView, template) {
+    'utils',
+    'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, AutoIntegrations, RDPlotView, LogView, utils, template) {
        
     var EmptyAP = Marionette.ItemView.extend({ template: '<p>No auto procesing available for this data collection</p>', tagName: 'p' })
     
@@ -13,11 +14,20 @@ define(['marionette',
         events: {
             'click .logf': 'showLog',
             'click .rd': 'showRD',
+            'click .dll': utils.signHandler,
         },
         
         showLog: function(e) {
             e.preventDefault()
-            app.dialog.show(new LogView({ title: this.model.get('TYPE') + ' Log File', url: $(e.target).attr('href') }))
+            var url = $(e.target).attr('href')
+            var self = this
+            utils.sign({
+                url: url,
+                callback: function(resp) {
+                    app.dialog.show(new LogView({ title: self.model.get('TYPE') + ' Log File', url: url+'?token='+resp.token }))
+                }
+            })
+            // app.dialog.show(new LogView({ title: this.model.get('TYPE') + ' Log File', url: $(e.target).attr('href') }))
             return false
         },
         

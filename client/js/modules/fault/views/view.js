@@ -9,10 +9,11 @@ define(['marionette',
     
     'utils/editable',
     'utils',
+    'utils/xhrimage',
     'tpl!templates/fault/view.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, Visits, Beamlines, Systems, Components, SubComponents,
-Editable, utils, template, Backbone) {
+Editable, utils, XHRImage, template, Backbone) {
     
     
         
@@ -44,6 +45,10 @@ Editable, utils, template, Backbone) {
             btlst: 'input[name="BEAMTIMELOST_STARTTIME"]',
             btlen: 'input[name="BEAMTIMELOST_ENDTIME"]',
             lost: 'span.LOST',
+        },
+
+        events: {
+            'click .fa a': utils.signHandler,
         },
         
         onRender: function() {
@@ -127,7 +132,19 @@ Editable, utils, template, Backbone) {
             }
             
             this.toggleRes(true)
-            this.toggleBTL(true)        
+            this.toggleBTL(true)
+
+            if (this.model.get('ATTACH_IMAGE')) {
+                var img = new XHRImage()
+                var self = this
+                img.onload = function() {
+                    var tag = $('<img alt="'+self.model.get('ATTACHMENT')+'" />')
+                    tag.attr('src', img.src)
+                    self.$el.find('.fa a').append(tag)
+                }
+
+                img.load(app.apiurl+'/image/fa/fid/'+this.model.get('FAULTID'))
+            }
         },
 
         

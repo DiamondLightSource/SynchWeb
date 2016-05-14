@@ -55,11 +55,11 @@
 
 
             <% if (ATTACHMENT) { %>
-            <li>
+            <li class="clearfix">
 
                 <% if (ATTACH_IMAGE) { %>
-                    <div class="image text">
-                        <a href="<%=APIURL%>/image/fa/fid/<%=FAULTID%>"><img src="<%=APIURL%>/image/fa/fid/<%=FAULTID%>" alt="<%=ATTACHMENT%>" /></a>
+                    <div class="image text fa">
+                        <a href="<%=APIURL%>/image/fa/fid/<%=FAULTID%>"></a>
                     </div>
                 <% } else { %>
                     <div class="ATTACHMENT text">

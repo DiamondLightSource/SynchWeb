@@ -10,6 +10,7 @@ define(['marionette',
     'modules/shipment/views/dewarhistory',
     
     'utils/editable',
+    'utils',
     'tpl!templates/shipment/shipment.html',
     
     'backbone', 'backbone-validation'], function(Marionette,
@@ -22,7 +23,7 @@ define(['marionette',
         DewarHistory,
         DewarHistoryView,
         
-        Editable, template,
+        Editable, utils, template,
         Backbone){
 
     return Marionette.LayoutView.extend({
@@ -39,6 +40,7 @@ define(['marionette',
         events: {
             'click #add_dewar': 'addDewar',
             'click a.send': 'sendShipment',
+            'click a.pdf': utils.signHandler,
         },
         
         sendShipment: function(e) {

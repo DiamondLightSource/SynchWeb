@@ -3,9 +3,9 @@ define(['marionette',
     'views/pvs',
     'modules/status/views/gdalog',
     'modules/status/views/epicspages',
-    
+    'utils',
     'tpl!templates/status/status.html',
-    ], function(Marionette, PVView, GDALog, EpicsPagesView, template) {
+    ], function(Marionette, PVView, GDALog, EpicsPagesView, utils, template) {
     
     
         
@@ -26,7 +26,16 @@ define(['marionette',
         toggleOAV: function() {
             this.$el.find('div.status.oavs').slideToggle()
             
-            this.$el.find('.oav img').attr('src', this.$el.find('div.status.oavs').is(':visible') ? (app.apiurl+'/image/oav/bl/'+this.getOption('bl')) : '')
+            if (this.$el.find('div.status.oavs').is(':visible')) {
+                var self = this
+                var url = app.apiurl+'/image/oav/bl/'+this.getOption('bl')
+                utils.sign({
+                    url: url,
+                    callback: function(resp) {
+                        self.$el.find('.oav img').attr('src', url+'?token='+resp.token)        
+                    }
+                })
+            }
         },
         
         templateHelpers: function() {
@@ -45,6 +54,17 @@ define(['marionette',
             
             this.$el.find('div.status.pv, div.status.webcams').show()
             this.pvs.show(new PVView({ bl: this.getOption('bl') }))
+
+            var self = this
+            this.$el.find('.webcam img').each(function(i,w) {
+                var url = app.apiurl+'/image/cam/bl/'+self.getOption('bl')+'/n/'+i
+                utils.sign({
+                    url: url,
+                    callback: function(resp) {
+                        $(w).attr('src', url+'?token='+resp.token)        
+                    }
+                })
+            })
 
             /*var self = this
             this.$el.find('.webcam img').each(function(i,w) {

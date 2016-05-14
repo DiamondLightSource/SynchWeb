@@ -81,6 +81,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
                     }
           
                     xhr2.open('GET', app.apiurl+'/download/map/ty/'+self.getOption('ty')+'/id/'+self.model.get('ID')+'/map/2');
+                    if (app.token) xhr2.setRequestHeader('Authorization','Bearer ' + app.token);
                     xhr2.responseType = 'arraybuffer';
                     xhr2.send();
                     
@@ -91,6 +92,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
           
             xhr.open('GET', app.apiurl+'/download/map/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID'));
             xhr.responseType = 'arraybuffer';
+            if (app.token) xhr.setRequestHeader('Authorization','Bearer ' + app.token);
             xhr.send();
         },
         
@@ -113,6 +115,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
             var p = this.glmol.protein
             var self = this
             
+            self.ui.status.html('Generating Symmetry Mates')
             Backbone.ajax({
                 url: app.apiurl+'/dc/sym',
                 data: { a: p.a,
@@ -138,6 +141,7 @@ define(['marionette', 'three', 'glmol', 'gzip', 'modules/dc/collections/downstre
                     })
                    
                     if (_.isFunction(callback)) callback()
+                    self.ui.status.html('')
                 }
            })
 

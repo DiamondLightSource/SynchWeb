@@ -1,7 +1,8 @@
 define(['marionette',
         'views/pvs',
+        'utils',
         'tpl!templates/status.html',
-    ], function(Marionette, PVView, template) {
+    ], function(Marionette, PVView, utils, template) {
 
 
     return Marionette.LayoutView.extend({
@@ -33,7 +34,14 @@ define(['marionette',
                 this.pvs.show(new PVView({ bl: this.getOption('bl') }))
                 var self = this
                 this.$el.find('.webcam img').each(function(i,w) {
-                    $(w).attr('src', app.apiurl+'/image/cam/bl/'+self.getOption('bl')+'/n/'+i+'?prop='+app.prop)
+                    var url = app.apiurl+'/image/cam/bl/'+self.getOption('bl')+'/n/'+i
+                    utils.sign({
+                        url: url,
+                        callback: function(resp) {
+                            $(w).attr('src', url+'?token='+resp.token)        
+                        }
+                    })
+                    // $(w).attr('src', app.apiurl+'/image/cam/bl/'+self.getOption('bl')+'/n/'+i+'?prop='+app.prop)
                 })
                 
             } else {

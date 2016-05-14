@@ -3,13 +3,14 @@ define(['marionette', 'backbone',
         'views/validatedrow',
         'utils/editable',
         'utils/forms',
+        'utils',
     
         'tpl!templates/shipment/dewarlist.html',
         'tpl!templates/shipment/dewarlistrow.html',
         'tpl!templates/shipment/dewarlistrownew.html',
     
         'backbone-validation',
-    ], function(Marionette, Backbone, Visits, ValidatedRow, Editable, forms, template, rowtemplate, rowtemplatenew) {
+    ], function(Marionette, Backbone, Visits, ValidatedRow, Editable, forms, utils, template, rowtemplate, rowtemplatenew) {
     
         
     var GridRow = ValidatedRow.extend(_.extend({}, forms, {
@@ -28,6 +29,7 @@ define(['marionette', 'backbone',
             //'mouseover td': 'showDewar',
             'click td': 'showDewar',
             'click a.deact': 'deactivateDewar',
+            'click a.print': utils.signHandler,
         },
         
         ui: {

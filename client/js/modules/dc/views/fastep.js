@@ -11,12 +11,19 @@ define(['marionette', 'views/log', 'tpl!templates/dc/dc_fastep.html', 'utils'], 
         
         events: {
             'click .logf': 'showLog',
+            'click .dll': utils.signHandler,
         },
             
         showLog: function(e) {
             e.preventDefault()
-            app.dialog.show(new LogView({ title: this.model.get('TYPE') + ' Log File', url: $(e.target).attr('href') }))
-            return false
+            var url = $(e.target).attr('href')
+            var self = this
+            utils.sign({
+                url: url,
+                callback: function(resp) {
+                    app.dialog.show(new LogView({ title: self.model.get('TYPE') + ' Log File', url: url+'?token='+resp.token }))
+                }
+            })
         },
         
         onDomRefresh: function() {
