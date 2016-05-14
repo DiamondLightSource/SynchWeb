@@ -4,14 +4,14 @@
             <li><a href="/<%=l%>"><i class="fa fa-2x fa-<%=i.icon%>"></i> <span class="icon-label"><%=i.title%></span></a></li>
         <% }) %>
     <% } %>
-    <li><a href="<%=APIURL%>/logout" title="Logout"><i class="fa fa-sign-out fa-2x"></i> <span class="icon-label">Logout</span></a></li>
+    <li><a href="#" title="Logout" class="logout"><i class="fa fa-sign-out fa-2x"></i> <span class="icon-label">Logout</span></a></li>
 </ul>
 
 <a class="icon pull" href="#"><i class="fa fa-bars fa-2x"></i> <span class="icon-label">Menu</span></a>
 
 <% if (PROPOSAL || IS_STAFF) { %>
-<a class="icon" href="/"><i class="fa fa-home fa-2x"></i> <span class="icon-label">Home</span></a>
 <% } %>
+<a class="icon" href="/"><i class="fa fa-home fa-2x"></i> <span class="icon-label">Home</span></a>
 
 <% if (IS_STAFF) { %>
 <a class="icon" href="/cal"><i class="fa fa-calendar fa-2x"></i> <span class="icon-label">Calendar</span></a>
