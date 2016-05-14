@@ -47,7 +47,7 @@
         function _get_users() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
 
-            $info = $this->db->pq("SELECT s.beamlinename as bl, TO_CHAR(s.startdate, 'YYYY') as yr FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-') s.visit_number) LIKE :1", array($this->arg('visit')));
+            $info = $this->db->pq("SELECT s.beamlinename as bl, TO_CHAR(s.startdate, 'YYYY') as yr FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
 
             if (!sizeof($info)) $this->_error('No such visit');
             else $info = $info[0];

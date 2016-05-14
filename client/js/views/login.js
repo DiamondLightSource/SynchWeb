@@ -32,6 +32,7 @@ define(['views/form',
         
         success: function(model, response, options) {
             app.token = response.jwt
+            sessionStorage.setItem('token', app.token)
             console.log('success from login', app.token)
             this.$el.find('form').addClass('loading')
             app.getuser({
