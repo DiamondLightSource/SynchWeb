@@ -34,6 +34,22 @@ define(['marionette', 'backbone', 'tpl!templates/header.html'], function(Marione
         
         events: {
             'click a.pull': 'showMenu',
+            'click a.logout': 'logOut',
+        },
+
+        logOut: function(e) {
+            e.preventDefault()
+
+            sessionStorage.removeItem('token')
+            delete app.token
+
+            sessionStorage.removeItem('prop')
+            delete app.prop
+
+            app.trigger('sidebar:render')
+
+            app.navigate('/');
+            this.render()
         },
         
         showMenu: function(e) {
