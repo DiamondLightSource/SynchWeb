@@ -25,6 +25,7 @@ define(['marionette', 'tpl!templates/sidebar.html', 'jquery.cookie'], function(M
             
             //app.on('proposal:change', this.setProposal, this)
             this.listenTo(app, 'proposal:change', this.setProposal, this)
+            this.listenTo(app, 'sidebar:render', this.render, this)
             this.listenTo(app.content, 'show', this.doToggleHelp, this)
         },
         
