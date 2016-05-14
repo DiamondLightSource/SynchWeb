@@ -8,6 +8,7 @@ define(['marionette',
     'views/table',
     'utils/table',
     'utils/editable',
+    'utils/xhrimage',
     'tpl!templates/shipment/regdewar.html',
     'jquery',
     'jquery.mp',
@@ -20,7 +21,24 @@ define(['marionette',
 
     TableView,
     table,
-    Editable, template, $){
+    Editable, XHRImage, template, $){
+
+
+    var ImageCell = Backgrid.Cell.extend({ 
+        render: function() {
+            this.$el.empty()
+            this.$el.html('<a class="popup" href="'+app.apiurl+'/image/dr/'+this.model.get('DEWARREPORTID')+'"><img class="img" alt="attachment" /></a>')
+
+            var self = this
+            var img = new XHRImage()
+            img.onload = function() {
+                self.$el.find('img').attr('src', img.src)
+            }
+            img.load(app.apiurl+'/image/dr/'+this.model.get('DEWARREPORTID'))
+
+            return this
+        }
+    })
             
     return Marionette.LayoutView.extend({
         className: 'content',
@@ -90,7 +108,7 @@ define(['marionette',
             var columns = [
                 { name: 'BLTIMESTAMP', label: 'Time / Date', cell: 'string', editable: false },
                 { name: 'REPORT', label: 'Report', cell: 'string', editable: false },
-                { label: 'Image', test: 'ATTACHMENT', cell: table.TemplateCell, editable: false, template: '<a class="popup" href="'+app.apiurl+'/image/dr/<%=DEWARREPORTID%>"><img class="img" src="'+app.apiurl+'/image/dr/<%=DEWARREPORTID%>" alt="attachment" /></a>' },
+                { label: 'Image', cell: ImageCell, editable: false },
             ]
 
             this.reptable = new TableView({ collection: this.reports, 
