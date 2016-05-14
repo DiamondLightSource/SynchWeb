@@ -56,7 +56,7 @@
 		    }
 
 		    if (sizeof($parts) > 0) {
-		    	if ($parts[0] == 'authenticate') $need_auth = false;
+		    	if ($parts[0] == 'authenticate' || $parts[0] == 'options') $need_auth = false;
 		    }
 
 
@@ -77,8 +77,13 @@
 		    			$need_auth = false;
 		    			$this->db->pq("DELETE FROM SW_onceToken WHERE token=:1", array($once));
 		    		}
+		    	} else {
+		    		$this->_error(400, 'Invalid one time authorisation token');
 		    	}
 		    }
+
+		    # Remove tokens more than 10 seconds old, they should have been used
+		    $this->db->pq("DELETE FROM SW_onceToken WHERE TIMESTAMPDIFF('SECOND', recordTimeStamp, CURRENT_TIMESTAMP) > 10");
 
 		    if ($need_auth) $this->check_auth();
 		}
@@ -133,11 +138,11 @@
 
 				// Invalid token
 				} catch (Exception $e) {
-					$this->_error(401, 'Invalid token');
+					$this->_error(401, 'Invalid authorisation token');
 				}
 
 			} else {
-				$this->_error(401, 'No token provided');
+				$this->_error(401, 'No authorisation token provided');
 			}
 		}
 
