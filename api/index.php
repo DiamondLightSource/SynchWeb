@@ -31,10 +31,8 @@
 
     $app = new \Slim\Slim(array(
         'mode' => $mode == 'production' ? 'production' : 'development'
-        // 'mode' => 'development'
     ));
 
-    // $db->set_app($app);
 
     $app->configureMode('production', function () use ($app) {
         $app->config(array(
@@ -49,6 +47,7 @@
             'debug' => true
         ));
     });
+    
 
     $app->get('/options', function() use ($app) {
         global $motd;
@@ -60,77 +59,30 @@
     //if (substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')) ob_start("ob_gzhandler");
     //else ob_start();
 
-    require_once('OracleSession.php');
-    $handler = new OracleSessionHandler();
-    session_set_save_handler(
-                             array($handler, '_open'),
-                             array($handler, '_close'),
-                             array($handler, '_read'),
-                             array($handler, '_write'),
-                             array($handler, '_destroy'),
-                             array($handler, '_gc')
-                             );
     
     // the following prevents unexpected effects when using objects as save handlers
     register_shutdown_function('session_write_close');
 
-    // require_once('includes/class.auth.php');
-    // $auth = new Authenticate($app);
-    // $auth->check_auth_required();
-
-    
-    $parts = explode('/', $app->request->getResourceUri()); 
-    if (sizeof($parts)) array_shift($parts);
-
-    $need_auth = true;
-    # Work around to allow beamline sample registration without CAS authentication
-    if (sizeof($parts) >= 2) {
-        if (
-            # For use on the touchscreen computers in the hutch
-            (($parts[0] == 'assign') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
-            (($parts[0] == 'shipment' && $parts[1] == 'containers') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
-
-            # Calendar ICS export
-            ($parts[0] == 'cal' && $parts[1] == 'ics' && $parts[2] == 'h') || 
-
-            # Allow barcode reader unauthorised access, same as above, certain IPs only
-            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && in_array($_SERVER["REMOTE_ADDR"], $bcr))
-            ) {
-            $need_auth = false;
-        }
-    }
-    
-    
-    if ($need_auth) {
-        require_once 'lib/CAS/CAS.php';
-        phpCAS::client(CAS_VERSION_2_0, 'liveauth.diamond.ac.uk', 443, '/cas');
-        // phpCAS::setCasServerCACert($cacert);
-        phpCAS::setNoCasServerValidation();
-        phpCAS::forceAuthentication();
-    }
+    require_once('includes/class.auth.php');
+    $auth = new Authenticate($app, $db);
+    $auth->check_auth_required();
 
 
     date_default_timezone_set('Europe/London');
     
     include_once('includes/class.page.php');
-    
 
 
     require_once('includes/class.user.php');
-    $login = class_exists('phpCAS') ? phpCAS::getUser() : null;
+    $login = $auth->get_user();
     $user = new User($login, $db, $app);
 
 
-    if ($parts[0] == 'logout') {
-        $db->pq("INSERT INTO log4stat (id,priority,log4jtimestamp,msg,detail) 
-            VALUES (s_log4stat.nextval, 'ISPYB2_STAT', SYSDATE, 'LOGOFF', :1)", 
-            array($login));
-        phpCAS::logout();
-    }
-
-    $chk = $db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($user->login));
-    if (sizeof($chk)) {
-        $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
+    if ($user->login) {
+        $chk = $db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($user->login));
+        if (sizeof($chk)) {
+            $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
+        }
     }
     
     
