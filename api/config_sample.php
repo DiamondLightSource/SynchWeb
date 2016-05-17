@@ -21,10 +21,15 @@
     $jwt_key = '';
 
 
+    # Auth type
+    # Can be cas, ldap
+    $authentication_type = 'cas';
+
+
     # CAS url (if using cas)
     $cas_url = 'https://cas.server.ac.uk';
 
-    # ldap server
+    # ldap server, used for lookup and authentication (if using)
     $ldap_server = 'altfed.cclrc.ac.uk';
     $ldap_search = 'dc=fed,dc=cclrc,dc=ac,dc=uk';
 
