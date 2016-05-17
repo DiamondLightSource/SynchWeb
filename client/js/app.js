@@ -19,6 +19,7 @@ define(['backbone', 'marionette', 'underscore', 'jquery',
     'views/header',
     'views/sidebar',
     'views/dialogregion',
+    'views/login',
     
     'models/proposal',
     'models/options',
@@ -27,7 +28,7 @@ define(['backbone', 'marionette', 'underscore', 'jquery',
     'json!config.json',
     'jquery.cookie', 'jquery-ui',
         ],
-function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Proposal, Options, utils, config) {
+function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, LoginView, Proposal, Options, utils, config) {
 
   window.app = new Marionette.Application()
 
@@ -42,7 +43,29 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
 
   // reference to config
   app.config = config
+
+  // Restore token if its in sessionStorage
+  app.token = sessionStorage.getItem('token')
   
+
+  // Allow the app to autoupdate itself when running
+  app.checkForUpdate = function() {
+      Backbone.ajax({
+          url: app.appurl+'/js/config.json',
+          success: function(config) {
+              if (config.build != app.config.build) {
+                  app.alert({ message: 'An update to SynchWeb is available. This page will automatically refresh in 5 secods' })
+                  setTimeout(function() {
+                      window.location.reload()
+                  }, 5000)
+              } 
+
+              setTimeout(app.checkForUpdate, 1000 * 60 * 30)
+          },
+      })
+  }
+  app.checkForUpdate()
+
 
   // Allow us to set a global base url for the API
   var oldSync = Backbone.sync;
@@ -58,7 +81,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
   // Pass prop to Backbone.ajax
   var oldAjax = Backbone.ajax
   Backbone.ajax = function(options) {
-      var prop = $.cookie('ispyb_prop_'+app.user)
+      var prop = app.prop
 
       // FormData
       if (options.data instanceof FormData) {
@@ -79,7 +102,25 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
           options.data.prop = prop
       }
 
+      // Send token with requst
+      if (app.token) {
+          options.beforeSend = function(request){
+              request.setRequestHeader('Authorization', 'Bearer ' + app.token);
+          }
+      }
+
       return oldAjax.call(this, options)
+  }
+
+
+  // Override so we can redirect to login when theres no token present
+  Backbone.Router.prototype.execute = function(callback, args, name) {
+      if (!app.token) {
+        app.login()
+        return false
+      }
+
+      if (callback) callback.apply(this, args)
   }
 
 
@@ -98,53 +139,30 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
    is disconnected from the interwebs
   */
   $(document).ajaxError(function(event, xhr, settings, error) {
-    console.log('ajax error', 'status', xhr.status, 'code', xhr.statusCode(), settings, error)
+    console.log('ajax error', 'status', xhr.status, 'code', settings, error)
 
-    if (xhr.status == 0) app.login(xhr)
+    var json;
+    if (xhr.responseText) {
+        try {
+            json = $.parseJSON(xhr.responseText)
+        } catch(err) {
+
+        }
+    }
+    var msg = json && (json.error || json.msg) ? (json.error ? json.error : json.msg) : error
+
+    if (xhr.readyState == 0) app.message({ title: 'Network Connection Unavailable', message: 'There seems to be a problem with your network connection' })
+
+    if (xhr.status == 401) app.login(xhr)
+    if (xhr.status == 500) app.alert({ message: 'An application error has occured <pre>'+msg+'</pre>', persist: 'e500' })
+    if (xhr.status == 503) app.alert({ message: 'An database error has occured <pre>'+msg+'</pre>', persist: 'e503' })
   })
     
-    
-  /*
-   I'd love to know a better way to do this.
-   We try and load a page from the API, when we can read the href of
-   the iframe we know we've been reidrected to the resource from CAS
-   and the user is logged in.
-  */
-  app.login = function(xhr) {
-    $('iframe').attr('src', app.apiurl+'/users/login').load(function() {
-        $('#login').dialog('open')
-        var poll = true
-        var refresh_thread = null
-        var refresh = function() {
-            if (poll) {
-                clearTimeout(refresh_thread)
-                /*
-                 This will throw an exception if the page is not on the same origin
-                 as the client
-                */
-                try {
-                    var loc = $('#login iframe').contents().get(0).location.href
-                    poll = false
-                    var content = $('#login iframe').contents()[0].body.innerHTML
-                    if (content.indexOf('CAS') > -1) {
-                        $('#login').dialog('close')
-                        app.message({ title: 'Authentication Failure', message: 'We couldnt log you in. Please try clearing your cookies, and / or restarting your browser' })
-                        return
-                    } else {
-                        console.log('logged in', loc)
-                        $('#login').dialog('close')
-                        app.getuser()
-                    }
-                    // if (xhr) Backbone.ajax(xhr)
+  
 
-                } catch (e) {
-                    refresh_thread = setTimeout(refresh, 1000)
-                }
-            }
-            
-        }
-        refresh()
-    })
+  app.login = function(xhr) {
+      app.bc.reset([{ title: 'Login' }])
+      app.content.show(new LoginView())
   }
     
     
@@ -152,18 +170,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
     Load module routers and startup application
   */
   app.addInitializer(function(options){
-    $('#login').dialog({
-      resizable: false,
-      width: '100%', // : '80%',
-      height: $(window).height(),
-      modal: true,
-      autoOpen: false,
-      closeOnEscape: false,
-      draggable: false,
-      title: 'Login',
-      dialogClass: 'no-close'
-    })
-      
     require([
         'modules/dc/router',
         'modules/proposal/router',
@@ -195,7 +201,15 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
           app.header.show(this.headerview)
         }
 
-        app.getuser()
+
+        if (app.token) app.getuser({ 
+          callback: function() {
+              if (!Backbone.History.started) app.starthistory()
+          }
+        })
+        else {
+          if (!Backbone.History.started) app.starthistory()
+        }
     })
   })
     
@@ -203,26 +217,25 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
   /*
    Get the fedid for the logged in user to read cookie
   */
-  app.getuser = function() {
+  app.getuser = function(options) {
     Backbone.ajax({
       url: app.apiurl+'/users/current',
-      // data: { prop: app.prop },
       success: function(resp) {
           app.user = resp.user
           app.personid = resp.personid
           app.staff = resp.is_staff
-          app.type = resp.ty
+          if (!app.type) app.type = resp.ty
 
           // Should put this somewhere else...
           app.user_can = function(perm) {
             return resp.permissions.indexOf(perm) > -1
           }
-        
+
           app.cookie(null, function() {
-              if (!Backbone.History.started) app.starthistory()
-              console.log('success', resp)
+            if (options && options.callback) options.callback()
           })
       },
+
     })
   }
     
@@ -239,12 +252,14 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
     
   /*
    Cookie the selected proposal
+      rename me app.get_proposal()
   */
   app.cookie = function(prop, callback) {
-    if (prop) $.cookie('ispyb_prop_'+app.user, prop, { path: '/' })
-    else prop = $.cookie('ispyb_prop_'+app.user)
+    if (prop) sessionStorage.setItem('prop', prop)
+    else prop = sessionStorage.getItem('prop')
+      
+    app.prop = prop
         
-    //console.log('prop', prop, callback)
     if (prop) {
         var proposal = new Proposal({ PROPOSAL: prop })
         proposal.fetch({
@@ -259,13 +274,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
                 })
             },
 
-            // error: function() {
-            //     $.removeCookie('ispyb_prop_'+app.user)
-            //     app.trigger('proposals:show')
-            // }
         })
     } else if (callback) callback()
-    //app.trigger('proposal:change', prop)
   },
     
 
@@ -385,12 +395,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
               console.log('routing', arguments)
               log()
           })
-          
-          
-          if(Backbone.history.fragment === ""){
-            //if (!app.prop) app.trigger('proposals:show')
-            //else app.trigger('current:show')
-          }
       }
 
       app.loadopts()
@@ -406,7 +410,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Prop
       })
   }
 
-  log()
+  // log()
        
   return app
   
