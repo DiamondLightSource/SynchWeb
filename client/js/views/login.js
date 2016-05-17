@@ -12,6 +12,15 @@ define(['views/form',
 
     var Login = Backbone.Model.extend({
         url: '/authenticate',
+        validation: {
+            login: {
+                required: true,
+            },
+
+            password: {
+                required: true
+            },
+        }
     })
 
 
