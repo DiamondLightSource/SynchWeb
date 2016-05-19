@@ -8,6 +8,7 @@
         public static $arg_list = array('id' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 'h' => '\d\d',
             'dcg' => '\d+', 
             'COMMENTS' => '.*',
+            'BLSAMPLEID' => '\d+',
             'pid' => '\d+',
             'sid' => '\d+',
 
@@ -22,7 +23,7 @@
                               array('/chi', 'post', '_chk_image'),
                               array('/dat/:id', 'get', '_plot'),
 
-                              array('/single/t/:t/:id', 'patch', '_set_comment'),
+                              array('/single/t/:t/:id', 'patch', '_update_dc'),
                               array('/dl/id/:id', 'get', '_download'),
 
                               array('/comments(/:dcid)', 'get', '_get_comments'),
@@ -64,7 +65,7 @@
             } else if ($this->has_arg('sid') && $this->has_arg('prop')) {
                 $info = $this->db->pq("SELECT s.blsampleid FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE s.blsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('sid'), $this->arg('prop')));
                 
-                $sess[0] = $t.'.blsampleid=:'.($i+1);
+                $sess[0] = 'dc.blsampleid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('sid'));
 
 
@@ -396,18 +397,32 @@
         }
         
         # ------------------------------------------------------------------------
-        # Update comment for a data collection
-        function _set_comment() {
+        # Update comment and blsample for a data collection
+        function _update_dc() {
             if (!$this->arg('id')) $this->_error('No data collection id specified');
-            if (!$this->arg('COMMENTS')) $this->_error('No comment specified');
-            
+
             $com = $this->db->pq('SELECT comments from datacollection WHERE datacollectionid=:1', array($this->arg('id')));
-            
             if (!sizeof($com)) $this->_error('No such data collection');
-            
-            $this->db->pq("UPDATE datacollection set comments=:1 where datacollectionid=:2", array($this->arg('COMMENTS'), $this->arg('id')));
-            
-            $this->_output(array('COMMENTS' => $this->arg('COMMENTS')));
+
+            foreach(array('COMMENTS', 'BLSAMPLEID') as $f) {
+                if ($this->has_arg($f)) {
+
+                    # Check the sample exists and belongs to the current proposal
+                    if ($f == 'BLSAMPLEID') {
+                        $s = $this->db->pq("SELECT blsampleid 
+                            FROM blsample b
+                            INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                            INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+                            INNER JOIN proposal p ON p.proposalid = pr.proposalid
+                            WHERE blsampleid=:1 AND p.proposalid=:2", array($this->arg($f), $this->proposalid));
+
+                        if (!sizeof($s)) $this->_error('No such sample');
+                    }
+
+                    $this->db->pq("UPDATE datacollection SET $f=:1 WHERE datacollectionid=:2", array($this->arg($f), $this->arg('id')));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
         }
 
 
