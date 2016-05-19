@@ -130,8 +130,7 @@
 
                     dc.runstatus,
                     'data' as type,
-                    TO_CHAR(dc.starttime,
-                    'DD-MM-YYYY HH24:MI:SS') as st,
+                    TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st,
                     dc.comments,
                     dc.starttime as sta,
 
@@ -179,8 +178,7 @@
 
                     min(dc.runstatus) as runstatus,
                     'data' as type,
-                    TO_CHAR(min(dc.starttime),
-                    'DD-MM-YYYY HH24:MI:SS') as st,
+                    TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st,
                     min(dc.comments) as comments,
                     min(dc.starttime) as sta,
 
