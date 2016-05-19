@@ -25,6 +25,7 @@ require.config({
     'jquery.flot.stack': 'vendor/flot/jquery.flot.stack',
     'jquery.flot.tickrotor': 'vendor/flot/jquery.flot.tickrotor',
     'jquery.flot.tooltip': 'vendor/flot/jquery.flot.tooltip',
+    'jquery.flot.axislabels': 'vendor/flot/jquery.flot.axislabels',
     
     'jquery.mp': 'vendor/jquery/jquery.magnific-popup',
     
@@ -139,6 +140,9 @@ require.config({
         deps: ['jquery.flot']
     },
     'jquery.flot.tickrotor': {
+        deps: ['jquery.flot']
+    },
+    'jquery.flot.axislabels': {
         deps: ['jquery.flot']
     },
     
