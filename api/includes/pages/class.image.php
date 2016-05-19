@@ -126,10 +126,11 @@
             
             $n = $this->has_arg('n') ? ($this->arg('n')-1) : 0;
             if ($n < sizeof($images)) {
-                if (file_exists($images[$n])) {
+                $file = $this->has_arg('f') ? $images[$n] : str_replace('.png', 't.png', $images[$n]);
+                if (file_exists($file)) {
                     $this->_browser_cache();
                     $this->app->contentType('image/png');
-                    readfile($this->has_arg('f') ? $images[$n] : str_replace('.png', 't.png', $images[$n]));
+                    readfile($file);
 
                 } else {
                     $this->_error('Not found', 'That image is no longer available');
