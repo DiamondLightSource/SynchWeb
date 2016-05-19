@@ -5,7 +5,10 @@ class ProposalType {
     var $table;
     var $col;
     
-    var $generic_pages = array('proposal', 'fault', 'cal', 'feedback', 'vstat', 'users');
+    var $generic_pages = array(
+        'proposal', 'fault', 'cal', 'feedback', 'vstat', 'users',
+        'sample', 'shipment', 'pdf', 'contact',
+    );
     
     var $visit_table;
     var $session_column;
