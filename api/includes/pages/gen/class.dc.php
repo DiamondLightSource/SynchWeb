@@ -8,6 +8,9 @@
         public static $arg_list = array('id' => '\d+', 'visit' => '\w+\d+-\d+', 'page' => '\d+', 's' => '[\w\d-\/]+', 'pp' => '\d+', 'h' => '\d\d',
             'dcg' => '\d+', 
             'COMMENTS' => '.*',
+            'pid' => '\d+',
+            'sid' => '\d+',
+
 
             'dcid' => '\d+',
             'DATACOLLECTIONID' => '\d+',
@@ -56,7 +59,23 @@
                 
                 $sess = array('dc.sessionid=:1');
                 array_push($args, $info['SESSIONID']);
+             
+            # Samples
+            } else if ($this->has_arg('sid') && $this->has_arg('prop')) {
+                $info = $this->db->pq("SELECT s.blsampleid FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE s.blsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('sid'), $this->arg('prop')));
                 
+                $sess[0] = $t.'.blsampleid=:'.($i+1);
+                array_push($args, $this->arg('sid'));
+
+
+            # Proteins
+            } else if ($this->has_arg('pid')) {
+                $info = $this->db->pq("SELECT proteinid FROM protein p WHERE p.proteinid=:1", array($this->arg('pid')));
+
+                $extj[0] .= " INNER JOIN crystal cr ON cr.crystalid = smp.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid";
+                $sess[0] = 'pr.proteinid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('pid'));
+
             # Proposal
             } else if ($this->has_arg('prop')) {
                 $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
@@ -214,6 +233,7 @@
             
             $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count($count_field) as tot FROM datacollection dc
                 INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
+                LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 $extj[0]
                 WHERE $sess[0] $where
