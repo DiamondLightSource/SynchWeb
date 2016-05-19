@@ -12,8 +12,9 @@ define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
                            
         initialize: function(options) {
             var pm = options.parent
+            var timestamp = utils._date_to_unix(pm.get('ST'))
                            
-            this.model = new Dat({ id: pm.get('ID') })
+            this.model = new Dat({ id: pm.get('ID'), timestamp: timestamp })
             this.model.fetch()
             this.$el.css('opacity', 0)
         },
