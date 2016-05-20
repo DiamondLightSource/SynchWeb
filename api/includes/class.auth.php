@@ -20,12 +20,32 @@
 				'password' => '.*',
 			));
 
+			$this->app->get('/authenticate/check', array(&$this, 'check'));
 			$this->app->get('/authenticate/key', array(&$this, 'generate_jwt_key'));
 			$this->app->get('/authenticate/logout', array(&$this, 'logout'));
 		}
 
 		function get_user() {
 			return $this->user;
+		}
+
+
+		// For SSO check if we are already logged in elsewhere
+		// - if a mechanism exists to do this
+		function check() {
+			global $authentication_type;
+			if (!$authentication_type) $authentication_type = 'cas';
+
+			$file = "includes/class.auth-${authentication_type}.php";
+			if (file_exists($file)) {
+				require_once($file);
+
+				$class = strtoupper($authentication_type)."Authentication";
+				$auth_handler = new $class();
+				$user = $auth_handler->check();
+				if ($user) $this->_output(200, $this->generate_jwt($user));
+				else $this->_error(400, 'No previous session');
+			}
 		}
 
 
@@ -220,6 +240,7 @@
 	interface Authentication {
 
 		public function authenticate($user, $pass);
+		public function check();
 
 		// public function logout();
 

@@ -4,6 +4,10 @@ require_once('config.php');
 
 class LDAPAuthentication extends AuthenticationBase implements Authentication {
 
+    function check() {
+        return false;
+    }
+
     function authenticate($login, $password) {
         global $ldap_server;
 
