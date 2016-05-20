@@ -26,8 +26,15 @@
     $authentication_type = 'cas';
 
 
-    # CAS url (if using cas)
-    $cas_url = 'https://cas.server.ac.uk';
+    # CAS url (if using cas, assume https)
+    $cas_url = 'cas.server.ac.uk';
+
+    # Follow CAS SSO
+    $cas_sso = true;
+
+    # CAS CA Cert (for SSO)
+    $cacert = '/etc/certs/ca-bundle.crt';
+
 
     # ldap server, used for lookup and authentication (if using)
     $ldap_server = 'altfed.cclrc.ac.uk';
