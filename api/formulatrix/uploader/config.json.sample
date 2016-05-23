@@ -4,5 +4,8 @@
 	"db":	"database",
 	"host":	"hostname",
 	"holding_dir":	"/dls/holding/directory",
-	"upload_dir":	"/dls/i02-2/data"
+	"upload_dir":	"/dls/i02-2/data",
+	"types": {
+		"CrystalQuickX": { "well_per_row": 12, "drops_per_well": 2 }
+	}
 }
