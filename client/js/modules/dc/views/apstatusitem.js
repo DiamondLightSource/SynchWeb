@@ -36,15 +36,17 @@ define(['marionette', 'jquery'], function(Marionette, $) {
                     '<i class="fa icon red fa-times alt="Failed"></i>']
         
            if (this.getOption('SCREEN')) {
-               this.ui.holder.html('Mosflm: ' + val[res[0]] + ' EDNA: ' + val[res[1]])
+               this.ui.holder.html('Mosflm: ' + val[res['Mosflm']] + ' EDNA: ' + val[res['EDNA']])
                
            } else {
-               this.ui.holder.eq(0).html('Fast DP: ' + val[res[2]] +
-                         ' Xia2: ' + val[res[3]] + ' ' +val[res[4]] + ' ' +val[res[5]])
-               this.ui.holder.eq(1).html('Fast EP: ' + val[res[6]] +
-                       ' Dimple: ' + val[res[7]] +
-                       ' MrBUMP: ' + val[res[8]] +
-                       ' Big EP: ' + val[Math.max(res[9], res[10])])
+               this.ui.holder.eq(0).html('Fast DP: ' + val[res['Fast DP']] +
+                         ' Xia2: ' + val[res['Xia2/3d']] + ' ' +val[res['Xia2/3dii']] + ' ' +val[res['DIALS']] +
+                         ' MultiXia2: ' + val[res['MultiXia2/XDS']] + ' ' +val[res['MultiXia2/DIALS']] +
+                         ' autoPROC: ' + val[res['autoPROC']])
+               this.ui.holder.eq(1).html( 'Fast EP: ' + val[res['Fast EP']] +
+                                         ' Big EP: ' + val[res['Big EP/XDS']] + ' '+ val[res['Big EP/DIALS']] +
+                                         ' Dimple: ' + val[res['Dimple']] +
+                                         ' MrBUMP: ' + val[res['MrBUMP']])
            }
         }
     })

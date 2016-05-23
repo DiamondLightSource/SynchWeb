@@ -551,23 +551,27 @@
             $this->profile('start');
             
             $aps1 = array(
-                         array('simple_strategy/', 'strategy_native.log', 'Phi start'),
-                         array('edna/', 'summary.html', 'Selected spacegroup'),
-                         );
+                    "Mosflm" => array('simple_strategy/', 'strategy_native.log', 'Phi start'),
+                    "EDNA" => array('edna/', 'summary.html', 'Selected spacegroup'),
+            );
             $aps2 = array(
-                         array('fast_dp/', 'fast_dp.log', 'I/sigma'),
-                         
-                         array('xia2/2d-run/', 'xia2.txt' , 'I/sigma'),
-                         array('xia2/3d-run/', 'xia2.txt' , 'I/sigma'),
-                         array('xia2/3dii-run/', 'xia2.txt' , 'I/sigma'),
-                         
-                         array('fast_ep/', 'fast_ep.log', 'Best spacegroup'),
-                         array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
-                         array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
-
-                         array('big_ep/', '/xia2/3dii-run/big_ep*.log', 'Results for'),
-                         array('big_ep/', '/xia2/dials-run/big_ep_*.log', 'Results for', 'Residues'),
-                         );
+                    "Fast DP" => array('fast_dp/', 'fast_dp.log', 'I/sigma'),
+                    
+                    "Xia2/3d" => array('xia2/3d-run/', 'xia2.txt' , 'I/sigma'),
+                    "Xia2/3dii" => array('xia2/3dii-run/', 'xia2.txt' , 'I/sigma'),
+                    "DIALS" => array('xia2/dials-run/', 'xia2.txt' , 'I/sigma'),
+                    
+                    "MultiXia2/XDS" => array('multi-xia2/3dii/', 'xia2.txt' , 'I/sigma'),
+                    "MultiXia2/DIALS" => array('multi-xia2/dials/', 'xia2.txt' , 'I/sigma'),
+                    
+                    "autoPROC" => array('autoPROC/ap-run/', 'autoPROC.log', 'Normal termination'),
+                    
+                    "Fast EP" => array('fast_ep/', 'fast_ep.log', 'Best spacegroup'),
+                    "Dimple" => array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
+                    "MrBUMP" => array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
+                    "Big EP/XDS" => array('big_ep/', '/xia2/3dii-run/big_ep*.log', 'Results for'),
+                    "Big EP/DIALS" => array('big_ep/', '/xia2/dials-run/big_ep_*.log', 'Results for', 'Residues'),
+            );
             
             $out = array();
             
@@ -597,12 +601,11 @@
                 $this->profile('filestart');
                 if ($dc['OVERLAP'] == 0) {
                     $aps = $aps2;
-                    $apr = array(0,0);
                 } else {
                     $aps = $aps1;
-                    $apr = array();
                 }
-                foreach ($aps as $ap) {
+                $apr = array();
+                foreach ($aps as $name => $ap) {
                     # 0: didnt run, 1: running, 2: success, 3: failed
                     $val = 0;
 
@@ -633,11 +636,10 @@
                         } //else $val = 3;
                     }
                     
-                    array_push($apr, $val);
+                    $apr[$name] = $val;
                     
                 }
             
-                if ($dc['OVERLAP'] != 0) for ($i = 0; $i < 5; $i++) array_push($apr, 0);
                 $this->profile('fileend');
                 
                 array_push($out, array($dc['ID'], $apr));
