@@ -23,11 +23,18 @@ define(['marionette', 'views/table', 'views/filter',
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: '<div><h1>Proteins</h1><p class="help">This page lists all proteins associated with the currently selected proposal</p><div class="ra"><a class="button" href="/proteins/add"><i class="fa fa-plus"></i> Add Protein</a></div><div class="filter type"></div><div class="wrapper"></div></div>',
+    template: _.template('<h1><%=title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal</p><div class="ra"><a class="button" href="/proteins/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper', type: '.type' },
     
-    initialize: function(options) {
-      var columns = [
+    title: 'Protein',
+
+    templateHelpers: function() {
+        return {
+          title: this.getOption('title')
+        }
+    },
+
+    columns: [
         { name: 'NAME', label: 'Name', cell: 'string', editable: false },
         { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false },
         { name: 'MOLECULARMASS', label: 'Mass', cell: 'string', editable: false },
@@ -36,16 +43,25 @@ define(['marionette', 'views/table', 'views/filter',
         { name: 'SCOUNT', label: 'Samples', cell: 'string', editable: false },
         { name: 'DCOUNT', label: 'Data Collections', cell: 'string', editable: false },
         { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
-      ]
-        
+    ],
+
+    hiddenColumns: [2,3],
+
+    initialize: function(options) {  
       if (app.mobile()) {
-        _.each([2,3], function(v) {
+        _.each(this.getOption('hiddenColumns'), function(v) {
             columns[v].renderable = false
         })
       }
         
       var self = this
-      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params && options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: function() { return self.collection.fetched ? 'No proteins found' : 'Retrieving proteins' } }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
+      this.table = new TableView({ collection: options.collection, columns: this.getOption('columns'), tableClass: 'proposals', filter: 's', search: options.params && options.params.s, loading: true, 
+        backgrid: { 
+          row: ClickableRow, 
+          emptyText: function() { 
+            return self.collection.fetched ? 'No '+self.getOption('title')+'s found' : 'Retrieving '+self.getOption('title')+'s' 
+          } 
+        }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
 
       this.types = new ComponentTypes()
       this.tr = this.types.fetch()

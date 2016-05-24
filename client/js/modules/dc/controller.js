@@ -1,12 +1,8 @@
-define(['marionette', 'modules/dc/datacollections', 'modules/dc/views/imageviewer', 'modules/dc/views/mapmodelview', 'modules/dc/views/summary', 'models/datacollection', 'collections/datacollections', 'models/sample', 'models/visit', 'models/proposal',
+define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewer', 'modules/dc/views/mapmodelview', 'modules/dc/views/summary', 'models/datacollection', 'collections/datacollections', 'models/sample', 'models/visit', 'models/proposal',
     'modules/dc/views/samplechangerfull',
     'modules/dc/views/queuebuilder',
     
-    'modules/types/gen/dc/datacollections',
-    'modules/types/tomo/dc/datacollections',
-    'modules/types/em/dc/datacollections',
-    
-    ], function(Marionette, DCList, ImageViewer, MapModelViewer, Summary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder, GenericDCList, TomoDCList, EMDCLIst) {
+    ], function(Marionette, GetView, ImageViewer, MapModelViewer, Summary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder) {
     
     var bc = { title: 'Data Collections', url: '/dc' }
     
@@ -37,18 +33,8 @@ define(['marionette', 'modules/dc/datacollections', 'modules/dc/views/imageviewe
                 dcs.setPageSize(app.mobile() ? 5 : 15)
                 dcs.state.currentPage = page
                 dcs.fetch().done(function() {
-                    var views = {
-                        mx: DCList,
-                        sm: DCList,
-                        gen: GenericDCList,
-                        tomo: TomoDCList,
-                        em: EMDCLIst,
-                    }
-                    
-                    if (model.get('TYPE') in views) view = views[model.get('TYPE')]
-                    else view = GenericDCList
-                    
-                    app.content.show(new view({ collection: dcs,  params: { visit: visit, search: search, type: type, id: id, dcg: dcg }, model: model }))
+                    console.log('DC TYPE', model.get('TYPE'))
+                    app.content.show(GetView.DCView.get(model.get('TYPE'), { collection: dcs,  params: { visit: visit, search: search, type: type, id: id, dcg: dcg }, model: model }))
                 })
             },
             

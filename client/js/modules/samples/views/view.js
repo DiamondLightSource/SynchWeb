@@ -4,7 +4,8 @@ define(['marionette',
     'utils/anoms',
     'utils/editable',
     'collections/datacollections',
-    'modules/dc/datacollections',
+    // 'modules/dc/datacollections',
+    'modules/dc/views/getdcview',
 
     'modules/samples/views/componentsview',
 
@@ -13,7 +14,7 @@ define(['marionette',
 
     'tpl!templates/samples/sample.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, DistinctProteins, SG, Anom, Editable, DCCol, DCView, 
+    ], function(Marionette, DistinctProteins, SG, Anom, Editable, DCCol, GetDCView, 
         ComponentsView,
         InspectionImages, ImageHistoryView,
         template, Backbone) {
@@ -40,9 +41,11 @@ define(['marionette',
             this.dcs = new DCCol(null, { queryParams: { sid: this.model.get('BLSAMPLEID'), pp: 5 } })
             this.dcs.fetch()
 
-            this.inspectionimages = new InspectionImages()
-            this.inspectionimages.queryParams.sid = this.model.get('BLSAMPLEID')
-            this.inspectionimages.fetch()
+            if (this.model.get('INSPECTIONS') > 0) {
+                this.inspectionimages = new InspectionImages()
+                this.inspectionimages.queryParams.sid = this.model.get('BLSAMPLEID')
+                this.inspectionimages.fetch()
+            }
 
             this.gproteins = new DistinctProteins()
         },
@@ -68,7 +71,7 @@ define(['marionette',
                 edit.create('PROTEINID', 'autocomplete', { autocomplete: { source: opts } })
             })
             
-            this.history.show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
+            this.history.show(GetDCView.DCView.get(app.type, { model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
 
             console.log('sample', this.model)
             this.comps.show(new ComponentsView({ showEmpty: true, collection: this.model.get('components'), viewLink: true, editinline: true, CRYSTALID: this.model.get('CRYSTALID') }))

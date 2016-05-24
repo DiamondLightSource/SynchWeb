@@ -61,13 +61,21 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
       }
   })
     
-  return Marionette.LayoutView.extend({
+  var module = Marionette.LayoutView.extend({
     className: 'content',
     template: '<div><h1>Samples</h1><p class="help">This page shows sample associated with the currently selected proposal</p><div class="filter type"></div><div class="wrapper"></div></div>',
     regions: { wrap: '.wrapper', type: '.type' },
-    
-    initialize: function(options) {
-      var columns = [
+
+    filters: [
+        { id: 'R', name: 'Robot Loaded'},
+        { id: 'SC', name: 'Screened'},
+        { id: 'AI', name: 'Auto Indexed'},
+        { id: 'DC', name: 'Data Collected'},
+        { id: 'AP', name: 'Auto Integrated'},
+    ],
+
+
+    columns: [
         //{ name: 'BLSAMPLEID', label: 'ID', cell: 'string', editable: false },
         { name: 'NAME', label: 'Name', cell: 'string', editable: false },
         { name: 'ACRONYM', label: 'Protein', cell: 'string', editable: false },
@@ -86,29 +94,27 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
         { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: false },
         { label: 'Status', cell: StatusCell, editable: false },
         { label: ' ', cell: table.ProjectCell, itemname: 'NAME', itemid: 'BLSAMPLEID', itemtype:'sample', editable: false },
-      ]
-        
+    ],
+
+    hiddenColumns: [2,3,4,5,6,7,8,10],
+
+    
+    initialize: function(options) {
       if (app.mobile()) {
         //_.each([0,3,4,5,6,7,9,11], function(v) {
-        _.each([2,3,4,5,6,7,8,10], function(v) {
+        _.each(this.getOption('hiddenColumns'), function(v) {
             columns[v].renderable = false
         })
       }
         
       var self = this
-      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'samples', filter: 's', search: options.params && options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: function() { return self.collection.fetched ? 'No samples found' : 'Retrieving samples' }  }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
+      this.table = new TableView({ collection: options.collection, columns: this.getOption('columns'), tableClass: 'samples', filter: 's', search: options.params && options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: function() { return self.collection.fetched ? 'No samples found' : 'Retrieving samples' }  }, noPageUrl: options.noPageUrl, noSearchUrl: options.noSearchUrl })
         
       this.ty = new FilterView({
         url: !options.noFilterUrl,
         collection: options.collection,
         name: 't',
-        filters: [
-          { id: 'R', name: 'Robot Loaded'},
-          { id: 'SC', name: 'Screened'},
-          { id: 'AI', name: 'Auto Indexed'},
-          { id: 'DC', name: 'Data Collected'},
-          { id: 'AP', name: 'Auto Integrated'},
-        ]  
+        filters: this.getOption('filters'),
       })
     },
                                       
@@ -121,5 +127,11 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
       this.table.focusSearch()
     },
   })
+
+  module.SnapshotCell = SnapshotCell
+  module.StatusCell = StatusCell
+
+
+  return module
 
 })

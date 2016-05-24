@@ -1,0 +1,79 @@
+<h1>Add Component</h1>
+
+<form method="post" id="add_protein" enctype="multipart/form-data">
+    
+    <div class="form">
+        <ul>
+            
+            <li>
+                <label>Name
+                    <span class="small">Name of the component</span>
+                </label>
+                <span class="name"><input type="text" name="NAME" /></span>
+            </li>
+            
+            <li>
+                <label>Acronym
+                    <span class="small">Short form of the component name</span>
+                </label>
+                <span class="acronym"><input type="text" name="ACRONYM" required /></span>
+            </li>
+            
+            
+            <li>
+                <label>Molecular Mass
+                    <span class="small">Mass of the component in daltons</span>
+                </label>
+                <span class="MASS"><input type="text" name="MOLECULARMASS" /></span>
+            </li>
+            
+            <!-- <li>
+                <label>Sequence
+                    <span class="small">Used to automatically run MrBump</span>
+                </label>
+                <span class="seq"><textarea name="SEQUENCE" ></textarea></span>
+            </li> -->
+
+            <li>
+                <label>Type
+                    <span class="small">Component Type</span>
+                </label>
+                <select name="COMPONENTTYPEID"></select>
+            </li>
+
+            <!--<li>
+                <label>Sub Type
+                    <span class="small">Component Sub Type</span>
+                </label>
+                <select name="COMPONENTSUBTYPEID"></select>
+            </li>-->
+
+            <li>
+                <label>Concentration Unit
+                    <span class="small">Unit used for measuring concentration</span>
+                </label>
+                <select name="CONCENTRATIONTYPEID"></select>
+            </li>
+
+            <% if (IS_STAFF) { %>
+            <li>
+                <label>Global
+                    <span class="small">Make this component visible to all users</span>
+                </label>
+                <select name="GLOBAL">
+                    <option value="0" selected="selected">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </li>
+            <% } %>
+            
+            <li>
+                <label>CIF File</label>
+                <span>CIF files can be added on the next page</span>
+            </li>
+        </ul>
+        
+        <button name="submit" value="1" type="submit" class="button submit">Add Component</button>
+    </div>
+    
+</form>

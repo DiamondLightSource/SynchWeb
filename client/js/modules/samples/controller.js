@@ -1,19 +1,30 @@
 define(['marionette',
-        'modules/samples/views/list',
-        'modules/samples/views/view',
+        'modules/samples/views/getsampleview',
+        // 'modules/samples/views/list',
+        // 'modules/samples/views/view',
     
+        // 'modules/types/gen/samples/views/list',
+
         'models/sample',
         'collections/samples',
     
-        'modules/samples/views/proteinlist',
-        'modules/samples/views/proteinview',
-        'modules/samples/views/proteinadd',
+        // 'modules/samples/views/proteinlist',
+        // 'modules/samples/views/proteinview',
+        // 'modules/samples/views/proteinadd',
+
+        // 'modules/types/gen/samples/views/componentlist',
+        // 'modules/types/gen/samples/views/componentadd',
 
         'models/protein',
         'collections/proteins',
     
-], function(Marionette, SampleList, SampleView, Sample, Samples, 
-  ProteinList, ProteinView, AddProteinView, Protein, Proteins) {
+], function(Marionette, 
+  GetView,
+  // SampleList, SampleView, GenSampleList, 
+  Sample, Samples, 
+  // ProteinList, ProteinView, AddProteinView, 
+  // GenComponentList, GenComponentAdd,
+  Protein, Proteins) {
     
   var sbc =  { title: 'Samples', url: '/samples' }
   var pbc =  { title: 'Proteins', url: '/proteins' }
@@ -26,7 +37,7 @@ define(['marionette',
       page = page ? parseInt(page) : 1
       var samples = new Samples(null, { state: { currentPage: page }, queryParams: { s : s } })
       samples.fetch().done(function() {
-          app.content.show(new SampleList({ collection: samples, params: { s: s } }))
+          app.content.show(GetView.SampleList.get(app.type, { collection: samples, params: { s: s } }))
       })
     },
       
@@ -36,7 +47,7 @@ define(['marionette',
         sample.fetch({
             success: function() {
                 app.bc.reset([sbc, { title: sample.get('NAME') }])
-                app.content.show(new SampleView({ model: sample }))
+                app.content.show(GetView.SampleView.get(app.type, { model: sample }))
             },
             
             error: function() {
@@ -54,7 +65,7 @@ define(['marionette',
         page = page ? parseInt(page) : 1
         var proteins = new Proteins(null, { state: { currentPage: page }, queryParams: { s : s } })
         proteins.fetch().done(function() {
-            app.content.show(new ProteinList({ collection: proteins, params: { s: s } }))
+            app.content.show(GetView.ProteinList.get(app.type, { collection: proteins, params: { s: s } }))
         })
     },
       
@@ -64,7 +75,7 @@ define(['marionette',
         protein.fetch({
             success: function() {
                 app.bc.reset([pbc, { title: protein.get('NAME') }])
-                app.content.show(new ProteinView({ model: protein }))
+                app.content.show(GetView.ProteinView.get(app.type, { model: protein }))
             },
             error: function() {
                 app.bc.reset([pbc])
@@ -75,7 +86,7 @@ define(['marionette',
       
     proteinadd: function() {
         app.bc.reset([pbc, { title: 'Add Protein' }])
-        app.content.show(new AddProteinView())
+        app.content.show(GetView.ProteinAdd.get(app.type))
     },
 
   }
