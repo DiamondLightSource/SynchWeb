@@ -16,6 +16,11 @@ class CASAuthentication extends AuthenticationBase implements Authentication {
         try {
             // CAS will try and redirect us
             $check = phpCAS::checkAuthentication();
+
+            // phpCAS will now lumber us with a session, which we dont want
+            session_unset();
+            session_destroy();
+
             if ($check) return phpCAS::getUser();
 
         // Dont crash the app
