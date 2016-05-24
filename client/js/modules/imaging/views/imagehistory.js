@@ -87,7 +87,8 @@ define(['marionette',
         
         preCache: function(n) {
             clearTimeout(this.cachethread)
-            
+            return
+
             var self = this
             var i = this.images.at(n)
             if (this.caching && i) {

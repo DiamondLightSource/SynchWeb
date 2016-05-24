@@ -369,18 +369,21 @@ define(['jquery', 'marionette',
         // Start precaching images
         precache: function() {
             clearTimeout(this.cache_thread)
+            return
+            
             var self = this
             if (!app.mobile() && ((this.ci - this.cistart) < 10)) {
                 var url = app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+self.ci
-                require(['image!'+url], function(image) {
+                var img = new XHRImage()
+                img.onload = function() {
                     self.ui.loadprog.html('Cached Image '+self.ci)
                     self.ui.loadprog.show()
                     if (self.ci < self.model.get('NI')) {
                         self.ci++
                         self.cache_thread = setTimeout(self.precache.bind(self), 500)
                     }
-
-                })
+                }
+                img.load(url)
             }
         },
         
