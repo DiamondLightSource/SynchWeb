@@ -1,9 +1,10 @@
 define([
     'modules/dc/views/dc',
     'modules/types/gen/dc/datplot',
+    'modules/types/gen/dc/assoc',
     'modules/types/gen/dc/imagestatusitem',
     'modules/dc/views/dccomments', 
-    'tpl!templates/types/gen/dc/dc.html'], function(DCItemView, DatPlot, DCImageStatusItem, DCCommentsView, template) {
+    'tpl!templates/types/gen/dc/dc.html'], function(DCItemView, DatPlot, AssocSampleView, DCImageStatusItem, DCCommentsView, template) {
 
     return DCItemView.extend({
         template: template,
@@ -18,6 +19,26 @@ define([
             'click .comments': 'showComments',
             'click a.dl': 'showPlot',
             'click a.sn': 'showSnapshots',
+            'click a.assoc': 'associateSample',
+        },
+
+        associateSample: function(e) {
+            e.preventDefault()
+            app.dialog.show(new AssocSampleView({ model: this.model }))
+            this.listenTo(app.dialog.currentView, 'sample:associated', this.updateSample, this)
+        },
+
+        updateSample: function() {
+            var s = this.$el.find('.sample')
+            console.log(s.length, this.$el.find('ul'))
+            if (s.length) {
+                var a = s.eq(0).find('a')
+                a.html(this.model.get('SAMPLE')).attr('href', '/samples/sid/'+this.model.get('BLSAMPLEID'))
+
+            } else {
+                this.$el.find('ul').prepend('<li class="sample"><span class="wrap">Sample: <a href="/samples/sid/'+this.model.get('BLSAMPLEID')+'">'+this.model.get('SAMPLE')+'</a></span></li>')
+            }
+            
         },
         
         showPlot: function(e) {
