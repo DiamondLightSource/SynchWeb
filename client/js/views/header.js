@@ -50,6 +50,9 @@ define(['marionette', 'backbone', 'tpl!templates/header.html'], function(Marione
 
             app.navigate('/');
             this.render()
+
+            if (app.options.get('authentication_type') == 'cas')
+                window.location.href='https://'+app.options.get('cas_url')+'/cas/logout'
         },
         
         showMenu: function(e) {
