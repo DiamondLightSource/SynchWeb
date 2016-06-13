@@ -51,6 +51,12 @@ define(['views/form',
                                 self.setToken(response)
                             }, 2000)
                         }
+
+                        if ('error' in response) {
+                            if (app.options.get('authentication_type') == 'cas')
+                                window.location.href='https://'+app.options.get('cas_url')+'/cas/login?service='+encodeURIComponent(window.location.href)            
+
+                        }
                     } catch(err) {
                         // Not valid JSON
                     }
