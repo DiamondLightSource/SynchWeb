@@ -50,9 +50,9 @@
     
 
     $app->get('/options', function() use ($app) {
-        global $motd;
+        global $motd, $authentication_type, $cas_url;
         $app->contentType('application/json');
-        $app->response()->body(json_encode(array('motd' => $motd)));
+        $app->response()->body(json_encode(array('motd' => $motd, 'authentication_type' => $authentication_type, 'cas_url' => $cas_url)));
         // $app->response()->body(json_encode($options->ui()));
     });
 
