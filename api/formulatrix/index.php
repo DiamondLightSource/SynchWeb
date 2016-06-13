@@ -25,6 +25,7 @@
  */
 
 date_default_timezone_set('Europe/London');
+require_once('config.php');
 
 /*******************************************************************
 ************************* ACCESS CONTROL ***************************
@@ -33,8 +34,8 @@ date_default_timezone_set('Europe/London');
 if (
     ( ! isset( $_SERVER['PHP_AUTH_USER'] ) ) ||
     ( ! isset( $_SERVER['PHP_AUTH_PW'] ) ) ||
-    ( "changeMe" != $_SERVER['PHP_AUTH_USER'] ) ||
-    ( "changeMe" != $_SERVER['PHP_AUTH_PW'] )
+    ( $username != $_SERVER['PHP_AUTH_USER'] ) ||
+    ( $password != $_SERVER['PHP_AUTH_PW'] )
 ) {
     header('WWW-Authenticate: Basic realm="WSPlate"');
     header('HTTP/1.1 401 Unauthorized');
