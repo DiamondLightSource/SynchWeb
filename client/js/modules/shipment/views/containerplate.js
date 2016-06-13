@@ -360,6 +360,7 @@ define(['marionette',
 
         preCache: function(n) {
             clearTimeout(this.cachethread)
+            return
             
             var self = this
             var i = this.inspectionimages.at(n)
