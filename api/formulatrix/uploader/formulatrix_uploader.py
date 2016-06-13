@@ -79,7 +79,7 @@ class FormulatrixUploader:
             
             image = xml.replace('.xml', '.jpg')
             if not os.path.exists(image):
-                print 'Corresponding image not found for', f, 'expected', image
+                print 'Corresponding image not found for', xml, 'expected', image
                 continue
 
 
