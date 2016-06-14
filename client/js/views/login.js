@@ -32,7 +32,7 @@ define(['views/form',
         },
 
         onRender: function() {
-            if (!app.token) this.checkExistingSession()
+            this.checkExistingSession()
         },
 
         // Hack for CAS SSO
@@ -53,16 +53,22 @@ define(['views/form',
                         }
 
                         if ('error' in response) {
-                            if (app.options.get('authentication_type') == 'cas')
-                                window.location.href='https://'+app.options.get('cas_url')+'/cas/login?service='+encodeURIComponent(window.location.href)            
+                            self.redirect()
 
                         }
                     } catch(err) {
                         // Not valid JSON
+                        console.log('catching error')
+                        self.redirect()
                     }
                 }
             })
             fr.attr('src',app.apiurl+'/authenticate/check')
+        },
+
+        redirect: function() {
+            if (app.options.get('authentication_type') == 'cas')
+                window.location.href='https://'+app.options.get('cas_url')+'/cas/login?service='+encodeURIComponent(window.location.href)            
         },
 
         onShow: function() {
