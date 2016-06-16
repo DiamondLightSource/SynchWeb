@@ -25,6 +25,9 @@
  */
 
 date_default_timezone_set('Europe/London');
+
+// Return if theres no config
+if (!file_exists('config.php')) exit;
 require_once('config.php');
 
 /*******************************************************************
