@@ -345,7 +345,7 @@
         
         function close() {
             // if (!$this->conn->connect_error) $this->conn->close();
-            // if ($this->conn) $this->conn->close();
+            if ($this->conn) $this->conn->close();
         }
 
         

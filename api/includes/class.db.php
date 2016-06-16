@@ -56,12 +56,13 @@
             header('HTTP/1.1 503 Service Unavailable');
             // header('Content-type:application/json');
             print json_encode(array('title' => $title, 'msg' => $msg));
+            error_log('Database Error: '.$msg);
             exit();
         }
 
 
         function __destruct() {
-            $this->close();
+            // $this->close();
         }
     }
 
