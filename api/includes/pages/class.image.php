@@ -1,5 +1,7 @@
 <?php
 
+    require_once(dirname(__FILE__).'/../class.templateparser.php');
+
     class Image extends Page {
         
         public static $arg_list = array('drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '[\w-]+', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
@@ -180,48 +182,24 @@
         
         # Small diffraction image viewer
         function _diffraction_image() {
-            // global $jpeg_location, $jpeg_thumb_location;
+            global $jpeg_location, $jpeg_thumb_location;
 
-            $first = $this->db->pq("SELECT dc.startimagenumber as si, s.beamlinename, TO_CHAR(dc.starttime, 'YYYY') as year, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, dc.imagedirectory, dc.imagesuffix, dc.filetemplate
-                FROM datacollection dc 
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
-                INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE dc.datacollectionid=:1", array($this->arg('id')));
-            
-            // $info = $first[0];
-            if (!sizeof($first)) $this->_error('No such data collection');
-            else $first = $first[0]['SI'];
-            
-            $n = $this->has_arg('n') ? $this->arg('n') : $first;
-            
-            $rows = $this->db->pq('SELECT jpegfilefullpath as im FROM image WHERE datacollectionid=:1 AND imagenumber=:2', array($this->arg('id'), $n));
-            
-            $this->db->close();
+            $args = array('DCID' => $this->arg('id'));
+            if ($this->has_arg('n')) $args['IMAGENUMBER'] = $this->arg('n');
 
-            // $jpeg = $this->interpolate($this->has_arg('f') ? $jpeg_location : $jpeg_thumb_location, array(
-            //     'VISITDIR' => $this->visit_dir($info),
-            //     'DIR' => $this->relative($info['IMAGEDIRECTORY'], $info),
-            //     'FILE' => $this->filetemplate($info['FILETEMPLATE'], array('IMAGENUMBER' => $info['SI'], 'NOSUFFIX' => true, 'IMAGESUFFIX' => $info['IMAGESUFFIX']))
-            // ));
+            $tmp = new TemplateParser($this->db);
+            $jpeg = $tmp->interpolate($this->has_arg('f') ? $jpeg_location : $jpeg_thumb_location, $args);
 
-            // print_r(array('jpeg' => $jpeg, 'imd' => $info['IMAGEDIRECTORY'], 'db' => $rows[0]));
-            // return;
-            
-            if (sizeof($rows) > 0) {
-                $im = $rows[0]['IM'];
-                if (file_exists($im)) {
-                    $this->_browser_cache();
-                    $this->app->contentType('image/jpeg');
-                    readfile($this->has_arg('f') ? $im : str_replace('.jpeg', '.thumb.jpeg', $im));
-                    
-                } else {
-                    $this->app->contentType('image/png');
-                    readfile('assets/images/no_image.png');
-                }
+            if (file_exists($jpeg)) {
+                $this->_browser_cache();
+                $this->app->contentType('image/'.pathinfo($jpeg, PATHINFO_EXTENSION));
+                readfile($jpeg);
+
             } else {
                 $this->app->contentType('image/png');
-                readfile('assets/images/no_image2.png');
+                readfile('assets/images/no_image.png');
             }
+            
         }
         
         
