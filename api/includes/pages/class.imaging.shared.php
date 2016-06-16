@@ -126,12 +126,14 @@
         function _get_plate_info($args) {
             if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
 
-            $cont = $this->db->pq("SELECT s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop
+            $cont = $this->db->pq("SELECT pe.emailaddress, pe.givenname, pe.familyname, pe.login, c.sessionid, s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop
                 FROM container c
                 LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                 INNER JOIN proposal p on p.proposalid = s.proposalid
+                LEFT OUTER JOIN labcontact lc ON lc.labcontactid = c.labcontactid
+                LEFT OUTER JOIN person pe ON pe.personid = lc.personid
                 WHERE c.code=:1", array($args['BARCODE']));
             if (!sizeof($cont)) $this->error('No such container');
             $cont = $cont[0];
@@ -140,6 +142,29 @@
             if (array_key_exists('SERIAL', $args)) {
                 if ($args['SERIAL'] != $cont['SERIAL']) $this->_set_imager(array('BARCODE' => $args['BARCODE'], 'SERIAL' => $args['SERIAL']));
             }
+
+            // No sessionid, need to create a visit using UAS REST API
+            // if (!$cont['SESSIONID']) {
+
+            //     $fields = array(
+                    
+            //     );
+
+            //     $ch = curl_init();
+            //     curl_setopt($ch, CURLOPT_URL, 'http://cs04r-sc-vserv-31.diamond.ac.uk:8080/uas/rest/v1/session');
+            //     curl_setopt($ch, CURLOPT_HEADER, 0);
+            //     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+            //     curl_setopt($ch, CURLOPT_POST, 1);
+            //     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($fields));
+            //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            //     $resp = curl_exec($ch);
+            //     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            //     curl_close($ch);
+
+            //     if ($resp) {
+            //         $json = json_decode($resp);
+            //     }
+            // }
 
             return $cont;
         }
@@ -211,6 +236,9 @@
 
             $this->db->pq("UPDATE container SET imagerid=:1 WHERE code=:2", array($imager['IMAGERID'], $args['BARCODE']));
         }
+
+
+
 
 	}
 
