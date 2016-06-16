@@ -73,7 +73,7 @@
 
 
     # Paths
-    # - These map files to physical locations on disk (Currently unused)
+    # - These map files to physical locations on disk
     #   For diffraction images, snapshots, and thumbnails
 
     # Visit directory on disk
