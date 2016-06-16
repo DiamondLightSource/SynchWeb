@@ -118,10 +118,10 @@ function getPlateInfo($getPlateInfo) {
     $plateInfo->plateTypeID = $info['CONTAINERTYPE'];
     
     // Todo: Need labcontactid in container
-    $plateInfo->userEmail = "a@b.c";
-    $plateInfo->userName = "ab";
+    $plateInfo->userEmail = $info['EMAILADDRESS'];
+    $plateInfo->userName = $info['LOGIN'];
 
-    error_log(print_r($plateInfo, true));
+    // error_log(print_r($plateInfo, true));
 
     $response = new uk\ac\ox\oppf\www\WSPlate\getPlateInfoResponse();
     $response->getPlateInfoReturn = $plateInfo;
