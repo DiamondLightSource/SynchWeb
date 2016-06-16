@@ -460,49 +460,6 @@
             return array_keys($keys) !== $keys;
         }
 
-
-
-        # ------------------------------------------------------------------------
-        # Interpolate a string with its arguments
-        function interpolate($string, $args) {
-            # Use underscore.js style template to be consistent with the front end
-            return preg_replace_callback('/<%=(\w+)%>/', 
-                function($mat) use ($args) {
-                    if (array_key_exists($mat[1], $args)) {
-                        return $args[$mat[1]];
-                    }
-                }, 
-                $string);
-        }
-
-
-        # ------------------------------------------------------------------------
-        # Directory and File template manipulations
-
-        function visit_dir($info) {
-            global $visit_directory;
-            return $this->interpolate($visit_directory, $info);
-        }
-
-        # Return a directory relative to the visit
-        function relative($dir, $info) {
-            $dir = preg_replace('/\/$/', '', $dir);
-            return str_replace($this->visit_dir($info).'/', '', $dir);
-        }
-
-        # Returns a filetemplate (i.e. img_1_####.cbf) with imagenumber replaced and padded
-        function filetemplate($template, $info) {
-            $temp = preg_replace_callback('/(#+)/', function($mat) use ($info) {
-                return str_pad($info['IMAGENUMBER'], strlen($mat[1]), '0', STR_PAD_LEFT);
-            }, $template);
-
-            if (array_key_exists('NOSUFFIX', $info)) {
-                $temp = str_replace('.'.$info['IMAGESUFFIX'], '', $temp);
-            }
-
-            return $temp;
-        }
-
     }
 
 
