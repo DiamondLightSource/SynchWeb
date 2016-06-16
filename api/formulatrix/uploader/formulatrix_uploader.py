@@ -101,7 +101,7 @@ class FormulatrixUploader:
 
                 # Check if the visit dir exists yet
                 new_root = '{root}/{year}/{visit}'.format(root=self.config['upload_dir'], year=container['year'], visit=container['visit'])
-                if not os.path.exists(new_path):
+                if not os.path.exists(new_root):
                     print 'Visit location for image doesnt exist', new_root
                     continue
 
