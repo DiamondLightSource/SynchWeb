@@ -155,7 +155,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
 
     if (xhr.status == 401) app.login(xhr)
     if (xhr.status == 500) app.alert({ message: 'An application error has occured <pre>'+msg+'</pre>', persist: 'e500' })
-    if (xhr.status == 503) app.alert({ message: 'An database error has occured <pre>'+msg+'</pre>', persist: 'e503' })
+    if (xhr.status == 503) app.alert({ message: 'A database error has occured <pre>'+msg+'</pre>', persist: 'e503' })
   })
     
   
@@ -235,6 +235,10 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
             if (options && options.callback) options.callback()
           })
       },
+
+      error: function() {
+          if (options && options.callback) options.callback()
+      }
 
     })
   }
