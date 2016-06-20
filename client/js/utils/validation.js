@@ -10,6 +10,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         fcode: /^DLS\-(MX|IN)\-\d\d\d\d$/i,
         datetime: /\d+-\d+-\d+ \d+:\d+/,
         sequence: /[>|;|\w+|\n]/,
+        address: /^(\w|\s|\-|\n)+$/,
     });
     
     _.extend(Backbone.Validation.messages, {
@@ -22,6 +23,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         fcode: 'This field must be of the format DLS-MX-XXXX',
         datetime: 'This field must be of the format DD-MM-YYYY HH:MM',
         sequence: 'This field may only contain word characters and line returns',
+        address: 'This field may only contain word character, spaces, and line returns',
     });
 
 })
