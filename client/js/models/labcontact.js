@@ -26,9 +26,11 @@ define(['backbone'], function(Backbone) {
             },
             LABNAME: {
                 required: true,
+                pattern: 'wwsdash',
             },
             ADDRESS: {
                 required: true,
+                pattern: 'address',
             },
             DEFAULTCOURRIERCOMPANY: {
                 pattern: 'wwsdash',
