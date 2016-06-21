@@ -67,7 +67,7 @@ define(['views/form',
         },
 
         redirect: function() {
-            if (app.options.get('authentication_type') == 'cas')
+            if (app.options.get('authentication_type') == 'cas' && app.options.get('cas_sso') == true && location.href.indexOf('?ticket=') == -1)
                 window.location.href='https://'+app.options.get('cas_url')+'/cas/login?service='+encodeURIComponent(window.location.href)            
         },
 
