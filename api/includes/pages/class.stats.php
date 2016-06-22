@@ -110,13 +110,13 @@
             $where = $all ? '1=1' : $where;
             
             $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, run, bl FROM (
-                    SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'HH24') as dh, vr.run, ses.beamlinename as bl
+                    SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
                     FROM datacollection dc
                     INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
                     INNER JOIN proposal p ON p.proposalid = ses.proposalid
                     WHERE $where AND p.proposalcode not in ('cm', 'nt') AND ses.beamlinename not in ('i12', 'i13')
-                    GROUP BY TO_CHAR(dc.starttime, 'HH24'), run, ses.beamlinename
+                    GROUP BY TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24'), run, ses.beamlinename
                 ) inq GROUP BY run, bl ORDER BY run, bl
             ");
             
@@ -135,13 +135,13 @@
         // Images / Hour
         function _images() {
             $dcs = $this->db->pq("SELECT AVG(images) as avg, run, bl FROM (
-                    SELECT sum(dc.numberofimages) as images, TO_CHAR(dc.starttime, 'HH24') as dh, vr.run, ses.beamlinename as bl
+                    SELECT sum(dc.numberofimages) as images, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
                     FROM datacollection dc
                     INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
                     INNER JOIN proposal p ON p.proposalid = ses.proposalid
                     WHERE p.proposalcode not in ('cm', 'nt') AND ses.beamlinename not in ('i12', 'i13')
-                    GROUP BY TO_CHAR(dc.starttime, 'HH24'), run, ses.beamlinename
+                    GROUP BY TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24'), run, ses.beamlinename
                 ) inq GROUP BY run, bl ORDER BY run, bl
             ");
             
@@ -163,7 +163,7 @@
                                  INNER JOIN proposal p ON p.proposalid = ses.proposalid
                                  WHERE dc.axisrange > 0 AND dc.overlap = 0
                                  AND p.proposalcode not in ('cm', 'nt')
-                                 AND (dc.endtime-dc.starttime)*1440 < 20
+                                 AND (TIMESTAMPDIFF('SECOND', dc.starttime, dc.endtime)/60) < 20
                                  AND ses.beamlinename not in ('i12', 'i13')
                                  GROUP BY vr.run, ses.beamlinename
                                  ORDER BY run, bl
@@ -181,7 +181,7 @@
         // Samples Loaded / Hour
         function _samples_loaded() {
             $dcs = $this->db->pq("SELECT AVG(count) as avg, count(count) as count, run, bl FROM (
-                    SELECT count(r.robotactionid) as count, TO_CHAR(r.starttimestamp, 'HH24') as dh, vr.run, ses.beamlinename as bl
+                    SELECT count(r.robotactionid) as count, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
                     FROM robotaction r
                     INNER JOIN blsession ses ON r.blsessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
@@ -189,7 +189,7 @@
                     WHERE r.actiontype = 'LOAD'
                     AND p.proposalcode not in ('cm', 'nt')
                     /*AND CAST(TO_CHAR(vr.startdate, 'YYYY') as NUMBER) > 2010*/
-                    GROUP BY TO_CHAR(r.starttimestamp, 'HH24'), run, ses.beamlinename
+                    GROUP BY TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24'), run, ses.beamlinename
                 ) inq WHERE count > 0 GROUP BY run, bl ORDER BY run, bl
             ");
             
@@ -205,8 +205,8 @@
                                  
                                  
         function _daily_usage() {
-            $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, TO_CHAR(dh, 'HH24') as hour, bl FROM (
-                    SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'HH24') as dh, ses.beamlinename as bl
+            $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, dh as hour, bl FROM (
+                    SELECT count(dc.datacollectionid) as datacollections, HOUR(dc.starttime) as dh, ses.beamlinename as bl
                     FROM datacollection dc
                     INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
@@ -214,8 +214,8 @@
                     WHERE dc.axisrange > 0 AND dc.overlap = 0
                     AND p.proposalcode not in ('cm', 'nt')
                     AND ses.beamlinename not in ('i12', 'i13')
-                    GROUP BY TO_CHAR(dc.starttime, 'HH24'), run, ses.beamlinename
-                ) inq WHERE datacollections > 0 GROUP BY TO_CHAR(dh, 'HH24'), bl ORDER BY hour, bl
+                    GROUP BY TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24'), run, ses.beamlinename
+                ) inq WHERE datacollections > 0 GROUP BY dh, bl ORDER BY hour, bl
             ");
             
             $json = $this->_format_data($dcs, 'HOUR', 'BL', array('AVG'), array('Average' => 'lines'), array('Average' => array()));
