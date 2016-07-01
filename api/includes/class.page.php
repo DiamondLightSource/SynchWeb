@@ -366,7 +366,15 @@
 
         function _get_email_fn($name) {
             $parts = explode(' ', $name);
-            $src = $this->_ldap_search("(&(sn=$parts[2])(givenname=$parts[1]))", true);
+            if (sizeof($parts) == 2) {
+                $fn = $parts[0];
+                $ln = $parts[1];
+            } else if (sizeof($parts) == 3) {
+                $fn = $parts[1];
+                $ln = $parts[2];
+            } else return;
+
+            $src = $this->_ldap_search("(&(sn=$ln)(givenname=$fn))", true);
 
             $ret = array();
             foreach ($src as $fedid => $email) {
