@@ -454,7 +454,7 @@
 
 
         function _transfer_dewar() {
-            global $tranfer_email;
+            global $transfer_email;
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
             $dew = $this->db->pq("SELECT d.dewarid,s.shippingid 
@@ -477,10 +477,11 @@
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
             $this->args['LCNEXTEMAIL'] = $this->_get_email_fn($this->arg('NEXTLOCALCONTACT'));
 
-            $email->data = $this->args;
-            if (!array_key_exists('FACILITYCODE', $email->data)) $email->data['FACILITYCODE'] = '';
+            $data = $this->args;
+            if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
+            $email->data = $data;            
 
-            $recpts = $tranfer_email.', '.$this->arg('EMAILADDRESS');
+            $recpts = $transfer_email.', '.$this->arg('EMAILADDRESS');
             if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
 
             $email->send($recpts);
@@ -512,8 +513,9 @@
 
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
 
-            $email->data = $this->args;
-            if (!array_key_exists('FACILITYCODE', $email->data)) $email->data['FACILITYCODE'] = '';
+            $data = $this->args;
+            if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
+            $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
             if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
