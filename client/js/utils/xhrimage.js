@@ -10,6 +10,13 @@ define(['marionette'], function() {
 
 		var xhr = new XMLHttpRequest()
 
+		// dont fetch image string
+		if (url.startsWith('data:image')) {
+			self.src = url
+			if (callback) callback(this)
+			return
+		}
+
 		xhr.open('GET', url, true)
 		if (app.token) xhr.setRequestHeader('Authorization','Bearer ' + app.token);
 		xhr.responseType = 'arraybuffer'
