@@ -72,92 +72,94 @@ class FormulatrixUploader:
 
 
     def run(self):
-        files = glob.glob(self.config['holding_dir']+"/*EF*.xml")
-        for xml in files:
-            print xml
-            st = os.stat(xml)
-            
-            image = xml.replace('.xml', '.jpg')
-            if not os.path.exists(image):
-                print 'Corresponding image not found for', xml, 'expected', image
-                continue
-
-
-            if time.time() - st.st_mtime > 10:
-                tree = ET.parse(xml)
-                root = tree.getroot()
-
-                # deal with xml namespace
-                ns = root.tag.split('}')[0].strip('{')
-                nss = { 'oppf': ns }
-
-                inspectionid = root.find('oppf:ImagingId', nss).text
-
-                print 'inspection', inspectionid
-
-                container = self._get_container(inspectionid)
-                if container is None:
+        while self.running:
+            files = glob.glob(self.config['holding_dir']+"/*EF*.xml")
+            for xml in files:
+                print xml
+                st = os.stat(xml)
+                
+                image = xml.replace('.xml', '.jpg')
+                if not os.path.exists(image):
+                    print 'Corresponding image not found for', xml, 'expected', image
                     continue
 
-                # Check if the visit dir exists yet
-                new_root = '{root}/{year}/{visit}'.format(root=self.config['upload_dir'], year=container['year'], visit=container['visit'])
-                if not os.path.exists(new_root):
-                    print 'Visit location for image doesnt exist', new_root
-                    continue
 
-                # Keep images in visit/imaging/containerid/inspectionid
-                new_path = '{new_root}/imaging/{containerid}/{inspectionid}'.format(new_root=new_root, containerid=container['containerid'], inspectionid=inspectionid)
-                if not os.path.exists(new_path):
-                    try:
-                        os.makedirs(new_path)
-                    except OSError as exc:
-                        if exc.errno == errno.EEXIST and os.path.isdir(new_path):
-                            pass
-                        else:
-                            raise
+                if time.time() - st.st_mtime > 10:
+                    tree = ET.parse(xml)
+                    root = tree.getroot()
 
-                position = self._get_position(root.find('oppf:Drop', nss).text, container['containertype'])
-                if position is None:
-                    print 'Could not match drop to position', root.find('oppf:Drop', nss).text, container['containertype']
-                    continue
+                    # deal with xml namespace
+                    ns = root.tag.split('}')[0].strip('{')
+                    nss = { 'oppf': ns }
 
-                print 'Drop', root.find('oppf:Drop', nss).text, 'position', position
+                    inspectionid = root.find('oppf:ImagingId', nss).text
 
-                sampleid = self._get_sampleid(position, container['containerid'])
-                if sampleid is None:
-                    continue
+                    print 'inspection', inspectionid
 
-                mppx = float(root.find('oppf:SizeInMicrons', nss).find('oppf:Width', nss).text) / float(root.find('oppf:SizeInPixels', nss).find('oppf:Width', nss).text)
-                mppy = float(root.find('oppf:SizeInMicrons', nss).find('oppf:Height', nss).text) / float(root.find('oppf:SizeInPixels', nss).find('oppf:Height', nss).text)
+                    container = self._get_container(inspectionid)
+                    if container is None:
+                        continue
 
-                db.pq("""INSERT INTO BLSampleImage (blsampleid, micronsperpixelx, micronsperpixely, containerinspectionid)
-                    VALUES (%s,%s,%s,%s)""", [sampleid, mppx, mppy, inspectionid])
-                print "INSERT INTO BLSampleImage (blsampleid, micronsperpixelx, micronsperpixely, containerinspectionid) VALUES (%s,%s,%s,%s)", [sampleid, mppx, mppy, inspectionid]
+                    # Check if the visit dir exists yet
+                    new_root = '{root}/{year}/{visit}'.format(root=self.config['upload_dir'], year=container['year'], visit=container['visit'])
+                    if not os.path.exists(new_root):
+                        print 'Visit location for image doesnt exist', new_root
+                        continue
 
-                iid = db.id()
+                    # Keep images in visit/imaging/containerid/inspectionid
+                    new_path = '{new_root}/imaging/{containerid}/{inspectionid}'.format(new_root=new_root, containerid=container['containerid'], inspectionid=inspectionid)
+                    if not os.path.exists(new_path):
+                        try:
+                            os.makedirs(new_path)
+                        except OSError as exc:
+                            if exc.errno == errno.EEXIST and os.path.isdir(new_path):
+                                pass
+                            else:
+                                raise
 
-                # Use blsampleimageid as file name as we are sure this is unique
-                new_file = '{path}/{iid}.jpg'.format(path=new_path, iid=iid)
+                    position = self._get_position(root.find('oppf:Drop', nss).text, container['containertype'])
+                    if position is None:
+                        print 'Could not match drop to position', root.find('oppf:Drop', nss).text, container['containertype']
+                        continue
 
-                db.pq("""UPDATE BLSampleImage set imagefullpath=%s WHERE blsampleimageid=%s""", [new_file, iid])
-                print "UPDATE BLSampleImage set imagefullpath=%s WHERE blsampleimageid=%s", [new_file, iid]
+                    print 'Drop', root.find('oppf:Drop', nss).text, 'position', position
 
-                # move image
-                print 'copy', image, new_file
-                copyfile(image, new_file)
+                    sampleid = self._get_sampleid(position, container['containerid'])
+                    if sampleid is None:
+                        continue
 
-                # clear up
-                os.move(image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
-                print 'move', image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed')
+                    mppx = float(root.find('oppf:SizeInMicrons', nss).find('oppf:Width', nss).text) / float(root.find('oppf:SizeInPixels', nss).find('oppf:Width', nss).text)
+                    mppy = float(root.find('oppf:SizeInMicrons', nss).find('oppf:Height', nss).text) / float(root.find('oppf:SizeInPixels', nss).find('oppf:Height', nss).text)
 
-                os.move(f, f.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
-                print 'move', xml, xml.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed')
+                    db.pq("""INSERT INTO BLSampleImage (blsampleid, micronsperpixelx, micronsperpixely, containerinspectionid)
+                        VALUES (%s,%s,%s,%s)""", [sampleid, mppx, mppy, inspectionid])
+                    print "INSERT INTO BLSampleImage (blsampleid, micronsperpixelx, micronsperpixely, containerinspectionid) VALUES (%s,%s,%s,%s)", [sampleid, mppx, mppy, inspectionid]
 
-                #os.unlink(image)
-                #os.unlink(xml)
+                    iid = db.id()
+
+                    # Use blsampleimageid as file name as we are sure this is unique
+                    new_file = '{path}/{iid}.jpg'.format(path=new_path, iid=iid)
+
+                    db.pq("""UPDATE BLSampleImage set imagefullpath=%s WHERE blsampleimageid=%s""", [new_file, iid])
+                    print "UPDATE BLSampleImage set imagefullpath=%s WHERE blsampleimageid=%s", [new_file, iid]
+
+                    # move image
+                    print 'copy', image, new_file
+                    copyfile(image, new_file)
+
+                    # clear up
+                    os.move(image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
+                    print 'move', image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed')
+
+                    os.move(f, f.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
+                    print 'move', xml, xml.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed')
+
+                    #os.unlink(image)
+                    #os.unlink(xml)
 
 
-        time.sleep(10)
+            print 'Sleeping until next iteration'
+            time.sleep(10)
 
 
     def _get_container(self, inspectionid):
