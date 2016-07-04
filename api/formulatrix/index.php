@@ -97,7 +97,7 @@ function __autoload( $class ) {
 
 // SynchWeb getPlateInfo implementation
 function getPlateInfo($getPlateInfo) {
-    global $imaging;  
+    global $imaging, $plate_types;
 
     // Attempt to extract something useful for plate number
     // - note it must fit in an int
@@ -118,9 +118,10 @@ function getPlateInfo($getPlateInfo) {
     $plateInfo->projectName = $info['PROP'];
 
     // This MUST match the rockimager plate definitions or we'll destroy all plate training
-    $plateInfo->plateTypeID = $info['CONTAINERTYPE'];
+    //   config.php has a mapping between internal and ispyb plate names
+    if (!array_key_exists($info['CONTAINERTYPE'], $plate_types)) return;
+    $plateInfo->plateTypeID = $plate_types[$info['CONTAINERTYPE']];
     
-    // Todo: Need labcontactid in container
     $plateInfo->userEmail = $info['EMAILADDRESS'];
     $plateInfo->userName = $info['LOGIN'];
 
