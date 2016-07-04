@@ -24,6 +24,7 @@
                               'pp' => '\d+',
                               'page' => '\d+',
                               'dist' => '\d+(.\d+)?',
+                              'pdb' => '\w+',
                               );
         
 
@@ -35,6 +36,8 @@
                               array('/ap', 'get', '_autoproc'),
                               array('/state', 'get', '_state'),
                               array('/bl', 'get', '_beamlines'),
+
+                              array('/pdb', 'get', '_proxy_pdb'),
         );
         
         
@@ -371,6 +374,22 @@
         function _get_processed() {
             $rows = $this->db->pq("SELECT code from pdbentry");
             $this->_output($rows);
+        }
+
+
+        function _proxy_pdb() {
+            if (!$this->has_arg('pdb')) $this->_error('No pdb file specified');
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'http://www.rcsb.org/pdb/rest/customReport?pdbids='.$this->arg('pdb').'&customReportColumns=structureId,structureTitle,unitCellAngleAlpha,unitCellAngleBeta,unitCellAngleGamma,lengthOfUnitCellLatticeA,lengthOfUnitCellLatticeB,lengthOfUnitCellLatticeC,structureAuthor,citationAuthor,firstPage,lastPage,journalName,title,volumeId,publicationYear,diffractionSource,resolution,spaceGroup,releaseDate');
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $this->app->contentType('text/xml');
+            print $response;
+
         }
 
 
