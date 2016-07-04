@@ -102,8 +102,8 @@ define(['marionette', 'modules/cell/collections/datacollections', 'views/pages',
             
             if (this.ui.pdb.val()) {
                 var self = this
-                $.ajax({
-                    url: 'http://www.rcsb.org/pdb/rest/customReport?pdbids='+this.ui.pdb.val()+'&customReportColumns=structureId,structureTitle,unitCellAngleAlpha,unitCellAngleBeta,unitCellAngleGamma,lengthOfUnitCellLatticeA,lengthOfUnitCellLatticeB,lengthOfUnitCellLatticeC,structureAuthor,citationAuthor,firstPage,lastPage,journalName,title,volumeId,publicationYear,diffractionSource,resolution,spaceGroup,releaseDate',
+                Backbone.ajax({
+                    url: app.apiurl+'/cell/pdb?pdb='+this.ui.pdb.val(),
                     type: 'GET',
                     dataType: 'xml',
                     timeout: 5000,
