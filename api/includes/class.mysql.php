@@ -58,9 +58,12 @@
             $query = preg_replace('/TO_CHAR\((.+?)MM(.+?)\)/', 'TO_CHAR(\1%m\2)', $query);
             $query = preg_replace('/TO_DATE\((.+?)MM(.+?)\)/', 'TO_DATE(\1%m\2)', $query);
 
+            $query = preg_replace('/TO_CHAR\((.+?)DD(.+?)\)/', 'TO_CHAR(\1%d\2)', $query);
+            $query = preg_replace('/TO_DATE\((.+?)DD(.+?)\)/', 'TO_DATE(\1%d\2)', $query);
+
             $query = preg_replace('/TO_CHAR/', 'DATE_FORMAT', $query);
             $query = preg_replace('/TO_DATE/', 'STR_TO_DATE', $query);
-            $query = preg_replace('/DD/', '%d', $query);
+            // $query = preg_replace('/DD/', '%d', $query);
             
             $query = preg_replace('/YYYY/', '%Y', $query);
             $query = preg_replace('/HH24/', '%H', $query);
