@@ -211,6 +211,8 @@ function imagingPlate($imagingPlate) {
         $container = $imaging->_get_plate_info(array('BARCODE' => $imagingPlate->plateID));
 
         $args = array(
+            'CONTAINERID' => $container['CONTAINERID'],
+            'INSPECTIONTYPEID' => 1, // configure me
             'DATETOIMAGE' => $dateToImage->format('d-m-Y H:i'),
             'BARCODE' => $imagingPlate->plateID, 
             'MANUAL' => 1,
