@@ -109,7 +109,7 @@ function getPlateInfo($getPlateInfo) {
     }
 
     // Get plateinfo from SynchWeb
-    $info = $imaging->_get_plate_info(array('BARCODE' => $getPlateInfo->plateID, 'SERIAL' => $getPlateInfo->robot->iD));
+    $info = $imaging->_get_plate_info(array('BARCODE' => $getPlateInfo->plateID, 'SERIAL' => $getPlateInfo->robot->name));
 
     $plateInfo = new uk\ac\ox\oppf\www\WSPlate\PlateInfo();
     $plateInfo->dateDispensed = date("c", strtotime($info['BLTIMESTAMP']));
@@ -178,35 +178,55 @@ function imagingPlate($imagingPlate) {
     // state = 5
 
     // SoapServer DateTime handling bug
-    $dateToImage = date_create_from_format(DATE_ATOM, $imagingPlate->dateToImage);
+    $dateToImage = date_create_from_format(DATE_ATOM, preg_replace('/\.\d+(\w)$/', '$1', $imagingPlate->dateToImage));
 
-    // This is totally nuts, we now have to magically retrive the containerinspectionid
-    // based on the timestamp and barcode, we could have passed a unique id from
-    // getImagingTasks which RockImager could internally use. Sigh :(
-    $inspection = $imaging->_update_inspection(array(
-        'DATETOIMAGE' => $dateToImage->format('d-m-Y H:i'),
-        'BARCODE' => $imagingPlate->plateID, 
-        'VALUES' => array(
+    // This has come from ISPyB
+    if ($imagingPlate->scheduled) {
+        // This is totally nuts, we now have to magically retrive the containerinspectionid
+        // based on the timestamp and barcode, we could have passed a unique id from
+        // getImagingTasks which RockImager could internally use. Sigh :(
+        $inspection = $imaging->_update_inspection(array(
+            'DATETOIMAGE' => $dateToImage->format('d-m-Y H:i'),
+            'BARCODE' => $imagingPlate->plateID, 
+            'VALUES' => array(
+                'STATE' => $states[5],
+                'BLTIMESTAMP' => date('d-m-Y H:i')
+            )
+        ));
+
+        // The first task of the schedule if scheduled when the container is originally
+        // created so is always overdue by the time it gets to site.
+
+        // If this is the first imaging for this plate, now schedule the rest of the tasks
+        // from this current timestamp (what we'll define as zero)
+        $imaging->_check_schedule_from_zero(array('BARCODE' => $imagingPlate->plateID));
+
+        // todo: throw error here
+        if (!sizeof($inspection)) return;
+        $inspectionid = $inspection[0]['CONTAINERINSPECTIONID'];
+
+
+    // This one is a manual inspection from RockImager
+    } else {
+        $container = $imaging->_get_plate_info(array('BARCODE' => $imagingPlate->plateID));
+
+        $args = array(
+            'DATETOIMAGE' => $dateToImage->format('d-m-Y H:i'),
+            'BARCODE' => $imagingPlate->plateID, 
+            'MANUAL' => 1,
             'STATE' => $states[5],
             'BLTIMESTAMP' => date('d-m-Y H:i')
-        )
-    ));
+        );
 
+        if ($container['TEMPERATURE']) $args['TEMPERATURE'] = $container['TEMPERATURE'];
+        if ($container['IMAGERID']) $args['IMAGERID'] = $container['IMAGERID'];
 
-    // The first task of the schedule if scheduled when the container is originally
-    // created so is always overdue by the time it gets to site.
+        $inspectionid = $imaging->_do_insert_inspection($args);
+    }
 
-    // If this is the first imaging for this plate, now schedule the rest of the tasks
-    // from this current timestamp (what we'll define as zero)
-    $imaging->_check_schedule_from_zero(array('BARCODE' => $imagingPlate->plateID));
-
-
-    // todo: throw error here
-    if (!sizeof($inspection)) return;
-    $inspection = $inspection[0];
 
     $response = new uk\ac\ox\oppf\www\WSPlate\imagingPlateResponse();
-    $response->imagingPlateReturn = $inspection['CONTAINERINSPECTIONID'];
+    $response->imagingPlateReturn = $inspectionid;
 
     return $response;
 
