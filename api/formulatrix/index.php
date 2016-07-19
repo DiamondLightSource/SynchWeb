@@ -185,7 +185,7 @@ function imagingPlate($imagingPlate) {
         // This is totally nuts, we now have to magically retrive the containerinspectionid
         // based on the timestamp and barcode, we could have passed a unique id from
         // getImagingTasks which RockImager could internally use. Sigh :(
-        $inspection = $imaging->_update_inspection(array(
+        $inspectionid = $imaging->_update_inspection(array(
             'DATETOIMAGE' => $dateToImage->format('d-m-Y H:i'),
             'BARCODE' => $imagingPlate->plateID, 
             'VALUES' => array(
@@ -200,10 +200,6 @@ function imagingPlate($imagingPlate) {
         // If this is the first imaging for this plate, now schedule the rest of the tasks
         // from this current timestamp (what we'll define as zero)
         $imaging->_check_schedule_from_zero(array('BARCODE' => $imagingPlate->plateID));
-
-        // todo: throw error here
-        if (!sizeof($inspection)) return;
-        $inspectionid = $inspection[0]['CONTAINERINSPECTIONID'];
 
 
     // This one is a manual inspection from RockImager
