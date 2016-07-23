@@ -22,6 +22,7 @@
 import json
 import time
 import glob
+import re
 import os
 import errno
 import MySQLdb
@@ -92,7 +93,7 @@ class FormulatrixUploader:
                     ns = root.tag.split('}')[0].strip('{')
                     nss = { 'oppf': ns }
 
-                    inspectionid = root.find('oppf:ImagingId', nss).text
+                    inspectionid = re.sub('\-.*', '', root.find('oppf:ImagingId', nss).text)
 
                     print 'inspection', inspectionid
 
@@ -148,10 +149,10 @@ class FormulatrixUploader:
                     copyfile(image, new_file)
 
                     # clear up
-                    os.move(image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
+                    os.rename(image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
                     print 'move', image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed')
 
-                    os.move(f, f.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
+                    os.rename(xml, xml.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
                     print 'move', xml, xml.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed')
 
                     #os.unlink(image)
@@ -191,8 +192,8 @@ class FormulatrixUploader:
         well, drop = text_position.split('.')
 
         drop = int(drop)
-        col = ord(well[0])-65
-        row = int(well[1:])
+        row = ord(well[0])-65
+        col = int(well[1:])
 
         # Need to know what type of plate this is to know how many columns its got
         # This should be in the database, currently in json format embedded in this collection:
