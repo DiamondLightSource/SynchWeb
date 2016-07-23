@@ -224,7 +224,8 @@ function imagingPlate($imagingPlate) {
 
 
     $response = new uk\ac\ox\oppf\www\WSPlate\imagingPlateResponse();
-    $response->imagingPlateReturn = $inspectionid;
+    // sigh
+    $response->imagingPlateReturn = $inspectionid . date('-Ymd-His');
 
     return $response;
 
@@ -235,10 +236,13 @@ function imagingPlate($imagingPlate) {
 function imagedPlate($imagedPlate) {
     global $imaging, $states;
 
+    // so close to sanity...
+    $id = preg_replace('/\-.*/', '', $imagedPlate->imagingID);
+
     // Mark imaging session $imagedPlate->imagingID as completed
     // - state 6
     $inspection = $imaging->_do_update_inspection(array(
-        'CONTAINERINSPECTIONID' => $imagedPlate->imagingID, 
+        'CONTAINERINSPECTIONID' => $id, 
         'VALUES' => array(
             'STATE' => $states[6],
         )
