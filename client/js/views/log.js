@@ -1,4 +1,4 @@
-define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
+define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView, utils) {
 
     return DialogView.extend({
         className: 'fixedwidth',
@@ -7,30 +7,62 @@ define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
         initialize: function(options) {
             this.url = options.url
             this.load()
+            this.iframe = $('<iframe></iframe>')
             
         },
         
         load: function() {
             var self = this
-            //if (this.getOption('iframe')) {
-                this.data = '<iframe src="'+this.url+'"></iframe>'
-                
-            /*} else {
-                $.get(this.url, function(d) {
-                    if (d.indexOf('h1') == -1) d = '<pre>'+d+'</pre>'
-                    self.data = d
-                    self.render()
-                })
-            }*/
+            Backbone.ajax({
+                url: this.url,
+                success: function(content, status, xhr) {
+                    var ct = xhr.getResponseHeader('content-type')
+                    if (ct.indexOf('text/plain') > -1) content = '<pre>'+content+'</pre>'
+
+                    // inject sign handler
+                    var sh = '<script src="/client/js/vendor/jquery/jquery-1.9.1.min.js"></script>\n\
+                    <script type="text/javascript">\n\
+                        $(document).ready(function() {\n\
+                            var app = { apiurl: "'+app.apiurl+'", prop: "'+app.prop+'"}\n\
+                            app.token = sessionStorage.getItem(\'token\')\n\
+                            var root = "'+self.url.replace(/\?token=.*/, '')+'"\n\
+                            var ajax = function(options) {\n\
+                                options.data.prop = app.prop\n\
+                                if (app.token) {\n\
+                                    options.beforeSend = function(request){\n\
+                                        request.setRequestHeader(\'Authorization\', \'Bearer \' + app.token);\n\
+                                    }\n\
+                                }\n\
+                                return $.ajax.call(this, options)\n\
+                            }\n\
+                            var Backbone = { ajax: ajax }\n\
+                            var sign = '+utils.sign.toString()+'\n\
+                            $("a").click(function(e) {\n\
+                                e.preventDefault()\n\
+                                var url = root+\'/\'+$(this).attr("href")\n\
+                                \sign({\n\
+                                    url: url,\n\
+                                    callback: function(resp) {\n\
+                                        window.location = url+\'?token=\'+resp.token\n\
+                                    }\n\
+                                })\n\
+                            })\n\
+                        });\n\
+                    </script>'
+
+                    var doc = self.iframe[0].contentWindow.document
+                    doc.open()
+                    doc.write(sh+content)
+                    doc.close()
+                }
+            })
         },
         
         onRender: function() {
-            this.$el.html(this.data)
+            this.$el.append(this.iframe)
             
-            //if (this.getOption('iframe')) {
-                this.$el.find('iframe').css('width', $(window).width()*(app.mobile() ? 0.8 : 0.5))
-                this.$el.find('iframe').css('height', $(window).width()*(app.mobile() ? 0.8 : 0.5))
-            //}
+            this.$el.find('iframe').css('width', $(window).width()*(app.mobile() ? 0.8 : 0.5))
+            this.$el.find('iframe').css('height', $(window).width()*(app.mobile() ? 0.8 : 0.5))
         }
         
     })
