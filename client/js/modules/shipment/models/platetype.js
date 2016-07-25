@@ -47,7 +47,7 @@ define(['backbone'], function(Backbone) {
             this.set('drop_heightpx', (this.get('well_height')-this.get('drop_pad')*2) / (this.get('drop_per_well_y') / this.get('drop_height')))
             
             this.set('drop_offset_x', this.get('drop_offset_x')*(this.get('well_width')-this.get('drop_pad')*2))
-            this.set('drop_offset_y', this.get('drop_offset_y')*(this.get('well_width')-this.get('drop_pad')*2))
+            this.set('drop_offset_y', this.get('drop_offset_y')*(this.get('well_height')-this.get('drop_pad')*2))
         },
         
         setGeometry: function(width, height, ofx, ofy) {
