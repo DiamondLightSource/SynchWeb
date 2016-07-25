@@ -193,7 +193,7 @@ class FormulatrixUploader:
 
         drop = int(drop)
         row = ord(well[0])-65
-        col = int(well[1:])
+        col = int(well[1:])-1
 
         # Need to know what type of plate this is to know how many columns its got
         # This should be in the database, currently in json format embedded in this collection:
@@ -205,7 +205,7 @@ class FormulatrixUploader:
         ty = self.config['types'][platetype]
 
         # Position is a linear sequence left to right across the plate
-        return (ty['well_per_row']*(row-1)*ty['drops_per_well']) + (col*ty['drops_per_well']) + (drop-1) + 1
+        return (ty['well_per_row']*row*ty['drops_per_well']) + (col*ty['drops_per_well']) + (drop-1) + 1
 
 
 
