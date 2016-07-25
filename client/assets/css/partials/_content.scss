@@ -755,9 +755,17 @@ ol.rounded {
         }
     }
 
+    .rp .data_collection.selected {
+        background: #cdcdcd;
+    }
+
     .distl {
         @include transition(opacity 0.25s ease-in-out);
         
+        .rp & {
+            width: 48%;
+        }
+
         width: 23.5%;
         float: right;
         margin: 0.25%;
