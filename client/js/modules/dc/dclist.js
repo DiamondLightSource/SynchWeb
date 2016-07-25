@@ -41,7 +41,8 @@ function(Marionette,
         return {
             imagestatuses: this.imagestatuses,
             apstatuses: this.apstatuses,
-            templateHelpers: { IS_VISIT: is_vis, VIS_LINK: vl, APIURL: app.apiurl }
+            templateHelpers: { IS_VISIT: is_vis, VIS_LINK: vl, APIURL: app.apiurl },
+            visit: vl,
         }
     },
       
