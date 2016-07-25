@@ -2,7 +2,15 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
     
     var plate_types = [
          { name: 'Puck', capacity: 16 },
-          
+        
+         { name: 'ReferencePlate', well_per_row: 2,
+             drop_per_well_x: 1, drop_per_well_y: 1,
+             drop_height: 1, drop_width: 1,
+             drop_offset_x: 0, drop_offset_y: 0,
+             well_drop: -1,
+             capacity: 4
+         },
+
          { name: 'CrystalQuickX', well_per_row: 12,
              drop_per_well_x: 2, drop_per_well_y: 1,
              drop_height: 0.5, drop_width: 1,
@@ -24,10 +32,10 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
              well_drop: -1,
              capacity: 48
         },
-         { name: 'Mitagen In-Situ', well_per_row: 12,
+         { name: 'MitegenInSitu', well_per_row: 12,
              drop_per_well_x: 1, drop_per_well_y: 1,
              drop_height: 0.5, drop_width: 1,
-             drop_offset_x: 0, drop_offset_y: 0.5,
+             drop_offset_x: 0, drop_offset_y: 0,
              well_drop: -1,
              capacity: 96
         },
@@ -63,6 +71,13 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
          { name: '1 drop', well_per_row: 12,
              drop_per_well_x: 1, drop_per_well_y: 1,
              drop_height: 0.5, drop_width: 0.5,
+             drop_offset_x: 0, drop_offset_y: 0,
+             well_drop: -1,
+             capacity: 96
+        },
+        { name: 'FilmBatch', well_per_row: 12,
+             drop_per_well_x: 1, drop_per_well_y: 1,
+             drop_height: 1, drop_width: 1,
              drop_offset_x: 0, drop_offset_y: 0,
              well_drop: -1,
              capacity: 96
