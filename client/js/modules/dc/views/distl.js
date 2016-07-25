@@ -55,6 +55,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
                   xaxis: {
                       minTickSize: 1,
                       tickDecimals: 0,
+                      max: this.getOption('parent').get('NUMIMG')
                   },
                   yaxes: [{}, { position: 'right', transform: function (v) { return -v; } }],
               })
