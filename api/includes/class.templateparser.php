@@ -59,7 +59,7 @@
             }
 
             if (array_key_exists('VISIT', $options)) {
-                $where = "CONCAT(CONCAT(CONCAT(p.proposalnumber, p.proposalcode), '-'), s.visit_number) LIKE :1";
+                $where = "WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1";
                 array_push($args, $options['VISIT']);
             }
 
@@ -92,7 +92,7 @@
         function filetemplate($options) {
             if (!array_key_exists('DCID', $options)) return;
 
-            $dc = $this->db->pq("SELECT dc.startimagenumber, dc.imagedirectory, dc.imagesuffix, dc.filetemplate, dc.sessionid
+            $dc = $this->db->pq("SELECT dc.startimagenumber, dc.imagedirectory, dc.imagesuffix, dc.imageprefix, dc.filetemplate, dc.sessionid, dc.datacollectionnumber
                 FROM datacollection dc 
                 WHERE dc.datacollectionid=:1", array($options['DCID']));
 
@@ -109,7 +109,7 @@
                 $temp = str_replace('.'.$dc['IMAGESUFFIX'], '', $temp);
             }
 
-            return array('IMFILE' =>$temp, 'IMDIRECTORY' => $this->relative($dc['IMAGEDIRECTORY'], array('SESSIONID' => $dc['SESSIONID'])));
+            return array('IMFILE' =>$temp, 'IMDIRECTORY' => $this->relative($dc['IMAGEDIRECTORY'], array('SESSIONID' => $dc['SESSIONID'])), 'IMPREFIX' => $dc['IMAGEPREFIX'], 'DCNUMBER' => $dc['DATACOLLECTIONNUMBER']);
         }
 
 
