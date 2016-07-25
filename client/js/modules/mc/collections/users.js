@@ -1,22 +1,16 @@
-define(['backbone'], function(Backbone) {
+define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
 
-	return Backbone.Collection.extend({
+	return Backbone.Collection.extend(_.extend({}, KVCollection, {
 		url: function() { return '/mc/users/visit/'+this.visit },
+
+		keyAttribute: 'NAME',
+		valueAttribute: 'PERSONID',
 
 		initialize: function(models, options) {
 			this.visit = options.visit
 		},
 
-		parse: function(r) {
-			var d = []
-			_.each(r, function(u, i) {
-				d.push({ ID: i, USER: u })
-			})
-
-			return d
-		}
-
-	})
+	}))
 
 
 })
