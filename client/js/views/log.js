@@ -38,8 +38,16 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
                             var Backbone = { ajax: ajax }\n\
                             var sign = '+utils.sign.toString()+'\n\
                             $("a").click(function(e) {\n\
+                                var is_relative_to_page = function(href) {\n\
+                                    return href.match(/^\\/|(http:|https:|ftp:|mailto:|javascript:)/) === null;\n\
+                                }\n\
+                                var is_routable = function(href) {\n\
+                                    return href.indexOf("#") === -1 && is_relative_to_page(href);\n\
+                                }\n\
+                                var href = $(this).attr("href")\n\
+                                if (!is_routable(href)) return true\n\
                                 e.preventDefault()\n\
-                                var url = root+\'/\'+$(this).attr("href")\n\
+                                var url = root+\'/\'+href\n\
                                 \sign({\n\
                                     url: url,\n\
                                     callback: function(resp) {\n\
