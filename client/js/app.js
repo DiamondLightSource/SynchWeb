@@ -51,8 +51,9 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
   // Allow the app to autoupdate itself when running
   app.checkForUpdate = function() {
       Backbone.ajax({
-          url: app.appurl+'/js/config.json',
+          url: app.appurl+'/js/config.json?t='+(new Date().getTime()),
           success: function(config) {
+              console.log('old', app.config.build, 'new', config.build)
               if (config.build != app.config.build) {
                   app.alert({ message: 'An update to SynchWeb is available. This page will automatically refresh in 5 secods' })
                   setTimeout(function() {
