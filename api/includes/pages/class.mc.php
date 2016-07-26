@@ -1,5 +1,7 @@
 <?php
 
+    require_once(dirname(__FILE__).'/../class.templateparser.php');
+
     class Mc extends Page {
     
 
@@ -9,7 +11,10 @@
             'id' => '\d+', 
             'ids' => '\d+', 
             'dcs' => '\d+',
-            'sg' => '\w+', 'a' => '\d+(.\d+)?', 'b' => '\d+(.\d+)?', 'c' => '\d+(.\d+)?', 'alpha' => '\d+(.\d+)?', 'beta' => '\d+(.\d+)?', 'gamma' => '\d+(.\d+)?', 'res' => '\d+(.\d+)?', 'rfrac' => '\d+(.\d+)?', 'isigi' => '\d+(.\d+)?', 'run' => '\d+', 'type' => '\d+', 'local' => '\d+', 'user' => '\d+');
+            'sg' => '\w+', 
+            'a' => '\d+(.\d+)?', 'b' => '\d+(.\d+)?', 'c' => '\d+(.\d+)?', 'alpha' => '\d+(.\d+)?', 'beta' => '\d+(.\d+)?', 'gamma' => '\d+(.\d+)?', 
+            'res' => '\d+(.\d+)?', 'rfrac' => '\d+(.\d+)?', 'isigi' => '\d+(.\d+)?', 'run' => '\d+', 'type' => '\d+', 'local' => '\d+', 'user' => '\d+',
+            'multi' => '\d');
 
 
         public static $dispatch = array(array('/ints(/user/:user)', 'post', '_integration_statuses'),
@@ -22,22 +27,30 @@
                               array('/blended', 'post', '_blend'),
                               array('/blended/visit/:visit(/user/:user)/:run', 'delete', '_delete'),
 
-                              array('/status(/local/:local)', 'get', '_get_status')
+                              array('/status', 'get', '_get_status')
         );
         
-        var $def = 'ints';
+
+        function __construct() {
+            call_user_func_array('parent::__construct', func_get_args());
+            $this->tmp = new TemplateParser($this->db);
+        }
         
-        
+        function _get_root($options) {
+            global $reprocessing_root;
+            return $this->tmp->interpolate($reprocessing_root, $options);
+        }
+
+        function _get_rp($dcid) {
+            global $reprocessing_str;
+            return $this->tmp->interpolate($reprocessing_str, array('DCID' => $dcid));
+        }
+
+
         # ------------------------------------------------------------------------
         # Find out how many jobs are running
         function _get_status() {
-            #if ($this->has_arg('local')) {
-            #    $jobs = exec('ps aux | grep blend.sh | wc -l') - 2;
-                
-            #} else {
-                $jobs = exec('. /etc/profile.d/modules.sh;module load global/cluster;qstat -u dls_mxweb | grep x2 | wc -l') - 0;
-            #}
-
+            $jobs = exec('. /etc/profile.d/modules.sh;module load global/cluster;qstat -u dls_mxweb | grep x2 | wc -l') - 0;
             $this->_output(array('NUMBER' => $jobs));
         }
 
@@ -46,14 +59,16 @@
         # Get list of users
         function _get_users() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
+            $dirs = $this->dirs($this->_get_root(array('VISIT' => $this->arg('visit'))));
 
-            $info = $this->db->pq("SELECT s.beamlinename as bl, TO_CHAR(s.startdate, 'YYYY') as yr FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
+            $where = array(); $args = array();
+            foreach ($dirs as $d) {
+                array_push($where, 'personid=:'.(sizeof($args)+1));
+                array_push($args, $d);
+            }
 
-            if (!sizeof($info)) $this->_error('No such visit');
-            else $info = $info[0];
-
-            $root = '/dls/'.$info['BL'].'/data/'.$info['YR'].'/'.$this->arg('visit').'/processing/auto_mc';
-            $this->_output($this->dirs($root));
+            $people = $this->db->pq("SELECT CONCAT(CONCAT(p.givenname, ' '), p.familyname) as name, p.personid FROM person p WHERE ".implode(' OR ', $where), $args);
+            $this->_output($people);
         }
         
         
@@ -74,49 +89,73 @@
 
             $where = '('.implode(' OR ', $where).')';
 
-            $rows = $this->db->pq("SELECT TO_CHAR(s.startdate, 'YYYY') as yr, s.beamlinename as bl, dc.datacollectionid as id, dc.filetemplate as prefix, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit 
+            $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.filetemplate as prefix, dc.imagedirectory as dir
                 FROM datacollection dc 
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid 
-                INNER JOIN proposal p ON p.proposalid = s.proposalid 
                 WHERE $where ORDER BY dc.imagedirectory, dc.starttime", $this->arg('ids'));
             
-            $us = array();
-            foreach ($rows as $i => &$r) {
-                if ($this->has_arg('user')) {
-                    if (!sizeof($us)) $us = $this->dirs('/dls/'.$r['BL'].'/data/'.$r['YR'].'/'.$r['VISIT'].'/processing/auto_mc');
-                    $u = $us[$this->arg('user')];
-                } else $u = $this->user->login;
+            $out = array();
+            foreach ($rows as $i => &$ref) {
+                // if (array_key_exists('INT', $r)) continue;
+                $base = $this->_get_rp($ref['ID']);
+                $ref['INT'] = 0;
 
-                $r['INT'] = 0;
-                $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.$u, $r['DIR']).str_replace('####.cbf', '', $r['PREFIX']);
-                
-                if (file_exists($root)) $r['INT'] = 1;
-                if (file_exists($root.'/xia2-summary.dat')) {
-                    $log = explode("\n", file_get_contents($root.'/xia2-summary.dat'));
-                    $stats = array();
-                    $r['INT'] = 2;
-                    
-                    foreach ($log as $l) {
-                        $pat = preg_split('/\t/', $l);
-                        $pats = preg_split('/\s+/', $l);
-                        if (strpos($l, 'High resolution limit') !== false) $stats['RESH'] = number_format($pat[1],2);
-                        if (strpos($l, 'Completeness') !== false) $stats['C'] = number_format($pat[1],1);
-                        if (strpos($l, 'Rmerge') !== false) $stats['R'] = number_format($pat[1],3);
-                        if (strpos($l, 'Cell:') !== false) $stats['CELL'] = array_slice($pats,1);
-                        if (strpos($l, 'Spacegroup:') !== false) $stats['SG'] = implode(' ', array_slice($pats,1));
+                $runs = glob($base.'/run_*');
+                if (!sizeof($runs)) array_push($out, $ref);
+
+                foreach ($runs as $i => $d) {
+                    if (preg_match('/run_(\d+)$/', $d, $m)) {
+                        $r = $ref;
+                        $root = $base.'/run_'.$m[1];
+                        $r['RUN'] = $m[1];
+                        $r['RID'] = $r['ID'].'-'.$r['RUN'];
+
+                        if (file_exists($root)) $r['INT'] = 1;
+                        if (file_exists($root.'/xia2-summary.dat')) {
+                            $log = explode("\n", file_get_contents($root.'/xia2-summary.dat'));
+                            $stats = array();
+                            $r['INT'] = 2;
+
+                            // $r['SHELLS'] = array('innerShell' => array(), 'outerShell' => array(), 'overall' => array());
+                            $shs = array('overall', 'innerShell', 'outerShell');
+
+                            foreach ($log as $l) {
+                                $pat = preg_split('/\t/', $l);
+                                $pats = preg_split('/\s+/', $l);
+
+                                foreach($shs as $i => $s) {
+                                    if (strpos($l, 'High resolution limit') !== false) $stats['SHELLS'][$s]['RESH'] = number_format($pat[$i+1],2);
+                                    if (strpos($l, 'Low resolution limit') !== false) $stats['SHELLS'][$s]['RESL'] = number_format($pat[$i+1],2);
+                                    if (strpos($l, 'Completeness') !== false) $stats['SHELLS'][$s]['COMPLETENESS'] = number_format($pat[$i+1],1);
+                                    if (strpos($l, 'I/sigma') !== false) $stats['SHELLS'][$s]['ISIGI'] = number_format($pat[$i+1],1);
+                                    if (strpos($l, 'Multiplicity') !== false) $stats['SHELLS'][$s]['MULTIPLICITY'] = number_format($pat[$i+1],1);
+                                    if (strpos($l, 'Rmerge') !== false) $stats['SHELLS'][$s]['RMERGE'] = number_format($pat[$i+1],3);
+                                    if (strpos($l, 'CC half') !== false) $stats['SHELLS'][$s]['CCHALF'] = number_format($pat[$i+1],3);
+                                    if (strpos($l, 'Anomalous completeness') !== false) $stats['SHELLS'][$s]['ANOMCOMPLETENESS'] = number_format($pat[$i+1],1);
+                                    if (strpos($l, 'Anomalous multiplicity') !== false) $stats['SHELLS'][$s]['ANOMMULTIPLICITY'] = number_format($pat[$i+1],1);
+                                }
+
+
+                                if (strpos($l, 'High resolution limit') !== false) $stats['RESH'] = number_format($pat[1],2);
+                                if (strpos($l, 'Completeness') !== false) $stats['C'] = number_format($pat[1],1);
+                                if (strpos($l, 'Rmerge') !== false) $stats['R'] = number_format($pat[1],3);
+                                if (strpos($l, 'I/sigma') !== false) $stats['ISIGI'] = number_format($pat[1],1);
+                                if (strpos($l, 'Cell:') !== false) $stats['CELL'] = array_slice($pats,1);
+                                if (strpos($l, 'Spacegroup:') !== false) $stats['SG'] = implode(' ', array_slice($pats,1));
+                            }
+                            
+                            $r['STATS'] = $stats;
+                        }
+                        
+                        if (file_exists($root.'/xia2-xinfo.error') || file_exists($root.'/xia2.error')) $r['INT'] = 3;
+                        
+                        
+                        $r['DIR'] = $this->tmp->relative($r['DIR'], array('DCID' => $r['ID']));
+                        array_push($out, $r);
                     }
-                    
-                    $r['STATS'] = $stats;
                 }
-                
-                if (file_exists($root.'/xia2-xinfo.error') || file_exists($root.'/xia2.error')) $r['INT'] = 3;
-                
-                
-                $r['DIR'] = $this->ads($r['DIR']);
-                $r['DIR'] = substr($r['DIR'], strpos($r['DIR'], $r['VISIT'])+strlen($r['VISIT'])+1);
             }
                                   
-            $this->_output($rows);
+            $this->_output($out);
         }
                                   
                                   
@@ -129,14 +168,15 @@
             $args = array();
             $where = array();
             
-            $running = array_map(function($i) { return intval(preg_replace('/.*x2(\d+).*/', '$1', $i)); }, explode("\n", exec('module load global/cluster;qstat -u vxn01537 | grep x2')));
+            $running = array_map(function($i) { return intval(preg_replace('/.*x2(\d+).*/', '$1', $i)); }, explode("\n", exec('module load global/cluster;qstat -u dls_mxweb | grep x2')));
             
             $ranges = array();
             foreach ($_POST['int'] as $d) {
                 if (is_numeric($d[0]) && is_numeric($d[1]) && is_numeric($d[2]) && !in_array($d[0], $running)) {
                     array_push($args, $d[0]);
                     array_push($where, 'dc.datacollectionid=:'.sizeof($args));
-                    $ranges[$d[0]] = array($d[1], $d[2]);
+                    // $ranges[$d[0]] = array($d[1], $d[2]);
+                    array_push($ranges, $d);
                 }
             }
                                  
@@ -144,39 +184,82 @@
                 $where = implode(' OR ', $where);
                 
                 $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
-                                      
-                foreach ($rows as $i => $r) {
-                    $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.$this->user->login,$r['DIR']) . str_replace('####.cbf', '', $r['PREFIX']);
+                $dict = array();
+                foreach ($rows as $r) $dict[$r['ID']] = $r;
+                                   
+                $cell = $this->has_arg('a') ? "unit_cell=".$this->arg('a').",".$this->arg('b').",".$this->arg('c').",".$this->arg('alpha').",".$this->arg('beta').",".$this->arg('gamma') : '';
+                $res = $this->has_arg('res') ? "-resolution ".$this->arg('res') : '';
+                $sg = $this->has_arg('sg') ? "space_group=".$this->arg('sg') : '';
                     
-                    $st = $ranges[$r['ID']][0] + 1;
-                    $en = $ranges[$r['ID']][1];
+                # /4479
+                $envs = "export CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data";
+                # \nprintenv > env.txt
+                $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 -ispyb_xml_out ispyb_reproc.xml -failover -3dii $sg $cell $res xinfo=xia.xinfo spot.phil\nsed -e 's/<Image>/<Image><dataCollectionId>{dcid}<\/dataCollectionId>/' -e 's/<fileName>[^>]*>//g' -e 's/<fileLocation>[^>]*>//g' ispyb_reproc.xml > ispyb_reproc2.xml\npython /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 -i ispyb_reproc2.xml\n";
+                // module load python/ana\npython /dls_sw/apps/ispyb-api/mxdatareduction2ispyb.py ispyb_reproc.xml
+                // python /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 ispyb_reproc.xml
 
-                    if (!file_exists($root)) mkdir($root, 0777, true);
-                    chdir($root);
+
+                // Multi-xia2 mode   
+                if ($this->has_arg('multi')) {
+                    $root = $this->_get_next($this->_get_rp($r['ID']));
+
+                    $sweeps = array();
+                    foreach ($ranges as $i => $r) {
+                        if (array_key_exists($r[0], $dict)) {
+                            $row = $dict[$r[0]];
+                            array_push($sweeps, "BEGIN SWEEP SWEEP".($i+1)."\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1]+1)." ".$r[2]."\nEND SWEEP SWEEP".($i+1));
+                        }
+                    }
                     
-                    foreach (glob($root.'/xia*') as $f) unlink($f);
-                    
-                    $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$r['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\nBEGIN SWEEP SWEEP1\nWAVELENGTH NATIVE\nDIRECTORY ".$r['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $r['PREFIX'])."\nSTART_END ".$st." ".$en."\nEND SWEEP SWEEP1\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
+                    $sweeps = implode("\n", $sweeps);
+                    $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$row['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\n$sweeps\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
                     
                     file_put_contents($root.'/xia.xinfo', $xinfo);
-                    
-                    $cell = $this->has_arg('a') ? "-cell ".$this->arg('a').",".$this->arg('b').",".$this->arg('c').",".$this->arg('alpha').",".$this->arg('beta').",".$this->arg('gamma') : '';
-                    $res = $this->has_arg('res') ? "-resolution ".$this->arg('res') : '';
-                    $sg = $this->has_arg('sg') ? "-spacegroup ".$this->arg('sg') : '';
-                    
-                    # /4479
-                    $envs = "export CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data";
-                    $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nprintenv > env.txt\nxia2 -failover -3dii $sg $cell $res -xinfo xia.xinfo -phil spot.phil";
-                    file_put_contents($root.'/x2'.$r['ID'].'.sh', $remote);
-                    
-                    #export networkTEMP=/dls/tmp/dls_mxweb;export localTEMP=/tmp/dls_mxweb;export HOME=/tmp/dls_mxweb;
-                    $ret = exec('. /etc/profile.d/modules.sh;module load global/cluster;qsub x2'.$r['ID'].'.sh');
-                    
-                    
+                    file_put_contents($root.'/x2'.$row['ID'].'.sh', str_replace('{dcid}', $row['ID'], $remote));
+                    $ret = exec('. /etc/profile.d/modules.sh;module load global/cluster;qsub x2'.$row['ID'].'.sh'); 
+
+                // Run xia2 multiple times
+                } else {
+                    foreach ($ranges as $i => $r) {
+                        $root = $this->_get_next($this->_get_rp($r[0]));
+                        $row = $dict[$r[0]];
+                        
+                        $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$row['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\nBEGIN SWEEP SWEEP1\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1]+1)." ".$r[2]."\nEND SWEEP SWEEP1\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
+                        file_put_contents($root.'/xia.xinfo', $xinfo);
+                        file_put_contents($root.'/x2'.$row['ID'].'.sh', str_replace('{dcid}', $row['ID'], $remote));
+                        
+                        #export networkTEMP=/dls/tmp/dls_mxweb;export localTEMP=/tmp/dls_mxweb;export HOME=/tmp/dls_mxweb;
+                        $ret = exec('. /etc/profile.d/modules.sh;module load global/cluster;qsub x2'.$row['ID'].'.sh');   
+                    }
+
                 }
+
             } else $ret = 'No data sets specified';
             
             $this->_output($ret);
+        }
+
+
+        function _get_next($root) {
+            $last = 0;
+            foreach (glob($root.'/run_*') as $d) {
+                if (preg_match('/run_(\d+)$/', $d, $m)) {
+                    if ($m[1] > $last) $last = $m[1];
+                }
+            }
+            $last++;
+
+            $root .= '/run_'.$last;
+            if (!file_exists($root)) {
+                try {
+                    mkdir($root, 0777, true);
+                } catch (Exception $e) {
+                    $this->_error('No write access to: '.$root, 500);
+                }
+            }
+            chdir($root);
+
+            return $root;
         }
         
         # ------------------------------------------------------------------------
@@ -198,11 +281,6 @@
             }
             
             if (sizeof($where)) {
-                if ($this->has_arg('user')) {
-                    $us = $this->dirs($vis.'/processing/auto_mc');
-                    $u = $us[$this->arg('user')];
-                } else $u = $this->user->login;
-                
                 $where = implode(' OR ', $where);
                 
                 $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.wavelength,dc.filetemplate as prefix, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit FROM datacollection dc INNER JOIN blsession s ON dc.sessionid = s.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
@@ -211,11 +289,8 @@
                 $ids = array();
                 $blend = '';
                 foreach ($rows as $i => $r) {
-                    if (!$blend) {
-                        $blend = substr($r['DIR'], 0, strpos($r['DIR'], $r['VISIT'])).$r['VISIT'].'/processing/auto_mc/'.$u.'/blend';
-                    }
-                    
-                    $root = str_replace($r['VISIT'], $r['VISIT'].'/processing/auto_mc/'.$this->user->login,$r['DIR']) . str_replace('####.cbf', '', $r['PREFIX']);
+                    if (!$blend) $blend = $this->_get_root(array('DCID' => $r['ID'])).'/blend';
+                    $root = $this->_get_rp($r['ID']);
                 
                     #$hkl = $root.'/DEFAULT/NATIVE/SWEEP1/integrate/INTEGRATE.HKL';
                     $hkl = $root.'/DEFAULT/scale/NATIVE_SWEEP1.HKL';
@@ -243,7 +318,13 @@
                     $radfrac = $this->has_arg('rfrac') ? $this->arg('rfrac') : 0.25;
                 }
                 
-                if (!file_exists($blend)) mkdir($blend, 0777, true);
+                if (!file_exists($blend)) {
+                    try {
+                        mkdir($blend, 0777, true);
+                    } catch (Exception $e) {
+                        $this->_error('No write access to: '.$blend, 500);
+                    }
+                }
                 chdir($blend);
                 
                 $isigi = $this->has_arg('isigi') ? $this->arg('isigi') : 1.5;
@@ -258,7 +339,7 @@
                 $cmd = "blend -a files.dat 2> blend.elog";
                 if ($this->arg('type') == 0) $cmd .= "\nblend -c ".implode(' ', $sets)." 2>> blend.elog";
                 
-                $envs = "export CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data\nexport CCP4_SCR=/dls/tmp/dls_mxweb\nexport CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport R_HOME=/dls_sw/apps/R/3.0.0/RHEL6/x86_64/lib64/R\nexport BLEND_HOME=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/share/blend";
+                $envs = "export CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data\nexport CCP4_SCR=/dls/tmp/dls_mxweb\nexport CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport R_HOME=/dls_sw/apps/R/3.0.0/RHEL6/x86_64/lib64/R\nexport BLEND_HOME=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/share/blend;";
                 file_put_contents($blend.'/blend.sh', "#!/bin/sh\n$envs\n. /etc/profile.d/modules.sh\nmodule load blend\n".$cmd);
                 
                 $sg = $this->has_arg('sg')  ? ("CHOOSE SPACEGROUP ".$this->arg('sg')) : '';
@@ -285,15 +366,8 @@
             if (!sizeof($info)) $this->_error('No such visit');
             $info = $info[0];
             
-            $vis = '/dls/'.$info['BL'].'/data/'.$info['YR'].'/'.$this->arg('visit');
-            
-            if ($this->has_arg('user')) {
-                $us = $this->dirs($vis.'/processing/auto_mc');
-                $u = $us[$this->arg('user')];
-            } else $u = $this->user->login;
-            
-            $root = $vis.'/processing/auto_mc/'.$u.'/blend';
-            
+            $root = $this->_get_root(array('VISIT' => $this->arg('visit'))).'/blend';
+
             $runs = array();
             if (file_exists($root)) {
                 foreach (glob($root.'/run_*') as $r) {
@@ -366,10 +440,8 @@
             if (!sizeof($info)) $this->_error('No such visit');
             $info = $info[0];
             
-            $vis = '/dls/'.$info['BL'].'/data/'.$info['YR'].'/'.$this->arg('visit');
-            $root = $vis.'/processing/auto_mc/'.$this->user->login.'/blend/run_'.$this->arg('run');
+            $root = $this->_get_root(array('VISIT' => $this->arg('visit'))).'/blend/run_'.$this->arg('run');
             $this->rrmdir($root);
-                                  
             $this->_output(1);    
         }
                                   
@@ -394,14 +466,7 @@
             if (!sizeof($info)) $this->_error('No such visit');
             $info = $info[0];
             
-            $vis = '/dls/'.$info['BL'].'/data/'.$info['YR'].'/'.$this->arg('visit');
-            
-            if ($this->has_arg('user')) {
-                $us = $this->dirs($vis.'/processing/auto_mc');
-                $u = $us[$this->arg('user')];
-            } else $u = $this->user->login;
-            
-            $root = $vis.'/processing/auto_mc/'.$u.'/blend/analyse';
+            $root = $this->_get_root(array('VISIT' => $this->arg('visit'))).'/blend/analyse';
             $cf = $root.'/CLUSTERS.txt';
             
             $data = array();
@@ -438,19 +503,6 @@
                 $ids = explode("\n", file_get_contents($root.'/ids.dat'));
                 $this->_output(array($ids, array_reverse($data)));
             }
-            
-        }
-    
-    
-        # ------------------------------------------------------------------------
-        # Get blend aimloss log output
-        function _blend_log() {
-            
-        }
-        
-        # ------------------------------------------------------------------------
-        # Get blend mtz
-        function _get_mtz() {
             
         }
     
