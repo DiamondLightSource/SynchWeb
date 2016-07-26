@@ -1,6 +1,5 @@
 define(['marionette', 
     'modules/mc/models/jobstatus',
-    'modules/mc/collections/users',
     'modules/mc/collections/blended',
     'modules/mc/collections/integrated',
     'modules/mc/views/stats',
@@ -9,7 +8,8 @@ define(['marionette',
     'modules/mc/collections/intstatuses',
 
     'views/table', 'utils/table', 'utils', 'tpl!templates/mc/blend.html'], 
-    function(Marionette, JobStatus, Users, Blended, Integrated, StatsView, 
+    function(Marionette, JobStatus, 
+        Blended, Integrated, StatsView, 
         DCs, IntegrationStatuses, 
         TableView, table, utils,
         template) {
@@ -98,7 +98,6 @@ define(['marionette',
         ui: {
             jobs: '.jobs',
             count: '.count',
-            user: 'select[name=user]',
             bl: '.data_collection',
             ana: '.analyse'
         },
@@ -107,7 +106,6 @@ define(['marionette',
             'click .clear': 'clearSelection',
             'click .blend': 'blend',
             'click @ana': 'analyse',
-            'change @ui.user': 'setUser',
             'click a.mtz': utils.signHandler,
         },
 
@@ -151,25 +149,6 @@ define(['marionette',
             })
         },
 
-        setUser: function(e) {
-            this.user = this.ui.user.val()
-
-            var u = this.users.findWhere({ ID: parseInt(this.user) })
-            if (u) {
-                this.userid = u.gfet('USER')
-                if (u.get('USER') == app.user) {
-                    this.ui.bl.slideDown()
-                    this.ui.ana.fadeIn()
-                } else {
-                    this.ui.bl.slideUp()
-                    this.ui.ana.fadeOut()
-                }
-            }
-
-            this.getStatuses()
-            this.blended.fetch()
-        },
-
 
         getStatuses: function() {
             var ids = this.dcs.pluck('ID')
@@ -197,21 +176,7 @@ define(['marionette',
             app.on('mc:select', this.selectIntegrated.bind(this), this)
 
             var self = this
-            this.users = new Users(null, { visit: options.visit })
-            this.users.fetch().done(function() {
-                var sel = ''
-                var opts = self.users.map(function(u, i) {
-                    if (u.get('USER') == app.user) sel = u.get('ID')
-                    return '<option value="'+u.get('ID')+'">'+u.get('USER')+'</option>'
-                }).join('')
-                self.ui.user.html(opts).val(sel)
-            })
-
             this.statuses = new IntegrationStatuses()
-            this.statuses.user = function() {
-                return self.user ? self.user : 0
-            }
-
             this.listenTo(this.statuses, 'sync', this.setStatuses, this)
 
             this.dcs = new DCs(null, { running: false, queryParams: { visit: options.visit }, state: { pageSize: 9999 } })
@@ -222,9 +187,6 @@ define(['marionette',
             this.listenTo(this.integrated, 'change', this.countSelected, this)
 
             this.blended = new Blended(null, { visit: options.visit })
-            this.blended.user = function() {
-                return self.user ? self.user : 0
-            }
             this.blended.fetch()
 
             var columns = [
@@ -273,7 +235,7 @@ define(['marionette',
             this.integratedtable = new TableView({ collection: this.integrated, columns: columns, tableClass: 'integrated', filter: false, loading: false, backgrid: { row: SelectedRow, emptyText: 'No integrated data sets found' } })
 
 
-            this.status = new JobStatus({ local: 1 })
+            this.status = new JobStatus()
             this.listenTo(this.status, 'sync', this.setJobs, this)
             this.status.fetch()
         },
