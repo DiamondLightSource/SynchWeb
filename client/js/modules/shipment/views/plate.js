@@ -160,7 +160,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                         var sampleid = i*this.pt.dropTotal()+did+1
                         var sample = this.collection.findWhere({ LOCATION: sampleid.toString() })
 
-                        if (this.showImageStatus && this.inspectionimages) var im = this.inspectionimages.findWhere({ BLSAMPLEID: sample.get('BLSAMPLEID') })
+                        if (sample && this.showImageStatus && this.inspectionimages) var im = this.inspectionimages.findWhere({ BLSAMPLEID: sample.get('BLSAMPLEID') })
                         else var im = null
                         
                         this.ctx.beginPath()
