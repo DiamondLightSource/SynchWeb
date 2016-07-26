@@ -4,7 +4,10 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
     'backbone',
     'modules/dc/views/imagestatusitem',
     'modules/dc/views/apstatusitem',
-    'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, TabView, DCCommentsView, DCDISTLView, DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, template) {
+    'modules/dc/views/reprocess',
+    'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, TabView, DCCommentsView, DCDISTLView, DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, 
+      ReprocessView,
+      template) {
 
   return Marionette.ItemView.extend({
     template: template,
@@ -86,12 +89,18 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       'click a.sn': 'showSnapshots',
       'click li.sample a': 'setProposal',
       'click @ui.exp': 'expandPath',
+      'click a.reprocess': 'reprocess',
     },
       
     ui: {
       temp: 'span.temp',
       exp: 'i.expand',
       cc: '.dcc',
+    },
+
+    reprocess: function(e) {
+        e.preventDefault()
+        app.dialog.show(new ReprocessView({ model: this.model, visit: this.getOption('visit') }))
     },
 
     expandPath: function(e) {
