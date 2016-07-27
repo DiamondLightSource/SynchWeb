@@ -64,16 +64,19 @@ class MySQL:
 
 class FormulatrixUploader:
 
+    _running = True
+
     def __init__(self, db=None, config=None):
         self.db = db
         self.config = config
 
-        if not os.path.exists(config['holding_dir']+'/processed'):
-            os.mkdir(config['holding_dir']+'/processed')
+        for d in ['processed', 'nosample']:
+            if not os.path.exists(config['holding_dir']+'/'+d):
+                os.mkdir(config['holding_dir']+'/'+d)
 
 
     def run(self):
-        while self.running:
+        while self._running:
             files = glob.glob(self.config['holding_dir']+"/*EF*.xml")
             for xml in files:
                 print xml
@@ -127,6 +130,7 @@ class FormulatrixUploader:
 
                     sampleid = self._get_sampleid(position, container['containerid'])
                     if sampleid is None:
+                        self._move_files(image, xml, 'nosample')
                         continue
 
                     mppx = float(root.find('oppf:SizeInMicrons', nss).find('oppf:Width', nss).text) / float(root.find('oppf:SizeInPixels', nss).find('oppf:Width', nss).text)
@@ -149,18 +153,20 @@ class FormulatrixUploader:
                     copyfile(image, new_file)
 
                     # clear up
-                    os.rename(image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
-                    print 'move', image, image.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed')
-
-                    os.rename(xml, xml.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed'))
-                    print 'move', xml, xml.replace(self.config['holding_dir'], self.config['holding_dir']+'/processed')
+                    self._move_files(image, xml, 'processed')
 
                     #os.unlink(image)
                     #os.unlink(xml)
 
 
             print 'Sleeping until next iteration'
-            time.sleep(10)
+            time.sleep(30)
+
+
+    def _move_files(self, image, xml, path):
+        for f in [image, xml]:
+            os.rename(f, f.replace(self.config['holding_dir'], self.config['holding_dir']+'/'+path))
+            print 'move', f, f.replace(self.config['holding_dir'], self.config['holding_dir']+'/'+path)
 
 
     def _get_container(self, inspectionid):
