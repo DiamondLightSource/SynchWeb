@@ -245,6 +245,7 @@ function imagedPlate($imagedPlate) {
         'CONTAINERINSPECTIONID' => $id, 
         'VALUES' => array(
             'STATE' => $states[6],
+            'COMPLETEDTIMESTAMP' => date('d-m-Y H:i')
         )
     ));
 
