@@ -40,7 +40,6 @@ define(['marionette', 'views/dialog',
 		rem: function(e) {
 			e.preventDefault()
 			this.model.collection.remove(this.model)
-			this.model.destroy()
 		},
 
 		clone: function(e) {
