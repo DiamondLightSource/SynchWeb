@@ -87,15 +87,17 @@ define(['marionette',
         
         preCache: function(n) {
             clearTimeout(this.cachethread)
-            return
 
             var self = this
             var i = this.images.at(n)
             if (this.caching && i) {
-                require(['image!'+i.urlFor('full')])
-                this.cachethread = setTimeout(function() {
-                    self.preCache(++n)
-                }, 500)
+                var xhr =  new XHRImage()
+                console.log('caching history', i.urlFor('hd'))
+                xhr.load(i.urlFor('full'), function() {
+                    self.cachethread = setTimeout(function() {
+                        self.preCache(++n)
+                    }, 500)
+                })
             }
             
         },

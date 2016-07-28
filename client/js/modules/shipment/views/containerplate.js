@@ -30,6 +30,7 @@ define(['marionette',
     'utils/editable',
     'views/table',
     'utils/table',
+    'utils/xhrimage',
     'utils',
 
     'tpl!templates/shipment/containerplate.html',
@@ -54,7 +55,7 @@ define(['marionette',
 
     InspectionTypes,
         
-    Editable, TableView, table, utils,
+    Editable, TableView, table, XHRImage, utils,
     template, templateimage){
 
     // $.event.props.push('dataTransfer');    
@@ -360,15 +361,17 @@ define(['marionette',
 
         preCache: function(n) {
             clearTimeout(this.cachethread)
-            return
             
             var self = this
             var i = this.inspectionimages.at(n)
             if (this.caching && i) {
-                require(['image!'+i.urlFor('full')])
-                this.cachethread = setTimeout(function() {
-                    self.preCache(++n)
-                }, 500)
+                var xhr =  new XHRImage()
+                console.log('caching', i.urlFor('hd'))
+                xhr.load(i.urlFor('full'), function() {
+                    self.cachethread = setTimeout(function() {
+                        self.preCache(++n)
+                    }, 1000)
+                })
             }
             
         },
