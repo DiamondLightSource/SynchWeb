@@ -27,7 +27,7 @@ import os
 import errno
 import subprocess
 import MySQLdb
-import Image
+from PIL import Image
 from shutil import copyfile
 import xml.etree.ElementTree as ET
 
