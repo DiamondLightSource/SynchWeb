@@ -78,6 +78,7 @@ define(['marionette'], function(Marionette) {
             if (this.getOption('view')) this.getOption('view').destroy()
             this.trigger('close')
             app.dialog.hideDialog()
+            app.dialog.empty()
         },
         
     });
