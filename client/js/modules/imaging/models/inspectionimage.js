@@ -17,7 +17,8 @@ define(['backbone', 'models/wfile'], function(Backbone, File) {
         },
 
         urlFor: function(ty) {
-            return app.apiurl+'/imaging/inspection/image/'+this.get('BLSAMPLEIMAGEID')+(ty ? (ty == 'full' ? '?f=1' : '?f=2') : '')
+            // return app.apiurl+'/imaging/inspection/image/'+this.get('BLSAMPLEIMAGEID')+(ty ? (ty == 'full' ? '?f=1' : '?f=2') : '')
+            return app.apiurl+'/imaging/inspection/image/'+this.get('BLSAMPLEIMAGEID')+(ty ? '?f=1' : '')
           
         }
     }, File))
