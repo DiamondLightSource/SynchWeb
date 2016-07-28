@@ -45,7 +45,7 @@
 		function _do_update_inspection($args) {
 			foreach ($args['VALUES'] as $f => $v) {
 				$fl = ':1';
-				if (in_array($f, array('BLTIMESTAMP', 'SCHEDULEDTIMESTAMP'))) {
+				if (in_array($f, array('BLTIMESTAMP', 'SCHEDULEDTIMESTAMP', 'COMPLETEDTIMESTAMP'))) {
 					$fl = "TO_DATE(:1, 'DD-MM-YYYY HH24:MI')"; 
 				}
 
@@ -67,7 +67,7 @@
 
             if (!array_key_exists('MICRONSPERPIXELX', $args)) $args['MICRONSPERPIXELX'] = null;
             if (!array_key_exists('MICRONSPERPIXELY', $args)) $args['MICRONSPERPIXELY'] = null;
-            
+
             if (!array_key_exists('IMAGEFULLPATH', $args)) $args['IMAGEFULLPATH'] = null;
 
             $this->db->pq("INSERT INTO blsampleimage (blsampleimageid, containerinspectionid, blsampleid, imagefullpath, micronsperpixelx, micronsperpixely, bltimestamp)
