@@ -96,6 +96,8 @@ define(['marionette',
 
             var columns = [{ name: 'PROP', label: 'Proposal', cell: 'string', editable: false },
                          { name: 'CONTAINER', label: 'Container', cell: 'string', editable: false },
+                         { name: 'CONTAINERID', label: 'Container ID', cell: 'string', editable: false },
+                         { name: 'CONTAINERINSPECTIONID', label: 'Inspection ID', cell: 'string', editable: false },
                          { name: 'STATE', label: 'State', cell: 'string', editable: false },
                          { name: 'SCHEDULECOMPONENTID', label: 'Adhoc', cell: table.TemplateCell, editable: false, template: "<%=SCHEDULECOMPONENTID > 0 ? 'Yes':'No' %>" },
                          { name: 'MANUAL', label: 'Manual', cell: table.TemplateCell, editable: false, template: "<%=MANUAL > 0 ? 'Yes':'No' %>" },
