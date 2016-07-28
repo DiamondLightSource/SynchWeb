@@ -50,8 +50,15 @@
         # ------------------------------------------------------------------------
         # Find out how many jobs are running
         function _get_status() {
-            $jobs = exec('. /etc/profile.d/modules.sh;module load global/cluster;qstat -u dls_mxweb | grep x2 | wc -l') - 0;
-            $this->_output(array('NUMBER' => $jobs));
+            $cmd = exec('. /etc/profile.d/modules.sh;module load global/cluster;qstat -u dls_mxweb | grep x2');
+            $jobs = explode("\n", $cmd);
+
+            $ids = array();
+            foreach ($jobs as $j) {
+                if (preg_match('/x2(\d+)/', $j, $m)) array_push($ids, $m[1]);
+            }
+
+            $this->_output(array('NUMBER' => sizeof($jobs), 'IDS' => $ids));
         }
 
 
@@ -194,10 +201,9 @@
                 # /4479
                 $envs = "export CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data";
                 # \nprintenv > env.txt
-                $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 -ispyb_xml_out ispyb_reproc.xml -failover -3dii $sg $cell $res xinfo=xia.xinfo spot.phil\nsed -e 's/<Image>/<Image><dataCollectionId>{dcid}<\/dataCollectionId>/' -e 's/<fileName>[^>]*>//g' -e 's/<fileLocation>[^>]*>//g' ispyb_reproc.xml > ispyb_reproc2.xml\npython /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 -i ispyb_reproc2.xml\n";
+                $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 -ispyb_xml_out ispyb_reproc.xml -failover -3dii $sg $cell $res xinfo=xia.xinfo spot.phil\nsed -e 's/xia2.txt/xia2.html/' -e 's/<Image><fileName>[^>]*>/<Image>/g' -e 's/<Image>/<Image><dataCollectionId>{dcid}<\/dataCollectionId>/' -e 's/<fileLocation>[^>]*>//g' ispyb_reproc.xml > ispyb_reproc2.xml\npython /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 -i ispyb_reproc2.xml\n";
                 // module load python/ana\npython /dls_sw/apps/ispyb-api/mxdatareduction2ispyb.py ispyb_reproc.xml
                 // python /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 ispyb_reproc.xml
-
 
                 // Multi-xia2 mode   
                 if ($this->has_arg('multi')) {
