@@ -103,6 +103,7 @@ define(['marionette',
         },
         
         onDestroy: function() {
+            clearTimeout(this.cachethread)
             this.caching = false
         },
         
