@@ -91,13 +91,6 @@
                                         array('/screen/components/:sccid', 'patch', '_update_screen_component'),
                                         array('/screen/components/:sccid', 'put', '_update_screen_component_full'),
                                         array('/screen/components/:sccid', 'delete', '_delete_screen_component'),
-
-                                        
-                                        array('/populate', 'get', '_populate'),
-
-                                        // schedule from zero (test)
-                                        array('/schedule/zero/:cid', 'get', '_sched_from_zero'),
-
                              );
 
 
@@ -111,7 +104,7 @@
 
 
         function _get_imagers() {
-            if (!$this->staff) $this->_error('Access Denied', 403);
+            $this->user->can('imaging_dash');
 
             $where = '1=1';
             $args = array();
@@ -519,19 +512,20 @@
                     $info = pathinfo($_FILES['IMAGE']['name']);
                     
                     if (in_array($info['extension'], array('jpg', 'png'))) {
-                        # Where are we gonna put these images? dls_mxweb cant write to /dls/i0x
-                        $root = $upload_directory.'/'.date('Y').'/imaging/'.$this->arg('CONTAINERINSPECTIONID').'/'.$this->arg('BLSAMPLEID');
-                        if (!file_exists($root)) mkdir($root, 0777, true);
-                        $file = $root.'/'.$this->arg('CONTAINERINSPECTIONID').'_'.$this->arg('BLSAMPLEID').'_'.time().'_ef.'.$info['extension'];
-                        move_uploaded_file($_FILES['IMAGE']['tmp_name'], $file);
-                        $this->_create_thumb($file);
-                        
                         $id = $this->shared->_do_insert_inspection_image(array(
                             'CONTAINERINSPECTIONID' => $this->arg('CONTAINERINSPECTIONID'),
                             'BLSAMPLEID' => $this->arg('BLSAMPLEID'),
-                            'IMAGEFULLPATH' => $file,
                             'PROPOSALID' => $this->proposalid,
                         ));
+
+                        # Follow same syntax as formulatrix images
+                        $root = $upload_directory.'/imaging/'.$this->arg('CONTAINERINSPECTIONID');
+                        if (!file_exists($root)) mkdir($root, 0777, true);
+                        $file = $root.'/'.$id.'.'.$info['extension'];
+                        move_uploaded_file($_FILES['IMAGE']['tmp_name'], $file);
+                        $this->_create_thumb($file);
+
+                        $this->db->pq("UPDATE blsampleimage SET imagefullpath=:1 WHERE blsampleimageid=:2", array($file, $id));
 
                         $this->_output(array('BLSAMPLEIMAGEID' => $id));
                     }
@@ -550,7 +544,9 @@
 
             $new = imagecreatetruecolor($nw, $nh);
             imagecopyresized($new, $img, 0, 0, 0, 0, $nw, $nh, $w, $h);
-            imagejpeg($new, str_replace('_ef', '_th', $file));
+
+            $info = pathinfo($file);
+            imagejpeg($new, str_replace('.'.$info['extension'], 'th.'.$info['extension'], $file));
         }
 
 
@@ -628,11 +624,15 @@
                     $ext = pathinfo($file, PATHINFO_EXTENSION);
                     if (in_array($ext, array('png', 'jpg', 'jpeg', 'gif'))) $head = 'image/'.$ext;
 
-                    if (!$this->has_arg('f')) $file = str_replace('ef', 'th', $file);
+                    if (!$this->has_arg('f')) {
+                        $th = str_replace('.'.$ext, 'th.'.$ext, $file);
+                        if (!file_exists($th)) $this->_create_thumb($file);
+                        $file = $th;
+                    }
 
                     $expires = 60*60*24*14;
-                    $this->app->response->headers->set('Pragma', 'public');
-                    $this->app->response->headers->set('Cache-Control', 'maxage='.$expires);
+                    // $this->app->response->headers->set('Pragma', 'public');
+                    $this->app->response->headers->set('Cache-Control', 'max-age='.$expires);
                     $this->app->response->headers->set('Expires', gmdate('D, d M Y H:i:s', time()+$expires) . ' GMT');
                     $this->app->contentType($head);
                     $this->app->response()->header('Content-Length', filesize($file));
@@ -641,37 +641,6 @@
                 } else $this->_error('No such image');
             }
         }
-
-
-
-        function _populate() {
-            $files = glob('/dls/i03/data/2015/nt11175-124/processing/plate_imaging/91j1/plateID_1981/batchID_14567/wellNum_*/profileID_1/d*_ef.jpg');
-            print_r($files);
-        }
-
-        function _sched_from_zero() {
-            if (!$this->has_arg('cid')) $this->_error('No container specified');
-
-            $insp = $this->db->pq("SELECT ci.scheduledtimestamp, ci.containerinspectionid, c.offset_hours 
-              FROM containerinspection ci
-              INNER JOIN schedulecomponent c ON c.schedulecomponentid = ci.schedulecomponentid
-              WHERE containerid=:1
-              ORDER BY offset_hours", array($this->arg('cid')));
-
-            $this->shared->_do_update_inspection(array(
-                'CONTAINERINSPECTIONID' => $insp[0]['CONTAINERINSPECTIONID'],
-                'VALUES' => array(
-                    'BLTIMESTAMP' => date('d-m-Y H:m'),
-                    'STATE' => 'Completed',
-                ),
-            ));
-
-            $this->shared->_schedule_from_zero(array(
-                'CONTAINERID' => $this->arg('cid'),
-            ));
-        }
-
-
 
 
         function _get_screens() {
