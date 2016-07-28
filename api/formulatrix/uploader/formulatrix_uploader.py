@@ -25,7 +25,9 @@ import glob
 import re
 import os
 import errno
+import subprocess
 import MySQLdb
+import Image
 from shutil import copyfile
 import xml.etree.ElementTree as ET
 
@@ -115,6 +117,9 @@ class FormulatrixUploader:
                     if not os.path.exists(new_path):
                         try:
                             os.makedirs(new_path)
+                            if config['web_user']:
+                                subprocess.call(['/usr/bin/setfacl', '-R', '-m', 'u:'+config['web_user']+':rwx', new_path]);
+
                         except OSError as exc:
                             if exc.errno == errno.EEXIST and os.path.isdir(new_path):
                                 pass
@@ -151,6 +156,12 @@ class FormulatrixUploader:
                     # move image
                     print 'copy', image, new_file
                     copyfile(image, new_file)
+
+                    # create a thumbnail
+                    file, ext = os.path.splitext(new_file)
+                    im = Image.open(new_file)
+                    im.thumbnail((config['thumb_width'], config['thumb_height']))
+                    im.save(file+'th'+ext)
 
                     # clear up
                     self._move_files(image, xml, 'processed')
