@@ -95,6 +95,7 @@ define(['marionette',
             }))
 
             var columns = [{ name: 'PROP', label: 'Proposal', cell: 'string', editable: false },
+                         { name: 'VISIT_NUMBER', label: 'Visit', cell: 'string', editable: false },
                          { name: 'CONTAINER', label: 'Container', cell: 'string', editable: false },
                          { name: 'CONTAINERID', label: 'Container ID', cell: 'string', editable: false },
                          { name: 'CONTAINERINSPECTIONID', label: 'Inspection ID', cell: 'string', editable: false },
