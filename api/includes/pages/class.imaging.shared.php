@@ -67,6 +67,8 @@
 
             if (!array_key_exists('MICRONSPERPIXELX', $args)) $args['MICRONSPERPIXELX'] = null;
             if (!array_key_exists('MICRONSPERPIXELY', $args)) $args['MICRONSPERPIXELY'] = null;
+            
+            if (!array_key_exists('IMAGEFULLPATH', $args)) $args['IMAGEFULLPATH'] = null;
 
             $this->db->pq("INSERT INTO blsampleimage (blsampleimageid, containerinspectionid, blsampleid, imagefullpath, micronsperpixelx, micronsperpixely, bltimestamp)
               VALUES (s_blsampleimage.nextval, :1, :2, :3, :4, :5, CURRENT_TIMESTAMP) RETURNING blsampleimageid INTO :id", 
