@@ -3,6 +3,8 @@ define(['marionette'], function() {
 	
 	var XHRImage = Image
 
+	if (!('imagecache' in app)) app.imagecache = {}
+
 	XHRImage.prototype.load = function(url, callback) {	
 		var self = this
 
@@ -13,6 +15,13 @@ define(['marionette'], function() {
 		// dont fetch image string
 		if (url.startsWith('data:image')) {
 			self.src = url
+			if (callback) callback(this)
+			return
+		}
+
+		// retrieve from cache if possible
+		if (url in app.imagecache) {
+			self.src = app.imagecache[url]
 			if (callback) callback(this)
 			return
 		}
@@ -33,6 +42,7 @@ define(['marionette'], function() {
 
         	var blob = new Blob([this.response], { type: mimeType })
         	self.src = window.URL.createObjectURL(blob)
+        	app.imagecache[url] = self.src
         	if (callback) callback(this)
 		}
 
