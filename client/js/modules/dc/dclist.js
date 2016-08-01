@@ -25,6 +25,7 @@ function(Marionette,
   // The main history view
   return Marionette.CollectionView.extend({
     apStatus: true,
+    rpStatus: true,
     imageStatusCollection: DCImageStatusCollection,
     apStatusCollection: DCAPStatusCollection,
       
@@ -53,7 +54,7 @@ function(Marionette,
       this.imagestatuses = new (this.getOption('imageStatusCollection'))()
       this.apstatuses = new (this.getOption('apStatusCollection'))()
       this.reprocstatuses = new ReprocStatus()
-      this.reprocstatuses.fetch()
+      if (this.getOption('rpStatus')) this.reprocstatuses.fetch()
     
       this.listenTo(this.collection, 'sync', this._onSync, this)
       this._onSync()
