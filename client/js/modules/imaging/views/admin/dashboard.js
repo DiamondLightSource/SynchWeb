@@ -62,6 +62,7 @@ define(['marionette',
             this.inspections = new ContainerInspections()
             this.inspections.queryParams.all = 1
             this.inspections.queryParams.allStates = 1
+            this.inspections.setSorting('BLTIMESTAMP', 1)
             this.inspections.fetch()
 
             this.containers = new Containers()
@@ -100,15 +101,15 @@ define(['marionette',
                          { name: 'CONTAINERID', label: 'Container ID', cell: 'string', editable: false },
                          { name: 'CONTAINERINSPECTIONID', label: 'Inspection ID', cell: 'string', editable: false },
                          { name: 'STATE', label: 'State', cell: 'string', editable: false },
-                         { name: 'SCHEDULECOMPONENTID', label: 'Adhoc', cell: table.TemplateCell, editable: false, template: "<%=SCHEDULECOMPONENTID > 0 ? 'Yes':'No' %>" },
-                         { name: 'MANUAL', label: 'Manual', cell: table.TemplateCell, editable: false, template: "<%=MANUAL > 0 ? 'Yes':'No' %>" },
+                         { label: 'Adhoc', cell: table.TemplateCell, editable: false, template: "<%=SCHEDULECOMPONENTID ? 'No' : 'Yes' %>" },
+                         { label: 'Manual', cell: table.TemplateCell, editable: false, template: "<%=MANUAL == '1' ? 'Yes':'No' %>" },
                          { name: 'INSPECTIONTYPE', label: 'Type', cell: 'string', editable: false },
                          { name: 'SCHEDULEDTIMESTAMP', label: 'Scheduled', cell: 'string', editable: false },
                          { name: 'BLTIMESTAMP', label: 'Started', cell: 'string', editable: false },
                          { name: 'DURATION', label: 'Took (m)', cell: 'string', editable: false },
                          { name: 'DWELL', label: 'Dwell (d)', cell: 'string', editable: false },
                          { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
-                         { name: 'IMAGESSCORED', label: 'Scored', cell: table.TemplateCell, editable: false, template: "<%=IMAGESSCORED > 0 ? 'Yes':'No' %>" },
+                         { label: 'Scored', cell: table.TemplateCell, editable: false, template: "<%=IMAGESSCORED == '1' ? 'Yes' : 'No' %>" },
 
             ]
                         
