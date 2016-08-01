@@ -4,6 +4,8 @@ define(['marionette',
         'modules/dc/collections/imagestatuses',
         'modules/dc/collections/apstatuses',
         
+        'modules/mc/models/jobstatus',
+
         'modules/dc/views/dc',
         'modules/dc/views/grid',
         'modules/dc/views/load',
@@ -12,7 +14,7 @@ define(['marionette',
         'modules/dc/views/action',
         ],
 function(Marionette, 
-         DCImageStatusCollection, DCAPStatusCollection,
+         DCImageStatusCollection, DCAPStatusCollection, ReprocStatus,
          DCItemView, GridItemView, RobotItemView, EdgeItemView, MCAItemView, ActionItemView) {
              
   var EmptyCollectionView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1>No data collections yet</h1></div>' })
@@ -42,6 +44,7 @@ function(Marionette,
             imagestatuses: this.imagestatuses,
             apstatuses: this.apstatuses,
             templateHelpers: { IS_VISIT: is_vis, VIS_LINK: vl, APIURL: app.apiurl },
+            reprocstatuses: this.reprocstatuses,
             visit: vl,
         }
     },
@@ -49,6 +52,8 @@ function(Marionette,
     initialize: function(options) {
       this.imagestatuses = new (this.getOption('imageStatusCollection'))()
       this.apstatuses = new (this.getOption('apStatusCollection'))()
+      this.reprocstatuses = new ReprocStatus()
+      this.reprocstatuses.fetch()
     
       this.listenTo(this.collection, 'sync', this._onSync, this)
       this._onSync()
@@ -75,6 +80,7 @@ function(Marionette,
                                                           
     onDestroy: function() {
       this.collection.stop()
+      this.reprocstatuses.stop()
     },
 
     onDomRefresh: function() {

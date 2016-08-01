@@ -44,6 +44,17 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), SCREEN: (this.model.get('OVERLAP') != 0 && this.model.get('AXISRANGE')), statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
 
+      this.listenTo(this.getOption('reprocstatuses'), 'sync', this.updateReprocStatus, this)
+    },
+
+    updateReprocStatus: function() {
+        if (this.getOption('reprocstatuses').get('IDS').indexOf(this.model.get('ID')) > -1) {
+            // this.ui.rp.addClass('active')
+            this.ui.rp.find('i').addClass('fa-spin')
+        } else {
+            // this.ui.rp.removeClass('active')
+            this.ui.rp.find('i').removeClass('fa-spin')
+        }
     },
 
     updateAP: function(e) {
@@ -89,18 +100,21 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       'click a.sn': 'showSnapshots',
       'click li.sample a': 'setProposal',
       'click @ui.exp': 'expandPath',
-      'click a.reprocess': 'reprocess',
+      'click @ui.rp': 'reprocess',
     },
       
     ui: {
       temp: 'span.temp',
       exp: 'i.expand',
       cc: '.dcc',
+      rp: 'a.reprocess',
     },
 
     reprocess: function(e) {
         e.preventDefault()
-        app.dialog.show(new ReprocessView({ model: this.model, visit: this.getOption('visit') }))
+
+        if (app.dialog.currentView instanceof ReprocessView) app.dialog.currentView.collection.add(this.model)
+        else app.dialog.show(new ReprocessView({ model: this.model, visit: this.getOption('visit') }))
     },
 
     expandPath: function(e) {
