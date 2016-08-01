@@ -37,6 +37,7 @@ class MySQL:
     def __init__(self, user, pw, db, host='127.0.0.1'):
         self._conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db)
         self._conn.autocommit(1)
+        self._conn.ping(True)
 
         self._cur = self._conn.cursor(MySQLdb.cursors.DictCursor)
 
