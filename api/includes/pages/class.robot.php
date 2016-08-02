@@ -109,8 +109,8 @@
                 WHERE r.status != 'SUCCESS' AND  (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where ORDER BY r.starttimestamp DESC", $args);
             
             $start = 0;
-            $end = 10;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
             
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
@@ -216,8 +216,8 @@
             $tot = intval($tot[0]['TOT']);
 
             $start = 0;
-            $end = 10;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
             
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;

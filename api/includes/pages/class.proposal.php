@@ -3,15 +3,15 @@
     class Proposal extends Page {
 
 
-        public static $arg_list = array('s' => '[\w\s-]+',
-                              'per_page' => '\d+',
-                              'page' => '\d+',
-                              'sort_by' => '\w+',
-                              'order' => '\w+',
+        public static $arg_list = array(//'s' => '[\w\s-]+',
+                              // 'per_page' => '\d+',
+                              // 'page' => '\d+',
+                              // 'sort_by' => '\w+',
+                              // 'order' => '\w+',
 
                               'prop' => '\w+\d+',
-                              'array' => '\d',
-                              'term' => '\w+',
+                              // 'array' => '\d',
+                              // 'term' => '\w+',
                               'value' => '.*',
                               'visit' => '\w+\d+-\d+',
                               'all' => '\d',
@@ -24,7 +24,7 @@
                               'next' => '\d',
                               'prev' => '\d',
         					  'started' => '\d',
-                              'proposal' => '\w+\d+',
+                              // 'proposal' => '\w+\d+',
                               'current' => '\d',
 
                               'COMMENTS' => '(\w|\s|-)+',
@@ -97,8 +97,8 @@
             $tot = intval($tot[0]['TOT']);
             
             $start = 0;
-            $end = 10;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
             
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
@@ -255,8 +255,8 @@
             $tot = intval($tot[0]['TOT']);
 
             $start = 0;
-            $end = 10;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
             
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;

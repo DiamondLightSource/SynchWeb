@@ -827,8 +827,6 @@
             }
             
             
-            $start = 0;
-            $end = 10;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
             $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
             $start = $pg*$pp;

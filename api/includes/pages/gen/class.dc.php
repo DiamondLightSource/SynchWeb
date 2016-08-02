@@ -43,8 +43,8 @@
             
             # Pagination
             $start = 0;
-            $end = 10;
             $pp = $this->has_arg('pp') ? $this->arg('pp') : 15;
+            $end = $pp;
             
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;

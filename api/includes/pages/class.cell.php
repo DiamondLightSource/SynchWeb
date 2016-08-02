@@ -111,8 +111,8 @@
             else $tot = 0;
             
             $start = 0;
-            $end = 10;
             $pp = $this->has_arg('pp') ? $this->arg('pp') : 15;
+            $end = $pp;
             
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
@@ -296,8 +296,8 @@
             $tot = intval($tot[0]['TOT']);
 
             $start = 0;
-            $end = 10;
             $pp = $this->has_arg('pp') ? $this->arg('pp') : 15;
+            $end = $pp;
             
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
