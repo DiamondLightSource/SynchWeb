@@ -58,6 +58,7 @@
             $info['DC_FULL'] = sizeof($dcf) ? $dcf[0]['COUNT'] : 0;
             $info['DC_SCREEN'] = sizeof($dcs) ? $dcs[0]['COUNT'] : 0;
             $info['DC_TOT'] = sizeof($dc);
+            $info['DC_GRID'] = $info['DC_TOT'] - $info['DC_SCREEN'] - $info['DC_FULL'];
             $info['DC_STOPPED'] = 0;
             $info['E_TOT'] = sizeof($edge);
             $info['FL_TOT'] = sizeof($fl);
