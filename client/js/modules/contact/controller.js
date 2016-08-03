@@ -6,7 +6,10 @@ define(['marionette',
         'modules/contact/views/viewcontact',
         'modules/contact/views/addcontact',
 
-], function(Marionette, Contact, Contacts, ContactList, ContactView, AddContactView) {
+        'models/user',
+        'modules/contact/views/viewuser',
+
+], function(Marionette, Contact, Contacts, ContactList, ContactView, AddContactView, User, ViewUser) {
     
     var bc = { title: 'Home Lab Contacts', url: '/contacts' }
     
@@ -42,6 +45,26 @@ define(['marionette',
             app.bc.reset([bc,{ title: 'Add Contact' }])
             app.content.show(new AddContactView())
         },
+
+
+        edit_user: function(pid) {
+            app.loading()
+            app.bc.reset([bc,{ title: 'View User' }])
+            var user = new User({ PERSONID: pid ? pid : app.personid })
+            user.fetch({
+                success: function() {
+                    app.bc.reset([bc,{ title: user.get('FULLNAME') }])
+                    app.content.show(new ViewUser({ model: user }))        
+                },
+
+                error: function() {
+                    app.bc.reset([bc,{ title: 'No such user' }])
+                    app.message({ title: 'No such user', message: 'The specified user doesn\'t exist'})
+                }
+            })
+
+            
+        },
     }
     
     
@@ -49,6 +72,11 @@ define(['marionette',
         app.on('contact:show', function(cid) {
             app.navigate('contacts/cid/'+cid)
             controller.view(cid)
+        })
+
+        app.on('user:show', function(uid) {
+            app.navigate('contacts/user/'+uid)
+            controller.edit_user(uid)
         })
     })
     

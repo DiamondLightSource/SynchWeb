@@ -6,9 +6,11 @@ define(['utils/lazyrouter'], function(LazyRouter) {
             'contacts(/page/:page)': 'list',
             'contacts/cid/:cid': 'view',
             'contacts/add': 'add',
+
+            'contacts/user(/:pid)': 'edit_user',
         },
         
-        loadEvents: ['contact:show'],
+        loadEvents: ['contact:show', 'user:show'],
     })
        
     return new Router({
