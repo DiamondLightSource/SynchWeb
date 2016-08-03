@@ -19,7 +19,7 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages'], function(Mario
       }
                                       
       //options.collection.fetch()
-      var gridopts = $.extend({}, { columns: this.getOption('columns'), collection: options.collection, className: options.tableClass }, options.backgrid)
+      var gridopts = $.extend({}, { columns: this.getOption('columns'), collection: options.collection, className: options.tableClass }, this.getOption('backgrid'))
       this.grid = new Backgrid.Grid(gridopts)
         
       if (this.getOption('pages')) this.paginator = new Pages({ collection: options.collection, noUrl: options.noPageUrl })
