@@ -609,6 +609,13 @@ ol.rounded {
                 text-align: center;
             }
 
+            @media (max-width: $breakpoint-vsmall) {
+                &.bepm_stats td,
+                &.bepm_sets td {
+                    text-align: left;
+                }
+            }
+
         }
 
 

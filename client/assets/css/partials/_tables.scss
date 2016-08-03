@@ -545,8 +545,8 @@ html[xmlns] .dataTables_wrapper { display: block; }
 
         &.bepm_stats {
             td:nth-of-type(1):before { content: "Pipeline"; }
-            td:nth-of-type(2):before { content: "Resid. / Frag / Max. Frag."; }
-            td:nth-of-type(3):before { content: "Best MapCC (Resol.)"; }
+            td:nth-of-type(2):before { content: "Res / Frag / Max"; }
+            td:nth-of-type(3):before { content: "Best MapCC (Res)"; }
             td:nth-of-type(4):before { content: "Files"; }
         }
     }
