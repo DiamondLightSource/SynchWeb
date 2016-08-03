@@ -93,7 +93,12 @@ define(['marionette',
         },
         
         cloneSample: function(e) {
-            e.preventDefault()
+            if (e) e.preventDefault()
+
+            if (!this.model.get('NAME')) {
+                this.triggerMethod('clone:stop')
+                return
+            }
 
             var cm = this.model
             var empty = this.model.collection.filter(function(m) { return parseInt(m.get('LOCATION')) > parseInt(cm.get('LOCATION')) && !m.get('NAME') })
@@ -115,6 +120,7 @@ define(['marionette',
 
                 empty[0].attributes = newm.attributes
                 empty[0].trigger('change').trigger('cloned')
+                this.triggerMethod('cloned')
             }
         },
 
@@ -263,6 +269,14 @@ define(['marionette',
         events: {
             'hover tr td': 'hoverRow',
         },
+
+        childEvents: {
+            'cloned': 'updateCloneStatus',
+            'clone:stop': 'stopClone',
+        },
+
+        _cloning: false,
+        _clone_count: 0,
         
         hoverRow: function(e) {
 
@@ -298,6 +312,34 @@ define(['marionette',
             if (this.extra.show) this.$el.find('.extra').addClass('show')
             else this.$el.find('.extra').removeClass('show')
         },
+
+
+        cloneAll: function() {
+            this._cloning = true
+            this._clone_count = 0
+
+            this.continueClone()
+        },
+
+        stopClone: function() {
+            this._cloning = false
+        },
+
+        updateCloneStatus:function() {
+            if (!this._cloning) return
+
+            this._clone_count++
+            this.continueClone()
+        },
+
+        continueClone: function() {
+            if (this._clone_count > this.children.length) {
+                this._cloning = false
+                return
+            }
+            this.children.findByIndex(this._clone_count).cloneSample()
+        },
+
 
         // This magically works, which is worrying...
         /*appendHtml: function(collectionView, itemView){
