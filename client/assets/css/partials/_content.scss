@@ -564,6 +564,9 @@ ol.rounded {
                 
                 &.cell, &.xo, &.bc {
                     width: auto;
+                    @media (max-width: $breakpoint-vsmall) {
+                        width: 100%;
+                    }
                 }
                 
                 &.reflow {
