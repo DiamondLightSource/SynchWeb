@@ -483,6 +483,7 @@
 
             $recpts = $transfer_email.', '.$this->arg('EMAILADDRESS');
             if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
+            if ($this->args['LCNEXTEMAIL']) $recpts .= ', '.$this->arg('LCNEXTEMAIL');
 
             $email->send($recpts);
 
