@@ -264,7 +264,7 @@
         function pv($pvs) {
             putenv('EPICS_CA_ADDR_LIST=172.23.240.13');
             putenv('PATH=/dls_sw/epics/R3.14.11/base/bin/linux-x86_64/:$PATH');
-            exec('caget ' . implode(' ', $pvs), $ret);
+            exec('caget ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
             $output = array();
             
             foreach ($ret as $i => $v) {
