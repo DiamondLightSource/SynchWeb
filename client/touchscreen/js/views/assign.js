@@ -308,7 +308,7 @@ define(['marionette',
             this.assigned = new Containers(null, { queryParams: { assigned: 1, bl: this.model.get('BL'), visit: this.model.get('VISIT') }, state: { pageSize: 9999 } })
             this.assigned.fetch()
             
-            this.containers = new Containers(null, { queryParams: { unassigned: this.model.get('BL'), visit: this.model.get('VISIT') }, state: { pageSize: 30 } })
+            this.containers = new Containers(null, { queryParams: { unassigned: this.model.get('BL'), visit: this.model.get('VISIT') }, state: { pageSize: 40 } })
             this.containers.fetch()
             
             this.listenTo(this.containers, 'sync', this.generateShipments, this)
