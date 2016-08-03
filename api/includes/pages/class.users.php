@@ -11,15 +11,27 @@ class Users extends Page {
                                     'sid' => '\d+',
                                     'visit' => '\w+\d+-\d+',
                                     'location' => '(\w|-|\/)+',
+                                    'all' => '\d',
 
                                     'NAME' => '\w+',
 
                                     'TYPE' => '\w+',
                                     'DESCRIPTION' => '(\w|\s)+',
+
+
+                                    'PERSONID' => '\d+',
+                                    'FAMILYNAME' => '([\w-])+',
+                                    'GIVENNAME' => '([\w-])+',
+                                    'PHONENUMBER' => '.*',
+                                    'EMAILADDRESS' => '.*',
+                                    'LABNAME' => '([\w\s-])+',
+                                    'ADDRESS' => '([\w\s-\n])+',
                               );
         
 
-    public static $dispatch = array(array('(/:gid)', 'get', '_get_users'),
+    public static $dispatch = array(array('(/:PERSONID)', 'get', '_get_users'),
+                                    array('/:PERSONID', 'patch', '_update_user'),
+
                                     array('/current', 'get', '_get_current_user'),
 
                                     array('/login', 'get', '_login'),
@@ -45,7 +57,11 @@ class Users extends Page {
     # ------------------------------------------------------------------------
     # Helpers for backbone application
     function _get_current_user() {
-            $this->_output(array('personid' => $this->user->personid, 'user' => $this->user->login, 'permissions' => $this->user->perms, 'is_staff' => $this->staff, 'visits' => $this->visits, 'ty' => $this->ptype->ty));
+            $this->_output(array('personid' => $this->user->personid, 'user' => $this->user->login, 'givenname' => $this->user->givenname,
+                'permissions' => $this->user->perms, 
+                'is_staff' => $this->staff, 
+                'visits' => $this->visits, 
+                'ty' => $this->ptype->ty));
     }
 
     function _login() {
@@ -150,6 +166,35 @@ class Users extends Page {
         $extc = '';
         $group = '';
 
+        if ($this->has_arg('all')) {
+            $where = '1=1';
+        }
+
+        if ($this->has_arg('pid')) {
+            $where .= ' AND (prhp.proposalid=:'.(sizeof($args)+1).' OR lc.proposalid=:'.(sizeof($args)+2).' OR p.personid=:'.(sizeof($args)+3).')';
+            array_push($args, $this->arg('pid'));
+            array_push($args, $this->arg('pid'));
+            array_push($args, $this->user->personid);
+        }
+
+        if ($this->has_arg('PERSONID')) {
+            $where = '1=1';
+
+            $where .= ' AND p.personid=:'.(sizeof($args)+1);
+            array_push($args, $this->arg('PERSONID'));
+
+            $where .= ' AND (prhp.proposalid=:'.(sizeof($args)+1).' OR lc.proposalid=:'.(sizeof($args)+2).' OR p.personid=:'.(sizeof($args)+3).')';
+            array_push($args, $this->proposalid);
+            array_push($args, $this->proposalid);
+            array_push($args, $this->user->personid);
+        }
+
+        if (!$this->staff && !$this->has_arg('visit') && !$this->has_arg('pid')) {
+            $where .= ' AND (prhp.proposalid=:'.(sizeof($args)+1).' OR lc.proposalid=:'.(sizeof($args)+2).')';
+            array_push($args, $this->proposalid);
+            array_push($args, $this->proposalid);
+        }
+
         if ($this->has_arg('gid')) {
             $join = 'INNER JOIN usergroup_has_person uhp ON uhp.personid = p.personid';
             $where .= ' AND uhp.usergroupid=:'.(sizeof($args)+1);
@@ -191,14 +236,16 @@ class Users extends Page {
 
         $tot = $this->db->pq("SELECT count(distinct p.personid) as tot
             FROM person p
+            LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
+            LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
             $join
             WHERE $where", $args);
         $tot = intval($tot[0]['TOT']);
         
         
         $start = 0;
-        $end = 50;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+        $end = $pp;
         
         if ($this->has_arg('page')) {
             $pg = $this->arg('page') - 1;
@@ -218,17 +265,69 @@ class Users extends Page {
             if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
         }
         
-        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login
+        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address
                                FROM person p
+                               LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
+                               LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
+                               LEFT OUTER JOIN laboratory l ON l.laboratoryid = p.laboratoryid
                                $join
                                WHERE $where
                                $group
                                ORDER BY $order", $args);
 
-        $this->_output(array('total' => $tot,
+        foreach ($rows as &$r) {
+            if ($r['PERSONID'] == $this->user->personid) $r['FULLNAME'] .= ' [You]';
+        }
+
+        if ($this->has_arg('PERSONID')) {
+            if (sizeof($rows)) $this->_output($rows[0]);
+            else $this->_error('No such user');
+
+        } else $this->_output(array('total' => $tot,
                              'data' => $rows,
                             ));   
 
+    }
+
+
+
+    function _update_user() {
+        if (!$this->has_arg('PERSONID')) $this->_error('No person specified');
+
+        // $this->db->set_debug(True);
+        $person = $this->db->pq("SELECT p.personid, p.laboratoryid
+            FROM person p
+            LEFT OUTER JOIN proposalhasperson php ON php.personid = p.personid
+            LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
+            WHERE (p.personid=:1 OR php.proposalid=:2 OR lc.proposalid=:3) AND p.personid=:4", array($this->user->personid, $this->proposalid, $this->proposalid, $this->arg('PERSONID')));
+
+        if (!sizeof($person)) $this->_error('No such person');
+        $person = $person[0];
+
+        # Update person
+        $pfields = array('FAMILYNAME', 'GIVENNAME', 'PHONENUMBER', 'EMAILADDRESS');
+        foreach ($pfields as $i => $f) {
+            if ($this->has_arg($f)) {
+                $this->db->pq('UPDATE person SET '.$f.'=:1 WHERE personid=:2', array($this->arg($f), $person['PERSONID']));
+                $this->_output(array($f => $this->arg($f)));
+            }
+        }
+
+        # Update laboratory
+        $lfields = array('LABNAME', 'ADDRESS');
+        foreach ($lfields as $i => $f) {
+            if ($this->has_arg($f)) {
+                $c = $f == 'LABNAME' ? 'NAME' : $f;
+
+                if (!$person['LABORATORYID']) {
+                    $this->db->pq("INSERT INTO laboratory ($c) VALUES (:1)", array($this->arg($f)));
+                    $person['LABORATORYID'] = $this->db->id();
+                    $this->db->pq("UPDATE person SET laboratoryid=:1 WHERE personid=:2", array($person['LABORATORYID'], $this->arg('PERSONID')));
+
+                } else $this->db->pq('UPDATE laboratory SET '.$c.'=:1 WHERE laboratoryid=:2', array($this->arg($f), $person['LABORATORYID']));
+                $this->_output(array($f => $this->arg($f)));
+            }
+        }
     }
 
 
@@ -295,8 +394,8 @@ class Users extends Page {
         
         
         $start = 0;
-        $end = 10;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+        $end = $pp;
         
         if ($this->has_arg('page')) {
             $pg = $this->arg('page') - 1;
