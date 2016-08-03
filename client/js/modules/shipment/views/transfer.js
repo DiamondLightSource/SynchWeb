@@ -63,6 +63,7 @@ define(['marionette', 'views/form',
         
         createModel: function() {
             this.model = new TransferModel({ 
+                FACILITYCODE: this.getOption('dewar').get('FACILITYCODE'),
                 DEWARID: this.getOption('dewar').get('DEWARID'), 
                 LABCONTACTID: this.getOption('dewar').get('LABCONTACTID'),
                 VISIT: this.getOption('dewar').get('FIRSTEXPERIMENT')
