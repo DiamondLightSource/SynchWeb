@@ -1,6 +1,6 @@
-define(['backgrid'], function(Backgrid) {
-    
-    return Backgrid.Grid.extend({
+define(['views/table'], function(TableView) {
+
+    return TableView.extend({
         emptyText: 'No history available',
         className: 'history',
         columns: [

@@ -326,6 +326,10 @@
     @extend .table.tw;
 }
 
+.history .table {
+    margin-top: 0;
+}
+
 
 html[xmlns] .dataTables_wrapper { display: block; }
 * html .dataTables_wrapper { height: 1%; }
