@@ -763,7 +763,7 @@
         # ------------------------------------------------------------------------        
         # Strategies for a data collection
         function _dc_strategies($id) {
-            $rows = $this->db->pq("SELECT ssw.wedgenumber, sssw.subwedgenumber, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(s.shortcomments, ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg 
+            $rows = $this->db->pq("SELECT st.rankingresolution as rankres, ssw.wedgenumber, sssw.subwedgenumber, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(s.shortcomments, ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg 
                 FROM screeningstrategy st 
                 INNER JOIN screeningoutput so on st.screeningoutputid = so.screeningoutputid 
                 INNER JOIN screening s on so.screeningid = s.screeningid 
@@ -795,6 +795,7 @@
                         if ($k == 'TIME') $v = number_format($v, 3);
                         if ($k == 'OSCRAN') $v = number_format($v, 2);
                         if ($k == 'RES') $v = number_format($v, 2);
+                        if ($k == 'RANKRES') $v = number_format($v, 2);
                     }
                     
                     $output[$t]['CELL']['SG'] = $r['SG'];

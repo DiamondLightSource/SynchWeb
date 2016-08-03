@@ -416,10 +416,11 @@ html[xmlns] .dataTables_wrapper { display: block; }
             td:nth-of-type(3):before { content: "\3A9 Start"; }
             td:nth-of-type(4):before { content: "\3A9 Oscillation"; }
             td:nth-of-type(5):before { content: "Resolution"; }
-            td:nth-of-type(6):before { content: "Relative Transmission"; }
-            td:nth-of-type(7):before { content: "Absolute Transmission"; }
-            td:nth-of-type(8):before { content: "Exposure"; }
-            td:nth-of-type(9):before { content: "No. of Images"; }
+            td:nth-of-type(6):before { content: "Ranking Resolution"; }
+            td:nth-of-type(7):before { content: "Relative Transmission"; }
+            td:nth-of-type(8):before { content: "Absolute Transmission"; }
+            td:nth-of-type(9):before { content: "Exposure"; }
+            td:nth-of-type(10):before { content: "No. of Images"; }
             
             td:first-child {
                 background: $content-light-background;
