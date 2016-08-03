@@ -109,6 +109,7 @@
                             'UserGroup_has_Person',
 
                             'Proposal',
+                            'ProposalHasPerson',
                             'BLSession',
                             'Session_has_Person',
 
