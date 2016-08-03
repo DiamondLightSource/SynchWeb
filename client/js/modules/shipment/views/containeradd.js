@@ -23,6 +23,8 @@ define(['marionette',
     'modules/imaging/collections/screencomponentgroups',
     'modules/imaging/collections/screencomponents',
     'modules/imaging/views/screencomponentgroup',
+
+    'collections/users',
     
     'tpl!templates/shipment/containeradd.html',
     'tpl!templates/shipment/sampletablenew.html',
@@ -50,6 +52,8 @@ define(['marionette',
     ScreenComponentGroups,
     ScreenComponents,
     ScreenGroupView,
+
+    Users,
         
     template, table, row){
     
@@ -86,6 +90,7 @@ define(['marionette',
             ext: '.extrainfo',
             schedule: 'select[name=SCHEDULEID]',
             screen: 'select[name=SCREENID]',
+            pid: 'select[name=PERSONID]',
         },
         
         
@@ -114,7 +119,13 @@ define(['marionette',
             'keypress input.comments': 'excelNavigate',
 
             'click a.view_sch': 'viewSchedule',
+            'click a.edit_user': 'editUser',
             'change @ui.screen': 'selectScreen',
+        },
+
+        editUser: function(e) {
+            e.preventDefault()
+            app.trigger('user:show', this.ui.pid.val())
         },
 
         getScreen: function() {
@@ -353,6 +364,11 @@ define(['marionette',
             //this.buildCollection()
             this.setupValidation()
             
+            this.users = new Users()
+            this.users.queryParams.all = 1
+            this.users.queryParams.pid = app.proposal.get('PROPOSALID')
+            this.ready.push(this.users.fetch())
+
             this.proteins = new DistinctProteins()
             this.ready.push(this.proteins.fetch())
 
@@ -407,6 +423,8 @@ define(['marionette',
             this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples })
             
             this.ready2.done(this.loadContainerCache.bind(this))
+
+            this.ui.pid.html(this.users.opts()).val(app.personid)
         }
     })
 

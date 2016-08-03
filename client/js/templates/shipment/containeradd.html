@@ -25,24 +25,33 @@
             <span><%=DEWAR%></span>
         </li>
         <li>
-            <span class="label">Container Type</span>
-            <span>
-                <select name="CONTAINERTYPE"></select>
-            </span>
+            <label>Container Type</label>
+            <select name="CONTAINERTYPE"></select>
         </li>
         <li>
-            <span class="label">Container Name</span>
-            <span><input type="text" name="NAME" /></span>
+            <label>Container Name</label>
+            <input type="text" name="NAME" />
         </li>
 
         <li class="plate">
-            <span class="label">Imaging Schedule</span>
-            <span><select name="SCHEDULEID"></select> <a href="#" class="button view_sch"><i class="fa fa-search"></i> View</a></span>
+            <label>Owner
+                <span class="small">This user will be emailed with container updates. Check your email is up to date!</span>
+            </label>
+            <select name="PERSONID"></select> <a href="#" class="button edit_user"><i class="fa fa-search"></i> View</a>
         </li>
 
         <li class="plate">
-            <span class="label">Crystallisation Screen</span>
-            <span><select name="SCREENID"></select></span>
+            <label>Imaging Schedule
+                <span class="small">Requested imaging schedule</span>
+            </label>
+            <select name="SCHEDULEID"></select> <a href="#" class="button view_sch"><i class="fa fa-search"></i> View</a>
+        </li>
+
+        <li class="plate">
+            <label>Crystallisation Screen
+                <span class="small">Crystallisation screen that was used for this container</span>
+            </label>
+            <select name="SCREENID"></select>
         </li>
     </ul>
     
