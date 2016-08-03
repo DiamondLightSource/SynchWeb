@@ -174,7 +174,6 @@ define(['marionette',
             this.table.currentView.toggleExtra()
         },
 
-
         setType: function(e) {
             this.type = this.ctypes.findWhere({ name: this.ui.type.val() })
             this.type.set({ isSelected: true })
@@ -187,7 +186,8 @@ define(['marionette',
                 this.buildCollection()
                 this.puck.$el.css('width', '25%')
                 this.puck.show(new PuckView({ collection: this.samples }))
-                this.table.show(new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table }))
+                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table })
+                this.table.show(this.stable)
                 this.single.empty()
                 this.grp.empty()
                 this.ui.pc.show()
@@ -197,6 +197,7 @@ define(['marionette',
                 if (!app.mobile()) this.puck.$el.css('width', '50%')
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.table.empty()
+                this.stable.destroy()
                 this.single.show(this.singlesample)
                 this.group = new ScreenGroupView({ components: this.screencomponents, editable: false })
                 this.grp.show(this.group)
@@ -240,7 +241,7 @@ define(['marionette',
         
         clonePuck: function(e) {
             if (e) e.preventDefault()
-            this.$el.find('.clone').each(function(i,c) { $(c).trigger('click') })
+            if (this.stable) this.stable.cloneAll()
         },
         
         
