@@ -1057,7 +1057,7 @@
                     $did = $dids[0]['DEWARID'];
                     
                 } else {
-                    $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing') RETURNING dewarid INTO :id", array($this->arg('visit').'_Dewar1', $shid));
+                    $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing',:3) RETURNING dewarid INTO :id", array($this->arg('visit').'_Dewar1', $shid, $sid));
                     
                     $did = $this->db->id();
                 }
