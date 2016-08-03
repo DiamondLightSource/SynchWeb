@@ -4,6 +4,7 @@ define(['marionette', 'backbone', 'modules/dc/views/mcaplot', 'modules/projects/
     template: template,
     plotView: MCAView,
       
+    fullPath: false,
       
     modelEvents: {
         'change': 'renderFlag',
@@ -13,11 +14,27 @@ define(['marionette', 'backbone', 'modules/dc/views/mcaplot', 'modules/projects/
       this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
       this.$el.find('.COMMENTS').html(this.model.get('COMMENTS'))
     },
+
+    ui: {
+      temp: 'span.temp',
+      exp: 'i.expand',
+    },
       
       
     events: {
       'click .atp': 'addToProject',
       'click .flag': 'flag',
+      'click @ui.exp': 'expandPath',
+    },
+
+    expandPath: function(e) {
+        e.preventDefault()
+
+        this.ui.temp.html(this.fullPath ? this.model.get('DIR') : this.model.get('DIRFULL'))
+        this.ui.exp.toggleClass('fa-caret-right')
+        this.ui.exp.toggleClass('fa-caret-left')
+        
+        this.fullPath = !this.fullPath
     },
       
     flag: function(e) {

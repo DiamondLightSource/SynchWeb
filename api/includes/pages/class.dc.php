@@ -430,6 +430,8 @@
                 // MCA Scans
                 } else if ($dc['TYPE'] == 'mca') {
                     $nf = array(2 => array('EXPOSURETIME', 'WAVELENGTH', 'TRANSMISSION'));
+                    $dc['DIRFULL'] = $dc['DIR'];
+                    $dc['DIR'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $dc['DIR']);
                     
                 // Robot loads
                 } else if ($dc['TYPE'] == 'load') {
