@@ -14,10 +14,14 @@
                               'pdb' => '\d',
                               'map' => '\d',
                               'validity' => '.*',
+
+                              'dt' => '\w+',
+                              'ppl' => '\w+',
+
                               );
 
     
-        public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/id/:id)(/map/:map)', 'get', '_map'),
+        public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/dt/:dt)(/ppl/:ppl)(/id/:id)(/map/:map)', 'get', '_map'),
                               array('/id/:id/aid/:aid(/log/:log)(/1)(/LogFiles/:LogFiles)', 'get', '_auto_processing'),
                               array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
                               array('/dimple/id/:id(/log/:log)', 'get', '_dimple_mtz'),
@@ -25,6 +29,7 @@
                               array('/csv/visit/:visit', 'get', '_csv_report'),
                               array('/bl/visit/:visit/run/:run', 'get', '_blend_mtz'),
                               array('/sign', 'post', '_sign_url'),
+                              array('/bigep/id/:id/dt/:dt/ppl/:ppl(/log/:log)', 'get', '_bigep_mtz'),
             );
 
         
@@ -127,6 +132,42 @@
         
         # ------------------------------------------------------------------------
         # Return pdb/mtz/log file for fast_ep and dimple
+        function _use_rel_path($pat, $pth, $root_pth) {
+            $regex_pat = str_replace("*", "\w+", $pat);
+            $rel_path =  array_pop(preg_split('`'.$regex_pat.'`', $pth));
+            $res =  $root_pth . $rel_path;
+            return $res;
+        }
+
+        function _get_downstream_dir($subdir, $root) {
+            $info = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1", array($this->arg('id')));
+            
+            if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
+            else $info = $info[0];
+            
+            $info['DIR'] = $this->ads($info['DIR']);
+            $this->db->close();
+            
+            if (is_string($subdir)) {
+                return preg_replace('/'.$info['VIS'].'/', $info['VIS'].$subdir, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+            
+            } elseif (is_array($subdir)) {
+                $paths = array();
+                foreach ($subdir as $sbd) {
+                    if (is_string($sbd)) {
+                        $pth = preg_replace('/'.$info['VIS'].'/', $info['VIS'].$sbd, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                        array_push($paths, $pth);
+                    } else {
+                        $this->_error('Invalid parameter type in downstream directory function call', 500);
+                    }
+                }
+                return $paths;
+            } else {
+                $this->_error('Invalid parameter type in downstream directory function call', 500);
+            }
+        }
+
+
         function _ep_mtz() {
             $this->_mtzmap('FastEP');
         }
@@ -139,6 +180,38 @@
             $this->_mtzmap('MrBUMP');
         }
 
+        function _bigep_mtz() {
+            $bigep_patterns = array (
+                    'AUTOSHARP' => array( 'path' => 'big_ep*/*/autoSHARP/', 'log' => 'LISTautoSHARP.html'),
+                    'AUTOBUILD' => array( 'path' => 'big_ep*/*/AutoSol/', 'log' => 'phenix_autobuild.log'),
+                    'CRANK2' => array( 'path' => 'big_ep*/*/crank2/', 'log' => 'crank2.log') 
+            );
+            $dt = strtoupper($this->arg('dt'));
+            $ppl = strtoupper($this->arg('ppl'));
+            
+            $t = array();
+            $root_dirs = $this->_get_downstream_dir(array ('/processed', '/tmp'), 'big_ep/');
+            foreach ( $root_dirs as $loc ) {
+                $root_pattern = $loc . $dt . '/xia2/*/' . $bigep_patterns[$ppl]['path'];
+                $bigep_mdl_glob = glob($root_pattern);
+                if (sizeof($bigep_mdl_glob)) {
+                    $root = $bigep_mdl_glob[0];
+                    $bigep_mdl_json = $root.'big_ep_model_ispyb.json';
+                    if (file_exists($bigep_mdl_json)) {
+                        $json_str = file_get_contents($bigep_mdl_json);
+                        $json_data = json_decode($json_str, true);
+                        $mtz_pth = $this->_use_rel_path($bigep_patterns[$ppl]['path'], $json_data['mtz'], $root);
+                        $pdb_pth = $this->_use_rel_path($bigep_patterns[$ppl]['path'], $json_data['pdb'], $root);
+                        $t = array('files' => array($mtz_pth, $pdb_pth), 'log' => $root.$bigep_patterns[$ppl]['log']);
+                        $type = 'BigEP_'.$dt.'_'.$ppl;
+                        $this->_mtzmap_readfile($type, $t['files'], $t['log']);
+                        return;
+                    }
+                }
+            }
+            $this->_error('Cannot find Big EP model builing results file');
+        }
+
 
         function _mtzmap($type) {
             $types = array('MrBUMP' => array('root' => 'auto_mrbump/', 'files' => array('PostMRRefine.pdb', 'PostMRRefine.mtz'), 'log' => 'MRBUMP.log'),
@@ -149,31 +222,28 @@
             if (!array_key_exists($type, $types)) $this->_error('No such downstream type');
             else $t = $types[$type];
 
-            $info = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1", array($this->arg('id')));
+            $root = $this->_get_downstream_dir('/processed', $t['root']);
+            $this->_mtzmap_readfile($type, array($root.$t['files'][0],$root.$t['files'][1]), $root.$t['log']);
+        }
             
-            if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
-            else $info = $info[0];
-            $this->db->close();
-            
-            $info['DIR'] = $this->ads($info['DIR']);
+        function _mtzmap_readfile($type, $files, $log_file) {
+            $file = $files[0];
 
-            $root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_/'.$t['root'];
-            $file = $root.$t['files'][0];
-            
             if (file_exists($file)) {
                 if ($this->has_arg('log')) {
-                    if (file_exists($root.$t['log'])) {
-                        $this->app->contentType("text/plain");
-                        readfile($root.$t['log']);
+                    if (file_exists($log_file)) {
+                        if (pathinfo($log_file, PATHINFO_EXTENSION) == 'log') {
+                            $this->app->contentType("text/plain");
+                        }
+                        readfile($log_file);
 
                     } else $this->_error('Not found', 'That file couldnt be found');
                     
                 } else {
                     if (!file_exists('/tmp/'.$this->arg('id').'_'.$type.'.tar.gz')) {
                         $a = new PharData('/tmp/'.$this->arg('id').'_'.$type.'.tar');
-
-                        $a->addFile($file, $t['files'][0]);
-                        $a->addFile($root.$t['files'][1], $t['files'][1]);
+                        $a->addFile($files[1], basename($files[1]));
+                        $a->addFile($files[1], basename($files[1]));
                         $a->compress(Phar::GZ);
 
                         unlink('/tmp/'.$this->arg('id').'_'.$type.'.tar');
@@ -191,30 +261,84 @@
         
         
         # ------------------------------------------------------------------------
+        # Return maps and pdbs for big_ep
+        function _big_ep_map() {
+            $bigep_patterns = array (
+                    'AUTOSHARP' => 'big_ep*/*/autoSHARP/',
+                    'AUTOBUILD' => 'big_ep*/*/AutoSol/',
+                    'CRANK2' => 'big_ep*/*/crank2/'
+            );
+            $dt = strtoupper($this->arg('dt'));
+            $ppl = strtoupper($this->arg('ppl'));
+            
+            $root_dirs = $this->_get_downstream_dir(array ('/processed', '/tmp'), 'big_ep/');
+            foreach ( $root_dirs as $loc ) {
+                $root_pattern = $loc . $dt . '/xia2/*/' . $bigep_patterns[$ppl];
+                $bigep_mdl_glob = glob($root_pattern);
+                if (sizeof($bigep_mdl_glob)) {
+                    $root = $bigep_mdl_glob[0];
+                    $bigep_mdl_json = $root.'big_ep_model_ispyb.json';
+                    if (file_exists($bigep_mdl_json)) {
+                        $json_str = file_get_contents($bigep_mdl_json);
+                        $json_data = json_decode($json_str, true);
+                        
+                        if ($this->has_arg('pdb') && array_key_exists('pdb', $json_data)) {
+                            $out = $this->_use_rel_path($bigep_patterns[$ppl], $json_data['pdb'], $root);
+                        } elseif (array_key_exists('map', $json_data)) {
+                            $out = $this->_use_rel_path($bigep_patterns[$ppl], $json_data['map'], $root);
+                        } else {
+                            continue;
+                        }
+                        # Use relative path in case files were moved
+                        if (file_exists($out)) {
+                            break;
+                        } else {
+                            $pth_split = preg_split('`'.$bigep_patterns[$ppl].'`', $out);
+                            if (sizeof($pth_split)) {
+                                $pth_rel = array_pop($pth_split);
+                                $out = $root.$pth_rel;
+                                if (file_exists($out)) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (file_exists($out)) {
+                if ($this->has_arg('pdb')) {
+                    $this->app->response->headers->set("Content-Length", filesize($out));
+                    readfile($out);
+                } else {
+                    $gz_map = gzencode(file_get_contents($out));
+                    $this->app->response->headers->set("Content-Length", strlen($gz_map));
+                    print $gz_map;
+                }
+            }
+        }
+
+        # ------------------------------------------------------------------------
         # Return maps and pdbs for dimple / fast ep
         function _map() {
             if (!$this->has_arg('id')) $this->_error('No id specified', 'No id was specified');
             if (!$this->has_arg('ty')) $this->_error('No type specified', 'No type was specified');
 
-            $info = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1", array($this->arg('id')));
-            
-            if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
-            else $info = $info[0];
-            $this->db->close();
-            
-            $info['DIR'] = $this->ads($info['DIR']);
-
             if ($this->arg('ty') == 'ep') {
-                $root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/fast_ep/';
+                $root = $this->_get_downstream_dir('/processed', 'fast_ep/');
                 $file_name = 'sad';
                 
             } else if ($this->arg('ty') == 'dimple') {
-                $root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/fast_dp/dimple/';
+                $root = $this->_get_downstream_dir('/processed', 'fast_dp/dimple/');
                 $file_name = 'final';
                 
             } else if ($this->arg('ty') == 'mrbump') {
-                $root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/auto_mrbump/';
+                $root = $this->_get_downstream_dir('/processed', 'auto_mrbump/');
                 $file_name = 'PostMRRefine';
+
+            } else if ($this->arg('ty') == 'bigep') {
+                $this->_big_ep_map();
+                return;
                 
             } else $this->_error('No file type specified');
             
@@ -234,7 +358,6 @@
             if ($ext == 'mtz') {
                 # convert mtz to map
                 if (!file_exists($out)) {
-                    #print './scripts/mtz2map.sh '.$file.'.'.$ext.' '.$this->arg('id').' '.$this->arg('ty').' '.$file.'.pdb';
                     exec('./scripts/mtz2map.sh '.$file.'.'.$ext.' '.$this->arg('id').' '.$this->arg('ty').' '.$file.'.pdb');
                 }
                 

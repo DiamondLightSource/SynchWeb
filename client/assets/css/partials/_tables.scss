@@ -532,6 +532,23 @@ html[xmlns] .dataTables_wrapper { display: block; }
             td:nth-of-type(3):before { content: "Y"; }
 
         }
+
+        &.bepm_sets {
+            td:nth-of-type(1):before { content: "Processed"; }
+            td:nth-of-type(2):before { content: "Anom. scatterer"; }
+            td:nth-of-type(3):before { content: "Space group"; }
+            td:nth-of-type(4):before { content: "Num. scatterers"; }
+            td:nth-of-type(5):before { content: "Dataset type"; }
+            td:nth-of-type(6):before { content: "Compound"; }
+            td:nth-of-type(7):before { content: "Sequence"; }
+        }
+
+        &.bepm_stats {
+            td:nth-of-type(1):before { content: "Pipeline"; }
+            td:nth-of-type(2):before { content: "Resid. / Frag / Max. Frag."; }
+            td:nth-of-type(3):before { content: "Best MapCC (Resol.)"; }
+            td:nth-of-type(4):before { content: "Files"; }
+        }
     }
 }
 

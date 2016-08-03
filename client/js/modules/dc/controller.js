@@ -67,7 +67,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
       
       
     // Map / Model Viewer
-    mapmodelviewer: function(id, ty) {
+    mapmodelviewer: function(id, ty, dt, ppl) {
         if (!ty) ty = 'dimple'
         var dc = new DataCollection({ ID: id })
         dc.fetch({
@@ -76,7 +76,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
                     {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
                     { title: 'Map/Model Viewer' },
                     { title: dc.get('FILETEMPLATE') }])
-                app.content.show(new MapModelViewer({ ty: ty, model: dc }))
+                app.content.show(new MapModelViewer({ ty: ty, dt: dt, ppl: ppl, model: dc }))
             },
             error: function() {
                 app.bc.reset([bc, { title: 'Map/Model Viewer' }])

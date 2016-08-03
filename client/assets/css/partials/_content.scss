@@ -604,6 +604,11 @@ ol.rounded {
                 background: $content-filter-current-background;
             }
 
+            &.bepm_stats td {
+                padding: 5px;
+                text-align: center;
+            }
+
         }
 
 
@@ -619,6 +624,64 @@ ol.rounded {
                 float: none;
             }
             
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+
+        .bigep-settings {
+            padding: 0.5%;
+
+            td {
+                text-align: center;    
+            }
+            
+
+            .bepm-seq {
+                white-space: pre-line;
+                font-family: Courier;
+                font-size: 10px;
+                text-align: left;
+            }
+        }
+        
+        .bigep-stats {
+            padding: 0.5%;
+        }
+        
+        .bigep-models {
+            width: 49%;
+            float: right;
+            padding: 0.5%;
+
+            @media (max-width: $breakpoint-vsmall) {
+                float: none;
+                width: auto;
+            }
+        }
+        
+        .bigep-seq {
+         
+            li {
+                span.label {
+                    width: 20%;
+                }
+             }
+         }
+
+        .plot_shelx-XDS,
+        .plot_shelx-DIALS {
+            width: 45%;
+            height: 250px;
+            float: inherit;
+             
+            @media (max-width: $breakpoint-vsmall) {
+                height: 100px;
+                float: none;
+            }
+             
             .legend {
                 > table {
                     width: auto;
