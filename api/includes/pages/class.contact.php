@@ -15,6 +15,8 @@
                               'DEWARAVGTRANSPORTVALUE' => '\d+',
                               'DEWARAVGCUSTOMSVALUE' => '\d+',
 
+                              'PERSONID' => '\d+',
+
                               'cid' => '\d+',
                               );
 
@@ -41,9 +43,9 @@
             $tot = $this->db->pq("SELECT count(c.labcontactid) as tot FROM labcontact c  $where", $args);
             $tot = intval($tot[0]['TOT']);
 
-            $start = 0;
-            $end = 10;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $start = 0;
+            $end = $pp;
             
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
@@ -160,7 +162,6 @@
             
             $this->_output(array('LABCONTACTID' => $this->db->id()));
         }
-
         
     }
 
