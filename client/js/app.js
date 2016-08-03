@@ -48,6 +48,23 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
   app.token = sessionStorage.getItem('token')
   
 
+  // Allow the app to load a proposal on bootstrap
+  app.parseQuery = function() {
+      var str = location.search.replace(/\?/, '').split(/&/)
+      var pairs = {}
+      _.each(str, function(v) {
+          var kv = v.split(/=/)
+          pairs[kv[0]] = kv[1]
+      })
+
+      console.log('pairs', pairs)
+
+      if ('prop' in pairs) sessionStorage.setItem('prop', pairs.prop)
+  }
+
+  app.parseQuery()
+
+
   // Allow the app to autoupdate itself when running
   app.checkForUpdate = function() {
       Backbone.ajax({
@@ -224,6 +241,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
       success: function(resp) {
           app.user = resp.user
           app.personid = resp.personid
+          app.givenname = resp.givenname
           app.staff = resp.is_staff
           if (!app.type) app.type = resp.ty
 
@@ -277,6 +295,12 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
                     app.trigger('proposal:change', proposal)
                     if (callback) callback()
                 })
+            },
+
+            error: function() {
+                app.message({ title: 'No such proposal', message: 'The selected proposal does not exist' })
+                app.prop = null
+                sessionStorage.removeItem('prop')
             },
 
         })
