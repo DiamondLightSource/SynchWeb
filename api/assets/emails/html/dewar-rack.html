@@ -4,8 +4,8 @@
 		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
 			<h2>Dear <?php echo $data['LCRET'] ?></h2>
 			<p>Your dewar has been transferred to the rack outside the beamline and is awaiting futher instruction from yourself.</p>
-			<p>Please either fill out the dewar dispatch form if you would like your dewar to be returned to you:<br />https://ispyb.diamond.ac.uk/dewars/dispatch/<?php echo $data['DEWARID'] ?>?prop=<?php echo $data['PROP'] ?></p>
-			<p>Or fill out the dewar transfer form if you would like it to be transferred to another beamline for another visit:<br />https://ispyb.diamond.ac.uk/dewars/transfer/<?php echo $data['DEWARID'] ?>?prop=<?php echo $data['PROP'] ?></p>
+			<p>Please either fill out the dewar dispatch form if you would like your dewar to be returned to you:<br /><a href="https://ispyb.diamond.ac.uk/dewars/dispatch/<?php echo $data['DEWARID'] ?>?prop=<?php echo $data['PROP'] ?>">https://ispyb.diamond.ac.uk/dewars/dispatch/<?php echo $data['DEWARID'] ?>?prop=<?php echo $data['PROP'] ?></a></p>
+			<p>Or fill out the dewar transfer form if you would like it to be transferred to another beamline for another visit:<br /><a href="https://ispyb.diamond.ac.uk/dewars/transfer/<?php echo $data['DEWARID'] ?>?prop=<?php echo $data['PROP'] ?>">https://ispyb.diamond.ac.uk/dewars/transfer/<?php echo $data['DEWARID'] ?>?prop=<?php echo $data['PROP'] ?></a></p>
 		</div>
 
 		<table class="details" style="background: #f4f4f4; margin: 1%">
