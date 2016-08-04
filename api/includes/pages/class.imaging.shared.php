@@ -103,7 +103,7 @@
         		WHERE containerid=:1
         		ORDER BY bltimestamp DESC, offset_hours", array($args['CONTAINERID']));
 
-        	if (!$insps[0]['BLTIMESTAMP']) $this->error('No inspections completed yet for that container');
+        	if (!$insps[0]['BLTIMESTAMP']) $this->error('No inspections started yet for that container');
 
         	$start = strtotime($insps[0]['BLTIMESTAMP']);
         	foreach ($insps as $in) {
