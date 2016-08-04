@@ -1,0 +1,24 @@
+Dear <?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?>,
+
+A new inspection is now available for your container <?php echo $data['CODE'] ?>.
+
+You can view this inspection here:
+https://ispyb.diamond.ac.uk/shipping/containers/cid/<?php echo $data['CONTAINERID'] ?>?prop=<?php echo $data['PROP'] ?>
+
+
+Information about this inspection: 
+
+Proposal:
+<?php echo $data['PROP'] ?>
+
+Shipping Name:
+<?php echo $data['SHIPPINGNAME'] ?>
+
+Container:
+<?php echo $data['CODE'] ?>
+
+Container Type:
+<?php echo $data['CONTAINERTYPE'] ?>
+
+Inspection Type:
+<?php echo $data['INSPECTIONTYPE'] ?>

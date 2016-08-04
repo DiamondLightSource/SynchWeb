@@ -121,6 +121,28 @@
         }
 
 
+        function _email_status_update($inspectionid) {
+            include_once(dirname(__FILE__).'/../class.email.php');
+
+            $imaging = $this->db->pq("SELECT s.shippingname, ci.containerinspectionid, ci.containerid, c.code, c.containertype, CONCAT(p.proposalcode, p.proposalnumber) as prop, pe.emailaddress, pe.givenname, pe.familyname, it.name as inspectiontype
+                FROM containerinspection ci
+                INNER JOIN inspectiontype it ON it.inspectiontypeid = ci.inspectiontypeid
+                INNER JOIN container c ON c.containerid = ci.containerid
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping s ON s.shippingid = d.shippingid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN person pe ON pe.personid = c.personid
+                WHERE ci.containerinspectionid=:1", array($inspectionid));
+
+            if (!sizeof($imaging)) return;
+            $imaging = $imaging[0];
+
+            $email = new Email('imaging-new', '*** New inspection for your container available ***');
+            $email->data = $imaging;
+            $email->send($imaging['EMAILADDRESS']);
+        }
+
+
 
         // ------------------------------------------------------------------------------------------------------
         // Functions for formulatrix

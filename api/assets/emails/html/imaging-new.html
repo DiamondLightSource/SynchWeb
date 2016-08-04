@@ -1,0 +1,33 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">New container inspection available</h1>
+
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+			<h2>Dear <?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?>,</h2>
+			<p>A new inspection is now available for your container <?php echo $data['CODE'] ?>.</p>
+			<p>You can view this inspection here:<br /><a href="https://ispyb.diamond.ac.uk/shipping/containers/cid/<?php echo $data['CONTAINERID'] ?>?prop=<?php echo $data['PROP'] ?>">https://ispyb.diamond.ac.uk/shipping/containers/cid/<?php echo $data['CONTAINERID'] ?>?prop=<?php echo $data['PROP'] ?></a></p>
+		</div>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Proposal</td>
+					<td><?php echo $data['PROP'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Shipping Name</td>
+					<td><?php echo $data['SHIPPINGNAME'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Container</td>
+					<td><?php echo $data['CODE'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Container Type</td>
+					<td><?php echo $data['CONTAINERTYPE'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Inspection Type</td>
+					<td><?php echo $data['INSPECTIONTYPE'] ?></td>
+				</tr>
+			</tbody>
+		</table>
