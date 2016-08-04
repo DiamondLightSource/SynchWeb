@@ -252,6 +252,15 @@
                 $email->send($dew['LCRETEMAIL']);
             }
 
+            if (strpos(strtolower($this->arg('LOCATION')),'-rack') !== false && $dew['LCRETEMAIL']) {
+                $dew['LOCATION'] = $this->arg('LOCATION');
+
+                require_once('includes/class.email.php');
+                $email = new Email('dewar-rack', '*** Dewar now outside Beamline ***');
+                $email->data = $dew;
+                $email->send($dew['LCRETEMAIL']);
+            }
+
             $this->_output(array('DEWARHISTORYID' => $dhid));
         }
 
