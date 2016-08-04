@@ -200,10 +200,13 @@
         function _get_plate_inspections($args) {
             if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
 
+            if (!array_key_exists('ALL', $args)) $scheduled = 'AND ci.schedulecomponentid IS NOT NULL';
+            else $scheduled = '';
+
             $inspections = $this->db->pq("SELECT ci.bltimestamp > CURRENT_TIMESTAMP as completed, TO_CHAR(ci.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as datetoimage, TO_CHAR(ci.bltimestamp, 'DD-MM-YYYY HH24:MI') as dateimaged, ci.state, ci.priority, ci.containerinspectionid, c.containerid
                 FROM containerinspection ci
                 INNER JOIN container c ON c.containerid = ci.containerid
-                WHERE c.code = :1 AND ci.scheduledtimestamp IS NOT NULL AND ci.schedulecomponentid IS NOT NULL AND ci.manual != 1", array($args['BARCODE']));
+                WHERE c.code = :1 AND ci.scheduledtimestamp IS NOT NULL $scheduled AND ci.manual != 1", array($args['BARCODE']));
 
             return $inspections;
         }
