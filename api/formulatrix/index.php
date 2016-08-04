@@ -151,7 +151,7 @@ function getImagingTasks($getImagingTasks) {
     $arrayImagingTask = new uk\ac\ox\oppf\www\WSPlate\ArrayImagingTask();
     $arrayImagingTask->item = array();
 
-    $inspections = $imaging->_get_plate_inspections(array('BARCODE' => $getImagingTasks->plateID));
+    $inspections = $imaging->_get_plate_inspections(array('BARCODE' => $getImagingTasks->plateID, 'ALL' => 1));
     foreach ($inspections as $i) {
         $imagingTask = new uk\ac\ox\oppf\www\WSPlate\ImagingTask();
 
@@ -248,6 +248,8 @@ function imagedPlate($imagedPlate) {
             'COMPLETEDTIMESTAMP' => date('d-m-Y H:i')
         )
     ));
+
+    // $imaging->_email_status_update($imagingPlate->imagingID);
 
     $response = new uk\ac\ox\oppf\www\WSPlate\imagedPlateResponse();
     $response->imagedPlateReturn = true;
