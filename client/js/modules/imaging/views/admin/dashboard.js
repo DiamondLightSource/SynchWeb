@@ -38,7 +38,7 @@ define(['marionette',
         
         onClick: function(e) {
             if ($(e.target).is('i') || $(e.target).is('a') || $(e.target).hasClass('editable')) return
-            if (this.cookie && this.model.get('PROP')) app.cookie(this.model.get('PROP'))
+            if (this.model.get('PROP')) app.cookie(this.model.get('PROP'))
             app.trigger('container:show', this.model.get('CONTAINERID'), this.model.get('CONTAINERINSPECTIONID'))
         },
     })
