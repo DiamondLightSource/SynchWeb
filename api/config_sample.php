@@ -57,6 +57,7 @@
     # First part is searched for in the processing command line
     $ap_types = array(
         'fast_dp' => 'Fast DP',
+        'autoPROC' => 'autoPROC',
         '-3da ' => 'XIA2 3da',
         '-2d ' => 'XIA2 2d',
         '-2dr ' => 'XIA2 2dr',
@@ -67,7 +68,16 @@
         '-3daii ' => 'XIA2 3daii',
         '-3diir ' => 'XIA2 3diir',
         '-dials ' => 'DIALS',
-        'autoPROC' => 'autoPROC',
+        'pipeline=3da ' => 'XIA2 3da',
+        'pipeline=2d ' => 'XIA2 2d',
+        'pipeline=2dr ' => 'XIA2 2dr',
+        'pipeline=2da ' => 'XIA2 3da',
+        'pipeline=3d ' => 'XIA2 3d',
+        'pipeline=3dr ' => 'XIA2 3dr',
+        'pipeline=3dii ' => 'XIA2 3dii',
+        'pipeline=3daii ' => 'XIA2 3daii',
+        'pipeline=3diir ' => 'XIA2 3diir',
+        'pipeline=dials ' => 'DIALS',
     );
 
 
