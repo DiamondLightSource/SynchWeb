@@ -104,6 +104,8 @@
                               array('/dewars/transfer', 'post', '_transfer_dewar'),
                               array('/dewars/dispatch', 'post', '_dispatch_dewar'),
 
+                              array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
+
 
 
                               array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
@@ -535,6 +537,76 @@
             $this->_output(1);
         }
 
+
+
+        function _get_dewar_tracking() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal id specified');
+            if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
+
+            $dew = $this->db->pq("SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron 
+              FROM dewar d 
+              INNER JOIN shipping s ON s.shippingid = d.shippingid 
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
+
+            if (!sizeof($dew)) $this->_error('No such dewar');
+            else $dew = $dew[0];
+
+            $tr = $this->_dewar_tracking($dew);
+
+            $this->_output(array(
+              'ORIGIN' => (string)$tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
+              'DESTINATION' => (string)$tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
+              'EVENTS' => $tr['events']
+            ));
+
+        }
+
+        function _dewar_tracking($dewar) {
+            global $dhl_user, $dhl_pass;
+
+            require_once('includes/class.dhl.php');
+            $dhl = new DHL($dhl_user, $dhl_pass);
+            if ($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) $status = $dhl->get_tracking_info(array('AWB' => $dewar['TRACKINGNUMBERFROMSYNCHROTRON']));
+            else $status = $dhl->get_tracking_info(array('AWB' => (string)($dewar['TRACKINGNUMBERTOSYNCHROTRON'])));
+
+            if ($status->Response->Status) $this->_error($status->Response->Status);
+            else {
+                if ($status->AWBInfo->Status->ActionStatus != 'success') $this->_error((string)$status->AWBInfo->Status->ActionStatus);
+                else {
+                    $states = array(
+                        'PU' => 'Picked Up',
+                        'PL' => 'Processed',
+                        'DF' => 'Departed Facility',
+                        'AF' => 'Arrived at Facility',
+                        'WC' => 'With Courier',
+                        'OK' => 'Delivered',
+                        'AR' => 'Arrived at Facility',
+                    );
+
+                    $events = array();
+                    // print_r($status->AWBInfo->ShipmentInfo);
+                    $i = 1;
+                    foreach ($status->AWBInfo->ShipmentInfo->ShipmentEvent as $e) {
+                        $st = (string)$e->ServiceEvent->EventCode;
+                        $event = array(
+                            'EVENTID' => $i++,
+                            'STISO' => (string)$e->Date.'T'.(string)$e->Time,
+                            'DATE' => (string)$e->Date.' '.(string)$e->Time,
+                            'EVENT' => (string)$e->ServiceEvent->EventCode,
+                            'STATE' => $states[$st],
+                            'LOCATION' => (string)$e->ServiceArea->Description,
+                            'SIGNATORY' => (string)$e->Signatory
+                        );
+
+                        array_push($events, $event);
+                    }
+
+                    return array('status' => $status, 'events' => $events);
+                }
+            }
+        }
+
         
         # ------------------------------------------------------------------------
         # List of dewars for a shipment
@@ -741,7 +813,6 @@
             $root = '/dls_sw/dasc/ispyb2/shipping';
             $this->_output(array(file_get_contents($root.'/instructions.html'), file_get_contents($root.'/pin.txt'), file_get_contents($root.'/account.txt')));
         }
-        
         
         
         function _get_all_containers() {
