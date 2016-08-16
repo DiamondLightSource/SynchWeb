@@ -152,6 +152,11 @@
     # - This is added to all shipment label PDFs
     $address = "The Experimental Hall Coordinators\nDiamond Light Source Limited\nChilton\nDidcot\nOxfordshire\nOX11 0DE\nUNITED KINGDOM\nTel: +44 (0)1235 778787\nFax: +44 (0)1235 778499";
     
+
+    # DHL API Details
+    $dhl_user = 'user';
+    $dhl_pass = 'password';
+    
   
     # Proposal codes to list
     $prop_codes = array('lb', 'cm', 'mx', 'nt', 'nr', 'sw', 'in', 'mt', 'ee', 'em', 'sm');
