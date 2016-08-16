@@ -4,6 +4,10 @@
     &.table-no-margin {
         margin: 0;
     }
+
+    &.right.tracking {
+        margin-left: 50%;
+    }
     
     table {
         width: 100%;
