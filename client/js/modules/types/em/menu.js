@@ -5,6 +5,8 @@ define([], function() {
             dc: 'View All Data',
             visits: 'Visits',
             calendar: 'Calendar',
+            shipments: 'Shipments',
+            contacts: 'Lab Contacts',
             stats: 'Statistics',
         },
         
