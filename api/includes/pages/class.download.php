@@ -9,6 +9,7 @@
                               'u' => '\w+\d+',
                               's' => '\d',
                               'log' => '\d',
+                              'archive' => '\d',
                               'LogFiles' => '([\w|\.])+',
                               'ty' => '\w+',
                               'pdb' => '\d',
@@ -22,7 +23,7 @@
 
     
         public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/dt/:dt)(/ppl/:ppl)(/id/:id)(/map/:map)', 'get', '_map'),
-                              array('/id/:id/aid/:aid(/log/:log)(/1)(/LogFiles/:LogFiles)', 'get', '_auto_processing'),
+                              array('/id/:id/aid/:aid(/log/:log)(/1)(/LogFiles/:LogFiles)(/archive/:archive)', 'get', '_auto_processing'),
                               array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
                               array('/dimple/id/:id(/log/:log)', 'get', '_dimple_mtz'),
                               array('/mrbump/id/:id(/log/:log)', 'get', '_mrbump_mtz'),
@@ -60,7 +61,7 @@
             // else $r = $rows[0];
         
             foreach ($rows as $r) {
-                if ($this->has_arg('log')) {
+                if ($this->has_arg('log') || $this->has_arg('archive')) {
                     if ($r['FILETYPE'] == 'Log') {
                         if ($this->has_arg('LogFiles')) {
                             $f = $r['FILEPATH'].'/LogFiles/'.$this->arg('LogFiles');
@@ -68,10 +69,28 @@
                             else $this->app->contentType("text/plain");
                             
                         } else {
-                        
-                            $f = $r['FILEPATH'].'/'.$r['FILENAME'];
-                            if ($r['FILENAME'] == 'fast_dp.log') $this->app->contentType("text/plain");
-                            if ($r['FILENAME'] == 'autoPROC.log') $this->app->contentType("text/plain");
+
+                            if ($this->has_arg('archive')) {
+                                $tar = '/tmp/'.$this->arg('aid').'.tar';
+                                $f = $tar.'.gz';
+
+                                if (!file_exists($f)) {
+                                    $a = new PharData($tar);
+                                    $a->buildFromDirectory($r['FILEPATH'], '/^((?!(HKL|cbf|dimple)).)*$/');
+                                    $a->compress(Phar::GZ);
+
+                                    unlink($tar);
+                                }
+
+                                $this->_header($this->arg('aid').'.tar.gz');
+                                readfile($f);
+                                exit;
+
+                            } else {
+                                $f = $r['FILEPATH'].'/'.$r['FILENAME'];
+                                if ($r['FILENAME'] == 'fast_dp.log') $this->app->contentType("text/plain");
+                                if ($r['FILENAME'] == 'autoPROC.log') $this->app->contentType("text/plain");
+                            }
                         }
                         
                         if (file_exists($f)) readfile($f);
