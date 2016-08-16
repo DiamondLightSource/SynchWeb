@@ -64,7 +64,8 @@
                     if ($r['FILETYPE'] == 'Log') {
                         if ($this->has_arg('LogFiles')) {
                             $f = $r['FILEPATH'].'/LogFiles/'.$this->arg('LogFiles');
-                            $this->app->contentType("text/plain");
+                            if (pathinfo($this->arg('LogFiles'), PATHINFO_EXTENSION) == 'html') $this->app->contentType("text/html");
+                            else $this->app->contentType("text/plain");
                             
                         } else {
                         
