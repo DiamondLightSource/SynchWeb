@@ -56,6 +56,7 @@
     # String replacements for autoprocessing types
     # First part is searched for in the processing command line
     $ap_types = array(
+        '_reproc' => 'XIA2 Reprocess',
         'fast_dp' => 'Fast DP',
         'autoPROC' => 'autoPROC',
         '-3da ' => 'XIA2 3da',
