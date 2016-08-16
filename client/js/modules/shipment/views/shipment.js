@@ -8,6 +8,10 @@ define(['marionette',
     'modules/shipment/views/dewarcontent',
     'modules/shipment/collections/dewarhistory',
     'modules/shipment/views/dewarhistory',
+
+    'modules/shipment/collections/dhl-tracking',
+    'modules/shipment/views/dewartracking',
+
     
     'utils/editable',
     'utils',
@@ -22,6 +26,8 @@ define(['marionette',
         DewarContentView,
         DewarHistory,
         DewarHistoryView,
+        DewarTracking,
+        DewarTrackingView,
         
         Editable, utils, template,
         Backbone){
@@ -29,7 +35,7 @@ define(['marionette',
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
-        regions: { table: '.table', history: '.history', cont: '.dcontent' },
+        regions: { table: '.table', history: '.history', cont: '.dcontent', rtracking: '.tracking' },
         //modelEvents: { 'change': 'render' },
         
         templateHelpers: {
@@ -75,6 +81,7 @@ define(['marionette',
             
             this.dewarcontent = new Containers()
             this.dewarhistory = new DewarHistory()
+            this.dewartracking = new DewarTracking()
             this.dewars = new Dewars([], { id: this.model.get('SHIPPINGID') })
             this.fetchDewars()
             
@@ -99,8 +106,19 @@ define(['marionette',
             this.dewarcontent.fetch()
             this.dewarhistory.id = did
             this.dewarhistory.fetch()
+
+            var d = this.dewars.findWhere({ DEWARID: did })
+            if (d && (d.get('TRACKINGNUMBERTOSYNCHROTRON') || d.get('TRACKINGNUMBERTOSYNCHROTRON'))) {
+                this.dewartracking.queryParams.DEWARID = did
+                this.dewartracking.fetch()
+
+            } else {
+                this.dewartracking.ORIGIN = 'N/A'
+                this.dewartracking.DESTINATION = 'N/A'
+                this.dewartracking.reset()
                 
             this.lastDewarID = did
+            }
         },
 
         refreshDewar: function() {
@@ -111,6 +129,7 @@ define(['marionette',
             this.table.show(new DewarsView({ collection: this.dewars }))
             this.cont.show(new DewarContentView({ collection: this.dewarcontent }))
             this.history.show(new DewarHistoryView({ collection: this.dewarhistory }))
+            this.rtracking.show(new DewarTrackingView({ collection: this.dewartracking }))
             
             this.listenTo(this.cont.currentView, 'refresh:dewars', this.refreshDewar, this)
             
