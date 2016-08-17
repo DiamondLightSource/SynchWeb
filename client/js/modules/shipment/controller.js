@@ -22,13 +22,16 @@ define(['marionette',
 
         'modules/shipment/views/dispatch',
         'modules/shipment/views/transfer',
+
+        'collections/dewars',
+        'modules/shipment/views/dewaroverview',
     
 ], function(Marionette,
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView,
     Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
-    DispatchView, TransferView) {
+    DispatchView, TransferView, Dewars, DewarOverview) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
         
@@ -199,6 +202,25 @@ define(['marionette',
             },
         })
     },
+
+
+    dewar_overview: function(s, page) {
+        page = page ? parseInt(page) : 1
+
+        var dewars = new Dewars(null, { state: { currentPage: page }, queryParams: { s: s, all: 1, ty: app.type } })
+        dewars.setSorting('FIRSTEXPERIMENTST', 1)
+        dewars.fetch({
+            success: function() {
+                app.bc.reset([bc, { title: 'Dewar Overview' }])
+                app.content.show(new DewarOverview({ collection: dewars, params: { s: s } }))
+            },
+            error: function() {
+                app.bc.reset([bc, { title: 'Error' }])
+                app.message({ title: 'No dewars', message: 'Couldnt fetch dewar list'})
+            },
+        })
+    }
+
   }
        
         

@@ -17,6 +17,8 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'dewars/add': 'add_dewar',
       'dewars/dispatch/:did': 'dispatch_dewar',
       'dewars/transfer/:did': 'transfer_dewar',
+
+      'dewars/overview(/s/:s)(/page/:page)': 'dewar_overview',
     },
     
     loadEvents: ['shipments:show', 'shipment:show', 'container:show', 'dewar:show']
