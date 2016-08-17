@@ -663,6 +663,12 @@
                 }
             }
 
+            if ($this->has_arg('s')) {
+                $st = sizeof($args) + 1;
+                $where .= " AND (lower(d.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(d.facilitycode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(CONCAT(p.proposalcode, p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
+                for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('s'));
+            }
+
             $tot = $this->db->pq("SELECT count(d.dewarid) as tot
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
@@ -689,7 +695,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron 
+            $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
