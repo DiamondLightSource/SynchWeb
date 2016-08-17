@@ -56,7 +56,6 @@ define(['marionette', 'backbone',
             var attr = $(e.target).attr('name')
             // pre validate file fields
             var val = e.target.files ? e.target.files[0] : $(e.target).val()
-            console.log('validating', attr, val)
             
             if (this.getOption('storeOnValidate')) {
                 var data = {}
