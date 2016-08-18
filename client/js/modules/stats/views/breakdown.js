@@ -9,6 +9,10 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
     return Marionette.ItemView.extend({
         template: template,
         
+        modelEvents: {
+            'sync': 'onDomRefresh'
+        },
+
         events: {
             'plotselected #dc_hist': 'zoomTime',
             'plotselected #avg_time': 'zoomTime',
@@ -133,10 +137,13 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                 fault: 'Fault',
                 nobeam: 'Beam Dump',
                 cent: 'Centring',
+                visit: 'Visit',
             }
             
             var len = (item.datapoint[0] - item.datapoint[2]) / 1000
-            if (len > 60) {
+            if (len > 3600) {
+                len = (len/3600).toFixed(1) + 'hrs'
+            } else if (len > 60) {
                 len = (len/60).toFixed(1) + 'mins'
             } else {
                 len += 's'
