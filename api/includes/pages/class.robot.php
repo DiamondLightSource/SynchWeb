@@ -12,7 +12,7 @@
         public static $dispatch = array(array('/averages', 'get', '_averages'),
                               array('/totals', 'get', '_totals'),
                               array('/errors', 'get', '_errors'),
-                              array('/profile/:visit', 'get', '_visit_profile'),
+                              array('/profile(/:visit)', 'get', '_visit_profile'),
         );
 
         //var $require_staff = True;
@@ -105,6 +105,7 @@
             $tot = $this->db->pq("SELECT count(r.robotactionid) as tot 
                 FROM blsession s 
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
                 WHERE r.status != 'SUCCESS' AND  (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where ORDER BY r.starttimestamp DESC", $args);
             
@@ -124,6 +125,7 @@
             $errors = $this->db->paginate("SELECT r.samplebarcode, r.actiontype, r.dewarlocation, r.containerlocation, r.message, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, s.beamlinename as bl, r.status, TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) as time 
                 FROM blsession s 
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
                 WHERE r.status != 'SUCCESS' AND (r.actiontype = 'LOAD' OR r.actiontype='UNLOAD') $where 
                 ORDER BY r.starttimestamp DESC", $args);
@@ -139,13 +141,33 @@
         
         # Dewar profile for visit
         function _visit_profile() {
+            if (!$this->staff && !$this->has_arg('visit')) $this->_error('Access Denied', 403);
+
+            $where = '';
+            $args = array();
+
+            if ($this->has_arg('bl')) {
+                $where .= ' AND s.beamlinename LIKE :'. (sizeof($args)+1);
+                array_push($args, $this->arg('bl'));
+            }
+            if ($this->has_arg('run')) {
+                $where .= ' AND vr.runid = :' . (sizeof($args)+1);
+                array_push($args, $this->arg('run'));
+            }
+
+            if ($this->has_arg('visit')) {
+                $where .= ' AND CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) LIKE :'.(sizeof($args)+1);
+                array_push($args, $this->arg('visit'));
+            }
+
             $dp = $this->db->pq("SELECT count(case when r.status='CRITICAL' then 1 end) as ccount, count(case when r.status!='SUCCESS' then 1 end) as ecount, count(case when r.status!='SUCCESS' then 1 end)/count(r.status)*100 as epc, count(case when r.status='CRITICAL' then 1 end)/count(r.status)*100 as cpc, count(r.status) as total, r.dewarlocation 
                 FROM robotaction r 
                 INNER JOIN blsession s on r.blsessionid=s.sessionid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
-                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) LIKE :1 AND r.actiontype LIKE 'LOAD' AND r.dewarlocation != 99 
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE r.actiontype LIKE 'LOAD' AND r.dewarlocation != 99 $where
                 GROUP BY r.dewarlocation 
-                ORDER BY r.dewarlocation", array($this->arg('visit')));
+                ORDER BY r.dewarlocation", $args);
             
             
             $profile = array(array(
