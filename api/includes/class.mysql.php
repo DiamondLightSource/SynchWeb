@@ -112,6 +112,7 @@
                             'ProposalHasPerson',
                             'BLSession',
                             'Session_has_Person',
+                            'SessionType',
 
                             'DataCollection',
                             'EnergyScan',
