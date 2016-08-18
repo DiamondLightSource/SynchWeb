@@ -1,0 +1,29 @@
+        <h1>Statistics for <%=BL%></h1>
+
+        <p class="help">This page shows statistics for the selected beamline. The plots below show each action and when they happened. Drag to zoom in on the plot. Click the refresh icon to reset the zoom level</p>
+
+        <div class="filter">
+            <ul>
+                <li>Run: <select name="runid"></select></li>
+            </ul>
+        </div>
+        <div class="filter type"></div>
+        <div class="breakdown"></div>
+
+        <h1>Robot Dewar Usage</h1>
+        <div class="plot_container">
+            <div class="dewar" id="avg_time"></div>
+        </div>
+        <div class="roboterrors"></div>
+        <div class="faults"></div>
+
+        <h1>Histograms</h1>
+        <div class="plot_wrap clearfix">
+            <div class="plot_container left en"></div>
+            <div class="plot_container right bs"></div>
+        </div>
+
+        <div class="plot_wrap clearfix">
+            <div class="plot_container left exp"></div>
+            <div class="plot_container right"></div>
+        </div>

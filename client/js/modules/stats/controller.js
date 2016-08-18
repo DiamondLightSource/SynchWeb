@@ -8,9 +8,10 @@ define(['marionette',
     
     'modules/types/gen/stats/views/visit',
 
-    'modules/stats/views/overview'
+    'modules/stats/views/overview',
+    'modules/stats/views/beamline'
     
-    ], function(Marionette, Visit, BreakDown, Pies, VisitView, ProposalView, GenericVisitView, BAGOverviewView) {
+    ], function(Marionette, Visit, BreakDown, Pies, VisitView, ProposalView, GenericVisitView, BAGOverviewView, BeamlineOverview) {
     
     var bc = { title: 'Visit Statistics', url: '/stats' }
     
@@ -70,8 +71,15 @@ define(['marionette',
         overview: function(s,page) {
             if (!app.user_can('all_prop_stats')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
             if (!page) page = 1
+            app.bc.reset([bc, { title: 'BAG Overview' }]),
             app.content.show(new BAGOverviewView({ params: { s: s } }))
         },
+
+
+        beamline: function(bl) {
+            app.bc.reset([bc, { title: 'Beamline Overview' }]),
+            app.content.show(new BeamlineOverview({ bl: bl }))  
+        } 
     }
         
        
