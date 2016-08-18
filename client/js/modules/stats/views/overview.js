@@ -75,8 +75,8 @@ define(['marionette',
                            { name: 'MSLH', label: 'Max Samples Loaded / hr', cell: 'string', editable: false },
                            { name: 'SL', label: 'Total Samples Loaded', cell: 'string', editable: false }]
                           
-            var columns2 = _.extend([], columns.slice(1), [{ name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false }])
-            var columns3 = _.extend([], columns.slice(1), [{ name: 'TYPENAME', label: 'Type', cell: 'string', editable: false }])
+            var columns2 = [{ name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false }].concat(columns.slice(1))
+            var columns3 = [{ name: 'TYPENAME', label: 'Type', cell: 'string', editable: false }].concat(columns.slice(1))
 
             this.table = new TableView({ collection: this.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: 'No proposals found', } })
             this.table2 = new TableView({ collection: this.beamlines, columns: columns2, tableClass: 'proposals', pages: false, loading: true, backgrid: { emptyText: 'No beamlines found', } })
