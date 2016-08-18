@@ -35,6 +35,7 @@
                                         array('/visits(/:visit)', 'get', '_get_visits'),
                                         array('/visits/:visit', 'patch', '_update_visit'),
                                         array('/bls/:ty', 'get', '_get_beamlines'),
+                                        array('/type', 'get', '_get_types'),
                              );
         
         
@@ -48,6 +49,18 @@
             if (!array_key_exists($this->arg('ty'), $bl_types)) $this->_error('No such proposal type');
 
             $this->_output($bl_types[$this->arg('ty')]);
+        }
+
+
+        function _get_types() {
+            global $bl_types;
+
+            $bls = implode("', '", $bl_types[$this->ptype->ty]);
+            $rows = $this->db->pq("SELECT distinct p.proposalcode 
+                FROM proposal p
+                INNER JOIN blsession s ON s.proposalid = p.proposalid
+                WHERE s.beamlinename IN ('$bls')");
+            $this->_output($rows);
         }
 
 
