@@ -9,47 +9,115 @@
             'runid' => '\d+',
             'group_by' => '\w+',
             'proposalcode' => '\w+',
+            'bl' => '\w+',
         );
 
 
-        public static $dispatch = array(array('/breakdown/:visit', 'get', '_visit_breakdown'),
+        public static $dispatch = array(array('/breakdown(/:visit)', 'get', '_visit_breakdown'),
                               array('/hrs(/:visit)', 'get', '_hourlies'),
                               array('/pies(/:visit)', 'get', '_pies'),
                               array('/ehc/:visit', 'get', '_ehc_log'),
                               array('/call/:visit', 'get', '_callouts'),
                               array('/overview', 'get', '_overview'),
                               array('/runs', 'get', '_runs'),
+                              array('/histogram', 'get', '_parameter_histogram'),
         );
 
         
         function _visit_breakdown() {
-            $info = $this->_check_visit();
+            if ($this->has_arg('visit')) {
+                $info = $this->_check_visit();
+                $where = 'AND s.sessionid=:1';
+                $args = array($info['SID']);
+
+            } else if ($this->user->has('all_breakdown')) {
+                if (!$this->has_arg('runid')) $this->_error('No run specified');
+                if (!$this->has_arg('bl')) $this->_error('No beamline specified');
+
+                $info = $this->db->pq("SELECT TO_CHAR(vr.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(vr.enddate, 'DD-MM-YYYY HH24:MI') as en
+                    FROM v_run vr 
+                    WHERE runid=:1", array($this->arg('runid')));
+
+                if (!sizeof($info)) $this->_error('No such run');
+                $info = $info[0];
+
+                $where = "AND vr.runid=:1 AND s.beamlinename=:2 AND p.proposalcode <> 'cm'";
+                $args = array($this->arg('runid'), $this->arg('bl'));
+
+            } else $this->_error('No visit specified');
 
             $dc = $this->db->pq("SELECT dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, dc.runstatus 
                 FROM datacollection dc 
-                WHERE dc.sessionid=:1 ORDER BY dc.starttime DESC", array($info['SID']));
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE 1=1 $where ORDER BY dc.starttime DESC", $args);
             
-            $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count FROM datacollection dc WHERE dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0", array($info['SID']));
-            $dcs = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count FROM datacollection dc WHERE dc.sessionid=:1 AND dc.overlap != 0", array($info['SID']));
+            $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count 
+                FROM datacollection dc 
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE dc.overlap = 0 AND dc.axisrange > 0 $where", $args);
+            $dcs = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count 
+                FROM datacollection dc 
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE dc.overlap != 0 $where", $args);
             
             $robot = $this->db->pq("SELECT r.status, r.actiontype, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as en
-                FROM robotaction r WHERE r.blsessionid=:1 AND r.actiontype='LOAD' ORDER BY r.endtimestamp DESC", array($info['SID']));
+                FROM robotaction r 
+                INNER JOIN blsession s ON s.sessionid = r.blsessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE r.actiontype='LOAD' $where ORDER BY r.endtimestamp DESC", $args);
 
             $edge = $this->db->pq("SELECT e.energyscanid as id, TO_CHAR(e.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(e.endtime, 'DD-MM-YYYY HH24:MI:SS') as en
-                FROM energyscan e WHERE e.sessionid=:1 ORDER BY e.endtime DESC", array($info['SID']));
+                FROM energyscan e
+                INNER JOIN blsession s ON s.sessionid = e.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE 1=1 $where ORDER BY e.endtime DESC", $args);
 
             $fl = $this->db->pq("SELECT f.xfefluorescencespectrumid as id, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI:SS') as en
-                FROM xfefluorescencespectrum f WHERE f.sessionid=:1 ORDER BY f.endtime DESC", array($info['SID']));
+                FROM xfefluorescencespectrum f 
+                INNER JOIN blsession s ON s.sessionid = f.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE 1=1 $where ORDER BY f.endtime DESC", $args);
             
-            $ai = $this->db->pq("SELECT dc.datacollectionid as id, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(max(s.bltimestamp), 'DD-MM-YYYY HH24:MI:SS') as en
-                FROM datacollection dc 
-                INNER JOIN screening s ON s.datacollectionid = dc.datacollectionid 
-                WHERE dc.sessionid=:1 GROUP BY dc.datacollectionid, dc.endtime ORDER BY dc.endtime DESC", array($info['SID']));
-            
-            $cent = $this->db->pq("SELECT * FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, TIMESTAMPDIFF('SECOND', CAST(r.endtimestamp as DATE), min(dc.starttime)) as dctime
-                FROM robotaction r 
-                INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime 
-                WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) inq WHERE dctime < 1000", array($info['SID']));
+            if ($this->has_arg('visit')) {
+                $ai = $this->db->pq("SELECT dc.datacollectionid as id, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(max(sc.bltimestamp), 'DD-MM-YYYY HH24:MI:SS') as en
+                    FROM datacollection dc 
+                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN screening sc ON sc.datacollectionid = dc.datacollectionid 
+                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE 1=1 $where
+                    GROUP BY dc.datacollectionid, dc.endtime ORDER BY dc.endtime DESC", $args);
+                
+                $cent = $this->db->pq("SELECT * FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, TIMESTAMPDIFF('SECOND', CAST(r.endtimestamp as DATE), min(dc.starttime)) as dctime
+                    FROM robotaction r 
+                    INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime 
+                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE 1=1 $where 
+                    GROUP BY r.endtimestamp ORDER BY r.endtimestamp) inq WHERE dctime < 1000", $args);
+
+                $sched = array();
+
+            } else {
+                $ai = array();
+                $cent = array();
+
+                $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st
+                    FROM blsession s
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE 1=1 $where", $args);
+            }
             
             #$cent = $this->db->pq("SELECT distinct en,st,dctime FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*86400 as dctime FROM robotaction r INNER JOIN datacollection dc ON r.endtimestamp < dc.starttime WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) WHERE dctime < 1000", array($info['SID']));
             
@@ -58,8 +126,11 @@
 
             # Get Faults
             $faultl = $this->db->pq("SELECT f.faultid, f.beamtimelost, f.title, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI:SS') as en
-                FROM bf_fault f INNER JOIN blsession bl ON f.sessionid = bl.sessionid
-                WHERE f.sessionid = :1 and f.beamtimelost = 1", array($info['SID']));
+                FROM bf_fault f 
+                INNER JOIN blsession s ON f.sessionid = s.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE f.beamtimelost=1 $where", $args);
             
             $info['DC_FULL'] = sizeof($dcf) ? $dcf[0]['COUNT'] : 0;
             $info['DC_SCREEN'] = sizeof($dcs) ? $dcs[0]['COUNT'] : 0;
@@ -122,6 +193,12 @@
                         array($this->jst($f['ST']), 4, $this->jst($f['ST'])),
                         array($this->jst($f['EN']), 4, $this->jst($f['ST']))), 'color' => 'grey', 'type' => 'fault', 'status' => ' Fault: '.$f['TITLE']));
             }
+
+            foreach ($sched as $s) {
+                    array_push($data, array('data' => array(
+                        array($this->jst($s['ST']), 6, $this->jst($s['ST'])),
+                        array($this->jst($s['EN']), 6, $this->jst($s['ST']))), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT']));
+            }
                                     
             foreach ($ai as $d) {
                 if ($d['ST'] && $d['EN'])
@@ -158,8 +235,8 @@
                            
                 if ($lastv && ($v != $lastv)) {
                     array_push($data, array('data' => array(
-                            array($st+$ex, 4, $st+$ex),
-                            array($c+$ex, 4, $st+$ex)), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
+                            array($st+$ex, 5, $st+$ex),
+                            array($c+$ex, 5, $st+$ex)), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
                     $bd = False;
                 }
                 
@@ -540,6 +617,67 @@
         }
     
 
+
+        // Histogram of beamline parameters
+        function _parameter_histogram() {
+            $types = array(
+                'energy' => array('unit' => 'eV', 'st' => 5000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
+                'beamsizex' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
+                'beamsizey' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
+                'exposuretime' => array('unit' => 'ms', 'st' => 0, 'en' => 5000, 'bin_size' => 50, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
+            );
+
+            $k = 'energy';
+            $t = $types[$k];
+            if ($this->has_arg('ty')) {
+                if (array_key_exists($this->arg('ty'), $types)) {
+                    $k = $this->arg('ty');
+                    $t = $types[$k];
+                }
+            }
+
+            $where = '';
+            $args = array();
+
+            if ($this->has_arg('bl')) {
+                $where .= ' AND s.beamlinename=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('bl'));
+            }
+
+            if ($this->has_arg('runid')) {
+                $where .= ' AND vr.runid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('runid'));
+            }
+
+            $col = $t['col'];
+            $ct = $t['count'];
+            $bs = $t['bin_size'];
+
+            $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y
+                FROM datacollection dc 
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE 1=1 $where
+                GROUP BY x", $args);
+
+            $ha = array();
+            foreach ($hist as &$h) {
+                $ha[$h['X']] = floatval($h['Y']);
+            }
+
+            $gram = array();
+            for($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
+                $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
+            }
+
+
+            $this->_output(array('label' => ucfirst($k).' ('.$t['unit'].')', 'data' => $gram));
+        }
+
+
+
+        // Return a list of runs
         function _runs() {
             $runs = $this->db->pq("SELECT runid,run 
                 FROM v_run 
