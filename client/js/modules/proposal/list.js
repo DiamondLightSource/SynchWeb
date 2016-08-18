@@ -18,7 +18,8 @@ define(['marionette', 'views/table', 'collections/proposals'], function(Marionet
     regions: { 'wrap': '.wrapper' },
     
     initialize: function(options) {
-      var columns = [{ name: 'ST', label: 'Start Date', cell: 'string', editable: false },
+      var columns = [
+                     // { name: 'ST', label: 'Start Date', cell: 'string', editable: false },
                      { name: 'PROPOSALCODE', label: 'Code', cell: 'string', editable: false },
                      { name: 'PROPOSALNUMBER', label: 'Number', cell: 'string', editable: false },
                      { name: 'VCOUNT', label: 'Visits', cell: 'string', editable: false },
