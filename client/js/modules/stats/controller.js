@@ -7,8 +7,10 @@ define(['marionette',
     'modules/stats/views/proposal',
     
     'modules/types/gen/stats/views/visit',
+
+    'modules/stats/views/overview'
     
-    ], function(Marionette, Visit, BreakDown, Pies, VisitView, ProposalView, GenericVisitView) {
+    ], function(Marionette, Visit, BreakDown, Pies, VisitView, ProposalView, GenericVisitView, BAGOverviewView) {
     
     var bc = { title: 'Visit Statistics', url: '/stats' }
     
@@ -64,6 +66,12 @@ define(['marionette',
                 }
             })
         },
+
+        overview: function(s,page) {
+            if (!app.user_can('all_prop_stats')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            if (!page) page = 1
+            app.content.show(new BAGOverviewView({ params: { s: s } }))
+        },
     }
         
        
@@ -71,6 +79,11 @@ define(['marionette',
         app.on('stats:show', function(visit) {
             app.navigate('stats/visit/'+visit)
             controller.visit(visit)
+        })
+
+        app.on('pstats:show', function() {
+            app.navigate('stats')
+            controller.proposal()
         })
     })
        

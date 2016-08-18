@@ -1,0 +1,147 @@
+define(['marionette', 
+  'views/table', 'views/filter',
+  'collections/proposaltypes',
+  'modules/stats/collections/overview',
+  'modules/stats/collections/runs'], 
+  function(Marionette, TableView, FilterView, ProposalTypes, BAGOverview, Runs) {
+
+    
+    var ClickableRow = Backgrid.Row.extend({
+        events: {
+            'click': 'onClick',
+        },
+        onClick: function() {
+            app.cookie(this.model.get('PROP'))
+            app.trigger('pstats:show', this.model.get('SHIPPINGID'))
+        },
+    })
+
+    
+    return Marionette.LayoutView.extend({
+        className: 'content',
+        template: '<div><h1>BAG Overview</h1><p class="help">This page shows BAG overview statistics for the selected time period</p><div class="filter"><ul><li>Run: <select name="runid"></select></li></ul></div><div class="filter type"></div><div class="filter type2"></div><div class="wrapper"></div><h1>Beamlines</h1><div class="wrapper2"></div><h1>Session Types</h1><div class="wrapper3"></div><h1>Totals</h1><div class="wrapper4"></div></div>',
+        regions: { 
+            wrap: '.wrapper', 
+            wrap2: '.wrapper2', 
+            wrap3: '.wrapper3', 
+            wrap4: '.wrapper4', 
+            type: '.type',
+            type2: '.type2',
+        },
+        
+        ui: {
+            run: 'select[name=runid]'
+        },
+
+        events: {
+            'change @ui.run': 'changeRun'
+        },
+
+        changeRun: function() {
+            this.collection.queryParams.runid = this.ui.run.val()
+            this.beamlines.queryParams.runid = this.ui.run.val()
+            this.sessiontypes.queryParams.runid = this.ui.run.val()
+            this.total.queryParams.runid = this.ui.run.val()
+            this.collection.fetch()
+            this.beamlines.fetch()
+            this.sessiontypes.fetch()
+            this.total.fetch()
+        },
+
+        initialize: function(options) {
+            this.collection = new BAGOverview(null)
+            this.beamlines = new BAGOverview(null, { queryParams: { group_by: 'beamline' } })
+            this.sessiontypes = new BAGOverview(null, { queryParams: { group_by: 'type' } })
+            this.total = new BAGOverview(null, { queryParams: { group_by: 'total' } })
+
+            this.runs = new Runs()
+            this.ready = this.runs.fetch()
+
+            this.types = new ProposalTypes()
+            this.ready2 = this.types.fetch()
+
+            var columns = [{ name: 'PROP', label: 'Proposal', cell: 'string', editable: false },
+                           { name: 'VISITS', label: 'No. Visits', cell: 'string', editable: false },
+                           { name: 'LEN', label: 'Allocated (hr)', cell: 'string', editable: false },
+                           { name: 'REM', label: 'Remaining (hr)', cell: 'string', editable: false },
+                           { name: 'USED', label: 'Used (%)', cell: 'string', editable: false },
+                           { name: 'DCH', label: 'Data Collections / hr', cell: 'string', editable: false },
+                           { name: 'MDCH', label: 'Max Data Collections / hr', cell: 'string', editable: false },
+                           { name: 'DC', label: 'Total Data Collections', cell: 'string', editable: false },
+                           { name: 'SCH', label: 'Screenings / hr', cell: 'string', editable: false },
+                           { name: 'MSCH', label: 'Max Screenings / hr', cell: 'string', editable: false },
+                           { name: 'SC', label: 'Total Screenings', cell: 'string', editable: false },
+                           { name: 'SLH', label: 'Samples Loaded / hr', cell: 'string', editable: false },
+                           { name: 'MSLH', label: 'Max Samples Loaded / hr', cell: 'string', editable: false },
+                           { name: 'SL', label: 'Total Samples Loaded', cell: 'string', editable: false }]
+                          
+            var columns2 = _.extend([], columns.slice(1), [{ name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false }])
+            var columns3 = _.extend([], columns.slice(1), [{ name: 'TYPENAME', label: 'Type', cell: 'string', editable: false }])
+
+            this.table = new TableView({ collection: this.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: 'No proposals found', } })
+            this.table2 = new TableView({ collection: this.beamlines, columns: columns2, tableClass: 'proposals', pages: false, loading: true, backgrid: { emptyText: 'No beamlines found', } })
+            this.table4 = new TableView({ collection: this.sessiontypes, columns: columns3, tableClass: 'proposals', pages: false, loading: true, backgrid: { emptyText: 'No session types found', } })
+            this.table3 = new TableView({ collection: this.total, columns: columns.slice(1), tableClass: 'proposals', pages: false, loading: true, backgrid: { emptyText: 'No total found', } })
+        },
+                                          
+        onRender: function() {
+            this.wrap.show(this.table)
+            this.wrap2.show(this.table2)
+            this.wrap3.show(this.table4)
+            this.wrap4.show(this.table3)
+            this.showFilter()
+
+            $.when(this.ready).done(this.popuateRuns.bind(this))
+            $.when(this.ready2).done(this.showFilter2.bind(this))
+        },
+
+        updateFilter: function(selected) {
+            this.beamlines.queryParams.proposalcode = selected
+            this.total.queryParams.proposalcode = selected
+
+            this.beamlines.fetch()
+            this.sessiontypes.fetch()
+            this.total.fetch()
+        },
+
+        showFilter2: function() {
+            this.ty2 = new FilterView({
+                url: false,
+                collection: this.collection,
+                name: 'proposalcode',
+                filters: this.types.map(function(b) { return { id: b.get('PROPOSALCODE'), name: b.get('PROPOSALCODE') } }),
+            })
+            this.listenTo(this.ty2, 'selected:change', this.updateFilter, this)
+            this.type2.show(this.ty2)
+        },
+
+
+        popuateRuns: function() {
+            this.ui.run.html(this.runs.opts())
+
+            var last = this.runs.first()
+            this.ui.run.val(last.get('RUNID'))
+            this.changeRun()
+        },
+
+
+        showFilter: function() {
+            this.ty = new FilterView({
+                url: false,
+                collection: this.collection,
+                name: 'ty',
+                filters: [
+                  { id: 'monthly', name: 'Monthly' },
+                  { id: 'weekly', name: 'Weekly' }
+                ],
+            })
+            this.type.show(this.ty)
+        },
+          
+        onShow: function() {
+            this.table.focusSearch()
+        },
+        
+    })
+
+})

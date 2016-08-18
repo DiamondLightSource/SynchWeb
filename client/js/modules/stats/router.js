@@ -5,6 +5,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
         appRoutes: {
             'stats(/page/:page)': 'proposal',
             'stats/visit/:visit': 'visit',
+            'stats/overview(/s/:s)(/page/:page)': 'overview',
         },
         
         loadEvents: ['stats:show'],
