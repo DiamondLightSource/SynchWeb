@@ -96,7 +96,18 @@ define(['marionette',
         },
 
         updateFilter: function(selected) {
+            this.beamlines.queryParams.ty = selected
+            this.sessiontypes.queryParams.ty = selected
+            this.total.queryParams.ty = selected
+
+            this.beamlines.fetch()
+            this.sessiontypes.fetch()
+            this.total.fetch()
+        },
+
+        updateFilter2: function(selected) {
             this.beamlines.queryParams.proposalcode = selected
+            this.sessiontypes.queryParams.proposalcode = selected
             this.total.queryParams.proposalcode = selected
 
             this.beamlines.fetch()
@@ -111,7 +122,7 @@ define(['marionette',
                 name: 'proposalcode',
                 filters: this.types.map(function(b) { return { id: b.get('PROPOSALCODE'), name: b.get('PROPOSALCODE') } }),
             })
-            this.listenTo(this.ty2, 'selected:change', this.updateFilter, this)
+            this.listenTo(this.ty2, 'selected:change', this.updateFilter2, this)
             this.type2.show(this.ty2)
         },
 
@@ -135,6 +146,7 @@ define(['marionette',
                   { id: 'weekly', name: 'Weekly' }
                 ],
             })
+            this.listenTo(this.ty, 'selected:change', this.updateFilter, this)
             this.type.show(this.ty)
         },
           
