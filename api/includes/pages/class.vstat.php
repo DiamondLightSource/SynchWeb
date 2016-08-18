@@ -3,8 +3,12 @@
     class Vstat extends Page {
     
 
-        public static $arg_list = array('visit' => '\w+\d+-\d+',
-        
+        public static $arg_list = array(
+            'visit' => '\w+\d+-\d+',
+            'ty' => '\w+',
+            'runid' => '\d+',
+            'group_by' => '\w+',
+            'proposalcode' => '\w+',
         );
 
 
@@ -13,6 +17,8 @@
                               array('/pies(/:visit)', 'get', '_pies'),
                               array('/ehc/:visit', 'get', '_ehc_log'),
                               array('/call/:visit', 'get', '_callouts'),
+                              array('/overview', 'get', '_overview'),
+                              array('/runs', 'get', '_runs'),
         );
 
         
@@ -321,7 +327,7 @@
                     INNER JOIN blsession s ON s.sessionid = dc.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     WHERE dc.axisrange > 0 AND dc.overlap = 0 AND p.proposalid=:1 $where
-                    GROUP BY TO_CHAR(dc.starttime, 'HH24')
+                    GROUP BY TO_CHAR(dc.starttime, 'DDHH24'), s.visit_number
                 ) inq GROUP BY dh ORDER BY hour
             ", $args);
             $dch = array();
@@ -337,7 +343,7 @@
                     INNER JOIN blsession s ON s.sessionid = r.blsessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     WHERE r.actiontype='LOAD' AND p.proposalid=:1 $where
-                    GROUP BY TO_CHAR(r.starttimestamp, 'HH24')
+                    GROUP BY TO_CHAR(r.starttimestamp, 'DDHH24'), s.visit_number
                 ) inq GROUP BY dh ORDER BY hour
             ", $args);
             $slh = array();
@@ -420,7 +426,128 @@
                                     
             return simplexml_load_string($xml);
         }
+
+
+
+
+        // BAG Overview Stats
+        function _overview() {
+            $this->user->can('all_prop_stats');
+
+            global $bl_types;
+            $bls = implode("', '", $bl_types[$this->ptype->ty]);
+
+            $where = " AND p.proposalcode NOT IN ('cm') AND s.beamlinename in ('$bls')";
+            $args = array();
+
+            if ($this->has_arg('ty')) {
+                if ($this->arg('ty') == 'monthly') $where .= " AND TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) <= 28";
+                if ($this->arg('ty') == 'weekly') $where .= " AND TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) <= 7";
+            }
+
+            if ($this->has_arg('runid')) {
+                $where .= " AND vr.runid=:".(sizeof($args)+1);
+                array_push($args, $this->arg('runid'));
+            }
+
+            if ($this->has_arg('proposalcode')) {
+                $where .= " AND p.proposalcode=:".(sizeof($args)+1);
+                array_push($args, $this->arg('proposalcode'));
+            }
+
+            if ($this->has_arg('s')) {
+                $st = sizeof($args) + 1;
+                $where .= " AND ( CONCAT(p.proposalcode, p.proposalnumber) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) )";
+                array_push($args, $this->arg('s'));
+            }
+
+            $match = 'PROP';
+            if ($this->has_arg('group_by')) {
+                if ($this->arg('group_by') == 'beamline') {
+                    $group = 'GROUP BY beamlinename';
+                    $match = 'BEAMLINENAME';
+                }
+
+                if ($this->arg('group_by') == 'type') {
+                    $group = 'GROUP BY typename';
+                    $match = 'TYPENAME';
+                }
+
+                if ($this->arg('group_by') == 'total') {
+                    $group = '';
+                    $match = 'TOTAL';
+                }
+
+            } else $group = 'GROUP BY prop';
+
+
+            $dc = $this->db->pq("
+                SELECT COUNT(visit_number) as visits, prop, SUM(rem) as rem, SUM(len) as len, ((SUM(len) - SUM(rem)) / SUM(len))*100 as used, beamlinename, 1 as total, typename FROM (
+                    SELECT GREATEST(TIMESTAMPDIFF('SECOND', MAX(dc.endtime), MAX(s.enddate))/3600,0) as rem, TIMESTAMPDIFF('SECOND', MAX(s.startdate), MAX(s.enddate))/3600 as len, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.visit_number, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename
+                    FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid)
+                    LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
+                    LEFT OUTER JOIN datacollection dc ON dc.sessionid = s.sessionid
+                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE 1=1 $where 
+                    GROUP BY p.proposalid, s.visit_number
+                    ) inq
+                $group", $args);
+
+
+            $dch = $this->db->pq("SELECT MAX(datacollections) as mdch, AVG(datacollections) as dch, SUM(datacollections) as dc, MAX(screenings) as msch, AVG(screenings) as sch, SUM(screenings) as sc, prop, beamlinename, 1 as total, typename FROM (
+                    SELECT SUM(IF(dc.axisrange > 0 AND dc.overlap = 0, 1, 0)) as datacollections, SUM(IF(dc.overlap != 0, 1, 0)) as screenings, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename
+                    FROM datacollection dc
+                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE 1=1 $where
+                    GROUP BY TO_CHAR(dc.starttime, 'DDHH24'), s.visit_number, p.proposalid
+                ) inq 
+                $group", $args);
+                                    
+            $slh = $this->db->pq("SELECT MAX(samples) as mslh, AVG(samples) as slh, SUM(samples) as sl, prop, beamlinename, 1 as total, typename FROM (
+                    SELECT count(r.robotactionid) as samples, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename
+                    FROM robotaction r
+                    INNER JOIN blsession s ON s.sessionid = r.blsessionid
+                    LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE r.actiontype='LOAD' $where
+                    GROUP BY TO_CHAR(r.starttimestamp, 'DDHH24'), s.visit_number, p.proposalid
+                ) inq
+                $group", $args);
+
+
+            foreach ($dc as &$d) {
+                foreach (array('DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC', 'MSLH', 'SLH', 'SL') as $k)
+                    if (!array_key_exists($k, $d)) $d[$k] = 0;
+
+                foreach ($dch as $dh) 
+                    if ($dh[$match] == $d[$match]) 
+                        foreach (array('DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC') as $k)
+                            $d[$k] = $dh[$k];
+
+                foreach ($slh as $sh) 
+                    if ($sh[$match] == $d[$match]) 
+                        foreach (array('SLH', 'MSLH', 'SL') as $k)
+                            $d[$k] = $sh[$k];
+
+                foreach(array('USED', 'REM', 'LEN', 'DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC', 'MSLH', 'SLH', 'SL') as $t) if ($d[$t]) $d[$t] = round(floatval($d[$t]), 1);
+            }
+
+            $this->_output($dc);
+        }
     
+
+        function _runs() {
+            $runs = $this->db->pq("SELECT runid,run 
+                FROM v_run 
+                WHERE enddate < CURRENT_TIMESTAMP
+                ORDER BY startdate DESC");
+            $this->_output($runs);
+        }
+
     }
 
 ?>
