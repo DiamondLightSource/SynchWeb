@@ -8,6 +8,7 @@
                               'cid' => '\d+',
                               'scid' => '\d+',
                               'fid' => '\d+',
+                              'runid' => '\d+',
 
                               'NAME' => '[A-Za-z0-9_\- ]+',
                               'BLS' => '[\w-]+',
@@ -128,6 +129,11 @@
                     array_push($args, $this->arg('bl'));
                 }
             }
+
+            if ($this->has_arg('runid')) {
+                array_push($where, 'vr.runid = :' . (sizeof($args)+1));
+                array_push($args, $this->arg('runid'));
+            }
             
             $where = implode($where, ' AND ');
             if ($where) $where = ' WHERE ' . $where;
@@ -148,6 +154,7 @@
                 INNER JOIN bf_component c ON sc.componentid = c.componentid
                 INNER JOIN bf_system s ON c.systemid = s.systemid
                 INNER JOIN blsession bl ON f.sessionid = bl.sessionid
+                INNER JOIN v_run vr ON bl.startdate BETWEEN vr.startdate AND vr.enddate
                 INNER JOIN proposal p on p.proposalid = bl.proposalid
                 '.$where, $args);
             $tot = $tot[0]['TOT'];
@@ -167,6 +174,7 @@
                 INNER JOIN bf_component c ON sc.componentid = c.componentid
                 INNER JOIN bf_system s ON c.systemid = s.systemid
                 INNER JOIN blsession bl ON f.sessionid = bl.sessionid
+                INNER JOIN v_run vr ON bl.startdate BETWEEN vr.startdate AND vr.enddate
                 INNER JOIN proposal p on p.proposalid = bl.proposalid
                 $where
                 ORDER BY f.starttime DESC", $args);
