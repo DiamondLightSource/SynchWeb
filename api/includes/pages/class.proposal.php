@@ -123,7 +123,7 @@
             array_push($args, $start);
             array_push($args, $end);
             
-            $order = 'p.bltimestamp DESC';
+            $order = 'p.proposalid DESC';
             
             if ($this->has_arg('sort_by')) {
                 $cols = array('ST' => 'p.bltimestamp', 'PROPOSALCODE' => 'p.proposalcode', 'PROPOSALNUMBER' => 'p.proposalnumber', 'VCOUNT' => 'vcount', 'TITLE' => 'lower(p.title)');
