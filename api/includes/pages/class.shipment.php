@@ -542,13 +542,13 @@
 
 
         function _get_dewar_tracking() {
-            if (!$this->has_arg('prop')) $this->_error('No proposal id specified');
+            if (!$this->has_arg('prop') && !$this->user->can('all_dewars')) $this->_error('No proposal id specified');
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
             $where = 'AND p.proposalid=:1';
             $args = array($this->arg('DEWARID'), $this->proposalid);
 
-            if ($this->staff) {
+            if ($this->user->can('all_dewars')) {
                 $where = '';
                 $args = array($this->arg('DEWARID'));
             }
@@ -622,12 +622,12 @@
         # List of dewars for a shipment
         function _get_dewars() {
             global $bl_types;
-            if (!$this->has_arg('prop')) $this->_error('No proposal id specified');
+            if (!$this->has_arg('prop') && !$this->user->has('all_dewars')) $this->_error('No proposal id specified');
 
             $where = 's.proposalid=:1';
             $args = array($this->proposalid);
 
-            if ($this->staff && $this->has_arg('all')) {
+            if ($this->user->has('all_dewars') && $this->has_arg('all')) {
                 $where = '1=1';
                 $args = array();
             }
