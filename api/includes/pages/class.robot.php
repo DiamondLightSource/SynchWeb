@@ -156,7 +156,7 @@
             }
 
             if ($this->has_arg('visit')) {
-                $where .= ' AND CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) LIKE :'.(sizeof($args)+1);
+                $where .= " AND CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
                 array_push($args, $this->arg('visit'));
             }
 
