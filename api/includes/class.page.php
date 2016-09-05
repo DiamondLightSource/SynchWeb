@@ -62,9 +62,9 @@
         
         function _setup_routes() {
             foreach ($this->_dispatch as $args) {
-                if (sizeof($args) > 4) $this->app->$args[1]($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($args[3])->name($args[4]);
-                if (sizeof($args) > 3) $this->app->$args[1]($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($args[3]);
-                else $this->app->$args[1]($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($this->_arg_list);
+                if (sizeof($args) > 4) $this->app->{$args[1]}($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($args[3])->name($args[4]);
+                if (sizeof($args) > 3) $this->app->{$args[1]}($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($args[3]);
+                else $this->app->{$args[1]}($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($this->_arg_list);
             }
         }
         
