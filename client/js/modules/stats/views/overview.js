@@ -66,14 +66,14 @@ define(['marionette',
                            { name: 'REM', label: 'Remaining (hr)', cell: 'string', editable: false },
                            { name: 'USED', label: 'Used (%)', cell: 'string', editable: false },
                            { name: 'DCH', label: 'Data Collections / hr', cell: 'string', editable: false },
-                           { name: 'MDCH', label: 'Max Data Collections / hr', cell: 'string', editable: false },
-                           { name: 'DC', label: 'Total Data Collections', cell: 'string', editable: false },
+                           { name: 'MDCH', label: 'Max / hr', cell: 'string', editable: false },
+                           { name: 'DC', label: 'Total', cell: 'string', editable: false },
                            { name: 'SCH', label: 'Screenings / hr', cell: 'string', editable: false },
-                           { name: 'MSCH', label: 'Max Screenings / hr', cell: 'string', editable: false },
-                           { name: 'SC', label: 'Total Screenings', cell: 'string', editable: false },
+                           { name: 'MSCH', label: 'Max / hr', cell: 'string', editable: false },
+                           { name: 'SC', label: 'Total', cell: 'string', editable: false },
                            { name: 'SLH', label: 'Samples Loaded / hr', cell: 'string', editable: false },
-                           { name: 'MSLH', label: 'Max Samples Loaded / hr', cell: 'string', editable: false },
-                           { name: 'SL', label: 'Total Samples Loaded', cell: 'string', editable: false }]
+                           { name: 'MSLH', label: 'Max / hr', cell: 'string', editable: false },
+                           { name: 'SL', label: 'Total', cell: 'string', editable: false }]
                           
             var columns2 = [{ name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false }].concat(columns.slice(1))
             var columns3 = [{ name: 'TYPENAME', label: 'Type', cell: 'string', editable: false }].concat(columns.slice(1))
