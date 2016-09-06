@@ -49,7 +49,7 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
         })
       }
         
-      var bgopts = {}
+      var bgopts = { emptyText: 'No visits found' }
       if (this.getOption('clickable')) bgopts.row = ClickableRow
 
       this.listenTo(this.collection, 'change:COMMENTS', this.saveComment, this)
