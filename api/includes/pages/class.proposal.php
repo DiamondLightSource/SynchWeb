@@ -106,7 +106,8 @@
                 for ($i = 0; $i < 2; $i++) array_push($args, $this->arg('s'));
             }
 
-            $tot = $this->db->pq("SELECT count(distinct p.proposalid) as tot FROM proposal p INNER JOIN blsession s ON p.proposalid = s.proposalid $where", $args);
+            $tot = $this->db->pq("SELECT count(distinct p.proposalid) as tot FROM proposal p 
+                LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid $where", $args);
             $tot = intval($tot[0]['TOT']);
             
             $start = 0;
@@ -133,7 +134,7 @@
             
             $rows = $this->db->paginate("SELECT CONCAT(CONCAT(p.proposalcode,'-'),p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid 
                     FROM proposal p 
-                    INNER JOIN blsession s ON p.proposalid = s.proposalid 
+                    LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid 
                     $where 
                     GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order", $args);
             
