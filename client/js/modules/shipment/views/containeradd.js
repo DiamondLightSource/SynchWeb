@@ -121,6 +121,22 @@ define(['marionette',
             'click a.view_sch': 'viewSchedule',
             'click a.edit_user': 'editUser',
             'change @ui.screen': 'selectScreen',
+            'change @ui.pid': 'checkPerson',
+        },
+
+        checkPerson: function() {
+            var u = this.users.findWhere({ PERSONID: this.ui.pid.val() })
+            console.log('check p', u)
+            if (u) {
+                if (!u.get('EMAILADDRESS')) {
+                    this.ui.pid.addClass('invalid')
+                    this.ui.pid.after('<span class="emsg ferror">Please update your email address by clicking view</span>')
+
+                } else {
+                    this.ui.pid.removeClass('invalid')
+                    this.ui.pid.siblings('span.emsg').remove()
+                }
+            }
         },
 
         editUser: function(e) {
@@ -426,6 +442,7 @@ define(['marionette',
             this.ready2.done(this.loadContainerCache.bind(this))
 
             this.ui.pid.html(this.users.opts()).val(app.personid)
+            this.checkPerson()
         }
     })
 
