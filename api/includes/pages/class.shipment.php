@@ -78,6 +78,7 @@
                               'NAME' => '([\w-])+',
                               'SCHEDULEID' => '\d+',
                               'SCREENID' => '\d+',
+                              'PERSONID' => '\d+',
                               );
         
 
@@ -1094,10 +1095,11 @@
             $cap = $this->has_arg('CAPACITY') ? $this->arg('CAPACITY') : 16;
             $sch = $this->has_arg('SCHEDULEID') ? $this->arg('SCHEDULEID') : null;
             $scr = $this->has_arg('SCREENID') ? $this->arg('SCREENID') : null;
+            $own = $this->has_arg('PERSONID') ? $this->arg('PERSONID') : null;
 
-            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid, screenid) 
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6) RETURNING containerid INTO :id", 
-              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr));
+            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid, screenid, ownerid) 
+              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7) RETURNING containerid INTO :id", 
+              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own));
                                  
             $cid = $this->db->id();
             
