@@ -9,7 +9,7 @@
             'runid' => '\d+',
             'group_by' => '\w+',
             'proposalcode' => '\w+',
-            'bl' => '\w+',
+            'bl' => '[\w-]+',
         );
 
 
@@ -189,15 +189,16 @@
             }
                                     
             foreach ($faultl as $f) {
-                    array_push($data, array('data' => array(
-                        array($this->jst($f['ST']), 4, $this->jst($f['ST'])),
-                        array($this->jst($f['EN']), 4, $this->jst($f['ST']))), 'color' => 'grey', 'type' => 'fault', 'status' => ' Fault: '.$f['TITLE']));
+                array_push($data, array('data' => array(
+                    array($this->jst($f['ST']), 4, $this->jst($f['ST'])),
+                    array($this->jst($f['EN']), 4, $this->jst($f['ST']))), 'color' => 'grey', 'type' => 'fault', 'status' => ' Fault: '.$f['TITLE']));
             }
 
             foreach ($sched as $s) {
-                    array_push($data, array('data' => array(
-                        array($this->jst($s['ST']), 6, $this->jst($s['ST'])),
-                        array($this->jst($s['EN']), 6, $this->jst($s['ST']))), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT']));
+                $offset = strpos($s['VISIT'], 'lb') !== false ? 7 : 6;
+                array_push($data, array('data' => array(
+                    array($this->jst($s['ST']), $offset, $this->jst($s['ST'])),
+                    array($this->jst($s['EN']), $offset, $this->jst($s['ST']))), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT']));
             }
                                     
             foreach ($ai as $d) {
