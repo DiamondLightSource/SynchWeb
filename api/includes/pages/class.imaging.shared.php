@@ -131,7 +131,7 @@
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                INNER JOIN person pe ON pe.personid = c.personid
+                INNER JOIN person pe ON pe.personid = c.ownerid
                 WHERE ci.containerinspectionid=:1", array($inspectionid));
 
             if (!sizeof($imaging)) return;
@@ -150,14 +150,13 @@
         function _get_plate_info($args) {
             if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
 
-            $cont = $this->db->pq("SELECT pe.emailaddress, pe.givenname, pe.familyname, pe.login, c.sessionid, s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop, i.temperature, c.containerid
+            $cont = $this->db->pq("SELECT pe.emailaddress, pe.givenname, pe.familyname, pe.login, c.sessionid, s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop, i.temperature, c.containerid, p.externalid, p.proposalid
                 FROM container c
                 LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                 INNER JOIN proposal p on p.proposalid = s.proposalid
-                LEFT OUTER JOIN labcontact lc ON lc.labcontactid = c.labcontactid
-                LEFT OUTER JOIN person pe ON pe.personid = lc.personid
+                LEFT OUTER JOIN person pe ON pe.personid = c.ownerid
                 WHERE c.code=:1", array($args['BARCODE']));
             if (!sizeof($cont)) $this->error('No such container');
             $cont = $cont[0];
@@ -169,28 +168,61 @@
 
             // No sessionid, need to create a visit using UAS REST API
             // if (!$cont['SESSIONID']) {
+            //     $samples = $this->db->pq("SELECT p.externalid 
+            //         FROM protein p
+            //         INNER JOIN crystal cr ON cr.proteinid = p.proteinid
+            //         INNER JOIN blsample s ON s.crystalid = cr.crystalid
+            //         INNER JOIN contnainer c ON c.containerid = p.containerid
+            //         WHERE p.externalid IS NOT NULL AND c.code=:1", array($args['BARCODE']));
+
+            //     $samples = array_map(function($s) {
+            //         return $s['EXTERNALID'];
+            //     }, $samples);
 
             //     $fields = array(
-                    
+            //         'proposalId' => $cont['EXTERNALID'],
+            //         'sampleIds' => $samples,
+            //         'startAt' => date('Y-m-d\Th:i:s.000\Z'),
+            //         // 'startAt': "2012-04-23T18:25:43.511Z",
+            //         'facility' => "I02-2"
             //     );
 
-            //     $ch = curl_init();
-            //     curl_setopt($ch, CURLOPT_URL, 'http://cs04r-sc-vserv-31.diamond.ac.uk:8080/uas/rest/v1/session');
-            //     curl_setopt($ch, CURLOPT_HEADER, 0);
-            //     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
-            //     curl_setopt($ch, CURLOPT_POST, 1);
-            //     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($fields));
-            //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            //     $resp = curl_exec($ch);
-            //     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            //     curl_close($ch);
+            //     $prop = $this->_curl(array(
+            //         'URL' => 'http://cs04r-sc-vserv-31.diamond.ac.uk:8080/uas/rest/v1/session',
+            //         'FIELDS' => $fields,
+            //     ));
 
-            //     if ($resp) {
-            //         $json = json_decode($resp);
+            //     if ($prop) {
+            //         $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinesetupid) 
+            //             VALUES (:1,:2,:3,1)", 
+            //             array($cont['PROPOSALID'], $prop->sessionNumber, $prop->id));
+
+            //         $this->db->pq("UPDATE container SET sessionid=:1 WHERE code=:2", array($this->db->id(), $args['BARCODE']));
             //     }
+
+                
             // }
 
             return $cont;
+        }
+
+
+        protected function _curl($options) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $options['URL']);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($options['FIELDS']));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $resp = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($resp) {
+                $json = json_decode($resp);
+                return $json;
+            }
         }
 
 
