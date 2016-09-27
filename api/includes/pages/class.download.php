@@ -262,8 +262,10 @@
                 } else {
                     if (!file_exists('/tmp/'.$this->arg('id').'_'.$type.'.tar.gz')) {
                         $a = new PharData('/tmp/'.$this->arg('id').'_'.$type.'.tar');
-                        $a->addFile($files[1], basename($files[1]));
-                        $a->addFile($files[1], basename($files[1]));
+                        foreach ($files as $f) {
+                            $a->addFile($f, basename($f));
+                        }
+                        $a->addFile($log_file, basename($log_file));
                         $a->compress(Phar::GZ);
 
                         unlink('/tmp/'.$this->arg('id').'_'.$type.'.tar');
