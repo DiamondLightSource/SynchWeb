@@ -682,7 +682,7 @@
         function _runs() {
             $runs = $this->db->pq("SELECT runid,run 
                 FROM v_run 
-                WHERE enddate < CURRENT_TIMESTAMP
+                WHERE startdate < CURRENT_TIMESTAMP
                 ORDER BY startdate DESC");
             $this->_output($runs);
         }
