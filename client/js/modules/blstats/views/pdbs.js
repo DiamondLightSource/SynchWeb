@@ -135,18 +135,9 @@ define(['marionette',
 
 			this.ui.proc.hide()
     		this.counts = { success: 0, fail: 0 }
-    	
-		    var query = '<orgPdbQuery>'+
-		        '<queryType>org.pdb.query.simple.XrayDiffrnSourceQuery</queryType>'+
-		        '<description>Diamond</description>'+
-		        '<diffrn_source.pdbx_synchrotron_site.comparator>contains</diffrn_source.pdbx_synchrotron_site.comparator>'+
-		        '<diffrn_source.pdbx_synchrotron_site.value>DIAMOND</diffrn_source.pdbx_synchrotron_site.value>'+
-		        '</orgPdbQuery>'
-		  
+
 		    Backbone.ajax({
-		        url: 'http://www.rcsb.org/pdb/rest/search/',
-		        data: query,
-		        type: 'POST',
+		        url: app.apiurl+'/cell/rcsb',
 		        success: this.getProcessedPDBs.bind(this)
 		    })
     	},
@@ -177,7 +168,7 @@ define(['marionette',
     		var self = this
 
     		Backbone.ajax({
-            	url: 'http://www.rcsb.org/pdb/rest/customReport?pdbids='+p+'&customReportColumns=structureTitle,unitCellAngleAlpha,unitCellAngleBeta,unitCellAngleGamma,lengthOfUnitCellLatticeA,lengthOfUnitCellLatticeB,lengthOfUnitCellLatticeC,structureAuthor,citationAuthor,diffractionSource,resolution,releaseDate',
+            	url: app.apiurl+'/cell/pdb?pdb='+p,
 	            type: 'GET',
 	            dataType: 'xml',
 	            timeout: 5000,

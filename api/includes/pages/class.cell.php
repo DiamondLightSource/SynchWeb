@@ -38,6 +38,7 @@
                               array('/bl', 'get', '_beamlines'),
 
                               array('/pdb', 'get', '_proxy_pdb'),
+                              array('/rcsb', 'get', '_proxy_pdbs'),
         );
         
         
@@ -162,8 +163,9 @@
                 $dc['DIR'] = $this->ads($dc['DIR']);
                 $dc['DIR'] = substr($dc['DIR'], strpos($dc['DIR'], $dc['VISIT'])+strlen($dc['VISIT'])+1);
                 
-                $dc['WAVELENGTH'] = number_format($dc['WAVELENGTH'], 3);
-                $dc['TRANSMISSION'] = number_format($dc['TRANSMISSION'], 3);
+                foreach(array('TRANSMISSION', 'WAVELENGTH', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_AL', 'CELL_BE', 'CELL_GA', 'EXPOSURETIME', 'AXISRANGE', 'RLOW', 'RHIGH', 'COMPLETENESS', 'MULTIPLICITY', 'RMERGE', 'ISIGI') as $k) {
+                    $dc[$k] = number_format($dc[$k], 3);
+                }
             }
             
             if ($output) $this->_output(array($tot, $pgs, $rows));
@@ -356,8 +358,8 @@
             }
 
             $bls = implode(', ', array_keys($bls));
-            $aid = sizeof($rows) ? $rows[0]['AUTOPROCPROGRAMID'] : '';
-            $dist = sizeof($rows) ? $rows[0]['DIST'] : '';
+            $aid = sizeof($rows) ? $rows[0]['AUTOPROCPROGRAMID'] : null;
+            $dist = sizeof($rows) ? $rows[0]['DIST'] : null;
 
             $title = $this->has_arg('title') ? $this->arg('title') : '';
             $author = $this->has_arg('author') ? $this->arg('author') : '';
@@ -390,6 +392,29 @@
             $this->app->contentType('text/xml');
             print $response;
 
+        }
+
+
+        function _proxy_pdbs() {
+            global $facility_pdb_site;
+            $facility_pdb_site_lc = strtolower($facility_pdb_site);
+
+            $xml = "<orgPdbQuery>
+                <queryType>org.pdb.query.simple.XrayDiffrnSourceQuery</queryType>
+                <description>$facility_pdb_site_lc</description>
+                <diffrn_source.pdbx_synchrotron_site.comparator>contains</diffrn_source.pdbx_synchrotron_site.comparator>
+                <diffrn_source.pdbx_synchrotron_site.value>$facility_pdb_site</diffrn_source.pdbx_synchrotron_site.value>
+                </orgPdbQuery>";
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'http://www.rcsb.org/pdb/rest/search');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            print $response;
         }
 
 
