@@ -38,6 +38,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
         filters: [
           { id: 'plate', name: 'Plates'},
           { id: 'puck', name: 'Pucks'},
+          { id: 'imager', name: 'In Imager'},
         ]  
       })
     },
