@@ -41,7 +41,7 @@ class CASAuthentication extends AuthenticationBase implements Authentication {
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'https://'.$cas_url.'/cas/v1/tickets');
-        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($fields));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -49,8 +49,34 @@ class CASAuthentication extends AuthenticationBase implements Authentication {
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
+        $this->tgt = null;
+        foreach (explode("\n", $this->response) as $line) {
+            if (preg_match('/^Location: .*\/(TGT.*)$/', $line, $mat)) {
+                $this->tgt = rtrim($mat[1]);//str_replace('?bypassSPNEGO=true', '', $mat[1]);
+            }
+        }
+
         // CAS returns 201 = Created
         return $code == 201;
+    }
+
+    function service($service) {
+        global $cas_url;
+
+        $fields = array(
+            'service' => $service,
+        );
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://'.$cas_url.'/cas/v1/tickets/'.$this->tgt);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($fields));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $resp = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        return rtrim($resp);
     }
 
 }
