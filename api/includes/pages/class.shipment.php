@@ -912,6 +912,8 @@
                     $where .= " AND c.containertype NOT LIKE 'Puck'";
                 } else if ($this->arg('ty') == 'puck') {
                     $where .= " AND c.containertype LIKE 'Puck'";
+                } else if ($this->arg('ty') == 'imager') {
+                    $where .= " AND c.imagerid IS NOT NULL";
                 }
             }
 
