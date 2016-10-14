@@ -22,6 +22,18 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
                      { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
                      ]
         
+
+      var filters =[
+          { id: 'plate', name: 'Plates'},
+          { id: 'puck', name: 'Pucks'},
+          { id: 'imager', name: 'In Imager'},
+      ]  
+
+      if (app.user_can('disp_cont')) {
+          columns.push({ label: '', cell: table.DisposeCell, editable: false })
+          filters.push({ id: 'todispose', name: 'To Dispose'})
+      }
+
       if (app.mobile()) {
         _.each([1,2,5,6], function(v) {
             columns[v].renderable = false
@@ -35,11 +47,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
         collection: options.collection,
         value: options.params && options.params.ty,
         name: 'ty',
-        filters: [
-          { id: 'plate', name: 'Plates'},
-          { id: 'puck', name: 'Pucks'},
-          { id: 'imager', name: 'In Imager'},
-        ]  
+        filters: filters
       })
     },
                                       
