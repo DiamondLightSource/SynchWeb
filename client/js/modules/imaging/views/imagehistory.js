@@ -27,9 +27,22 @@ define(['marionette',
             this.img.onload = function() {
                 self.$el.find('img').attr('src', self.img.src)
             }
-            this.img.load(this.model.urlFor())
 
+            if (this.getOption('autoLoad')) {
+                this.loadImage()
+            }
         },
+
+        loadImage: function() {
+            var idx = this.model.collection.indexOf(this.model)
+            var last = this.model.collection.length == idx+1
+            setTimeout(this.doLoadImage.bind(this), last ? 0 : idx*500)
+        },
+
+        doLoadImage: function() {
+            this.img.load(this.model.urlFor())
+        },
+
             
         onSelectedChanged: function() {
             this.model.get('isSelected') ? this.$el.addClass('selected') : this.$el.removeClass('selected')
@@ -44,6 +57,18 @@ define(['marionette',
         
     var ThumbsView = Marionette.CollectionView.extend({
         childView: ThumbView,
+
+        childViewOptions: function() {
+            return {
+                autoLoad: this.getOption('autoLoad')
+            }
+        },
+
+        load: function() {
+            this.children.each(function(v) {
+                v.loadImage()
+            })
+        }
     })
         
     
@@ -75,13 +100,20 @@ define(['marionette',
         initialize: function(options) {
             this.caching = true
             this.images = options.historyimages
-            this.listenTo(this.images, 'sync', this.preCache.bind(this,1))
+            // this.listenTo(this.images, 'sync', this.preCache.bind(this,1))
             //this.images.fetch()
+            //
+            this.autoLoad = options && options.embed
             
         },
         
         onRender: function() {
-            this.thm.show(new ThumbsView({ collection: this.images }))
+            this.thumbs = new ThumbsView({ collection: this.images, autoLoad: this.getOption('autoLoad') })
+            this.thm.show(this.thumbs)
+        },
+
+        load: function() {
+            this.thumbs.load()
         },
         
         
