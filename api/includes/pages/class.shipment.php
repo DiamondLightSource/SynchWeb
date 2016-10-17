@@ -79,6 +79,7 @@
                               'SCHEDULEID' => '\d+',
                               'SCREENID' => '\d+',
                               'PERSONID' => '\d+',
+                              'DISPOSE' => '\d',
                               );
         
 
@@ -914,6 +915,8 @@
                     $where .= " AND c.containertype LIKE 'Puck'";
                 } else if ($this->arg('ty') == 'imager') {
                     $where .= " AND c.imagerid IS NOT NULL";
+                } else if ($this->arg('ty') == 'todispose') {
+                    $where .= " AND c.requestdisposal=1";
                 }
             }
 
@@ -1081,6 +1084,11 @@
                     $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($this->arg($k), $this->arg('cid')));
                     $this->_output(array($k => $this->arg($k)));
                 }
+            }
+
+            if ($this->user->can('disp_cont') && $this->has_arg('DISPOSE')) {
+                $this->db->pq("UPDATE container SET imagerid=NULL WHERE containerid=:1", array($this->arg('cid')));
+                $this->_output(array('IMAGERID' => null));
             }
         }
         
