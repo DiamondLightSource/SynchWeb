@@ -189,6 +189,7 @@ define(['marionette',
             gap: 'input[name=gap]',
 
             ity: 'select[name=INSPECTIONTYPEID]',
+            status: 'span.sta',
         },
 
         events: {
@@ -368,9 +369,14 @@ define(['marionette',
                 var xhr =  new XHRImage()
                 console.log('caching', i.urlFor('hd'))
                 xhr.load(i.urlFor('full'), function() {
+                    self.plateView.drawPlate()
+
+                    if (n+1 == self.inspectionimages.length) self.ui.status.html('')
+                    else self.ui.status.html('Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
+
                     self.cachethread = setTimeout(function() {
                         self.preCache(++n)
-                    }, 1000)
+                    }, 200)
                 })
             }
             
