@@ -1,5 +1,42 @@
-define(['marionette', 'views/table', 'collections/containers', 'views/filter', 'utils/table'], function(Marionette, TableView, Shipments, FilterView, table) {
+define(['marionette', 'views/table', 'collections/containers', 'views/filter', 'utils/table', 'utils'], function(Marionette, TableView, Shipments, FilterView, table, utils) {
     
+    var DisposeCell = Backgrid.Cell.extend({
+        events: {
+            'click a.dispose': 'disposeContainer',
+        },
+
+        initialize: function(options) {
+            DisposeCell.__super__.initialize.call(this,options)
+            this.listenTo(this.model, 'change', this.render, this)
+        },
+
+        disposeContainer: function(e) {
+            e.preventDefault()
+
+            utils.confirm({
+                title: 'Dispose Container',
+                content: 'Are you sure you want to dispose this container? ISPyB will no longer know where this plate is, so it must be removed from the imager',
+                callback: this.doDispose.bind(this)
+            })
+        },
+
+
+        doDispose: function() {
+            this.model.set('DISPOSE', 1)
+            this.model.save(this.model.changedAttributes(), { patch: true })
+        },
+
+        render: function() {
+            this.$el.empty() 
+            if (this.model.get('IMAGERID')) {
+                this.$el.html('<a href="#" class="button dispose" title="Dispose Container"><i class="fa fa-trash-o"></i></a>')    
+            }
+
+            return this
+        }
+    })
+
+
   var ClickableRow = table.ClickableRow.extend({
     event: 'container:show',
     argument: 'CONTAINERID',
@@ -30,7 +67,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
       ]  
 
       if (app.user_can('disp_cont')) {
-          columns.push({ label: '', cell: table.DisposeCell, editable: false })
+          columns.push({ label: '', cell: DisposeCell, editable: false })
           filters.push({ id: 'todispose', name: 'To Dispose'})
       }
 
