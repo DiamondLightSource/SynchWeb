@@ -116,6 +116,7 @@ define(['marionette',
                 this.ui.hist.removeClass('button-highlight')
             } else {
                 this.hist.$el.fadeIn()
+                this.history.load()
                 this.ui.hist.addClass('button-highlight')
             }
         },
