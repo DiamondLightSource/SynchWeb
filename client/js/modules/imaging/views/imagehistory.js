@@ -25,7 +25,7 @@ define(['marionette',
             var self = this
             this.img = new XHRImage()
             this.img.onload = function() {
-                self.$el.find('img').attr('src', self.img.src)
+                self.$el.find('img').attr('src', self.img.src).css('visibility', 'visible').hide().fadeIn()
             }
 
             if (this.getOption('autoLoad')) {
@@ -49,6 +49,8 @@ define(['marionette',
         },
             
         onRender: function() {
+            this.$el.width(125)
+            this.$el.find('img').css('visibility', 'hidden')
             if (this.model.get('isSelected')) this.$el.addClass('selected')
         },
         
