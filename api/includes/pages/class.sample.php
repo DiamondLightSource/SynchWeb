@@ -244,7 +244,7 @@
         function _update_sub_sample() {
             if (!$this->has_arg('ssid')) $this->_error('No subsample specified');
             
-            $samp = $this->db->pq("SELECT ss.diffractionplanid,s.blsampleid,ss.positionid FROM blsubsample ss
+            $samp = $this->db->pq("SELECT ss.diffractionplanid,s.blsampleid,ss.positionid,ss.position2id FROM blsubsample ss
               INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
               INNER JOIN container c ON c.containerid = s.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -273,7 +273,17 @@
             if ($samp[0]['POSITIONID']) {
                 foreach(array('X', 'Y', 'Z') as $f) {
                     if ($this->has_arg($f)) {
-                        $this->db->pq('UPDATE position SET '.$f.'=:1 WHERE positionid=:2', array($this->arg($f), $samp[0]['POSITIONID']));
+                        $this->db->pq('UPDATE position SET pos'.$f.'=:1 WHERE positionid=:2', array($this->arg($f), $samp[0]['POSITIONID']));
+                        $this->_output(array($f => $this->arg($f)));
+                    }
+                }
+            }
+
+            if ($samp[0]['POSITION2ID']) {
+                foreach(array('X2', 'Y2', 'Z2') as $f) {
+                    if ($this->has_arg($f)) {
+                        $cn = str_replace('2', '', $f);
+                        $this->db->pq('UPDATE position SET pos'.$cn.'=:1 WHERE positionid=:2', array($this->arg($f), $samp[0]['POSITION2ID']));
                         $this->_output(array($f => $this->arg($f)));
                     }
                 }
