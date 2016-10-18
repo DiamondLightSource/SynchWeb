@@ -48,7 +48,8 @@
         <div>
             <h2>Marked Sub Samples</h2>
             <div class="ra">
-                <a href="#" class="button add_sub"><i class="fa fa-plus"></i> <span>Mark Sub Sample</span></a>
+                <a href="#" class="button add_point"><i class="fa fa-plus"></i> <span>Mark Point</span></a>
+                <a href="#" class="button add_region"><i class="fa fa-plus"></i> <span>Mark Region</span></a>
             </div>
             <div class="subs"></div>
         </div>
@@ -114,9 +115,10 @@
                 </div>
 
                 <div class="queue">
-                    <% if (QUEUED == 1) { %>
+                    <% if (CONTAINERQUEUEID > 0) { %>
                         <p>This container was queued for data collection on: <%=QUEUEDTIMESTAMP%></p>
                     <% } else { %>
+                    <a href="#" class="button prepare"><i class="fa fa-list"></i> <span>Prepare for Data Collection</span></a>
                     <a href="#" class="button queue"><i class="fa fa-arrow-up"></i> <span>Queue for Data Collection</span></a>
                     <% } %>
                 </div>

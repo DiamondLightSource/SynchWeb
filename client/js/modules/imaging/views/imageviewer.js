@@ -72,6 +72,7 @@ define(['marionette',
             help: '.help_pane',
             hb: 'a.help',
             meas: 'a.measure',
+            move: 'a.move',
         },
         
         events: {
@@ -87,6 +88,7 @@ define(['marionette',
             'change @ui.score': 'updateScore',
             'click @ui.hist': 'toggleHistory',
             'click @ui.meas': 'toggleMeasure',
+            'click @ui.move': 'toggleMove',
 
             'click @ui.hb': 'toggleHelp',
         },
@@ -96,6 +98,13 @@ define(['marionette',
 
             if (this.ui.meas.hasClass('button-highlight')) this.ui.meas.removeClass('button-highlight')
             else this.ui.meas.addClass('button-highlight')
+        },
+
+        toggleMove: function(e) {
+            e.preventDefault()
+
+            if (this.ui.move.hasClass('button-highlight')) this.ui.move.removeClass('button-highlight')
+            else this.ui.move.addClass('button-highlight')
         },
 
         toggleHelp: function(e) {
@@ -145,6 +154,7 @@ define(['marionette',
                 var self = this
                 sub.save(null, {
                     success: function() {
+                        sub.set('RID', self.subsamples.length)
                         self.subsamples.add(sub)
                         self.draw()
                         self.plotObjects()
@@ -160,6 +170,10 @@ define(['marionette',
         setAddSubsample: function(state) {
             this.add_object = state
         },
+
+        setAddSubsampleRegion: function(state) {
+            this.add_region = state
+        },
         
         
         remSubsample: function(e) {
@@ -169,6 +183,8 @@ define(['marionette',
 
         initialize: function(options) {
             this.add_object = false
+            this.add_region = false
+
             this.plotObjects = _.debounce(this.plotObjects, 200)
             this.drawDebounce = _.debounce(this.draw, 10)
             
@@ -212,6 +228,11 @@ define(['marionette',
             this.hasLine = false
             this.lineStart = {}
             this.lineEnd = {}
+
+            this.drawingRegion = false
+            this.isMovingObject = false
+            this.movingObject = false
+            this.resizeObject = false
         },
 
         selectSubSample: function(e) {
@@ -314,6 +335,11 @@ define(['marionette',
                 // m - measure
                 case 109:
                     this.ui.meas.trigger('click')
+                    break
+
+                // o - move
+                case 111:
+                    this.ui.move.trigger('click')
                     break
 
                 // s - start / stop
@@ -471,7 +497,11 @@ define(['marionette',
             this.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
             this.ctx.clearRect(0,0,this.width,this.height)
             this.ctx.drawImage(this.img, 0, 0, this.width, this.height)
-            this.drawLines()
+
+            if (this.isMovingObject) this.drawMovingObject()
+            else if (this.drawingRegion) this.drawNewRegion()
+            else this.drawLines()
+            
         },
         
 
@@ -532,13 +562,51 @@ define(['marionette',
             this.plotObjects()
         },
         
-                
+            
+        nearest: function(pos) {
+            var distances = this.subsamples.map(function(m) {
+                if (m.get('X2') && m.get('Y2')) {
+                    if (pos.x > m.get('X') && pos.x < m.get('X2') && pos.y > m.get('Y') && pos.y < m.get('Y2')) return 0
+                    else return 9999
+                } else return Math.sqrt(Math.pow(pos.x-parseInt(m.get('X')), 2) + Math.pow(pos.y-parseInt(m.get('Y')), 2))
+            })
+            
+            var min = _.min(distances)
+            console.log(pos, min, distances)
+
+            if (min < 30/this.scalef) {
+                var id = distances.indexOf(min)
+                var ss = this.subsamples.at(id)
+                console.log(ss)
+                return ss
+            }
+        },
+
+        edge: function(options) {
+            if (!options.obj) return
+
+            if (options.obj.get('X2') && options.obj.get('Y2')) {
+                var tol = 10/this.scalef
+                if (options.pos.x > options.obj.get('X2') - tol && options.pos.x < options.obj.get('X2')) return true
+                if (options.pos.y > options.obj.get('Y2') - tol && options.pos.y < options.obj.get('Y2')) return true
+            }
+        },
+
+
         mouseDownCanvas: function(e) {
             e.preventDefault()
             if(e.originalEvent.touches && e.originalEvent.touches.length) e = e.originalEvent.touches[0];
 
-            if (this.ui.meas.hasClass('button-highlight')) {
+            if (this.ui.move.hasClass('button-highlight')) {
+                this.lineStart = this.getScaledXY(e)
+                this.isMovingObject = true
+
+            } else if (this.ui.meas.hasClass('button-highlight')) {
                 this.drawingLine = true
+                this.lineStart = this.getScaledXY(e)
+
+            } else if (this.add_region) {
+                this.drawingRegion = true
                 this.lineStart = this.getScaledXY(e)
 
             } else {
@@ -576,7 +644,38 @@ define(['marionette',
                 this.starty = e.clientY
             }
 
+            if (this.ui.move.hasClass('button-highlight')) {
+                if (this.isMovingObject) {
+                    this.lineEnd = this.getScaledXY(e)
+                    this.drawDebounce()
+
+
+                } else {
+                    var obj = this.nearest(this.getScaledXY(e))
+                    var edge = this.edge({ obj: obj, pos: this.getScaledXY(e) })
+                    this.resizeObject = false
+                    if (edge) {
+                        document.body.style.cursor = 'se-resize'
+                        this.resizeObject = true
+
+                    } else if (obj) {
+                        obj.set({ isSelected: true })
+                        document.body.style.cursor = 'pointer'
+                    } else {
+                        document.body.style.cursor = 'default'
+                        var s = this.subsamples.findWhere({ isSelected: true })
+                        if (s) s.set({ isSelected: false })
+                    }
+                    this.movingObject = obj
+                }
+            }
+
             if (this.drawingLine) {
+                this.moved = true
+                this.lineEnd = this.getScaledXY(e)
+                this.drawDebounce()
+
+            } else if (this.drawingRegion) {
                 this.moved = true
                 this.lineEnd = this.getScaledXY(e)
                 this.drawDebounce()
@@ -586,6 +685,69 @@ define(['marionette',
                 
         mouseUpCanvas: function(e) {
             e.preventDefault()
+
+            if (this.isMovingObject) {
+                this.isMovingObject = false
+
+                if (this.lineEnd && this.movingObject) {
+                    this._calcNewPos({ obj: this.movingObject, x2: this.resizeObject })
+                    this.movingObject.save(this.movingObject.changedAttributes(), { 
+                        patch: true,
+                        success: function() {
+
+                        },
+
+                        error: function(model, response, options) {
+                            app.alert({ message: 'Something went wrong moving that object, please try again: '+response.responseText })
+                        },
+                    })
+                }
+            }
+
+            if (this.drawingRegion) {
+                // swap coords if needed
+                if (this.lineStart.x > this.lineEnd.x) {
+                    x1 = this.lineEnd.x
+                    x2 = this.lineStart.x
+                } else {
+                    x1 = this.lineStart.x
+                    x2 = this.lineEnd.x
+                }
+
+                if (this.lineStart.y > this.lineEnd.y) {
+                    y1 = this.lineEnd.y
+                    y2 = this.lineStart.y
+                } else {
+                    y1 = this.lineStart.y
+                    y2 = this.lineEnd.y
+                }
+
+                this.lineStart = {}
+                this.lineEnd = {}
+
+                var sub = new Subsample({
+                    BLSAMPLEID: this.model.get('BLSAMPLEID'),
+                    X: x1,
+                    Y: y1,
+                    X2: x2,
+                    Y2: y2
+                })
+
+                var self = this
+                sub.save(null, {
+                    success: function() {
+                        sub.set('RID', self.subsamples.length)
+                        self.subsamples.add(sub)
+                    
+                        self.draw()
+                        self.plotObjects()
+                    },
+                    
+                    error: function(model, response, options) {
+                        app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
+                    },
+                })
+            }
 
             if (!this.moved && this.lineStart.x) {
                 this.lineStart = {}
@@ -599,13 +761,17 @@ define(['marionette',
                 this.plotObjects()
                 this.moved = false
             }
+
             this.record = false
             this.drawingLine = false
+            this.drawingRegion = false
         },
                 
 
         drawLines: function() {
             if (!this.lineStart || !this.lineEnd) return
+
+            var m = this.scalef > 1 ? 1 : 1/this.scalef
 
             this.ctx.beginPath()
             this.ctx.moveTo(this.lineStart.x, this.lineStart.y)
@@ -621,24 +787,101 @@ define(['marionette',
             var ymid = (this.lineEnd.y - this.lineStart.y) / 2
             var dist = Math.sqrt(Math.pow((this.lineEnd.x - this.lineStart.x)*mppx, 2)+Math.pow((this.lineEnd.y - this.lineStart.y)*mppy, 2))
 
-            this.ctx.font = '14px Arial';
+            this.ctx.font = parseInt(14*m)+'px Arial';
             this.ctx.fillText(dist.toFixed(0)+'\u03BCm',this.lineStart.x+xmid+5,this.lineStart.y+ymid+5);
         },
 
+
+        drawNewRegion: function() {
+            this.ctx.beginPath()
+            this.ctx.save();
+            this.ctx.setLineDash([5, 15]);
+            this.ctx.rect(this.lineStart.x, this.lineStart.y, Math.abs(this.lineEnd.x-this.lineStart.x), Math.abs(this.lineEnd.y-this.lineStart.y))
+
+            this.ctx.stroke()
+            this.ctx.restore()
+            this.ctx.closePath()
+        },
+
+
+        _calcNewPos: function(options) {
+            var obj = options.obj
+            var delx = this.lineEnd.x - this.lineStart.x
+            var dely = this.lineEnd.y - this.lineStart.y
+
+            var np = {}
+            if (!options.x2) {
+                np.X = parseInt(obj.get('X'))+delx
+                np.Y = parseInt(obj.get('Y'))+dely
+            }
+
+            if (obj.get('X2') && obj.get('Y2')) {
+                np.X2 = parseInt(obj.get('X2'))+delx
+                np.Y2 = parseInt(obj.get('Y2'))+dely
+            }
+
+            obj.set(np)
+        },
+
+
+        drawMovingObject: function() {
+            if (!this.movingObject) return
+            this._drawObject({ o: this.movingObject })
+
+            var no = this.movingObject.clone()
+            this._calcNewPos({obj: no, x2: this.resizeObject })
+            this._drawObject({ o: no, dashed: true })
+        },
+
         
+        _drawObject: function(options) {
+            if (!options.o) return
+
+            var m = this.scalef > 1 ? 1: 1/this.scalef
+            var w = 15*m
+            this.ctx.lineWidth = this.scalef > 1 ? 1 : 1/this.scalef
+
+
+            if (options.dashed) {
+                this.ctx.save();
+                this.ctx.setLineDash([5, 15]);
+            }
+
+            var x = parseInt(options.o.get('X'))
+            var y = parseInt(options.o.get('Y'))
+            this.ctx.strokeStyle = options.o.get('isSelected') ? 'turquoise' : 'red'
+
+            if (options.o.get('X2') && options.o.get('Y2')) {
+                var x2 = parseInt(options.o.get('X2'))
+                var y2 = parseInt(options.o.get('Y2'))
+
+                this.ctx.beginPath()
+                this.ctx.rect(x, y, x2-x, y2-y)
+                this.ctx.stroke()
+                this.ctx.closePath()
+
+            } else {
+                this.ctx.beginPath();
+                this.ctx.moveTo(x-w,y)
+                this.ctx.lineTo(x+w,y)
+                this.ctx.stroke()
+                this.ctx.beginPath();
+                this.ctx.moveTo(x,y-w)
+                this.ctx.lineTo(x,y+w)
+                this.ctx.stroke()
+            }
+
+            if (options.dashed) this.ctx.restore()
+
+            this.ctx.fillStyle = options.o.get('isSelected') ? 'turquoise' : 'red'
+            this.ctx.font = parseInt(14*m)+'px Arial';
+            this.ctx.fillText(parseInt(options.o.get('RID'))+1,x-(m*15), y-(m*6));
+        },
+
+
         plotObjects: function() {
             this.subsamples.each(function(o) {
-                var x = parseInt(o.get('X'))
-                var y = parseInt(o.get('Y'))
-                this.ctx.strokeStyle= o.get('isSelected') ? 'green' : 'red'
-                this.ctx.beginPath();
-                this.ctx.moveTo(x-15,y)
-                this.ctx.lineTo(x+15,y)
-                this.ctx.stroke()
-                this.ctx.beginPath();
-                this.ctx.moveTo(x,y-15)
-                this.ctx.lineTo(x,y+15)
-                this.ctx.stroke()
+                this._drawObject({ o: o })
             }, this)
         },
         

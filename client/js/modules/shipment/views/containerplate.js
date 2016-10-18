@@ -123,7 +123,7 @@ define(['marionette',
 
             this.$el.html('<!--<a href="#" class="button button-notext measure" title="Measure"><i class="fa fa-arrows-h"></i> <span>Measure</span></a>-->\
              <a href="#" class="button button-notext fish '+active2+'" title="Fish into puck"><i class="fa fa-crosshairs"></i> <span>Fish</span></a>\
-             <a href="#" class="button button-notext details '+active+'" title="View Experimental Parameters"><i class="fa fa-flask"></i> <span>Experimental Parameters</span></a>\
+             <!--<a href="#" class="button button-notext details '+active+'" title="View Experimental Parameters"><i class="fa fa-flask"></i> <span>Experimental Parameters</span></a>-->\
              <a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>')
             
             this.delegateEvents();
@@ -180,7 +180,8 @@ define(['marionette',
             // ext: '.extrainfo',
             ins: 'select[name=inspection]',
             add: '.add_image',
-            ads: 'a.add_sub',
+            ads: 'a.add_point',
+            adr: 'a.add_region',
 
             drop: '.dropimage',
             prog: '.progress',
@@ -195,7 +196,8 @@ define(['marionette',
         events: {
             // 'click @ui.ext': 'toggleExtra',
             'change @ui.ins': 'selectInspection',
-            'click @ui.ads': 'setAddSubsample',
+            'click @ui.ads': 'setAddSubsamplePoint',
+            'click @ui.adr': 'setAddSubsampleRegion',
             'click a.add_inspection': 'showAddInspection',
             'click a.view_sched': 'showViewSchedule',
             'click @ui.play': 'playInspection',
@@ -330,18 +332,34 @@ define(['marionette',
 
         },
 
-        setAddSubsample: function(e) {
+        setAddSubsamplePoint: function(e) {
             e.preventDefault()
 
             if (this.ui.ads.hasClass('button-highlight')) {
                 this.ui.ads.removeClass('button-highlight')
                 this.image.setAddSubsample(false)
-                this.ui.ads.find('span').html('Mark Sub Sample')
+                this.ui.ads.find('span').html('Mark Point')
                 
             } else {
                 this.ui.ads.addClass('button-highlight')
                 this.image.setAddSubsample(true)
                 this.ui.ads.find('span').html('Finish')
+            }
+        },
+
+
+        setAddSubsampleRegion: function(e) {
+            e.preventDefault()
+
+            if (this.ui.adr.hasClass('button-highlight')) {
+                this.ui.adr.removeClass('button-highlight')
+                this.image.setAddSubsampleRegion(false)
+                this.ui.adr.find('span').html('Mark Region')
+                
+            } else {
+                this.ui.adr.addClass('button-highlight')
+                this.image.setAddSubsampleRegion(true)
+                this.ui.adr.find('span').html('Finish')
             }
         },
 
@@ -361,6 +379,7 @@ define(['marionette',
         },
 
         preCache: function(n) {
+            return
             clearTimeout(this.cachethread)
             
             var self = this
@@ -565,10 +584,13 @@ define(['marionette',
             edit.create('NAME', 'text')
 
             if (this.model.get('INSPECTIONS') > 0) {
-                var columns = [{ name: 'X', label: 'X', cell: 'string', editable: false },
-                         { name: 'Y', label: 'Y', cell: 'string', editable: false },
-                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
-                         { label: '', cell: ActionCell, editable: false },
+                var columns = [
+                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%=(RID+1)%>' },
+                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%=(X2 ? "Region" : "Point")%>' },
+                        { name: 'X', label: 'X', cell: 'string', editable: false },
+                        { name: 'Y', label: 'Y', cell: 'string', editable: false },
+                        { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
+                        { label: '', cell: ActionCell, editable: false },
                 ]
                         
                 this.subtable = new TableView({ collection: this.subsamples, columns: columns, tableClass: 'subsamples', loading: false, pages: false, backgrid: { row: ClickableRow, emptyText: 'No subsamples found', } })
