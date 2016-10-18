@@ -110,8 +110,51 @@
 
 
 
-        function _q_sub_sample() {
+        function _q_container() {
+            if ($this->has_arg('CONTAINERID')) $this->_error('No container specified');
+
+            $chkc = $this->db->pq("SELECT c.containerid FROM container c 
+                INNER JOIN dewar d ON c.dewarid = d.dewarid 
+                INNER JOIN shipping s ON s.shippingid = d.shippingid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid 
+                WHERE c.containerid=:1 AND p.proposalid=:2", array($this->arg('CONTAINERID'), $this->proposalid));
             
+            if (!sizeof($chkc)) $this->_error('No such container');
+
+            $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
+            $qid = $this->db->id();
+
+            $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
+              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+              INNER JOIN container c ON c.containerid = s.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+              WHERE p.proposalid=:1 AND c.containerid=:2", array($this->proposalid, $this->arg('CONTAINERID')));
+
+            foreach ($samples as $s) {
+                $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
+            }
+
+            $this->_output(array('CONTAINERQUEUEID' => $qid));
+        }
+
+
+        function _pre_q_sub_sample() {
+            if ($this->has_arg('BLSUBSAMPLEID')) $this->_error('No subsample specified');
+
+            $samp = $this->db->pq("SELECT ss.diffractionplanid,s.blsampleid,ss.positionid FROM blsubsample ss
+              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+              INNER JOIN container c ON c.containerid = s.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              WHERE p.proposalid=:1 AND ss.blsubsampleid=:2", array($this->proposalid, $this->arg('BLSUBSAMPLEID')));
+
+            if (!sizeof($samp)) $this->_error('No such sub sample');
+
+            $this->db->pq("INSERT INTO containerqueuesample (blsubsampleid) VALUES (:1)", array($this->arg("BLSUBSAMPLEID")));
         }
 
 
@@ -184,6 +227,8 @@
               WHERE p.proposalid=:1 $where
               GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.x, po.y, po.z
               ORDER BY ss.blsubsampleid", $args);
+
+            foreach ($subs as $i => &$r) $r['RID'] = $i;
 
             if ($this->has_arg('ssid')) {
                 if (!sizeof($subs)) $this->_error('No such sub sample');
