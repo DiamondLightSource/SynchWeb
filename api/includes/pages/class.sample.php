@@ -67,6 +67,9 @@
                               'X' => '\d+(.\d+)?',
                               'Y' => '\d+(.\d+)?',
                               'Z' => '\d+(.\d+)?',
+                              'X2' => '\d+(.\d+)?',
+                              'Y2' => '\d+(.\d+)?',
+                              'Z2' => '\d+(.\d+)?',
 
                               'EXPERIMENTKIND' => '\w+',
                               'EXPOSURETIME' => '\d+(.\d+)?',
@@ -209,9 +212,10 @@
                 array_push($args, $this->arg('cid'));
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
+              LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
               LEFT OUTER JOIN blsample sss on ss.blsubsampleid = sss.blsubsampleid
               INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
               INNER JOIN crystal cr ON cr.crystalid = s.crystalid
@@ -312,6 +316,10 @@
 
             $z = $this->has_arg('Z') ? $this->arg('Z') : null;
 
+            $x2 = $this->has_arg('X2') ? $this->arg('X2') : null;
+            $y2 = $this->has_arg('Y2') ? $this->arg('Y2') : null;
+            $z2 = $this->has_arg('Z2') ? $this->arg('Z2') : null;
+
             $samp = $this->db->pq("SELECT s.blsampleid FROM blsample s
               INNER JOIN container c ON c.containerid = s.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -321,16 +329,22 @@
 
             if (!sizeof($samp)) $this->_error('No such sample');
 
-            $this->db->pq("INSERT INTO position (positionid, x, y, z) 
+            $this->db->pq("INSERT INTO position (positionid, posx, posy, posz) 
               VALUES (s_position.nextval, :1, :2, :3) RETURNING positionid INTO :id", array($this->arg('X'), $this->arg('Y'), $z));
             $pid = $this->db->id();
+
+            if ($x2 && $y2) {
+                $this->db->pq("INSERT INTO position (positionid, posx, posy, posz) 
+                    VALUES (s_position.nextval, :1, :2, :3) RETURNING positionid INTO :id", array($x2, $y2, $z2));
+                $pid2 = $this->db->id();
+            } else $pid2 = null;
 
             $this->db->pq("INSERT INTO diffractionplan (diffractionplanid) 
               VALUES (s_diffractionplan.nextval) RETURNING diffractionplanid INTO :id");
             $did = $this->db->id();
 
-            $this->db->pq("INSERT INTO blsubsample (blsubsampleid, blsampleid, positionid, diffractionplanid) 
-              VALUES (s_blsubsample.nextval, :1, :2, :3) RETURNING blsubsampleid INTO :id", array($this->arg('BLSAMPLEID'), $pid, $did));
+            $this->db->pq("INSERT INTO blsubsample (blsubsampleid, blsampleid, positionid, position2id, diffractionplanid) 
+              VALUES (s_blsubsample.nextval, :1, :2, :3, :4) RETURNING blsubsampleid INTO :id", array($this->arg('BLSAMPLEID'), $pid, $pid2, $did));
 
             // $this->_output(array('BLSUBSAMPLEID' => $this->db->id()));
             $this->args['ssid'] = $this->db->id();
