@@ -109,6 +109,12 @@
         );
 
 
+
+        function _q_sub_sample() {
+            
+        }
+
+
         function _add_sample_component() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('ABUNDANCE')) $this->_error('No amount specified');
@@ -160,7 +166,7 @@
                 array_push($args, $this->arg('cid'));
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.x, po.y, po.z
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.x, po.y, po.z, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN blsample sss on ss.blsubsampleid = sss.blsubsampleid
@@ -171,6 +177,7 @@
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid AND cqs.containerqueueid IS NULL
 
               LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
 
