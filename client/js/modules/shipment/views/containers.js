@@ -67,6 +67,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
       ]  
 
       if (app.user_can('disp_cont')) {
+          columns.push({ name: 'VISIT', label: 'Visit', cell: 'string', editable: false })
           columns.push({ label: '', cell: DisposeCell, editable: false })
           filters.push({ id: 'todispose', name: 'To Dispose'})
       }
