@@ -317,8 +317,7 @@
                 
                 UNION SELECT count(es.energyscanid) as tot FROM energyscan es
                 INNER JOIN blsession ses ON ses.sessionid = es.sessionid
-                LEFT OUTER JOIN blsample_has_energyscan bes ON es.energyscanid = bes.energyscanid
-                LEFT OUTER  JOIN blsample smp ON bes.blsampleid = smp.blsampleid
+                LEFT OUTER  JOIN blsample smp ON es.blsampleid = smp.blsampleid
                 $extj[1]
                 WHERE $sess[1] $where2
                                 
@@ -357,8 +356,7 @@
              UNION
              SELECT $extc 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',es.beamsizehorizontal,es.beamsizevertical,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.peakfdoubleprime, 1, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1 FROM energyscan es
             INNER JOIN blsession ses ON ses.sessionid = es.sessionid
-            LEFT OUTER  JOIN blsample_has_energyscan bes ON es.energyscanid = bes.energyscanid
-            LEFT OUTER JOIN blsample smp ON bes.blsampleid = smp.blsampleid
+            LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid
             $extj[1]
             WHERE $sess[1] $where2
                    
@@ -1303,7 +1301,7 @@
         # ------------------------------------------------------------------------
         # Grid Scan Info
         function _grid_info() {
-            $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.x, p.y, p.z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation
+            $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation
                 FROM gridinfo g
                 INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
                 INNER JOIN position p ON dc.positionid = p.positionid

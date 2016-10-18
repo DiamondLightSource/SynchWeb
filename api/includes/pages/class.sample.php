@@ -209,7 +209,7 @@
                 array_push($args, $this->arg('cid'));
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.x, po.y, po.z, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN blsample sss on ss.blsubsampleid = sss.blsubsampleid
@@ -225,7 +225,7 @@
               LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
 
               WHERE p.proposalid=:1 $where
-              GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.x, po.y, po.z
+              GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx, po.posy, po.posz
               ORDER BY ss.blsubsampleid", $args);
 
             foreach ($subs as $i => &$r) $r['RID'] = $i;

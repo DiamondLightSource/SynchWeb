@@ -116,7 +116,6 @@
 
                             'DataCollection',
                             'EnergyScan',
-                            'BLSample_has_EnergyScan',
                             'XFEFluorescenceSpectrum',
                             'RobotAction',
                             'DataCollectionGroup',
@@ -152,7 +151,7 @@
                             'DewarTransportHistory',
                             'DewarRegistry',
                             'DewarReport',
-                            'DHLTermsAccepted',
+                            'CourierTermsAccepted',
                             
                             'BLSubSample',
                             'PDB',
@@ -217,6 +216,10 @@
                             'InspectionType',
                             'BLSampleImage',
                             'BLSampleImageScore',
+
+                            // Queuing
+                            'ContainerQueueSample',
+                            'ContainerQueue',
 
 
                             // To be removed

@@ -878,7 +878,7 @@
             // $this->db->pq("INSERT INTO genericdata (genericdataid,parametervaluedate,parametervaluestring,parametercomments) 
               // VALUES (s_genericdata.nextval, SYSDATE, 'terms_accepted', :1)", array($this->arg('prop').','.$this->arg('SHIPPINGNAME').','.$this->user->login));
 
-            $this->db->pq("INSERT INTO dhltermsaccepted (dhltermsacceptedid,proposalid,personid,shippingname,timestamp) 
+            $this->db->pq("INSERT INTO couriertermsaccepted (couriertermsacceptedid,proposalid,personid,shippingname,timestamp) 
               VALUES (s_dhltermsaccepted.nextval, :1, :2, :3, CURRENT_TIMESTAMP)", array($this->proposalid, $this->user->personid, $this->arg('SHIPPINGNAME')));
             
             $root = '/dls_sw/dasc/ispyb2/shipping';
@@ -1014,7 +1014,6 @@
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
                                   LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
                                   LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != 'Completed' AND ci2.manual!=1 AND ci2.schedulecomponentid IS NULL
-                                  /*LEFT OUTER JOIN containerdataschedule as cs ON cs.containerid = c.containerid*/
                                   $join
                                   WHERE $where
                                   GROUP BY sch.name, c.scheduleid, c.screenid, sc.name, c.imagerid, i.temperature, i.name, CONCAT(p.proposalcode, p.proposalnumber), c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
