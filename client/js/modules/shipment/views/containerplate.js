@@ -607,6 +607,7 @@ define(['marionette',
         onRender: function() {  
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
+            edit.create('COMMENTS', 'textarea')
 
             if (this.model.get('INSPECTIONS') > 0) {
                 var columns = [

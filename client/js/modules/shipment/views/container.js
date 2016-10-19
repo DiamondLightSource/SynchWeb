@@ -62,6 +62,7 @@ define(['marionette',
         onRender: function() {  
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
+            edit.create('COMMENTS', 'text')
         },
         
         onShow: function() {
