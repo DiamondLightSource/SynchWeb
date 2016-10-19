@@ -456,7 +456,7 @@
             // Search
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(b.name) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(b.comments) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')) OR OR lower(b.code) LIKE lower(CONCAT(CONCAT('%',:".($st+3)."), '%')))";
+                $where .= " AND (lower(b.name) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(b.comments) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')) OR lower(b.code) LIKE lower(CONCAT(CONCAT('%',:".($st+3)."), '%')))";
                 for ($i = 0; $i < 4; $i++) array_push($args, $this->arg('s'));
             }
             
