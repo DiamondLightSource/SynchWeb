@@ -24,6 +24,8 @@ define(['marionette',
     'modules/imaging/collections/screencomponents',
     'modules/imaging/views/screencomponentgroup',
 
+    'modules/imaging/collections/imagers',
+
     'collections/users',
     
     'tpl!templates/shipment/containeradd.html',
@@ -52,6 +54,8 @@ define(['marionette',
     ScreenComponentGroups,
     ScreenComponents,
     ScreenGroupView,
+
+    Imagers,
 
     Users,
         
@@ -91,6 +95,7 @@ define(['marionette',
             schedule: 'select[name=SCHEDULEID]',
             screen: 'select[name=SCREENID]',
             pid: 'select[name=PERSONID]',
+            imager: 'select[name=REQUESTEDIMAGERID]',
         },
         
         
@@ -409,6 +414,11 @@ define(['marionette',
             this.screens = new Screens()
             this.screens.fetch().done(function() {
                 self.ui.screen.html('<option value=""> - </option>'+self.screens.opts())
+            })
+
+            this.imagers = new Imagers()
+            this.imagers.fetch().done(function() {
+                self.ui.imager.html('<option value=""> - </option>'+self.imagers.opts())
             })
 
             this.screencomponentgroups = new ScreenComponentGroups()
