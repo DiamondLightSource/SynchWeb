@@ -394,6 +394,8 @@ define(['marionette',
             
             this.cache = new Cache({ name: 'container' })
             this.ready2 = this.cache.fetch()
+
+            if (!app.user_can('disp_cont')) PlateTypes.remove(PlateTypes.findWhere({ name: 'ReferencePlate' }))
             this.ctypes = PlateTypes
             
             this.cacheContainer = _.debounce(this.cacheContainer, 3000)
