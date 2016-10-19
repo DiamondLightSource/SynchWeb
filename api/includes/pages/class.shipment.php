@@ -978,7 +978,8 @@
             
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%'))";
+                $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
+                array_push($args, $this->arg('s'));
                 array_push($args, $this->arg('s'));
             }
             
