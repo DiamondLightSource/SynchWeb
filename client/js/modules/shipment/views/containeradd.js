@@ -214,6 +214,7 @@ define(['marionette',
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.table.empty()
                 this.stable.destroy()
+                this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples })
                 this.single.show(this.singlesample)
                 this.group = new ScreenGroupView({ components: this.screencomponents, editable: false })
                 this.grp.show(this.group)
@@ -437,7 +438,6 @@ define(['marionette',
             //this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, childTemplate: row, template: table }))
             this.ui.type.html(this.ctypes.opts())
             this.setType()
-            this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples })
             
             this.ready2.done(this.loadContainerCache.bind(this))
 
