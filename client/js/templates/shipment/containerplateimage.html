@@ -105,23 +105,9 @@
         <li class="clearfix reorder">
             
             <div class="text_table">
-                <div class="adhoc">
-                    <% if (ALLOW_ADHOC == 1) { %>
-                        <select name="INSPECTIONTYPEID"></select>
-                        <a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>
-                    <% } else { %>
-                        <p>An adhoc inspection of this container has been requested</p>
-                    <% } %>
-                </div>
-
-                <div class="queue">
-                    <% if (CONTAINERQUEUEID > 0) { %>
-                        <p>This container was queued for data collection on: <%=QUEUEDTIMESTAMP%></p>
-                    <% } else { %>
-                    <a href="#" class="button prepare"><i class="fa fa-list"></i> <span>Prepare for Data Collection</span></a>
-                    <a href="#" class="button queue"><i class="fa fa-arrow-up"></i> <span>Queue for Data Collection</span></a>
-                    <% } %>
-                </div>
+                <div class="adhoc"></div>
+                <div class="queue"></div>
+                <div class="return"></div>
             </div>
             <span class="label">Actions</span>
         </li>

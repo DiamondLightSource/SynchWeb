@@ -191,6 +191,9 @@ define(['marionette',
 
             ity: 'select[name=INSPECTIONTYPEID]',
             status: 'span.sta',
+            ret: 'div.return',
+            adh: 'div.adhoc',
+            que: 'div.queue',
         },
 
         events: {
@@ -208,6 +211,7 @@ define(['marionette',
 
             'click a.queue': 'queueContainer',
             'click a.adhoc': 'requestAdhoc',
+            'click a.return': 'requestReturn',
         },
 
         modelEvents: {
@@ -216,13 +220,35 @@ define(['marionette',
 
 
         updateAdhoc: function() {
-
+            if (this.model.get('ALLOW_ADHOC') == '1') this.ui.adh.html('<a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>')
+            else this.ui.adh.html('<p>An adhoc inspection of this container has been requested</p>')
+            this.updateTypes()
         },
 
         updatedQueued: function() {
-
+            if (this.model.get('CONTAINERQUEUEID')) this.ui.que.html('<p>This container was queued for data collection at '+this.model.get('QUEUEDTIMESTAMP')+'</p>')
+            else this.ui.que.html('<a href="#" class="button prepare"><i class="fa fa-list"></i> <span>Prepare for Data Collection</span></a>\
+                    <a href="#" class="button queue"><i class="fa fa-arrow-up"></i> <span>Queue for Data Collection</span></a>')
         },
 
+        requestReturn: function(e) {
+            e.preventDefault()
+
+            var self = this
+            this.model.set({ REQUESTEDRETURN: '1' })
+            this.model.save(this.model.changedAttributes(), { 
+                patch: true,
+                success: function() {
+                    app.alert({ message: 'Return of this container to the user has been successfully requested' })
+                    self.updateReturn()
+                },
+            })
+        },
+
+        updateReturn: function() {
+            if (this.model.get('REQUESTEDRETURN') == '1') this.ui.ret.html('<p>This plate has been requested for return to the user</p>')
+            else this.ui.ret.html('<a href="#" class="button return"><i class="fa fa-paper-plane-o"></i> <span>Request Return</span></a>')
+        },
 
 
         dragHover: function(e) {
@@ -319,7 +345,7 @@ define(['marionette',
                 url: app.apiurl+'/imaging/inspection/adhoc',
                 data: {
                     cid: this.model.get('CONTAINERID'),
-                    INSPECTIONTYPEID: this.ui.ity.val(),
+                    INSPECTIONTYPEID: 1// this.ui.ity.val(),
                 },
                 success: function(resp) {
                     app.alert({ message: 'Adhoc inspection successfully requested for this container' })
@@ -480,7 +506,7 @@ define(['marionette',
             }
 
             this.inspectiontypes = new InspectionTypes()
-            this.inspectiontypes.fetch().done(this.updateTypes.bind(this))
+            this.inspectiontypes.fetch()
 
             Backbone.Validation.bind(this)
         },
@@ -596,6 +622,9 @@ define(['marionette',
                 this.subs.show(this.subtable)
             }
 
+            this.updateReturn()
+            this.updatedQueued()
+            this.updateAdhoc()
         },
         
         onShow: function() {
