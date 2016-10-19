@@ -148,7 +148,7 @@
             } else if ($this->has_arg('sid') && $this->has_arg('prop')) {
                 $info = $this->db->pq("SELECT s.blsampleid FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE s.blsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('sid'), $this->arg('prop')));
                 
-                $tables2 = array('dc', 'bes', 'r', 'xrf');
+                $tables2 = array('dc', 'es', 'r', 'xrf');
                 foreach ($tables2 as $i => $t) $sess[$i] = $t.'.blsampleid=:'.($i+1);
                 for ($i = 0; $i < 4; $i++) array_push($args, $this->arg('sid'));
                  
