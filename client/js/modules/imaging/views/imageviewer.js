@@ -52,6 +52,7 @@ define(['marionette',
     return Marionette.LayoutView.extend({
         template: template,
         className: 'image_large',
+        showBeam: false,
         
         regions: {
             hist: '.hist',
@@ -194,15 +195,18 @@ define(['marionette',
 
             this.subsamples = options.subsamples
             this.listenTo(this.subsamples, 'sync', this.plotObjects, this)
+            this.listenTo(this.subsamples, 'change:BOXSIZEX', this.plotObjects, this)
+            this.listenTo(this.subsamples, 'change:BOXSIZEY', this.plotObjects, this)
+            this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEX', this.plotObjects, this)
+            this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEY', this.plotObjects, this)
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
             this.listenTo(this.subsamples, 'remove', this.remSubsample, this)
-            
-            this.inspectionimages = options.inspectionimages
 
             this.historyimages = options.historyimages
-            this.listenTo(this.historyimages, 'selected:change', this.hChanged, this)
-
-            this.history = new ImageHistory({ historyimages: this.historyimages })
+            if (this.historyimages) {
+                this.listenTo(this.historyimages, 'selected:change', this.hChanged, this)
+                this.history = new ImageHistory({ historyimages: this.historyimages })
+            }
             
             this.img = new XHRImage()
             this.img.onload = this.onImageLoaded.bind(this)
@@ -306,8 +310,12 @@ define(['marionette',
         
         onRender: function() {
             this.ready.done(this.updateScores.bind(this))
-            this.hist.show(this.history)
-            this.hist.$el.hide()
+            if (this.historyimages) {
+                this.hist.show(this.history)
+                this.hist.$el.hide()
+            } else (this.ui.hist.hide())
+
+            if (this.getOption('scores') !== null && this.getOption('scores') === false) this.$el.find('.scoresel').hide()
             
             $(document).unbind('keypress.imviewer').bind('keypress.imviewer', this.keyPress.bind(this))
         },
@@ -350,6 +358,7 @@ define(['marionette',
                 // a - prev
                 case 97:
                     if (this.ui.hist.hasClass('button-highlight')) {
+                        if (!this.historyimages) return
                         var cur = this.historyimages.indexOf(this.model)
                         var next = this.historyimages.at(cur-1) || this.historyimages.last()
                         if (next) {
@@ -364,6 +373,7 @@ define(['marionette',
                 // d - next
                 case 100:
                     if (this.ui.hist.hasClass('button-highlight')) {
+                        if (!this.historyimages) return
                         var cur = this.historyimages.indexOf(this.model)
                         var next = this.historyimages.at(cur+1) || this.historyimages.first()
                         if (next) {
@@ -378,6 +388,7 @@ define(['marionette',
                 // q - first
                 case 113:
                     if (this.ui.hist.hasClass('button-highlight')) {
+                        if (!this.historyimages) return
                         var next = this.historyimages.first()
                         if (next) {
                             this.setModel(next)
@@ -391,6 +402,7 @@ define(['marionette',
                 // e  - last
                 case 101:
                     if (this.ui.hist.hasClass('button-highlight')) {
+                        if (!this.historyimages) return
                         var next = this.historyimages.last()
                         if (next) {
                             this.setModel(next)
@@ -855,17 +867,21 @@ define(['marionette',
                 var x2 = parseInt(options.o.get('X2'))
                 var y2 = parseInt(options.o.get('Y2'))
 
+                if (this.getOption('showBeam')) this.drawGrid(options.o)
+
                 this.ctx.beginPath()
                 this.ctx.rect(x, y, x2-x, y2-y)
                 this.ctx.stroke()
                 this.ctx.closePath()
 
             } else {
-                this.ctx.beginPath();
+                if (this.getOption('showBeam')) this.drawBeam(options.o)
+
+                this.ctx.beginPath()
                 this.ctx.moveTo(x-w,y)
                 this.ctx.lineTo(x+w,y)
                 this.ctx.stroke()
-                this.ctx.beginPath();
+                this.ctx.beginPath()
                 this.ctx.moveTo(x,y-w)
                 this.ctx.lineTo(x,y+w)
                 this.ctx.stroke()
@@ -874,8 +890,60 @@ define(['marionette',
             if (options.dashed) this.ctx.restore()
 
             this.ctx.fillStyle = options.o.get('isSelected') ? 'turquoise' : 'red'
-            this.ctx.font = parseInt(14*m)+'px Arial';
-            this.ctx.fillText(parseInt(options.o.get('RID'))+1,x-(m*15), y-(m*6));
+            this.ctx.font = parseInt(14*m)+'px Arial'
+            this.ctx.fillText(parseInt(options.o.get('RID'))+1,x-(m*15), y-(m*6))
+        },
+
+        drawBeam: function(o) {
+            if (!o.get('PREFERREDBEAMSIZEX') || !o.get('PREFERREDBEAMSIZEY')) return
+
+            var mppx = (this.model.get('MICRONSPERPIXELX') || 3) * this.scalef
+            var mppy = (this.model.get('MICRONSPERPIXELY') || 3) * this.scalef
+
+            this.ctx.save()
+            this.ctx.setLineDash([3/this.scalef,3/this.scalef])
+            this.ctx.strokeStyle = 'red'
+            this.ctx.lineWidth = 1
+            this.ctx.beginPath()
+            this.ctx.ellipse(parseInt(o.get('X')), parseInt(o.get('Y')), (mppx * parseInt(o.get('PREFERREDBEAMSIZEX')))/2, (mppy * parseInt(o.get('PREFERREDBEAMSIZEY')))/2, 0, 0, Math.PI*2)
+            this.ctx.closePath()
+            this.ctx.stroke()
+            this.ctx.restore()
+        },
+
+        drawGrid: function(o) {
+            if (!o.get('BOXSIZEX') || !o.get('BOXSIZEY')) return
+            if (o.get('BOXSIZEX') == 0 || o.get('BOXSIZEY') == 0) return
+
+            var mppx = this.model.get('MICRONSPERPIXELX') || 3
+            var mppy = this.model.get('MICRONSPERPIXELY') || 3
+
+            var px = mppx * parseInt(o.get('BOXSIZEX'))
+            var py = mppy * parseInt(o.get('BOXSIZEY'))
+
+            this.ctx.save()
+            this.ctx.setLineDash([5/this.scalef,5/this.scalef])
+            this.ctx.strokeStyle = 'red'
+            this.ctx.lineWidth = 1
+
+            var x = parseInt(o.get('X'))
+            var y = parseInt(o.get('Y'))
+            var x2 = parseInt(o.get('X2'))
+            var y2 = parseInt(o.get('Y2'))
+
+            for (var i = x+px; i < x2; i += px) {
+                this.ctx.moveTo(i,o.get('Y'))
+                this.ctx.lineTo(i,o.get('Y2'))
+                this.ctx.stroke()
+            }
+
+            for (var i = y+py; i < y2; i += py) {
+                this.ctx.moveTo(o.get('X'),i)
+                this.ctx.lineTo(o.get('X2'),i)
+                this.ctx.stroke()
+            }
+
+            this.ctx.restore()
         },
 
 
