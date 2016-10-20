@@ -75,6 +75,17 @@
                               'EXPOSURETIME' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEX' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEY' => '\d+(.\d+)?',
+                              'BOXSIZEX' => '\d+',
+                              'BOXSIZEY' => '\d+',
+                              'NUMBEROFIMAGES' => '\d+',
+                              'AXISSTART' => '\d+(.\d+)?',
+                              'AXISRANGE' => '\d+(.\d+)?',
+                              'TRANSMISSION' => '\d+(.\d+)?',
+                              'WAVELENGTH' => '\d+(.\d+)?',
+                              'MONOCHROMATOR' => '\w+',
+
+                              'queued' => '\d',
+                              'UNQUEUE' => '\d',
 
                                );
         
@@ -92,6 +103,7 @@
                               array('/sub/:ssid', 'put', '_update_sub_sample_full'),
                               array('/sub', 'post', '_add_sub_sample'),
                               array('/sub/:ssid', 'delete', '_delete_sub_sample'),
+                              array('/sub/queue/:BLSUBSAMPLEID', 'get', '_pre_q_sub_sample'),
 
                               array('/plan', 'get', '_get_diffraction_plans'),
                               array('/plan', 'post', '_add_diffraction_plan'),
@@ -112,40 +124,8 @@
         );
 
 
-
-        function _q_container() {
-            if ($this->has_arg('CONTAINERID')) $this->_error('No container specified');
-
-            $chkc = $this->db->pq("SELECT c.containerid FROM container c 
-                INNER JOIN dewar d ON c.dewarid = d.dewarid 
-                INNER JOIN shipping s ON s.shippingid = d.shippingid 
-                INNER JOIN proposal p ON p.proposalid = s.proposalid 
-                WHERE c.containerid=:1 AND p.proposalid=:2", array($this->arg('CONTAINERID'), $this->proposalid));
-            
-            if (!sizeof($chkc)) $this->_error('No such container');
-
-            $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
-            $qid = $this->db->id();
-
-            $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
-              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
-              INNER JOIN container c ON c.containerid = s.containerid
-              INNER JOIN dewar d ON d.dewarid = c.dewarid
-              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
-              INNER JOIN proposal p ON p.proposalid = sh.proposalid
-              INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
-              WHERE p.proposalid=:1 AND c.containerid=:2", array($this->proposalid, $this->arg('CONTAINERID')));
-
-            foreach ($samples as $s) {
-                $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
-            }
-
-            $this->_output(array('CONTAINERQUEUEID' => $qid));
-        }
-
-
         function _pre_q_sub_sample() {
-            if ($this->has_arg('BLSUBSAMPLEID')) $this->_error('No subsample specified');
+            if (!$this->has_arg('BLSUBSAMPLEID')) $this->_error('No subsample specified');
 
             $samp = $this->db->pq("SELECT ss.diffractionplanid,s.blsampleid,ss.positionid FROM blsubsample ss
               INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
@@ -157,7 +137,13 @@
 
             if (!sizeof($samp)) $this->_error('No such sub sample');
 
-            $this->db->pq("INSERT INTO containerqueuesample (blsubsampleid) VALUES (:1)", array($this->arg("BLSUBSAMPLEID")));
+            if ($this->has_arg('UNQUEUE')) {
+                $this->db->pq("DELETE FROM containerqueuesample WHERE blsubsampleid=:1 AND containerqueueid IS NULL", array($this->arg('BLSUBSAMPLEID')));
+
+            } else {
+                $this->db->pq("INSERT INTO containerqueuesample (blsubsampleid) VALUES (:1)", array($this->arg("BLSUBSAMPLEID")));
+                $this->_output(array('CONTAINERQUEUESAMPLEID' => $this->db->id()));
+            }
         }
 
 
@@ -212,7 +198,11 @@
                 array_push($args, $this->arg('cid'));
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue
+            if ($this->has_arg('queued')) {
+                $where .= ' AND cqs.containerqueuesampleid IS NOT NULL';
+            }
+
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.wavelength, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue, cqs.containerqueuesampleid
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
@@ -262,7 +252,7 @@
             }
 
             if ($samp[0]['DIFFRACTIONPLANID']) {
-                foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME') as $f) {
+                foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'WAVELENGTH', 'MONOCHROMATOR') as $f) {
                     if ($this->has_arg($f)) {
                         $this->db->pq('UPDATE diffractionplan SET '.$f.'=:1 WHERE diffractionplanid=:2', array($this->arg($f), $samp[0]['DIFFRACTIONPLANID']));
                         $this->_output(array($f => $this->arg($f)));
@@ -306,11 +296,12 @@
 
             if ($samp[0]['DIFFRACTIONPLANID']) {
                 $args = array($samp[0]['DIFFRACTIONPLANID']);
-                foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME') as $f) {
+                foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 
+                  'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'WAVELENGTH', 'MONOCHROMATOR') as $f) {
                     array_push($args, $this->has_arg($f) ? $this->arg($f) : null);
                 }
                 $this->db->pq('UPDATE diffractionplan 
-                  SET requiredresolution=:2, experimentkind=:3, preferredbeamsizex=:4, preferredbeamsizey=:5, exposuretime=:6 
+                  SET requiredresolution=:2, experimentkind=:3, preferredbeamsizex=:4, preferredbeamsizey=:5, exposuretime=:6, boxsizex=:7, boxsizey=:8, axisstart=:9, axisrange=:10, numberofimages=:11, transmission=:12, wavelength=:13, monochromator=:14 
                   WHERE diffractionplanid=:1', $args);
 
                 $this->_output(array('BLSUBSAMPLEID' => $this->arg('ssid')));
@@ -349,8 +340,9 @@
                 $pid2 = $this->db->id();
             } else $pid2 = null;
 
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid) 
-              VALUES (s_diffractionplan.nextval) RETURNING diffractionplanid INTO :id");
+            $exp = ($x2 && $y2) ? 'MESH' : 'SAD';
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid,experimentkind) 
+              VALUES (s_diffractionplan.nextval,:1) RETURNING diffractionplanid INTO :id", array($exp));
             $did = $this->db->id();
 
             $this->db->pq("INSERT INTO blsubsample (blsubsampleid, blsampleid, positionid, position2id, diffractionplanid) 
@@ -1034,18 +1026,17 @@
 
 
         function _get_diffraction_plans() {
-            $where = '';
-            $args = array();//$this->proposalid);
+            $where = 'dp.presetforproposalid=:1 OR dp.presetforproposalid=:2';
+            $args = array($this->proposalid, 37159);
 
             if ($this->has_arg('did')) {
                 $where .= ' AND dp.diffractionplanid = :'.(sizeof($args)+1);
                 array_push($args, $this->arg('did'));
             }
 
-            $dps = $this->db->pq("SELECT dp.diffractionplanid, dp.comments, dp.complexity,
-              dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 1) as exposuretime, ROUND(dp.requiredresolution, 1) as requiredresolution
+            $dps = $this->db->pq("SELECT dp.diffractionplanid, dp.comments, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 2) as exposuretime, ROUND(dp.requiredresolution, 2) as requiredresolution, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, wavelength as energy, monochromator
               FROM diffractionplan dp
-              WHERE dp.complexity = 'PRESET' $where
+              WHERE $where
             ", $args);
 
             if ($this->has_arg('did')) {
@@ -1059,13 +1050,13 @@
         function _add_diffraction_plan() {
             if (!$this->has_arg('COMMENTS')) $this->_error('No name specified');
 
-            $args = array('PRESET', $this->arg('COMMENTS'));
-            foreach(array('EXPERIMENTKIND', 'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME') as $f) {
+            $args = array($this->arg('COMMENTS'), $this->proposalid);
+            foreach(array('EXPERIMENTKIND', 'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'WAVELENGTH', 'MONOCHROMATOR') as $f) {
                 array_push($args, $this->has_arg($f) ? $this->arg($f) : null);
             } 
 
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, complexity, comments, experimentkind, requiredresolution, preferredbeamsizex, preferredbeamsizey, exposuretime)
-              VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7) RETURNING diffractionplanid INTO :id", $args);
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, comments, presetforproposalid, experimentkind, requiredresolution, preferredbeamsizex, preferredbeamsizey, exposuretime, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, wavelength, monochromator)
+              VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15) RETURNING diffractionplanid INTO :id", $args);
 
             $this->_output(array('DIFFRACTIONPLANID' => $this->db->id()));
         }
