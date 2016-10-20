@@ -1,25 +1,41 @@
-<h1>Queue Container for Data Collection</h1>
+<h1>Prepare Container for Data Collection</h1>
 
-<p class="help">This pages allows you to queue a container for data collection</p>
+<p class="help">This pages allows you to queue samples in a container for data collection</p>
 
-<div class="form">
-    <ul>
-        <li>
-            <span class="label">Container</span>
-            <span class="NAME"><%=NAME%></span>
-        </li>
+<div class="clearfix">
+    <div class="image right"></div>
+    <div class="left">
+        <div class="form">
+            <ul>
+                <li>
+                    <span class="label">Container</span>
+                    <span class="NAME"><%=NAME%></span>
+                </li>
 
-        <li>
-            <span class="label">Type</span>
-            <span class="CONTAINERTYPE"><%=CONTAINERTYPE%></span>
-        </li>
-    </ul>
+                <li>
+                    <span class="label">Type</span>
+                    <span class="CONTAINERTYPE"><%=CONTAINERTYPE%></span>
+                </li>
+            </ul>
+        </div>
+
+        <h2>Available Samples</h2>
+        <span class="ra">
+            <a href="#" class="button add"><i class="fa fa-plus"></i> <span>Add All to Queue</span></a>
+        </span>
+        <div class="asamples"></div>
+    </div>
 </div>
 
-<h2>Marked Samples</h2>
-<p class="help">Data will only be collected for samples with a defined experiment plan</p>
-<div class="subsamples"></div>
+<h2>Queued Samples</h2>
+<div class="r">
+Presets: <select name="preset"></select> <a href="#" class="button apply" title="Apply this preset to the selected samples"><i class="fa fa-file-o"></i> Apply</a>
+</div>
+<div class="filter filter-nohide qfilt"></div>
+<div class="qsamples"></div>
 
+<h2>Enqueue Plate</h2>
+<p>Enquing the container will make it immutable, please make sure you have added all sub samples, and that they have valid experimental plans. Invalid experimental plans will be ignored</p>
 <div class="form">
     <button name="submit" value="1" type="submit" class="button submit">Queue Container</button>
 </div>
