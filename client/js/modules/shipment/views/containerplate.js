@@ -18,8 +18,6 @@ define(['marionette',
     'modules/imaging/views/addinspection',
     'modules/imaging/views/actualschedule',
     'modules/imaging/views/subtosample',
-    'modules/imaging/views/ssdiffractionplan',
-    'modules/imaging/views/queuecontainer',
     
     'modules/imaging/collections/screencomponentgroups',
     'modules/imaging/collections/screencomponents',
@@ -47,7 +45,7 @@ define(['marionette',
     SingleSample,
 
     ContainerInspections, InspectionImage, InspectionImages, ImageViewer, ImageHistoryView,
-    AddInspectionView, ActualScheduleView, SubToSampleView, SSDiffractionPlan, QueueContainerView,
+    AddInspectionView, ActualScheduleView, SubToSampleView,
 
     ScreenComponentGroups,
     ScreenComponents,
@@ -104,17 +102,6 @@ define(['marionette',
             e.preventDefault()
         },
 
-        details: function(e) {
-            e.preventDefault()
-
-            app.dialog.show(new DialogView({ 
-                title: 'View Subsample Details',
-                className: 'content', 
-                view: new SSDiffractionPlan({ dialog: true, model: this.model }),
-                autoSize: true 
-            }))  
-        },
-
         render: function() {
             this.$el.empty();
 
@@ -123,7 +110,6 @@ define(['marionette',
 
             this.$el.html('<!--<a href="#" class="button button-notext measure" title="Measure"><i class="fa fa-arrows-h"></i> <span>Measure</span></a>-->\
              <a href="#" class="button button-notext fish '+active2+'" title="Fish into puck"><i class="fa fa-crosshairs"></i> <span>Fish</span></a>\
-             <!--<a href="#" class="button button-notext details '+active+'" title="View Experimental Parameters"><i class="fa fa-flask"></i> <span>Experimental Parameters</span></a>-->\
              <a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>')
             
             this.delegateEvents();
@@ -209,7 +195,6 @@ define(['marionette',
             'dragleave @ui.drop': 'dragHover',
             'drop @ui.drop': 'uploadFile',
 
-            'click a.queue': 'queueContainer',
             'click a.adhoc': 'requestAdhoc',
             'click a.return': 'requestReturn',
         },
@@ -226,9 +211,8 @@ define(['marionette',
         },
 
         updatedQueued: function() {
-            if (this.model.get('CONTAINERQUEUEID')) this.ui.que.html('<p>This container was queued for data collection at '+this.model.get('QUEUEDTIMESTAMP')+'</p>')
-            else this.ui.que.html('<a href="#" class="button prepare"><i class="fa fa-list"></i> <span>Prepare for Data Collection</span></a>\
-                    <a href="#" class="button queue"><i class="fa fa-arrow-up"></i> <span>Queue for Data Collection</span></a>')
+            if (this.model.get('CONTAINERQUEUEID')) this.ui.que.html('<p>This container was queued for data collection at '+this.model.get('QUEUEDTIMESTAMP')+' <a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa fa-list"></i> <span>View Sample Queue</span></a></p>')
+            else this.ui.que.html('<a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa fa-list"></i> <span>Prepare for Data Collection</span></a>')
         },
 
         requestReturn: function(e) {
@@ -324,16 +308,6 @@ define(['marionette',
         showViewSchedule: function(e) {
             e.preventDefault()
             app.dialog.show(new DialogView({ title: 'View Inspection Schedule', className: 'content', view: new ActualScheduleView({ dialog: true, CONTAINERID: this.model.get('CONTAINERID') }), autoSize: true }))
-        },
-
-
-        queueContainer: function(e) {
-            e.preventDefault()
-            app.dialog.show(new DialogView({ 
-                title: 'Queue Container for Data Collection',
-                className: 'content', 
-                view: new QueueContainerView({ dialog: true, model: this.model, autoSize: true, type: this.type })
-            }))
         },
 
 
@@ -734,6 +708,7 @@ define(['marionette',
         },
 
         onDestroy: function() {
+            clearTimeout(this.cachethread)
             this.caching = false
         },
     })
