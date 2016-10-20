@@ -7,6 +7,7 @@ require.config({
     'backbone-validation': 'vendor/backbone/backbone-validation',
     backgrid: 'vendor/backbone/backgrid',
     'backgrid-paginator': 'vendor/backbone/backgrid-paginator',
+    'backgrid-select-all': 'vendor/backbone/backgrid-select-all',
     
     
     'jquery': 'vendor/jquery/jquery-1.9.1.min',
@@ -85,6 +86,11 @@ require.config({
 
     'backgrid-paginator': {
       exports: 'Backgrid.Extension.Paginator',
+        deps: ['backgrid']
+    },
+
+    'backgrid-select-all': {
+      // exports: 'Backgrid.Extension.SelectCell',
         deps: ['backgrid']
     },
     
