@@ -23,7 +23,12 @@ define(['backbone'], function(Backbone) {
             SCHEDULEID: {
                 required: false,
                 pattern: 'number',
-            }
+            },
+
+            REQUESTEDIMAGERID: {
+                required: false,
+                pattern: 'number',
+            },
         },
         
     })
