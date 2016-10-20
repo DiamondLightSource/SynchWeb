@@ -1048,25 +1048,36 @@
         
 
         function _queue_container() {
-            if (!$this->has_arg('cid')) $this->_error('No container specified');
+            if ($this->has_arg('CONTAINERID')) $this->_error('No container specified');
 
-            $chkc = $this->db->pq("SELECT c.containerid 
-              FROM container c 
-              INNER JOIN dewar d ON c.dewarid = d.dewarid 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid 
-              WHERE c.containerid=:1 AND p.proposalid=:2", array($this->arg('cid'), $this->proposalid));
+            $chkc = $this->db->pq("SELECT c.containerid FROM container c 
+                INNER JOIN dewar d ON c.dewarid = d.dewarid 
+                INNER JOIN shipping s ON s.shippingid = d.shippingid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid 
+                WHERE c.containerid=:1 AND p.proposalid=:2", array($this->arg('CONTAINERID'), $this->proposalid));
+            
+            if (!sizeof($chkc)) $this->_error('No such container');
 
-            $chkq = $this->db->pq("SELECT containerid FROM containerdataschedule WHERE containerid=:1", $this->arg('cid'));
+            $chkq = $this->db->pq("SELECT containerid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL");
+            if (sizeof($chkq)) $this->_error('That container is already queued');
 
-            if (sizeof($chkc) && !sizeof($chkq)) {
-                if (!sizeof($chkq)) {
-                  $this->db->pq("INSERT INTO containerdataschedule (containerdatascheduleid, containerid, bltimestamp)
-                    VALUE (s_containerdataschedule.nextval, :1, CURRENT_TIMESTAMP)", array($this->arg('cid')));
-                  $this->_output(1);
+            $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
+            $qid = $this->db->id();
 
-                } else $this->_error('That container is already in the queue');
+            $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
+              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+              INNER JOIN container c ON c.containerid = s.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+              WHERE p.proposalid=:1 AND c.containerid=:2", array($this->proposalid, $this->arg('CONTAINERID')));
+
+            foreach ($samples as $s) {
+                $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
             }
+
+            $this->_output(array('CONTAINERQUEUEID' => $qid));
         }
 
         
