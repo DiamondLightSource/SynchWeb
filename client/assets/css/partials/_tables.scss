@@ -248,6 +248,15 @@
         }
     }
 
+    table.subsamples {
+        table td {
+            text-align: left;
+            input {
+                width: auto;
+            }
+        }
+    }
+
     div.dataTables_wrapper {
         background-color: $content-background;
     }
