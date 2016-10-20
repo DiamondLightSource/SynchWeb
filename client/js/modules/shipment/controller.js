@@ -13,6 +13,7 @@ define(['marionette',
         'modules/shipment/views/containerplate',
         'modules/shipment/views/containeradd',
         'modules/shipment/views/containers',
+        'modules/imaging/views/queuecontainer',
 
         'modules/shipment/models/dewarregistry',
         'modules/shipment/collections/dewarregistry',
@@ -29,7 +30,7 @@ define(['marionette',
 ], function(Marionette,
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView,
-    Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView,
+    Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView, QueueContainerView,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
     DispatchView, TransferView, Dewars, DewarOverview) {
     
@@ -115,6 +116,22 @@ define(['marionette',
             error: function() {
                 app.bc.reset([bc, { title: 'Error' }])
                 app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+            },
+        })
+    },
+
+
+
+    queue_container: function(cid) {
+        var container = new Container({ CONTAINERID: cid })
+        container.fetch({
+            success: function() {
+                app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }, { title: 'Queue Samples' }])
+                app.content.show(new QueueContainerView({ model: container }))
+            },
+            error: function() {
+                app.bc.reset([bc, { title: 'Error' }])
+                app.message({ title: 'No such container', message: 'The specified container could not be found'})
             },
         })
     },
