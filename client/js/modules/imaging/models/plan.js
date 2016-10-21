@@ -26,52 +26,52 @@ define(['backbone'], function(Backbone) {
             },
 
             PREFERREDBEAMSIZEX: {
-                required: true,
+                required: false,
                 pattern: 'number',
             },
 
             PREFERREDBEAMSIZEY: {
-                required: true,
+                required: false,
                 pattern: 'number',
             },
 
             BOXSIZEX: {
-                required: true,
+                required: false,
                 pattern: 'digits',
             },
 
             BOXSIZEY: {
-                required: true,
+                required: false,
                 pattern: 'digits',
             },
 
             AXISRANGE: {
-                required: true,
+                required: false,
                 pattern: 'number',
             },
 
             AXISSTART: {
-                required: true,
+                required: false,
                 pattern: 'number',
             },
 
             NUMBEROFIMAGES: {
-                required: true,
+                required: false,
                 pattern: 'digits',
             },
 
             TRANSMISSION: {
-                required: true,
+                required: false,
                 pattern: 'number',
             },
 
-            WAVELENGTH: {
-                required: true,
+            ENERGY: {
+                required: false,
                 pattern: 'digits',
             },
 
             MONOCHROMATOR: {
-                required: true,
+                required: false,
                 pattern: 'word',
             },
         },
