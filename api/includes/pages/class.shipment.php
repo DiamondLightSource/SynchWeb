@@ -596,6 +596,7 @@
                         'WC' => 'With Courier',
                         'OK' => 'Delivered',
                         'AR' => 'Arrived at Facility',
+                        'TR' => 'In Transit'
                     );
 
                     $events = array();
