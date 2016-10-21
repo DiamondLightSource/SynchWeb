@@ -202,7 +202,7 @@
                 $where .= ' AND cqs.containerqueuesampleid IS NOT NULL';
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue, cqs.containerqueuesampleid
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueuesampleid IS NULL, 1, 0) as readyforqueue, max(cqs.containerqueueid) as containerqueueid
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
@@ -214,7 +214,8 @@
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = sh.proposalid
-              LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid AND cqs.containerqueueid IS NULL
+              LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+              LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
 
               LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
 
