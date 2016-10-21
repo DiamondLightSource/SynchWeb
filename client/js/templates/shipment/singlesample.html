@@ -15,8 +15,9 @@
     </div>
     <% } %>
 
-    <form method="post" id="add_contact">
+    <form>
 
+    <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
     <div class="form">
         <ul>
             <li>
@@ -25,7 +26,7 @@
             </li>
             <li>
                 <label>Sample Name</label>
-                <input type="text" name="NAME">
+                <input type="text" name="NAME" />
             </li>
             <li>
                 <label>Spacegroup</label>
@@ -33,7 +34,43 @@
             </li>
             <li>
                 <label>Comments</label>
-                <input type="text" name="COMMENTS">
+                <input type="text" name="COMMENTS" />
+            </li>
+
+            <li class="extra">
+                <label>Required Res</label>
+                <input type="text" name="REQUIREDRESOLUTION" />
+            </li>
+            <li class="extra">
+                <label>Anom Scatterer</label>
+                <select name="ANOMALOUSSCATTERER"></select>
+            </li>
+            <li class="extra clearifx reorder">
+                <div class="text_table table">
+                    <table class="reflow cell">      
+                        <thead>            
+                            <tr>
+                                <th>A</th>
+                                <th>B</th>
+                                <th>C</th>
+                                <th>&alpha;</th>
+                                <th>&beta;</th>
+                                <th>&gamma;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>                                
+                                <td><input type="text" name="CELL_A" /></td>
+                                <td><input type="text" name="CELL_B" /></td>
+                                <td><input type="text" name="CELL_C" /></td>
+                                <td><input type="text" name="CELL_ALPHA" /></td>
+                                <td><input type="text" name="CELL_BETA" /></td>
+                                <td><input type="text" name="CELL_GAMMA" /></td>
+                            </tr> 
+                        </tbody>    
+                    </table>
+                </div>
+                <label>Unit Cell</label>
             </li>
         </ul>
     </div>
