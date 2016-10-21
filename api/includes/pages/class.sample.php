@@ -81,7 +81,7 @@
                               'AXISSTART' => '\d+(.\d+)?',
                               'AXISRANGE' => '\d+(.\d+)?',
                               'TRANSMISSION' => '\d+(.\d+)?',
-                              'WAVELENGTH' => '\d+(.\d+)?',
+                              'ENERGY' => '\d+(.\d+)?',
                               'MONOCHROMATOR' => '\w+',
 
                               'queued' => '\d',
@@ -202,7 +202,7 @@
                 $where .= ' AND cqs.containerqueuesampleid IS NOT NULL';
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.wavelength, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue, cqs.containerqueuesampleid
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL, 1, 0) as readyforqueue, cqs.containerqueuesampleid
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
@@ -252,7 +252,7 @@
             }
 
             if ($samp[0]['DIFFRACTIONPLANID']) {
-                foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'WAVELENGTH', 'MONOCHROMATOR') as $f) {
+                foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR') as $f) {
                     if ($this->has_arg($f)) {
                         $this->db->pq('UPDATE diffractionplan SET '.$f.'=:1 WHERE diffractionplanid=:2', array($this->arg($f), $samp[0]['DIFFRACTIONPLANID']));
                         $this->_output(array($f => $this->arg($f)));
@@ -297,11 +297,11 @@
             if ($samp[0]['DIFFRACTIONPLANID']) {
                 $args = array($samp[0]['DIFFRACTIONPLANID']);
                 foreach(array('REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 
-                  'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'WAVELENGTH', 'MONOCHROMATOR') as $f) {
+                  'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR') as $f) {
                     array_push($args, $this->has_arg($f) ? $this->arg($f) : null);
                 }
                 $this->db->pq('UPDATE diffractionplan 
-                  SET requiredresolution=:2, experimentkind=:3, preferredbeamsizex=:4, preferredbeamsizey=:5, exposuretime=:6, boxsizex=:7, boxsizey=:8, axisstart=:9, axisrange=:10, numberofimages=:11, transmission=:12, wavelength=:13, monochromator=:14 
+                  SET requiredresolution=:2, experimentkind=:3, preferredbeamsizex=:4, preferredbeamsizey=:5, exposuretime=:6, boxsizex=:7, boxsizey=:8, axisstart=:9, axisrange=:10, numberofimages=:11, transmission=:12, energy=:13, monochromator=:14 
                   WHERE diffractionplanid=:1', $args);
 
                 $this->_output(array('BLSUBSAMPLEID' => $this->arg('ssid')));
@@ -1034,7 +1034,7 @@
                 array_push($args, $this->arg('did'));
             }
 
-            $dps = $this->db->pq("SELECT dp.diffractionplanid, dp.comments, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 2) as exposuretime, ROUND(dp.requiredresolution, 2) as requiredresolution, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, wavelength as energy, monochromator
+            $dps = $this->db->pq("SELECT dp.diffractionplanid, dp.comments, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 2) as exposuretime, ROUND(dp.requiredresolution, 2) as requiredresolution, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy as energy, monochromator
               FROM diffractionplan dp
               WHERE $where
             ", $args);
@@ -1051,11 +1051,11 @@
             if (!$this->has_arg('COMMENTS')) $this->_error('No name specified');
 
             $args = array($this->arg('COMMENTS'), $this->proposalid);
-            foreach(array('EXPERIMENTKIND', 'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'WAVELENGTH', 'MONOCHROMATOR') as $f) {
+            foreach(array('EXPERIMENTKIND', 'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR') as $f) {
                 array_push($args, $this->has_arg($f) ? $this->arg($f) : null);
             } 
 
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, comments, presetforproposalid, experimentkind, requiredresolution, preferredbeamsizex, preferredbeamsizey, exposuretime, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, wavelength, monochromator)
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, comments, presetforproposalid, experimentkind, requiredresolution, preferredbeamsizex, preferredbeamsizey, exposuretime, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy, monochromator)
               VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15) RETURNING diffractionplanid INTO :id", $args);
 
             $this->_output(array('DIFFRACTIONPLANID' => $this->db->id()));
