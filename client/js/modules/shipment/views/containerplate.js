@@ -385,6 +385,7 @@ define(['marionette',
         },
 
         preCache: function(n) {
+            return
             clearTimeout(this.cachethread)
             
             var self = this
@@ -396,7 +397,7 @@ define(['marionette',
                     self.plateView.drawPlate()
 
                     if (n+1 == self.inspectionimages.length) self.ui.status.html('')
-                    else self.ui.status.html('Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
+                    else self.ui.status.html('| Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
 
                     self.cachethread = setTimeout(function() {
                         self.preCache(++n)
@@ -596,6 +597,8 @@ define(['marionette',
                         { name: 'X', label: 'X', cell: 'string', editable: false },
                         { name: 'Y', label: 'Y', cell: 'string', editable: false },
                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
+                        { label: '', cell: table.StatusCell, editable: false },
+                        { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%=BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
                 ]
 
                 if (!this.model.get('CONTAINERQUEUEID')) columns.push({ label: '', cell: ActionCell, editable: false })
