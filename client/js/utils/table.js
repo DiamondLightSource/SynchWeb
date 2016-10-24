@@ -57,7 +57,21 @@ define(['marionette', 'backgrid', 'modules/projects/views/addto'], function(Mari
                 return this;
             }
         }),
-        
+
+        StatusCell: Backgrid.Cell.extend({
+            render: function() {
+                this.$el.empty()
+                
+                var st = ''
+                _.each(['R', 'SC', 'AI', 'DC', 'AP'], function(t) {
+                    if (this.model.get(t) > 0) st = '<li class="'+t+'"></li>'
+                }, this)
+                
+                if (st) this.$el.append('<ul class="status">'+st+'</ul>')
+                
+                return this
+            }
+        }),
     }
     
 })
