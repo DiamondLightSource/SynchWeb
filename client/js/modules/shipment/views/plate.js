@@ -41,6 +41,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
             
             this.hover = {}
             this.showImageStatus = this.getOption('showImageStatus')
+            this.showSampleStatus = this.getOption('showSampleStatus')
             
             Backbone.Validation.bind(this, {
                 collection: this.collection
@@ -51,6 +52,12 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
             this.inspectionimages = imgs
             this.showImageStatus = true
             if (this.inspectionimages) this.listenTo(this.inspectionimages, 'sync', this.render, this)
+        },
+
+        setShowSampleStatus: function(status) {
+            this.showSampleStatus = status
+            this.showImageStatus = !status
+            this.drawPlate()
         },
         
         
@@ -169,7 +176,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                             this.ctx.strokeStyle = 'cyan'
                             
                         } else if (sample && sample.get('PROTEINID') > -1) {
-                            if (this.getOption('showImageStatus')) {
+                            if (this.showImageStatus) {
                                 if (im) {
                                     if (im.urlFor('full') in app.imagecache) this.ctx.strokeStyle = '#000'
                                     else this.ctx.strokeStyle = '#aaa'
