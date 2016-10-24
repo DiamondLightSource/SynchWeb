@@ -180,6 +180,7 @@ define(['marionette',
             ret: 'div.return',
             adh: 'div.adhoc',
             que: 'div.queue',
+            ss: 'input[name=sample_status]',
         },
 
         events: {
@@ -197,12 +198,17 @@ define(['marionette',
 
             'click a.adhoc': 'requestAdhoc',
             'click a.return': 'requestReturn',
+            'change @ui.ss': 'toggleSampleStatus',
         },
 
         modelEvents: {
             'change:QUEUED': 'updatedQueued',
         },
 
+
+        toggleSampleStatus: function(e) {
+            this.plateView.setShowSampleStatus(this.ui.ss.is(':checked'))
+        },
 
         updateAdhoc: function() {
             if (this.model.get('ALLOW_ADHOC') == '1') this.ui.adh.html('<a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>')
@@ -590,8 +596,9 @@ define(['marionette',
                         { name: 'X', label: 'X', cell: 'string', editable: false },
                         { name: 'Y', label: 'Y', cell: 'string', editable: false },
                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
-                        { label: '', cell: ActionCell, editable: false },
                 ]
+
+                if (!this.model.get('CONTAINERQUEUEID')) columns.push({ label: '', cell: ActionCell, editable: false })
                         
                 this.subtable = new TableView({ collection: this.subsamples, columns: columns, tableClass: 'subsamples', loading: false, pages: false, backgrid: { row: ClickableRow, emptyText: 'No subsamples found', } })
                 this.subs.show(this.subtable)
@@ -646,7 +653,7 @@ define(['marionette',
 
                 this.startendimages = new InspectionImages()
 
-                this.image = new ImageViewer({ subsamples: this.subsamples, inspectionimages: this.inspectionimages, historyimages: this.historyimages })
+                this.image = new ImageViewer({ subsamples: this.subsamples, inspectionimages: this.inspectionimages, historyimages: this.historyimages, move: !this.model.get('CONTAINERQUEUEID') })
                 this.listenTo(this.image, 'space', this.playInspection, this)
                 this.listenTo(this.image, 'image:next', this.nextImage, this)
                 this.listenTo(this.image, 'image:prev', this.prevImage, this)
