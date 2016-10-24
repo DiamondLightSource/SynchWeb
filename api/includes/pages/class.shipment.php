@@ -83,6 +83,7 @@
                               'REQUESTEDRETURN' => '\d',
                               'REQUESTEDIMAGERID' => '\d+',
                               'CONTAINERID' => '\d+',
+                              'UNQUEUE' => '\d',
                               );
         
 
@@ -1061,26 +1062,38 @@
             
             if (!sizeof($chkc)) $this->_error('No such container');
 
-            $chkq = $this->db->pq("SELECT containerid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
-            if (sizeof($chkq)) $this->_error('That container is already queued');
 
-            $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
-            $qid = $this->db->id();
+            if ($this->has_arg('UNQUEUE')) {
+                $chkq = $this->db->pq("SELECT containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
+                if (!sizeof($chkq)) $this->_error('That container is not queued');
+                $cqid = $chkq[0]['CONTAINERQUEUEID'];
 
-            $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
-              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
-              INNER JOIN container c ON c.containerid = s.containerid
-              INNER JOIN dewar d ON d.dewarid = c.dewarid
-              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
-              INNER JOIN proposal p ON p.proposalid = sh.proposalid
-              INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
-              WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL", array($this->proposalid, $this->arg('CONTAINERID')));
+                $this->db->pq("UPDATE containerqueuesample SET containerqueueid = NULL WHERE containerqueueid=:1", array($cqid));
+                $this->db->pq("DELETE FROM containerqueue WHERE containerqueueid=:1", array($cqid));
+                $this->_output(new stdClass);
 
-            foreach ($samples as $s) {
-                $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
+            } else {
+                $chkq = $this->db->pq("SELECT containerid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
+                if (sizeof($chkq)) $this->_error('That container is already queued');
+
+                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
+                $qid = $this->db->id();
+
+                $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
+                  INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+                  INNER JOIN container c ON c.containerid = s.containerid
+                  INNER JOIN dewar d ON d.dewarid = c.dewarid
+                  INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                  INNER JOIN proposal p ON p.proposalid = sh.proposalid
+                  INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+                  WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL", array($this->proposalid, $this->arg('CONTAINERID')));
+
+                foreach ($samples as $s) {
+                    $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
+                }
+
+                $this->_output(array('CONTAINERQUEUEID' => $qid));
             }
-
-            $this->_output(array('CONTAINERQUEUEID' => $qid));
         }
 
         
