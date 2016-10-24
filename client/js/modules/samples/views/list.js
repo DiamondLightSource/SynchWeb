@@ -104,7 +104,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
   })
 
   module.SnapshotCell = SnapshotCell
-  module.StatusCell = StatusCell
+  module.StatusCell = table.StatusCell
 
 
   return module
