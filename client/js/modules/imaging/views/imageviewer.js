@@ -315,6 +315,7 @@ define(['marionette',
                 this.hist.$el.hide()
             } else (this.ui.hist.hide())
 
+            if (this.getOption('move') !== null && this.getOption('move') == false) this.ui.move.hide()
             if (this.getOption('scores') !== null && this.getOption('scores') === false) this.$el.find('.scoresel').hide()
             
             $(document).unbind('keypress.imviewer').bind('keypress.imviewer', this.keyPress.bind(this))
