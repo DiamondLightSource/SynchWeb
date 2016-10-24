@@ -210,7 +210,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                         }
                         
                         // Show status
-                        if (sample && this.getOption('showStatus')) {
+                        if (sample && this.showSampleStatus) {
                             var colors = {
                                 SC: '#fdfd96',
                                 AI: '#ffb347',
@@ -218,9 +218,14 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                                 AP: '#77dd77',
                             }
                             
+                            var hasStatus = false
                             _.each(colors, function(v,t) {
-                                if (sample.get(t) > 0) this.ctx.fillStyle = v
+                                if (sample.get(t) > 0) {
+                                    this.ctx.fillStyle = v
+                                    hasStatus = true
+                                }
                             }, this)
+                            if (hasStatus) this.ctx.fill()
                         }
 
                         // Show image score
