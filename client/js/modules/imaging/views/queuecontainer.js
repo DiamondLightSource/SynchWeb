@@ -7,6 +7,7 @@ define(['marionette',
     'views/table',
     'utils/table',
     'views/filter',
+    'utils',
 
     'modules/imaging/models/plan',
     'modules/imaging/collections/plans',
@@ -20,7 +21,7 @@ define(['marionette',
     ], function(Marionette,
         PlateTypes, ContainerInspections, InspectionImages, ImageViewer,
         SubSamples,
-        TableView, table, FilterView,
+        TableView, table, FilterView, utils,
         DiffractionPlan, DiffractionPlans,
         template, pointemplate, gridtemplate, xfetemplate,
         VMXiPoint, VMXiGrid, VMXiXFE,
@@ -377,11 +378,38 @@ define(['marionette',
         events: {
             'click button.submit': 'queueContainer',
             'click a.apply': 'applyPreset',
+            'click a.unqueue': 'unqueueContainer',
         },
 
         ui: {
             preset: 'select[name=preset]',
             rpreset: '.rpreset',
+        },
+
+        unqueueContainer: function(e) {
+            e.preventDefault()
+            utils.confirm({
+                title: 'Unqueue Container?',
+                content: 'Are you sure you want to remove this container from the queue? You will loose your current place',
+                callback: this.doUnqueueContainer.bind(this)
+            })
+        },
+
+        doUnqueueContainer: function() {
+            var self = this
+            Backbone.ajax({
+                url: app.apiurl+'/shipment/containers/queue',
+                data: {
+                    CONTAINERID: this.model.get('CONTAINERID'),
+                    UNQUEUE: 1,
+                },
+                success: function(resp) {
+                    app.alert({ message: 'Container Successfully Unqueued' })
+                },
+                error: function(resp) {
+                    app.alert({ message: 'Something went wrong unqueuing this container' })
+                }
+            })
         },
 
         applyPreset:function(e) {
@@ -461,7 +489,7 @@ define(['marionette',
             this.inspectionimages = new InspectionImages()
 
             this.imagess = new SubSamples()
-            this.image = new ImageViewer({ subsamples: this.imagess, scores: false, showBeam: true })
+            this.image = new ImageViewer({ subsamples: this.imagess, scores: false, showBeam: true, move: !this.model.get('CONTAINERQUEUEID') })
 
             this.qsubsamples = new SubSamples()
             this.qsubsamples.state.pageSize = 5
@@ -552,6 +580,12 @@ define(['marionette',
             })
             this.qfilt.show(this.typeselector)
 
+            if (this.model.get('CONTAINERQUEUEID')) {
+                this.ui.rpreset.hide()
+                columns.push({ label: '', cell: table.StatusCell, editable: false })
+                columns.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%=BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
+            }
+
             this.table2 = new TableView({ 
                 collection: this.qsubsamples,
                 columns: columns, 
@@ -561,8 +595,6 @@ define(['marionette',
             })
 
             this.qsmps.show(this.table2)
-
-            if (this.model.get('CONTAINERQUEUEID')) this.ui.rpreset.hide()
         },
 
         onShow: function() {

@@ -3,7 +3,10 @@
 <p class="help">This pages allows you to queue samples in a container for data collection</p>
 
 <% if (CONTAINERQUEUEID) { %>
-<p class="message alert">This container queued for data collection, you can not modify it without unqueuing it</p>
+<p class="message alert">
+    This container queued for data collection, you can not modify it without unqueuing it
+    <a href="#" class="button unqueue"><i class="fa fa-times"></i> Unqueue</a>
+</p>
 <% } %>
 
 <div class="clearfix">
