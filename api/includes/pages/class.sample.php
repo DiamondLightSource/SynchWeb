@@ -202,7 +202,7 @@
                 $where .= ' AND cqs.containerqueuesampleid IS NOT NULL';
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueuesampleid IS NULL, 1, 0) as readyforqueue, max(cqs.containerqueueid) as containerqueueid
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,2) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, max(cqs.containerqueueid) as containerqueueid, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
@@ -218,6 +218,19 @@
               LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
 
               LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
+
+
+              LEFT OUTER JOIN datacollection dc ON ss.blsubsampleid = dc.blsubsampleid AND dc.overlap != 0
+              LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
+              LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
+              LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
+              LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
+
+              LEFT OUTER JOIN datacollection dc2 ON ss.blsubsampleid = dc2.blsubsampleid AND dc2.overlap = 0 AND dc2.axisrange > 0
+              LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc2.datacollectionid
+              LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
+              LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
+
 
               WHERE p.proposalid=:1 $where
               GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx, po.posy, po.posz
