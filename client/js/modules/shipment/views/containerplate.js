@@ -385,7 +385,6 @@ define(['marionette',
         },
 
         preCache: function(n) {
-            return
             clearTimeout(this.cachethread)
             
             var self = this
