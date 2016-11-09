@@ -174,7 +174,7 @@
                     FROM protein p
                     INNER JOIN crystal cr ON cr.proteinid = p.proteinid
                     INNER JOIN blsample s ON s.crystalid = cr.crystalid
-                    INNER JOIN contnainer c ON c.containerid = p.containerid
+                    INNER JOIN container c ON c.containerid = s.containerid
                     WHERE p.externalid IS NOT NULL AND c.code=:1", array($args['BARCODE']));
 
                 $samples = array_map(function($s) {
