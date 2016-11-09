@@ -5,6 +5,7 @@ class UAS {
 	function __construct() {
 		global $uas_url, $vmxi_user, $vmxi_pass;
 
+        include(dirname(__FILE__).'/../config.php');
 		$this->url = $uas_url;
 
         require_once(dirname(__FILE__).'/class.auth-cas.php');

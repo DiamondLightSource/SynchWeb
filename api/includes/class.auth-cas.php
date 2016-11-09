@@ -34,6 +34,7 @@ class CASAuthentication extends AuthenticationBase implements Authentication {
 
     function authenticate($login, $password) {
         global $cas_url;
+        include(dirname(__FILE__).'/../config.php');
 
         $fields = array(
             'username' => $login,
