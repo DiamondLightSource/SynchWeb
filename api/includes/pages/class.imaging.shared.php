@@ -137,6 +137,8 @@
             if (!sizeof($imaging)) return;
             $imaging = $imaging[0];
 
+            if (!$imaging['EMAILADDRESS']) return;
+
             $email = new Email('imaging-new', '*** New inspection for your container available ***');
             $email->data = $imaging;
             $email->send($imaging['EMAILADDRESS']);
@@ -167,64 +169,42 @@
             }
 
             // No sessionid, need to create a visit using UAS REST API
-            // if (!$cont['SESSIONID']) {
-            //     $samples = $this->db->pq("SELECT p.externalid 
-            //         FROM protein p
-            //         INNER JOIN crystal cr ON cr.proteinid = p.proteinid
-            //         INNER JOIN blsample s ON s.crystalid = cr.crystalid
-            //         INNER JOIN contnainer c ON c.containerid = p.containerid
-            //         WHERE p.externalid IS NOT NULL AND c.code=:1", array($args['BARCODE']));
+            if (!$cont['SESSIONID']) {
+                $samples = $this->db->pq("SELECT p.externalid 
+                    FROM protein p
+                    INNER JOIN crystal cr ON cr.proteinid = p.proteinid
+                    INNER JOIN blsample s ON s.crystalid = cr.crystalid
+                    INNER JOIN contnainer c ON c.containerid = p.containerid
+                    WHERE p.externalid IS NOT NULL AND c.code=:1", array($args['BARCODE']));
 
-            //     $samples = array_map(function($s) {
-            //         return $s['EXTERNALID'];
-            //     }, $samples);
+                $samples = array_map(function($s) {
+                    return $s['EXTERNALID'];
+                }, $samples);
 
-            //     $fields = array(
-            //         'proposalId' => $cont['EXTERNALID'],
-            //         'sampleIds' => $samples,
-            //         'startAt' => date('Y-m-d\Th:i:s.000\Z'),
-            //         // 'startAt': "2012-04-23T18:25:43.511Z",
-            //         'facility' => "I02-2"
-            //     );
+                $data = array(
+                    'proposalId' => strtoupper($cont['EXTERNALID']),
+                    'sampleIds' => $samples,
+                    'startAt' => date('Y-m-d\TH:i:s.000\Z'),
+                    // 'startAt': "2012-04-23T18:25:43.511Z",
+                    'facility' => 'I02-2'
+                );
 
-            //     $prop = $this->_curl(array(
-            //         'URL' => 'http://cs04r-sc-vserv-31.diamond.ac.uk:8080/uas/rest/v1/session',
-            //         'FIELDS' => $fields,
-            //     ));
+                require_once(dirname(__FILE__).'/../class.uas.php');
+                $uas = new UAS();
+                $sess = $uas->create_session($data);
 
-            //     if ($prop) {
-            //         $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinesetupid) 
-            //             VALUES (:1,:2,:3,1)", 
-            //             array($cont['PROPOSALID'], $prop->sessionNumber, $prop->id));
+                if ($sess['code'] == 200) {
+                    $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinesetupid) 
+                        VALUES (:1,:2,:3,1)", 
+                        array($cont['PROPOSALID'], $sess['resp']->sessionNumber, $sess['resp']->id));
 
-            //         $this->db->pq("UPDATE container SET sessionid=:1 WHERE code=:2", array($this->db->id(), $args['BARCODE']));
-            //     }
-
-                
-            // }
+                    $cont['SESSIONID'] = $this->db->id();
+                    $this->db->pq("UPDATE container SET sessionid=:1 WHERE code=:2", array($cont['SESSIONID'], $args['BARCODE']));
+                }
+            }
 
             return $cont;
         }
-
-
-        protected function _curl($options) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $options['URL']);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($options['FIELDS']));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $resp = curl_exec($ch);
-            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            if ($resp) {
-                $json = json_decode($resp);
-                return $json;
-            }
-        }
-
 
 
         // Duplication from imaging, but somewhat simplified

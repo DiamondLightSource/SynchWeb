@@ -249,7 +249,7 @@ function imagedPlate($imagedPlate) {
         )
     ));
 
-    // $imaging->_email_status_update($imagingPlate->imagingID);
+    $imaging->_email_status_update($id);
 
     $response = new uk\ac\ox\oppf\www\WSPlate\imagedPlateResponse();
     $response->imagedPlateReturn = true;
