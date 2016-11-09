@@ -193,7 +193,7 @@
                 $uas = new UAS();
                 $sess = $uas->create_session($data);
 
-                if ($sess['code'] == 200) {
+                if ($sess['code'] == 200 && $sess['resp']) {
                     $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinesetupid) 
                         VALUES (:1,:2,:3,1)", 
                         array($cont['PROPOSALID'], $sess['resp']->sessionNumber, $sess['resp']->id));
