@@ -7,7 +7,7 @@ class UAS {
 
 		$this->url = $uas_url;
 
-        require_once(dirname(__FILE__).'/../class.auth-cas.php');
+        require_once(dirname(__FILE__).'/class.auth-cas.php');
         $cas = new CASAuthentication();
         $cas->authenticate($vmxi_user, $vmxi_pass);
 
