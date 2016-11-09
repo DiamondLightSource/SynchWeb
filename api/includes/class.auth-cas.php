@@ -1,6 +1,7 @@
 <?php
 
 require_once('config.php');
+require_once(dirname(__FILE__).'/class.auth.php');
 
 class CASAuthentication extends AuthenticationBase implements Authentication {
 
