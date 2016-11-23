@@ -213,6 +213,19 @@ define(['marionette',
                 this.grp.empty()
                 this.ui.pc.show()
                 this.$el.find('li.plate').hide()
+                this.$el.find('li.pcr').hide()
+
+            } else if (this.type.get('name') == 'PCRStrip') {
+                this.puck.$el.css('width', '50%')
+                this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
+                this.buildCollection()
+                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, type: 'non-xtal' })
+                this.table.show(this.stable)
+                this.single.empty()
+                this.grp.empty()
+                this.ui.pc.show()
+                this.$el.find('li.plate').hide()                
+                this.$el.find('li.pcr').show()                
 
             } else {
                 if (!app.mobile()) this.puck.$el.css('width', '50%')
@@ -226,6 +239,7 @@ define(['marionette',
                 this.ui.pc.hide()
                 this.buildCollection()
                 this.$el.find('li.plate').show()
+                this.$el.find('li.pcr').hide()
             }
             console.log('samples', this.samples)
         },
@@ -364,7 +378,7 @@ define(['marionette',
         
         
         selectSample: function() {
-            if (this.type.get('name') != 'Puck') {
+            if (this.type.get('name') != 'Puck' && this.type.get('name') != 'PCRStrip') {
                 var s = this.samples.findWhere({ isSelected: true })
                 if (s) {
                     this.singlesample.setModel(s)
