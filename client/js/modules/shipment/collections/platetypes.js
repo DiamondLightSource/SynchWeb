@@ -96,6 +96,13 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
              well_drop: -1,
              capacity: 24
         },*/
+         { name: 'PCRStrip', well_per_row: 9,
+             drop_per_well_x: 1, drop_per_well_y: 1,
+             drop_height: 1, drop_width: 1,
+             drop_offset_x: 0, drop_offset_y: 0,
+             well_drop: -1,
+             capacity: 9
+        },
     ]
 
     var PlateTypes = Backbone.Collection.extend(_.extend({}, KVCollection, {
