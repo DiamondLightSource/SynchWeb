@@ -194,11 +194,11 @@ define(['marionette',
             this.ready = this.scores.fetch()
 
             this.subsamples = options.subsamples
-            this.listenTo(this.subsamples, 'sync', this.plotObjects, this)
-            this.listenTo(this.subsamples, 'change:BOXSIZEX', this.plotObjects, this)
-            this.listenTo(this.subsamples, 'change:BOXSIZEY', this.plotObjects, this)
-            this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEX', this.plotObjects, this)
-            this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEY', this.plotObjects, this)
+            this.listenTo(this.subsamples, 'sync', this.replotObjects, this)
+            this.listenTo(this.subsamples, 'change:BOXSIZEX', this.replotObjects, this)
+            this.listenTo(this.subsamples, 'change:BOXSIZEY', this.replotObjects, this)
+            this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEX', this.replotObjects, this)
+            this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEY', this.replotObjects, this)
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
             this.listenTo(this.subsamples, 'remove', this.remSubsample, this)
 
@@ -720,19 +720,19 @@ define(['marionette',
             if (this.drawingRegion) {
                 // swap coords if needed
                 if (this.lineStart.x > this.lineEnd.x) {
-                    x1 = this.lineEnd.x
-                    x2 = this.lineStart.x
+                    var x1 = this.lineEnd.x
+                    var x2 = this.lineStart.x
                 } else {
-                    x1 = this.lineStart.x
-                    x2 = this.lineEnd.x
+                    var x1 = this.lineStart.x
+                    var x2 = this.lineEnd.x
                 }
 
                 if (this.lineStart.y > this.lineEnd.y) {
-                    y1 = this.lineEnd.y
-                    y2 = this.lineStart.y
+                    var y1 = this.lineEnd.y
+                    var y2 = this.lineStart.y
                 } else {
-                    y1 = this.lineStart.y
-                    y2 = this.lineEnd.y
+                    var y1 = this.lineStart.y
+                    var y2 = this.lineEnd.y
                 }
 
                 this.lineStart = {}
@@ -948,7 +948,13 @@ define(['marionette',
         },
 
 
+        replotObjects: function() {
+            this.draw()
+            this.plotObjects()
+        },
+
         plotObjects: function() {
+            console.log('plot obj', this.subsamples.length, this.subsamples, arguments)
             this.subsamples.each(function(o) {
                 this._drawObject({ o: o })
             }, this)
