@@ -41,7 +41,8 @@ define(['backbone'], function(Backbone) {
             //console.log('well_pad', this.get('well_pad'), 'drop_pad', this.get('drop_pad'))
             
             this.set('well_width', ((this.width-this.get('offset_x')) / this.get('well_per_row')) - this.get('well_pad'))
-            this.set('well_height', ((this.width*(1/1.5))-this.get('offset_y')) / (this.get('capacity')/(this.get('well_per_row')*this.dropTotal())) - this.get('well_pad'))
+            // this.set('well_height', ((this.width*(1/1.5))-this.get('offset_y')) / (this.get('capacity')/(this.get('well_per_row')*this.dropTotal())) - this.get('well_pad'))
+            this.set('well_height', (this.height-this.get('offset_y')) / (this.get('capacity')/(this.get('well_per_row')*this.dropTotal())) - this.get('well_pad'))
             
             this.set('drop_widthpx', (this.get('well_width')-this.get('drop_pad')*2) / (this.get('drop_per_well_x') / this.get('drop_width')))
             this.set('drop_heightpx', (this.get('well_height')-this.get('drop_pad')*2) / (this.get('drop_per_well_y') / this.get('drop_height')))
