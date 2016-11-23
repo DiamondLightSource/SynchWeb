@@ -168,11 +168,17 @@ define(['marionette',
             //if (this.model.get('CODE')) this.$el.find('input[name=CODE]').val(this.model.get('CODE'))
             //if (this.model.get('COMMENTS')) this.$el.find('input[name=COMMENTS]').val(this.model.get('COMMENTS'))
                 
-            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO'], function(f, i) {
+            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME'], function(f, i) {
                 if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             }, this)
 
             if (this.getOption('extra').show) this.$el.find('.extra').addClass('show')
+
+            if (this.getOption('type') == 'non-xtal') {
+                this.$el.find('.non-xtal').addClass('show')
+            } else {
+                this.$el.find('.xtal').addClass('show')
+            }
             this.ui.comp.autocomplete({ 
                 source: this.getGlobalProteins.bind(this),
                 select: this.selectGlobalProtein.bind(this)
@@ -301,6 +307,7 @@ define(['marionette',
 
             this.extra = { show: false }
             this.options.childViewOptions.extra = this.extra
+            this.options.childViewOptions.type = this.getOption('type')
             
         },
         
