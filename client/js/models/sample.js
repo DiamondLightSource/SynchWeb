@@ -59,6 +59,7 @@ define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
             CELL_ALPHA: '',
             CELL_BETA: '',
             CELL_GAMMA: '',
+            VOLUME: '',
         },
         
         validation: {
