@@ -92,7 +92,7 @@ define(['marionette',
         container.fetch({
             success: function() {
                 app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }])
-                var is_plate = !(['Puck', null].indexOf(container.get('CONTAINERTYPE')) > -1)
+                var is_plate = !(['Puck', 'PCRStrip', null].indexOf(container.get('CONTAINERTYPE')) > -1)
                 console.log('is plate', is_plate)
                 if (is_plate) app.content.show(new ContainerPlateView({ model: container, params: { iid: iid, sid: sid } }))
                   else app.content.show(new ContainerView({ model: container }))
