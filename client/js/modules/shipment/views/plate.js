@@ -66,7 +66,8 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
             this.ctx = this.canvas.getContext('2d')
             
             this.canvas.width = this.$el.parent().width()
-            this.canvas.height = this.canvas.width*0.68
+            if (this.pt.get('capacity') == this.pt.get('well_per_row')) this.canvas.height = this.canvas.width*0.20
+            else this.canvas.height = this.canvas.width*0.68
             console.log('type', this.getOption('type'), this.canvas, this.ctx)
             this.pt.setGeometry(this.canvas.width, this.canvas.height)
             this.drawPlate()
