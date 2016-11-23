@@ -72,7 +72,7 @@ define(['marionette',
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP'], function(f) {
+            _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP', 'VOLUME'], function(f) {
                 data[f] = this.$el.find('[name='+f+']').val()
             }, this)
 
@@ -304,7 +304,14 @@ define(['marionette',
             
         },
         
-        onRender: function() { console.log('rendering sample tale')},
+        onRender: function() { 
+            console.log('rendering sample tale')
+            if (this.getOption('type') == 'non-xtal') {
+                this.$el.find('.non-xtal').addClass('show')
+            } else {
+                this.$el.find('.xtal').addClass('show')
+            }
+        },
         
         toggleExtra: function() {
             this.extra.show = !this.extra.show

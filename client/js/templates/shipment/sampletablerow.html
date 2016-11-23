@@ -1,7 +1,9 @@
 
     <td><%=LOCATION%></td>
     <% if (PROTEINID == -1) { %>
-    <td colspan="7">&nbsp;</td>
+    <td colspan="5">&nbsp;</td>
+    <td class="xtal" colspan="2">&nbsp;</td>
+    <td class="non-xtal" colspan="1">&nbsp;</td>
     <td class="extra" colspan="3">&nbsp;</td>
 
     <% } else { %>
@@ -9,8 +11,9 @@
     <td><%=ACRONYM%></td>
     <td class="components"></td>
     <td><%=NAME%></td>
-    <td><%=SPACEGROUP %></td>
-    <td><%=CODE%></td>
+    <td class="xtal"><%=SPACEGROUP %></td>
+    <td class="xtal"><%=CODE%></td>
+    <td class="non-xtal"><%=VOLUME%></td>
     <td><%=COMMENTS%></td>
 
     <td class="extra"><%=REQUIREDRESOLUTION%></td>
