@@ -78,6 +78,13 @@
             <span class="label">Comments</span>
         </li>
 
+        <% if (REQUESTEDIMAGERID) { %>
+            <li>
+                <span class="label">Requested Imager Location</span>
+                <span class="IMAGERID"><%=REQUESTEDIMAGER%></span>
+            </li>
+        <% } %>
+
         <% if (IMAGERID) { %>
         <li>
             <span class="label">Current Imager Location</span>
