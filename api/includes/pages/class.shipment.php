@@ -1060,7 +1060,7 @@
         function _queue_container() {
             if (!$this->has_arg('CONTAINERID')) $this->_error('No container specified');
 
-            $chkc = $this->db->pq("SELECT c.containerid FROM container c 
+            $chkc = $this->db->pq("SELECT c.containerid,c.containerstatus FROM container c 
                 INNER JOIN dewar d ON c.dewarid = d.dewarid 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
@@ -1072,6 +1072,8 @@
             if ($this->has_arg('UNQUEUE')) {
                 $chkq = $this->db->pq("SELECT containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
                 if (!sizeof($chkq)) $this->_error('That container is not queued');
+                if (!in_array($chkc[0]['CONTAINERSTATUS'], array('in_storage', 'disposed', null))) $this->_error('Container is awaiting data collection and cannot be unqueued');
+
                 $cqid = $chkq[0]['CONTAINERQUEUEID'];
 
                 $this->db->pq("UPDATE containerqueuesample SET containerqueueid = NULL WHERE containerqueueid=:1", array($cqid));

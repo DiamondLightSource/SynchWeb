@@ -4,8 +4,12 @@
 
 <% if (CONTAINERQUEUEID) { %>
 <p class="message alert">
-    This container queued for data collection, you can not modify it without unqueuing it
-    <a href="#" class="button unqueue"><i class="fa fa-times"></i> Unqueue</a>
+    <% if (['disposed', 'in_storage', null].indexOf(CONTAINERSTATUS) > -1) { %>
+        This container is queued for data collection, you can not modify it without unqueuing it
+        <a href="#" class="button unqueue"><i class="fa fa-times"></i> Unqueue</a>
+    <% } else { %>
+        This container is en route for data collection, it cannot be unqueued.
+    <% } %>
 </p>
 <% } %>
 
