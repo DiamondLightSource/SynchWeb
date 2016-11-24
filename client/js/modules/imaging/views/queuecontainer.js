@@ -191,7 +191,7 @@ define(['marionette',
         preSave: function() {
             if (this.plan.isValid(true)) {
                 var ch = this.model.changedAttributes()
-                console.log('model valid', ch)
+                console.log('model valid', this.model, ch)
                 if (this.model.get('_valid') == false) this.model.save()
                 else if (ch && !(Object.keys(ch).length == 1 && ('isSelected' in ch || '_valid' in ch))) {
                     console.log('attrs changed', this.model.changedAttributes())
@@ -267,7 +267,8 @@ define(['marionette',
             if (this.model.get('CONTAINERQUEUEID')) this.$el.find('input').attr('disabled', 'disabled')
 
             this.bindModel()
-            this.preSave()
+            // this.preSave()
+            this.model.set('_valid', this.plan.isValid(true))
 
             return this
         },
