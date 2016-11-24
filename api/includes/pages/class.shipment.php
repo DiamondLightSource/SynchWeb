@@ -19,6 +19,7 @@
                               'imager' => '\d',
                               'imid' => '\d+',
 
+                              'requestedimager' => '\d',
 
                               // cache name
                               'name' => '\w+',
@@ -669,6 +670,11 @@
                     $where .= " AND se.beamlinename IN ('$bls')";
                 }
             }
+
+            if ($this->has_arg('requestedimager')) {
+                $where .= ' AND c.requestedimagerid IS NOT NULL';
+            }
+
 
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
