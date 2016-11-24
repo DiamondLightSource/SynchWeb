@@ -127,6 +127,13 @@ define(['marionette',
             'click a.edit_user': 'editUser',
             'change @ui.screen': 'selectScreen',
             'change @ui.pid': 'checkPerson',
+
+            'change @ui.imager': 'limitProteins',
+        },
+
+        limitProteins: function() {
+            this.proteins.queryParams.externalid = this.ui.imager.val() ? 1 : null
+            this.proteins.fetch()
         },
 
         checkPerson: function() {
