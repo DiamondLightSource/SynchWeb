@@ -254,7 +254,11 @@ define(['marionette',
         },
         
         updateProteins: function() {
-            this.$el.find('select[name=PROTEINID]').html(this.proteins.opts())
+            this.$el.find('select[name=PROTEINID]').html(this.proteins.opts({
+                addClass: 'active',
+                classProperty: 'EXTERNAL',
+                classPropertyValue: '1',
+            }))
             this.$el.find('select[name=PROTEINID]').combobox('value', this.model.get('PROTEINID'))
         },
     

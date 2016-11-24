@@ -183,6 +183,8 @@ define(['marionette',
             this.ready = []
             this.extra = false
             this.gproteins = options.gproteins
+
+            this.listenTo(options.proteins, 'sync', this.updateProteins, this)
         },
         
         onRender: function() {
@@ -299,7 +301,11 @@ define(['marionette',
 
         
         updateProteins: function() {
-            this.ui.prot.html(this.getOption('proteins').opts())
+            this.ui.prot.html(this.getOption('proteins').opts({
+                addClass: 'active',
+                classProperty: 'EXTERNAL',
+                classPropertyValue: '1',
+            }))
             this.ui.prot.combobox('value', this.model.get('PROTEINID'))
         },
         
