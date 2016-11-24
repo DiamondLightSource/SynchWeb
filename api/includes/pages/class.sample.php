@@ -87,6 +87,8 @@
                               'queued' => '\d',
                               'UNQUEUE' => '\d',
 
+                              'externalid' => '\d',
+
                                );
         
         
@@ -737,6 +739,10 @@
                 $where .= ' AND pr.componenttypeid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('type'));
             }
+
+            if ($this->has_arg('externalid')) {
+                $where .= ' AND pr.externalid IS NOT NULL';
+            }
             
 
             $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr INNER JOIN proposal p ON p.proposalid = pr.proposalid $join WHERE $where", $args);
@@ -773,7 +779,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype, CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass,pr.global,ROUND(pr.abundance,3) as abundance/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
+            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype, CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass,pr.global,ROUND(pr.abundance,3) as abundance, IF(pr.externalid IS NOT NULL, 1, 0) as external/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
                                   FROM protein pr
                                   LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
                                   LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
@@ -841,13 +847,17 @@
                 $where = '(pr.proposalid=:1 OR pr.global=1)';
             }
 
+            if ($this->has_arg('externalid')) {
+                $where .= ' AND pr.externalid IS NOT NULL';
+            }
+
             if ($this->has_arg('term')) {
                 $where .= " AND (lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+1)."), '%')) OR lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+2)."), '%')))";
                 array_push($args, $this->arg('term'));
                 array_push($args, $this->arg('term'));
             }
             
-            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as concentrationtype, 1 as hasph
+            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as concentrationtype, 1 as hasph, IF(pr.externalid IS NOT NULL, 1, 0) as external
               FROM protein pr 
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
               WHERE pr.acronym is not null AND $where 
