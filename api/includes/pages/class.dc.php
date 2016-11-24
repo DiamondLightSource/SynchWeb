@@ -39,6 +39,7 @@
                               array('/comments(/:dcid)', 'get', '_get_comments'),
                               array('/comments', 'post', '_add_comment'),
 
+                              array('/dat/:id', 'get', '_plot'),
                             );
 
 
@@ -1482,6 +1483,43 @@
                 'FAMILYNAME' => $this->user->familyname,
                 'CREATETIME' => date('d-m-Y H:i:s')
             ));
+        }
+
+
+
+
+        # ------------------------------------------------------------------------
+        # Dat Plot
+        function _plot() {
+            session_write_close();
+            if (!$this->has_arg('id')) {
+                $this->_error('No data collection id specified');
+                return;
+            }
+            
+            $info = $this->db->pq('SELECT ses.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir FROM datacollection dc INNER JOIN blsession ses ON dc.sessionid = ses.sessionid WHERE datacollectionid=:1', array($this->arg('id')));
+            if (sizeof($info) == 0) {
+                $this->_error('No data for that collection id');
+                return;
+            } else $info = $info[0];
+            
+            $info['VISIT'] = $this->arg('prop') .'-'.$info['VISIT_NUMBER'];
+            
+            $pth = str_replace($info['VISIT'], $info['VISIT'].'/.ispyb', $this->ads($info['DIR']).$info['IMP'].'/'.$info['SCAN'].'.dat');
+            
+            $data = array();
+            if (file_exists($pth) && is_readable(($pth))) {
+                $dat = explode("\n",file_get_contents($pth));
+
+                foreach (array_slice($dat,5) as $i => $d) {
+                    if ($d) {
+                        list($x, $y) = preg_split('/\s+/', trim($d));
+                        array_push($data, array(floatval($x), floatval($y)));
+                    }
+                }
+            }
+            
+            $this->_output(array($data));
         }
 
 
