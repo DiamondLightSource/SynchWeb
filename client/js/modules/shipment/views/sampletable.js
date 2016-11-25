@@ -16,6 +16,7 @@ define(['marionette',
         'utils',
     
         'jquery',
+        'jquery-ui',
         'jquery-ui.combobox',
     ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
         sampletable, sampletablerow, sampletablerowedit, 
