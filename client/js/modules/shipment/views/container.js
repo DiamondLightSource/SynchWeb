@@ -71,6 +71,7 @@ define(['marionette',
             edit.create('COMMENTS', 'text')
             edit.create('EXPERIMENTTYPE', 'text')
             edit.create('STORAGETEMPERATURE', 'text')
+            edit.create('BARCODE', 'text')
         },
         
         onShow: function() {

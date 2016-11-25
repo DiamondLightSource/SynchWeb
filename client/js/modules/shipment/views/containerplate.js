@@ -588,6 +588,8 @@ define(['marionette',
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
             edit.create('COMMENTS', 'textarea')
+            if (app.user_can('disp_cont')) edit.create('BARCODE', 'text')
+            if (app.user_can('disp_cont')) edit.create('CONTAINERTYPE', 'select', { data: this.ctypes.kv() })
 
             if (this.model.get('INSPECTIONS') > 0) {
                 var columns = [
