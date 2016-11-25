@@ -120,6 +120,10 @@ require.config({
     'jquery.editable.datepicker': {
         deps: ['jquery.editable'],
     },
+
+    'jquery-ui.combobox': {
+        deps: ['jquery-ui']
+    },
     
     
     // Flot
