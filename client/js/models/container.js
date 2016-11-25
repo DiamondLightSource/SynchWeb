@@ -6,7 +6,7 @@ define(['backbone'], function(Backbone) {
         _cache: {},
         
         defaults: {
-            new: false,
+            BARCODETEST: null
         },
 
         validation: {
@@ -35,43 +35,18 @@ define(['backbone'], function(Backbone) {
                 pattern: 'number',
             },
 
-            // BARCODE: {
-            //     pattern: 'wwdash',
-            //     required: function() {
-            //         return this.get('REQUESTEDIMAGERID') != '' || this.get('CONTAINERTYPE') == 'PCRStrip'
-            //     }
-            // },
-
-            BARCODE: _.debounce(function(value, attr, state) {
-                if ((this.get('REQUESTEDIMAGERID') != '' || this.get('CONTAINERTYPE') == 'PCRStrip') && !value) {
-                    return Backbone.Validation.messages.required
-                } else if (!value) return
-
-                if (!Backbone.Validation.patterns.wwdash.test(value)) {
-                    return Backbone.Validation.messages.wwdash
+            BARCODE: {
+                pattern: 'wwdash',
+                required: function() {
+                    return this.get('REQUESTEDIMAGERID') != '' || this.get('CONTAINERTYPE') == 'PCRStrip'
                 }
+            },
 
-                if (!(value in this._cache)) {
-                    var self = this
-                    Backbone.ajax({
-                        url: app.apiurl+'/shipment/containers/barcode/'+value,
-                        async: false,
-                        success: function(resp) {
-                            console.log('container', resp)
-                            self._cache[value] = resp.PROP
-                        },
-
-                        failure: function() {
-                            self._cache[value] = false
-                        }
-                    })
+            BARCODECHECK: function(value, attr, state) {
+                if (value !== null) {
+                    if (value != 1) return 'Barcode check failed'
                 }
-
-                if (this._cache[value]) {
-                    return 'That barcode is already registered to '+this._cache[value]
-                }
-            }, 200),
-
+            },
         },
         
     })
