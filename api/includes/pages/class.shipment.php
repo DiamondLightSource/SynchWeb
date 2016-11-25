@@ -85,6 +85,8 @@
                               'REQUESTEDIMAGERID' => '\d+',
                               'CONTAINERID' => '\d+',
                               'UNQUEUE' => '\d',
+                              'EXPERIMENTTYPE' => '\w+',
+                              'STORAGETEMPERATURE' => '[\w-]+',
                               );
         
 
