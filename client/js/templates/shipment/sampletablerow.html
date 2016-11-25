@@ -8,7 +8,12 @@
 
     <% } else { %>
 
-    <td><%=ACRONYM%></td>
+    <td>
+        <%=ACRONYM%>
+        <% if (ABUNDANCE) { %>
+            [<%=ABUNDANCE%><%=SYMBOL%>]
+        <% } %>
+    </td>
     <td class="components"></td>
     <td><%=NAME%></td>
     <td class="xtal"><%=SPACEGROUP %></td>
