@@ -1154,7 +1154,7 @@
             }
 
             if ($this->user->can('disp_cont') && $this->has_arg('DISPOSE')) {
-                $this->db->pq("UPDATE container SET imagerid=NULL WHERE containerid=:1", array($this->arg('cid')));
+                $this->db->pq("UPDATE container SET imagerid=NULL,containerstatus='disposed' WHERE containerid=:1", array($this->arg('cid')));
                 $this->_output(array('IMAGERID' => null));
             }
         }
