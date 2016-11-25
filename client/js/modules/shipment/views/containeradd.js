@@ -478,7 +478,7 @@ define(['marionette',
             this.screencomponents = new ScreenComponents()
             this.screencomponents.queryParams.scid = this.getScreen.bind(this)
           
-            this.checkBarcode = _.debounce(this.checkBarcode.bind(this))
+            this.checkBarcode = _.debounce(this.checkBarcode.bind(this), 200)
         },
 
         buildCollection: function() {
