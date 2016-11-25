@@ -122,6 +122,7 @@
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
                               array('/containers/queue', 'get', '_queue_container'),
+                              array('/containers/barcode/:BARCODE', 'get', '_check_container'),
                               
 
                               array('/cache/:name', 'put', '_session_cache'),
@@ -896,7 +897,20 @@
             $this->_output(array(file_get_contents($root.'/instructions.html'), file_get_contents($root.'/pin.txt'), file_get_contents($root.'/account.txt')));
         }
         
-        
+        # Check if a barcode exists
+        function _check_container() {
+            $cont = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, c.barcode 
+              FROM container c
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping s ON s.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              WHERE c.barcode=:1", array($this->arg('BARCODE')));
+
+            if (!sizeof($cont)) $this->_error('Barcode not used');
+            $this->_output($cont[0]);
+        }
+
+
         function _get_all_containers() {
             //$this->db->set_debug(True);
             if (!$this->has_arg('prop') && !$this->has_arg('visit') && !$this->staff) $this->_error('No proposal specified');
