@@ -380,7 +380,7 @@ define(['marionette',
         
         
         createModel: function() {
-            this.model = new Container({ DEWARID: this.dewar.get('DEWARID') })
+            this.model = new Container({ DEWARID: this.dewar.get('DEWARID'), new: true })
         },
         
         
