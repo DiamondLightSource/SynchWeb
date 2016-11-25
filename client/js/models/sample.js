@@ -115,6 +115,12 @@ define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
                 required: false,
                 pattern: 'number'
             },
+            
+            VOLUME: {
+                required: false,
+                pattern: 'number'
+            },
+
 
             COMPONENTAMOUNTS: function(from_ui, attr, all_values) {
                 var values = all_values.components.pluck('ABUNDANCE')
