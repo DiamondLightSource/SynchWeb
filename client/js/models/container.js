@@ -6,7 +6,7 @@ define(['backbone'], function(Backbone) {
         _cache: {},
         
         defaults: {
-            BARCODETEST: null
+            BARCODECHECK: null
         },
 
         validation: {
@@ -46,6 +46,16 @@ define(['backbone'], function(Backbone) {
                 if (value !== null) {
                     if (value != 1) return 'Barcode check failed'
                 }
+            },
+
+            EXPERIMENTTYPE: {
+                required: false,
+                pattern: 'word',
+            },
+
+            STORAGETEMPERATURE: {
+                required: false,
+                pattern: 'wwdash',
             },
         },
         
