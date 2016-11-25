@@ -96,6 +96,7 @@ define(['marionette',
             screen: 'select[name=SCREENID]',
             pid: 'select[name=PERSONID]',
             imager: 'select[name=REQUESTEDIMAGERID]',
+            barcode: 'input[name=BARCODE]',
         },
         
         
@@ -129,7 +130,36 @@ define(['marionette',
             'change @ui.pid': 'checkPerson',
 
             'change @ui.imager': 'limitProteins',
+            'change @ui.barcode': 'checkBarcode',
+            'keyup @ui.barcode': 'checkBarcode',
         },
+
+
+        checkBarcode: function() {
+            if (!this.ui.barcode.val()) this.model.set('BARCODECHECK', null)
+            var self = this
+            Backbone.ajax({
+                url: app.apiurl+'/shipment/containers/barcode/'+this.ui.barcode.val(),
+                success: function(resp) {
+                    self.updateBarcode(resp.PROP)
+                },
+
+                error: function() {
+                    self.updateBarcode()
+                }
+            })
+        },
+
+        updateBarcode: function(resp) {
+            if (resp) {
+                this.model.set('BARCODECHECK', 0)
+                this.$el.find('.message').html('This barcode is already registered to '+resp).addClass('ferror')
+            } else {
+                this.model.set('BARCODECHECK', 1)
+                this.$el.find('.message').html('').removeClass('ferror')
+            }
+        },
+
 
         limitProteins: function() {
             this.proteins.queryParams.externalid = this.ui.imager.val() ? 1 : null
@@ -447,7 +477,8 @@ define(['marionette',
 
             this.screencomponents = new ScreenComponents()
             this.screencomponents.queryParams.scid = this.getScreen.bind(this)
-            
+          
+            this.checkBarcode = _.debounce(this.checkBarcode.bind(this))
         },
 
         buildCollection: function() {
