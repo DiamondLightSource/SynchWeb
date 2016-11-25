@@ -85,7 +85,11 @@ define(['marionette',
             
         success: function(m,r,o) {
             var p = this.proteins.findWhere({ PROTEINID: this.model.get('PROTEINID') })
-            if (p) this.model.set('ACRONYM', p.get('ACRONYM'))
+            if (p) {
+                this.model.set('ACRONYM', p.get('ACRONYM'))
+                this.model.set('ABUNDANCE', p.get('ABUNDANCE'))
+                this.model.set('SYMBOL', p.get('CONCENTRATIONTYPE'))
+            }
 
             this.model.set('new', false)
             this.editing = false
