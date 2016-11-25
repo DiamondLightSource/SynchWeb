@@ -69,8 +69,8 @@ define(['marionette',
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
             edit.create('COMMENTS', 'text')
-            edit.create('EXPERIMENTTYPE', 'text')
-            edit.create('STORAGETEMPERATURE', 'text')
+            edit.create('EXPERIMENTTYPE', 'select', { data: { '':'-', 'robot':'robot', 'HPLC':'HPLC'} })
+            edit.create('STORAGETEMPERATURE', 'select', { data: { '-80':'-80', '4':'4', '25':'25' } })
             edit.create('BARCODE', 'text')
         },
         
