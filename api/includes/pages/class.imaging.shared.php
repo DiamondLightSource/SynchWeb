@@ -273,7 +273,7 @@
             if (!sizeof($imager)) return;
             $imager = $imager[0];
 
-            $this->db->pq("UPDATE container SET imagerid=:1 WHERE code=:2", array($imager['IMAGERID'], $args['BARCODE']));
+            $this->db->pq("UPDATE container SET imagerid=:1,containerstatus='in_storage' WHERE code=:2", array($imager['IMAGERID'], $args['BARCODE']));
         }
 
 
