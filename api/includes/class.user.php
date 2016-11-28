@@ -19,7 +19,8 @@ class User {
 				$this->$f = $result[0][strtoupper($f)];
 			}
 
-			$this->_cache = $result[0]['CACHE'] ? unserialize($this->db->read($result[0]['CACHE'])) : array();
+			$this->_cache = $result[0]['CACHE'] ? json_decode($this->db->read($result[0]['CACHE']), True) : array();
+			if (!$this->_cache) $this->_cache = array();
 			$this->personid = intval($this->personid);
 
 			$perms = $this->db->pq("SELECT p.type, g.name as usergroup 
@@ -66,7 +67,7 @@ class User {
 
 		if (in_array($key, $allowed_caches)) {
 			$this->_cache[$key] = $data;
-			$this->db->pq("UPDATE person SET cache=:1 WHERE personid=:2", array(serialize($this->_cache), $this->personid));
+			$this->db->pq("UPDATE person SET cache=:1 WHERE personid=:2", array(json_encode($this->_cache), $this->personid));
 
 			return true;
 		}
