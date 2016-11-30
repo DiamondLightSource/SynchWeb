@@ -159,7 +159,7 @@
                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                 INNER JOIN proposal p on p.proposalid = s.proposalid
                 LEFT OUTER JOIN person pe ON pe.personid = c.ownerid
-                WHERE c.code=:1", array($args['BARCODE']));
+                WHERE c.barcode=:1", array($args['BARCODE']));
             if (!sizeof($cont)) $this->error('No such container');
             $cont = $cont[0];
 
@@ -175,7 +175,7 @@
                     INNER JOIN crystal cr ON cr.proteinid = p.proteinid
                     INNER JOIN blsample s ON s.crystalid = cr.crystalid
                     INNER JOIN container c ON c.containerid = s.containerid
-                    WHERE p.externalid IS NOT NULL AND c.code=:1", array($args['BARCODE']));
+                    WHERE p.externalid IS NOT NULL AND c.barcode=:1", array($args['BARCODE']));
 
                 $samples = array_map(function($s) {
                     return $s['EXTERNALID'];
@@ -199,7 +199,7 @@
                         array($cont['PROPOSALID'], $sess['resp']->sessionNumber, $sess['resp']->id));
 
                     $cont['SESSIONID'] = $this->db->id();
-                    $this->db->pq("UPDATE container SET sessionid=:1 WHERE code=:2", array($cont['SESSIONID'], $args['BARCODE']));
+                    $this->db->pq("UPDATE container SET sessionid=:1 WHERE barcode=:2", array($cont['SESSIONID'], $args['BARCODE']));
                 }
             }
 
@@ -273,7 +273,7 @@
             if (!sizeof($imager)) return;
             $imager = $imager[0];
 
-            $this->db->pq("UPDATE container SET imagerid=:1,containerstatus='in_storage' WHERE code=:2", array($imager['IMAGERID'], $args['BARCODE']));
+            $this->db->pq("UPDATE container SET imagerid=:1,containerstatus='in_storage' WHERE barcode=:2", array($imager['IMAGERID'], $args['BARCODE']));
         }
 
 
