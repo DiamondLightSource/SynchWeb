@@ -1302,7 +1302,7 @@
         # ------------------------------------------------------------------------
         # Grid Scan Info
         function _grid_info() {
-            $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation
+            $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked
                 FROM gridinfo g
                 INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
                 INNER JOIN position p ON dc.positionid = p.positionid
