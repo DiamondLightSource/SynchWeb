@@ -13,6 +13,11 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
         tagName: 'li',
         template: _.template('<i class="fa fa-spin fa-spinner"></i>')
     })
+
+    var EmptyView = Marionette.ItemView.extend({
+        tagName: 'li',
+        template: _.template('No users regsitered yet')
+    })
     
     return Marionette.CollectionView.extend({
         //template: _.template('<h1>Users</h1><ul class="users"></ul>'),
@@ -21,11 +26,20 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
         childView: UserItem,
         emptyView: LoadingView,
         className: 'visit_users',
+
+        getEmptyView: function(e) {
+            if (this.collection.fetched) return EmptyView
+            else return LoadingView
+        },
         
         initialize: function(options) {
             this.collection = new Users()
             this.collection.queryParams.visit = options.visit
-            this.collection.fetch()
+            var self = this
+            this.collection.fetch().done(function() {
+                self.collection.fetched = true
+                self.collection.trigger('reset')
+            })
         }
     })
     
