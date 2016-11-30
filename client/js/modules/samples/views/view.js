@@ -60,6 +60,7 @@ define(['marionette',
             edit.create('COMMENTS', 'text')
             edit.create('CODE', 'text')
             edit.create('VOLUME', 'text')
+            edit.create('ABUNDANCE', 'text')
 
             _.each(['CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION'], function(f, i) {
                 edit.create(f, 'text')

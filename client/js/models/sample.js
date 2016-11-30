@@ -60,6 +60,8 @@ define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
             CELL_BETA: '',
             CELL_GAMMA: '',
             VOLUME: '',
+            ABUNDANCE: '',
+            SYMBOL: '',
         },
         
         validation: {
@@ -115,8 +117,13 @@ define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
                 required: false,
                 pattern: 'number'
             },
-            
+
             VOLUME: {
+                required: false,
+                pattern: 'number'
+            },
+
+            ABUNDANCE: {
                 required: false,
                 pattern: 'number'
             },

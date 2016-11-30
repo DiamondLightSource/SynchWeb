@@ -12,7 +12,7 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
         defaults: {
             SEQUENCEMD: '',
             CONCENTRATIONTYPE: '',
-            ABUNDANCE: 0,
+            // ABUNDANCE: 0,
         },
         
         refreshOptions: function() {
@@ -48,10 +48,10 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
                 required: false,
                 pattern: 'number',  
             },
-            ABUNDANCE: {
-                required: false,
-                pattern: 'number',
-            },
+            // ABUNDANCE: {
+            //     required: false,
+            //     pattern: 'number',
+            // },
         },
     })
     

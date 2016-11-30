@@ -37,6 +37,7 @@ define(['marionette',
         ui: {
             comp: 'input[name=COMPONENTID]',
             comps: 'td.components',
+            symbol: 'span.SYMBOL',
         },
 
         modelEvents: {
@@ -73,7 +74,7 @@ define(['marionette',
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP', 'VOLUME'], function(f) {
+            _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP', 'VOLUME', 'ABUNDANCE'], function(f) {
                 data[f] = this.$el.find('[name='+f+']').val()
             }, this)
 
@@ -87,7 +88,6 @@ define(['marionette',
             var p = this.proteins.findWhere({ PROTEINID: this.model.get('PROTEINID') })
             if (p) {
                 this.model.set('ACRONYM', p.get('ACRONYM'))
-                this.model.set('ABUNDANCE', p.get('ABUNDANCE'))
                 this.model.set('SYMBOL', p.get('CONCENTRATIONTYPE'))
             }
 
@@ -133,7 +133,7 @@ define(['marionette',
         clearSample: function(e) {
             e.preventDefault()
             this.model.set({ 
-                PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '',
+                PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: ''
             })
             this.model.get('components').reset()
@@ -160,11 +160,18 @@ define(['marionette',
             }, this)
             this.model.set({ STATUS: st })
         },
+
+        selectProtein: function(e) {
+            this.validateField.apply(this,arguments)
+            var p = this.proteins.findWhere({ PROTEINID: this.$el.find('select[name=PROTEINID]').combobox('value') })
+            console.log('selectProtein', arguments, p)
+            if (p) this.ui.symbol.text(p.get('CONCENTRATIONTYPE') ? p.get('CONCENTRATIONTYPE') : '')
+        },
         
         onRender: function() {
             this.$el.find('[name=SPACEGROUP]').html(SG.opts()).val(this.model.get('SPACEGROUP'))
             this.$el.find('[name=ANOMALOUSSCATTERER]').html(Anom.opts()).val(this.model.get('ANOMALOUSSCATTERER'))
-            this.$el.find('select[name=PROTEINID]').combobox({ invalid: this.addProtein.bind(this), change: this.validateField.bind(this), select: this.validateField.bind(this) })
+            this.$el.find('select[name=PROTEINID]').combobox({ invalid: this.addProtein.bind(this), change: this.selectProtein.bind(this), select: this.selectProtein.bind(this) })
             this.updateProteins()
             
             // for pasting from spreadsheet

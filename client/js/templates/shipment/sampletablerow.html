@@ -1,18 +1,18 @@
 
     <td><%=LOCATION%></td>
     <% if (PROTEINID == -1) { %>
-    <td colspan="5">&nbsp;</td>
+    <td colspan="6">&nbsp;</td>
     <td class="xtal" colspan="2">&nbsp;</td>
     <td class="non-xtal" colspan="1">&nbsp;</td>
     <td class="extra" colspan="3">&nbsp;</td>
 
     <% } else { %>
 
+    <td><%=ACRONYM%></td>
     <td>
-        <%=ACRONYM%>
         <% if (ABUNDANCE) { %>
-            [<%=ABUNDANCE%><%=SYMBOL%>]
-        <% } %>
+            <%=ABUNDANCE%><%=SYMBOL%>
+        <% } %>    
     </td>
     <td class="components"></td>
     <td><%=NAME%></td>
