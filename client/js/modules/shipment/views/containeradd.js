@@ -242,7 +242,7 @@ define(['marionette',
             
             if (this.type.get('name') == 'Puck') {
                 this.buildCollection()
-                this.puck.$el.css('width', '25%')
+                this.puck.$el.css('width', app.mobile() ? '100%' : '25%')
                 this.puck.show(new PuckView({ collection: this.samples }))
                 this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table })
                 this.table.show(this.stable)
@@ -253,7 +253,7 @@ define(['marionette',
                 this.$el.find('li.pcr').hide()
 
             } else if (this.type.get('name') == 'PCRStrip') {
-                this.puck.$el.css('width', '50%')
+                this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.buildCollection()
                 this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, type: 'non-xtal' })
@@ -265,7 +265,7 @@ define(['marionette',
                 this.$el.find('li.pcr').show()                
 
             } else {
-                if (!app.mobile()) this.puck.$el.css('width', '50%')
+                if (!app.mobile()) this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.table.empty()
                 this.stable.destroy()
