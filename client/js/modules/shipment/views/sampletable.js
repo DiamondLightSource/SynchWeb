@@ -133,7 +133,7 @@ define(['marionette',
         clearSample: function(e) {
             e.preventDefault()
             this.model.set({ 
-                PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '',
+                PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '', SYMBOL: '',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: ''
             })
             this.model.get('components').reset()
@@ -165,7 +165,10 @@ define(['marionette',
             this.validateField.apply(this,arguments)
             var p = this.proteins.findWhere({ PROTEINID: this.$el.find('select[name=PROTEINID]').combobox('value') })
             console.log('selectProtein', arguments, p)
-            if (p) this.ui.symbol.text(p.get('CONCENTRATIONTYPE') ? p.get('CONCENTRATIONTYPE') : '')
+            if (p) {
+                this.model.set('SYMBOL', p.get('CONCENTRATIONTYPE'))
+                this.ui.symbol.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
+            }
         },
         
         onRender: function() {
@@ -183,6 +186,8 @@ define(['marionette',
             _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME'], function(f, i) {
                 if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             }, this)
+
+            this.ui.symbol.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
 
             if (this.getOption('extra').show) this.$el.find('.extra').addClass('show')
 
