@@ -1294,6 +1294,10 @@
                     $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing',:3) RETURNING dewarid INTO :id", array($this->arg('visit').'_Dewar1', $shid, $sid));
                     
                     $did = $this->db->id();
+
+                    # Need to generate barcode
+                    $bl = $this->db->pq("SELECT s.beamlinename as bl FROM blsession s WHERE s.sessionid=:1", array($sid));
+                    $this->db->pq("UPDATE dewar set barcode=:1 WHERE dewarid=:2", array($this->arg('visit').'-'.$bl[0]['BL'].'-'.str_pad($did,7,'0',STR_PAD_LEFT), $did));
                 }
             }
             
