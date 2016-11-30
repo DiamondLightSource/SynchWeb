@@ -53,6 +53,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
     columns: [
         //{ name: 'BLSAMPLEID', label: 'ID', cell: 'string', editable: false },
         { name: 'NAME', label: 'Name', cell: 'string', editable: false },
+        { name: 'RECORDTIMESTAMP', label: 'Created', cell: 'string', editable: false },
         { name: 'ACRONYM', label: 'Protein', cell: 'string', editable: false },
         { name: 'COMPONENTACRONYMS', label: 'Components', cell: 'string', editable: false },
         { name: 'SPACEGROUP', label: 'Spacegroup', cell: 'string', editable: false },
