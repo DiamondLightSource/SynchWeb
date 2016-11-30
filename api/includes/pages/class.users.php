@@ -172,8 +172,8 @@ class Users extends Page {
 
         if ($this->has_arg('pid')) {
             $where .= ' AND (prhp.proposalid=:'.(sizeof($args)+1).' OR lc.proposalid=:'.(sizeof($args)+2).' OR p.personid=:'.(sizeof($args)+3).')';
-            array_push($args, $this->arg('pid'));
-            array_push($args, $this->arg('pid'));
+            array_push($args, $this->proposalid);
+            array_push($args, $this->proposalid);
             array_push($args, $this->user->personid);
         }
 
@@ -214,14 +214,14 @@ class Users extends Page {
         }
 
         if ($this->has_arg('visit')) {
-            $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last,";
+            $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, shp.remote,";
             $join = 'INNER JOIN session_has_person shp ON shp.personid = p.personid
                      INNER JOIN blsession s ON shp.sessionid = s.sessionid
                      INNER JOIN proposal pr ON pr.proposalid = s.proposalid
 
                      LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
                      LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate';
-            $where .= " AND CONCAT(CONCAT(CONCAT(pr.proposalcode,pr.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
+            $where .= " AND shp.remote IS NOT NULL AND CONCAT(CONCAT(CONCAT(pr.proposalcode,pr.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
             $group = 'GROUP BY p.personid, p.givenname, p.familyname, p.login';
             array_push($args, $this->arg('visit'));
         }
