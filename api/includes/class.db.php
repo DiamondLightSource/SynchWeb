@@ -17,7 +17,8 @@
                 $dbclass = ucwords($dbtype);
                 if (file_exists($dbclassfile)) include_once($dbclassfile);
 
-                return new $dbclass($isb['user'], $isb['pass'], $isb['db'], $app);
+                $port = array_key_exists('port', $isb) ? $isb['port'] : null;
+                return new $dbclass($isb['user'], $isb['pass'], $isb['db'], $port);
             
             //     self::$instance = new $dbclass($isb['user'], $isb['pass'], $isb['db'], $app);
             // } else {
@@ -33,6 +34,7 @@
         public $debug = False;
         public $stats = False;
         public $stat;
+        private $app;
 
         function type() {
             return $this->type;
@@ -68,7 +70,7 @@
 
 
     interface DatabaseInterface {
-        public function __construct($user, $pass, $db, $app);
+        public function __construct($user, $pass, $db, $port);
 
         // Prepared Query
         public function pq($query, $arguments);

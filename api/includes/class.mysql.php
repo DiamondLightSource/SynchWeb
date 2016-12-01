@@ -11,11 +11,10 @@
         var $stat = '';
         var $stats = False;
         
-        function __construct($user, $pass, $db, $app=null) {
-            $this->app = $app;
-
+        function __construct($user, $pass, $db, $port=null) {
             list($host, $dbn) = explode('/', $db);
-            $this->conn = new mysqli($host, $user, $pass, $dbn);
+            if (!$port) $port = ini_get("mysqli.default_port");
+            $this->conn = new mysqli($host, $user, $pass, $dbn, $port);
             mysqli_set_charset($this->conn, "utf8");
             
             if (mysqli_connect_errno()) {
