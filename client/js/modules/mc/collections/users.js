@@ -6,6 +6,10 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
 		keyAttribute: 'NAME',
 		valueAttribute: 'PERSONID',
 
+		state: {
+	      pageSize: 9999,
+	    },
+
 		initialize: function(models, options) {
 			this.visit = options.visit
 		},
