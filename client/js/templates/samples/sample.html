@@ -19,7 +19,13 @@
         
         <li>
             <span class="label">Protein Acronym</span>
-            <span class="ACRONYM"><%=ACRONYM%></span> <a href="/proteins/pid/<%=PROTEINID%>" class="button"><i class="fa fa-search"></i> View All</a>
+            <span class="ACRONYM"><%=ACRONYM%></span> 
+            <a href="/proteins/pid/<%=PROTEINID%>" class="button"><i class="fa fa-search"></i> View All</a>
+        </li>
+
+        <li>
+            <span class="label">Abundance</span>
+            <span class="ABUNDANCE"><%=ABUNDANCE%></span><%=SYMBOL%>
         </li>
 
         <li class="clearfix">
@@ -29,6 +35,11 @@
             <span class="components floated"></span>
         </li>
         
+        <li>
+            <span class="label">Volume</span>
+            <span class="VOLUME"><%=VOLUME%></span>
+        </li>
+
         <li>
             <span class="label">Spacegroup</span>
             <span class="SPACEGROUP"><%=SPACEGROUP%></span>

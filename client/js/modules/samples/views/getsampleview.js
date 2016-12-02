@@ -25,7 +25,8 @@ define(['views/getview',
 
 		SampleList: new GetView({
 			views: {
- 				mx: SampleList,
+                mx: SampleList,
+ 				saxs: SampleList,
               	gen: GenSampleList,
 			},
 			default: GenSampleList,
@@ -33,7 +34,8 @@ define(['views/getview',
 
 		SampleView: new GetView({
         	views: {
-        		mx: SampleView,
+                mx: SampleView,
+        		saxs: SampleView,
                 gen: GenSampleView,
         	},
         	default: GenSampleView,
@@ -43,7 +45,8 @@ define(['views/getview',
 
 		ProteinList: new GetView({
 			views: {
-				mx: ProteinList,
+                mx: ProteinList,
+				saxs: ProteinList,
             	gen: GenComponentList,
             },
             default: GenComponentList,
@@ -52,7 +55,8 @@ define(['views/getview',
 
         ProteinAdd: new GetView({
         	views: {
-        		mx: AddProteinView,
+                mx: AddProteinView,
+        		saxs: AddProteinView,
             	gen: GenComponentAdd,
         	},
         	default: GenComponentAdd
@@ -61,7 +65,8 @@ define(['views/getview',
 
         ProteinView: new GetView({
         	views: {
-        		mx: ProteinView,
+                mx: ProteinView,
+        		saxs: ProteinView,
                 gen: GenComponentView,
         	},
         	default: GenComponentView,

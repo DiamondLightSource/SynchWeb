@@ -2,7 +2,7 @@ define(['modules/proposal/visit_list', 'tpl!templates/types/saxs/proposal/visitl
     
     return VisitList.extend({
         linksTemplate: visitlinks,
-        clickable: false,
+        clickable: true,
     })
 
 

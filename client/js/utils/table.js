@@ -18,7 +18,7 @@ define(['marionette', 'backgrid', 'modules/projects/views/addto'], function(Mari
             render: function() {
                 this.$el.empty();
 
-                if (!this.column.get('test') || (this.column.get('test') && this.model.get(this.column.get('test')))) {
+                if (!this.column.get('test') || (this.column.get('test') && this.model.get(this.column.get('test')) && this.model.get(this.column.get('test')) != '0')) {
                     
                     var temp = _.isFunction(this.getTemplate) ? _.result(this, 'getTemplate') : this.column.get('template')
                     var t = _.isFunction(temp) ? temp : _.template(temp)
@@ -57,7 +57,21 @@ define(['marionette', 'backgrid', 'modules/projects/views/addto'], function(Mari
                 return this;
             }
         }),
-        
+
+        StatusCell: Backgrid.Cell.extend({
+            render: function() {
+                this.$el.empty()
+                
+                var st = ''
+                _.each(['R', 'SC', 'AI', 'DC', 'AP'], function(t) {
+                    if (this.model.get(t) > 0) st = '<li class="'+t+'"></li>'
+                }, this)
+                
+                if (st) this.$el.append('<ul class="status">'+st+'</ul>')
+                
+                return this
+            }
+        }),
     }
     
 })

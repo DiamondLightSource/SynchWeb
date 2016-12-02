@@ -91,7 +91,7 @@
          input.data( "ui-autocomplete" )._renderItem = function( ul, item ) {
 
                return $( "<li>" )
-                           .append( $( "<a>" ).html( item.label ) )
+                           .append( $( "<a>" ).html( item.label+'' ).addClass(item.class) )
                            .appendTo( ul );
 
             };
@@ -109,7 +109,8 @@
                   var text = $( this ).text();
 
                   if ( this.value && ( !request.term || matcher.test(text) ) ) {
-
+                     var classes = []
+                     this.classList.forEach(function(v) { classes.push(v) })
                      return {
                            label: text.replace(
                               new RegExp(
@@ -118,7 +119,8 @@
                                   ")(?![^<>]*>)(?![^&;]+;)", "gi"),
                                   "<strong>$1</strong>"),
                            value: text,
-                           option: this
+                           option: this,
+                           class: classes.join(' ')
                         };
                   }
               })

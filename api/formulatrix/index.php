@@ -249,7 +249,7 @@ function imagedPlate($imagedPlate) {
         )
     ));
 
-    // $imaging->_email_status_update($imagingPlate->imagingID);
+    $imaging->_email_status_update($id);
 
     $response = new uk\ac\ox\oppf\www\WSPlate\imagedPlateResponse();
     $response->imagedPlateReturn = true;
@@ -260,7 +260,7 @@ function imagedPlate($imagedPlate) {
 
 // SynchWeb skippedImaging implementation
 function skippedImaging($skippedImaging) {
-    global $imaging;
+    global $imaging, $states;
 
     // Mark imaging session $skippedImaging->dateToImage for
     // $skippedImaging->plateID as skipped
@@ -268,7 +268,7 @@ function skippedImaging($skippedImaging) {
     $dateToImage = date_create_from_format(DATE_ATOM, $skippedImaging->dateToImage);
     $imaging->_update_inspection(array(
         'DATETOIMAGE' => $dateToImage->format('d-m-Y H:i'),
-        'BARCODE' => $imagingPlate->plateID, 
+        'BARCODE' => $skippedImaging->plateID, 
         'VALUES' => array(
             'STATE' => $states[2],
         )

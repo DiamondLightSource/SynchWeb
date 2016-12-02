@@ -19,6 +19,7 @@
                               'imager' => '\d',
                               'imid' => '\d+',
 
+                              'requestedimager' => '\d',
 
                               // cache name
                               'name' => '\w+',
@@ -79,6 +80,13 @@
                               'SCHEDULEID' => '\d+',
                               'SCREENID' => '\d+',
                               'PERSONID' => '\d+',
+                              'DISPOSE' => '\d',
+                              'REQUESTEDRETURN' => '\d',
+                              'REQUESTEDIMAGERID' => '\d+',
+                              'CONTAINERID' => '\d+',
+                              'UNQUEUE' => '\d',
+                              'EXPERIMENTTYPE' => '\w+',
+                              'STORAGETEMPERATURE' => '[\w-]+',
                               );
         
 
@@ -116,6 +124,7 @@
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
                               array('/containers/queue', 'get', '_queue_container'),
+                              array('/containers/barcode/:BARCODE', 'get', '_check_container'),
                               
 
                               array('/cache/:name', 'put', '_session_cache'),
@@ -593,6 +602,7 @@
                         'WC' => 'With Courier',
                         'OK' => 'Delivered',
                         'AR' => 'Arrived at Facility',
+                        'TR' => 'In Transit'
                     );
 
                     $events = array();
@@ -663,6 +673,11 @@
                     $where .= " AND se.beamlinename IN ('$bls')";
                 }
             }
+
+            if ($this->has_arg('requestedimager')) {
+                $where .= ' AND c.requestedimagerid IS NOT NULL';
+            }
+
 
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
@@ -877,18 +892,32 @@
             // $this->db->pq("INSERT INTO genericdata (genericdataid,parametervaluedate,parametervaluestring,parametercomments) 
               // VALUES (s_genericdata.nextval, SYSDATE, 'terms_accepted', :1)", array($this->arg('prop').','.$this->arg('SHIPPINGNAME').','.$this->user->login));
 
-            $this->db->pq("INSERT INTO dhltermsaccepted (dhltermsacceptedid,proposalid,personid,shippingname,timestamp) 
+            $this->db->pq("INSERT INTO couriertermsaccepted (couriertermsacceptedid,proposalid,personid,shippingname,timestamp) 
               VALUES (s_dhltermsaccepted.nextval, :1, :2, :3, CURRENT_TIMESTAMP)", array($this->proposalid, $this->user->personid, $this->arg('SHIPPINGNAME')));
             
             $root = '/dls_sw/dasc/ispyb2/shipping';
             $this->_output(array(file_get_contents($root.'/instructions.html'), file_get_contents($root.'/pin.txt'), file_get_contents($root.'/account.txt')));
         }
         
-        
+        # Check if a barcode exists
+        function _check_container() {
+            $cont = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, c.barcode 
+              FROM container c
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping s ON s.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              WHERE c.barcode=:1", array($this->arg('BARCODE')));
+
+            if (!sizeof($cont)) $this->_error('Barcode not used');
+            $this->_output($cont[0]);
+        }
+
+
         function _get_all_containers() {
             //$this->db->set_debug(True);
             if (!$this->has_arg('prop') && !$this->has_arg('visit') && !$this->staff) $this->_error('No proposal specified');
             
+            $having = '';
             
             if ($this->has_arg('visit')) {
                 $join = " INNER JOIN blsession ses ON ses.proposalid = p.proposalid";
@@ -912,7 +941,12 @@
                     $where .= " AND c.containertype NOT LIKE 'Puck'";
                 } else if ($this->arg('ty') == 'puck') {
                     $where .= " AND c.containertype LIKE 'Puck'";
-                }
+                } else if ($this->arg('ty') == 'imager') {
+                    $where .= " AND c.imagerid IS NOT NULL";
+                } else if ($this->arg('ty') == 'todispose') {
+                    $where .= " AND c.imagerid IS NOT NULL";
+                    $having .= " HAVING (TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24) > 42";
+                } 
             }
 
             
@@ -967,13 +1001,16 @@
                 LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
                 LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
                 LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
+                LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
                 $join 
-                WHERE $where", $args);
+                WHERE $where
+                $having", $args);
             $tot = intval($tot[0]['TOT']);
             
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%'))";
+                $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
+                array_push($args, $this->arg('s'));
                 array_push($args, $this->arg('s'));
             }
             
@@ -990,6 +1027,12 @@
             
             $order = 'c.bltimestamp DESC';
             
+
+            if ($this->has_arg('ty')) {
+                if ($this->arg('ty') == 'todispose') {
+                    $order = 'c.requestedreturn DESC, age DESC';
+                } 
+            }
             
             if ($this->has_arg('sort_by')) {
                 $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)');
@@ -997,7 +1040,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             // $this->db->set_debug(True);
-            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, 0 as queued, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples
+            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, cq.createdtimestamp as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode
                                   FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
@@ -1006,13 +1049,17 @@
                                   LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                                   LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
                                   LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
+                                  LEFT OUTER JOIN imager i2 ON i2.imagerid = c.requestedimagerid
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
                                   LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
                                   LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != 'Completed' AND ci2.manual!=1 AND ci2.schedulecomponentid IS NULL
-                                  /*LEFT OUTER JOIN containerdataschedule as cs ON cs.containerid = c.containerid*/
+                                  LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
+
+                                  LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
                                   $join
                                   WHERE $where
                                   GROUP BY sch.name, c.scheduleid, c.screenid, sc.name, c.imagerid, i.temperature, i.name, CONCAT(p.proposalcode, p.proposalnumber), c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
+                                  $having
                                   ORDER BY $order", $args);
 
             if ($this->has_arg('cid')) {
@@ -1027,24 +1074,49 @@
         
 
         function _queue_container() {
-            if (!$this->has_arg('cid')) $this->_error('No container specified');
+            if (!$this->has_arg('CONTAINERID')) $this->_error('No container specified');
 
-            $chkc = $this->db->pq("SELECT c.containerid 
-              FROM container c 
-              INNER JOIN dewar d ON c.dewarid = d.dewarid 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid 
-              WHERE c.containerid=:1 AND p.proposalid=:2", array($this->arg('cid'), $this->proposalid));
+            $chkc = $this->db->pq("SELECT c.containerid,c.containerstatus FROM container c 
+                INNER JOIN dewar d ON c.dewarid = d.dewarid 
+                INNER JOIN shipping s ON s.shippingid = d.shippingid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid 
+                WHERE c.containerid=:1 AND p.proposalid=:2", array($this->arg('CONTAINERID'), $this->proposalid));
+            
+            if (!sizeof($chkc)) $this->_error('No such container');
 
-            $chkq = $this->db->pq("SELECT containerid FROM containerdataschedule WHERE containerid=:1", $this->arg('cid'));
 
-            if (sizeof($chkc) && !sizeof($chkq)) {
-                if (!sizeof($chkq)) {
-                  $this->db->pq("INSERT INTO containerdataschedule (containerdatascheduleid, containerid, bltimestamp)
-                    VALUE (s_containerdataschedule.nextval, :1, CURRENT_TIMESTAMP)", array($this->arg('cid')));
-                  $this->_output(1);
+            if ($this->has_arg('UNQUEUE')) {
+                $chkq = $this->db->pq("SELECT containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
+                if (!sizeof($chkq)) $this->_error('That container is not queued');
+                if (!in_array($chkc[0]['CONTAINERSTATUS'], array('in_storage', 'disposed', null))) $this->_error('Container is awaiting data collection and cannot be unqueued');
 
-                } else $this->_error('That container is already in the queue');
+                $cqid = $chkq[0]['CONTAINERQUEUEID'];
+
+                $this->db->pq("UPDATE containerqueuesample SET containerqueueid = NULL WHERE containerqueueid=:1", array($cqid));
+                $this->db->pq("DELETE FROM containerqueue WHERE containerqueueid=:1", array($cqid));
+                $this->_output(new stdClass);
+
+            } else {
+                $chkq = $this->db->pq("SELECT containerid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
+                if (sizeof($chkq)) $this->_error('That container is already queued');
+
+                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
+                $qid = $this->db->id();
+
+                $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
+                  INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+                  INNER JOIN container c ON c.containerid = s.containerid
+                  INNER JOIN dewar d ON d.dewarid = c.dewarid
+                  INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                  INNER JOIN proposal p ON p.proposalid = sh.proposalid
+                  INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+                  WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL", array($this->proposalid, $this->arg('CONTAINERID')));
+
+                foreach ($samples as $s) {
+                    $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
+                }
+
+                $this->_output(array('CONTAINERQUEUEID' => $qid));
             }
         }
 
@@ -1073,12 +1145,17 @@
             
             if (!sizeof($chkc)) $this->_error('No such container');
 
-            $fields = array('NAME' => 'CODE');
+            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE');
             foreach ($fields as $k => $f) {
                 if ($this->has_arg($k)) {
                     $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($this->arg($k), $this->arg('cid')));
                     $this->_output(array($k => $this->arg($k)));
                 }
+            }
+
+            if ($this->user->can('disp_cont') && $this->has_arg('DISPOSE')) {
+                $this->db->pq("UPDATE container SET imagerid=NULL,containerstatus='disposed' WHERE containerid=:1", array($this->arg('cid')));
+                $this->_output(array('IMAGERID' => null));
             }
         }
         
@@ -1096,10 +1173,15 @@
             $sch = $this->has_arg('SCHEDULEID') ? $this->arg('SCHEDULEID') : null;
             $scr = $this->has_arg('SCREENID') ? $this->arg('SCREENID') : null;
             $own = $this->has_arg('PERSONID') ? $this->arg('PERSONID') : null;
+            $rid = $this->has_arg('REQUESTEDIMAGERID') ? $this->arg('REQUESTEDIMAGERID') : null;
+            $com = $this->has_arg('COMMENTS') ? $this->arg('COMMENTS') : null;
+            $bar = $this->has_arg('BARCODE') ? $this->arg('BARCODE') : null;
+            $ext = $this->has_arg('EXPERIMENTTYPE') ? $this->arg('EXPERIMENTTYPE') : null;
+            $tem = $this->has_arg('STORAGETEMPERATURE') ? $this->arg('STORAGETEMPERATURE') : null;
 
-            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid, screenid, ownerid) 
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7) RETURNING containerid INTO :id", 
-              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own));
+            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature) 
+              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12) RETURNING containerid INTO :id", 
+              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem));
                                  
             $cid = $this->db->id();
             
@@ -1212,6 +1294,10 @@
                     $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing',:3) RETURNING dewarid INTO :id", array($this->arg('visit').'_Dewar1', $shid, $sid));
                     
                     $did = $this->db->id();
+
+                    # Need to generate barcode
+                    $bl = $this->db->pq("SELECT s.beamlinename as bl FROM blsession s WHERE s.sessionid=:1", array($sid));
+                    $this->db->pq("UPDATE dewar set barcode=:1 WHERE dewarid=:2", array($this->arg('visit').'-'.$bl[0]['BL'].'-'.str_pad($did,7,'0',STR_PAD_LEFT), $did));
                 }
             }
             

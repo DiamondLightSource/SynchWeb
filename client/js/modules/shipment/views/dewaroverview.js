@@ -41,8 +41,8 @@ define(['marionette',
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Dewar Overview</h1><p class="help">This page shows all dewars for all current visits</p><div class="filter type"></div><div class="wrapper"></div></div>',
-        regions: { wrap: '.wrapper', type: '.type' },
+        template: '<div><h1>Dewar Overview</h1><p class="help">This page shows all dewars for all current visits</p><div class="filter bl"></div><div class="filter img"></div><div class="wrapper"></div></div>',
+        regions: { wrap: '.wrapper', type: '.bl', img: '.img' },
         
         initialize: function(options) {
             this.beamlines = new Beamlines(null, { ty: app.type })
@@ -76,6 +76,14 @@ define(['marionette',
                 filters: this.beamlines.map(function(b) { return { id: b.get('BEAMLINE'), name: b.get('BEAMLINE') } }),
             })
             this.type.show(this.ty)
+
+            this.ty2 = new FilterView({
+                url: false,
+                collection: this.collection,
+                name: 'requestedimager',
+                filters: [{ id: '1', name: 'Imager Requested'}],
+            })
+            this.img.show(this.ty2)
         },
           
         onShow: function() {

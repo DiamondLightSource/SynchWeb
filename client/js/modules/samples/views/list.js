@@ -9,31 +9,6 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
     cookie: true,
   })
     
-  /*var ClickableRow = Backgrid.Row.extend({
-    events: {
-      'click': 'onClick',
-    },
-    onClick: function() {
-      if ($(e.target).is('i') || $(e.target).is('a')) return
-      app.cookie(this.model.get('PROP'))
-      app.trigger('samples:view', this.model.get('BLSAMPLEID'))
-    },
-  })*/
-
-  var StatusCell = Backgrid.Cell.extend({
-    render: function() {
-        this.$el.empty();
-        
-        var st = ''
-        _.each(['R', 'SC', 'AI', 'DC', 'AP'], function(t) {
-            if (this.model.get(t) > 0) st = '<li class="'+t+'"></li>'
-        }, this)
-        
-        if (st) this.$el.append('<ul class="status">'+st+'</ul>')
-        
-        return this;
-    }
-  });
 
   var SnapshotCell = Backgrid.Cell.extend({
       render: function() {
@@ -78,9 +53,11 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
     columns: [
         //{ name: 'BLSAMPLEID', label: 'ID', cell: 'string', editable: false },
         { name: 'NAME', label: 'Name', cell: 'string', editable: false },
+        { name: 'RECORDTIMESTAMP', label: 'Created', cell: 'string', editable: false },
         { name: 'ACRONYM', label: 'Protein', cell: 'string', editable: false },
+        { label: 'Abundance', cell: table.TemplateCell, editable: false, template: '<% if (ABUNDANCE) { %><%=ABUNDANCE%><%=SYMBOL%><% } %>' },
         { name: 'COMPONENTACRONYMS', label: 'Components', cell: 'string', editable: false },
-        { name: 'SPACEGROUP', label: 'Spacegroup', cell: 'string', editable: false },
+        { name: 'SPACEGROUP', label: 'SG', cell: 'string', editable: false },
         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: false },
         { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
         { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
@@ -92,7 +69,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
         { name: 'SCRESOLUTION', label: 'Res', cell: 'string', editable: false },
         { name: 'DC', label: 'DCs', cell: 'string', editable: false },
         { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: false },
-        { label: 'Status', cell: StatusCell, editable: false },
+        { label: 'Status', cell: table.StatusCell, editable: false },
         { label: ' ', cell: table.ProjectCell, itemname: 'NAME', itemid: 'BLSAMPLEID', itemtype:'sample', editable: false },
     ],
 
@@ -129,7 +106,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
   })
 
   module.SnapshotCell = SnapshotCell
-  module.StatusCell = StatusCell
+  module.StatusCell = table.StatusCell
 
 
   return module

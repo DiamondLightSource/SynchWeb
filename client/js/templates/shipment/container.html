@@ -24,7 +24,26 @@
             <span class="label">Container Type</span>
             <span><%=CONTAINERTYPE%></span>
         </li>
-
+        <li>
+            <span class="label">Barcode</span>
+            <span class="BARCODE"><%=BARCODE%></span>
+        </li>
+        <% if (EXPERIMENTTYPE) { %>
+        <li>
+            <span class="label">Experiment Type</span>
+            <span class="EXPERIMENTTYPE"><%=EXPERIMENTTYPE%></span>
+        </li>
+        <% } %>
+        <% if (STORAGETEMPERATURE) { %>
+        <li>
+            <span class="label">Storage Temperature</span>
+            <span class="STORAGETEMPERATURE"><%=STORAGETEMPERATURE%></span>
+        </li>
+        <% } %>
+        <li>
+            <span class="label">Comments</span>
+            <span class="COMMENTS"><%=COMMENTS%></span>
+        </li>
     </ul>
 </div>
 

@@ -17,7 +17,7 @@
             padding: 5px;
         }
 
-        td.extra, th.extra {
+        td.extra, th.extra, th.xtal, td.xtal, th.non-xtal, td.non-xtal {
             display: none;
 
             &.show {
@@ -26,7 +26,7 @@
         }
 
         @media (max-width: $breakpoint-vsmall) {
-            td.extra, th.extra {
+            td.extra, th.extra,, th.xtal, td.xtal, th.non-xtal, td.non-xtal {
                 &.show {
                     display: block;
                 }
@@ -207,23 +207,27 @@
     }
 
     table.samples {
-        td:nth-child(2), td:nth-child(9) {
+        td:nth-child(2), td:nth-child(3), td:nth-child(11) {
             white-space: nowrap;
         }
 
-        td:nth-child(10) {
+        td:nth-child(12) {
             width: 16%;
             input {
                 width: 25%;
             }
         }
 
-        td:nth-child(9) {
+        td:nth-child(11) {
             width: 10%;
             input {
                 width: 40%;
             }
             
+        }
+
+        input[name=ABUNDANCE] {
+            width: auto;
         }
 
         .components {
@@ -242,7 +246,16 @@
         }
 
         @media (max-width: $breakpoint-vsmall) {
-            td:nth-child(9), td:nth-child(10) {
+            td:nth-child(11), td:nth-child(12) {
+                width: auto;
+            }
+        }
+    }
+
+    table.subsamples {
+        table td {
+            text-align: left;
+            input {
                 width: auto;
             }
         }
@@ -484,14 +497,16 @@ html[xmlns] .dataTables_wrapper { display: block; }
 
             td:nth-of-type(1):before { content: "Location"; }
             td:nth-of-type(2):before { content: "Protein Acronym"; }
-            td:nth-of-type(3):before { content: "Components"; }
-            td:nth-of-type(4):before { content: "Sample Name"; }
-            td:nth-of-type(5):before { content: "Spacegroup"; }
-            td:nth-of-type(6):before { content: "Barcode"; }
-            td:nth-of-type(7):before { content: "Comment"; }
-            td:nth-of-type(8):before { content: "Required Resolution"; }
-            td:nth-of-type(9):before { content: "Anom Scatterer"; }
-            td:nth-of-type(10):before { content: "Unit Cell"; }
+            td:nth-of-type(3):before { content: "Abundance"; }
+            td:nth-of-type(4):before { content: "Components"; }
+            td:nth-of-type(5):before { content: "Sample Name"; }
+            td:nth-of-type(6):before { content: "Spacegroup"; }
+            td:nth-of-type(7):before { content: "Barcode"; }
+            td:nth-of-type(8):before { content: "Volume"; }
+            td:nth-of-type(9):before { content: "Comment"; }
+            td:nth-of-type(10):before { content: "Required Resolution"; }
+            td:nth-of-type(11):before { content: "Anom Scatterer"; }
+            td:nth-of-type(12):before { content: "Unit Cell"; }
             /*td:nth-of-type(9):before { content: "Clone / Delete"; }*/
         }
         

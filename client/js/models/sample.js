@@ -59,6 +59,9 @@ define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
             CELL_ALPHA: '',
             CELL_BETA: '',
             CELL_GAMMA: '',
+            VOLUME: '',
+            ABUNDANCE: '',
+            SYMBOL: '',
         },
         
         validation: {
@@ -114,6 +117,17 @@ define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
                 required: false,
                 pattern: 'number'
             },
+
+            VOLUME: {
+                required: false,
+                pattern: 'number'
+            },
+
+            ABUNDANCE: {
+                required: false,
+                pattern: 'number'
+            },
+
 
             COMPONENTAMOUNTS: function(from_ui, attr, all_values) {
                 var values = all_values.components.pluck('ABUNDANCE')
