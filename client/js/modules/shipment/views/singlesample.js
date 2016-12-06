@@ -36,6 +36,8 @@ define(['marionette',
             cr: 'a.clone-row',
             comps: '.components',
             comp: 'input[name=COMPONENTID]',
+            abun: 'input[name=ABUNDANCE]',
+            sym: 'span.SYMBOL',
         },
         
         events: {
@@ -98,12 +100,14 @@ define(['marionette',
                             PROTEINID: -2,
                             NAME: '',
                             SPACEGROUP: '',
+                            ABUNDANCE: '',
+                            SYMBOL: '',
                         }, { silent: true })
                     }
                 }
             }, this)
             
-            start.set({ NAME: '', PROTEINID: -1 })
+            start.set({ NAME: '', PROTEINID: -1, ABUNDANCE: '', SYMBOL: '' })
         },
         
         clonePlate: function(e) {
@@ -145,6 +149,8 @@ define(['marionette',
                             PROTEINID: start.get('PROTEINID'),
                             NAME: this.sampleName(p.pos, start.get('NAME')),
                             SPACEGROUP: start.get('SPACEGROUP'),
+                            ABUNDANCE: start.get('ABUNDANCE'),
+                            SYMBOL: start.get('SYMBOL'),
                         }, { silent: true })
                     }
                 }
@@ -183,23 +189,37 @@ define(['marionette',
             this.ready = []
             this.extra = false
             this.gproteins = options.gproteins
+
+            this.listenTo(options.proteins, 'sync', this.updateProteins, this)
         },
         
         onRender: function() {
             $.when.apply($, this.ready).done(this.doRender.bind(this))
+        },
+
+        selectProtein: function() {
+            this.validateField.apply(this, arguments)
+            var p = this.getOption('proteins').findWhere({ PROTEINID: this.$el.find('select[name=PROTEINID]').combobox('value') })
+            console.log('selectProtein', arguments, p)
+            if (p) {
+                this.model.set('SYMBOL', p.get('CONCENTRATIONTYPE'))
+                this.ui.sym.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
+            }
         },
         
         doRender: function() {
             if (this.model) {
                 
                 if (this.model.get('new')) {
-                    this.ui.prot.combobox({ invalid: this.addProtein.bind(this), change: this.validateField.bind(this), select: this.validateField.bind(this) })
+                    this.ui.prot.combobox({ invalid: this.addProtein.bind(this), change: this.selectProtein.bind(this), select: this.selectProtein.bind(this) })
                     this.updateProteins()
                     
                     this.ui.sg.html(SG.opts()).val(this.model.get('SPACEGROUP'))
                     
                     this.ui.name.val(this.model.get('NAME'))
                     this.ui.com.val(this.model.get('COMMENTS'))
+                    this.ui.abun.val(this.model.get('ABUNDANCE'))
+                    this.ui.sym.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
                     
                 } else {
                     var edit = new Editable({ model: this.model, el: this.$el })
@@ -219,6 +239,7 @@ define(['marionette',
                     edit.create('CELL_ALPHA', 'text')
                     edit.create('CELL_BETA', 'text')
                     edit.create('CELL_GAMMA', 'text')
+                    edit.create('ABUNDANCE', 'text')
                 }
 
 
@@ -299,7 +320,11 @@ define(['marionette',
 
         
         updateProteins: function() {
-            this.ui.prot.html(this.getOption('proteins').opts())
+            this.ui.prot.html(this.getOption('proteins').opts({
+                addClass: 'active',
+                classProperty: 'EXTERNAL',
+                classPropertyValue: '1',
+            }))
             this.ui.prot.combobox('value', this.model.get('PROTEINID'))
         },
         

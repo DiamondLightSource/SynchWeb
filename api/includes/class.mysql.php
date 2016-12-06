@@ -11,11 +11,10 @@
         var $stat = '';
         var $stats = False;
         
-        function __construct($user, $pass, $db, $app=null) {
-            $this->app = $app;
-
+        function __construct($user, $pass, $db, $port=null) {
             list($host, $dbn) = explode('/', $db);
-            $this->conn = new mysqli($host, $user, $pass, $dbn);
+            if (!$port) $port = ini_get("mysqli.default_port");
+            $this->conn = new mysqli($host, $user, $pass, $dbn, $port);
             mysqli_set_charset($this->conn, "utf8");
             
             if (mysqli_connect_errno()) {
@@ -116,7 +115,6 @@
 
                             'DataCollection',
                             'EnergyScan',
-                            'BLSample_has_EnergyScan',
                             'XFEFluorescenceSpectrum',
                             'RobotAction',
                             'DataCollectionGroup',
@@ -152,7 +150,7 @@
                             'DewarTransportHistory',
                             'DewarRegistry',
                             'DewarReport',
-                            'DHLTermsAccepted',
+                            'CourierTermsAccepted',
                             
                             'BLSubSample',
                             'PDB',
@@ -218,6 +216,10 @@
                             'BLSampleImage',
                             'BLSampleImageScore',
 
+                            // Queuing
+                            'ContainerQueueSample',
+                            'ContainerQueue',
+
 
                             // To be removed
                             'Image',
@@ -273,19 +275,34 @@
 
             $data = array();
             if (strpos($query, 'SELECT') !== false) {
-                $params = array();
-                $row = array();
-                $meta = $stmt->result_metadata();
-                while ($field = $meta->fetch_field()) {
-                    array_push($params, &$row[$field->name]);
-                }
-                call_user_func_array(array($stmt, 'bind_result'), $params);
+                if (PHP_VERSION_ID <= 50401) {
+                    $params = array();
+                    $row = array();
+                    $meta = $stmt->result_metadata();
+                    while ($field = $meta->fetch_field()) {
+                        array_push($params, &$row[$field->name]);
+                    }
+                    call_user_func_array(array($stmt, 'bind_result'), $params);
 
-                while ($stmt->fetch()) {
-                    $c = array();
-                    // Oracle returns all values as strings - Need to be consistent :(
-                    foreach ($row as $key => $val) $c[strtoupper($key)] = $val === null ? null : strval($val);
-                    $data[] = $c;
+                    while ($stmt->fetch()) {
+                        $c = array();
+                        // Oracle returns all values as strings - Need to be consistent :(
+                        foreach ($row as $key => $val) $c[strtoupper($key)] = $val === null ? null : strval($val);
+                        $data[] = $c;
+                    }
+
+                } else {
+                    $result = $stmt->get_result();
+                    if ($result) {
+                        if($result->num_rows > 0) {
+                            while($row = $result->fetch_assoc()) {
+                                $c = array();
+                                // oracle inheritance ;(
+                                foreach ($row as $key => $val) $c[strtoupper($key)] = $val === null ? null : strval($val);
+                                array_push($data, $c);
+                            }
+                        }
+                    }
                 }
             }
 

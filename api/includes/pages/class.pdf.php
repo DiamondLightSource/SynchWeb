@@ -169,8 +169,7 @@
             
             $rows = $this->db->pq("SELECT sa.name, p.name as protein, es.element, es.peakfprime, es.exposuretime, es.peakfdoubleprime, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor as transmission, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy 
                 FROM energyscan es 
-                LEFT OUTER JOIN blsample_has_energyscan she ON she.energyscanid = es.energyscanid 
-                LEFT OUTER JOIN blsample sa ON she.blsampleid = sa.blsampleid 
+                LEFT OUTER JOIN blsample sa ON es.blsampleid = sa.blsampleid 
                 LEFT OUTER JOIN crystal c ON sa.crystalid = c.crystalid 
                 LEFT OUTER JOIN protein p ON c.proteinid = p.proteinid 
                 WHERE es.sessionid=:1 ORDER BY es.starttime", array($info['SID']));

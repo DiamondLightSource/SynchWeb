@@ -16,8 +16,7 @@
         
 
         # Initialise database connection
-        function __construct($user, $pass, $db, $app=null) {
-            $this->app = $app;
+        function __construct($user, $pass, $db, $port=null) {
             #ini_set('oci8.persistent_timeout', 60);
             #ini_set('oci8.max_persistent', 3);
             #ini_set('oci8.statement_cache_size', 450);

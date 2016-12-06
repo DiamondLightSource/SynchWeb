@@ -1,5 +1,7 @@
 <?php
 
+    require_once(dirname(__FILE__).'/../class.templateparser.php');
+
     class Download extends Page {
         
         public static $arg_list = array('id' => '\d+',
@@ -31,6 +33,7 @@
                               array('/bl/visit/:visit/run/:run', 'get', '_blend_mtz'),
                               array('/sign', 'post', '_sign_url'),
                               array('/bigep/id/:id/dt/:dt/ppl/:ppl(/log/:log)', 'get', '_bigep_mtz'),
+                              array('/data/visit/:visit', 'get', '_download_visit'),
             );
 
         
@@ -42,6 +45,20 @@
 
             $this->db->pq("INSERT INTO SW_onceToken (token, validity, proposalid, personid) VALUES (:1, :2, :3, :4)", array($token, $this->arg('validity'), $this->proposalid, $this->user->personid));
             $this->_output(array('token' => $token));
+        }
+
+
+        # ------------------------------------------------------------------------
+        # SAXS Specific Visit Download Link
+        function _download_visit() {
+            $tp = new TemplateParser($this->db);
+            $visit = $tp->visit_dir(array('VISIT' => $this->arg('visit')));
+            
+            $data = $visit.'/.ispyb/download/download.zip';
+            if (file_exists($data)) {
+                $this->_header($this->arg('visit').'_download.zip');
+                readfile($data);
+            } else $this->_error('There doesnt seem to be a data archive available for this visit');
         }
 
 
@@ -262,8 +279,10 @@
                 } else {
                     if (!file_exists('/tmp/'.$this->arg('id').'_'.$type.'.tar.gz')) {
                         $a = new PharData('/tmp/'.$this->arg('id').'_'.$type.'.tar');
-                        $a->addFile($files[1], basename($files[1]));
-                        $a->addFile($files[1], basename($files[1]));
+                        foreach ($files as $f) {
+                            $a->addFile($f, basename($f));
+                        }
+                        $a->addFile($log_file, basename($log_file));
                         $a->compress(Phar::GZ);
 
                         unlink('/tmp/'.$this->arg('id').'_'.$type.'.tar');

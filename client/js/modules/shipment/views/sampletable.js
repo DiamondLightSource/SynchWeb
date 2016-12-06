@@ -16,6 +16,7 @@ define(['marionette',
         'utils',
     
         'jquery',
+        'jquery-ui',
         'jquery-ui.combobox',
     ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
         sampletable, sampletablerow, sampletablerowedit, 
@@ -36,6 +37,7 @@ define(['marionette',
         ui: {
             comp: 'input[name=COMPONENTID]',
             comps: 'td.components',
+            symbol: 'span.SYMBOL',
         },
 
         modelEvents: {
@@ -72,7 +74,7 @@ define(['marionette',
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP'], function(f) {
+            _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP', 'VOLUME', 'ABUNDANCE'], function(f) {
                 data[f] = this.$el.find('[name='+f+']').val()
             }, this)
 
@@ -84,7 +86,10 @@ define(['marionette',
             
         success: function(m,r,o) {
             var p = this.proteins.findWhere({ PROTEINID: this.model.get('PROTEINID') })
-            if (p) this.model.set('ACRONYM', p.get('ACRONYM'))
+            if (p) {
+                this.model.set('ACRONYM', p.get('ACRONYM'))
+                this.model.set('SYMBOL', p.get('CONCENTRATIONTYPE'))
+            }
 
             this.model.set('new', false)
             this.editing = false
@@ -128,7 +133,7 @@ define(['marionette',
         clearSample: function(e) {
             e.preventDefault()
             this.model.set({ 
-                PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '',
+                PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '', SYMBOL: '',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: ''
             })
             this.model.get('components').reset()
@@ -155,11 +160,21 @@ define(['marionette',
             }, this)
             this.model.set({ STATUS: st })
         },
+
+        selectProtein: function(e) {
+            this.validateField.apply(this,arguments)
+            var p = this.proteins.findWhere({ PROTEINID: this.$el.find('select[name=PROTEINID]').combobox('value') })
+            console.log('selectProtein', arguments, p)
+            if (p) {
+                this.model.set('SYMBOL', p.get('CONCENTRATIONTYPE'))
+                this.ui.symbol.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
+            }
+        },
         
         onRender: function() {
             this.$el.find('[name=SPACEGROUP]').html(SG.opts()).val(this.model.get('SPACEGROUP'))
             this.$el.find('[name=ANOMALOUSSCATTERER]').html(Anom.opts()).val(this.model.get('ANOMALOUSSCATTERER'))
-            this.$el.find('select[name=PROTEINID]').combobox({ invalid: this.addProtein.bind(this), change: this.validateField.bind(this), select: this.validateField.bind(this) })
+            this.$el.find('select[name=PROTEINID]').combobox({ invalid: this.addProtein.bind(this), change: this.selectProtein.bind(this), select: this.selectProtein.bind(this) })
             this.updateProteins()
             
             // for pasting from spreadsheet
@@ -168,11 +183,19 @@ define(['marionette',
             //if (this.model.get('CODE')) this.$el.find('input[name=CODE]').val(this.model.get('CODE'))
             //if (this.model.get('COMMENTS')) this.$el.find('input[name=COMMENTS]').val(this.model.get('COMMENTS'))
                 
-            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO'], function(f, i) {
+            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME'], function(f, i) {
                 if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             }, this)
 
+            this.ui.symbol.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
+
             if (this.getOption('extra').show) this.$el.find('.extra').addClass('show')
+
+            if (this.getOption('type') == 'non-xtal') {
+                this.$el.find('.non-xtal').addClass('show')
+            } else {
+                this.$el.find('.xtal').addClass('show')
+            }
             this.ui.comp.autocomplete({ 
                 source: this.getGlobalProteins.bind(this),
                 select: this.selectGlobalProtein.bind(this)
@@ -248,7 +271,11 @@ define(['marionette',
         },
         
         updateProteins: function() {
-            this.$el.find('select[name=PROTEINID]').html(this.proteins.opts())
+            this.$el.find('select[name=PROTEINID]').html(this.proteins.opts({
+                addClass: 'active',
+                classProperty: 'EXTERNAL',
+                classPropertyValue: '1',
+            }))
             this.$el.find('select[name=PROTEINID]').combobox('value', this.model.get('PROTEINID'))
         },
     
@@ -301,10 +328,18 @@ define(['marionette',
 
             this.extra = { show: false }
             this.options.childViewOptions.extra = this.extra
+            this.options.childViewOptions.type = this.getOption('type')
             
         },
         
-        onRender: function() { console.log('rendering sample tale')},
+        onRender: function() { 
+            console.log('rendering sample tale')
+            if (this.getOption('type') == 'non-xtal') {
+                this.$el.find('.non-xtal').addClass('show')
+            } else {
+                this.$el.find('.xtal').addClass('show')
+            }
+        },
         
         toggleExtra: function() {
             this.extra.show = !this.extra.show

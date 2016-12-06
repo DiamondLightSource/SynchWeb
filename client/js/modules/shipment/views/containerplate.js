@@ -18,8 +18,6 @@ define(['marionette',
     'modules/imaging/views/addinspection',
     'modules/imaging/views/actualschedule',
     'modules/imaging/views/subtosample',
-    'modules/imaging/views/ssdiffractionplan',
-    'modules/imaging/views/queuecontainer',
     
     'modules/imaging/collections/screencomponentgroups',
     'modules/imaging/collections/screencomponents',
@@ -47,7 +45,7 @@ define(['marionette',
     SingleSample,
 
     ContainerInspections, InspectionImage, InspectionImages, ImageViewer, ImageHistoryView,
-    AddInspectionView, ActualScheduleView, SubToSampleView, SSDiffractionPlan, QueueContainerView,
+    AddInspectionView, ActualScheduleView, SubToSampleView,
 
     ScreenComponentGroups,
     ScreenComponents,
@@ -104,17 +102,6 @@ define(['marionette',
             e.preventDefault()
         },
 
-        details: function(e) {
-            e.preventDefault()
-
-            app.dialog.show(new DialogView({ 
-                title: 'View Subsample Details',
-                className: 'content', 
-                view: new SSDiffractionPlan({ dialog: true, model: this.model }),
-                autoSize: true 
-            }))  
-        },
-
         render: function() {
             this.$el.empty();
 
@@ -123,7 +110,6 @@ define(['marionette',
 
             this.$el.html('<!--<a href="#" class="button button-notext measure" title="Measure"><i class="fa fa-arrows-h"></i> <span>Measure</span></a>-->\
              <a href="#" class="button button-notext fish '+active2+'" title="Fish into puck"><i class="fa fa-crosshairs"></i> <span>Fish</span></a>\
-             <a href="#" class="button button-notext details '+active+'" title="View Experimental Parameters"><i class="fa fa-flask"></i> <span>Experimental Parameters</span></a>\
              <a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>')
             
             this.delegateEvents();
@@ -180,7 +166,8 @@ define(['marionette',
             // ext: '.extrainfo',
             ins: 'select[name=inspection]',
             add: '.add_image',
-            ads: 'a.add_sub',
+            ads: 'a.add_point',
+            adr: 'a.add_region',
 
             drop: '.dropimage',
             prog: '.progress',
@@ -189,12 +176,18 @@ define(['marionette',
             gap: 'input[name=gap]',
 
             ity: 'select[name=INSPECTIONTYPEID]',
+            status: 'span.sta',
+            ret: 'div.return',
+            adh: 'div.adhoc',
+            que: 'div.queue',
+            ss: 'input[name=sample_status]',
         },
 
         events: {
             // 'click @ui.ext': 'toggleExtra',
             'change @ui.ins': 'selectInspection',
-            'click @ui.ads': 'setAddSubsample',
+            'click @ui.ads': 'setAddSubsamplePoint',
+            'click @ui.adr': 'setAddSubsampleRegion',
             'click a.add_inspection': 'showAddInspection',
             'click a.view_sched': 'showViewSchedule',
             'click @ui.play': 'playInspection',
@@ -203,8 +196,9 @@ define(['marionette',
             'dragleave @ui.drop': 'dragHover',
             'drop @ui.drop': 'uploadFile',
 
-            'click a.queue': 'queueContainer',
             'click a.adhoc': 'requestAdhoc',
+            'click a.return': 'requestReturn',
+            'change @ui.ss': 'toggleSampleStatus',
         },
 
         modelEvents: {
@@ -212,14 +206,39 @@ define(['marionette',
         },
 
 
-        updateAdhoc: function() {
+        toggleSampleStatus: function(e) {
+            this.plateView.setShowSampleStatus(this.ui.ss.is(':checked'))
+        },
 
+        updateAdhoc: function() {
+            if (this.model.get('ALLOW_ADHOC') == '1') this.ui.adh.html('<a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>')
+            else this.ui.adh.html('<p>An adhoc inspection of this container has been requested</p>')
+            this.updateTypes()
         },
 
         updatedQueued: function() {
-
+            if (this.model.get('CONTAINERQUEUEID')) this.ui.que.html('<p>This container was queued for data collection at '+this.model.get('QUEUEDTIMESTAMP')+' <a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa fa-list"></i> <span>View Sample Queue</span></a></p>')
+            else this.ui.que.html('<a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa fa-list"></i> <span>Prepare for Data Collection</span></a>')
         },
 
+        requestReturn: function(e) {
+            e.preventDefault()
+
+            var self = this
+            this.model.set({ REQUESTEDRETURN: '1' })
+            this.model.save(this.model.changedAttributes(), { 
+                patch: true,
+                success: function() {
+                    app.alert({ message: 'Return of this container to the user has been successfully requested' })
+                    self.updateReturn()
+                },
+            })
+        },
+
+        updateReturn: function() {
+            if (this.model.get('REQUESTEDRETURN') == '1') this.ui.ret.html('<p>This plate has been requested for return to the user</p>')
+            else this.ui.ret.html('<a href="#" class="button return"><i class="fa fa-paper-plane-o"></i> <span>Request Return</span></a>')
+        },
 
 
         dragHover: function(e) {
@@ -298,16 +317,6 @@ define(['marionette',
         },
 
 
-        queueContainer: function(e) {
-            e.preventDefault()
-            app.dialog.show(new DialogView({ 
-                title: 'Queue Container for Data Collection',
-                className: 'content', 
-                view: new QueueContainerView({ dialog: true, model: this.model, autoSize: true, type: this.type })
-            }))
-        },
-
-
         requestAdhoc: function(e) {
             e.preventDefault()
 
@@ -316,7 +325,7 @@ define(['marionette',
                 url: app.apiurl+'/imaging/inspection/adhoc',
                 data: {
                     cid: this.model.get('CONTAINERID'),
-                    INSPECTIONTYPEID: this.ui.ity.val(),
+                    INSPECTIONTYPEID: 1// this.ui.ity.val(),
                 },
                 success: function(resp) {
                     app.alert({ message: 'Adhoc inspection successfully requested for this container' })
@@ -329,18 +338,34 @@ define(['marionette',
 
         },
 
-        setAddSubsample: function(e) {
+        setAddSubsamplePoint: function(e) {
             e.preventDefault()
 
             if (this.ui.ads.hasClass('button-highlight')) {
                 this.ui.ads.removeClass('button-highlight')
                 this.image.setAddSubsample(false)
-                this.ui.ads.find('span').html('Mark Sub Sample')
+                this.ui.ads.find('span').html('Mark Point')
                 
             } else {
                 this.ui.ads.addClass('button-highlight')
                 this.image.setAddSubsample(true)
                 this.ui.ads.find('span').html('Finish')
+            }
+        },
+
+
+        setAddSubsampleRegion: function(e) {
+            e.preventDefault()
+
+            if (this.ui.adr.hasClass('button-highlight')) {
+                this.ui.adr.removeClass('button-highlight')
+                this.image.setAddSubsampleRegion(false)
+                this.ui.adr.find('span').html('Mark Region')
+                
+            } else {
+                this.ui.adr.addClass('button-highlight')
+                this.image.setAddSubsampleRegion(true)
+                this.ui.adr.find('span').html('Finish')
             }
         },
 
@@ -368,9 +393,14 @@ define(['marionette',
                 var xhr =  new XHRImage()
                 console.log('caching', i.urlFor('hd'))
                 xhr.load(i.urlFor('full'), function() {
+                    self.plateView.drawPlate()
+
+                    if (n+1 == self.inspectionimages.length) self.ui.status.html('')
+                    else self.ui.status.html('| Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
+
                     self.cachethread = setTimeout(function() {
                         self.preCache(++n)
-                    }, 1000)
+                    }, 200)
                 })
             }
             
@@ -456,7 +486,7 @@ define(['marionette',
             }
 
             this.inspectiontypes = new InspectionTypes()
-            this.inspectiontypes.fetch().done(this.updateTypes.bind(this))
+            this.inspectiontypes.fetch()
 
             Backbone.Validation.bind(this)
         },
@@ -557,18 +587,30 @@ define(['marionette',
         onRender: function() {  
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
+            edit.create('COMMENTS', 'textarea')
+            if (app.user_can('disp_cont')) edit.create('BARCODE', 'text')
+            if (app.user_can('disp_cont')) edit.create('CONTAINERTYPE', 'select', { data: this.ctypes.kv() })
 
             if (this.model.get('INSPECTIONS') > 0) {
-                var columns = [{ name: 'X', label: 'X', cell: 'string', editable: false },
-                         { name: 'Y', label: 'Y', cell: 'string', editable: false },
-                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
-                         { label: '', cell: ActionCell, editable: false },
+                var columns = [
+                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%=(RID+1)%>' },
+                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%=(X2 ? "Region" : "Point")%>' },
+                        { name: 'X', label: 'X', cell: 'string', editable: false },
+                        { name: 'Y', label: 'Y', cell: 'string', editable: false },
+                        { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
+                        { label: '', cell: table.StatusCell, editable: false },
+                        { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%=BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
                 ]
+
+                if (!this.model.get('CONTAINERQUEUEID')) columns.push({ label: '', cell: ActionCell, editable: false })
                         
                 this.subtable = new TableView({ collection: this.subsamples, columns: columns, tableClass: 'subsamples', loading: false, pages: false, backgrid: { row: ClickableRow, emptyText: 'No subsamples found', } })
                 this.subs.show(this.subtable)
             }
 
+            this.updateReturn()
+            this.updatedQueued()
+            this.updateAdhoc()
         },
         
         onShow: function() {
@@ -615,7 +657,7 @@ define(['marionette',
 
                 this.startendimages = new InspectionImages()
 
-                this.image = new ImageViewer({ subsamples: this.subsamples, inspectionimages: this.inspectionimages, historyimages: this.historyimages })
+                this.image = new ImageViewer({ subsamples: this.subsamples, inspectionimages: this.inspectionimages, historyimages: this.historyimages, move: !this.model.get('CONTAINERQUEUEID') })
                 this.listenTo(this.image, 'space', this.playInspection, this)
                 this.listenTo(this.image, 'image:next', this.nextImage, this)
                 this.listenTo(this.image, 'image:prev', this.prevImage, this)
@@ -677,6 +719,7 @@ define(['marionette',
         },
 
         onDestroy: function() {
+            clearTimeout(this.cachethread)
             this.caching = false
         },
     })

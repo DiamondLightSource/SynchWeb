@@ -34,10 +34,50 @@
         </li>
 
         <li>
+            <label>Barcode</label>
+            <input type="text" name="BARCODE" /> <span class="message"></span>
+        </li>
+
+        <li>
             <label>Owner
                 <span class="small">This user will be emailed with container updates. Check your email is up to date!</span>
             </label>
             <select name="PERSONID"></select> <a href="#" class="button edit_user"><i class="fa fa-search"></i> View</a>
+        </li>
+
+        <li class="pcr">
+            <label>Experiment Type
+            </label>
+            <select name="EXPERIMENTTYPE">
+                <option value="">-</option>
+                <option value="robot">Robot</option>
+                <option value="hplc">HPLC</option>
+            </select>
+        </li>
+
+        <li class="pcr">
+            <label>Storage Temperature
+            </label>
+            <select name="STORAGETEMPERATURE">
+                <option value="">-</option>
+                <option value="-80">-80</option>
+                <option value="0">-0</option>
+                <option value="25">25</option>
+            </select>
+        </li>
+
+        <li>
+            <label>Comments
+                <span class="small">Comment for the container</span>
+            </label>
+            <input type="text" name="COMMENTS" />
+        </li>
+
+        <li class="plate">
+            <label>Requested Imager
+                <span class="small">Imager this container should go into</span>
+            </label>
+            <select name="REQUESTEDIMAGERID"></select>
         </li>
 
         <li class="plate">

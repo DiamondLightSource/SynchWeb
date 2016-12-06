@@ -156,6 +156,13 @@
     # DHL API Details
     $dhl_user = 'user';
     $dhl_pass = 'password';
+
+
+  
+    # VMXi 
+    $vmxi_user = 'vmxi';
+    $vmxi_pass = 'pass';
+    $uas_url = 'http://path.to.uas';
     
   
     # Proposal codes to list

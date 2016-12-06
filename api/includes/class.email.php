@@ -21,9 +21,10 @@
 
         public function send($recepients) {
             global $email_from;
+            include(dirname(__FILE__).'/../config.php');
             ob_start();
             
-            $path = 'assets/emails/'.($this->html ? 'html/' : '');
+            $path = dirname(__FILE__).'/../assets/emails/'.($this->html ? 'html/' : '');
             if (file_exists($path.$this->template)) {
                 extract($this->vars);
                 if ($this->html) include($path.'email-header.html');

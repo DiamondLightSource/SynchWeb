@@ -11,6 +11,9 @@
     <div class="img right"></div>
     <div class="left">
         <div class="plate"></div>
+        <div class="ra">
+            <span class="label">Show Data Status</span> <input type="checkbox" name="sample_status" /> <span class="sta small"></span> 
+        </div>
         <div class="form">
             <ul>
                 <li class="nowrap">
@@ -45,7 +48,8 @@
         <div>
             <h2>Marked Sub Samples</h2>
             <div class="ra">
-                <a href="#" class="button add_sub"><i class="fa fa-plus"></i> <span>Mark Sub Sample</span></a>
+                <a href="#" class="button add_point"><i class="fa fa-plus"></i> <span>Mark Point</span></a>
+                <a href="#" class="button add_region"><i class="fa fa-plus"></i> <span>Mark Region</span></a>
             </div>
             <div class="subs"></div>
         </div>
@@ -66,8 +70,25 @@
         </li>
         <li>
             <span class="label">Container Type</span>
-            <span><%=CONTAINERTYPE%></span>
+            <span class="CONTAINERTYPE"><%=CONTAINERTYPE%></span>
         </li>
+
+        <li>
+            <span class="label">Barcode</span>
+            <span class="BARCODE"><%=BARCODE%></span>
+        </li>
+
+        <li class="clearfix reorder">
+            <div class="COMMENTS text"><%=COMMENTS%></div>
+            <span class="label">Comments</span>
+        </li>
+
+        <% if (REQUESTEDIMAGERID) { %>
+            <li>
+                <span class="label">Requested Imager Location</span>
+                <span class="IMAGERID"><%=REQUESTEDIMAGER%></span>
+            </li>
+        <% } %>
 
         <% if (IMAGERID) { %>
         <li>
@@ -101,22 +122,9 @@
         <li class="clearfix reorder">
             
             <div class="text_table">
-                <div class="adhoc">
-                    <% if (ALLOW_ADHOC == 1) { %>
-                        <select name="INSPECTIONTYPEID"></select>
-                        <a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>
-                    <% } else { %>
-                        <p>An adhoc inspection of this container has been requested</p>
-                    <% } %>
-                </div>
-
-                <div class="queue">
-                    <% if (QUEUED == 1) { %>
-                        <p>This container was queued for data collection on: <%=QUEUEDTIMESTAMP%></p>
-                    <% } else { %>
-                    <a href="#" class="button queue"><i class="fa fa-arrow-up"></i> <span>Queue for Data Collection</span></a>
-                    <% } %>
-                </div>
+                <div class="adhoc"></div>
+                <div class="queue"></div>
+                <div class="return"></div>
             </div>
             <span class="label">Actions</span>
         </li>

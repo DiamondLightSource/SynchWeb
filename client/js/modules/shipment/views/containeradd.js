@@ -24,6 +24,8 @@ define(['marionette',
     'modules/imaging/collections/screencomponents',
     'modules/imaging/views/screencomponentgroup',
 
+    'modules/imaging/collections/imagers',
+
     'collections/users',
     
     'tpl!templates/shipment/containeradd.html',
@@ -52,6 +54,8 @@ define(['marionette',
     ScreenComponentGroups,
     ScreenComponents,
     ScreenGroupView,
+
+    Imagers,
 
     Users,
         
@@ -91,6 +95,8 @@ define(['marionette',
             schedule: 'select[name=SCHEDULEID]',
             screen: 'select[name=SCREENID]',
             pid: 'select[name=PERSONID]',
+            imager: 'select[name=REQUESTEDIMAGERID]',
+            barcode: 'input[name=BARCODE]',
         },
         
         
@@ -122,6 +128,42 @@ define(['marionette',
             'click a.edit_user': 'editUser',
             'change @ui.screen': 'selectScreen',
             'change @ui.pid': 'checkPerson',
+
+            'change @ui.imager': 'limitProteins',
+            'change @ui.barcode': 'checkBarcode',
+            'keyup @ui.barcode': 'checkBarcode',
+        },
+
+
+        checkBarcode: function() {
+            if (!this.ui.barcode.val()) this.model.set('BARCODECHECK', null)
+            var self = this
+            Backbone.ajax({
+                url: app.apiurl+'/shipment/containers/barcode/'+this.ui.barcode.val(),
+                success: function(resp) {
+                    self.updateBarcode(resp.PROP)
+                },
+
+                error: function() {
+                    self.updateBarcode()
+                }
+            })
+        },
+
+        updateBarcode: function(resp) {
+            if (resp) {
+                this.model.set('BARCODECHECK', 0)
+                this.$el.find('.message').html('This barcode is already registered to '+resp).addClass('ferror')
+            } else {
+                this.model.set('BARCODECHECK', 1)
+                this.$el.find('.message').html('').removeClass('ferror')
+            }
+        },
+
+
+        limitProteins: function() {
+            this.proteins.queryParams.externalid = this.ui.imager.val() ? 1 : null
+            this.proteins.fetch()
         },
 
         checkPerson: function() {
@@ -200,7 +242,7 @@ define(['marionette',
             
             if (this.type.get('name') == 'Puck') {
                 this.buildCollection()
-                this.puck.$el.css('width', '25%')
+                this.puck.$el.css('width', app.mobile() ? '100%' : '25%')
                 this.puck.show(new PuckView({ collection: this.samples }))
                 this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table })
                 this.table.show(this.stable)
@@ -208,18 +250,33 @@ define(['marionette',
                 this.grp.empty()
                 this.ui.pc.show()
                 this.$el.find('li.plate').hide()
+                this.$el.find('li.pcr').hide()
+
+            } else if (this.type.get('name') == 'PCRStrip') {
+                this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
+                this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
+                this.buildCollection()
+                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, type: 'non-xtal' })
+                this.table.show(this.stable)
+                this.single.empty()
+                this.grp.empty()
+                this.ui.pc.show()
+                this.$el.find('li.plate').hide()                
+                this.$el.find('li.pcr').show()                
 
             } else {
-                if (!app.mobile()) this.puck.$el.css('width', '50%')
+                if (!app.mobile()) this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.table.empty()
                 this.stable.destroy()
+                this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples })
                 this.single.show(this.singlesample)
                 this.group = new ScreenGroupView({ components: this.screencomponents, editable: false })
                 this.grp.show(this.group)
                 this.ui.pc.hide()
                 this.buildCollection()
                 this.$el.find('li.plate').show()
+                this.$el.find('li.pcr').hide()
             }
             console.log('samples', this.samples)
         },
@@ -353,12 +410,12 @@ define(['marionette',
         
         
         createModel: function() {
-            this.model = new Container({ DEWARID: this.dewar.get('DEWARID') })
+            this.model = new Container({ DEWARID: this.dewar.get('DEWARID'), new: true })
         },
         
         
         selectSample: function() {
-            if (this.type.get('name') != 'Puck') {
+            if (this.type.get('name') != 'Puck' && this.type.get('name') != 'PCRStrip') {
                 var s = this.samples.findWhere({ isSelected: true })
                 if (s) {
                     this.singlesample.setModel(s)
@@ -393,6 +450,8 @@ define(['marionette',
             
             this.cache = new Cache({ name: 'container' })
             this.ready2 = this.cache.fetch()
+
+            if (!app.user_can('disp_cont')) PlateTypes.remove(PlateTypes.findWhere({ name: 'ReferencePlate' }))
             this.ctypes = PlateTypes
             
             this.cacheContainer = _.debounce(this.cacheContainer, 3000)
@@ -408,12 +467,18 @@ define(['marionette',
                 self.ui.screen.html('<option value=""> - </option>'+self.screens.opts())
             })
 
+            this.imagers = new Imagers()
+            this.imagers.fetch().done(function() {
+                self.ui.imager.html('<option value=""> - </option>'+self.imagers.opts())
+            })
+
             this.screencomponentgroups = new ScreenComponentGroups()
             this.screencomponentgroups.queryParams.scid = this.getScreen.bind(this)
 
             this.screencomponents = new ScreenComponents()
             this.screencomponents.queryParams.scid = this.getScreen.bind(this)
-            
+          
+            this.checkBarcode = _.debounce(this.checkBarcode.bind(this), 200)
         },
 
         buildCollection: function() {
@@ -437,7 +502,6 @@ define(['marionette',
             //this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, childTemplate: row, template: table }))
             this.ui.type.html(this.ctypes.opts())
             this.setType()
-            this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples })
             
             this.ready2.done(this.loadContainerCache.bind(this))
 

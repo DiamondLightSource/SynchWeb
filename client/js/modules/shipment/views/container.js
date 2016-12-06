@@ -6,6 +6,9 @@ define(['marionette',
     'modules/shipment/views/puck',
     'modules/shipment/views/sampletable',
 
+    'modules/shipment/collections/platetypes',
+    'modules/shipment/views/plate',
+
     'utils/editable',
     'tpl!templates/shipment/container.html'], function(Marionette,
         
@@ -14,6 +17,9 @@ define(['marionette',
     Samples,
     PuckView,
     SampleTableView,
+
+    PlateTypes,
+    PlateView,
         
     Editable, template){
             
@@ -62,6 +68,10 @@ define(['marionette',
         onRender: function() {  
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
+            edit.create('COMMENTS', 'text')
+            edit.create('EXPERIMENTTYPE', 'select', { data: { '':'-', 'robot':'robot', 'HPLC':'HPLC'} })
+            edit.create('STORAGETEMPERATURE', 'select', { data: { '-80':'-80', '4':'4', '25':'25' } })
+            edit.create('BARCODE', 'text')
         },
         
         onShow: function() {
@@ -70,9 +80,16 @@ define(['marionette',
         
         doOnShow: function() {
             console.log(self.samples)
+
+            var type = this.model.get('CONTAINERTYPE') == 'PCRStrip' ? 'non-xtal' : ''
             
-            this.puck.show(new PuckView({ collection: this.samples }))
-            this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing') }))
+            if (this.model.get('CONTAINERTYPE') == 'PCRStrip') {
+                this.$el.find('.puck').css('width', '50%')
+                // this.puck.$el.width(this.puck.$el.parent().width()/2)
+                this.type = PlateTypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
+                this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
+            } else this.puck.show(new PuckView({ collection: this.samples }))
+            this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type }))
         }
     })
 

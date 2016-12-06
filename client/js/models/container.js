@@ -1,9 +1,14 @@
 define(['backbone'], function(Backbone) {
     
-    return Backbone.Model.extend({
+    var Container = Backbone.Model.extend({
         idAttribute: 'CONTAINERID',
         urlRoot: '/shipment/containers',
+        _cache: {},
         
+        defaults: {
+            BARCODECHECK: null
+        },
+
         validation: {
             NAME: {
                 required: true,
@@ -23,9 +28,39 @@ define(['backbone'], function(Backbone) {
             SCHEDULEID: {
                 required: false,
                 pattern: 'number',
-            }
+            },
+
+            REQUESTEDIMAGERID: {
+                required: false,
+                pattern: 'number',
+            },
+
+            BARCODE: {
+                pattern: 'wwdash',
+                required: function() {
+                    return this.get('REQUESTEDIMAGERID') != '' || this.get('CONTAINERTYPE') == 'PCRStrip'
+                }
+            },
+
+            BARCODECHECK: function(value, attr, state) {
+                if (value !== null) {
+                    if (value != 1) return 'Barcode check failed'
+                }
+            },
+
+            EXPERIMENTTYPE: {
+                required: false,
+                pattern: 'word',
+            },
+
+            STORAGETEMPERATURE: {
+                required: false,
+                pattern: 'wwdash',
+            },
         },
         
     })
+
+    return Container
     
 })

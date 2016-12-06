@@ -1,6 +1,10 @@
-define(['backbone', 'utils/kvcollection', 'models/protein'], function(Backbone, KVCollection, Protein) {
+define(['backbone.paginator', 'utils/kvcollection', 'models/protein'], function(PageableCollection, KVCollection, Protein) {
     
-    return Backbone.Collection.extend(_.extend({}, KVCollection, {
+    return PageableCollection.extend(_.extend({}, KVCollection, {
+        mode: 'client',
+        state: {
+            pageSize: 9999,
+        },
         model: Protein,
         idAttribute: 'PROTEINID',
         url: '/sample/proteins/distinct',

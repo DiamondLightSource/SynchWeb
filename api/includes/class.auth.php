@@ -2,11 +2,10 @@
 
 	include_once('config.php');
 
-	require_once('lib/jwt/JWT.php');
-	require_once('lib/jwt/ExpiredException.php');
-	require_once('lib/jwt/SignatureInvalidException.php');
+	require_once(dirname(__FILE__).'/../lib/jwt/JWT.php');
+	require_once(dirname(__FILE__).'/../lib/jwt/ExpiredException.php');
+	require_once(dirname(__FILE__).'/../lib/jwt/SignatureInvalidException.php');
     use \Firebase\JWT\JWT;
-
 
 	class Authenticate {
 		private $user;
@@ -24,6 +23,7 @@
 			$this->app->get('/authenticate/key', array(&$this, 'generate_jwt_key'));
 			$this->app->get('/authenticate/logout', array(&$this, 'logout'));
 		}
+
 
 		function get_user() {
 			return $this->user;

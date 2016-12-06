@@ -41,6 +41,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
             
             this.hover = {}
             this.showImageStatus = this.getOption('showImageStatus')
+            this.showSampleStatus = this.getOption('showSampleStatus')
             
             Backbone.Validation.bind(this, {
                 collection: this.collection
@@ -52,6 +53,12 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
             this.showImageStatus = true
             if (this.inspectionimages) this.listenTo(this.inspectionimages, 'sync', this.render, this)
         },
+
+        setShowSampleStatus: function(status) {
+            this.showSampleStatus = status
+            this.showImageStatus = !status
+            this.drawPlate()
+        },
         
         
         onDomRefresh: function() {
@@ -59,7 +66,8 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
             this.ctx = this.canvas.getContext('2d')
             
             this.canvas.width = this.$el.parent().width()
-            this.canvas.height = this.canvas.width*0.68
+            if (this.pt.get('capacity') == this.pt.get('well_per_row')) this.canvas.height = this.canvas.width*0.20
+            else this.canvas.height = this.canvas.width*0.68
             console.log('type', this.getOption('type'), this.canvas, this.ctx)
             this.pt.setGeometry(this.canvas.width, this.canvas.height)
             this.drawPlate()
@@ -169,13 +177,15 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                             this.ctx.strokeStyle = 'cyan'
                             
                         } else if (sample && sample.get('PROTEINID') > -1) {
-                            if (this.getOption('showImageStatus')) {
-                                if (im) this.ctx.strokeStyle = '#000'
-                                else this.ctx.strokeStyle = '#ccc'
+                            if (this.showImageStatus) {
+                                if (im) {
+                                    if (im.urlFor('full') in app.imagecache) this.ctx.strokeStyle = '#000'
+                                    else this.ctx.strokeStyle = '#aaa'
+                                } else this.ctx.strokeStyle = '#ddd'
 
                             } else this.ctx.strokeStyle = '#000'
 
-                        } else this.ctx.strokeStyle = '#ccc'
+                        } else this.ctx.strokeStyle = '#ddd'
           
                         this.ctx.rect(this.pt.get('drop_offset_x')+this.pt.get('offset_x')+row*(this.pt.get('well_width')+this.pt.get('well_pad'))+(j*this.pt.get('drop_widthpx')+this.pt.get('drop_pad')), this.pt.get('drop_offset_y')+this.pt.get('offset_y')+col*(this.pt.get('well_height')+this.pt.get('well_pad'))+(k*this.pt.get('drop_heightpx')+this.pt.get('drop_pad')), this.pt.get('drop_widthpx'), this.pt.get('drop_heightpx'))
                             
@@ -201,7 +211,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                         }
                         
                         // Show status
-                        if (sample && this.getOption('showStatus')) {
+                        if (sample && this.showSampleStatus) {
                             var colors = {
                                 SC: '#fdfd96',
                                 AI: '#ffb347',
@@ -209,9 +219,14 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                                 AP: '#77dd77',
                             }
                             
+                            var hasStatus = false
                             _.each(colors, function(v,t) {
-                                if (sample.get(t) > 0) this.ctx.fillStyle = v
+                                if (sample.get(t) > 0) {
+                                    this.ctx.fillStyle = v
+                                    hasStatus = true
+                                }
                             }, this)
+                            if (hasStatus) this.ctx.fill()
                         }
 
                         // Show image score
