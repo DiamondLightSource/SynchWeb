@@ -170,7 +170,7 @@
 
             // No sessionid, need to create a visit using UAS REST API
             if (!$cont['SESSIONID']) {
-                $samples = $this->db->pq("SELECT p.externalid 
+                $samples = $this->db->pq("SELECT HEX(p.externalid) as externalid 
                     FROM protein p
                     INNER JOIN crystal cr ON cr.proteinid = p.proteinid
                     INNER JOIN blsample s ON s.crystalid = cr.crystalid
@@ -183,7 +183,7 @@
 
                 $data = array(
                     'proposalId' => strtoupper($cont['EXTERNALID']),
-                    'sampleIds' => $samples,
+                    'sampleIds' => array_unique($samples),
                     'startAt' => date('Y-m-d\TH:i:s.000\Z'),
                     // 'startAt': "2012-04-23T18:25:43.511Z",
                     'facility' => 'I02-2'
