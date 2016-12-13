@@ -152,7 +152,7 @@
         function _get_plate_info($args) {
             if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
 
-            $cont = $this->db->pq("SELECT pe.emailaddress, pe.givenname, pe.familyname, pe.login, c.sessionid, s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop, i.temperature, c.containerid, HEX(p.externalid) as externalid, p.proposalid
+            $cont = $this->db->pq("SELECT pe.emailaddress, pe.givenname, pe.familyname, pe.login, c.sessionid, s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop, i.temperature, c.containerid, HEX(p.externalid) as externalid, p.proposalid, HEX(pe.externalid) as pexternalid
                 FROM container c
                 LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -186,7 +186,8 @@
                     'sampleIds' => array_unique($samples),
                     'startAt' => date('Y-m-d\TH:i:s.000\Z'),
                     // 'startAt': "2012-04-23T18:25:43.511Z",
-                    'facility' => 'I02-2'
+                    'facility' => 'I02-2',
+                    'investigators' => array(array('personId' => strtoupper($cont['PEXTERNALID']), 'role' => 'TEAM_MEMBER' )),
                 );
 
                 require_once(dirname(__FILE__).'/../class.uas.php');
