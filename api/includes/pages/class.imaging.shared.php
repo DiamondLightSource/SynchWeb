@@ -178,7 +178,7 @@
                     WHERE p.externalid IS NOT NULL AND c.barcode=:1", array($args['BARCODE']));
 
                 $samples = array_map(function($s) {
-                    return $s['EXTERNALID'];
+                    return strtoupper($s['EXTERNALID']);
                 }, $samples);
 
                 $data = array(
