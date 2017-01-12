@@ -11,4 +11,9 @@
 	"types": {
 		"CrystalQuickX": { "well_per_row": 12, "drops_per_well": 2 }
 	}
+	"logging": {
+		"syslog": {"host": "my-server", "port": 514, "format": "fmlx_ul:%(message)s", "level": "error"},
+		"rotating_file": {"filename": "fmlx_ul.log", "max_bytes": 1000000, "no_files": 20, "format": "* %(asctime)s [id=%(thread)d] <%(levelname)s> %(message)s", "level": "debug"}
+	}	
+
 }
