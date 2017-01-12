@@ -4,7 +4,8 @@ define([
     'modules/types/pow/dc/datplotlarge',
     'modules/types/gen/dc/imagestatusitem',
     'modules/dc/views/dccomments', 
-    'tpl!templates/types/pow/dc/dc.html'], function(DCItemView, DatPlot, DatPlotLarge, DCImageStatusItem, DCCommentsView, template) {
+    'utils',
+    'tpl!templates/types/pow/dc/dc.html'], function(DCItemView, DatPlot, DatPlotLarge, DCImageStatusItem, DCCommentsView, utils, template) {
 
     return DCItemView.extend({
         template: template,
@@ -20,6 +21,7 @@ define([
             'click a.dl': 'showPlot',
             'click a.sn': 'showSnapshots',
             'click a.assoc': 'associateSample',
+            'click a.dd': utils.signHandler,
         },
         
         showPlot: function(e) {
