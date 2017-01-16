@@ -236,7 +236,7 @@
             }
 
             if ($this->has_arg('cm')) {
-                $where .= " AND p.proposalcode LIKE 'cm' AND s.enddate <= SYSDATE";
+                $where .= " AND p.proposalcode LIKE 'cm' AND s.startdate <= SYSDATE";
             }
             
             if ($this->has_arg('ty')) {
