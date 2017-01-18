@@ -225,7 +225,7 @@
             }
             
             if ($this->has_arg('next')) {
-                $where .= " AND s.enddate > SYSDATE AND TO_CHAR(s.startdate,'YYYY') > 2009";
+                $where .= " AND s.enddate > SYSDATE AND TO_CHAR(s.startdate,'YYYY') > 2009 AND p.proposalcode not in ('cm', 'nr', 'lb')";
                 $this->args['order'] = 'asc';
                 $this->args['sort_by'] = 'ST';
             }
