@@ -764,7 +764,9 @@
         # ------------------------------------------------------------------------        
         # Strategies for a data collection
         function _dc_strategies($id) {
-            $rows = $this->db->pq("SELECT st.rankingresolution as rankres, ssw.wedgenumber, sssw.subwedgenumber, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(s.shortcomments, ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg 
+            global $strat_align;
+
+            $rows = $this->db->pq("SELECT s.programversion, st.rankingresolution as rankres, ssw.wedgenumber, sssw.subwedgenumber, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(s.shortcomments, ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg 
                 FROM screeningstrategy st 
                 INNER JOIN screeningoutput so on st.screeningoutputid = so.screeningoutputid 
                 INNER JOIN screening s on so.screeningid = s.screeningid 
@@ -775,15 +777,24 @@
                 WHERE s.datacollectionid = :1 
                 ORDER BY s.shortcomments, ssw.wedgenumber", array($id));
         
-            $output = array('EDNA' => array('CELL' => array(), 'STRATS' => array()), 'Mosflm' => array('CELL' => array(), 'STRATS' => array()));
-            $xo = array();
+
+            $output = array();
+            foreach ($rows as $r) {
+                if (!array_key_exists($r['PROGRAMVERSION'], $output)) $output[$r['PROGRAMVERSION']] = array('CELL' => array(), 'STRATS' => array());
+            }
+
             $nf = array('A', 'B', 'C', 'AL', 'BE', 'GA');
             foreach ($rows as &$r) {
-                if (strpos($r['COM'], 'XOalign') !== false) {
-                    array_push($xo, $r);
+                $is_align = false;
+                foreach ($strat_align as $sa) {
+                    if (!$is_align) $is_align = strpos($r['PROGRAMVERSION'], $sa) !== false;
+                }
+
+                if ($is_align) {
+                    array_push($output[$r['PROGRAMVERSION']]['STRATS'], $r);
                 } else {
                 
-                    $t = strpos($r['COM'], 'EDNA') === false ? 'Mosflm' : 'EDNA'; 
+                    $t = $r['PROGRAMVERSION'];
                     
                     foreach ($r as $k => &$v) {
                         if (in_array($k, $nf)) {
@@ -816,7 +827,7 @@
                 }
             }
                 
-            $this->_output(array(sizeof($rows), $output, $xo));
+            $this->_output(array(sizeof($rows), $output));
         }
         
         # ------------------------------------------------------------------------        
