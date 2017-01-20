@@ -47,6 +47,8 @@ define(['marionette', 'views/dialog',
         },
 
         selectAll: function(e) {
+            e.preventDefault()
+            
             var si = parseInt(this.model.get('SI'))
             var ni = parseInt(this.model.get('NUMIMG'))
 
