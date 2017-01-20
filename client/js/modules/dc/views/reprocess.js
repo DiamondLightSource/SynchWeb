@@ -48,7 +48,7 @@ define(['marionette', 'views/dialog',
 
         selectAll: function(e) {
             e.preventDefault()
-            
+
             var si = parseInt(this.model.get('SI'))
             var ni = parseInt(this.model.get('NUMIMG'))
 
@@ -85,7 +85,7 @@ define(['marionette', 'views/dialog',
             this.ui.cell.hide()
             this.ui.ind.hide()
             this.$el.find('ul').addClass('half')
-            this.$el.find('li input[type="text"]').css('width', '27%')
+            this.$el.find('li input[type="text"]').css('width', '25%')
         },
 
         toggleSG: function(e) {
@@ -234,7 +234,7 @@ define(['marionette', 'views/dialog',
             this.ui.opts.hide()
             this.ui.cell.hide()
 
-            _.each(['Fast DP', 'Xia2', 'DIALS'], function(t,i) {
+            _.each(['xia2 3daii', 'xia2 dials'], function(t,i) {
                 this.ui.met.append('<option value="'+(i+1)+'">'+t+'</option>')
             }, this)
 
