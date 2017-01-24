@@ -222,7 +222,7 @@
                     foreach ($ranges as $i => $r) {
                         if (array_key_exists($r[0], $dict)) {
                             $row = $dict[$r[0]];
-                            array_push($sweeps, "BEGIN SWEEP SWEEP".($i+1)."\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1]+1)." ".$r[2]."\nEND SWEEP SWEEP".($i+1));
+                            array_push($sweeps, "BEGIN SWEEP SWEEP".($i+1)."\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1])." ".$r[2]."\nEND SWEEP SWEEP".($i+1));
                         }
                     }
                     
@@ -239,7 +239,7 @@
                         $root = $this->_get_next($this->_get_rp($r[0]));
                         $row = $dict[$r[0]];
                         
-                        $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$row['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\nBEGIN SWEEP SWEEP1\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1]+1)." ".$r[2]."\nEND SWEEP SWEEP1\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
+                        $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$row['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\nBEGIN SWEEP SWEEP1\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1])." ".$r[2]."\nEND SWEEP SWEEP1\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
                         file_put_contents($root.'/xia.xinfo', $xinfo);
                         file_put_contents($root.'/x2'.$row['ID'].'.sh', str_replace('{dcid}', $row['ID'], $remote));
                         
