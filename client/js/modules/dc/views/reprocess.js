@@ -53,7 +53,7 @@ define(['marionette', 'views/dialog',
             var ni = parseInt(this.model.get('NUMIMG'))
 
             this.ui.st.val(si)
-            this.ui.en.val(si+ni)
+            this.ui.en.val(si+ni-1)
             this.updateSelection()
         },
 
@@ -234,7 +234,7 @@ define(['marionette', 'views/dialog',
             this.ui.opts.hide()
             this.ui.cell.hide()
 
-            _.each(['xia2 3daii', 'xia2 dials'], function(t,i) {
+            _.each(['xia2 3dii', 'xia2 dials'], function(t,i) {
                 this.ui.met.append('<option value="'+(i+1)+'">'+t+'</option>')
             }, this)
 
