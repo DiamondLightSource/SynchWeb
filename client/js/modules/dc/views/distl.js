@@ -54,7 +54,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
           if (this.model.get('data')) {
               var osc = []
               _.each(this.model.get('data')[0], function(d,i) {
-                osc.push([d[0]*parseFloat(p.get('AXISRANGE')) + parseFloat(p.get('AXISSTART')), 0])
+                osc.push([(d[0]-parseFloat(p.get('SI')))*parseFloat(p.get('AXISRANGE')) + parseFloat(p.get('AXISSTART')), 0])
               })
 
               var options = $.extend({}, utils.default_plot, {
