@@ -8,7 +8,7 @@ define(['marionette',
       modelEvents: { 'change': 'render' },
 
       getTemplate: function(m) {
-          return this.model.get('TYPE') == 'XOAlign' ? xotemplate : template
+          return (this.model.get('TYPE') == 'XOalign' || this.model.get('TYPE') == 'dials.align_crystal') ? xotemplate : template
       }
   })
        

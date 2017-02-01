@@ -920,9 +920,9 @@
             $having = '';
             
             if ($this->has_arg('visit')) {
-                $join = " INNER JOIN blsession ses ON ses.proposalid = p.proposalid";
+                $join = " INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid";
                 $args = array($this->arg('visit'));
-                $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) LIKE :1";
+                $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses2.visit_number) LIKE :1";
 
             } else if ($this->has_arg('all') && $this->staff) {
                 $join = '';

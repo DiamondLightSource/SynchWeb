@@ -275,8 +275,8 @@ define(['marionette',
                 this.grp.show(this.group)
                 this.ui.pc.hide()
                 this.buildCollection()
-                this.$el.find('li.plate').show()
                 this.$el.find('li.pcr').hide()
+                this.$el.find('li.plate').show()
             }
             console.log('samples', this.samples)
         },

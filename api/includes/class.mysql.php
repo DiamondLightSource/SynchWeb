@@ -16,7 +16,7 @@
             if (!$port) $port = ini_get("mysqli.default_port");
             $this->conn = new mysqli($host, $user, $pass, $dbn, $port);
             mysqli_set_charset($this->conn, "utf8");
-            
+
             if (mysqli_connect_errno()) {
                 $this->error('There was an error connecting to MySQL: ', htmlentities(mysqli_connect_errno()));
             }
@@ -287,7 +287,15 @@
                     while ($stmt->fetch()) {
                         $c = array();
                         // Oracle returns all values as strings - Need to be consistent :(
-                        foreach ($row as $key => $val) $c[strtoupper($key)] = $val === null ? null : strval($val);
+                        foreach ($row as $key => $val) {
+                            if ($val !== null) {
+                                if (gettype($val) == gettype(0.1)) $val = round($val, 5);
+                                $val = strval($val);
+                            }
+                            // $c[strtoupper($key)] = $val === null ? null : strval($val);
+                            $c[strtoupper($key)] = $val;
+                        }
+                        // foreach ($row as $key => $val) $c[strtoupper($key)] = $val;// === null ? null : strval($val);
                         $data[] = $c;
                     }
 

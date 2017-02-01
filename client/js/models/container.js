@@ -38,7 +38,7 @@ define(['backbone'], function(Backbone) {
             BARCODE: {
                 pattern: 'wwdash',
                 required: function() {
-                    return this.get('REQUESTEDIMAGERID') != '' || this.get('CONTAINERTYPE') == 'PCRStrip'
+                    return (this.get('REQUESTEDIMAGERID') != '' && this.get('REQUESTEDIMAGERID') != null) || this.get('CONTAINERTYPE') == 'PCRStrip'
                 }
             },
 

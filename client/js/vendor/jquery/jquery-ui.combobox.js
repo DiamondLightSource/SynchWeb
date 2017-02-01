@@ -110,7 +110,10 @@
 
                   if ( this.value && ( !request.term || matcher.test(text) ) ) {
                      var classes = []
-                     this.classList.forEach(function(v) { classes.push(v) })
+                     _.each(this.className.split(/\s+/), function(v) {
+                     // this.classList.forEach(function(v) { 
+                        classes.push(v) 
+                     })
                      return {
                            label: text.replace(
                               new RegExp(
