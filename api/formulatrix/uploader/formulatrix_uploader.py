@@ -113,7 +113,9 @@ class FormulatrixUploader:
                         continue
 
                     # Check if the visit dir exists yet
-                    new_root = '{root}/{year}/{visit}'.format(root=self.config['upload_dir'], year=container['year'], visit=container['visit'])
+                    visit = container['visit']
+                    proposal = visit[ : visit.index('-')]
+                    new_root = '{root}/{proposal}/{visit}'.format(root=self.config['upload_dir'], proposal=proposal, visit=visit)
                     if not os.path.exists(new_root):
                         logging.getLogger().error('Visit location for image doesnt exist: %s' % new_root)
                         continue
@@ -129,6 +131,9 @@ class FormulatrixUploader:
                         except OSError as exc:
                             if exc.errno == errno.EEXIST and os.path.isdir(new_path):
                                 pass
+                            elif exc.errno == errno.EACCES:
+                                logging.getLogger().error("%s - %s" % (exc.strerror, new_path))
+                                continue
                             else:
                                 raise
 
@@ -290,8 +295,26 @@ def set_logging(logs):
 cf = open('config.json')
 config = json.load(cf)
 cf.close()
- 
+
 set_logging(config['logging'])
+
+try:
+    pid = os.fork()
+except OSError, e:
+    logging.getLogger().error("Unable to fork, can't run as daemon in background")
+    sys.exit(1)
+if pid != 0:
+    sys.exit()
+
+
+# pid_file = config['pid_file']
+# if pid_file != None:
+#     try:
+#         f = open(pid_file, 'w')     
+#         f.write(str(os.getpid()))
+#         f.close()
+#     except:
+#         logging.getLogger().error("Unable to write to pid file %s" % pid_file)
 
 atexit.register(logging.shutdown)
 signal.signal(signal.SIGTERM,killHandler)
