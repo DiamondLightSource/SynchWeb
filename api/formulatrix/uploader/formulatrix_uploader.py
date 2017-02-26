@@ -2,19 +2,19 @@
 #!/usr/bin/env python
 #
 #   Copyright 2015 Diamond Light Source <stuart.fisher@diamond.ac.uk>
-#    
+#
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-#    
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#    
+#
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-# 
+#
 # Implementation of Jon Diprose's ImageUploader in Python for
 # formulatrix plate imagers, takes outputted xml / image files and
 # puts them in the correct location, and adds an entry to SynchWeb
@@ -57,13 +57,13 @@ class MySQL:
 
     def pq(self, query, args=[]):
         res = self._cur.execute(query, args)
-        
+
         rows = []
         for r in self._cur:
             rows.append(r)
 
         return rows if rows else []
-        
+
 
     def id(self):
         return self._cur.connection.insert_id()
@@ -89,7 +89,7 @@ class FormulatrixUploader:
             for xml in files:
                 logging.getLogger().debug(xml)
                 st = os.stat(xml)
-                
+
                 image = xml.replace('.xml', '.jpg')
                 if not os.path.exists(image):
                     logging.getLogger().error('Corresponding image not found for %s expected %s' % (str(xml), str(image)) )
@@ -116,12 +116,19 @@ class FormulatrixUploader:
                     visit = container['visit']
                     proposal = visit[ : visit.index('-')]
                     new_root = '{root}/{proposal}/{visit}'.format(root=self.config['upload_dir'], proposal=proposal, visit=visit)
-                    if not os.path.exists(new_root):
-                        logging.getLogger().error('Visit location for image doesnt exist: %s' % new_root)
+                    old_root = '{root}/{year}/{visit}'.format(root=self.config['upload_dir_old'], year=container['year'], visit=visit)
+
+                    the_root = None
+                    if os.path.exists(new_root):
+                        the_root = new_root
+                    elif os.path.exists(old_root):
+                        the_root = old_root
+                    else:
+                        logging.getLogger().error('Visit location for image doesnt exist, tried %s and %s' % (new_root, old_root))
                         continue
 
                     # Keep images in visit/imaging/containerid/inspectionid
-                    new_path = '{new_root}/imaging/{containerid}/{inspectionid}'.format(new_root=new_root, containerid=container['containerid'], inspectionid=inspectionid)
+                    new_path = '{the_root}/imaging/{containerid}/{inspectionid}'.format(the_root=the_root, containerid=container['containerid'], inspectionid=inspectionid)
                     if not os.path.exists(new_path):
                         try:
                             os.makedirs(new_path)
@@ -142,7 +149,7 @@ class FormulatrixUploader:
                         logging.getLogger().error('Could not match drop: %s to position: %s' % (root.find('oppf:Drop', nss).text, container['containertype']) )
                         continue
 
-                    logging.getLogger().debug('Drop: %s position: %s' % (root.find('oppf:Drop', nss).text, position)) 
+                    logging.getLogger().debug('Drop: %s position: %s' % (root.find('oppf:Drop', nss).text, position))
 
                     sampleid = self._get_sampleid(position, container['containerid'])
                     if sampleid is None:
@@ -170,7 +177,7 @@ class FormulatrixUploader:
                     logging.getLogger().debug('copy: %s to %s' % (image, new_file))
                     try:
                         copyfile(image, new_file)
-                    
+
                         # create a thumbnail
                         file, ext = os.path.splitext(new_file)
                         try:
@@ -204,7 +211,7 @@ class FormulatrixUploader:
 
     def _get_container(self, inspectionid):
         container = self.db.pq("""SELECT c.containertype, c.containerid, c.sessionid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, DATE_FORMAT(c.bltimestamp, '%%Y') as year
-            FROM Container c 
+            FROM Container c
             INNER JOIN ContainerInspection ci ON ci.containerid = c.containerid
             INNER JOIN Dewar d ON d.dewarid = c.dewarid
             INNER JOIN Shipping s ON s.shippingid = d.shippingid
@@ -263,7 +270,7 @@ class FormulatrixUploader:
         return sample[0]['blsampleid']
 
 
-def killHandler(sig,frame):
+def kill_handler(sig,frame):
     hostname = os.uname()[1]
     logging.getLogger().warning("%s: got SIGTERM on %s :-O" % (sys.argv[0], hostname))
     logging.shutdown()
@@ -282,7 +289,7 @@ def set_logging(logs):
             handler = logging.handlers.RotatingFileHandler(filename=logs[log_name]['filename'], maxBytes=logs[log_name]['max_bytes'], backupCount=logs[log_name]['no_files'])
         else:
             sys.exit("Invalid logging mechanism defined in config: %s. (Valid options are syslog and rotating_file.)" % log_name)
-        
+
         handler.setFormatter(logging.Formatter(logs[log_name]['format']))
         level = logs[log_name]['level']
         if levels_dict[level]:
@@ -310,17 +317,16 @@ if pid != 0:
 # pid_file = config['pid_file']
 # if pid_file != None:
 #     try:
-#         f = open(pid_file, 'w')     
+#         f = open(pid_file, 'w')
 #         f.write(str(os.getpid()))
 #         f.close()
 #     except:
 #         logging.getLogger().error("Unable to write to pid file %s" % pid_file)
 
 atexit.register(logging.shutdown)
-signal.signal(signal.SIGTERM,killHandler)
+signal.signal(signal.SIGTERM, kill_handler)
 
 db = MySQL(user=config['user'], pw=config['pw'], db=config['db'], host=config['host'])
 
 uploader = FormulatrixUploader(db=db, config=config)
 uploader.run()
-
