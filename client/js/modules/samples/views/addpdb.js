@@ -44,8 +44,8 @@ define(['backbone', 'views/dialog', 'modules/samples/models/pdb', 'modules/sampl
             if (this.model.isValid(true)) {
                 this.model.save({}, {
                     success: function(xhr, model, options) {
-                        self.closeDialog()
                         self.ui.prog.hide()
+                        self.closeDialog()
                         self.trigger('pdb:success')
                     },
                     error: function(xhr, model, options) {
