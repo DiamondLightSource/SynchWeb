@@ -208,9 +208,7 @@
                 }
 
                 # /4479
-                $envs = "export CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data";
-                # \nprintenv > env.txt
-                $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 failover=True pipeline=$pipeline $sg $cell $res xinfo=xia.xinfo spot.phil\nxia2.ispyb_xml ispyb_reproc.xml\nsed -e 's/xia2.txt/xia2.html/' -e 's/<Image><fileName>[^>]*>/<Image>/g' -e 's/<Image>/<Image><dataCollectionId>{dcid}<\/dataCollectionId>/' -e 's/<fileLocation>[^>]*>//g' ispyb_reproc.xml > ispyb_reproc2.xml\npython /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 -i ispyb_reproc2.xml\n";
+                $remote = "#!/bin/sh\nsource /etc/profile.d/modules.sh\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 failover=True pipeline=$pipeline $sg $cell $res xinfo=xia.xinfo spot.phil\nxia2.ispyb_xml ispyb_reproc.xml\nsed -e 's/xia2.txt/xia2.html/' -e 's/<Image><fileName>[^>]*>/<Image>/g' -e 's/<Image>/<Image><dataCollectionId>{dcid}<\/dataCollectionId>/' -e 's/<fileLocation>[^>]*>//g' ispyb_reproc.xml > ispyb_reproc2.xml\npython /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 -i ispyb_reproc2.xml\n";
                 // module load python/ana\npython /dls_sw/apps/ispyb-api/mxdatareduction2ispyb.py ispyb_reproc.xml
                 // python /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 ispyb_reproc.xml
 
@@ -354,8 +352,7 @@
                 $cmd = "blend -a files.dat 2> blend.elog";
                 if ($this->arg('type') == 0) $cmd .= "\nblend -c ".implode(' ', $sets)." 2>> blend.elog";
                 
-                $envs = "export CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data\nexport CCP4_SCR=/dls/tmp/dls_mxweb\nexport CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport R_HOME=/dls_sw/apps/R/3.0.0/RHEL6/x86_64/lib64/R\nexport BLEND_HOME=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/share/blend;";
-                file_put_contents($blend.'/blend.sh', "#!/bin/sh\n$envs\n. /etc/profile.d/modules.sh\nmodule load blend\n".$cmd);
+                file_put_contents($blend.'/blend.sh', "#!/bin/sh\nsource /etc/profile.d/modules.sh\nmodule load blend\n".$cmd);
                 
                 $sg = $this->has_arg('sg')  ? ("CHOOSE SPACEGROUP ".$this->arg('sg')) : '';
                 file_put_contents($blend.'/BLEND_KEYWORDS.dat', "BLEND KEYWORDS\nNBIN	  20\nRADFRAC   $radfrac\nISIGI     $isigi\nCPARWT    1.000\nPOINTLESS KEYWORDS\n$sg\nAIMLESS KEYWORDS\n$res");
