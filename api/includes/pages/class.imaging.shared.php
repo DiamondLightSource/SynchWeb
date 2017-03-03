@@ -169,7 +169,8 @@
             }
 
             // No sessionid, need to create a visit using UAS REST API
-            if (!$cont['SESSIONID']) {
+            // make sure PEXTERNALID is not null
+            if (!$cont['SESSIONID'] && $cont['PEXTERNALID']) {
                 $samples = $this->db->pq("SELECT HEX(p.externalid) as externalid 
                     FROM protein p
                     INNER JOIN crystal cr ON cr.proteinid = p.proteinid
@@ -187,7 +188,7 @@
                     'startAt' => date('Y-m-d\TH:i:s.000\Z'),
                     // 'startAt': "2012-04-23T18:25:43.511Z",
                     'facility' => 'I02-2',
-                    'investigators' => array(array('personId' => strtoupper($cont['PEXTERNALID']), 'role' => 'TEAM_MEMBER' )),
+                    'investigators' => array(array('personId' => strtoupper($cont['PEXTERNALID']), 'role' => 'TEAM_LEADER' )),
                 );
 
                 require_once(dirname(__FILE__).'/../class.uas.php');
@@ -219,7 +220,7 @@
             $inspections = $this->db->pq("SELECT ci.bltimestamp > CURRENT_TIMESTAMP as completed, TO_CHAR(ci.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as datetoimage, TO_CHAR(ci.bltimestamp, 'DD-MM-YYYY HH24:MI') as dateimaged, ci.state, ci.priority, ci.containerinspectionid, c.containerid
                 FROM containerinspection ci
                 INNER JOIN container c ON c.containerid = ci.containerid
-                WHERE c.code = :1 AND ci.scheduledtimestamp IS NOT NULL $scheduled AND ci.manual != 1", array($args['BARCODE']));
+                WHERE c.barcode = :1 AND ci.scheduledtimestamp IS NOT NULL $scheduled AND ci.manual != 1", array($args['BARCODE']));
 
             return $inspections;
         }
