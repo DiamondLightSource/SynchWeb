@@ -89,6 +89,7 @@ define(['marionette',
         
         ui: {
             name: 'input[name=NAME]',
+            comments: 'input[name=COMMENTS]',
             type: 'select[name=CONTAINERTYPE]',
             pc: '.puck_controls',
             ext: '.extrainfo',
@@ -229,7 +230,7 @@ define(['marionette',
         toggleExtra: function (e) {
             e.preventDefault()
             //this.$el.find('.extra').toggleClass('show')
-            this.table.currentView.toggleExtra()
+            if (this.table.currentView) this.table.currentView.toggleExtra()
         },
 
         setType: function(e) {
@@ -305,10 +306,18 @@ define(['marionette',
             }
         },
         
+        clearPlate: function(e) {
+            this.ui.barcode.val('')
+            this.ui.imager.val('')
+            this.ui.schedule.val('')
+            this.ui.screen.val('')
+            this.singlesample.clearPlate()
+        },
         
         clearPuck: function(e) {
             if (e) e.preventDefault()
             this.ui.name.val('')
+            this.ui.comments.val('')
             this.$el.find('.clear').each(function(i,c) { $(c).trigger('click') })
         },
         
@@ -401,6 +410,7 @@ define(['marionette',
         finished: function() {
             app.alert({ message: 'New container &quot;'+this.model.get('NAME')+'&quot; created, Click <a href="/containers/cid/'+this.model.get('CONTAINERID')+'">here</a> to view it', persist: 'cadd'+this.model.get('CONTAINERID'), className: 'message notify' })
             this.clearPuck()
+            this.clearPlate()
             this.model.set({ CONTAINERID: null })
         },
         
