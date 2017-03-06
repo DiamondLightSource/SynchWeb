@@ -69,6 +69,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
 
       if (app.user_can('disp_cont')) {
           columns.push({ name: 'VISIT', label: 'Visit', cell: 'string', editable: false })
+          columns.push({ name: 'REQUESTEDIMAGER', label: 'Req. Imager', cell: 'string', editable: false })
           columns.push({ name: 'IMAGER', label: 'Imager', cell: 'string', editable: false })
           columns.push({ label: '', cell: table.TemplateCell, editable: false, test: 'REQUESTEDRETURN', template: '<i class="fa fa-paper-plane-o" title="User requested return"></i>' })
           columns.push({ label: '', cell: DisposeCell, editable: false })
