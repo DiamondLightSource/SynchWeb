@@ -320,6 +320,15 @@ define(['marionette',
 
         
         addProtein: function(ui, val) {
+            if (this.getOption('isForImager')) {
+                var ifi = this.getOption('isForImager')()
+                console.log('is for imager', ifi)
+                if (ifi) {
+                    ui.combobox('value', -1).trigger('change')    
+                    return
+                }
+            }
+
             var safe = val.replace(/\W/g, '')
 
             var exists = this.getOption('proteins').findWhere({ ACRONYM: safe })

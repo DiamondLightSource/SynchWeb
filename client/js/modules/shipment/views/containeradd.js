@@ -233,6 +233,10 @@ define(['marionette',
             if (this.table.currentView) this.table.currentView.toggleExtra()
         },
 
+        isForImager: function() {
+            return !(!this.ui.imager.val())
+        },
+
         setType: function(e) {
             this.type = this.ctypes.findWhere({ name: this.ui.type.val() })
             this.type.set({ isSelected: true })
@@ -270,7 +274,7 @@ define(['marionette',
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.table.empty()
                 this.stable.destroy()
-                this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples })
+                this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples, isForImager: this.isForImager.bind(this) })
                 this.single.show(this.singlesample)
                 this.group = new ScreenGroupView({ components: this.screencomponents, editable: false })
                 this.grp.show(this.group)
