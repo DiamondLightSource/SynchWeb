@@ -351,6 +351,10 @@ define(['marionette',
                 this.image.setAddSubsample(true)
                 this.ui.ads.find('span').html('Finish')
             }
+
+            this.ui.adr.removeClass('button-highlight')
+            this.image.setAddSubsampleRegion(false)
+            this.ui.adr.find('span').html('Mark Region')
         },
 
 
@@ -367,6 +371,10 @@ define(['marionette',
                 this.image.setAddSubsampleRegion(true)
                 this.ui.adr.find('span').html('Finish')
             }
+
+            this.ui.ads.removeClass('button-highlight')
+            this.image.setAddSubsample(false)
+            this.ui.ads.find('span').html('Mark Point')
         },
 
 
