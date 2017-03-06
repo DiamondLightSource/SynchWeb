@@ -233,7 +233,7 @@
             $inspections = $this->db->pq("SELECT ci.containerinspectionid 
                 FROM containerinspection ci
                 INNER JOIN container c ON c.containerid = ci.containerid
-                WHERE c.code = :1 AND ci.scheduledtimestamp IS NOT NULL AND ci.manual != 1 AND CONVERT_TZ(ci.scheduledtimestamp, @@session.time_zone, :3) <= TO_DATE(:2, 'DD-MM-YYYY HH24:MI')
+                WHERE c.barcode = :1 AND ci.scheduledtimestamp IS NOT NULL AND ci.manual != 1 AND CONVERT_TZ(ci.scheduledtimestamp, @@session.time_zone, :3) <= TO_DATE(:2, 'DD-MM-YYYY HH24:MI')
                 ORDER BY ci.scheduledtimestamp DESC", array($args['BARCODE'], $args['DATETOIMAGE'], '+00:00'));
 
             
