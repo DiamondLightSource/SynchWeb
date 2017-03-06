@@ -218,7 +218,7 @@ define(['marionette',
 
         updatedQueued: function() {
             if (this.model.get('CONTAINERQUEUEID')) this.ui.que.html('<p>This container was queued for data collection at '+this.model.get('QUEUEDTIMESTAMP')+' <a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa fa-list"></i> <span>View Sample Queue</span></a></p>')
-            else this.ui.que.html('<a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa fa-list"></i> <span>Prepare for Data Collection</span></a>')
+            else this.ui.que.html('<a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa-3x fa fa-list"></i> <span class="large">Prepare for Data Collection</span></a>')
         },
 
         requestReturn: function(e) {
