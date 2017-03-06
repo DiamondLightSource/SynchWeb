@@ -40,6 +40,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
   var ClickableRow = table.ClickableRow.extend({
     event: 'container:show',
     argument: 'CONTAINERID',
+    cookie: true,
   })
     
   return Marionette.LayoutView.extend({
