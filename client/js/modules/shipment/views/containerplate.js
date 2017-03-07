@@ -621,6 +621,12 @@ define(['marionette',
             this.updateAdhoc()
         },
         
+
+        resetZoom: function() {
+            this.image.resetZoom(100)
+        },
+
+
         onShow: function() {
             $.when.apply($, this._ready).then(this.doOnShow.bind(this))
         },
@@ -630,6 +636,7 @@ define(['marionette',
 
             this.type = this.ctypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
             this.plateView = new PlateView({ collection: this.samples, type: this.type, showImageStatus: this.model.get('INSPECTIONS') > 0 })
+            this.listenTo(this.plateView, 'plate:select', this.resetZoom, this)
             this.plate.show(this.plateView)
             this.singlesample = new SingleSample({ proteins: this.proteins, existingContainer: true, gproteins: this.gproteins })
 
