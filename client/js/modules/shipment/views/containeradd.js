@@ -165,6 +165,9 @@ define(['marionette',
         limitProteins: function() {
             this.proteins.queryParams.externalid = this.ui.imager.val() ? 1 : null
             this.proteins.fetch()
+
+            this.users.queryParams.login = this.ui.imager.val() ? 1 : null
+            this.users.fetch()
         },
 
         checkPerson: function() {
@@ -455,6 +458,7 @@ define(['marionette',
             this.users = new Users(null, { state: { pageSize: 9999 }})
             this.users.queryParams.all = 1
             this.users.queryParams.pid = app.proposal.get('PROPOSALID')
+            this.listenTo(this.users, 'sync', this.updateUsers, this)
             this.ready.push(this.users.fetch())
 
             this.proteins = new DistinctProteins()
@@ -519,9 +523,13 @@ define(['marionette',
             
             this.ready2.done(this.loadContainerCache.bind(this))
 
-            this.ui.pid.html(this.users.opts()).val(app.personid)
+            this.updateUsers()
             this.checkPerson()
-        }
+        },
+
+        updateUsers: function(e) {
+            this.ui.pid.html(this.users.opts()).val(app.personid)
+        },
     })
 
 })
