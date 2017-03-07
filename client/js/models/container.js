@@ -26,8 +26,10 @@ define(['backbone'], function(Backbone) {
             },
 
             SCHEDULEID: {
-                required: false,
                 pattern: 'number',
+                required: function() {
+                    return (this.get('REQUESTEDIMAGERID') != '' && this.get('REQUESTEDIMAGERID') != null)
+                }
             },
 
             REQUESTEDIMAGERID: {
