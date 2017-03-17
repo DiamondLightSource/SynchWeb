@@ -27,6 +27,7 @@
                               'visit' => '\w+\d+-\d+',
                               'type' => '\d+',
                               'global' => '\d+',
+                              'seq' => '\d',
 
                               'PROTEINID' => '\d+',
                               'CONTAINERID' => '\d+',
@@ -733,6 +734,10 @@
             if ($this->has_arg('pid')) {
                 $where .= ' AND pr.proteinid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('pid'));
+                $extc = 'pr.sequence, ';
+            }
+
+            if ($this->has_arg('seq')) {
                 $extc = 'pr.sequence, ';
             }
 
