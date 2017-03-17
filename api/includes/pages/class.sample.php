@@ -34,9 +34,10 @@
                               'CODE' => '\w+',
                               // 'NAME' => '.*',
                               'ACRONYM' => '([\w-])+',
-                              'SEQUENCE' => '\w+',
+                              'SEQUENCE' => '[\s\w\(\)\.>\|;\n]+',
                               'MOLECULARMASS' => '\d+(.\d+)?',
                               'VOLUME' => '\d+(.\d+)?',
+                              'DENSITY' => '\d+(.\d+)?',
 
                               'NAME' => '[\w\s-()]+',
                               'COMMENTS' => '.*',
@@ -780,7 +781,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype, CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass,pr.global, IF(pr.externalid IS NOT NULL, 1, 0) as external/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
+            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype, CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass,pr.global, IF(pr.externalid IS NOT NULL, 1, 0) as external, pr.density/*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
                                   FROM protein pr
                                   LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
                                   LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
@@ -880,7 +881,7 @@
             
             if (!sizeof($prot)) $this->_error('No such protein');
             
-            foreach(array('NAME', 'SEQUENCE', 'ACRONYM', 'MOLECULARMASS', 'CONCENTRATIONTYPEID', 'COMPONENTTYPEID', 'GLOBAL') as $f) {
+            foreach(array('NAME', 'SEQUENCE', 'ACRONYM', 'MOLECULARMASS', 'CONCENTRATIONTYPEID', 'COMPONENTTYPEID', 'GLOBAL', 'DENSITY') as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq('UPDATE protein SET '.$f.'=:1 WHERE proteinid=:2', array($this->arg($f), $this->arg('pid')));
                     $this->_output(array($f => $this->arg($f)));
@@ -1039,11 +1040,12 @@
             $ct = $this->has_arg('CONCENTRATIONTYPEID') ? $this->arg('CONCENTRATIONTYPEID') : null;
             $cmt = $this->has_arg('COMPONENTTYPEID') ? $this->arg('COMPONENTTYPEID') : null;
             $global = $this->has_arg('GLOBAL') ? $this->arg('GLOBAL') : null;
+            $density = $this->has_arg('DENSITY') ? $this->arg('DENSITY') : null;
             // $abundance = $this->has_arg('ABUNDANCE') ? $this->arg('ABUNDANCE') : null;
             
-            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global) 
-              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8) RETURNING proteinid INTO :id',
-              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global));
+            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density) 
+              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9) RETURNING proteinid INTO :id',
+              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density));
             
             $pid = $this->db->id();
             
