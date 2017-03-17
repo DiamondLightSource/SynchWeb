@@ -170,7 +170,7 @@
             $check = $this->db->pq("SELECT crystalid FROM crystal c
               INNER JOIN protein pr ON pr.proteinid = c.proteinid
               WHERE pr.proposalid=:1 AND c.crystalid=:2", array($this->proposalid, $this->arg('BLSAMPLETYPEID')));
-            if (!sizeof($check)) $this->_error('No suck blsampletype');
+            if (!sizeof($check)) $this->_error('No such blsampletype');
 
             $this->_update_sample_components(array(), array($this->arg('COMPONENTID')), array($this->arg('ABUNDANCE')), $this->arg('BLSAMPLETYPEID'));
             $this->_output(1);
@@ -186,7 +186,7 @@
             $check = $this->db->pq("SELECT crystalid FROM crystal c
               INNER JOIN protein pr ON pr.proteinid = c.proteinid
               WHERE pr.proposalid=:1 AND c.crystalid=:2", array($this->proposalid, $crystalid));
-            if (!sizeof($check)) $this->_error('No suck blsampletype');
+            if (!sizeof($check)) $this->_error('No such blsampletype');
 
             $this->_update_sample_components(array($componentid), array(), array(), $crystalid);
             $this->_output(1);
