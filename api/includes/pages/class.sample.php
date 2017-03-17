@@ -16,6 +16,7 @@
                               'sid' => '\d+',
                               'ssid' => '\d+',
                               'cid' => '\d+',
+                              'crid' => '\d+',
                               'value' => '.*',
                               'ty' => '\w+',
                               't' => '\w+',
@@ -30,6 +31,7 @@
                               'seq' => '\d',
 
                               'PROTEINID' => '\d+',
+                              'CRYSTALID' => '\d+',
                               'CONTAINERID' => '\d+',
                               'LOCATION' => '\d+',
                               'CODE' => '\w+',
@@ -122,6 +124,10 @@
                               array('/proteins', 'post', '_add_protein'),
                               array('/proteins/:pid', 'patch', '_update_protein'),
                               array('/proteins/distinct', 'get', '_disinct_proteins'),
+
+                              array('/crystals(/:crid)', 'get', '_crystals'),
+                              array('/crystals', 'post', '_add_crystal'),
+                              array('/crystals/:crid', 'patch', '_update_crystal'),
 
                               array('/pdbs(/pid/:pid)', 'get', '_get_pdbs'),
                               array('/pdbs', 'post', '_add_pdb'),
@@ -438,6 +444,12 @@
                 $join .= ' LEFT OUTER JOIN blsampletype_has_component chc2 ON chc2.blsampletypeid=b.crystalid';
                 array_push($args, $this->arg('pid'));
                 array_push($args, $this->arg('pid'));
+            }
+
+            # For a particular crystal
+            if ($this->has_arg('crid')) {
+                $where .= ' AND cr.crystalid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('crid'));                
             }
 
             # For a specific container
@@ -1102,6 +1114,150 @@
 
         }
 
+
+
+        function _crystals() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            
+            $args = array($this->proposalid);
+            $where = 'pr.proposalid=:1';
+            $join = '';
+            
+            # For a specific protein
+            if ($this->has_arg('pid')) {
+                $where .= ' AND (pr.proteinid=:'.(sizeof($args)+1).' OR chc2.componentid=:'.(sizeof($args)+2).')';
+                $join .= ' LEFT OUTER JOIN blsampletype_has_component chc2 ON chc2.blsampletypeid=cr.crystalid';
+                array_push($args, $this->arg('pid'));
+                array_push($args, $this->arg('pid'));
+            }
+            
+            # For a particular crystal
+            if ($this->has_arg('crid')) {
+                $where .= ' AND cr.crystalid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('crid'));                
+            }
+            
+            
+            // Search
+            if ($this->has_arg('s')) {
+                $st = sizeof($args) + 1;
+                $where .= " AND (lower(cr.name) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(cr.comments) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
+                for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('s'));
+            }
+            
+            $tot = $this->db->pq("SELECT count(distinct cr.crystalid) as tot 
+              FROM crystal cr
+              INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
+              LEFT OUTER JOIN blsampletype_has_component chc ON cr.crystalid = chc.blsampletypeid
+              INNER JOIN proposal p ON p.proposalid = pr.proposalid 
+              $join WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            
+            
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+            
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+            
+            $order = 'cr.crystalid DESC';
+            
+            
+            if ($this->has_arg('sort_by')) {
+                $cols = array('CRYSTALID' => 'cr.crystalid', 'NAME' => 'cr.name', 'ACRONYM' => 'pr.acronym', 'SPACEGROUP' => 'cr.spacegroup', 'COMMENTS' => 'cr.comments');
+                $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+                if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
+            }
+            
+            $rows = $this->db->paginate("SELECT distinct cr.crystalid, cr.name, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.acronym, pr.proteinid, cr.spacegroup,cr.comments,cr.name,cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, cr.comments
+                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, pct.symbol,ROUND(cr.abundance,3) as abundance
+                                  
+                                  FROM crystal cr
+                                  INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+                                  LEFT OUTER JOIN concentrationtype pct ON pr.concentrationtypeid = pct.concentrationtypeid
+
+                                  LEFT OUTER JOIN blsampletype_has_component chc ON cr.crystalid = chc.blsampletypeid
+                                  LEFT OUTER JOIN protein cpr ON cpr.proteinid = chc.componentid
+                                  LEFT OUTER JOIN concentrationtype ct ON cpr.concentrationtypeid = ct.concentrationtypeid
+
+                                  INNER JOIN proposal p ON p.proposalid = pr.proposalid
+                                  $join
+
+                                  WHERE $where
+                                  
+                                  GROUP BY cr.crystalid, pr.acronym, pr.proteinid, cr.spacegroup, CONCAT(p.proposalcode,p.proposalnumber), cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+                                  
+                                  ORDER BY $order", $args);
+            
+            foreach ($rows as &$r) {
+                foreach (array('COMPONENTIDS', 'COMPONENTAMOUNTS', 'COMPONENTACRONYMS', 'COMPONENTTYPESYMBOLS', 'COMPONENTGLOBALS') as $k) {
+                    if ($r[$k]) $r[$k] = explode(',', $r[$k]);
+                }
+            }
+
+
+            if ($this->has_arg('crid')) {
+                if (sizeof($rows))$this->_output($rows[0]);
+                else $this->_error('No such sample');
+            } else $this->_output(array('total' => $tot,
+                                 'data' => $rows,
+                           ));   
+        }
+
+
+        function _add_crystal() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('PROTEINID')) $this->_error('No protein specified');
+            if (!$this->has_arg('NAME')) $this->_error('No name specified');
+
+            $chk = $this->db->pq("SELECT proteinid FROM protein WHERE proteinid=:1 AND proposalid=:2", array($this->arg('PROTEINID'), $this->proposalid));
+            if (!sizeof($chk)) $this->_error('No such protein');
+
+            $a = array();
+            foreach (array('SPACEGROUP', 'COMMENTS', 'NAME') as $f) $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
+            foreach (array('CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'ABUNDANCE') as $f) $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
+
+            $this->db->pq("INSERT INTO crystal (crystalid,proteinid,spacegroup,cell_a,cell_b,cell_c,cell_alpha,cell_beta,cell_gamma,abundance,comments,name) VALUES (s_crystal.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,11) RETURNING crystalid INTO :id", 
+                array($this->arg('PROTEINID'), $a['SPACEGROUP'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['ABUNDANCE'], $a['COMMENTS'], $a['NAME']));
+            $crysid = $this->db->id();
+            
+            $this->_output(array('CRYSTALID' => $crysid));
+        }
+
+
+        function _update_crystal() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('CRYSTALID')) $this->_error('No crystal specified');
+
+            $chk = $this->db->pq("SELECT pr.proteinid FROM crystal cr INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+              WHERE cr.crystalid=:1 AND pr.proposalid=:2", array($this->arg('CRYSTALID'), $this->proposalid));
+            if (!sizeof($chk)) $this->_error('No such crystal');
+            $chk = $chk[0];
+
+            $cfields = array('PROTEINID', 'SPACEGROUP', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'ABUNDANCE', 'COMMENTS', 'NAME');
+            foreach ($cfields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE crystal SET $f=:1 WHERE crystalid=:2", array($this->arg($f), $this->arg('CRYSTALID')));
+                    
+                    if ($f == 'PROTEINID') {
+                        $name = $this->db->pq('SELECT acronym FROM protein WHERE proteinid=:1', array($chk['PROTEINID']));
+                        if (sizeof($name)) {
+                            $this->_output(array('ACRONYM' => $name[0]['ACRONYM']));
+                        }
+                    } else $this->_output(array($f => $this->arg($f)));
+                }
+            }
+        }
 
 
 
