@@ -623,7 +623,7 @@ define(['marionette',
         
 
         resetZoom: function() {
-            this.image.resetZoom(100)
+            if (this.image) this.image.resetZoom(100)
         },
 
 
