@@ -61,6 +61,10 @@
                               'COMPONENTIDS' => '\d+',
                               'COMPONENTAMOUNTS' => '\d+(.\d+)?',
                               'ABUNDANCE' => '\d+(.\d+)?',
+                              'PACKINGFRACTION' => '\d+(.\d+)?',
+                              'DIMENSION1' => '\d+(.\d+)?',
+                              'DIMENSION2' => '\d+(.\d+)?',
+                              'DIMENSION3' => '\d+(.\d+)?',
                               'COMPONENTID' => '\d+',
                               'BLSAMPLETYPEID' => '\d+',
                               'scid' => '\d+-\d+',
@@ -520,7 +524,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma
+            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp
                                   
                                   FROM blsample b
@@ -602,8 +606,8 @@
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4 WHERE blsampleid=:5", 
-              array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$this->arg('sid')));                
+            $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8 WHERE blsampleid=:9", 
+              array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$a['PACKINGFRACTION'],$a['DIMENSION1'],$a['DIMENSION2'],$a['DIMENSION3'],$this->arg('sid')));                
             $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8 WHERE crystalid=:9", 
               array($a['SPACEGROUP'], $a['PROTEINID'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $samp['CRYSTALID']));            
             $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2 WHERE diffractionplanid=:3", 
@@ -672,12 +676,12 @@
                 }
             }
             
-            foreach (array('COMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER', ) as $f) {
+            foreach (array('COMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : '';
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
             }
 
-            foreach (array('SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE') as $f) {
+            foreach (array('SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
             }
@@ -695,8 +699,8 @@
                 array($a['PROTEINID'], $a['SPACEGROUP'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['ABUNDANCE']));
             $crysid = $this->db->id();
                              
-            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10) RETURNING blsampleid INTO :id", 
-                array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME']));
+            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING blsampleid INTO :id", 
+                array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3']));
             $sid = $this->db->id();
 
             if ($a['COMPONENTIDS']) $this->_update_sample_components(array(), $a['COMPONENTIDS'], $a['COMPONENTAMOUNTS'], $crysid);
@@ -910,7 +914,7 @@
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME');
+            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3');
             foreach ($sfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE blsample SET $f=:1 WHERE blsampleid=:2", array($this->arg($f), $samp['BLSAMPLEID']));
@@ -1046,7 +1050,6 @@
             $cmt = $this->has_arg('COMPONENTTYPEID') ? $this->arg('COMPONENTTYPEID') : null;
             $global = $this->has_arg('GLOBAL') ? $this->arg('GLOBAL') : null;
             $density = $this->has_arg('DENSITY') ? $this->arg('DENSITY') : null;
-            // $abundance = $this->has_arg('ABUNDANCE') ? $this->arg('ABUNDANCE') : null;
             
             $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density) 
               VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9) RETURNING proteinid INTO :id',
