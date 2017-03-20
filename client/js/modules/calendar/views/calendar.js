@@ -290,6 +290,7 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
             }
 
             if (options.all) queryParams.ty = app.type
+            if (options.bl) queryParams.bl = options.bl
 
             this.visits = new Visits(null, {
                 queryParams: queryParams,

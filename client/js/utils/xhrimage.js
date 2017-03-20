@@ -26,7 +26,9 @@ define(['marionette'], function() {
 			return
 		}
 
-		xhr.open('GET', url, true)
+		var req = url + (url.indexOf('?') > -1 ? '&prop=': '?prop=') + app.prop
+
+		xhr.open('GET', req, true)
 		if (app.token) xhr.setRequestHeader('Authorization','Bearer ' + app.token);
 		xhr.responseType = 'arraybuffer'
 
@@ -70,7 +72,7 @@ define(['marionette'], function() {
 
 		xhr.onerror = function () {
 			console.log('img network error')
-			self.onerror(arguments)
+			// self.onerror(arguments)
 		}
 
 		xhr.send()

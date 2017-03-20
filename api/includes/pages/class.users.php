@@ -12,6 +12,7 @@ class Users extends Page {
                                     'visit' => '\w+\d+-\d+',
                                     'location' => '(\w|-|\/)+',
                                     'all' => '\d',
+                                    'login' => '\d',
 
                                     'NAME' => '\w+',
 
@@ -199,6 +200,10 @@ class Users extends Page {
             $join = 'INNER JOIN usergroup_has_person uhp ON uhp.personid = p.personid';
             $where .= ' AND uhp.usergroupid=:'.(sizeof($args)+1);
             array_push($args, $this->arg('gid'));
+        }
+
+        if ($this->has_arg('login')) {
+            $where .= ' AND p.login IS NOT NULL';
         }
 
         if ($this->has_arg('s')) {

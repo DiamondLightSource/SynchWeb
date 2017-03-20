@@ -38,8 +38,16 @@ define(['marionette',
             comp: 'input[name=COMPONENTID]',
             abun: 'input[name=ABUNDANCE]',
             sym: 'span.SYMBOL',
+            cella: 'input[name=CELL_A]',
+            cellb: 'input[name=CELL_B]',
+            cellc: 'input[name=CELL_C]',
+            cellal: 'input[name=CELL_ALPHA]',
+            cellbe: 'input[name=CELL_BETA]',
+            cellga: 'input[name=CELL_GAMMA]',
+            reqr: 'input[name=REQUIREDRESOLUTION]',
+            anom: 'input[name=ANOMALOUSSCATTERER]',
         },
-        
+
         events: {
             'click @ui.cp': 'clonePlate',
             'click @ui.cc': 'cloneCol',
@@ -61,7 +69,7 @@ define(['marionette',
         },
         
         clearPlate: function(e) {
-            e.preventDefault()
+            if (e) e.preventDefault()
             this.clear(['drop'])
         },
 
@@ -86,6 +94,22 @@ define(['marionette',
             var sp = pt.getRowColDrop(start.get('LOCATION'))
             if (start.get('PROTEINID') == -1) return
                 
+            var fields = {
+                NAME: '',
+                SPACEGROUP: '',
+                ABUNDANCE: '',
+                SYMBOL: '',
+                COMMENTS: '',
+                REQUIREDRESOLUTION: '',
+                ANOMALOUSSCATTERER: '',
+                CELL_A: '',
+                CELL_B: '',
+                CELL_C: '',
+                CELL_ALPHA: '',
+                CELL_BETA: '',
+                CELL_GAMMA: '',
+            }
+
             this.getOption('samples').each(function(s,i) {
                 if (i > start.get('LOCATION')-1) {
                     var p = pt.getRowColDrop(s.get('LOCATION'))
@@ -96,18 +120,15 @@ define(['marionette',
                     })
                     
                     if (match) {
-                        s.set({
-                            PROTEINID: -2,
-                            NAME: '',
-                            SPACEGROUP: '',
-                            ABUNDANCE: '',
-                            SYMBOL: '',
-                        }, { silent: true })
+                        s.set(_.extend({}, fields, {PROTEINID: -2}), { silent: true })
+                        s.get('components').reset()
                     }
                 }
             }, this)
             
-            start.set({ NAME: '', PROTEINID: -1, ABUNDANCE: '', SYMBOL: '' })
+            start.set(_.extend({}, fields, {PROTEINID: -1}))
+            start.get('components').reset()
+            this.render()
         },
         
         clonePlate: function(e) {
@@ -220,6 +241,15 @@ define(['marionette',
                     this.ui.com.val(this.model.get('COMMENTS'))
                     this.ui.abun.val(this.model.get('ABUNDANCE'))
                     this.ui.sym.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
+
+                    this.ui.cella.val(this.model.get('CELL_A'))
+                    this.ui.cellb.val(this.model.get('CELL_B'))
+                    this.ui.cellc.val(this.model.get('CELL_C'))
+                    this.ui.cellal.val(this.model.get('CELL_ALPHA'))
+                    this.ui.cellbe.val(this.model.get('CELL_BETA'))
+                    this.ui.cellga.val(this.model.get('CELL_GAMMA'))
+                    this.ui.reqr.val(this.model.get('REQUIREDRESOLUTION'))
+                    this.ui.anom.val(this.model.get('ANOMALOUSSCATTERER'))
                     
                 } else {
                     var edit = new Editable({ model: this.model, el: this.$el })
@@ -251,6 +281,8 @@ define(['marionette',
                 console.log('render single', this.model)
                 this.compview = new ComponentsView({ showEmpty: true, CRYSTALID: this.model.get('CRYSTALID'), collection: this.model.get('components'), editable: this.model.get('new'), editinline: this.getOption('existingContainer') })
                 this.ui.comps.append(this.compview.render().$el)
+
+                if (this.extra) this.$el.find('.extra').addClass('show')
             }
         },
 
@@ -288,6 +320,15 @@ define(['marionette',
 
         
         addProtein: function(ui, val) {
+            if (this.getOption('isForImager')) {
+                var ifi = this.getOption('isForImager')()
+                console.log('is for imager', ifi)
+                if (ifi) {
+                    ui.combobox('value', -1).trigger('change')    
+                    return
+                }
+            }
+
             var safe = val.replace(/\W/g, '')
 
             var exists = this.getOption('proteins').findWhere({ ACRONYM: safe })

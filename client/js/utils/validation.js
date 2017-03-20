@@ -9,7 +9,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         word: /^\w+$/,
         fcode: /^DLS\-(MX|IN)\-\d\d\d\d$/i,
         datetime: /\d+-\d+-\d+ \d+:\d+/,
-        sequence: /[>|;|\w+|\n]/,
+        sequence: /^[>;\s\w+\n\(\)\.\|]+$/,
         address: /^(\w|\s|\-|\n)+$/,
     });
     

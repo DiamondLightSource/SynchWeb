@@ -128,6 +128,26 @@ define(['backbone', 'collections/proteins'], function(Backbone, Proteins) {
                 pattern: 'number'
             },
 
+            PACKINGFRACTION: {
+                required: false,
+                pattern: 'number'
+            },
+
+            DIMENSION1: {
+                required: false,
+                pattern: 'number'
+            },
+
+            DIMENSION2: {
+                required: false,
+                pattern: 'number'
+            },
+
+            DIMENSION3: {
+                required: false,
+                pattern: 'number'
+            },
+
 
             COMPONENTAMOUNTS: function(from_ui, attr, all_values) {
                 var values = all_values.components.pluck('ABUNDANCE')

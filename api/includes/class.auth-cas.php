@@ -81,4 +81,23 @@ class CASAuthentication extends AuthenticationBase implements Authentication {
         return rtrim($resp);
     }
 
+    function validate($service, $ticket) {
+        $fields = array(
+            'service' => $service,
+            'ticket' => $ticket,
+            'format' => 'JSON',
+        );
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://'.$cas_url.'/cas/v1/serviceValidate');
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($fields));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $resp = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        return rtrim($resp);
+    }
+
 }

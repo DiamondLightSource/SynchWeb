@@ -18,18 +18,10 @@ define(['marionette',
         template) {
     
 
-
-    var ClickableRow = Backgrid.Row.extend({
-        events: {
-            'click': 'onClick',
-        },
-        onClick: function() {
-            // dont do this :(
-            // should not be using the global event handler
-            app.trigger('select:imager', this.model.get('IMAGERID'))
-        },
+    var ClickableRow = table.ClickableRow.extend({
+        event: 'select:imager',
+        argument: 'IMAGERID',
     })
-
 
     var ClickableRow2 = Backgrid.Row.extend({
         events: {

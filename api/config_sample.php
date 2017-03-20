@@ -82,6 +82,9 @@
     );
 
 
+    # Crystal alignment programs
+    $strat_align = array('XOalign', 'dials.align_crystal');
+
 
     # Paths
     # - These map files to physical locations on disk

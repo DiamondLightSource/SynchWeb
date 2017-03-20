@@ -162,12 +162,26 @@ define(['jquery', 'marionette',
 
                     // Account for vertical grid scans
                     if (this.vertical) {
-                        var x = Math.floor(k / this.grid.get('STEPS_Y')) * sw + sw/2 + (this.offset_w*this.scale)/2
-                        var y = (k % this.grid.get('STEPS_Y')) * sh + sh/2 + (this.offset_h*this.scale)/2
+                        var xstep = Math.floor(k / this.grid.get('STEPS_Y'))
+                        var ystep = k % this.grid.get('STEPS_Y')
+
+                        if (this.grid.get('SNAKED') == 1) {
+                             if (xstep % 2 == 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
+                         }
+
+                        var x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
+                        var y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
 
                     } else {
-                        var x = (k % this.grid.get('STEPS_X')) * sw + sw/2 + (this.offset_w*this.scale)/2
-                        var y = Math.floor(k / this.grid.get('STEPS_X')) * sh + sh/2 + (this.offset_h*this.scale)/2
+                        var xstep = k % this.grid.get('STEPS_X')
+                        var ystep = Math.floor(k / this.grid.get('STEPS_X'))
+
+                        if (this.grid.get('SNAKED') == 1) {
+                             if (ystep % 2 == 1) xstep = (this.grid.get('STEPS_X')-1) - xstep
+                        }
+
+                        var x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
+                        var y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
                     }
                     var r = ((v[1] < 1 ? 0 : v[1]) / (max == 0 ? 1 : max)) * sw / 2
 

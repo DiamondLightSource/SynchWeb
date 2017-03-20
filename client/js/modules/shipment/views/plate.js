@@ -29,6 +29,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
             if (pos) {
                 var drop = this.collection.findWhere({ LOCATION: pos.toString() })
                 
+                this.trigger('plate:select')
                 if (drop) drop.set('isSelected', true)
                 this.drawPlate()
             }

@@ -517,6 +517,15 @@ define(['marionette',
             
         },
         
+        resetZoom: function() {
+            this.setZoom(this.ui.zoom.slider('option', 'min'))
+        },
+
+        setZoom: function(value) {
+            this.ui.zoom.slider('value', value)
+            this.scalef = this.ui.zoom.slider('value')/100.0
+            this.clampOffsets()
+        },
 
         
         onZoomChange: function(e) {

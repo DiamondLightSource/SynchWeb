@@ -1849,3 +1849,30 @@ textarea[name=pasted] {
         color: #fff;
     }
 }
+
+
+.fixed {
+
+    &.xtalpreview {
+        position: fixed;
+        bottom: 5px;
+        width: 80%;
+        @media (max-width: $breakpoint-large) {
+            width: 96%;
+        }
+        background: #ccc;
+        border-radius: 5px;
+        z-index: 99;
+        padding: 10px;
+
+        canvas {
+            height: 340px;
+        }
+    }
+
+
+    &.content {
+        margin-bottom: 220px;
+    }
+
+}

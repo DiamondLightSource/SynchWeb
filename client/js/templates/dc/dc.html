@@ -37,7 +37,7 @@
         <li>&Omega; Overlap: <%=OVERLAP%>&deg;</li>
         <li>No. Images: <%=NUMIMG%></li>
         <% if (SI != 1 ) { %> <li>First Image: <%=SI%></li><% } %>
-        <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0)) { %><li>&kappa;: <%=KAPPA%>&deg; &phi;: <%=PHI%>&deg;</li><% } %>
+        <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0) || (CHISTART && CHISTART !=0)) { %><li>&kappa;: <%=KAPPA == null ? 0 : KAPPA%>&deg; &phi;: <%=PHI == null ? 0 : PHI%>&deg; &chi;: <%=CHISTART == null ? 0 : CHISTART%>&deg;</li><% } %>
         <li>Resolution: <%=RESOLUTION%>&#197;</li>
         <li>Wavelength: <%=WAVELENGTH%>&#197;</li>
         <li>Exposure: <%=EXPOSURETIME%>s</li>

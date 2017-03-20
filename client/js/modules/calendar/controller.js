@@ -3,9 +3,9 @@ define(['underscore', 'marionette',
         'modules/calendar/views/current',
 ], function(_, Marionette, CalendarView, CurrentView) {
   var controller = {
-    calendar: function() {
+    calendar: function(bl) {
         app.bc.reset([{ title: 'Calendar' }])
-        app.content.show(new CalendarView({ all: 1 }))
+        app.content.show(new CalendarView({ all: 1, bl: bl }))
     },
        
     calendar_prop: function() {

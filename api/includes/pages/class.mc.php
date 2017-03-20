@@ -14,7 +14,8 @@
             'sg' => '\w+', 
             'a' => '\d+(.\d+)?', 'b' => '\d+(.\d+)?', 'c' => '\d+(.\d+)?', 'alpha' => '\d+(.\d+)?', 'beta' => '\d+(.\d+)?', 'gamma' => '\d+(.\d+)?', 
             'res' => '\d+(.\d+)?', 'rfrac' => '\d+(.\d+)?', 'isigi' => '\d+(.\d+)?', 'run' => '\d+', 'type' => '\d+', 'local' => '\d+', 'user' => '\d+',
-            'multi' => '\d');
+            'multi' => '\d',
+            'recipes' => '\d+');
 
 
         public static $dispatch = array(array('/ints(/user/:user)', 'post', '_integration_statuses'),
@@ -195,13 +196,21 @@
                 foreach ($rows as $r) $dict[$r['ID']] = $r;
                                    
                 $cell = $this->has_arg('a') ? "unit_cell=".$this->arg('a').",".$this->arg('b').",".$this->arg('c').",".$this->arg('alpha').",".$this->arg('beta').",".$this->arg('gamma') : '';
-                $res = $this->has_arg('res') ? "-resolution ".$this->arg('res') : '';
+                $res = $this->has_arg('res') ? "d_min=".$this->arg('res') : '';
                 $sg = $this->has_arg('sg') ? "space_group=".$this->arg('sg') : '';
                     
+                $pipeline = '3dii';
+                if ($this->has_arg('recipes')) {
+                    if ($this->arg('recipes') < 3 && $this->arg('recipes') > 0) {
+                        $pls = array('3dii', 'dials');
+                        $pipeline = $pls[($this->arg('recipes')-1)];
+                    }
+                }
+
                 # /4479
                 $envs = "export CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data";
                 # \nprintenv > env.txt
-                $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 -ispyb_xml_out ispyb_reproc.xml -failover -3dii $sg $cell $res xinfo=xia.xinfo spot.phil\nsed -e 's/xia2.txt/xia2.html/' -e 's/<Image><fileName>[^>]*>/<Image>/g' -e 's/<Image>/<Image><dataCollectionId>{dcid}<\/dataCollectionId>/' -e 's/<fileLocation>[^>]*>//g' ispyb_reproc.xml > ispyb_reproc2.xml\npython /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 -i ispyb_reproc2.xml\n";
+                $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 failover=True pipeline=$pipeline $sg $cell $res xinfo=xia.xinfo spot.phil\nxia2.ispyb_xml ispyb_reproc.xml\nsed -e 's/xia2.txt/xia2.html/' -e 's/<Image><fileName>[^>]*>/<Image>/g' -e 's/<Image>/<Image><dataCollectionId>{dcid}<\/dataCollectionId>/' -e 's/<fileLocation>[^>]*>//g' ispyb_reproc.xml > ispyb_reproc2.xml\npython /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 -i ispyb_reproc2.xml\n";
                 // module load python/ana\npython /dls_sw/apps/ispyb-api/mxdatareduction2ispyb.py ispyb_reproc.xml
                 // python /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 ispyb_reproc.xml
 
@@ -213,7 +222,7 @@
                     foreach ($ranges as $i => $r) {
                         if (array_key_exists($r[0], $dict)) {
                             $row = $dict[$r[0]];
-                            array_push($sweeps, "BEGIN SWEEP SWEEP".($i+1)."\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1]+1)." ".$r[2]."\nEND SWEEP SWEEP".($i+1));
+                            array_push($sweeps, "BEGIN SWEEP SWEEP".($i+1)."\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1])." ".$r[2]."\nEND SWEEP SWEEP".($i+1));
                         }
                     }
                     
@@ -230,7 +239,7 @@
                         $root = $this->_get_next($this->_get_rp($r[0]));
                         $row = $dict[$r[0]];
                         
-                        $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$row['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\nBEGIN SWEEP SWEEP1\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1]+1)." ".$r[2]."\nEND SWEEP SWEEP1\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
+                        $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$row['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\nBEGIN SWEEP SWEEP1\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1])." ".$r[2]."\nEND SWEEP SWEEP1\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
                         file_put_contents($root.'/xia.xinfo', $xinfo);
                         file_put_contents($root.'/x2'.$row['ID'].'.sh', str_replace('{dcid}', $row['ID'], $remote));
                         
