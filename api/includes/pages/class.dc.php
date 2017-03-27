@@ -369,7 +369,7 @@
             WHERE $sess[3] $where4
                    
             UNION
-            SELECT $extc 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)), 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, 'A', r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, 'A', 'A', 'A', 'A', r.starttimestamp as sta, 1, 1, 1, 0 FROM robotaction r
+            SELECT $extc 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)), 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, smp.code, r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, 'A', 'A', 'A', 'A', r.starttimestamp as sta, 1, 1, 1, 0 FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
             LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
             $extj[2]
@@ -766,7 +766,7 @@
         function _dc_strategies($id) {
             global $strat_align;
 
-            $rows = $this->db->pq("SELECT s.programversion, st.rankingresolution as rankres, ssw.wedgenumber, sssw.subwedgenumber, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(s.shortcomments, ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg 
+            $rows = $this->db->pq("SELECT s.programversion, st.rankingresolution as rankres, ssw.wedgenumber, sssw.subwedgenumber, ssw.chi, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(s.shortcomments, ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg 
                 FROM screeningstrategy st 
                 INNER JOIN screeningoutput so on st.screeningoutputid = so.screeningoutputid 
                 INNER JOIN screening s on so.screeningid = s.screeningid 

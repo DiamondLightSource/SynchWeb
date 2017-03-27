@@ -135,6 +135,10 @@
     
     span {
         font-size: 11px;
+
+        &.large {
+            font-size: 18px;
+        }
     }
     
     &.button-notext {

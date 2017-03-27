@@ -89,6 +89,7 @@ define(['marionette',
         
         ui: {
             name: 'input[name=NAME]',
+            comments: 'input[name=COMMENTS]',
             type: 'select[name=CONTAINERTYPE]',
             pc: '.puck_controls',
             ext: '.extrainfo',
@@ -164,6 +165,9 @@ define(['marionette',
         limitProteins: function() {
             this.proteins.queryParams.externalid = this.ui.imager.val() ? 1 : null
             this.proteins.fetch()
+
+            this.users.queryParams.login = this.ui.imager.val() ? 1 : null
+            this.users.fetch()
         },
 
         checkPerson: function() {
@@ -229,7 +233,11 @@ define(['marionette',
         toggleExtra: function (e) {
             e.preventDefault()
             //this.$el.find('.extra').toggleClass('show')
-            this.table.currentView.toggleExtra()
+            if (this.table.currentView) this.table.currentView.toggleExtra()
+        },
+
+        isForImager: function() {
+            return !(!this.ui.imager.val())
         },
 
         setType: function(e) {
@@ -269,7 +277,7 @@ define(['marionette',
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.table.empty()
                 this.stable.destroy()
-                this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples })
+                this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples, isForImager: this.isForImager.bind(this) })
                 this.single.show(this.singlesample)
                 this.group = new ScreenGroupView({ components: this.screencomponents, editable: false })
                 this.grp.show(this.group)
@@ -305,10 +313,18 @@ define(['marionette',
             }
         },
         
+        clearPlate: function(e) {
+            this.ui.barcode.val('')
+            this.ui.imager.val('')
+            this.ui.schedule.val('')
+            this.ui.screen.val('')
+            this.singlesample.clearPlate()
+        },
         
         clearPuck: function(e) {
             if (e) e.preventDefault()
             this.ui.name.val('')
+            this.ui.comments.val('')
             this.$el.find('.clear').each(function(i,c) { $(c).trigger('click') })
         },
         
@@ -401,6 +417,7 @@ define(['marionette',
         finished: function() {
             app.alert({ message: 'New container &quot;'+this.model.get('NAME')+'&quot; created, Click <a href="/containers/cid/'+this.model.get('CONTAINERID')+'">here</a> to view it', persist: 'cadd'+this.model.get('CONTAINERID'), className: 'message notify' })
             this.clearPuck()
+            this.clearPlate()
             this.model.set({ CONTAINERID: null })
         },
         
@@ -438,9 +455,10 @@ define(['marionette',
             //this.buildCollection()
             this.setupValidation()
             
-            this.users = new Users()
+            this.users = new Users(null, { state: { pageSize: 9999 }})
             this.users.queryParams.all = 1
             this.users.queryParams.pid = app.proposal.get('PROPOSALID')
+            this.listenTo(this.users, 'sync', this.updateUsers, this)
             this.ready.push(this.users.fetch())
 
             this.proteins = new DistinctProteins()
@@ -505,9 +523,13 @@ define(['marionette',
             
             this.ready2.done(this.loadContainerCache.bind(this))
 
-            this.ui.pid.html(this.users.opts()).val(app.personid)
+            this.updateUsers()
             this.checkPerson()
-        }
+        },
+
+        updateUsers: function(e) {
+            this.ui.pid.html(this.users.opts()).val(app.personid)
+        },
     })
 
 })
