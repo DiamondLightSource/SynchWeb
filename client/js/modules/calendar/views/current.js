@@ -37,7 +37,7 @@ define(['marionette',
             app.trigger('dclist:show', this.model.get('VISIT'))
         },
         
-        template: _.template('<div class="r"><a class="button" href="/stats/visit/<%=VISIT%>"><i class="fa fa-pie-chart"></i></a> <a href="#" class="button users"><i class="fa fa-users"></i></a></div><h1><%=BL%>. <%=LC%></h1><h3><a href="/dc/visit/<%=VISIT%>"><%=VISIT%></a></h3><ul><li>Start: <%=ST%></li><li>End: <%=EN%></li></ul>'),
+        template: _.template('<div class="r"><a class="button" href="/stats/visit/<%=VISIT%>"><i class="fa fa-pie-chart"></i></a> <a href="#" class="button users"><i class="fa fa-users"></i></a></div><h1><%=BL%>. <%=LC%></h1><h3><a href="/dc/visit/<%=VISIT%>"><%=VISIT%></a></h3><ul><li>Start: <%=ST%></li><li>End: <%=EN%></li><li>&nbsp; <% if (SESSIONTYPE) { %><%=SESSIONTYPE%><% }%></li></ul>'),
         
     })
     
@@ -105,7 +105,7 @@ define(['marionette',
                 model: model
             })
 
-            this.visits = new visits(null, { queryParams: { current: 1 } })
+            this.visits = new visits(null, { queryParams: { current: 1, scheduled: 1 } })
             var def = this.visits.fetch({
                 success: this.sortVisits.bind(this)
             })

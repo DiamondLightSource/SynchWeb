@@ -10,7 +10,7 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
     
     
     var EventItemView = Marionette.ItemView.extend({
-        template: _.template('<%=BL%>: <a href="/dc/visit/<%=VISIT%>"><%=VISIT%></a> (<%=LEN%>h)<% if(LC) { %><br />&nbsp; - <%=LC%><% } %>'),
+        template: _.template('<%=BL%>: <a href="/dc/visit/<%=VISIT%>"><%=VISIT%></a> (<%=LEN%>h)<% if(LC) { %><br />&nbsp; - <%=LC%><% } %><%if(SESSIONTYPE) { %><br />[<%=SESSIONTYPE%>]<% } %>'),
         tagName: 'li',
         
         className: function() {
