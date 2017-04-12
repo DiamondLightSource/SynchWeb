@@ -23,7 +23,8 @@
                               'ty' => '\w+',
                               'next' => '\d',
                               'prev' => '\d',
-        					  'started' => '\d',
+                              'started' => '\d',
+        					  'scheduled' => '\d',
                               // 'proposal' => '\w+\d+',
                               'current' => '\d',
 
@@ -225,7 +226,7 @@
             }
             
             if ($this->has_arg('next')) {
-                $where .= " AND s.enddate > SYSDATE AND TO_CHAR(s.startdate,'YYYY') > 2009 AND p.proposalcode not in ('cm', 'nr', 'lb')";
+                $where .= " AND s.enddate > SYSDATE AND TO_CHAR(s.startdate,'YYYY') > 2009 AND p.proposalcode not in ('lb')";
                 $this->args['order'] = 'asc';
                 $this->args['sort_by'] = 'ST';
             }
@@ -249,6 +250,10 @@
             if ($this->has_arg('s')) {
                 $where .= " AND s.visit_number LIKE :".(sizeof($args)+1);
                 array_push($args, $this->arg('s'));
+            }
+
+            if ($this->has_arg('scheduled')) {
+                $where .= " AND s.scheduled=1";
             }
             
             
@@ -291,9 +296,10 @@
             }
             
             
-            $rows = $this->db->paginate("SELECT case when SYSDATE between s.startdate and s.enddate then 1 else 0 end as active, case when SYSDATE between s.startdate-0.4 and s.enddate+0.4 then 1 else 0 end as cams, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as st, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as en, TO_CHAR(s.startdate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as stiso, TO_CHAR(s.enddate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as eniso,  s.sessionid, s.visit_number as vis, s.beamlinename as bl, s.beamlineoperator as lc, s.comments/*, count(dc.datacollectionid) as dcount*/ 
+            $rows = $this->db->paginate("SELECT case when SYSDATE between s.startdate and s.enddate then 1 else 0 end as active, case when SYSDATE between s.startdate-0.4 and s.enddate+0.4 then 1 else 0 end as cams, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as st, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as en, TO_CHAR(s.startdate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as stiso, TO_CHAR(s.enddate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as eniso,  s.sessionid, s.visit_number as vis, s.beamlinename as bl, s.beamlineoperator as lc, s.comments, s.scheduled, st.typename as sessiontype/*, count(dc.datacollectionid) as dcount*/ 
                     FROM blsession s 
                     INNER JOIN proposal p ON p.proposalid = s.proposalid 
+                    LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid
                     /*LEFT OUTER JOIN datacollection dc ON s.sessionid = dc.sessionid*/ 
                     $where 
                     /*GROUP BY TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY'),TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY'), s.sessionid, s.visit_number,s.beamlinename,s.beamlineoperator,s.comments,s.startdate*/ 
