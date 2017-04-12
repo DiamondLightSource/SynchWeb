@@ -365,6 +365,8 @@
                 unset($this->args['sort_by']);
                 foreach (array('next', 'prev', 'cm') as $r) unset($this->args[$r]); 
                 $this->args[$t] = True;
+                if ($t == 'cm') unset($this->args['scheduled']);
+                else $this->args['scheduled'] = 1;
 
                 foreach ($beamlines as $bl) {
                     $this->args['bl'] = $bl;
