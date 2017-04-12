@@ -105,7 +105,7 @@ define(['marionette',
                 model: model
             })
 
-            this.visits = new visits(null, { queryParams: { current: 1, scheduled: 1 } })
+            this.visits = new visits(null, { queryParams: { current: 1 } })
             var def = this.visits.fetch({
                 success: this.sortVisits.bind(this)
             })
