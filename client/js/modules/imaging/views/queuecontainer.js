@@ -424,7 +424,9 @@ define(['marionette',
         applyModel: function(p) {
             var models = this.qsubsamples.where({ isGridSelected: true })
             _.each(models, function(m) {
-                _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR', 'EXPERIMENTKIND'], function(k) {
+                if (p.get('EXPERIMENTKIND') != m.get('EXPERIMENTKIND')) return
+                    
+                _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
                     if (p.get(k) !== null) m.set(k, p.get(k))
                 }, this)
                 m.save()
