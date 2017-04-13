@@ -104,8 +104,6 @@
 
 
         function _get_imagers() {
-            $this->user->can('imaging_dash');
-
             $where = '1=1';
             $args = array();
 
