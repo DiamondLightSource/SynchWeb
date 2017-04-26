@@ -17,6 +17,7 @@
                               'ssid' => '\d+',
                               'cid' => '\d+',
                               'crid' => '\d+',
+                              'lid' => '\d+',
                               'value' => '.*',
                               'ty' => '\w+',
                               't' => '\w+',
@@ -98,6 +99,8 @@
 
                               'externalid' => '\d',
 
+                              'COMPONENTLATTICEID' => '\d+',
+
                                );
         
         
@@ -125,6 +128,11 @@
                               array('/proteins', 'post', '_add_protein'),
                               array('/proteins/:pid', 'patch', '_update_protein'),
                               array('/proteins/distinct', 'get', '_disinct_proteins'),
+
+                              array('/proteins/lattice(/:lid)', 'get', '_protein_lattices'),
+                              array('/proteins/lattice', 'post', '_add_protein_lattice'),
+                              array('/proteins/lattice/:lid', 'patch', '_update_protein_lattice'),
+
 
                               array('/crystals(/:crid)', 'get', '_crystals'),
                               array('/crystals', 'post', '_add_crystal'),
@@ -1259,6 +1267,78 @@
                 }
             }
         }
+
+
+
+        function _protein_lattices() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            
+            $where = 'pr.proposalid=:1';
+            $args = array($this->proposalid);
+
+            if ($this->has_arg('lid')) {
+                $where .= ' AND l.proteinhaslatticeid=:2';
+                array_push($args, $this->arg('lid'));
+            }
+            
+            if ($this->has_arg('pid')) {
+                $where .= ' AND pr.proteinid=:2';
+                array_push($args, $this->arg('pid'));
+            }
+
+            $tot = $this->db->pq("SELECT count(distinct l.componentlatticeid) as tot 
+              FROM componentlattice l
+              INNER JOIN protein pr ON pr.proteinid = l.componentid
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+            
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT l.componentlatticeid, pr.proteinid, l.spacegroup, l.cell_a, l.cell_b, l.cell_c, l.cell_alpha, l.cell_beta, l.cell_gamma
+              FROM componentlattice l
+              INNER JOIN protein pr ON pr.proteinid = l.componentid
+              WHERE $where", $args);
+            
+            if ($this->has_arg('pid')) {
+                if (!sizeof($rows)) $this->_error('No such lattice');
+                else $this->_output($rows[0]);
+            } else $this->_output(array('total' => $tot,
+                                 'data' => $rows,
+                           ));
+        }
+
+        function _add_protein_lattice() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('PROTEINID')) $this->_error('No protein specified');
+
+            $chk = $this->db->pq("SELECT proteinid FROM protein WHERE proteinid=:1 AND proposalid=:2", array($this->arg('PROTEINID'), $this->proposalid));
+            if (!sizeof($chk)) $this->_error('No such protein');
+
+
+        }
+
+        function _update_protein_lattice() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('CRYSTALID')) $this->_error('No crystal specified');
+
+            $chk = $this->db->pq("SELECT pr.proteinid FROM componentlattice l INNER JOIN protein pr ON l.proteinid = cr.proteinid
+              WHERE l.componentlatticeid=:1 AND pr.proposalid=:2", array($this->arg('COMPONENTLATTICEID'), $this->proposalid));
+            if (!sizeof($chk)) $this->_error('No such lattice');
+        }
+
 
 
 
