@@ -2,12 +2,13 @@
 
     class Assign extends Page {
         
-        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+',);
+        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+', 'bl' => '[\w-]+');
 
         public static $dispatch = array(array('/visits(/:visit)', 'get', '_blsr_visits'),
                               array('/assign', 'get', '_assign'),
                               array('/unassign', 'get', '_unassign'),
                               array('/deact', 'get', '_deactivate'),
+                              array('/names', 'get', '_get_puck_names'),
 
                              );
         
@@ -127,6 +128,37 @@
                 }
                 $this->_error('No such visit');
             } else $this->_output($visits);
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Puck names from puck scanner
+        # BL03I-MO-ROBOT-01:PUCK_01_NAME
+        function _get_puck_names() {
+            global $bl_pv_map;
+            session_write_close();
+            
+            if (!$this->has_arg('bl')) $this->_error('No beamline specified');
+            if (!array_key_exists($this->arg('bl'), $bl_pv_map)) $this->_error('No such beamline');
+            $pv_prefix = $bl_pv_map[$this->arg('bl')];
+
+            $pvs = array();
+            for ($i = 1; $i < 38; $i++) {
+                $id = $i < 10 ? '0'.$i : $i;
+                array_push($pvs, $pv_prefix.'-MO-ROBOT-01:PUCK_'.$id.'_NAME');
+            }
+            
+            $vals = $this->pv(array_values($pvs), true);
+
+            $return = array();
+            foreach ($vals as $k => $v) {
+                if (preg_match('/PUCK_(\d+)_NAME/', $k, $mat)) {
+                    array_push($return, array('id' => intval($mat[1]), 'name' => sizeof($v) > 1 ? $v[1] : ''));
+                }
+            }
+            
+            $this->_output($return);
+            
         }
     
     }
