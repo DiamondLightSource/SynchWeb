@@ -46,7 +46,7 @@
 
             } else $this->_error('No visit specified');
 
-            $dc = $this->db->pq("SELECT dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, dc.runstatus 
+            $dc = $this->db->pq("SELECT IF(dc.chistart IS NULL, 0, dc.chistart) as chistart, dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, dc.runstatus 
                 FROM datacollection dc 
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -145,12 +145,10 @@
             if ($info['DC_TOT'] + $info['E_TOT'] + $info['R_TOT'] == 0) $this->_error('No Data');
             
             $data = array();
-            $lines = array(array('data' => array()),
-                           array('data' => array()),
-                           array('data' => array()),
-                           array('data' => array()),
-                           array('data' => array()),
-                           );
+
+            $linecols = array('ENERGY', 'BEAMSIZEATSAMPLEX', 'BEAMSIZEATSAMPLEY', 'KAPPASTART', 'PHISTART', 'CHISTART');
+            $lines = array();
+            foreach ($linecols as $c) array_push($lines, array('data' => array()));
 
             foreach ($dc as $d) {
                 if (strpos($d['RUNSTATUS'], 'Successful') === false) $info['DC_STOPPED']++;
@@ -162,7 +160,7 @@
 
                     $d['ENERGY'] = $d['WAVELENGTH'] ? (1.98644568e-25/($d['WAVELENGTH']*1e-10))/1.60217646e-19 : '';
 
-                    foreach (array('ENERGY', 'BEAMSIZEATSAMPLEX', 'BEAMSIZEATSAMPLEY', 'KAPPASTART', 'PHISTART') as $i => $f) {
+                    foreach ($linecols as $i => $f) {
                         $lines[$i]['label'] = $f;
                         if ($i > 0) $lines[$i]['yaxis'] = $i > 2 ? 3 : ($i > 0 ? 2 : 1);
                         array_push($lines[$i]['data'], array($this->jst($d['ST']), floatval(round($d[$f],4))));
