@@ -62,13 +62,13 @@
                 array_push($out[3]['data'], array(intval($r['K']), intval($r['D'])));
             }
             
-            $rows = $this->db->pq("SELECT $t[0] as k, \"Total logins\" as t, \"Distinct logins\" as d FROM v_logonby${t[1]}");
-            foreach ($rows as $r) {
-                if ($k == 'wd') $r['K'] = array_search($r['K'], $days);
+            // $rows = $this->db->pq("SELECT $t[0] as k, \"Total logins\" as t, \"Distinct logins\" as d FROM v_logonby${t[1]}");
+            // foreach ($rows as $r) {
+            //     if ($k == 'wd') $r['K'] = array_search($r['K'], $days);
                 
-                array_push($out[0]['data'], array(intval($r['K']), intval($r['T'])));
-                array_push($out[1]['data'], array(intval($r['K']), intval($r['D'])));
-            }
+            //     array_push($out[0]['data'], array(intval($r['K']), intval($r['T'])));
+            //     array_push($out[1]['data'], array(intval($r['K']), intval($r['D'])));
+            // }
             
             $this->_output($out);
             
