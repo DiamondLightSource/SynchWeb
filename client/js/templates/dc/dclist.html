@@ -7,7 +7,7 @@
     <p class="help">This page shows all data collections for the selected visit. If the visit is ongoing the page will automatically update as new data is collected. Auto processing results will be displayed</p>
 
     <% if (IS_VISIT && !IS_SINGLE) { %>
-    <% if (VISIT.search('cm') == -1 && VISIT.search('nt') == -1 && VISIT.search('nr') == -1) { %>
+    <% if (VISIT.search('cm') == -1 && VISIT.search('nt') == -1 && VISIT.search('nr') == -1 && ACTIVE != '1') { %>
         <p class="message notify">
             This visit is inactive and will not auto update 
             | Auto Refresh <input type="checkbox" name="autorefresh" value="1" />
