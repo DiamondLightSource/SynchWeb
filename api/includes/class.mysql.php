@@ -221,6 +221,8 @@
                             'ContainerQueue',
 
 
+                            'ComponentLattice',
+
                             // To be removed
                             'Image',
                 );
