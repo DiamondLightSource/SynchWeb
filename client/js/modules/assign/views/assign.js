@@ -381,6 +381,7 @@ define(['marionette', 'views/pages',
         
         onDestroy: function() {
             if (this.scview) this.scview.destroy()
+            this.pucknames.stop()
             // hmm no destroy?
             //if (this.paginator) this.paginator.destroy()
         },
