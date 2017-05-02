@@ -59,6 +59,11 @@ define(['backbone'], function(Backbone) {
                 required: false,
                 pattern: 'wwdash',
             },
+
+            CONTAINERREGISTRYID: {
+                required: false,
+                pattern: 'number',
+            }
         },
         
     })
