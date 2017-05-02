@@ -158,19 +158,18 @@
                 FROM containerregistry cr
                 INNER JOIN containerregistry_has_proposal crhp ON crhp.containerregistryid = cr.containerregistryid
                 WHERE crhp.proposalid = :1", array($this->proposalid));
-            // $rows = array();
 
             $codes = array();
             foreach ($rows as $r) {
-                array_push($codes, $r['BARCODE']);
+                array_push($codes, rtrim($r['BARCODE']));
             }
 
             $return = array();
             foreach ($vals as $k => $v) {
                 if (preg_match('/PUCK_(\d+)_NAME/', $k, $mat)) {
                     if (sizeof($v) > 1) {
-                        $val = (!array_key_exists($v[1], $codes) && !$this->staff) ? '[Loaded]' : $v[1];
-                    } $val = '';
+                        $val = (!in_array($v[1], $codes) && !$this->staff) ? '[Loaded]' : $v[1];
+                    } else $val = '';
                     array_push($return, array('id' => intval($mat[1]), 'name' => $val));
                 }
             }
