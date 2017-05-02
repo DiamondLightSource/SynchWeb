@@ -12,6 +12,8 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'containers/add/did/:did': 'add_container',
       'containers/add/visit/:visit': 'add_container_visit',
       'containers(/s/:s)(/ty/:ty)(/page/:page)': 'container_list',
+      'containers/registry': 'container_registry',
+      'containers/registry/:crid': 'view_rcontainer',
 
       'dewars(/s/:s)(/page/:page)': 'dewar_list',
       'dewars/fc/:fc': 'view_dewar',
