@@ -266,6 +266,10 @@ div.text_table {
     margin: 0 0 1% 0;
     float: right;
 
+    &.small {
+        width: 47%;
+    }
+
     table {
         width: auto;
     }
