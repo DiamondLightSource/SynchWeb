@@ -220,6 +220,12 @@
                             'ContainerQueueSample',
                             'ContainerQueue',
 
+                            // Container DB
+                            'ContainerHistory',
+                            'ContainerRegistry',
+                            'ContainerRegistry_has_Proposal',
+                            'ContainerReport',
+
 
                             'ComponentLattice',
 
