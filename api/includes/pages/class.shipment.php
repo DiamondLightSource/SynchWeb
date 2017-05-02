@@ -1300,7 +1300,9 @@
 
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(r.barcode) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')))";
+                $where .= " AND (lower(r.barcode) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(r.comments) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
+                array_push($args, $this->arg('s'));
+                array_push($args, $this->arg('s'));
                 array_push($args, $this->arg('s'));
             }
 
