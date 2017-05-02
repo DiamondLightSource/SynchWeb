@@ -27,6 +27,7 @@ define(['marionette',
     'modules/imaging/collections/imagers',
 
     'collections/users',
+    'modules/shipment/collections/containerregistry',
     
     'tpl!templates/shipment/containeradd.html',
     'tpl!templates/shipment/sampletablenew.html',
@@ -58,6 +59,7 @@ define(['marionette',
     Imagers,
 
     Users,
+    ContainerRegistry,
         
     template, table, row){
     
@@ -98,6 +100,7 @@ define(['marionette',
             pid: 'select[name=PERSONID]',
             imager: 'select[name=REQUESTEDIMAGERID]',
             barcode: 'input[name=BARCODE]',
+            registry: 'select[name=CONTAINERREGISTRYID]',
         },
         
         
@@ -133,6 +136,13 @@ define(['marionette',
             'change @ui.imager': 'limitProteins',
             'change @ui.barcode': 'checkBarcode',
             'keyup @ui.barcode': 'checkBarcode',
+
+            'change @ui.registry': 'updateName',
+        },
+
+        updateName: function(e) {
+            var rc = this.containerregistry.findWhere({ CONTAINERREGISTRYID: this.ui.registry.val() })
+            if (rc) this.ui.name.val(rc.get('BARCODE'))
         },
 
 
@@ -257,6 +267,7 @@ define(['marionette',
                 this.single.empty()
                 this.grp.empty()
                 this.ui.pc.show()
+                this.$el.find('li.pck').show()
                 this.$el.find('li.plate').hide()
                 this.$el.find('li.pcr').hide()
 
@@ -269,6 +280,7 @@ define(['marionette',
                 this.single.empty()
                 this.grp.empty()
                 this.ui.pc.show()
+                this.$el.find('li.pck').hide()
                 this.$el.find('li.plate').hide()                
                 this.$el.find('li.pcr').show()                
 
@@ -283,6 +295,7 @@ define(['marionette',
                 this.grp.show(this.group)
                 this.ui.pc.hide()
                 this.buildCollection()
+                this.$el.find('li.pck').hide()
                 this.$el.find('li.pcr').hide()
                 this.$el.find('li.plate').show()
             }
@@ -324,6 +337,7 @@ define(['marionette',
         clearPuck: function(e) {
             if (e) e.preventDefault()
             this.ui.name.val('')
+            this.ui.registry.val('')
             this.ui.comments.val('')
             this.$el.find('.clear').each(function(i,c) { $(c).trigger('click') })
         },
@@ -497,6 +511,11 @@ define(['marionette',
             this.screencomponents.queryParams.scid = this.getScreen.bind(this)
           
             this.checkBarcode = _.debounce(this.checkBarcode.bind(this), 200)
+
+            this.containerregistry = new ContainerRegistry(null, { state: { pageSize: 9999 }})
+            this.containerregistry.fetch().done(function() {
+                self.ui.registry.html('<option value=""> - </option>'+self.containerregistry.opts())
+            })
         },
 
         buildCollection: function() {
