@@ -80,8 +80,8 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
       if (app.mobile()) {
         //_.each([0,3,4,5,6,7,9,11], function(v) {
         _.each(this.getOption('hiddenColumns'), function(v) {
-            columns[v].renderable = false
-        })
+            this.getOption('columns')[v].renderable = false
+        }, this)
       }
         
       var self = this
