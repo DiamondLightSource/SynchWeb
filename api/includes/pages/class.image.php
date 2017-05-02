@@ -4,7 +4,7 @@
 
     class Image extends Page {
         
-        public static $arg_list = array('drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '[\w-]+', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
+        public static $arg_list = array('crid' => '\d+', 'drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '[\w-]+', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
 
         public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
@@ -15,6 +15,7 @@
                               array('/fa/fid/:id', 'get', '_fault_attachment'),
                               array('/ai/visit/:visit/aid/:aid(/n/:n)(/f/:f)', 'get', '_action_image'),
                               array('/dr/:drid', 'get', '_dewar_report_image'),
+                              array('/cr/:crid', 'get', '_container_report_image'),
                             );
 
         # Dewar reports
@@ -25,6 +26,28 @@
             
             if (!sizeof($attachment)) $this->_error('No such dewar report');
             else $att = $attachment[0]['ATTACHMENT'];
+            $this->db->close();
+
+            if (file_exists($att)) {
+                $ext = pathinfo($att, PATHINFO_EXTENSION);
+                if (in_array($ext, array('png', 'jpg', 'jpeg', 'gif'))) $head = 'image/'.$ext;
+
+                $this->_browser_cache();
+                $this->app->contentType($head);
+                readfile($att);
+
+            } else $this->_error('No such attachment');
+        }
+
+
+        # Container reports
+        function _container_report_image() {
+            $attachment = $this->db->pq("SELECT attachmentfilepath
+                FROM containerreport 
+                WHERE containerreportid = :1", array($this->arg('crid')));
+            
+            if (!sizeof($attachment)) $this->_error('No such container report');
+            else $att = $attachment[0]['ATTACHMENTFILEPATH'];
             $this->db->close();
 
             if (file_exists($att)) {
