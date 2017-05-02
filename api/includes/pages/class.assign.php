@@ -33,7 +33,8 @@
                 $c = $cs[0];
                 $this->db->pq("UPDATE dewar SET dewarstatus='processing' WHERE dewarid=:1", array($c['DEWARID']));
                                
-                $this->db->pq("UPDATE container SET beamlinelocation=:1,samplechangerlocation=:2,containerstatus='processing' WHERE containerid=:3", array($c['BEAMLINENAME'], $this->arg('pos'), $c['CONTAINERID']));        
+                $this->db->pq("UPDATE container SET beamlinelocation=:1,samplechangerlocation=:2,containerstatus='processing' WHERE containerid=:3", array($c['BEAMLINENAME'], $this->arg('pos'), $c['CONTAINERID']));
+                $this->db->pq("INSERT INTO containerhistory (containerid,status,location,beamlinename) VALUES (:1,:2,:3,:4)", array($c['CONTAINERID'], 'processing', $this->arg('pos'), $c['BEAMLINENAME']));
                 $this->_update_history($c['DEWARID'], 'processing', $c['BEAMLINENAME'], $c['CODE'].' => '.$this->arg('pos'));
                                 
                 $this->_output(1);
@@ -58,7 +59,8 @@
             if (sizeof($cs) > 0) {
                 $c = $cs[0];
                                
-                $this->db->pq("UPDATE container SET samplechangerlocation='',containerstatus='at DLS' WHERE containerid=:1",array($c['CONTAINERID']));                
+                $this->db->pq("UPDATE container SET samplechangerlocation='',containerstatus='at DLS' WHERE containerid=:1",array($c['CONTAINERID']));
+                $this->db->pq("INSERT INTO containerhistory (containerid,status,beamlinename) VALUES (:1,:2,:3)", array($c['CONTAINERID'], 'at DLS', $c['BEAMLINENAME']));                
                 //$this->_update_history($c['DEWARID'], 'unprocessing');
                                 
                 $this->_output(1);
@@ -93,6 +95,7 @@
                 $conts = $this->db->pq("SELECT containerid as id FROM container WHERE dewarid=:1", array($this->arg('did')));
                 foreach ($conts as $c) {
                     $this->db->pq("UPDATE container SET containerstatus='at DLS' WHERE containerid=:1", array($c['ID']));
+                    $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['ID'], 'at DLS'));
                 }
                 $this->_output(1);
                                 
@@ -137,6 +140,7 @@
         function _get_puck_names() {
             global $bl_pv_map;
             session_write_close();
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             if (!array_key_exists($this->arg('bl'), $bl_pv_map)) $this->_error('No such beamline');
@@ -150,10 +154,24 @@
             
             $vals = $this->pv(array_values($pvs), true);
 
+            $rows = $this->db->pq("SELECT cr.barcode 
+                FROM containerregistry cr
+                INNER JOIN containerregistry_has_proposal crhp ON crhp.containerregistryid = cr.containerregistryid
+                WHERE crhp.proposalid = :1", array($this->proposalid));
+            // $rows = array();
+
+            $codes = array();
+            foreach ($rows as $r) {
+                array_push($codes, $r['BARCODE']);
+            }
+
             $return = array();
             foreach ($vals as $k => $v) {
                 if (preg_match('/PUCK_(\d+)_NAME/', $k, $mat)) {
-                    array_push($return, array('id' => intval($mat[1]), 'name' => sizeof($v) > 1 ? $v[1] : ''));
+                    if (sizeof($v) > 1) {
+                        $val = (!array_key_exists($v[1], $codes) && !$this->staff) ? '[Loaded]' : $v[1];
+                    } $val = '';
+                    array_push($return, array('id' => intval($mat[1]), 'name' => $val));
                 }
             }
             
