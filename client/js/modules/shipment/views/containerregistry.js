@@ -151,7 +151,7 @@ define(['marionette',
                 chp.save({}, {
                     success: function() {
                         var props = m.get('PROPOSALS')
-                        props = props.split(',')
+                        props = props ? props.split(',') : []
                         props.push(p.get('PROPOSAL'))
                         m.set('PROPOSALS', props.join(','))
                     }
