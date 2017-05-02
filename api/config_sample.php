@@ -214,5 +214,11 @@
                                            ),
     );
 
+    # Map of beamlinename to pv prefix
+    $bl_pv_map = array(
+        'i02' => 'BL02I',
+        'i03' => 'BL03I',
+    );
+
 
 ?>
