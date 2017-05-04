@@ -36,7 +36,7 @@ define(['marionette', 'jquery'], function(Marionette, $) {
                     '<i class="fa icon red fa-times alt="Failed"></i>']
         
            if (this.getOption('SCREEN')) {
-               this.ui.holder.html('Mosflm: ' + val[res['Mosflm']] + ' EDNA: ' + val[res['EDNA']])
+               this.ui.holder.html('Mosflm: ' + val[res['Mosflm']] + ' EDNA: ' + val[res['EDNA']] + ' Xia2: ' + val[res['Xia2/strat']])
                
            } else {
                this.ui.holder.eq(0).html('Fast DP: ' + val[res['Fast DP']] +

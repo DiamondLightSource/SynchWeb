@@ -553,6 +553,7 @@
             $aps1 = array(
                     "Mosflm" => array('simple_strategy/', 'strategy_native.log', 'Phi start'),
                     "EDNA" => array('edna/', 'summary.html', 'Selected spacegroup'),
+                    "Xia2/strat" => array('xia2strategy/', 'xia2.strategy.txt', 'Status: error', 'Start / end / width'),
             );
             $aps2 = array(
                     "Fast DP" => array('fast_dp/', 'fast_dp.log', 'I/sigma'),
