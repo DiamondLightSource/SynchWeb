@@ -130,10 +130,10 @@ define(['marionette',
                 })
 
                 this.ty = new FilterView({
-                    url: false,
                     collection: this.collection,
                     name: 't',
                     filters: [{ id: 'orphan', name: 'Orphaned'},],
+                    value: options.params && options.params.ty,
                 })
             }
         },

@@ -158,7 +158,7 @@ define(['marionette',
     },
 
 
-    container_registry: function(s, page) {
+    container_registry: function(ty, s, page) {
       app.loading()
       var containers = new ContainersRegistry()
         
@@ -168,7 +168,7 @@ define(['marionette',
       containers.queryParams.all = 1
       containers.fetch().done(function() {
         app.bc.reset([bc, { title: 'Registered Containers', url: '/dewars' }])
-        app.content.show(new ContainerRegistryView({ collection: containers, params: { s: s } }))
+        app.content.show(new ContainerRegistryView({ collection: containers, params: { s: s, ty: ty } }))
       })
     },
 
