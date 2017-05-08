@@ -38,7 +38,7 @@ define(['marionette',
             this.ui.barcode.val('')
             this.ui.comments.val('')
             this.trigger('model:saved', this.model)
-            this.createModel()
+            this.setupValidation()
         },
 
         failure: function(model, response, options) {
