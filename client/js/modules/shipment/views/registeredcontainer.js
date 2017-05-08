@@ -236,7 +236,12 @@ define(['marionette',
             this.con.show(this.conttable)
             this.rep.show(this.reptable)
             this.props.show(new ProposalsView({ collection: this.proposals }))
-            if (app.staff) this.ar.show(new AddReport({ CONTAINERREGISTRYID: this.model.get('CONTAINERREGISTRYID') }))
+            if (app.staff) {
+                var edit = new Editable({ model: this.model, el: this.$el })
+                edit.create('COMMENTS', 'text');
+
+                this.ar.show(new AddReport({ CONTAINERREGISTRYID: this.model.get('CONTAINERREGISTRYID') }))
+            }
         },
         
     })
