@@ -134,6 +134,8 @@
 
                               array('/containers/registry(/:CONTAINERREGISTRYID)', 'get', '_container_registry'),
                               array('/containers/registry', 'post', '_add_container_registry'),
+                              array('/containers/registry/:CONTAINERREGISTRYID', 'patch', '_update_container_registry'),
+
                               array('/containers/registry/proposals', 'get', '_get_prop_container'),
                               array('/containers/registry/proposals', 'post', '_add_prop_container'),
                               array('/containers/registry/proposals/:CONTAINERREGISTRYHASPROPOSALID', 'delete', '_rem_prop_container'),
@@ -1328,7 +1330,7 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $order = 'r.barcode DESC';
+            $order = 'r.barcode';
             if ($this->has_arg('sort_by')) {
                 $cols = array(
                   'BARCODE' => 'r.barcode', 'INSTANCES' => 'count(distinct c.containerid)', 
@@ -1375,6 +1377,22 @@
             $this->db->pq("INSERT INTO containerregistry (barcode,comments) VALUES (:1,:2)", array($this->arg('BARCODE'), $com));
             $this->_output(array('CONTAINERREGISTRYID' => $this->db->id()));
         }
+
+
+        function _update_container_registry() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('CONTAINERREGISTRYID')) $this->_error('No container id specified');
+            
+            $fields = array('COMMENTS');
+            foreach ($fields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE containerregistry SET $f=:1 WHERE containerregistryid=:2", array($this->arg($f), $this->arg('CONTAINERREGISTRYID')));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
+        }
+
 
 
         function _get_prop_container() {
