@@ -331,7 +331,7 @@ define(['marionette',
             this.ui.imager.val('')
             this.ui.schedule.val('')
             this.ui.screen.val('')
-            this.singlesample.clearPlate()
+            if (this.singlesample) this.singlesample.clearPlate()
         },
         
         clearPuck: function(e) {
@@ -420,9 +420,17 @@ define(['marionette',
 
             var samples = new Samples(this.samples.filter(function(m) { return m.get('PROTEINID') > - 1 }))
             if (samples.length) {
+                this.$el.find('form').addClass('loading')
+                this.ui.submit.prop('disabled', true)
                 samples.save({
                     success: function() {
                         self.finished()
+                        self.ui.submit.prop('disabled', false)
+                        self.$el.find('form').removeClass('loading')
+                    },
+                    error: function() {
+                        self.ui.submit.prop('disabled', false)
+                        self.$el.find('form').removeClass('loading')
                     }
                 })
             } else this.finished()
