@@ -123,13 +123,16 @@ define(['marionette', 'backbone',
                 var self = this
                 this.$el.find('form').addClass('loading')
                 if (this.beforeSave) this.beforeSave.call(this)
+                this.ui.submit.prop('disabled', true)
                 this.model.save({}, {
                     success: function(model, response, options) {
                         self.$el.find('form').removeClass('loading')
+                        self.ui.submit.prop('disabled', false)
                         self.success(model, response, options)
                     },
                     error: function(model, response, options) {
                         self.$el.find('form').removeClass('loading')
+                        self.ui.submit.prop('disabled', false)
                         self.failure(model, response, options)
                     }
                 })
