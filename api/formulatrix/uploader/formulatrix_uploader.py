@@ -185,15 +185,18 @@ class FormulatrixUploader:
                             im.thumbnail((config['thumb_width'], config['thumb_height']))
                             try:
                                 im.save(file+'th'+ext)
-
-                                # clear up
-                                self._move_files(image, xml, 'processed')
-
-                                #os.unlink(image)
-                                #os.unlink(xml)
-
                             except IOError as e:
                                 logging.getLogger().error('Error saving image file %s' % file+'th'+ext)
+                            # clear up - should be in a try ... except?
+                            #self._move_files(image, xml, 'processed')
+                            try:
+                                os.unlink(image)
+                            except IOError as e:
+                                logging.getLogger().error('Error deleting image file %s' % image)
+                            try:
+                                os.unlink(xml)
+                            except IOError as e:
+                                logging.getLogger().error('Error deleting XML file %s' % xml)
                         except IOError as e:
                             logging.getLogger().error('Error opening image file %s' % new_file)
                     except IOError as e:
