@@ -8,6 +8,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
             'dc/view/id/:id': 'di_viewer',
             'dc/map/id/:id(/ty/:ty)(/dt/:dt)(/ppl/:ppl)': 'mapmodelviewer',
             'dc/summary/visit/:visit': 'summary',
+            'dc/apstatussummary/visit/:visit(/ty/:ty)': 'apstatussummary',
             'dc/sc/visit/:visit': 'sampleChanger',
             'dc/queue/visit/:visit': 'queue',
         },
