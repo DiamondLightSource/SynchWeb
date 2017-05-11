@@ -231,6 +231,15 @@
 
                             // To be removed
                             'Image',
+
+                            // Exp Planning
+                            'Detector',
+                            'DataCollectionPlan_has_Detector',
+                            'ScanParametersService',
+                            'ScanParametersModel',
+                            'BLSample_has_DataCollectionPlan',
+                            '',
+
                 );
 
             foreach ($tables as $table) {
