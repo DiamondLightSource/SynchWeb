@@ -148,7 +148,7 @@ define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.d
                 
                 if (invalid) {
                     $('input,select', td).addClass('ferror')
-                    if ($('.errormessage', td).length) $(td).children('form').append('<span class="errormessage ferror">'+invalid+'</span>')
+                    if (!$('.errormessage', td).length) $(td).append('<span class="errormessage ferror">'+invalid+'</span>')
                 } else {
                     $('input,select', td).removeClass('ferror')
                     $('.errormessage', td).remove()

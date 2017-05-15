@@ -8,6 +8,7 @@ define([], function() {
             assign: 'Assign Containers',
             shipments: 'Shipments',
             dewars: 'Registered Dewars',
+            'containers/registry': 'Registered Containers',
             containers: 'Containers',
             samples: 'Samples',
             proteins: 'Proteins',

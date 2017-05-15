@@ -1,8 +1,8 @@
-define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewer', 'modules/dc/views/mapmodelview', 'modules/dc/views/summary', 'models/datacollection', 'collections/datacollections', 'models/sample', 'models/visit', 'models/proposal',
+define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewer', 'modules/dc/views/mapmodelview', 'modules/dc/views/summary', 'modules/dc/views/apstatussummary', 'models/datacollection', 'collections/datacollections', 'models/sample', 'models/visit', 'models/proposal',
     'modules/dc/views/samplechangerfull',
     'modules/dc/views/queuebuilder',
     
-    ], function(Marionette, GetView, ImageViewer, MapModelViewer, Summary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder) {
+    ], function(Marionette, GetView, ImageViewer, MapModelViewer, Summary, APStatusSummary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder) {
     
     var bc = { title: 'Data Collections', url: '/dc' }
     
@@ -98,6 +98,29 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
                 var dcs = new DCCol(null, { queryParams: { visit: visit, t: 'fc', pp: app.mobile() ? 5 : 15 }, running: false })
                 dcs.fetch().done(function() {
                     app.content.show(new Summary({ collection: dcs, model: vis }))
+                })
+            },
+            
+            error: function() {
+                app.bc.reset([bc, { title: 'Error' }])
+                app.message({ title: 'No such visit', message: 'The specified visit doesnt exist' })
+            },
+        })
+    },
+      
+      
+    // Autoprocessing Status Summary
+    apstatussummary: function(visit) {
+        console.log('apstatussummary')
+        app.loading()
+        var vis = new Visit({ VISIT: visit })
+        vis.fetch({
+            success: function() {
+                app.bc.reset([bc, { title: 'Autoprocessing Status Summary' }, { title: visit }])
+                
+                var dcs = new DCCol(null, { queryParams: { visit: visit, t: 'fc', pp: app.mobile() ? 5 : 15 }, running: false })
+                dcs.fetch().done(function() {
+                    app.content.show(new APStatusSummary({ collection: dcs, model: vis }))
                 })
             },
             

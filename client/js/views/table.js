@@ -5,7 +5,7 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages'], function(Mario
   */
   return Marionette.LayoutView.extend({
     template: _.template('<div class="perp"></div><div class="srch clearfix"></div><div class="table bg"></div><div class="page_wrap"></div>'),
-    regions: { 'table': '.table', 'pages': '.page_wrap', search: '.srch', pp: '.perp' },
+    regions: { 'table': '.table', 'pages': '.page_wrap:last', search: '.srch', pp: '.perp' },
       
     pages: true,
       

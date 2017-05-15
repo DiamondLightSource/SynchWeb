@@ -170,6 +170,7 @@
         # ------------------------------------------------------------------------
         # Integrate multiple data sets
         function _integrate() {
+            global $reprocess_script, $submit_script;
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
 
             $ret = '';
@@ -195,9 +196,9 @@
                 $dict = array();
                 foreach ($rows as $r) $dict[$r['ID']] = $r;
                                    
-                $cell = $this->has_arg('a') ? "unit_cell=".$this->arg('a').",".$this->arg('b').",".$this->arg('c').",".$this->arg('alpha').",".$this->arg('beta').",".$this->arg('gamma') : '';
-                $res = $this->has_arg('res') ? "d_min=".$this->arg('res') : '';
-                $sg = $this->has_arg('sg') ? "space_group=".$this->arg('sg') : '';
+                $cell = $this->has_arg('a') ? "--unitcell ".$this->arg('a').",".$this->arg('b').",".$this->arg('c').",".$this->arg('alpha').",".$this->arg('beta').",".$this->arg('gamma') : '';
+                $res = $this->has_arg('res') ? "-resolution ".$this->arg('res') : '';
+                $sg = $this->has_arg('sg') ? "--spacegroup ".$this->arg('sg') : '';
                     
                 $pipeline = '3dii';
                 if ($this->has_arg('recipes')) {
@@ -207,13 +208,7 @@
                     }
                 }
 
-                # /4479
-                $envs = "export CINCL=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/include\nexport CCP4=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5\nexport CLIBD=/dls_sw/apps/ccp4/64/6.5/update16/ccp4-6.5/lib/data";
-                # \nprintenv > env.txt
-                $remote = "#!/bin/sh\n$envs\nmodule load xia2\necho 'xds.colspot.minimum_pixels_per_spot=3' > spot.phil\nxia2 failover=True pipeline=$pipeline $sg $cell $res xinfo=xia.xinfo spot.phil\nxia2.ispyb_xml ispyb_reproc.xml\nsed -e 's/xia2.txt/xia2.html/' -e 's/<Image><fileName>[^>]*>/<Image>/g' -e 's/<Image>/<Image><dataCollectionId>{dcid}<\/dataCollectionId>/' -e 's/<fileLocation>[^>]*>//g' ispyb_reproc.xml > ispyb_reproc2.xml\npython /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 -i ispyb_reproc2.xml\n";
-                // module load python/ana\npython /dls_sw/apps/ispyb-api/mxdatareduction2ispyb.py ispyb_reproc.xml
-                // python /dls_sw/apps/mx-scripts/dbserver/src/DbserverClient.py -h sci-serv3 -p 1994 ispyb_reproc.xml
-
+                $script = "#!/bin/sh\n$reprocess_script --workingdir {root} --pipeline $pipeline --dcid {dcid} $res $sg $cell";
                 // Multi-xia2 mode   
                 if ($this->has_arg('multi')) {
                     $root = $this->_get_next($this->_get_rp($r['ID']));
@@ -230,8 +225,8 @@
                     $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$row['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\n$sweeps\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
                     
                     file_put_contents($root.'/xia.xinfo', $xinfo);
-                    file_put_contents($root.'/x2'.$row['ID'].'.sh', str_replace('{dcid}', $row['ID'], $remote));
-                    $ret = exec('. /etc/profile.d/modules.sh;module load global/cluster;qsub x2'.$row['ID'].'.sh'); 
+                    file_put_contents($root.'/x2'.$row['ID'].'.sh', str_replace('{root}', $root, str_replace('{dcid}', $row['ID'], $script)));
+                    $ret = exec($submit_script.' x2'.$row['ID'].'.sh'); 
 
                 // Run xia2 multiple times
                 } else {
@@ -241,10 +236,9 @@
                         
                         $xinfo ="BEGIN PROJECT AUTOMATIC\nBEGIN CRYSTAL DEFAULT\nBEGIN WAVELENGTH NATIVE\nWAVELENGTH ".$row['WAVELENGTH']."\nEND WAVELENGTH NATIVE\n\nBEGIN SWEEP SWEEP1\nWAVELENGTH NATIVE\nDIRECTORY ".$row['DIR']."\nIMAGE ".str_replace('####.cbf', '0001.cbf', $row['PREFIX'])."\nSTART_END ".($r[1])." ".$r[2]."\nEND SWEEP SWEEP1\n\nEND CRYSTAL DEFAULT\nEND PROJECT AUTOMATIC";
                         file_put_contents($root.'/xia.xinfo', $xinfo);
-                        file_put_contents($root.'/x2'.$row['ID'].'.sh', str_replace('{dcid}', $row['ID'], $remote));
+                        file_put_contents($root.'/x2'.$row['ID'].'.sh', str_replace('{root}', $root, str_replace('{dcid}', $row['ID'], $script)));
                         
-                        #export networkTEMP=/dls/tmp/dls_mxweb;export localTEMP=/tmp/dls_mxweb;export HOME=/tmp/dls_mxweb;
-                        $ret = exec('. /etc/profile.d/modules.sh;module load global/cluster;qsub x2'.$row['ID'].'.sh');   
+                        $ret = exec($submit_script.' x2'.$row['ID'].'.sh'); 
                     }
 
                 }

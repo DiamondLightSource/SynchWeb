@@ -4,6 +4,8 @@ define(['marionette',
     'models/sample',
     'collections/samples',
     'collections/subsamples',
+
+    'modules/shipment/collections/containerhistory',
     
     'modules/shipment/collections/platetypes',
     'modules/shipment/views/plate',
@@ -39,6 +41,8 @@ define(['marionette',
     Sample,
     Samples,
     Subsamples,
+
+    ContainerHistory,
         
     PlateTypes,
     PlateView,
@@ -160,6 +164,7 @@ define(['marionette',
             subs: '.subs',
             sten: '.startend',
             grp: '.group',
+            hist: '.history',
         },
         
         ui: {
@@ -496,6 +501,10 @@ define(['marionette',
             this.inspectiontypes = new InspectionTypes()
             this.inspectiontypes.fetch()
 
+            this.history = new ContainerHistory()
+            this.history.queryParams.cid = this.model.get('CONTAINERID')
+            this.history.fetch()
+
             Backbone.Validation.bind(this)
         },
 
@@ -615,6 +624,17 @@ define(['marionette',
                 this.subtable = new TableView({ collection: this.subsamples, columns: columns, tableClass: 'subsamples', loading: false, pages: false, backgrid: { row: ClickableRow, emptyText: 'No subsamples found', } })
                 this.subs.show(this.subtable)
             }
+
+
+            var columns = [
+                { name: 'BLTIMESTAMP', label: 'Date', cell: 'string', editable: false },
+                { name: 'STATUS', label: 'Status', cell: 'string', editable: false },
+                { name: 'LOCATION', label: 'Location', cell: 'string', editable: false },
+                { name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false },
+            ]
+                        
+            this.histtable = new TableView({ collection: this.history, columns: columns, tableClass: 'hist', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
+            this.hist.show(this.histtable)
 
             this.updateReturn()
             this.updatedQueued()

@@ -261,7 +261,7 @@
         
         
         # Get a PV
-        function pv($pvs) {
+        function pv($pvs,$full=false) {
             putenv('EPICS_CA_ADDR_LIST=172.23.240.13');
             putenv('PATH=/dls_sw/epics/R3.14.11/base/bin/linux-x86_64/:$PATH');
             exec('caget ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
@@ -269,7 +269,7 @@
             
             foreach ($ret as $i => $v) {
                 $lis = preg_split('/\s+/', $v);
-                $output[$lis[0]] = sizeof($lis) > 1 ? $lis[1] : '';
+                $output[$lis[0]] = sizeof($lis) > 1 ? ($full ? array_slice($lis,1) : $lis[1]) : '';
             }
             
             return $output;

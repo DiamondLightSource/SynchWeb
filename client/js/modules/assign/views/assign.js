@@ -4,6 +4,7 @@ define(['marionette', 'views/pages',
     'collections/dewars',
     'models/shipment',
     'models/dewar',
+    'modules/assign/collections/pucknames',
     
     'utils',
     'tpl!templates/assign/assign.html',
@@ -14,6 +15,7 @@ define(['marionette', 'views/pages',
         Dewars,
         Shipment,
         Dewar,
+        PuckNames,
     
         utils,
         template) {
@@ -194,7 +196,7 @@ define(['marionette', 'views/pages',
     // Sample Changer Positions
     var PositionView = Marionette.CompositeView.extend({
         className:'bl_puck',
-        template: _.template('<%=id%><div class="ac"></div>'),
+        template: _.template('<%=id%> <span class="name"></span><div class="ac"></div>'),
         
         childView: ContainerView,
         childViewOptions: {
@@ -204,6 +206,10 @@ define(['marionette', 'views/pages',
         
         childEvents: {
             'remove:container': 'removeContainer',
+        },
+
+        ui: {
+            name: '.name',
         },
         
         removeContainer: function(child, model) {
@@ -225,6 +231,20 @@ define(['marionette', 'views/pages',
             this.assigned = options.assigned
             this.listenTo(this.assigned, 'change sync reset add remove', this.updateCollection, this)
             this.updateCollection()
+
+            this.listenTo(this.getOption('pucknames'), 'sync', this.getNameModel)
+        },
+
+        getNameModel: function() {
+            this.name = this.getOption('pucknames').findWhere({ id: this.model.get('id') })
+            if (this.name) {
+                this.listenTo(this.name, 'change update', this.updateName)
+                this.updateName()
+            }
+        },
+
+        updateName: function() {
+            if (this.name.get('name')) this.ui.name.html(' - '+this.name.get('name'))
         },
         
         updateCollection: function() {
@@ -238,7 +258,6 @@ define(['marionette', 'views/pages',
                 accept: '.container',
                 hoverClass: 'bl_puck_drag',
             })
-            
         },
         
         handleDrop: function(e, ui) {
@@ -255,6 +274,7 @@ define(['marionette', 'views/pages',
             return {
                 assigned: this.getOption('assigned'),
                 visit: this.getOption('visit'),
+                pucknames: this.getOption('pucknames')
             }
         }
     })
@@ -299,6 +319,10 @@ define(['marionette', 'views/pages',
             })
             this.listenTo(this.containers, 'sync', this.generateShipments, this)
             this.paginator = new Pages({ collection: this.containers })
+
+            this.pucknames = new PuckNames()
+            this.pucknames.queryParams.bl = this.getOption('visit').get('BL')
+            this.pucknames.fetch()
         },
         
         generateShipments: function() {
@@ -344,6 +368,7 @@ define(['marionette', 'views/pages',
                 assigned: this.assigned,
                 visit: this.getOption('visit').get('VISIT'),
                 shipments: this.collection,
+                pucknames: this.pucknames,
             })
             this.$el.find('#assigned').append(this.scview.render().$el)
             this.$el.find('.page_wrap').append(this.paginator.render().$el)
@@ -356,6 +381,7 @@ define(['marionette', 'views/pages',
         
         onDestroy: function() {
             if (this.scview) this.scview.destroy()
+            this.pucknames.stop()
             // hmm no destroy?
             //if (this.paginator) this.paginator.destroy()
         },

@@ -17,6 +17,7 @@
                               'ssid' => '\d+',
                               'cid' => '\d+',
                               'crid' => '\d+',
+                              'lid' => '\d+',
                               'value' => '.*',
                               'ty' => '\w+',
                               't' => '\w+',
@@ -98,6 +99,8 @@
 
                               'externalid' => '\d',
 
+                              'COMPONENTLATTICEID' => '\d+',
+
                                );
         
         
@@ -125,6 +128,11 @@
                               array('/proteins', 'post', '_add_protein'),
                               array('/proteins/:pid', 'patch', '_update_protein'),
                               array('/proteins/distinct', 'get', '_disinct_proteins'),
+
+                              array('/proteins/lattice(/:lid)', 'get', '_protein_lattices'),
+                              array('/proteins/lattice', 'post', '_add_protein_lattice'),
+                              array('/proteins/lattice/:lid', 'patch', '_update_protein_lattice'),
+
 
                               array('/crystals(/:crid)', 'get', '_crystals'),
                               array('/crystals', 'post', '_add_crystal'),
@@ -492,9 +500,9 @@
             if ($this->has_arg('t')) {
                 //$this->db->set_debug(true);
                 $types = array('R' => 'count(distinct r.robotactionid)',
-                               'SC' => 'count(distinct dc.datacollectionid)',
+                               'SC' => 'count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL))',
                                'AI' => 'count(distinct so.screeningid)',
-                               'DC' => 'count(distinct dc2.datacollectionid)',
+                               'DC' => 'count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL))',
                                'AP' => 'count(distinct ap.autoprocintegrationid)');
                 if (array_key_exists($this->arg('t'), $types)) {
                     $having .= " HAVING ".$types[$this->arg('t')]." > 0";
@@ -537,7 +545,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, cr.theoreticaldensity
+            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, cr.theoreticaldensity
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp
                                   
                                   FROM blsample b
@@ -556,7 +564,7 @@
                                   $join
                                   
                                   LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = b.diffractionplanid 
-                                  LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid AND dc.overlap != 0
+                                  LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
                                   LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
                                   LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
                                   
@@ -564,9 +572,7 @@
                                   LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
                                   
                                   
-                                  LEFT OUTER JOIN datacollection dc2 ON b.blsampleid = dc2.blsampleid AND dc2.overlap = 0 AND dc2.axisrange > 0
-                                  LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc2.datacollectionid
-                                  
+                                  LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
                                   LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
                                   LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
 
@@ -1259,6 +1265,78 @@
                 }
             }
         }
+
+
+
+        function _protein_lattices() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            
+            $where = 'pr.proposalid=:1';
+            $args = array($this->proposalid);
+
+            if ($this->has_arg('lid')) {
+                $where .= ' AND l.proteinhaslatticeid=:2';
+                array_push($args, $this->arg('lid'));
+            }
+            
+            if ($this->has_arg('pid')) {
+                $where .= ' AND pr.proteinid=:2';
+                array_push($args, $this->arg('pid'));
+            }
+
+            $tot = $this->db->pq("SELECT count(distinct l.componentlatticeid) as tot 
+              FROM componentlattice l
+              INNER JOIN protein pr ON pr.proteinid = l.componentid
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+            
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT l.componentlatticeid, pr.proteinid, l.spacegroup, l.cell_a, l.cell_b, l.cell_c, l.cell_alpha, l.cell_beta, l.cell_gamma
+              FROM componentlattice l
+              INNER JOIN protein pr ON pr.proteinid = l.componentid
+              WHERE $where", $args);
+            
+            if ($this->has_arg('pid')) {
+                if (!sizeof($rows)) $this->_error('No such lattice');
+                else $this->_output($rows[0]);
+            } else $this->_output(array('total' => $tot,
+                                 'data' => $rows,
+                           ));
+        }
+
+        function _add_protein_lattice() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('PROTEINID')) $this->_error('No protein specified');
+
+            $chk = $this->db->pq("SELECT proteinid FROM protein WHERE proteinid=:1 AND proposalid=:2", array($this->arg('PROTEINID'), $this->proposalid));
+            if (!sizeof($chk)) $this->_error('No such protein');
+
+
+        }
+
+        function _update_protein_lattice() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('CRYSTALID')) $this->_error('No crystal specified');
+
+            $chk = $this->db->pq("SELECT pr.proteinid FROM componentlattice l INNER JOIN protein pr ON l.proteinid = cr.proteinid
+              WHERE l.componentlatticeid=:1 AND pr.proposalid=:2", array($this->arg('COMPONENTLATTICEID'), $this->proposalid));
+            if (!sizeof($chk)) $this->_error('No such lattice');
+        }
+
 
 
 

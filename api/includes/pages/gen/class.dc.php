@@ -338,7 +338,11 @@
                 return;
             }
             
-            $info = $this->db->pq('SELECT ses.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir FROM datacollection dc INNER JOIN blsession ses ON dc.sessionid = ses.sessionid WHERE datacollectionid=:1', array($this->arg('id')));
+            $info = $this->db->pq('SELECT ses.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir 
+                FROM datacollection dc 
+                INNER JOIN blsession ses ON dc.sessionid = ses.sessionid 
+                INNER JOIN proposal p ON p.proposalid = ses.proposalid
+                WHERE datacollectionid=:1', array($this->arg('id')));
             if (sizeof($info) == 0) {
                 $this->_error('No data for that collection id');
                 return;

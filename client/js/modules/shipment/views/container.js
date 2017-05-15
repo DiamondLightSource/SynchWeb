@@ -6,8 +6,13 @@ define(['marionette',
     'modules/shipment/views/puck',
     'modules/shipment/views/sampletable',
 
+    'modules/shipment/collections/containerregistry',
+    'modules/shipment/collections/containerhistory',
+
     'modules/shipment/collections/platetypes',
     'modules/shipment/views/plate',
+
+    'views/table',
 
     'utils/editable',
     'tpl!templates/shipment/container.html'], function(Marionette,
@@ -18,17 +23,23 @@ define(['marionette',
     PuckView,
     SampleTableView,
 
+    ContainerRegistry,
+    ContainerHistory,
+
     PlateTypes,
     PlateView,
-        
+    
+    TableView,    
+
     Editable, template){
             
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
         regions: {
-            table: '.table',
+            table: '.sample',
             puck: '.puck',
+            hist: '.history'
         },
         
         ui: {
@@ -60,7 +71,13 @@ define(['marionette',
             
             this.proteins = new DistinctProteins()
             this.proteins.fetch()
+
+            this.containerregistry = new ContainerRegistry()
             
+            this.history = new ContainerHistory()
+            this.history.queryParams.cid = this.model.get('CONTAINERID')
+            this.history.fetch()
+
             Backbone.Validation.bind(this)
         },
 
@@ -72,6 +89,23 @@ define(['marionette',
             edit.create('EXPERIMENTTYPE', 'select', { data: { '':'-', 'robot':'robot', 'HPLC':'HPLC'} })
             edit.create('STORAGETEMPERATURE', 'select', { data: { '-80':'-80', '4':'4', '25':'25' } })
             edit.create('BARCODE', 'text')
+
+            var self = this
+            this.containerregistry.fetch().done(function() {
+                var opts = self.containerregistry.kv()
+                opts[''] = '-'
+                edit.create('CONTAINERREGISTRYID', 'select', { data: opts })
+            })
+
+            var columns = [
+                { name: 'BLTIMESTAMP', label: 'Date', cell: 'string', editable: false },
+                { name: 'STATUS', label: 'Status', cell: 'string', editable: false },
+                { name: 'LOCATION', label: 'Location', cell: 'string', editable: false },
+                { name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false },
+            ]
+                        
+            this.histtable = new TableView({ collection: this.history, columns: columns, tableClass: 'history', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
+            this.hist.show(this.histtable)
         },
         
         onShow: function() {
