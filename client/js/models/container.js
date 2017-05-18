@@ -26,8 +26,10 @@ define(['backbone'], function(Backbone) {
             },
 
             SCHEDULEID: {
-                required: false,
                 pattern: 'number',
+                required: function() {
+                    return (this.get('REQUESTEDIMAGERID') != '' && this.get('REQUESTEDIMAGERID') != null)
+                }
             },
 
             REQUESTEDIMAGERID: {
@@ -38,7 +40,7 @@ define(['backbone'], function(Backbone) {
             BARCODE: {
                 pattern: 'wwdash',
                 required: function() {
-                    return this.get('REQUESTEDIMAGERID') != '' || this.get('CONTAINERTYPE') == 'PCRStrip'
+                    return (this.get('REQUESTEDIMAGERID') != '' && this.get('REQUESTEDIMAGERID') != null) || this.get('CONTAINERTYPE') == 'PCRStrip'
                 }
             },
 
@@ -57,6 +59,11 @@ define(['backbone'], function(Backbone) {
                 required: false,
                 pattern: 'wwdash',
             },
+
+            CONTAINERREGISTRYID: {
+                required: false,
+                pattern: 'number',
+            }
         },
         
     })

@@ -4,8 +4,9 @@ define(['marionette',
     'modules/status/views/gdalog',
     'modules/status/views/epicspages',
     'utils',
+    'modules/calendar/views/calendar',
     'tpl!templates/status/status.html',
-    ], function(Marionette, PVView, GDALog, EpicsPagesView, utils, template) {
+    ], function(Marionette, PVView, GDALog, EpicsPagesView, utils, CalendarView, template) {
     
     
         
@@ -17,6 +18,7 @@ define(['marionette',
             pvs: '.pvs',
             ep: '.screens',
             gda: '.gda',
+            cal: '.calendar',
         },
         
         events: {
@@ -65,6 +67,8 @@ define(['marionette',
                     }
                 })
             })
+
+            this.cal.show(new CalendarView({ all: 1, bl: this.getOption('bl') }))
 
             /*var self = this
             this.$el.find('.webcam img').each(function(i,w) {

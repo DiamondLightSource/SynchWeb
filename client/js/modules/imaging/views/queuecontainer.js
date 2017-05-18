@@ -385,6 +385,7 @@ define(['marionette',
         ui: {
             preset: 'select[name=preset]',
             rpreset: '.rpreset',
+            xtal: '.xtalpreview',
         },
 
         unqueueContainer: function(e) {
@@ -423,7 +424,9 @@ define(['marionette',
         applyModel: function(p) {
             var models = this.qsubsamples.where({ isGridSelected: true })
             _.each(models, function(m) {
-                _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR', 'EXPERIMENTKIND'], function(k) {
+                if (p.get('EXPERIMENTKIND') != m.get('EXPERIMENTKIND')) return
+                    
+                _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
                     if (p.get(k) !== null) m.set(k, p.get(k))
                 }, this)
                 m.save()
@@ -500,7 +503,31 @@ define(['marionette',
             this.plans = new DiffractionPlans()
             this.plans.fetch()
             this.listenTo(this.plans, 'add remove sync', this.populatePresets, this)
+
+            this.listenTo(app, 'window:scroll', this.onScroll, this)
         },
+
+
+        onScroll: function(e) {
+            console.log('scrolling', e)
+            if (this.fixedPreview) {
+                if (utils.inView(this.$el.find('.qfilt'), -100)) {
+                    this.ui.xtal.removeClass('fixed')
+                    $('.content').removeClass('fixed')
+                    this.subsamples.setPageSize(10)
+                    this.fixedPreview = false
+                }
+            } else {
+                var inv = utils.inView(this.ui.xtal, -200)
+                if (!inv) {
+                    this.ui.xtal.addClass('fixed')
+                    this.subsamples.setPageSize(5)
+                    $('.content').addClass('fixed')
+                    this.fixedPreview = true
+                }
+            }
+        },
+
 
         populatePresets: function() {
             this.ui.preset.html(this.plans.opts())

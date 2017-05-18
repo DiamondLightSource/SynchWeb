@@ -38,11 +38,27 @@ function(Marionette, Pages, DCListView,
         status: '.st',
         use: '.usage',
     },
+
+    ui: {
+        ar: 'input[name=autorefresh]',
+    },
       
     events: {
       //'click a.queue': 'showQueueBuilder',
       'mouseover a.users': 'showUsers',
       'mouseout a.users': 'hideUsers',
+      'click a.refresh': 'refreshDCs',
+      'click @ui.ar': 'setAutoRefresh',
+    },
+
+    setAutoRefresh: function(e) {
+        if (this.ui.ar.is(':checked')) this.collection.run()
+        else this.collection.stop()
+    },
+
+    refreshDCs: function(e) {
+        e.preventDefault()
+        this.collection.fetch()
     },
 
     showUsers: function(e) {

@@ -43,7 +43,7 @@ class ProposalType {
         
         
         // default to use (none)
-        $ty = '';
+        $ty = 'gen';
         
         $bbreq = (array)json_decode($this->app->request()->getBody());
         $request = array_merge($_REQUEST, $bbreq);

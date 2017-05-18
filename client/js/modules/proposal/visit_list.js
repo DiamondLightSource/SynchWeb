@@ -40,6 +40,7 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
                      { name: 'LC', label: 'Local Contact', cell: 'string', editable: false },
                      { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
                      { name: 'DCCOUNT', label: 'Data Collections', cell: 'string', editable: false },
+                     { name: 'SESSIONTYPE', label: 'Type', cell: 'string', editable: false },
                      { name: 'LINKS', label: '', cell: this.getOption('linksCell'), template: this.getOption('linksTemplate'), test: 'DCCOUNT', editable: false }]
         
       if (app.mobile()) {

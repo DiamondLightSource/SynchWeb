@@ -46,13 +46,13 @@ define(['marionette', 'views/table', 'views/filter',
         { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
     ],
 
-    hiddenColumns: [2,3],
+    hiddenColumns: [2,3, 5],
 
     initialize: function(options) {  
       if (app.mobile()) {
         _.each(this.getOption('hiddenColumns'), function(v) {
-            columns[v].renderable = false
-        })
+            this.getOption('columns')[v].renderable = false
+        }, this)
       }
         
       var self = this

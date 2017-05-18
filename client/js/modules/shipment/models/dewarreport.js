@@ -30,7 +30,7 @@ define(['backbone', 'markdown', 'models/wfile'], function(Backbone, markdown, Fi
             ATTACHMENT: function(v) {
                 if (v) {
                     var ext = v.substr(v.lastIndexOf('.')+1)
-                    if (['png', 'jpg', 'jpeg'].indexOf(ext.toLower()) == -1) {
+                    if (['png', 'jpg', 'jpeg'].indexOf(ext.toLowerCase()) == -1) {
                         return 'Attachment must be a png or jpeg file'
                     }
                 }

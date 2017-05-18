@@ -1,7 +1,9 @@
 define([
     'modules/types/gen/dc/dc',
     'modules/types/saxs/dc/datplot',
-    'tpl!templates/types/saxs/dc/dc.html'], function(DCItemView, DatPlot, template) {
+    'utils',
+    'tpl!templates/types/saxs/dc/dc.html'], function(DCItemView, DatPlot, utils, template) {
+
 
     return DCItemView.extend({
         template: template,
@@ -16,6 +18,7 @@ define([
             'click .comments': 'showComments',
             'click a.dl': 'showPlot',
             'click a.sn': 'showSnapshots',
+            'click a.dd': utils.signHandler,
         },
         
         showDiff: function(e) {

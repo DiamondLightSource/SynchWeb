@@ -15,6 +15,11 @@ define(['marionette',
         'modules/shipment/views/containers',
         'modules/imaging/views/queuecontainer',
 
+        'modules/shipment/models/containerregistry',
+        'modules/shipment/collections/containerregistry',
+        'modules/shipment/views/containerregistry',
+        'modules/shipment/views/registeredcontainer',
+
         'modules/shipment/models/dewarregistry',
         'modules/shipment/collections/dewarregistry',
         'modules/shipment/views/dewarreg',
@@ -31,6 +36,7 @@ define(['marionette',
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView,
     Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView, QueueContainerView,
+    ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
     DispatchView, TransferView, Dewars, DewarOverview) {
     
@@ -42,10 +48,8 @@ define(['marionette',
       app.loading()
       var shipments = new Shipments()
         
-      page = page ? parseInt(page) : 1
-        
+      shipments.state.currentPage = page ? parseInt(page) : 1
       shipments.fetch().done(function() {
-        shipments.getPage(page)
         app.bc.reset([bc])
         app.content.show(new ShipmentsView({ collection: shipments }))
       })
@@ -154,16 +158,46 @@ define(['marionette',
     },
 
 
+    container_registry: function(ty, s, page) {
+      app.loading()
+      var containers = new ContainersRegistry()
+        
+      page = page ? parseInt(page) : 1
+        
+      containers.state.currentPage = page
+      containers.queryParams.all = 1
+      containers.fetch().done(function() {
+        app.bc.reset([bc, { title: 'Registered Containers', url: '/dewars' }])
+        app.content.show(new ContainerRegistryView({ collection: containers, params: { s: s, ty: ty } }))
+      })
+    },
+
+    view_rcontainer: function(crid) {
+        var container = new ContainerRegistry({ CONTAINERREGISTRYID: crid })
+        container.fetch({
+            data: {
+                all: 1
+            },
+            success: function() {
+                app.bc.reset([bc, { title: container.get('BARCODE') }])
+                app.content.show(new RegisteredContainer({ model: container }))
+            },
+            error: function() {
+                app.bc.reset([bc, { title: 'Error' }])
+                app.message({ title: 'No such container', message: 'The specified container could not be found'})
+            },
+        })
+    },
+
+
 
     dewar_list: function(s, page) {
       console.log('dew list')
       app.loading()
       var dewars = new DewarRegistry()
         
-      page = page ? parseInt(page) : 1
-        
+      dewars.state.currentPage = page ? parseInt(page) : 1
       dewars.fetch().done(function() {
-        dewars.getPage(page)
         app.bc.reset([bc, { title: 'Registered Dewars', url: '/dewars' }])
         app.content.show(new DewarRegView({ collection: dewars, params: { s: s } }))
       })
@@ -260,6 +294,11 @@ define(['marionette',
     app.on('rdewar:show', function(fc) {
       app.navigate('dewars/fc/'+fc)
       controller.view_dewar(fc)
+    })
+
+    app.on('rcontainer:show', function(crid) {
+      app.navigate('containers/registry/'+crid)
+      controller.view_rcontainer(crid)
     })
   })
        

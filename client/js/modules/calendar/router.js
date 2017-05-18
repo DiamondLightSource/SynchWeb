@@ -4,7 +4,7 @@ define(['marionette', 'modules/calendar/controller'], function(Marionette, c) {
     //var Router = LazyRouter.extend({
     var Router = Marionette.AppRouter.extend({
         appRoutes: {
-            'cal': 'calendar',
+            'cal(/bl/:bl)': 'calendar',
             'calendar': 'calendar_prop',
             'log': 'current',
             'ispyb/ispyb': 'goHome',

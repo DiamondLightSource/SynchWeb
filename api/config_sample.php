@@ -81,6 +81,12 @@
         'pipeline=dials ' => 'DIALS',
     );
 
+    # Script to reprocess data
+    $reprocess_script = '/path/to/reprocess.sh';
+    $submit_script = '/path/to/submit.sh';
+
+    # Crystal alignment programs
+    $strat_align = array('XOalign', 'dials.align_crystal');
 
 
     # Paths
@@ -209,6 +215,12 @@
                                            'Wavelength' => 'BL02I-OP-DCM-01:WLRB',
                                            'Transmission' => 'BL02I-EA-ATTN-01:CONV_TRANS_RBV',
                                            ),
+    );
+
+    # Map of beamlinename to pv prefix
+    $bl_pv_map = array(
+        'i02' => 'BL02I',
+        'i03' => 'BL03I',
     );
 
 

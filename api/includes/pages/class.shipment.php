@@ -87,6 +87,11 @@
                               'UNQUEUE' => '\d',
                               'EXPERIMENTTYPE' => '\w+',
                               'STORAGETEMPERATURE' => '[\w-]+',
+
+                              'CONTAINERREGISTRYID' => '\d+',
+                              'PROPOSALID' => '\d+',
+                              't' => '\w+',
+
                               );
         
 
@@ -125,6 +130,19 @@
                               array('/containers/move', 'get', '_move_container'),
                               array('/containers/queue', 'get', '_queue_container'),
                               array('/containers/barcode/:BARCODE', 'get', '_check_container'),
+
+
+                              array('/containers/registry(/:CONTAINERREGISTRYID)', 'get', '_container_registry'),
+                              array('/containers/registry', 'post', '_add_container_registry'),
+                              array('/containers/registry/:CONTAINERREGISTRYID', 'patch', '_update_container_registry'),
+
+                              array('/containers/registry/proposals', 'get', '_get_prop_container'),
+                              array('/containers/registry/proposals', 'post', '_add_prop_container'),
+                              array('/containers/registry/proposals/:CONTAINERREGISTRYHASPROPOSALID', 'delete', '_rem_prop_container'),
+
+                              array('/containers/history', 'get', '_container_history'),
+                              array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
+                              array('/containers/reports', 'post', '_add_container_report'),
                               
 
                               array('/cache/:name', 'put', '_session_cache'),
@@ -277,7 +295,6 @@
 
             $this->_output(array('DEWARHISTORYID' => $dhid));
         }
-
 
 
 
@@ -913,6 +930,7 @@
         }
 
 
+
         function _get_all_containers() {
             //$this->db->set_debug(True);
             if (!$this->has_arg('prop') && !$this->has_arg('visit') && !$this->staff) $this->_error('No proposal specified');
@@ -920,9 +938,9 @@
             $having = '';
             
             if ($this->has_arg('visit')) {
-                $join = " INNER JOIN blsession ses ON ses.proposalid = p.proposalid";
+                $join = " INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid";
                 $args = array($this->arg('visit'));
-                $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) LIKE :1";
+                $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses2.visit_number) LIKE :1";
 
             } else if ($this->has_arg('all') && $this->staff) {
                 $join = '';
@@ -991,6 +1009,11 @@
                 $where .= ' AND c.imagerid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('iid'));
             }
+
+            if ($this->has_arg('CONTAINERREGISTRYID')) {
+                $where .= ' AND c.containerregistryid = :'.(sizeof($args)+1);
+                array_push($args, $this->arg('CONTAINERREGISTRYID'));
+            }
                 
 
             $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
@@ -1005,7 +1028,7 @@
                 $join 
                 WHERE $where
                 $having", $args);
-            $tot = intval($tot[0]['TOT']);
+            $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
             
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
@@ -1040,7 +1063,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             // $this->db->set_debug(True);
-            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, cq.createdtimestamp as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode
+            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, cq.createdtimestamp as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, COUNT(distinct dc.datacollectionid) as dccount, GROUP_CONCAT(DISTINCT CONCAT(CONCAT(bpr.proposalcode, bpr.proposalnumber,'-',bls.visit_number)),':',bls.beamlinename) as dcvisits, GROUP_CONCAT(DISTINCT TO_CHAR(bls.startdate, 'HH24:MI DD-MM-YYYY')) as dcdates
                                   FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
@@ -1054,8 +1077,14 @@
                                   LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
                                   LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != 'Completed' AND ci2.manual!=1 AND ci2.schedulecomponentid IS NULL
                                   LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
+                                  LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
 
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
+
+                                  LEFT OUTER JOIN datacollection dc ON dc.blsampleid = s.blsampleid
+                                  LEFT OUTER JOIN blsession bls ON bls.sessionid = dc.sessionid
+                                  LEFT OUTER JOIN proposal bpr ON bpr.proposalid = bls.proposalid
+
                                   $join
                                   WHERE $where
                                   GROUP BY sch.name, c.scheduleid, c.screenid, sc.name, c.imagerid, i.temperature, i.name, CONCAT(p.proposalcode, p.proposalnumber), c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
@@ -1145,7 +1174,7 @@
             
             if (!sizeof($chkc)) $this->_error('No such container');
 
-            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE');
+            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID');
             foreach ($fields as $k => $f) {
                 if ($this->has_arg($k)) {
                     $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($this->arg($k), $this->arg('cid')));
@@ -1179,9 +1208,11 @@
             $ext = $this->has_arg('EXPERIMENTTYPE') ? $this->arg('EXPERIMENTTYPE') : null;
             $tem = $this->has_arg('STORAGETEMPERATURE') ? $this->arg('STORAGETEMPERATURE') : null;
 
-            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature) 
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12) RETURNING containerid INTO :id", 
-              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem));
+            $crid = $this->has_arg('CONTAINERREGISTRYID') ? $this->arg('CONTAINERREGISTRYID') : null;
+
+            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid) 
+              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13) RETURNING containerid INTO :id", 
+              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid));
                                  
             $cid = $this->db->id();
             
@@ -1196,6 +1227,305 @@
 
             $this->_output(array('CONTAINERID' => $cid));
         }
+
+
+
+
+        function _container_history() {
+            if (!$this->has_arg('cid') && !$this->has_arg('CONTAINERREGISTRYID')) $this->_error('No container specified');
+
+            $args = array($this->proposalid);
+            $where = 'p.proposalid=:1';
+
+            if ($this->has_arg('all') && ($this->bcr() || $this->staff)) {
+                $args = array();
+                $where = '1=1';
+            }
+
+            if ($this->has_arg('cid')) {
+                $where .= ' AND c.containerid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('cid'));
+            } else {
+                $where .= ' AND c.containerregistryid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('CONTAINERREGISTRYID'));
+            }
+
+            $tot = $this->db->pq("SELECT count(h.containerhistoryid) as tot 
+              FROM containerhistory h 
+              INNER JOIN container c ON c.containerid = h.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid 
+              INNER JOIN shipping s ON s.shippingid = d.shippingid 
+              INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
+            $start = $pg*$pp;
+            $end = $pg*$pp+$pp;
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT h.containerhistoryid, s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.containerid, h.status,h.location,TO_CHAR(h.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, h.beamlinename
+              FROM containerhistory h 
+              INNER JOIN container c ON c.containerid = h.containerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid 
+              INNER JOIN shipping s ON d.shippingid = s.shippingid 
+              INNER JOIN proposal p ON p.proposalid = s.proposalid 
+              LEFT OUTER JOIN blsession b ON b.sessionid = d.firstexperimentid
+              WHERE $where ORDER BY h.bltimestamp DESC", $args);
+            
+            $this->_output(array('total' => $tot, 'data' => $rows));
+        }
+
+
+        function _add_container_history() {
+
+        }
+
+
+        function _container_registry() {
+            $args = array($this->proposalid);
+            $where = 'p.proposalid=:1';
+
+            if ($this->has_arg('all') && $this->staff) {
+                $args = array();
+                $where = '1=1';
+            }
+
+            if ($this->has_arg('CONTAINERREGISTRYID')) {
+                $where .= ' AND r.containerregistryid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('CONTAINERREGISTRYID'));
+            }
+
+            if ($this->has_arg('s')) {
+                $st = sizeof($args) + 1;
+                $where .= " AND (lower(r.barcode) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(r.comments) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
+                array_push($args, $this->arg('s'));
+                array_push($args, $this->arg('s'));
+                array_push($args, $this->arg('s'));
+            }
+
+            if ($this->has_arg('t')) {
+                if ($this->arg('t') == 'orphan') $where .= " AND rhp.containerregistryid IS NULL";
+            }
+
+
+            $tot = $this->db->pq("SELECT count(r.containerregistryid) as tot 
+              FROM containerregistry r 
+              LEFT OUTER JOIN containerregistry_has_proposal rhp on rhp.containerregistryid = r.containerregistryid
+              LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
+            $start = $pg*$pp;
+            $end = $pg*$pp+$pp;
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $order = 'r.barcode';
+            if ($this->has_arg('sort_by')) {
+                $cols = array(
+                  'BARCODE' => 'r.barcode', 'INSTANCES' => 'count(distinct c.containerid)', 
+                  'LASTUSE' => 'max(c.bltimestamp)', 'RECORDTIMESTAMP' => 'r.recordtimestamp',
+                  'REPORTS' => 'count(cr.containerreportid)'
+                );
+                $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+                if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
+            }
+
+            $rows = $this->db->paginate("SELECT r.containerregistryid, r.barcode, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, count(distinct c.containerid) as instances, TO_CHAR(r.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, 
+              TO_CHAR(max(c.bltimestamp),'DD-MM-YYYY') as lastuse, max(CONCAT(p.proposalcode,p.proposalnumber)) as prop, r.comments, COUNT(distinct cr.containerreportid) as reports
+              FROM containerregistry r 
+              LEFT OUTER JOIN containerregistry_has_proposal rhp on rhp.containerregistryid = r.containerregistryid
+              LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
+              LEFT OUTER JOIN container c ON c.containerregistryid = r.containerregistryid
+              LEFT OUTER JOIN containerreport cr ON cr.containerregistryid = r.containerregistryid
+
+              WHERE $where 
+              GROUP BY r.containerregistryid
+
+              ORDER BY $order", $args);
+            
+            if ($this->has_arg('CONTAINERREGISTRYID')) {
+                if (sizeof($rows)) $this->_output($rows[0]);
+                else $this->_error('No such container');
+
+            } else  $this->_output(array('total' => $tot, 'data' => $rows));
+        }
+
+
+        function _add_container_registry() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('BARCODE')) $this->_error('No barcode specified');
+
+            $chk = $this->db->pq("SELECT containerregistryid 
+              FROM containerregistry 
+              WHERE lower(barcode) LIKE lower(:1)", array($this->arg('BARCODE')));
+
+            if (sizeof($chk)) $this->_error('That barcode is already registered');
+
+            $com = $this->has_arg('COMMENTS') ? $this->arg('COMMENTS') : '';
+
+            $this->db->pq("INSERT INTO containerregistry (barcode,comments) VALUES (:1,:2)", array($this->arg('BARCODE'), $com));
+            $this->_output(array('CONTAINERREGISTRYID' => $this->db->id()));
+        }
+
+
+        function _update_container_registry() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('CONTAINERREGISTRYID')) $this->_error('No container id specified');
+            
+            $fields = array('COMMENTS');
+            foreach ($fields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE containerregistry SET $f=:1 WHERE containerregistryid=:2", array($this->arg($f), $this->arg('CONTAINERREGISTRYID')));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
+        }
+
+
+
+        function _get_prop_container() {
+            if (!$this->has_arg('CONTAINERREGISTRYID')) $this->_error('No container specified');
+
+            $rows = $this->db->pq("SELECT crhp.containerregistryhasproposalid,crhp.containerregistryid,crhp.proposalid,CONCAT(p.proposalcode, p.proposalnumber) as proposal
+              FROM containerregistry_has_proposal crhp
+              INNER JOIN proposal p ON p.proposalid = crhp.proposalid
+              WHERE crhp.containerregistryid = :1", array($this->arg('CONTAINERREGISTRYID')));
+
+            $this->_output($rows);
+        }
+
+        function _add_prop_container() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('CONTAINERREGISTRYID')) $this->_error('No container specified');
+            if (!$this->has_arg('PROPOSALID')) $this->_error('No proposal specified');
+
+            $chk = $this->db->pq("SELECT containerregistryid FROM containerregistry_has_proposal
+              WHERE containerregistryid = :1 AND proposalid = :2", array($this->arg('CONTAINERREGISTRYID'), $this->arg('PROPOSALID')));
+            if (sizeof($chk)) $this->_error('That container is already registered to that proposal');
+
+            $this->db->pq("INSERT INTO containerregistry_has_proposal (containerregistryid,proposalid,personid) 
+              VALUES (:1,:2,:3)", array($this->arg('CONTAINERREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personid));
+
+            $this->_output(array('CONTAINERREGISTRYHASPROPOSALID' => $this->db->id()));
+
+        }
+
+        function _rem_prop_container() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('CONTAINERREGISTRYHASPROPOSALID')) $this->_error('No container proposal specified');
+
+            $this->db->pq("DELETE FROM containerregistry_has_proposal WHERE containerregistryhasproposalid=:1", array($this->arg('CONTAINERREGISTRYHASPROPOSALID')));
+        }
+
+
+        function _get_container_reports() {
+            if (!$this->has_arg('CONTAINERREGISTRYID')) $this->_error('No container specified');
+
+            $where = 'r.containerregistryid=:1';
+            $args = array($this->arg('CONTAINERREGISTRYID'));
+
+            $tot = $this->db->pq("SELECT count(r.containerregistryid) as tot 
+              FROM containerreport r
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
+            $start = $pg*$pp;
+            $end = $pg*$pp+$pp;
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT r.containerreportid, r.report, TO_CHAR(r.recordtimestamp, 'HH24:MI DD-MM-YYYY') as recordtimestamp, IF(r.attachmentfilepath IS NOT NULL,1,0) as attachment, CONCAT(p.givenname, ' ', p.familyname) as reporter
+                FROM containerreport r
+                INNER JOIN person p ON p.personid = r.personid
+              WHERE $where ORDER BY r.recordtimestamp DESC", $args);
+
+            foreach ($rows as $i => &$row) {
+              $row['REPORT'] = $this->db->read($row['REPORT']);
+            }
+
+            $this->_output(array('total' => $tot, 'data' => $rows));
+        }
+
+        function _add_container_report() {
+            if (!$this->has_arg('REPORT')) $this->_error('No report specified');
+            if (!$this->has_arg('CONTAINERREGISTRYID')) $this->_error('No container specified');
+
+            $last_visits = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, s.beamlineoperator as localcontact, pe.emailaddress, r.containerregistryid, r.barcode, CONCAT(p.proposalcode, p.proposalnumber) as prop
+              FROM containerregistry r
+              INNER JOIN container c ON c.containerregistryid = r.containerregistryid
+              LEFT OUTER JOIN person pe ON pe.personid = c.ownerid
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN blsession s ON d.firstexperimentid = s.sessionid
+              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+              INNER JOIN proposal p ON p.proposalid = sh.proposalid
+              WHERE r.containerregistryid = :1
+              ORDER BY c.containerid DESC
+              LIMIT 1", array($this->arg('CONTAINERREGISTRYID')));
+
+            if (!sizeof($last_visits)) $this->_error('Cant find a visit for that container');
+            else $lv = $last_visits[0];
+
+            $path = null;
+            if (array_key_exists('ATTACHMENT', $_FILES)) {
+                if ($_FILES['ATTACHMENT']['name']) {
+                    $info = pathinfo($_FILES['ATTACHMENT']['name']);
+
+                    if ($info['extension'] == 'jpg' || $info['extension'] == 'jpeg') {
+                        # dls_mxweb cant write to visits...
+                        #$root = '/dls/'.$lv['BEAMLINENAME'].'/data/'.$lv['YEAR'].'/'.$lv['VISIT'].'/.ispyb/';
+
+                        $root = '/dls_sw/dasc/ispyb2/uploads/'.$lv['YEAR'].'/'.$lv['VISIT'].'/';
+                        if (!is_dir($root)) {
+                            mkdir($root, 0755, true);
+                        }
+
+                        $file = strftime('%Y-%m-%d_%H%M').'containerreport.jpg';
+                        $path = $root.$file;
+
+                        move_uploaded_file($_FILES['ATTACHMENT']['tmp_name'], $path);
+                    }
+                }
+            }
+
+            $this->db->pq("INSERT INTO containerreport (containerregistryid,report,attachmentfilepath,personid,recordtimestamp) VALUES (:1,:2,:3,:4,CURRENT_TIMESTAMP)", 
+            array($this->arg('CONTAINERREGISTRYID'), $this->arg('REPORT'), $path, $this->user->personid));
+            if ($lv['EMAILADDRESS']) {
+                $recpts = array($lv['EMAILADDRESS']);
+                $local = $this->_get_email_fn($lv['LOCALCONTACT']);
+                if ($local) array_push($recpts, $local);
+
+                require_once('includes/class.email.php');
+                $lv['NOW'] = strftime('%d-%m-%Y %H:%M');
+                $lv['REPORT'] = $this->arg('REPORT');
+                $email = new Email('container-report', '*** Status Report for Container '.$lv['BARCODE'].' at '.$lv['NOW'].' ***');
+                $email->data = $lv;
+                $email->send(implode(', ', $recpts));
+            }
+
+
+            $this->_output(array('CONTAINERREPORTID' => $this->db->id()));
+        }
+
+
+
+
         
         
         # Cache form temporary data to session

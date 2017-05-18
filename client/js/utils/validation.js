@@ -9,8 +9,9 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         word: /^\w+$/,
         fcode: /^DLS\-(MX|IN)\-\d\d\d\d$/i,
         datetime: /\d+-\d+-\d+ \d+:\d+/,
-        sequence: /[>|;|\w+|\n]/,
+        sequence: /^[>;\s\w+\n\(\)\.\|]+$/,
         address: /^(\w|\s|\-|\n)+$/,
+        array: /^[\d+(.\d+)?),]+$/,
     });
     
     _.extend(Backbone.Validation.messages, {
@@ -20,10 +21,11 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         datetime: 'Please specify a valid date and time',
         edate: 'Please specify a valid date (european style)',
         word: 'This field must contain only letters and numbers',
-        fcode: 'This field must be of the format DLS-MX-XXXX',
+        fcode: 'This field must be of the format DLS-XX-XXXX',
         datetime: 'This field must be of the format DD-MM-YYYY HH:MM',
         sequence: 'This field may only contain word characters and line returns',
         address: 'This field may only contain word character, spaces, and line returns',
+        array: 'This field may only contain numbers and commas',
     });
 
 })

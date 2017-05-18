@@ -79,9 +79,9 @@
 
 
     if ($user->login) {
-        $chk = $db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($user->login));
+        $chk = $db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) as lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($user->login));
         if (sizeof($chk)) {
-            $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
+            if ($chk[0]['LASTUPDATE'] > 20) $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
         }
     }
     

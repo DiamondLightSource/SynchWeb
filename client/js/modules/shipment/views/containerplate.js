@@ -4,6 +4,8 @@ define(['marionette',
     'models/sample',
     'collections/samples',
     'collections/subsamples',
+
+    'modules/shipment/collections/containerhistory',
     
     'modules/shipment/collections/platetypes',
     'modules/shipment/views/plate',
@@ -39,6 +41,8 @@ define(['marionette',
     Sample,
     Samples,
     Subsamples,
+
+    ContainerHistory,
         
     PlateTypes,
     PlateView,
@@ -160,6 +164,7 @@ define(['marionette',
             subs: '.subs',
             sten: '.startend',
             grp: '.group',
+            hist: '.history',
         },
         
         ui: {
@@ -218,7 +223,7 @@ define(['marionette',
 
         updatedQueued: function() {
             if (this.model.get('CONTAINERQUEUEID')) this.ui.que.html('<p>This container was queued for data collection at '+this.model.get('QUEUEDTIMESTAMP')+' <a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa fa-list"></i> <span>View Sample Queue</span></a></p>')
-            else this.ui.que.html('<a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa fa-list"></i> <span>Prepare for Data Collection</span></a>')
+            else this.ui.que.html('<a href="/containers/queue/'+this.model.get('CONTAINERID')+'" class="button prepare"><i class="fa-3x fa fa-list"></i> <span class="large">Prepare for Data Collection</span></a>')
         },
 
         requestReturn: function(e) {
@@ -351,6 +356,10 @@ define(['marionette',
                 this.image.setAddSubsample(true)
                 this.ui.ads.find('span').html('Finish')
             }
+
+            this.ui.adr.removeClass('button-highlight')
+            this.image.setAddSubsampleRegion(false)
+            this.ui.adr.find('span').html('Mark Region')
         },
 
 
@@ -367,6 +376,10 @@ define(['marionette',
                 this.image.setAddSubsampleRegion(true)
                 this.ui.adr.find('span').html('Finish')
             }
+
+            this.ui.ads.removeClass('button-highlight')
+            this.image.setAddSubsample(false)
+            this.ui.ads.find('span').html('Mark Point')
         },
 
 
@@ -488,6 +501,10 @@ define(['marionette',
             this.inspectiontypes = new InspectionTypes()
             this.inspectiontypes.fetch()
 
+            this.history = new ContainerHistory()
+            this.history.queryParams.cid = this.model.get('CONTAINERID')
+            this.history.fetch()
+
             Backbone.Validation.bind(this)
         },
 
@@ -608,11 +625,28 @@ define(['marionette',
                 this.subs.show(this.subtable)
             }
 
+
+            var columns = [
+                { name: 'BLTIMESTAMP', label: 'Date', cell: 'string', editable: false },
+                { name: 'STATUS', label: 'Status', cell: 'string', editable: false },
+                { name: 'LOCATION', label: 'Location', cell: 'string', editable: false },
+                { name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false },
+            ]
+                        
+            this.histtable = new TableView({ collection: this.history, columns: columns, tableClass: 'hist', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
+            this.hist.show(this.histtable)
+
             this.updateReturn()
             this.updatedQueued()
             this.updateAdhoc()
         },
         
+
+        resetZoom: function() {
+            if (this.image) this.image.resetZoom(100)
+        },
+
+
         onShow: function() {
             $.when.apply($, this._ready).then(this.doOnShow.bind(this))
         },
@@ -622,6 +656,7 @@ define(['marionette',
 
             this.type = this.ctypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
             this.plateView = new PlateView({ collection: this.samples, type: this.type, showImageStatus: this.model.get('INSPECTIONS') > 0 })
+            this.listenTo(this.plateView, 'plate:select', this.resetZoom, this)
             this.plate.show(this.plateView)
             this.singlesample = new SingleSample({ proteins: this.proteins, existingContainer: true, gproteins: this.gproteins })
 
