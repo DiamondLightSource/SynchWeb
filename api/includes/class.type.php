@@ -7,7 +7,7 @@ class ProposalType {
     
     var $generic_pages = array(
         'proposal', 'fault', 'cal', 'feedback', 'vstat', 'users',
-        'sample', 'shipment', 'pdf', 'contact', 'download',
+        'sample', 'shipment', 'pdf', 'contact', 'download', 'exp',
     );
     
     var $visit_table;
