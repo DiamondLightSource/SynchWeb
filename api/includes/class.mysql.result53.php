@@ -1,7 +1,7 @@
 <?php
 
-	function mysql_result53($stmt) {
-		$params = array();
+    function mysql_result53($stmt) {
+        $params = array();
         $row = array();
         $meta = $stmt->result_metadata();
         while ($field = $meta->fetch_field()) {
@@ -26,4 +26,4 @@
         }
 
         return $data;
-	}
+    }
