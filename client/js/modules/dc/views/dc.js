@@ -5,8 +5,13 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
     'modules/dc/views/imagestatusitem',
     'modules/dc/views/apstatusitem',
     'modules/dc/views/reprocess',
-    'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, TabView, DCCommentsView, DCDISTLView, DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, 
+    'modules/dc/views/attachments',
+    'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, 
+      TabView, DCCommentsView, DCDISTLView, 
+      DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, 
+      AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, 
       ReprocessView,
+      AttachmentsView,
       template) {
 
   return Marionette.ItemView.extend({
@@ -101,6 +106,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       'click li.sample a': 'setProposal',
       'click @ui.exp': 'expandPath',
       'click @ui.rp': 'reprocess',
+      'click a.attach': 'attachments',
     },
       
     ui: {
@@ -108,6 +114,15 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       exp: 'i.expand',
       cc: '.dcc',
       rp: 'a.reprocess',
+    },
+
+
+    attachments: function(e) {
+        e.preventDefault()
+        app.dialog.show(new DialogView({ 
+            title: 'Attachments', 
+            view: new AttachmentsView({ id: this.model.get('ID') })
+        }))
     },
 
     reprocess: function(e) {
