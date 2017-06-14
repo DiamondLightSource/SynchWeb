@@ -36,12 +36,15 @@ require.config({
     caman: 'vendor/caman.min',
     heatmap: 'vendor/hmap',
     
-    three: 'vendor/Three49custom',
-    ms: 'vendor/MarchingSquares',
+    // three: 'vendor/Three49custom',
+    // ms: 'vendor/MarchingSquares',
     gzip: 'vendor/gunzip.min',
-    glmol: 'vendor/GLmol',
+    // glmol: 'vendor/GLmol',
     
     markdown: 'vendor/markdown',
+
+    three: 'vendor/three.min',
+    uglymol: 'vendor/uglymol',
     
   },
     
@@ -171,10 +174,10 @@ require.config({
         exports: 'Zlib',
     },
     
-    glmol: {
-        deps: ['three', 'ms'],
-        exports: 'GLmol',
-    },
+    // glmol: {
+    //     deps: ['three', 'ms'],
+    //     exports: 'GLmol',
+    // },
     
     
     markdown: {
