@@ -100,11 +100,8 @@ define(['marionette',
             var residues = this.viewer.selected.bag.model.get_residues()
             if (this.ui.res.val() in residues) {
                 var res = residues[this.ui.res.val()]
-                console.log('goto res', res)
-                
-                // this.viewer.renderer.domElement.focus()
+
                 this.viewer.select_atom({ bag: this.viewer.selected.bag, atom: res[0] }, { steps: 10 })
-                // this.viewer.recenter(res[0].xyz, [100,0,0], 1)
                 this.viewer.request_render()
                 
 
@@ -156,6 +153,7 @@ define(['marionette',
         onDomRefresh: function() {
             this.$el.find('.peaks').hide()
             this.viewer = new Uglymol.Viewer({viewer: 'viewer', hud: 'hud', help: 'help'})
+            this.viewer.xhr_headers = { Authorization: 'Bearer ' + app.token }
             this.loadMapModel()
         },
                 
