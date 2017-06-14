@@ -293,28 +293,8 @@
             $data = array();
             if (strpos($query, 'SELECT') !== false) {
                 if (PHP_VERSION_ID <= 50401) {
-                    $params = array();
-                    $row = array();
-                    $meta = $stmt->result_metadata();
-                    while ($field = $meta->fetch_field()) {
-                        array_push($params, &$row[$field->name]);
-                    }
-                    call_user_func_array(array($stmt, 'bind_result'), $params);
-
-                    while ($stmt->fetch()) {
-                        $c = array();
-                        // Oracle returns all values as strings - Need to be consistent :(
-                        foreach ($row as $key => $val) {
-                            if ($val !== null) {
-                                if (gettype($val) == gettype(0.1)) $val = round($val, 5);
-                                $val = strval($val);
-                            }
-                            // $c[strtoupper($key)] = $val === null ? null : strval($val);
-                            $c[strtoupper($key)] = $val;
-                        }
-                        // foreach ($row as $key => $val) $c[strtoupper($key)] = $val;// === null ? null : strval($val);
-                        $data[] = $c;
-                    }
+                    require_once(dirname(__FILE__).'/class.mysql.result53.php');
+                    $data = mysql_result53($stmt);
 
                 } else {
                     $result = $stmt->get_result();
