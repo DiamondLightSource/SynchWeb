@@ -41,13 +41,14 @@ define(['marionette'], function(Marionette) {
         
         onRender: function() {
             //if (this.getOption('view')) this.getOption('view').$el = this.$el
-            
+
             if (this.getOption('autoSize')) {
                 this.$el.css('width', $(window).width()*(app.mobile() ? 0.8 : 0.5))
                 this.$el.css('height', this.$el.width())
             }
             
             if (this.getOption('view')) {
+                this.listenTo(this.getOption('view'), 'dialog:close', this.closeDialog)
                 this.getOption('view').$el.find('.no_mobile').hide()
                 
                 if (this.getOption('autoSize')) {
