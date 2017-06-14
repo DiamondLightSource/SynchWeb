@@ -1786,67 +1786,56 @@ textarea[name=pasted] {
 #map_model {
     position: relative;
     
-    &:-webkit-full-screen {
-        width: 100% !important;
-        height: 100% !important;
-        
-        #glmol01 {
-            height: 100% !important;
-        }
-
-    }
-    
     .controls {
-        position: absolute;
+        z-index: 9;
+        top: 10px;
+        left: 10px;
+        position: fixed;
         margin: 5px;
-
-        .navigate {
-            button {
-                padding: 2px 3px;
-            }
-        }
-        
-        .mousemode {
-            color: #fff;
-            padding: 3% 0;
-        }
-        
-        .maps {
-            color: #fff;
-            padding: 3% 0;
-            
-            span {
-                padding: 2% 0;
-            }
-        }
-        
-        .residues {
-            padding: 0 0 3% 0;
-            //text-align: center;
-            
-            .buttons {
-                padding: 3% 0 0 0;
-            }
-
-        }
         
         div.peaks {
             height: 150px;
             overflow-y: auto;
         }
     }
-    
-    .fullscreen {
-        top: 5px;
-        right: 5px;
-        position: absolute;
+
+    #viewer {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
     }
-    
-    .status_bar {
-        bottom: 5px;
-        left: 5px;
-        position: absolute;
-        color: #fff;
+
+    #hud {
+        font-size: 15px;
+        color: #ddd;
+        background-color: rgba(0,0,0,0.6);
+        text-align: center;
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 2px 8px;
+        border-radius: 5px;
+        z-index: 9;
+        white-space: pre-line;
+    }
+
+    #help {
+        display: none;
+        font-size: 16px;
+        color: #eee;
+        background-color: rgba(0,0,0,0.7);
+        position: fixed;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: default;
+        padding: 5px;
+        border-radius: 5px;
+        z-index: 9;
+        white-space: pre-line;
     }
 }
 
