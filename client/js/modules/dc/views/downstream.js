@@ -9,7 +9,7 @@ define(['marionette',
     ], function(Marionette, TabView, DownStreams, FastEP, DIMPLE, MrBUMP, BigEP) {
 
         
-    var EmptyAP = Marionette.ItemView.extend({ template: '<p>No downstream procesing available for this data collection</p>', tagName: 'p' })
+    var EmptyAP = Marionette.ItemView.extend({ template: '<p>No downstream processing available for this data collection</p>', tagName: 'p' })
         
    
     var DCDSTabView = TabView.extend({

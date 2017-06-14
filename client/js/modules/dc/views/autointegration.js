@@ -5,7 +5,7 @@ define(['marionette',
     'utils',
     'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, AutoIntegrations, RDPlotView, LogView, utils, template) {
        
-    var EmptyAP = Marionette.ItemView.extend({ template: '<p>No auto procesing available for this data collection</p>', tagName: 'p' })
+    var EmptyAP = Marionette.ItemView.extend({ template: '<p>No auto processing available for this data collection</p>', tagName: 'p' })
     
     var AutoIntegrationItem = Marionette.ItemView.extend({
         template: template,

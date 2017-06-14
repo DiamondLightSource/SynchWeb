@@ -174,7 +174,7 @@
         
 
         # ------------------------------------------------------------------------
-        # Autoprocesing stats
+        # Autoprocessing stats
         function _autoproc() {
             if (!$this->staff) $this->_error('Access Denied', 403);
 
