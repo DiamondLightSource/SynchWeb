@@ -21,6 +21,7 @@
                               'dt' => '\w+',
                               'ppl' => '\w+',
 
+                              'filetype' => '\w+',
                               );
 
     
@@ -34,6 +35,8 @@
                               array('/sign', 'post', '_sign_url'),
                               array('/bigep/id/:id/dt/:dt/ppl/:ppl(/log/:log)', 'get', '_bigep_mtz'),
                               array('/data/visit/:visit', 'get', '_download_visit'),
+                              array('/attachments', 'get', '_get_attachments'),
+                              array('/attachment/id/:id/aid/:aid', 'get', '_get_attachment'),
             );
 
         
@@ -445,8 +448,57 @@
                 print implode(',', array_values($r))."\n";
             }
         }
+
+
+        # ------------------------------------------------------------------------
+        # Get dc attachmmnts
+        function _get_attachments() {
+            if (!$this->has_arg('id')) $this->_error('No datacolectionid specified');
+
+            $args = array($this->arg('id'));
+            $where = 'datacollectionid=:1';
+
+            if ($this->has_arg('aid')) {
+                $where .= ' AND datacollectionfileattachmentid=:2';
+                array_push($args, $this->arg('id'));
+            }   
+
+            if ($this->has_arg('filetype')) {
+                $where .= ' AND filetype LIKE :'.(sizeof($args)+1);
+                array_push($args, $this->arg('filetype'));
+            }
+
+            $rows = $this->db->pq("SELECT filefullpath, filetype, datacollectionfileattachmentid
+                FROM datacollectionfileattachment
+                WHERE $where", $args);
+
+            foreach($rows as &$r) {
+                $r['FILEFULLPATH'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $r['FILEFULLPATH']);
+            }
+
+
+            if ($this->has_arg('aid')) {
+                if (sizeof($rows))$this->_output($rows[0]);
+                else $this->_error('No such attachment');
+                
+            } else $this->_output($rows);
+        }
         
         
+        function _get_attachment() {
+            $rows = $this->db->pq("SELECT filefullpath
+                FROM datacollectionfileattachment
+                WHERE datacollectionid=:1 AND datacollectionfileattachmentid=:2", array($this->arg('id'), $this->arg('aid')));
+
+            if (!sizeof($rows)) $this->_error('No such attachment');
+
+            $size = filesize($rows[0]['FILEFULLPATH']);
+            $this->app->response->headers->set("Content-length", $size);
+            $this->_header(basename($rows[0]['FILEFULLPATH']));
+            readfile($rows[0]['FILEFULLPATH']);
+        }
+
+
         # ------------------------------------------------------------------------
         # Force browser to download file
         function _header($f) {
