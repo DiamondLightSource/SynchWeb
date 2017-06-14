@@ -1,8 +1,16 @@
-define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewer', 'modules/dc/views/mapmodelview', 'modules/dc/views/summary', 'modules/dc/views/apstatussummary', 'models/datacollection', 'collections/datacollections', 'models/sample', 'models/visit', 'models/proposal',
+define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewer', 
+    'modules/dc/views/mapmodelview', 
+    'modules/dc/views/reciprocalview', 
+    'modules/dc/views/summary', 
+    'modules/dc/views/apstatussummary', 
+    'models/datacollection', 
+    'collections/datacollections', 
+    'models/sample', 'models/visit', 'models/proposal',
     'modules/dc/views/samplechangerfull',
     'modules/dc/views/queuebuilder',
     
-    ], function(Marionette, GetView, ImageViewer, MapModelViewer, Summary, APStatusSummary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder) {
+    ], function(Marionette, GetView, ImageViewer, MapModelViewer, ReciprocalSpaceViewer,
+        Summary, APStatusSummary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder) {
     
     var bc = { title: 'Data Collections', url: '/dc' }
     
@@ -85,6 +93,24 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
         })
     },
       
+
+    // Reciprocal Space Viewer
+    rsviewer: function(id) {
+        var dc = new DataCollection({ ID: id })
+        dc.fetch({
+            success: function() {
+                app.bc.reset([bc,
+                    {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
+                    { title: 'Reciprocal Space Viewer' },
+                    { title: dc.get('FILETEMPLATE') }])
+                app.content.show(new ReciprocalSpaceViewer({ model: dc }))
+            },
+            error: function() {
+                app.bc.reset([bc, { title: 'Reciprocal Space Viewer' }])
+                app.message({ title: 'No such data collection', message: 'The specified data collection doesnt exist' })
+            }
+        })
+    },
       
     // Data Collection Summary
     summary: function(visit) {
