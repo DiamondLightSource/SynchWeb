@@ -1,5 +1,5 @@
 /*!
- * UglyMol v0.5.5. Macromolecular Viewer for Crystallographers.
+ * UglyMol v0.5.6. Macromolecular Viewer for Crystallographers.
  * Copyright 2014 Nat Echols
  * Copyright 2016 Diamond Light Source Ltd
  * Copyright 2016 Marcin Wojdyr
@@ -11,7 +11,7 @@
 	(factory((global.UM = global.UM || {}),global.THREE));
 }(this, (function (exports,THREE) { 'use strict';
 
-var VERSION = exports.VERSION = '0.5.5';
+var VERSION = exports.VERSION = '0.5.6';
 
 
 // @flow
@@ -2755,6 +2755,7 @@ var Viewer = function Viewer(options /*: {[key: string]: any}*/) {
                  mark: null };
   this.labels = {};
   this.nav = null;
+  this.xhr_headers = {};
 
   this.config = {
     bond_line: 4.0, // ~ to height, like in Coot (see scale_by_height())
@@ -3294,7 +3295,6 @@ Viewer.prototype.permalink = function permalink () {
 };
 
 Viewer.prototype.redraw_all = function redraw_all () {
-  console.log('redraw', this.renderer)
   if (!this.renderer) { return; }
   this.scene.fog.color = this.config.colors.bg;
   if (this.renderer) { this.renderer.setClearColor(this.config.colors.bg, 1); }
@@ -3703,12 +3703,16 @@ Viewer.prototype.load_file = function load_file (url/*:string*/, options/*:{[id:
   if (this.renderer === null) { return; }// no WebGL detected
   var req = new XMLHttpRequest();
   req.open('GET', url, true);
-  if (app.token) req.setRequestHeader('Authorization','Bearer ' + app.token)
   if (options.binary) {
     req.responseType = 'arraybuffer';
   } else {
     // http://stackoverflow.com/questions/7374911/
     req.overrideMimeType('text/plain');
+  }
+  for (var name in this.xhr_headers) {
+    if (this.xhr_headers.hasOwnProperty(name)) {
+      req.setRequestHeader(name, this.xhr_headers[name]);
+    }
   }
   var self = this;
   req.onreadystatechange = function () {
