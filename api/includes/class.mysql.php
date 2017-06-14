@@ -238,6 +238,10 @@
                             'ScanParametersService',
                             'ScanParametersModel',
                             'BLSample_has_DataCollectionPlan',
+
+                            
+                            'DataCollectionFileAttachment',
+
                             '',
 
                 );
