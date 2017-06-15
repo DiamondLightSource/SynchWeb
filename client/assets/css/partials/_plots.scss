@@ -22,6 +22,10 @@
 
 #avg_time {
     height: 250px;
+
+    &.large {
+        height: 500px;
+    }
 }
 
 #visit_breakdown {
