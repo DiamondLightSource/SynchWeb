@@ -32,6 +32,8 @@ require.config({
     
     'jquery.editable': 'vendor/jquery/jquery.jeditable.min',
     'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
+
+    'jquery.color': 'vendor/jquery/jquery.color',
     
     caman: 'vendor/caman.min',
     heatmap: 'vendor/hmap',
@@ -99,6 +101,10 @@ require.config({
     
 
     // jQuery
+    'jquery.color': {
+        deps: ['jquery'],
+    },
+    
     'jquery.editable': {
         deps: ['jquery'],
     },

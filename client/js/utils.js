@@ -1,4 +1,4 @@
-define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
+define(['marionette', 'views/dialog', 'jquery', 'jquery.color'], function(Marionette, DialogView, $) {
 
   var utils = {
        
@@ -146,6 +146,11 @@ define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
         return 'rgb('+ Math.floor(Math.sin(col)*width+cent) + ',' + Math.floor(Math.sin(col+2*Math.PI/3)*width+cent) + ',' + Math.floor(Math.sin(col+4*Math.PI/3)*width+cent)+ ')'
     },
       
+    getColors: function(len) {
+        return _.map(_.range(len), function (o, i) {
+            return $.Color({ hue: (i*360/len), saturation: 0.90, lightness: 0.40, alpha: 1 }).toHexString();
+        })
+    },
       
       
     // Check if an element is in view
