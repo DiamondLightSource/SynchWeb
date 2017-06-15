@@ -39,14 +39,14 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
 
         initialize: function(options) {            
             this.$el.css('opactiy', 0)
-            this.collection.listenTo(this.collection, 'change:data', this.render)
+            this.listenTo(this.collection, 'change:histograms', this.render)
         },
         
 
         getToolTip: function(lab, x, y, item) {
-            console.log(lab, x, y, item)
-            var f = this.collection.first()
-            return lab+': '+Object.keys(f.get('data'))[x]
+            var fh = this.collection.first()
+            var f = fh.get('histograms')[0]
+            return lab+': '+Object.keys(f['data'])[x]
         },
 
           
@@ -71,27 +71,31 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
                 yaxes: [{}, { position: 'right' }],
             }
             
-            var f = this.collection.first()
-            if (!f.get('data')) return
+            var fh = this.collection.first()
+            if (!fh.get('histograms')) return
+            var f = fh.get('histograms')[0]
+            
             var ticks = []
             var i = 0
-            var int = Math.floor(Object.keys(f.get('data')).length/15)
-            _.each(f.get('data'), function(v, bin) {
+            var int = Math.floor(Object.keys(f['data']).length/15)
+            _.each(f['data'], function(v, bin) {
                 ticks.push([i, i % int == 0 ? bin : ''])
                 i++
             })  
             options.xaxis.ticks = ticks
 
             var data = []
-            this.collection.each(function(s) {
-                var series = { data: [], label: s.get('label') }
-                var i = 0
-                _.each(s.get('data'), function(v, bin) {
-                    series.data.push([i, parseFloat(v)])
-                    i++
-                })  
+            this.collection.each(function(h) {
+                _.each(h.get('histograms'), function(s) {
+                    var series = { data: [], label: s['label'] }
+                    var i = 0
+                    _.each(s['data'], function(v, bin) {
+                        series.data.push([i, parseFloat(v)])
+                        i++
+                    })  
 
-                data.push(series)
+                    data.push(series)
+                }, this)
             })
 
             if (data.length) {
