@@ -25,6 +25,8 @@
 
         
         function _visit_breakdown() {
+            ini_set('memory_limit', '512M'); 
+
             if ($this->has_arg('visit')) {
                 $info = $this->_check_visit();
                 $where = 'AND s.sessionid=:1';
@@ -46,11 +48,14 @@
 
             } else $this->_error('No visit specified');
 
-            $dc = $this->db->pq("SELECT IF(dc.chistart IS NULL, 0, dc.chistart) as chistart, dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, dc.runstatus 
+            $dc = $this->db->pq("SELECT IF(dc.chistart IS NULL, 0, dc.chistart) as chistart, dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, dc.runstatus, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, pr.proteinid, pr.acronym as protein, smp.name as sample
                 FROM datacollection dc 
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                LEFT OUTER JOIN blsample smp ON smp.blsampleid = dc.blsampleid
+                LEFT OUTER JOIN crystal c ON c.crystalid = smp.crystalid
+                LEFT OUTER JOIN protein pr ON pr.proteinid = c.proteinid
                 WHERE 1=1 $where ORDER BY dc.starttime DESC", $args);
             
             $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count 
@@ -66,25 +71,34 @@
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE dc.overlap != 0 $where", $args);
             
-            $robot = $this->db->pq("SELECT r.status, r.actiontype, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as en
+            $robot = $this->db->pq("SELECT r.status, r.actiontype, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as en, pr.acronym as protein, smp.name as sample
                 FROM robotaction r 
                 INNER JOIN blsession s ON s.sessionid = r.blsessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                LEFT OUTER JOIN blsample smp ON r.blsampleid = smp.blsampleid
+                LEFT OUTER JOIN crystal c ON c.crystalid = smp.crystalid
+                LEFT OUTER JOIN protein pr ON pr.proteinid = c.proteinid
                 WHERE r.actiontype='LOAD' $where ORDER BY r.endtimestamp DESC", $args);
 
-            $edge = $this->db->pq("SELECT e.energyscanid as id, TO_CHAR(e.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(e.endtime, 'DD-MM-YYYY HH24:MI:SS') as en
+            $edge = $this->db->pq("SELECT e.energyscanid as id, TO_CHAR(e.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(e.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, CONCAT(p.proposalnumber, p.proposalcode) as prop, pr.acronym as protein, smp.name as sample
                 FROM energyscan e
                 INNER JOIN blsession s ON s.sessionid = e.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                LEFT OUTER JOIN blsample smp ON e.blsampleid = smp.blsampleid
+                LEFT OUTER JOIN crystal c ON c.crystalid = smp.crystalid
+                LEFT OUTER JOIN protein pr ON pr.proteinid = c.proteinid
                 WHERE 1=1 $where ORDER BY e.endtime DESC", $args);
 
-            $fl = $this->db->pq("SELECT f.xfefluorescencespectrumid as id, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI:SS') as en
+            $fl = $this->db->pq("SELECT f.xfefluorescencespectrumid as id, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, CONCAT(p.proposalnumber, p.proposalcode) as prop, pr.acronym as protein, smp.name as sample
                 FROM xfefluorescencespectrum f 
                 INNER JOIN blsession s ON s.sessionid = f.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                LEFT OUTER JOIN blsample smp ON f.blsampleid = smp.blsampleid
+                LEFT OUTER JOIN crystal c ON c.crystalid = smp.crystalid
+                LEFT OUTER JOIN protein pr ON pr.proteinid = c.proteinid
                 WHERE 1=1 $where ORDER BY f.endtime DESC", $args);
             
             if ($this->has_arg('visit')) {
@@ -112,11 +126,12 @@
                 $ai = array();
                 $cent = array();
 
-                $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st
+                $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title
                     FROM blsession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                    WHERE 1=1 $where", $args);
+                    WHERE 1=1 $where
+                    ORDER BY p.proposalcode, s.startdate", $args);
             }
             
             #$cent = $this->db->pq("SELECT distinct en,st,dctime FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*86400 as dctime FROM robotaction r INNER JOIN datacollection dc ON r.endtimestamp < dc.starttime WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) WHERE dctime < 1000", array($info['SID']));
@@ -156,7 +171,7 @@
                 if ($d['ST'] && $d['EN']) {
                     array_push($data, array('data' => array(
                         array($this->jst($d['ST']), 1, $this->jst($d['ST'])),
-                        array($this->jst($d['EN']), 1, $this->jst($d['ST']))), 'color' => 'green', 'id' => intval($d['ID']), 'type' => 'dc'));
+                        array($this->jst($d['EN']), 1, $this->jst($d['ST']))), 'color' => 'green', 'id' => intval($d['ID']), 'type' => 'dc', 'visit' => $d['VISIT'], 'pid' => $d['PROTEINID'], 'status' => 'Protein: '.$d['PROTEIN']));
 
                     $d['ENERGY'] = $d['WAVELENGTH'] ? (1.98644568e-25/($d['WAVELENGTH']*1e-10))/1.60217646e-19 : '';
 
@@ -177,13 +192,13 @@
             foreach ($edge as $e) {
                 array_push($data, array('data' => array(
                         array($this->jst($e['ST']), 3, $this->jst($e['ST'])),
-                        array($this->jst($e['EN']), 3, $this->jst($e['ST']))), 'color' => 'orange', 'id' => $e['ID'], 'type' => 'ed'));
+                        array($this->jst($e['EN']), 3, $this->jst($e['ST']))), 'color' => 'orange', 'id' => $e['ID'], 'type' => 'ed', 'pid' => $d['PROTEINID'], 'status' => 'Protein: '.$d['PROTEIN']));
             }
 
             foreach ($fl as $e) {
                 array_push($data, array('data' => array(
                         array($this->jst($e['ST']), 3, $this->jst($e['ST'])),
-                        array($this->jst($e['EN']), 3, $this->jst($e['ST']))), 'color' => 'red', 'type' => 'mca', 'id' => $e['ID'], 'type' => 'mca'));
+                        array($this->jst($e['EN']), 3, $this->jst($e['ST']))), 'color' => 'red', 'type' => 'mca', 'id' => $e['ID'], 'type' => 'mca', 'pid' => $d['PROTEINID'], 'status' => 'Protein: '.$d['PROTEIN']));
             }
                                     
             foreach ($faultl as $f) {
@@ -192,11 +207,15 @@
                     array($this->jst($f['EN']), 4, $this->jst($f['ST']))), 'color' => 'grey', 'type' => 'fault', 'status' => ' Fault: '.$f['TITLE']));
             }
 
+            $lbc = 6;
+            $ntc = 0;
             foreach ($sched as $s) {
-                $offset = strpos($s['VISIT'], 'lb') !== false ? 7 : 6;
+                $offset = strpos($s['VISIT'], 'lb') !== false ? 
+                    (++$lbc) : 
+                    ((strpos($s['VISIT'], 'nt') !== false || strpos($s['VISIT'], 'nr') !== false) ? (++$ntc+$lbc) : 6);
                 array_push($data, array('data' => array(
                     array($this->jst($s['ST']), $offset, $this->jst($s['ST'])),
-                    array($this->jst($s['EN']), $offset, $this->jst($s['ST']))), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT']));
+                    array($this->jst($s['EN']), $offset, $this->jst($s['ST']))), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT'].': '.$s['TITLE'], 'visit' => $s['VISIT']));
             }
                                     
             foreach ($ai as $d) {
@@ -619,6 +638,9 @@
 
         // Histogram of beamline parameters
         function _parameter_histogram() {
+            global $bl_types;
+            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+
             $types = array(
                 'energy' => array('unit' => 'eV', 'st' => 5000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
                 'beamsizex' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
@@ -652,26 +674,38 @@
             $ct = $t['count'];
             $bs = $t['bin_size'];
 
-            $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y
+            $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
                 FROM datacollection dc 
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                WHERE 1=1 $where
-                GROUP BY x", $args);
+                WHERE 1=1 $where AND s.beamlinename in ('$bls')
+                GROUP BY s.beamlinename,x
+                ORDER BY s.beamlinename", $args);
 
-            $ha = array();
-            foreach ($hist as &$h) {
-                $ha[$h['X']] = floatval($h['Y']);
+            $bls = array();
+            foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
+
+            $data = array();
+            foreach ($bls as $bl => $y) {
+                $ha = array();
+                foreach ($hist as &$h) {
+                    if ($h['BEAMLINENAME'] != $bl) continue;
+                    $ha[$h['X']] = floatval($h['Y']);
+                }
+
+                $gram = array();
+                for($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
+                    $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
+                }
+
+                $lab = ucfirst($k).' ('.$t['unit'].')';
+                if (!$this->has_arg('bl')) $lab = $bl.': '.$lab;
+
+                array_push($data, array('label' => $lab, 'data' => $gram));
             }
 
-            $gram = array();
-            for($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
-                $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
-            }
-
-
-            $this->_output(array('label' => ucfirst($k).' ('.$t['unit'].')', 'data' => $gram));
+            $this->_output(array('histograms' => $data));
         }
 
 
