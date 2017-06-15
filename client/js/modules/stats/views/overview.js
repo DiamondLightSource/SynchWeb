@@ -23,22 +23,21 @@ define(['marionette',
             var val = this.model.get(this.column.get('name'))
             this.$el.text(val)
 
-            if (this.column.get('avg').length) {
-                var avg = this.column.get('avg').at(0)
-                if (avg.get(this.column.get('name'))) {
-                    var av = avg.get(this.column.get('name'))
-                    col = null
-                    if (val > av) {
-                        col = utils.shadeColor('#00cc00', 1-(0.35*parseFloat(val)/parseFloat(av)))
-                    }
+            var vals = this.model.collection.pluck(this.column.get('name'))
+            var avg = _.reduce(vals, function(v, n) { return v + n }, 0) / vals.length
 
-                    if (val < av) {
-                        col = utils.shadeColor('#cc0000', 0.55*parseFloat(val)/parseFloat(av))
-                    }
+            console.log(vals, avg)
 
-                    if (col) this.$el.css('background-color', col)
-                }
+            col = null
+            if (val > avg) {
+                col = utils.shadeColor('#00cc00', 1-(0.35*(val/avg)))
             }
+
+            if (val < avg) {
+                col = utils.shadeColor('#cc0000', 0.55*(val/avg))
+            }
+
+            if (col) this.$el.css('background-color', col)
 
             return this
         }
