@@ -5,6 +5,7 @@
 	require_once(dirname(__FILE__).'/../lib/jwt/JWT.php');
 	require_once(dirname(__FILE__).'/../lib/jwt/ExpiredException.php');
 	require_once(dirname(__FILE__).'/../lib/jwt/SignatureInvalidException.php');
+	require_once(dirname(__FILE__).'/../lib/getallheaders.php');
     use \Firebase\JWT\JWT;
 
 	class Authenticate {
