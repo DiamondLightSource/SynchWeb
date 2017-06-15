@@ -24,6 +24,11 @@ define(['marionette',
         
 
         loadData: function() {
+            if (!this.attachments.length) {
+                this.ui.hud.text('No reciprocal space data for this datacollection')
+                return
+            }
+
             var xhr = this.xhrWithStatus('Downloading Reciprocal Space Data')
             var self = this
             
@@ -45,7 +50,7 @@ define(['marionette',
         initialize: function() {
             this.attachments = new Attachments()
             this.attachments.queryParams.id = this.model.get('ID')
-            // this.attachments.queryParams.filetype = 'recip'
+            this.attachments.queryParams.filetype = 'recip'
             this.ready = this.attachments.fetch()
         },
 
