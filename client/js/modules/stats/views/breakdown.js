@@ -1,10 +1,11 @@
 define(['marionette', 'tpl!templates/stats/breakdown.html',
+    'utils',
     'jquery',
     'jquery.flot',
     'jquery.flot.time',
     'jquery.flot.selection',
     'jquery.flot.tooltip',
-    ], function(Marionette, template, $) {
+    ], function(Marionette, template, utils, $) {
 
     return Marionette.ItemView.extend({
         template: template,
@@ -21,6 +22,10 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
             'click a[name=reset]': 'resetPlots',
         },
         
+        onRender: function() {
+            if (this.getOption('large')) this.$el.find('#avg_time').addClass('large')
+        },
+
         resetPlots: function(e) {
             e.preventDefault()
             this.main.setSelection({ xaxis: { from: this.model.get('info').start, to: this.model.get('info').end } })
@@ -54,7 +59,7 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                 mca: 'mca',
             }
             if (item.series.id) {
-                app.trigger('dc:show', types[item.series.type], item.series.id)
+                app.trigger('dc:show', types[item.series.type], item.series.id, item.series.visit)
             }
         },
         
@@ -92,7 +97,31 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                 this.options2.grid.hoverable = true
                 this.options2.grid.clickable = true
                 this.options2.tooltipOpts = { content: this.getToolTip.bind(this) }
-              
+
+                var dc = _.where(this.model.get('data'), { type: 'dc' })
+                var pids = _.unique(_.pluck(this.model.get('data'), 'pid'))
+                var cols = utils.getColors(pids.length)
+
+                _.each(dc, function(d) {
+                    d.color = cols[pids.indexOf(d.pid)]
+                })
+
+                // var markings = []
+                // var vis = _.where(this.model.get('data'), { type: 'visit' })
+                // _.each(vis, function(v) {
+                //     var vdc = _.where(dc, { visit: v['visit'] })
+
+                //     if (!vdc.length) return
+
+                //     var f = _.first(vdc)
+                //     var l = _.last(vdc)
+
+                //     markings.push({ color: '#000', lineWidth: 1, yaxis: { from: 0, to: v['data'][0][1] }, xaxis: { from: f['data'][0][0], to: f['data'][0][0] } })
+                //     markings.push({ color: '#000', lineWidth: 1, yaxis: { from: 0, to: v['data'][1][1] }, xaxis: { from: l['data'][1][2], to: l['data'][1][2] } })
+                // }, this)
+
+                // this.options2.grid.markings = markings
+
                 this.main = $.plot(this.$el.find('#avg_time'), this.model.get('data'), this.options2);
                 this.overview = $.plot(this.$el.find('#overview'), this.model.get('data'), this.options);
 
@@ -109,15 +138,6 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                         hoverable: true,
                         borderWidth: 0,
                     },
-
-                    /*points: {
-                        show: true,
-                        radius: 1,
-                    },
-
-                    lines: {
-                        show: false,
-                    },*/
 
                     yaxes: [{ position: 'right' }, { position: 'right' }, { position: 'right' }],
                 }
