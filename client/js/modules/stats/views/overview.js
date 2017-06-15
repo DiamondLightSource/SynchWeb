@@ -2,8 +2,9 @@ define(['marionette',
   'views/table', 'views/filter',
   'collections/proposaltypes',
   'modules/stats/collections/overview',
-  'modules/stats/collections/runs'], 
-  function(Marionette, TableView, FilterView, ProposalTypes, BAGOverview, Runs) {
+  'modules/stats/collections/runs',
+  'utils'], 
+  function(Marionette, TableView, FilterView, ProposalTypes, BAGOverview, Runs, utils) {
 
     
     var ClickableRow = Backgrid.Row.extend({
@@ -14,6 +15,33 @@ define(['marionette',
             app.cookie(this.model.get('PROP'))
             app.trigger('pstats:show', this.model.get('SHIPPINGID'))
         },
+    })
+
+
+    var ShadedCell = Backgrid.Cell.extend({
+        render: function() {
+            var val = this.model.get(this.column.get('name'))
+            this.$el.text(val)
+
+            if (this.column.get('avg').length) {
+                var avg = this.column.get('avg').at(0)
+                if (avg.get(this.column.get('name'))) {
+                    var av = avg.get(this.column.get('name'))
+                    col = null
+                    if (val > av) {
+                        col = utils.shadeColor('#00cc00', 1-(0.35*parseFloat(val)/parseFloat(av)))
+                    }
+
+                    if (val < av) {
+                        col = utils.shadeColor('#cc0000', 0.55*parseFloat(val)/parseFloat(av))
+                    }
+
+                    if (col) this.$el.css('background-color', col)
+                }
+            }
+
+            return this
+        }
     })
 
     
@@ -64,14 +92,14 @@ define(['marionette',
                            { name: 'VISITS', label: 'No. Visits', cell: 'string', editable: false },
                            { name: 'LEN', label: 'Allocated (hr)', cell: 'string', editable: false },
                            { name: 'REM', label: 'Remaining (hr)', cell: 'string', editable: false },
-                           { name: 'USED', label: 'Used (%)', cell: 'string', editable: false },
-                           { name: 'DCH', label: 'Data Collections / hr', cell: 'string', editable: false },
+                           { name: 'USED', label: 'Used (%)', cell: ShadedCell, editable: false, avg: this.total },
+                           { name: 'DCH', label: 'Data Collections / hr', cell: ShadedCell, editable: false, avg: this.total },
                            { name: 'MDCH', label: 'Max / hr', cell: 'string', editable: false },
                            { name: 'DC', label: 'Total', cell: 'string', editable: false },
-                           { name: 'SCH', label: 'Screenings / hr', cell: 'string', editable: false },
+                           { name: 'SCH', label: 'Screenings / hr', cell: ShadedCell, editable: false, avg: this.total },
                            { name: 'MSCH', label: 'Max / hr', cell: 'string', editable: false },
                            { name: 'SC', label: 'Total', cell: 'string', editable: false },
-                           { name: 'SLH', label: 'Samples Loaded / hr', cell: 'string', editable: false },
+                           { name: 'SLH', label: 'Samples Loaded / hr', cell: ShadedCell, editable: false, avg: this.total },
                            { name: 'MSLH', label: 'Max / hr', cell: 'string', editable: false },
                            { name: 'SL', label: 'Total', cell: 'string', editable: false }]
                           
