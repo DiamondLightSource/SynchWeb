@@ -32,17 +32,20 @@ define(['marionette',
             flt: '.faults',
             rbt: '.roboterrors',
             en: '.en',
-            bs: '.bs',
+            rbsx: '.bsx',
+            rbsy: '.bsy',
             ex: '.exp'
         },
         
         ui: {
             rbd: '.dewar',
-            run: 'select[name=runid]'
+            run: 'select[name=runid]',
+            all: 'input[name=all]',
         },
 
         events: {
-            'change @ui.run': 'changeRun'
+            'change @ui.run': 'changeRun',
+            'change @ui.all': 'changeRun',
         },
 
         templateHelpers: function() {
@@ -52,7 +55,7 @@ define(['marionette',
         },
 
         initialize: function(options) {
-            this.breakdown = new BreakDown({ title: 'Energy' })
+            this.breakdown = new BreakDown()
 
             this.faults = new Faults(null, { queryParams: { bl: options.bl } })
             this.roboterrors = new RobotErrors(null, { queryParams: { bl: options.bl } })
@@ -88,14 +91,14 @@ define(['marionette',
 
             this.henergy.fetch({
                 data: {
-                    bl: this.getOption('bl'),
+                    bl: this.ui.all.is(':checked') ? null : this.getOption('bl'),
                     runid: this.ui.run.val()
                 }
             })
 
             this.bsx.fetch({
                 data: {
-                    bl: this.getOption('bl'),
+                    bl: this.ui.all.is(':checked') ? null : this.getOption('bl'),
                     runid: this.ui.run.val(),
                     ty: 'beamsizex',
                 }
@@ -103,7 +106,7 @@ define(['marionette',
 
             this.bsy.fetch({
                 data: {
-                    bl: this.getOption('bl'),
+                    bl: this.ui.all.is(':checked') ? null : this.getOption('bl'),
                     runid: this.ui.run.val(),
                     ty: 'beamsizey'
                 }
@@ -111,7 +114,7 @@ define(['marionette',
 
             this.exp.fetch({
                 data: {
-                    bl: this.getOption('bl'),
+                    bl: this.ui.all.is(':checked') ? null : this.getOption('bl'),
                     runid: this.ui.run.val(),
                     ty: 'exposuretime'
                 }
@@ -138,10 +141,11 @@ define(['marionette',
 
         
         onShow: function() {
-            this.bd.show(new BreakdownView({ model: this.breakdown }))
+            this.bd.show(new BreakdownView({ large: true, model: this.breakdown }))
             this.en.show(new HistgramPlot({ collection: new Backbone.Collection([this.henergy]) }))
-            this.bs.show(new HistgramPlot({ collection: new Backbone.Collection([this.bsx, this.bsy]) }))
             this.ex.show(new HistgramPlot({ collection: new Backbone.Collection([this.exp]) }))
+            this.rbsx.show(new HistgramPlot({ collection: new Backbone.Collection([this.bsx]) }))
+            this.rbsy.show(new HistgramPlot({ collection: new Backbone.Collection([this.bsy]) }))
 
             this.flt.show(new FaultListView({ collection: this.faults, filters: false, search: false }))
             this.rbt.show(new RobotErrorsView({ collection: this.roboterrors }))
