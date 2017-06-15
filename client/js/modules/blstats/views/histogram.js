@@ -38,8 +38,8 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
         },
 
         initialize: function(options) {            
-            this.$el.css('opactiy', 0)
-            this.listenTo(this.collection, 'change:histograms', this.render)
+            this.$el.css('opacity', 0)
+            this.listenTo(this.collection, 'add remove change:histograms', this.render)
         },
         
 
@@ -72,6 +72,7 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
             }
             
             var fh = this.collection.first()
+            if (!fh) return
             if (!fh.get('histograms')) return
             var f = fh.get('histograms')[0]
             
