@@ -174,7 +174,7 @@
                     if (rotateTicks <= 90) {
                         // Center such that the top of the label is at the center of the tick.
                         xoffset = -Math.ceil(Math.cos(radsAboveHoriz) * tick.height);
-                        yoffset = Math.ceil(Math.sin(radsAboveHoriz) * tick.height);
+                        yoffset = Math.ceil(Math.sin(radsAboveHoriz) * tick.height) / 3.14;
                         ctx.translate(Math.round(plot.getPlotOffset().left + xaxis.p2c(tick.v)) + xoffset,
                                       box.top + box.padding + plot.getOptions().grid.labelMargin + yoffset);
                         ctx.rotate(rotateTicksRads);
