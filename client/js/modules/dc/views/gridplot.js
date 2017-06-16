@@ -1,6 +1,7 @@
 define(['jquery', 'marionette',
         'modules/dc/models/distl',
         'modules/dc/models/grid',
+        'modules/dc/models/xfm',
         'utils/canvas',
         'tpl!templates/dc/gridplot.html',
         'caman',
@@ -8,7 +9,7 @@ define(['jquery', 'marionette',
         'utils',
         'utils/xhrimage',
         'jquery-ui',
-    ], function($, Marionette, DISTL, GridInfo, canvas, template, Caman, HeatMap, utils, XHRImage) {
+    ], function($, Marionette, DISTL, GridInfo, XFMap, canvas, template, Caman, HeatMap, utils, XHRImage) {
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
         template: template,
@@ -18,6 +19,9 @@ define(['jquery', 'marionette',
             canvas: 'canvas',
             hmt: 'input[name=heatmap]',
             ty: 'select[name=type]',
+            xfm: '.xfm',
+            flu: 'input[name=fluo]',
+            el: 'select[name=element]',
         },
 
         events: {
@@ -26,6 +30,9 @@ define(['jquery', 'marionette',
 
             'change @ui.ty': 'setType',
             'change @ui.hmt': 'setHM',
+
+            'change @ui.flu': 'toggleFluo',
+            'change @ui.el': 'changeElement',
         },
 
 
@@ -65,6 +72,9 @@ define(['jquery', 'marionette',
                 console.log('grid', self.grid.get('DATACOLLECTIONID'), self.grid.get('ORIENTATION'), 'vertical', self.vertical)
             })
 
+            this.xfm = new XFMap({ id: this.getOption('ID') })
+            this.xfm.fetch().done(this.populateXFM.bind(this))
+
             this.hasSnapshot = false
             this.snapshot = new XHRImage()
             this.snapshot.onload = this.snapshotLoaded.bind(this)
@@ -76,6 +86,30 @@ define(['jquery', 'marionette',
 
             this.heatmapToggle = false
             this.type = 1
+        },
+
+        toggleFluo: function() {
+            if (this.ui.flu.is(':checked')) {
+                this.ui.ty.prop('disabled', true)
+                this.draw()
+            } else {
+                this.ui.ty.prop('disabled', false)
+                this.draw()
+            }
+        },
+
+        changeElement: function() {
+            this.draw()
+        },
+
+        populateXFM: function() {
+            if (!this.xfm.get('data').length) return
+            this.ui.xfm.show()
+
+            var opts = _.map(_.unique(_.pluck(this.xfm.get('data'), 'ELEMENT')), function(e) {
+                return '<option value="'+e+'">'+e+'</option>'
+            })
+            this.ui.el.html(opts.join())
         },
 
         getModel: function() {
@@ -91,6 +125,10 @@ define(['jquery', 'marionette',
             console.log('snapshot loaded')
             this.hasSnapshot = true
             this.draw()
+        },
+
+        onRender: function() {
+            this.ui.xfm.hide()
         },
 
 
@@ -126,8 +164,8 @@ define(['jquery', 'marionette',
                 var stx = (Math.floor(this.grid.get('SNAPSHOT_OFFSETXPIXEL'))+1)*scalef
                 var sty = (Math.floor(this.grid.get('SNAPSHOT_OFFSETYPIXEL'))+1)*scalef
 
-                var w = bw*this.grid.get('STEPS_X')*scalef
-                var h = bh*this.grid.get('STEPS_Y')*scalef
+                var w = bw*this.grid.get('STEPS_X')*scalef*0.97
+                var h = bh*this.grid.get('STEPS_Y')*scalef*0.97
 
                 var cvratio = this.canvas.width / this.canvas.height
                 var snratio = w/h
@@ -144,10 +182,18 @@ define(['jquery', 'marionette',
                 this.ctx.drawImage(this.snapshot, stx-this.offset_w/2, sty-this.offset_h/2, w+this.offset_w, h+this.offset_h-1, 0, 0, this.canvas.width, this.canvas.height)
             }
 
-            // plot distl data
-            if (this.distl.get('data')) {
-                var d = this.distl.get('data')[this.type] 
+            var d = []
+            if (this.ui.flu.is(':checked')) {
+                var tmp = _.where(this.xfm.get('data'), { ELEMENT: this.ui.el.val() })
+                _.each(tmp, function(r) {
+                    d.push([r.IMAGENUMBER, r.COUNTS])
+                })
+            } else {
+                if (this.distl.get('data')) d = this.distl.get('data')[this.type] 
+            }
 
+            // plot distl data
+            if (d.length) {
                 var max = 0
                 _.each(d, function(v,i) {
                     if (v[1] > max) max = v[1]
@@ -267,14 +313,25 @@ define(['jquery', 'marionette',
             var sw = (this.canvas.width-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
             var sh = (this.canvas.height-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
         
+            // if (xstep % 2 == 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
 
             var xa = x - ((this.offset_w*this.scale)/2)
             var ya = y - ((this.offset_h*this.scale)/2)
 
             if (this.vertical) {
-                var pos = Math.floor(xa/sw) * this.grid.get('STEPS_Y') + Math.floor(ya/sh)
+                var x =  Math.floor(xa/sw) 
+                var y = Math.floor(ya/sh)
+                if (this.grid.get('SNAKED') == 1) {
+                    if (x % 2 == 1) y = (this.grid.get('STEPS_Y') - 1) - y
+                }
+                var pos = (x * this.grid.get('STEPS_Y')) + y
             } else {
-                var pos = Math.floor(xa/sw) + (Math.floor(ya/sh) * this.grid.get('STEPS_X'))
+                var x =  Math.floor(xa/sw) 
+                var y = Math.floor(ya/sh)
+                if (this.grid.get('SNAKED') == 1) {
+                    if (y % 2 == 1) x = (this.grid.get('STEPS_X') - 1) - x
+                }
+                var pos = x + (y  * this.grid.get('STEPS_X'))
             }
 
             return pos
