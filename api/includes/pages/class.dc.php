@@ -35,6 +35,7 @@
                               array('/rd/aid/:aid/:id', 'get', '_rd'),
                               array('/single/t/:t/:id', 'patch', '_set_comment'),
                               array('/sym', 'get', '_get_symmetry'),
+                              array('/xfm/:id', 'get', '_fluo_map'),
 
                               array('/comments(/:dcid)', 'get', '_get_comments'),
                               array('/comments', 'post', '_add_comment'),
@@ -1331,6 +1332,17 @@
                 }    
                 $this->_output($info[0]);
             }
+        }
+
+        # ------------------------------------------------------------------------
+        # Fluorescence Map Info
+        function _fluo_map() {
+            $info = $this->db->pq("SELECT xfm.imagenumber, xfm.counts, xfroi.element
+                FROM xrffluorescencemapping xfm
+                INNER JOIN xrffluorescencemappingroi xfroi
+                WHERE xfm.datacollectionid=:1", array($this->arg('id')));
+
+            $this->_output($info);
         }
 
         
