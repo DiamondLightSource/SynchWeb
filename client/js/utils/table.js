@@ -15,6 +15,15 @@ define(['marionette', 'backgrid',
                 app.trigger(this.event, this.model.get(this.argument))
             },
         }),
+
+        BGSelectRow: Backgrid.Row.extend({
+            events: {
+                'click': 'onClick',
+            },
+            onClick: function() {
+                this.model.trigger('backgrid:select', this.model, !this.$el.find('input[type=checkbox]').is(':checked'))
+            },
+        }),
         
         TemplateCell: Backgrid.Cell.extend({
             render: function() {
