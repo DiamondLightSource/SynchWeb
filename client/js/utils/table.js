@@ -1,4 +1,6 @@
-define(['marionette', 'backgrid', 'modules/projects/views/addto'], function(Marionette, Backgrid, AddToProjectView) {
+define(['marionette', 'backgrid', 
+    'utils',
+    'modules/projects/views/addto'], function(Marionette, Backgrid, utils, AddToProjectView) {
     
   
     return {
@@ -72,6 +74,29 @@ define(['marionette', 'backgrid', 'modules/projects/views/addto'], function(Mari
                 return this
             }
         }),
+
+        ShadedCell: Backgrid.Cell.extend({
+            render: function() {
+                var val = this.model.get(this.column.get('name'))
+                this.$el.text(val)
+
+                var vals = this.model.collection.fullCollection.pluck(this.column.get('name'))
+                var avg = _.reduce(vals, function(v, n) { return v + n }, 0) / vals.length
+
+                col = null
+                if (val > avg) {
+                    col = utils.shadeColor('#00cc00', 1-(0.35*(val/avg)))
+                }
+
+                if (val < avg) {
+                    col = utils.shadeColor('#cc0000', 0.55*(val/avg))
+                }
+
+                if (col) this.$el.css('background-color', col)
+
+                return this
+            }
+        })
     }
     
 })
