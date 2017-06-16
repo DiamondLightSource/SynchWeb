@@ -9,9 +9,11 @@ define(['marionette',
     'modules/types/gen/stats/views/visit',
 
     'modules/stats/views/overview',
+    'modules/stats/views/overview2',
+    'modules/stats/views/bloverview',
     'modules/stats/views/beamline'
     
-    ], function(Marionette, Visit, BreakDown, Pies, VisitView, ProposalView, GenericVisitView, BAGOverviewView, BeamlineOverview) {
+    ], function(Marionette, Visit, BreakDown, Pies, VisitView, ProposalView, GenericVisitView, BAGOverviewView, BLSOverviewView, BeamlineHLOverview, BeamlineOverview) {
     
     var bc = { title: 'Visit Statistics', url: '/stats' }
     
@@ -75,6 +77,18 @@ define(['marionette',
             app.content.show(new BAGOverviewView({ params: { s: s } }))
         },
 
+        bls_overview: function(s) {
+            if (!app.user_can('all_prop_stats')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            app.bc.reset([bc, { title: 'Beamlines Overview' }]),
+            app.content.show(new BLSOverviewView({ params: { s: s } }))
+        },
+
+        bl_overview: function(bl,s,page) {
+            if (!app.user_can('all_prop_stats')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            app.bc.reset([bc, { title: bl+' Overview' }]),
+            app.content.show(new BeamlineHLOverview({ bl: bl, params: { s: s } }))
+        },
+
 
         beamline: function(bl) {
             if (!app.user_can('all_breakdown')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
@@ -93,6 +107,11 @@ define(['marionette',
         app.on('pstats:show', function() {
             app.navigate('stats')
             controller.proposal()
+        })
+
+        app.on('bloverview:show', function(bl) {
+            app.navigate('stats/overview/bl/'+bl)
+            controller.bl_overview(bl)
         })
     })
        

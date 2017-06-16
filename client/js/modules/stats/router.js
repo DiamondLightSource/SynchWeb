@@ -6,6 +6,8 @@ define(['utils/lazyrouter'], function(LazyRouter) {
             'stats(/page/:page)': 'proposal',
             'stats/visit/:visit': 'visit',
             'stats/overview(/s/:s)(/page/:page)': 'overview',
+            'stats/overview/beamlines(/s/:s)(/page/:page)': 'bls_overview',
+            'stats/overview/bl/:bl': 'bl_overview',
             'stats/bl/:bl': 'beamline',
         },
         
