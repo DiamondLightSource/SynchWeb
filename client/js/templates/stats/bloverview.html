@@ -1,0 +1,50 @@
+<div class="filter filter-nohide">
+    <ul class="clearfix">
+        <li title="View BAG Overview"><a href="/stats/overview">BAGs</a></li>
+        <li title="View Beamlines Overview"><a href="/stats/overview/beamlines">Beamlines</a></li>
+        <li title="View Beamlines Run Overview"><a href="/stats/bl/<%=BL%>">Beamline Run Overview</a></li>
+    </ul>
+</div>
+
+
+<h1><%=BL%> Overview</h1>
+
+<p class="help">This page shows beamline overview statistics for the all time</p>
+
+<div class="filter">
+    <ul>
+        <li><label><input type="checkbox" name="scheduled" /> Scheduled Visits Only</label></li>
+    </ul> (Exclude vmxi, lb, and other long running visits)
+</div>
+
+<div class="filter type2"></div>
+<div class="plot_container"><div id="avg_time"></div></div>
+<div class="wrapper"></div>
+<a href="#" class="button download"><i class="fa fa-download"></i> Download</a>
+
+<h1>Histograms</h1>
+<div class="plot_wrap clearfix">
+    <div class="plot_container left en"></div>
+    <div class="plot_container right exp"></div>
+</div>
+
+<div class="plot_wrap clearfix">
+    <div class="plot_container left bsx"></div>
+    <div class="plot_container right bsy"></div>
+</div>
+
+<h1>Per Run Breakdown</h1>
+
+<div class="filter">
+    <ul>
+        <li>Run: <select name="runid"></select></li>
+    </ul>
+</div>
+
+<div class="filter type"></div>
+
+<h1>Proposals</h1>
+<div class="wrapper2"></div>
+
+<h1>Session Types</h1>
+<div class="wrapper3"></div>
