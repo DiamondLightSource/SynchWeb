@@ -206,9 +206,9 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
       }
     })
       
-    app.on('dc:show', function(type, id) {
-        app.navigate('dc/ty/'+type+'/id/'+id)
-        controller.dc_list(null, null, null, type, id)
+    app.on('dc:show', function(type, id, visit) {
+        app.navigate('dc/'+(visit ? ('visit/'+visit) : '') + '/ty/'+type+'/id/'+id)
+        controller.dc_list(visit, null, null, null, type, id)
     })
   })
        
