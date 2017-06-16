@@ -2,7 +2,7 @@
 
 
 // Flexible grid
-@mixin cols($n, $pad: 1%, $marg: 0) {
+@mixin cols($n, $pad: 1%, $marg: 0, $multi: 1) {
     $p: 0;
     $m: 0;
     
@@ -24,7 +24,7 @@
     }
     
     
-    $col: (100%/$n) - $p - $m;
+    $col: (100%/$n)*$multi - $p - $m;
     
     width: $col;
     margin: $marg;
