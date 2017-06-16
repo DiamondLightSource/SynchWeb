@@ -13,6 +13,10 @@
         @include cols(3,0 1% 0 0);
     }
 
+    &.twothird {
+        @include cols(3,0 1% 0 0, 0, 2);   
+    }
+
     @media (max-width: $breakpoint-vsmall) {
         @include cols(1,0);
     }
@@ -24,6 +28,10 @@
 
     &.third {
         @include cols(3,0 1% 0 0);
+    }
+
+    &.twothird {
+        @include cols(3,0 1% 0 0, 0, 2);   
     }
     
     @media (max-width: $breakpoint-vsmall) {
