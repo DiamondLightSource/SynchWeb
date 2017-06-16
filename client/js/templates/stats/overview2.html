@@ -1,0 +1,57 @@
+<div class="filter filter-nohide">
+    <ul class="clearfix">
+        <li title="View BAG Overview"><a href="/stats/overview">BAGs</a></li>
+        <li title="View Beamlines Overview" class="current"><a href="/stats/overview/beamlines">Beamlines</a></li>
+    </ul>
+</div>
+
+<h1>Beamlines</h1>
+<p class="help">This page shows beamline overview statistics for the selected time period. Click on a beamline to see overview stats for that particular beamline</p>
+
+<div class="filter">
+    <ul>
+        <li>
+            <label>
+                <input type="checkbox" name="scheduled" /> Scheduled Visits Only
+            </label>
+        </li>
+    </ul>
+</div>
+<div class="filter type2"></div>
+
+
+<div class="right third">
+    <div class="filter">
+        <ul>
+            <li><label><input type="radio" name="type" value="USED" checked="checked" /> Used (%)</label></li>
+            <li><label><input type="radio" name="type" value="DCH" /> DC / hr</label></li>
+            <li><label><input type="radio" name="type" value="SCH" /> SC / hr</label></li>
+            <li><label><input type="radio" name="type" value="SLH" /> Samples / hr</label></li>
+        </ul>
+    </div>
+    <div class="runlist"></div>
+</div>
+<div class="left twothird">
+    <div class="plot_container"><div id="avg_time" class="large"></div></div>
+</div>
+
+
+<div class="filter">
+    <ul>
+        <li>Run:
+            <select name="runid"></select>
+        </li>
+    </ul>
+</div>
+<div class="filter type"></div>
+
+<div class="wrapper2"></div>
+<a href="#" class="button download beamlines"><i class="fa fa-download"></i> Download</a>
+
+<h1>Session Types</h1>
+<div class="wrapper3"></div>
+<a href="#" class="button download sessiontypes"><i class="fa fa-download"></i> Download</a>
+
+<h1>Totals</h1>
+<div class="wrapper4"></div>
+<a href="#" class="button download totals"><i class="fa fa-download"></i> Download</a>
