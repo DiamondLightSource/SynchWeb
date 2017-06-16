@@ -103,8 +103,8 @@
             
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(p.title) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(CONCAT(p.proposalcode, p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
-                for ($i = 0; $i < 2; $i++) array_push($args, $this->arg('s'));
+                $where .= " AND (lower(s.beamlinename) LIKE lower(:".$st.") OR lower(p.title) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."),'%')) OR lower(CONCAT(p.proposalcode, p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
+                for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('s'));
             }
 
             $tot = $this->db->pq("SELECT count(distinct p.proposalid) as tot FROM proposal p 
