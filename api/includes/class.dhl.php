@@ -100,7 +100,7 @@ class DHL {
         
         $shipment->ShipmentDetails->NumberOfPieces = sizeof($options['pieces']);
         $shipment->ShipmentDetails->WeightUnit = 'K';
-        $shipment->ShipmentDetails->GlobalProductCode = 'P';
+        $shipment->ShipmentDetails->GlobalProductCode = $options['service'];
         $shipment->ShipmentDetails->Date = date('Y-m-d');
         $shipment->ShipmentDetails->Contents = $options['description'];
         $shipment->ShipmentDetails->DimensionUnit = 'C';
