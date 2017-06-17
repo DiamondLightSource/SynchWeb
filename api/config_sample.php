@@ -162,7 +162,7 @@
     # DHL API Details
     $dhl_user = 'user';
     $dhl_pass = 'password';
-
+    $dhl_acc = '12345678';
 
   
     # VMXi 
