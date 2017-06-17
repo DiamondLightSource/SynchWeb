@@ -148,7 +148,7 @@ class DHL {
 
         $response = new ShipmentResponse();
         $response->initFromXML($xml);
-        echo $response->toXML();
+        // echo $response->toXML();
 
         return array(
             'awb' => $response->AirwayBillNumber,
@@ -209,7 +209,7 @@ class DHL {
 
         $response = new BookPUResponse();
         $response->initFromXML($xml);
-        echo $response->toXML();
+        // echo $response->toXML();
 
         return array(
             'confirmationnumber' => $response->ConfirmationNumber,
