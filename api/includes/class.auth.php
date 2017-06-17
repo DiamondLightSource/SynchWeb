@@ -80,7 +80,6 @@
 		    	if ($parts[0] == 'authenticate' || $parts[0] == 'options') $need_auth = false;
 		    }
 
-
 		    # One time use tokens
 		    $once = $this->app->request->get('token');
 		    if ($once) {
@@ -91,8 +90,10 @@
 		    		WHERE token=:1", array($once));
 		    	if (sizeof($token)) {
 		    		$token = $token[0];
+		    		$qs = $_SERVER['QUERY_STRING'] ? (preg_replace('/(&amp;)?token=\w+/', '', str_replace('&', '&amp;', $_SERVER['QUERY_STRING']))) : null;
+		    		if ($qs) $qs = '?'.$qs;
 
-		    		if ($this->app->request->getResourceUri() == $token['VALIDITY']) {
+		    		if ($this->app->request->getResourceUri().$qs == $token['VALIDITY']) {
 		    			$_REQUEST['prop'] = $token['PROP'];
 		    			$this->user = $token['LOGIN'];
 		    			$need_auth = false;
