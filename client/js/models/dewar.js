@@ -29,6 +29,11 @@ define(['backbone'], function(Backbone) {
         pattern: 'word',
         required: false
       },
+
+      WEIGHT: {
+        pattern: 'number',
+        required: true
+      }
     },
     
   })
