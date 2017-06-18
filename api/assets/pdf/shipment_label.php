@@ -238,15 +238,7 @@
                 <div class="left" style="width: 70px">FROM:</div>
                 <div class="pad-left grey">
                     <p>
-                        The Experimental Hall Coordinators<br />
-                        Diamond Light Source Limited<br />
-                        Chilton<br />
-                        Didcot<br />
-                        Oxfordshire<br />
-                        OX11 0DE<br />
-                        UNITED KINGDOM<br />
-                        Tel: +44 (0)1235 778787<br />
-                        Fax: +44 (0)1235 778499
+                        <?php echo $ship['FACILITYADDRESS'] ?>
                     </p>
 
                 </div>
