@@ -156,7 +156,17 @@
 
     # Shipping Address for Labels
     # - This is added to all shipment label PDFs
-    $address = "The Experimental Hall Coordinators\nDiamond Light Source Limited\nChilton\nDidcot\nOxfordshire\nOX11 0DE\nUNITED KINGDOM\nTel: +44 (0)1235 778787\nFax: +44 (0)1235 778499";
+    $facility_fao = "The Experimental Hall Coordinators";
+    $facility_company = "Diamond Light Source";
+    $facility_address = "Fermi Avenue";
+    $facility_city = "Didcot";
+    $facility_postcode = "OX11 0DE";
+    $facility_country = "United Kingdom";
+    $facility_contact = "A person";
+    $facility_phone = "01234 567890";
+    $facility_email = "stores@facility.co.uk";
+    $facility_courier_countries = array('United Kingdom');
+    $package_description = 'Dry shipper containing frozen crystals';
     
 
     # DHL API Details
