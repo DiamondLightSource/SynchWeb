@@ -8,7 +8,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         edate: /^\d\d-\d\d-\d\d\d\d$/,
         word: /^\w+$/,
         fcode: /^DLS\-(MX|IN)\-\d\d\d\d$/i,
-        time: /^\d\d+:\d\$/,
+        time: /^\d\d:\d\d$/,
         sequence: /^[>;\s\w+\n\(\)\.\|]+$/,
         address: /^(\w|\s|\-|\n)+$/,
         array: /^[\d+(.\d+)?),]+$/,
