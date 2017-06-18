@@ -27,7 +27,9 @@ define(['marionette',
             edit.create('EMAILADDRESS', 'text')
             edit.create('LABNAME', 'text')
             edit.create('ADDRESS', 'textarea')
-            
+            edit.create('CITY', 'text')
+            edit.create('POSTCODE', 'text')
+            edit.create('COUNTRY', 'text')
         },
         
     })
