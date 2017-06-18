@@ -66,7 +66,7 @@ define(['marionette', 'backbone',
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'FACILITYCODE','FIRSTEXPERIMENTID','TRACKINGNUMBERTOSYNCHROTRON','TRACKINGNUMBERFROMSYNCHROTRON'], function(f) {
+            _.each(['CODE', 'FACILITYCODE','FIRSTEXPERIMENTID','TRACKINGNUMBERTOSYNCHROTRON','TRACKINGNUMBERFROMSYNCHROTRON', 'WEIGHT'], function(f) {
                 data[f] = $('[name='+f+']').val()
             })
             this.model.set(data)
@@ -103,6 +103,7 @@ define(['marionette', 'backbone',
             edit.create('FACILITYCODE', 'text')
             edit.create('TRACKINGNUMBERTOSYNCHROTRON', 'text')
             edit.create('TRACKINGNUMBERFROMSYNCHROTRON', 'text')
+            edit.create('WEIGHT', 'text')
             
             var self = this
             this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 5 } })
