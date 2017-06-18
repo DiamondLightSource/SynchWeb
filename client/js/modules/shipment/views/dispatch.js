@@ -135,7 +135,7 @@ define(['marionette', 'views/form',
                 this.ui.fn.val(lc.get('FAMILYNAME'))
                 this.ui.em.val(lc.get('EMAILADDRESS'))
                 this.ui.ph.val(lc.get('PHONENUMBER'))
-                this.ui.addr.val(lc.get('ADDRESS'))
+                this.ui.addr.val([lc.get('ADDRESS'),lc.get('CITY'),lc.get('POSTCODE'),lc.get('COUNTRY')].join("\n"))
                 this.ui.lab.val(lc.get('LABNAME'))
             }
         },
