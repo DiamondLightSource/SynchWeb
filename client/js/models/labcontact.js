@@ -32,6 +32,18 @@ define(['backbone'], function(Backbone) {
                 required: true,
                 pattern: 'address',
             },
+            CITY: {
+                required: true,
+                pattern: 'wwsdash',
+            },
+            COUNTRY: {
+                required: true,
+                pattern: 'wwsdash',
+            },
+            POSTCODE: {
+                required: true,
+                pattern: 'wwdash',
+            },
             DEFAULTCOURRIERCOMPANY: {
                 pattern: 'wwsdash',
                 required: false,

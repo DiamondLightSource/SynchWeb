@@ -17,12 +17,15 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
         { name: 'GIVENNAME', label: 'First Name', cell: 'string', editable: false },
         { name: 'FAMILYNAME', label: 'Surname', cell: 'string', editable: false },
         { name: 'ADDRESS', label: 'Address', cell: 'string', editable: false },
+        { name: 'CITY', label: 'City', cell: 'string', editable: false },
+        { name: 'POSTCODE', label: 'Postcode', cell: 'string', editable: false },
+        { name: 'COUNTRY', label: 'Country', cell: 'string', editable: false },
         { name: 'PHONENUMBER', label: 'Phone No.', cell: 'string', editable: false },
         { name: 'LABNAME', label: 'Laboratory', cell: 'string', editable: false },
       ]
         
       if (app.mobile()) {
-        _.each([2,3], function(v) {
+        _.each([2,3,4,5,6], function(v) {
             columns[v].renderable = false
         })
       }
