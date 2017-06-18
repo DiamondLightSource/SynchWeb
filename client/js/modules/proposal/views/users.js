@@ -16,7 +16,7 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
 
     var EmptyView = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('No users regsitered yet')
+        template: _.template('No users registered yet')
     })
     
     return Marionette.CollectionView.extend({

@@ -26,7 +26,7 @@ define(['marionette', 'collections/dewars'], function(Marionette, Dewars) {
 
     var EmptyView = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('No dewars regsitered yet')
+        template: _.template('No dewars registered yet')
     })
     
     return Marionette.CollectionView.extend({
