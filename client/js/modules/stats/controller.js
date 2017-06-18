@@ -71,27 +71,39 @@ define(['marionette',
         },
 
         overview: function(s,page) {
-            if (!app.user_can('all_prop_stats')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            if (!app.user_can('all_prop_stats')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
             if (!page) page = 1
             app.bc.reset([bc, { title: 'BAG Overview' }]),
             app.content.show(new BAGOverviewView({ params: { s: s } }))
         },
 
         bls_overview: function(s) {
-            if (!app.user_can('all_prop_stats')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            if (!app.user_can('all_prop_stats')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
             app.bc.reset([bc, { title: 'Beamlines Overview' }]),
             app.content.show(new BLSOverviewView({ params: { s: s } }))
         },
 
         bl_overview: function(bl,s,page) {
-            if (!app.user_can('all_prop_stats')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            if (!app.user_can('all_prop_stats')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
             app.bc.reset([bc, { title: bl+' Overview' }]),
             app.content.show(new BeamlineHLOverview({ bl: bl, params: { s: s } }))
         },
 
 
         beamline: function(bl) {
-            if (!app.user_can('all_breakdown')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            if (!app.user_can('all_breakdown')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
             app.bc.reset([bc, { title: 'Beamline Overview' }]),
             app.content.show(new BeamlineOverview({ bl: bl }))  
         } 

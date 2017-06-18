@@ -20,7 +20,10 @@ define(['marionette',
     var controller = {
         // Imaging Dashboard
         imaging_dash: function() {
-            if (!app.user_can('imaging_dash')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            if (!app.user_can('imaging_dash')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
             app.content.show(new Dashboard())
             app.bc.reset([bc, { title: 'Imaging Dashboard', url: '/admin/imaging' }])
         },
@@ -29,7 +32,10 @@ define(['marionette',
 
         // Imaging Schedules
         schedules: function() {
-            if (!app.user_can('schedules')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            if (!app.user_can('schedules')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
             app.loading()
 
             var schedules = new Schedules()
@@ -47,7 +53,11 @@ define(['marionette',
 
 
         view_schedule: function(sid) {
-            if (!app.user_can('schedule_comp')) app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            if (!app.user_can('schedule_comp')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+            
             app.loading()
 
             var schedule = new Schedule({ SCHEDULEID: sid })
