@@ -71,9 +71,30 @@
             
             <li>
                 <label>Shipping Date
-                    <span class="small">Date shipment left lab</span>
+                    <span class="small">Date shipment will leave lab / be picked up</span>
                 </label>
                 <input class="half" type="text" name="DELIVERYAGENT_SHIPPINGDATE" />
+            </li>
+
+            <li>
+                <label>Physical Location
+                    <span class="small">Location where shipment can be picked up from. i.e. Reception</span>
+                </label>
+                <input class="half" type="text" name="PHYSICALLOCATION" />
+            </li>
+
+            <li>
+                <label>Ready by Time
+                    <span class="small">Time shipment will be ready for pickup</span>
+                </label>
+                <input class="half" type="text" name="READYBYTIME" />
+            </li>
+
+            <li>
+                <label>Close Time
+                    <span class="small">Time after which shipment cannot be picked up</span>
+                </label>
+                <input class="half" type="text" name="CLOSETIME" />
             </li>
             
             
@@ -88,7 +109,7 @@
                 <label>Courier Name
                     <span class="small">Courier name for the return shipment</span>
                 </label>
-                <input type="text" name="DELIVERYAGENT_AGENTNAME" /> <button name="dls" class="button"><i class="fa fa-envelope"></i> Use Diamond Account (UK ONLY)</button>
+                <input type="text" name="DELIVERYAGENT_AGENTNAME" />
             </li>
             
             <li>

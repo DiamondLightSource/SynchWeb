@@ -16,47 +16,7 @@ define(['marionette', 'views/form',
     ], function(Marionette, FormView,
         Shipment, Visits, LabContacts,
         DialogView, AddContactView,
-        template, $_, Backbone) {
-
-    
-    /*
-     T&C Dialog
-    */
-    var DHLDetails = Backbone.Model.extend({
-        urlRoot: '/shipment/termsaccept',
-            
-        parse: function(r) {
-            return { details: r[0], pin: r[1], account: r[2] }
-        },
-    })
-            
-    var Terms = Backbone.Model.extend({
-        urlRoot: '/shipment/terms',
-            
-        parse: function(r) {
-            return { content: r }
-        },
-    })
-            
-    var TCDialog = DialogView.extend({
-        template: _.template('<%=content%>'),
-        title: 'Terms & Conditions',
-        buttons: {
-            'Accept': 'accept',
-            'Cancel': 'closeDialog',
-        },
-        
-        accept: function() {
-            this.trigger('terms:accepted')
-            this.closeDialog()
-        },
-    })
-            
-    var AcceptedDialog = DialogView.extend({
-        title: 'Terms Accepted',
-        template: _.template('<p>Pin Code: <b><%=pin%></b></p><%=details%>')
-    })
-            
+        template, $_, Backbone) {  
 
     /*
      List of facility codes
@@ -81,7 +41,6 @@ define(['marionette', 'views/form',
             'change @ui.lcret': 'getlcdetails',
             'change input[name^=FCODES]': 'checkFCodes',
             'change @ui.name': 'checkFCodes',
-            'click button[name=dls]': 'getTerms',
             'click a.add_lc': 'addLC',
         },
         
@@ -184,35 +143,6 @@ define(['marionette', 'views/form',
             this.model.set({ FCODES: this.$el.find('input[name^=FCODES]').map(function(i,f) { if ($(f).val()) return $(f).val() }).get() })
         },
         
-        
-        /*
-         Get T&Cs for using DLS shipping
-        */
-        getTerms: function(e) {
-            e.preventDefault()
-            var self = this
-            this.terms = new Terms()
-            this.terms.fetch().done(this.showTerms.bind(this))
-        },
-        
-        showTerms: function() {
-            var terms = new TCDialog({ model: this.terms })
-            this.listenTo(terms, 'terms:accepted', this.termsAccepted, this)
-            if (!this.terms.get('accepted')) app.dialog.show(terms)
-            else this.showAccepted()
-        },
-        
-        termsAccepted: function() {
-            this.details = new DHLDetails()
-            this.details.fetch({ data: { SHIPPINGNAME: this.ui.name.val() } }).done(this.showAccepted.bind(this))
-        },
-        
-        showAccepted: function() {
-            this.terms.set({ accepted: true })
-            this.$el.find('input[name="DELIVERYAGENT_AGENTNAME"]').val('DHL')
-            this.$el.find('input[name="DELIVERYAGENT_AGENTCODE"]').val(this.details.get('account'))
-            app.dialog.show(new AcceptedDialog({ model: this.details }))
-        },
     })
 
 })
