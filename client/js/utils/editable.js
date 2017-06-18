@@ -130,7 +130,7 @@ define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.d
                 this.model.set(attr, value)
                 console.log('valid', this.model.isValid(true), attr, 'changed', this.model.changedAttributes())
                 var self = this
-                this.model.save(this.model.changedAttributes(), { patch: true,
+                this.model.save(this.model.changedAttributes(), { patch: true, validate: false,
                     success: function() {
                         if (refetch) self.model.fetch()
                     },
