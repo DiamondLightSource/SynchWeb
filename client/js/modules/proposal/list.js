@@ -6,9 +6,11 @@ define(['marionette', 'views/table', 'collections/proposals'], function(Marionet
       'click': 'onClick',
     },
     onClick: function() {
+      var prop = app.prop
       app.cookie(this.model.get('PROPOSALCODE') + this.model.get('PROPOSALNUMBER'))
       app.type = this.model.get('TYPE')
-      app.trigger('visits:show')
+      if (!prop  && !app.staff) app.trigger('current:show')
+      else app.trigger('visits:show')
     },
   })
     
