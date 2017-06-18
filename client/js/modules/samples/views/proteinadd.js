@@ -54,6 +54,19 @@ define(['marionette', 'views/form',
             console.log('success from protadd', this.model)
             app.trigger('proteins:view', model.get('PROTEINID'))
         },
+
+        failure: function(model, xhr, options) {
+            console.log(arguments)
+            json = null
+            if (xhr.responseText) {
+                try { 
+                    json = $.parseJSON(xhr.responseText)
+                } catch(err) {}
+            }
+
+            if (json.message) app.alert({ message: json.message })
+            else app.alert({ message: 'Something went wrong registering that protein' })
+        },
     })
 
 })
