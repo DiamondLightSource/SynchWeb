@@ -3,9 +3,10 @@ define(['marionette',
         'collections/visits', 
         'collections/bls', 
         'modules/proposal/views/users', 
+        'modules/proposal/views/dewars', 
         'modules/proposal/models/time', 
         'tpl!templates/calendar/current.html'], 
-        function(Marionette, Visit, Visits, Beamlines, UserView, Time, template) {
+        function(Marionette, Visit, Visits, Beamlines, UserView, DewarsView, Time, template) {
 
 
     var VisitItem = Marionette.ItemView.extend({
@@ -18,8 +19,22 @@ define(['marionette',
             'click': 'showVisit',
             'mouseover a.users': 'showUsers',
             'mouseout a.users': 'hideUsers',
+            'mouseover a.dewars': 'showDewars',
+            'mouseout a.dewars': 'hideDewars',
         },
         
+        showDewars: function(e) {
+            if (!this.dewars) {
+                this.dewars = new DewarsView({ visit: this.model.get('VISIT') })
+                this.$el.find('.dewars').append(this.dewars.render().$el)
+            }
+            this.dewars.$el.show()
+        },
+
+        hideDewars: function(e) {
+            if (this.dewars) this.dewars.$el.hide()
+        },
+
         showUsers: function(e) {
             if (!this.users) {
                 this.users = new UserView({ visit: this.model.get('VISIT') })
@@ -37,7 +52,7 @@ define(['marionette',
             app.trigger('dclist:show', this.model.get('VISIT'))
         },
         
-        template: _.template('<div class="r"><a class="button" href="/stats/visit/<%=VISIT%>"><i class="fa fa-pie-chart"></i></a> <a href="#" class="button users"><i class="fa fa-users"></i></a></div><h1><%=BL%>. <%=LC%></h1><h3><a href="/dc/visit/<%=VISIT%>"><%=VISIT%></a></h3><ul><li>Start: <%=ST%></li><li>End: <%=EN%></li><li>&nbsp; <% if (SESSIONTYPE) { %><%=SESSIONTYPE%><% }%></li></ul>'),
+        template: _.template('<div class="r"><a class="button" href="/stats/visit/<%=VISIT%>"><i class="fa fa-pie-chart"></i></a> <a href="#" class="button users"><i class="fa fa-users"></i></a> <a href="#" class="button dewars"><i class="fa fa-truck"></i></a></div><h1><%=BL%>. <%=LC%></h1><h3><a href="/dc/visit/<%=VISIT%>"><%=VISIT%></a></h3><ul><li>Start: <%=ST%></li><li>End: <%=EN%></li><li>&nbsp; <% if (SESSIONTYPE) { %><%=SESSIONTYPE%><% }%></li></ul>'),
         
     })
     

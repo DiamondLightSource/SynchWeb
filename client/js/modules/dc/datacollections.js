@@ -14,11 +14,12 @@ define(['marionette',
         'views/dialog',
         'modules/dc/views/queuebuilder',
         'modules/proposal/views/users', 
+        'modules/proposal/views/dewars', 
 
         'tpl!templates/dc/dclist.html',
         ],
 function(Marionette, Pages, DCListView,
-         SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, UserView, template) {
+         SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, UserView, DewarsView, template) {
 
              
   return Marionette.LayoutView.extend({
@@ -47,6 +48,8 @@ function(Marionette, Pages, DCListView,
       //'click a.queue': 'showQueueBuilder',
       'mouseover a.users': 'showUsers',
       'mouseout a.users': 'hideUsers',
+      'mouseover a.dewars': 'showDewars',
+      'mouseout a.dewars': 'hideDewars',
       'click a.refresh': 'refreshDCs',
       'click @ui.ar': 'setAutoRefresh',
     },
@@ -60,6 +63,20 @@ function(Marionette, Pages, DCListView,
         e.preventDefault()
         this.collection.fetch()
     },
+
+
+    showDewars: function(e) {
+        if (!this.dewars) {
+            this.dewars = new DewarsView({ visit: this.model.get('VISIT') })
+            this.$el.find('.dewars').append(this.dewars.render().$el)
+        }
+        this.dewars.$el.show()
+    },
+
+    hideDewars: function(e) {
+        if (this.dewars) this.dewars.$el.hide()
+    },
+
 
     showUsers: function(e) {
         console.log('show users')
