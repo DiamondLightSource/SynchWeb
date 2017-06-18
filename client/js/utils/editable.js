@@ -46,7 +46,7 @@ define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.d
             type: 'select',
             onblur: 'ignore',
             callback: function(value, settings) {
-                $(this).html(_.result(settings, 'data')[value]);
+                $(this).html(_.result(settings, 'data')[value])
             }
         },
         
@@ -57,6 +57,11 @@ define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.d
         
         datetime: {
             type: 'datetime',
+            onblur: 'ignore',
+        },
+
+        time: {
+            type: 'time',
             onblur: 'ignore',
         }
     }
@@ -110,6 +115,20 @@ define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.d
                     var ele = $('<input value="'+original+'" />')
                     $(this).append(ele)
                     $(this).children('input').datetimepicker({ dateFormat: "dd-mm-yy" })
+                                      
+                    return ele
+                },
+            })
+
+            // Timepicker
+            $.editable.addInputType('time', {
+                element : function(settings, original) {
+                    settings.onblur = function(e) {
+                    };
+                                      
+                    var ele = $('<input value="'+original+'" />')
+                    $(this).append(ele)
+                    $(this).children('input').timepicker()
                                       
                     return ele
                 },
