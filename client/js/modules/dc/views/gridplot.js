@@ -188,7 +188,7 @@ define(['jquery', 'marionette',
                 _.each(tmp, function(r) {
                     d.push([r.IMAGENUMBER, r.COUNTS])
                 })
-                this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: tmp[0]['COLOUR'] } })
+                this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: 'rgb('+tmp[0]['R']+','+tmp[0]['G']+','+tmp[0]['B']+')' } })
             } else {
                 if (this.distl.get('data')) d = this.distl.get('data')[this.type] 
                 this.heatmap.configure({ maxOpacity: .4, gradient: { 0.25: 'rgb(0,0,255)', 0.55: 'rgb(0,255,0)', 0.85: 'yellow', 1.0: 'rgb(255,0,0)'} })
