@@ -1337,7 +1337,7 @@
         # ------------------------------------------------------------------------
         # Fluorescence Map Info
         function _fluo_map() {
-            $info = $this->db->pq("SELECT xfm.imagenumber, xfm.counts, xfroi.element
+            $info = $this->db->pq("SELECT xfm.imagenumber, xfm.counts, xfroi.element, xfroi.colour
                 FROM xrffluorescencemapping xfm
                 INNER JOIN xrffluorescencemappingroi xfroi
                 WHERE xfm.datacollectionid=:1", array($this->arg('id')));
