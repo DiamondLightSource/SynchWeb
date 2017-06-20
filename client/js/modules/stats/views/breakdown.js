@@ -99,11 +99,17 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                 this.options2.tooltipOpts = { content: this.getToolTip.bind(this) }
 
                 var dc = _.where(this.model.get('data'), { type: 'dc' })
-                var pids = _.unique(_.pluck(this.model.get('data'), 'pid'))
-                var cols = utils.getColors(pids.length)
-
+                var pids = _.unique(_.pluck(dc, 'pid'))
+                var cols = utils.shuffle(utils.getColors(pids.length))
                 _.each(dc, function(d) {
-                    d.color = cols[pids.indexOf(d.pid)]
+                    if (d.pid) d.color = cols[pids.indexOf(d.pid)]
+                })
+
+                var vis = _.where(this.model.get('data'), { type: 'visit_ns' })
+                var vids = _.unique(_.pluck(vis, 'visit'))
+                var cols = utils.shuffle(utils.getColors(vids.length))
+                _.each(vis, function(v) {
+                    v.color = cols[vids.indexOf(v.visit)]
                 })
 
                 // var markings = []
@@ -157,7 +163,8 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                 fault: 'Fault',
                 nobeam: 'Beam Dump',
                 cent: 'Centring',
-                visit: 'Visit',
+                visit: 'Visit (Scheduled)',
+                visit_ns: 'Visit (Queued)',
             }
             
             var len = (item.datapoint[0] - item.datapoint[2]) / 1000
