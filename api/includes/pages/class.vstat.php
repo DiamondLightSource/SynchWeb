@@ -59,7 +59,7 @@
                 LEFT OUTER JOIN blsample smp ON smp.blsampleid = dc.blsampleid
                 LEFT OUTER JOIN crystal c ON c.crystalid = smp.crystalid
                 LEFT OUTER JOIN protein pr ON pr.proteinid = c.proteinid
-                WHERE 1=1 $where ORDER BY dc.starttime DESC", $args);
+                WHERE 1=1 $where ORDER BY dc.starttime", $args);
             
             $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count 
                 FROM datacollection dc 
@@ -129,7 +129,7 @@
                 $ai = array();
                 $cent = array();
 
-                $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title
+                $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
                     FROM blsession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
@@ -168,7 +168,37 @@
             $lines = array();
             foreach ($linecols as $c) array_push($lines, array('data' => array()));
 
+
+            $queued = 0;
+            $vis_map = array();
+            foreach ($sched as $s) {
+                if ($s['SCHEDULED'] != '1' || $s['PROPOSALCODE'] == 'lb' || $s['PROPOSALCODE'] == 'nr') {
+                    $vis_map[$s['VISIT']] = $s;
+                    $queued++;
+                    continue;
+                }
+                array_push($data, array('data' => array(
+                    array($this->jst($s['ST']), 6, $this->jst($s['ST'])),
+                    array($this->jst($s['EN']), 6, $this->jst($s['ST']))), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT'].': '.$s['TITLE'], 'visit' => $s['VISIT']));
+            }
+
+            $lastend = null;
+            $lastvisit = null;
+            $startvisit = null;
             foreach ($dc as $d) {
+                
+                if ($lastvisit && ($d['VISIT'] != $lastvisit)) {
+                    if (array_key_exists($d['VISIT'], $vis_map)) {
+                        $s = $vis_map[$d['VISIT']];
+                        // print_r(array($startvisit, $lastend, $s));
+                        array_push($data, array('data' => array(
+                        array($this->jst($startvisit), 7, $this->jst($startvisit)),
+                        array($this->jst($lastend), 7, $this->jst($startvisit))), 'color' => 'purple', 'type' => 'visit_ns', 'status' => $s['VISIT'].': '.$s['TITLE'], 'visit' => $s['VISIT']));
+                    }
+
+                    $startvisit = null;
+                }
+
                 if (strpos($d['RUNSTATUS'], 'Successful') === false) $info['DC_STOPPED']++;
                                     
                 if ($d['ST'] && $d['EN']) {
@@ -184,8 +214,12 @@
                         array_push($lines[$i]['data'], array($this->jst($d['ST']), floatval(round($d[$f],4))));
                     }
                 }
+
+                $lastvisit = $d['VISIT'];
+                if (!$startvisit) $startvisit = $d['ST'];
+                $lastend = $d['EN'] ? $d['EN'] : $d['ST'];
             }
-            
+            // return;
             foreach ($robot as $r) {
                 array_push($data, array('data' => array(
                         array($this->jst($r['ST']), 2, $this->jst($r['ST'])),
@@ -208,17 +242,6 @@
                 array_push($data, array('data' => array(
                     array($this->jst($f['ST']), 4, $this->jst($f['ST'])),
                     array($this->jst($f['EN']), 4, $this->jst($f['ST']))), 'color' => 'grey', 'type' => 'fault', 'status' => ' Fault: '.$f['TITLE']));
-            }
-
-            $lbc = 6;
-            $ntc = 0;
-            foreach ($sched as $s) {
-                $offset = strpos($s['VISIT'], 'lb') !== false ? 
-                    (++$lbc) : 
-                    ((strpos($s['VISIT'], 'nt') !== false || strpos($s['VISIT'], 'nr') !== false) ? (++$ntc+$lbc) : 6);
-                array_push($data, array('data' => array(
-                    array($this->jst($s['ST']), $offset, $this->jst($s['ST'])),
-                    array($this->jst($s['EN']), $offset, $this->jst($s['ST']))), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT'].': '.$s['TITLE'], 'visit' => $s['VISIT']));
             }
                                     
             foreach ($ai as $d) {
