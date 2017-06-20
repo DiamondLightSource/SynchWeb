@@ -188,8 +188,8 @@
             foreach ($dc as $d) {
                 
                 if ($lastvisit && ($d['VISIT'] != $lastvisit)) {
-                    if (array_key_exists($d['VISIT'], $vis_map)) {
-                        $s = $vis_map[$d['VISIT']];
+                    if (array_key_exists($lastvisit, $vis_map)) {
+                        $s = $vis_map[$lastvisit];
                         // print_r(array($startvisit, $lastend, $s));
                         array_push($data, array('data' => array(
                         array($this->jst($startvisit), 7, $this->jst($startvisit)),
