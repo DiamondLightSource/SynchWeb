@@ -104,7 +104,7 @@ define(['marionette',
                 app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
                 return
             }
-            app.bc.reset([bc, { title: 'Beamline Overview' }]),
+            app.bc.reset([bc, { title: 'Beamline Run Overview' }, { title: bl }]),
             app.content.show(new BeamlineOverview({ bl: bl }))  
         } 
     }
