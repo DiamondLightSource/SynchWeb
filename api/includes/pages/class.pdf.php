@@ -23,18 +23,17 @@
                               array('/container(/sid/:sid)(/cid/:cid)(/did/:did)/prop/:prop', 'get', '_container_report'),
                               array('/report/visit/:visit', 'get', '_visit_report'),
                               array('/sheets', 'get', '_generate_sheets'),
+                              array('/awb/sid/:sid', 'get', '_get_awb'),
         );
         
         
         # ------------------------------------------------------------------------
         # Shipment Labels
         function _shipment_label() {
-            global $address;
-
             if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
             if (!$this->has_arg('sid')) $this->_error('No shipment specified', 'No shipment id was specified');
             
-            $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany 
+            $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, '' as postcode, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, '' as postcode2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany 
                 FROM shipping s 
                 INNER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
                 INNER JOIN person pe ON c.personid = pe.personid 
@@ -49,15 +48,19 @@
             
             $addr = array($ship['ADDRESS']);
             if ($ship['CITY']) array_push($addr, $ship['CITY']."\n");
+            if ($ship['POSTCODE']) array_push($addr, $ship['POSTCODE']."\n");
             if ($ship['COUNTRY']) array_push($addr, $ship['COUNTRY']."\n");
             $ship['ADDRESS'] = str_replace("\n", '<br/>',  implode(', ', $addr));
 
             $addr = array($ship['ADDRESS2']);
             if ($ship['CITY2']) array_push($addr, $ship['CITY2']."\n");
+            if ($ship['POSTCODE2']) array_push($addr, $ship['POSTCODE2']."\n");
             if ($ship['COUNTRY2']) array_push($addr, $ship['COUNTRY2']."\n");
             $ship['ADDRESS2'] = str_replace("\n", '<br/>',  implode(', ', $addr));
             
-            $ship['FACILITYADDRESS'] = str_replace("\n", '<br />', $address);
+            global $facility_fao, $facility_company, $facility_address, $facility_city, $facility_postcode, $facility_country, $facility_phone;
+            $addr = array($facility_fao, $facility_company, str_replace("\n", '<br />', $facility_address), $facility_city, $facility_postcode, $facility_country, $facility_phone);
+            $ship['FACILITYADDRESS'] = implode("<br />", $addr);
 
             $this->ship = $ship;
             
@@ -67,6 +70,23 @@
                 WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
             
             $this->_render('shipment_label');
+        }
+
+
+        function _get_awb() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
+            
+            $ship = $this->db->pq("SELECT s.shippingid, s.deliveryagent_label
+                FROM shipping s 
+                WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
+            
+            if (!sizeof($ship)) $this->_error('No such shipment');
+
+            if ($ship[0]['DELIVERYAGENT_LABEL']) {
+                $this->app->contentType('application/pdf');
+                echo base64_decode($ship[0]['DELIVERYAGENT_LABEL']);
+            } else $this->_error('No airway bill for this shipment');
         }
         
         
