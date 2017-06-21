@@ -42,7 +42,7 @@ define(['backbone'], function(Backbone) {
             },
             POSTCODE: {
                 required: true,
-                pattern: 'wwdash',
+                pattern: 'wwsdash',
             },
             DEFAULTCOURRIERCOMPANY: {
                 pattern: 'wwsdash',
