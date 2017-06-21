@@ -167,12 +167,16 @@
     $facility_email = "stores@facility.co.uk";
     $facility_courier_countries = array('United Kingdom');
     $package_description = 'Dry shipper containing frozen crystals';
-    
+    $dewar_weight = 18;
+
 
     # DHL API Details
     $dhl_user = 'user';
     $dhl_pass = 'password';
     $dhl_acc = '12345678';
+    // N = Domestic Express, P = Worldwide Express
+    $dhl_service = 'N';
+    $dhl_int_service = 'P';
 
   
     # VMXi 
