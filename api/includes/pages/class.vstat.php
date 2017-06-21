@@ -219,6 +219,15 @@
                 if (!$startvisit) $startvisit = $d['ST'];
                 $lastend = $d['EN'] ? $d['EN'] : $d['ST'];
             }
+
+            if (array_key_exists($lastvisit, $vis_map)) {
+                $s = $vis_map[$lastvisit];
+                // print_r(array($startvisit, $lastend, $s));
+                array_push($data, array('data' => array(
+                array($this->jst($startvisit), 7, $this->jst($startvisit)),
+                array($this->jst($lastend), 7, $this->jst($startvisit))), 'color' => 'purple', 'type' => 'visit_ns', 'status' => $s['VISIT'].': '.$s['TITLE'], 'visit' => $s['VISIT']));
+            }
+            
             // return;
             foreach ($robot as $r) {
                 array_push($data, array('data' => array(
