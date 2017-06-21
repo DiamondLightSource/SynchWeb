@@ -9,6 +9,9 @@
                               'EMAILADDRESS' => '.*',
                               'LABNAME' => '([\w\s-])+',
                               'ADDRESS' => '([\w\s-\n])+',
+                              'COUNTRY' => '([\w\s-])+',
+                              'CITY' => '([\w\s-])+',
+                              'POSTCODE' => '([\w\s-])+',
                               'DEFAULTCOURRIERCOMPANY' => '([\w\s-])+',
                               'COURIERACCOUNT' => '([\w-])+',
                               'BILLINGREFERENCE' => '([\w\s-])+',
@@ -60,7 +63,7 @@
             
             $order = 'c.labcontactid DESC';
         
-            $rows = $this->db->paginate("SELECT c.labcontactid, c.cardname, pe.givenname, pe.familyname, pe.phonenumber, l.name as labname, l.address, l.city, l.country, c.courieraccount,  c.billingreference, c.defaultcourriercompany, c.dewaravgcustomsvalue, c.dewaravgtransportvalue, pe.emailaddress 
+            $rows = $this->db->paginate("SELECT c.labcontactid, c.cardname, pe.givenname, pe.familyname, pe.phonenumber, l.name as labname, l.address, l.city, l.country, c.courieraccount,  c.billingreference, c.defaultcourriercompany, c.dewaravgcustomsvalue, c.dewaravgtransportvalue, pe.emailaddress, l.postcode, l.country
                                  FROM labcontact c 
                                  INNER JOIN person pe ON c.personid = pe.personid 
                                  INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
@@ -112,7 +115,7 @@
             
             
             # Update laboratory
-            $lfields = array('LABNAME', 'ADDRESS');
+            $lfields = array('LABNAME', 'ADDRESS', 'CITY', 'COUNTRY', 'POSTCODE');
             foreach ($lfields as $i => $f) {
                 if ($this->has_arg($f)) {
                     $c = $f == 'LABNAME' ? 'NAME' : $f;
@@ -130,15 +133,15 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal selected');
             
             $valid = True;
-            foreach (array('CARDNAME', 'FAMILYNAME', 'GIVENNAME', 'LABNAME', 'ADDRESS') as $k) {
+            foreach (array('CARDNAME', 'FAMILYNAME', 'GIVENNAME', 'LABNAME', 'ADDRESS', 'CITY', 'COUNTRY', 'POSTCODE') as $k) {
                 if (!$this->has_arg($k)) $valid = False;
             }
             
             if (!$valid) $this->_error('Missing Fields');
             
-            $this->db->pq("INSERT INTO laboratory (laboratoryid,name,address) 
-                VALUES (s_laboratory.nextval, :1, :2) RETURNING laboratoryid INTO :id", 
-                array($this->arg('LABNAME'), $this->arg('ADDRESS')));
+            $this->db->pq("INSERT INTO laboratory (laboratoryid,name,address,city,postcode,country) 
+                VALUES (s_laboratory.nextval, :1, :2, :3, :4, :5) RETURNING laboratoryid INTO :id", 
+                array($this->arg('LABNAME'), $this->arg('ADDRESS'), $this->arg('CITY'), $this->arg('POSTCODE'), $this->arg('COUNTRY')));
             $lid = $this->db->id();
             
             $email = $this->has_arg('EMAILADDRESS') ? $this->arg('EMAILADDRESS') : '';
