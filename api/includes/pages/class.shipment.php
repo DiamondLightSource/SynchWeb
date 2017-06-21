@@ -393,10 +393,6 @@
               GROUP BY $group
 
               ORDER BY r.facilitycode DESC", $args);
-
-            foreach ($rows as &$r) {
-                $r['ADDRESS'] = nl2br($r['ADDRESS']);
-            }
             
             if ($this->has_arg('FACILITYCODE')) {
                 if (sizeof($rows)) $this->_output($rows[0]);
