@@ -27,6 +27,9 @@ class Users extends Page {
                                     'EMAILADDRESS' => '.*',
                                     'LABNAME' => '([\w\s-])+',
                                     'ADDRESS' => '([\w\s-\n])+',
+                                    'COUNTRY' => '([\w\s-])+',
+                                    'CITY' => '([\w\s-])+',
+                                    'POSTCODE' => '([\w\s-])+',
                               );
         
 
@@ -271,7 +274,7 @@ class Users extends Page {
             if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
         }
         
-        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address
+        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country
                                FROM person p
                                LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
                                LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
@@ -320,7 +323,7 @@ class Users extends Page {
         }
 
         # Update laboratory
-        $lfields = array('LABNAME', 'ADDRESS');
+        $lfields = array('LABNAME', 'ADDRESS', 'CITY', 'POSTCODE', 'COUNTRY');
         foreach ($lfields as $i => $f) {
             if ($this->has_arg($f)) {
                 $c = $f == 'LABNAME' ? 'NAME' : $f;
