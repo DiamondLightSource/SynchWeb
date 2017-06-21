@@ -1,0 +1,119 @@
+<h1>Create Airway Bill: <% if (RETURN) { %>From Facility<% } else { %>To Facility<% } %></h1>
+
+<h2>Shipment Details</h2>
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Shipment</span>
+            <span class="SHIPPINGNAME"><%=SHIPPINGNAME%></span>
+        </li>
+
+        <li class="clearfix">
+            <span class="label">Dewars</span>
+            <span class="DEWARS floated"></span>
+        </li>
+
+        <li>
+            <span class="label">Weight</span>
+            <span class="WEIGHT"></span> Kg
+        </li>
+
+        <li>
+            <span class="label">DHL Account Number</span>
+            <span class="DELIVERYAGENT_AGENTCODE"><%=DELIVERYAGENT_AGENTCODE%></span> <a href="#" class="facc button"><i class="fa fa-envelope"></i> Use Facility Account</a> <span class="acc_msg"></span>
+        </li>
+
+        <li>
+            <span class="label">Declared Value</span>
+            <input type="text" name="DECLAREDVALUE" value="100" /> GBP
+        </li>
+
+        <li>
+            <span class="label">Package Description</span>
+            <input type="text" name="DESCRIPTION" class="full" />
+        </li>        
+    </ul>
+</div>
+
+<h2>Contact Details</h2>
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Contact</span>
+            <span class="GIVENNAME"></span> <span class="FAMILYNAME"></span>
+        </li>
+        
+        <li>
+            <span class="label">Contact Phone Number</span>
+            <span class="PHONENUMBER"></span>
+        </li>
+        
+        <li>
+            <span class="label">Contact Email</span>
+            <span class="EMAILADDRESS"></span>
+        </li>
+    </ul>
+</div>
+        
+<h2>Laboratory Details</h2>
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Laboratory Name</span>
+            <span class="LABNAME"></span>
+        </li>
+        
+        <li class="clearfix reorder">
+            <div class="ADDRESS text"></div>
+            <span class="label">Laboratory Address</span>
+        </li>
+        
+        <li>
+            <span class="label">Laboratory City</span>
+            <span class="CITY"></span>
+        </li>
+
+        <li>
+            <span class="label">Laboratory Postcode</span>
+            <span class="POSTCODE"></span>
+        </li>
+
+        <li>
+            <span class="label">Laboratory Country</span>
+            <span class="COUNTRY"></span> <span class="free"></span>
+        </li>
+    </ul>
+</div>
+        
+<h2>Pickup Details</h2>
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Package Location <br /> 
+                <span class="small">Location where shipment can be picked up from</span>
+            </span>
+            <span class="PHYSICALLOCATION"><%=PHYSICALLOCATION%></span>
+        </li>
+
+        <li>
+            <span class="label">Shipping Date</span>
+            <span class="DELIVERYAGENT_SHIPPINGDATE"><%=DELIVERYAGENT_SHIPPINGDATE%></span>
+        </li>
+
+        <li>
+            <span class="label">Ready By <br /> 
+                <span class="small">Time shipment will be ready for pickup</span>
+            </span>
+            <span class="READYBYTIME"><%=READYBYTIME%></span>
+        </li>
+
+        <li>
+            <span class="label">Close Time <br /> 
+                <span class="small">Time after which shipment cannot be picked up</span>
+            </span>
+            <span class="CLOSETIME"><%=CLOSETIME%></span>
+        </li>
+
+        <button name="submit" value="1" type="submit" class="button submit">Create Airway Bill</button>
+    </ul>
+</div>

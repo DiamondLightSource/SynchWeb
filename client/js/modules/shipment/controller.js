@@ -31,6 +31,8 @@ define(['marionette',
 
         'collections/dewars',
         'modules/shipment/views/dewaroverview',
+
+        'modules/shipment/views/createawb',
     
 ], function(Marionette,
     Dewar, Shipment, Shipments, 
@@ -38,7 +40,7 @@ define(['marionette',
     Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
-    DispatchView, TransferView, Dewars, DewarOverview) {
+    DispatchView, TransferView, Dewars, DewarOverview, CreateAWBView) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
         
@@ -74,6 +76,21 @@ define(['marionette',
       app.log('ship add view')
       app.bc.reset([bc, { title: 'Add New Shipment' }])
       app.content.show(new ShipmentAddView())
+    },
+
+
+    create_awb: function(sid) {
+        var shipment = new Shipment({ SHIPPINGID: sid })
+        shipment.fetch({
+            success: function() {
+                app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }, { title: 'Create Airway Bill' }])
+                app.content.show(new CreateAWBView({ shipment: shipment }))
+            },
+            error: function() {
+                app.bc.reset([bc])
+                app.message({ title: 'No such shipment', message: 'The specified shipment could not be found'})
+            },
+        })
     },
     
     
@@ -188,7 +205,6 @@ define(['marionette',
             },
         })
     },
-
 
 
     dewar_list: function(s, page) {
