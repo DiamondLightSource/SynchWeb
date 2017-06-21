@@ -82,10 +82,10 @@
                 <span class="CLOSETIME"><%=CLOSETIME%></span>
             </li>
 
-            <% if (DELIVERYAGENT_PICKUPCONFIRMATION != '') { %>
+            <% if (DELIVERYAGENT_PICKUPCONFIRMATION) { %>
             <li>
                 <span class="label">Shipping Pickup Confirmed</span>
-                Yes: <span class="DELIVERYAGENT_PICKUPCONFIRMATION"><%=DELIVERYAGENT_PICKUPCONFIRMATION%></span>
+                Yes - Confirmation Number: <span class="DELIVERYAGENT_PICKUPCONFIRMATION"><%=DELIVERYAGENT_PICKUPCONFIRMATION%></span>
             </li>
             <li>
                 <span class="label">Shipping Confirmed Ready By</span>
