@@ -26,8 +26,73 @@ class DHL {
         'Germany' => 'DE',
     );
 
-    function __construct($user, $password) {
-        define('DHL_API_DIR', dirname(__FILE__).'/../lib/DHL-API/');
+    public $_tracking_statuses = array(
+        'AD' => 'Agreed delivery',
+        'AF' => 'Arrived facility',
+        'AR' => 'Arrival in delivery facility',
+        'BA' => 'Bad address',
+        'BL' => 'Bond location',
+        'BN' => 'Customer broker notified',
+        'BR' => 'Broker release',
+        'CA' => 'Closed on arrival',
+        'CC' => 'Awaiting cnee collection',
+        'CD' => 'Controllable clearance delay',
+        'CI' => 'Facility check-in',
+        'CM' => 'Customer moved',
+        'CR' => 'Clearance release',
+        'CS' => 'Closed shipment',
+        'CU' => 'Confirm uplift',
+        'DD' => 'Delivered damaged',
+        'DF' => 'Depart facility',
+        'DI' => 'Duty invoice',
+        'DM' => 'Damaged',
+        'DP' => 'Denied parties',
+        'DS' => 'Destroyed / disposal',
+        'ES' => 'Entry submitted',
+        'FD' => 'Forward destination (DD\'s expected)',
+        'HI' => 'Lodged into hic',
+        'HN' => 'Handover',
+        'HO' => 'Lodged out of held inventory control',
+        'HP' => 'Held for payment',
+        'IA' => 'Image available',
+        'IC' => 'In clearance processing',
+        'IR' => 'Incorrect route',
+        'LV' => 'Load vehicle',
+        'MC' => 'Miscode',
+        'MD' => 'Missed delivery cycle',
+        'MS' => 'Mis-sort',
+        'NA' => 'Not arrived',
+        'ND' => 'Not delivered',
+        'NH' => 'Not home',
+        'OH' => 'On hold',
+        'OK' => 'Delivery',
+        'PD' => 'Partial delivery',
+        'PL' => 'Processed at location',
+        'PU' => 'Shipment pick up',
+        'PY' => 'Payment',
+        'RD' => 'Refused delivery',
+        'RR' => 'Response received',
+        'RT' => 'Returned to consignor',
+        'RW' => 'Weigh & dimension',
+        'SA' => 'Shipment acceptance',
+        'SC' => 'Service changed',
+        'SI' => 'Shipment inspection',
+        'SM' => 'Scheduled movement',
+        'SS' => 'Shipment stopped',
+        'ST' => 'Shipment intercept',
+        'TD' => 'Transport delay',
+        'TI' => 'Trace initiated',
+        'TP' => 'Forwarded to 3rd party - no DD\'s',
+        'TR' => 'Record of transfer',
+        'TT' => 'Trace terminated',
+        'UD' => 'Uncontrollable clearance delay',
+        'UV' => 'Unload vehicle',
+        'WC' => 'With delivering courier',
+    );    
+
+
+    function __construct($user=null, $password=null) {
+        if (!defined('DHL_API_DIR')) define('DHL_API_DIR', dirname(__FILE__).'/../lib/DHL-API/');
         require_once(DHL_API_DIR . 'vendor/autoloadManager/autoloadManager.php');
 
         $scanOption = autoloadManager::SCAN_ONCE;
@@ -37,6 +102,13 @@ class DHL {
         $autoloadManager->addFolder(DHL_API_DIR . 'vendor');
         $autoloadManager->addFolder(DHL_API_DIR . 'DHL');
         $autoloadManager->register();
+
+        if (file_exists('tables/countries.json')) {
+            $countries = json_decode(file_get_contents('tables/countries.json'), true);
+            foreach($countries as $c) {
+                $this->_country_codes[$c['country']] = $c['code'];
+            }
+        }
 
         $this->_user = $user;
         $this->_password = $password;
@@ -249,8 +321,13 @@ class DHL {
     }
 
 
-    function get_available_countries() {
+    function get_countries() {
         return array_keys($this->_country_codes);
+    }
+
+
+    function tracking_status($key) {
+        return array_key_exists($key, $this->_tracking_statuses) ? $this->_tracking_statuses[$key] : null;
     }
 
 }
