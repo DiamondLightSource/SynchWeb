@@ -246,6 +246,8 @@
                             'XRFFluorescenceMapping',
                             'XRFFluorescenceMappingROI',
 
+                            'Particle',
+
                             '',
 
                 );
