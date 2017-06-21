@@ -27,12 +27,12 @@ define(['backbone'], function(Backbone) {
       },
       
       DELIVERYAGENT_AGENTCODE: {
-        required: true,
+        required: false,
         pattern: 'wwdash'
       },
       
       DELIVERYAGENT_AGENTNAME: {
-        required: true,
+        required: false,
         pattern: 'wwsdash'
       },
 
