@@ -1,9 +1,9 @@
 define(['marionette',
-    
+    'collections/countries',
     'utils/editable',
     'tpl!templates/contact/userview.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, Editable, template, Backbone) {
+    ], function(Marionette, Countries, Editable, template, Backbone) {
     
     
         
@@ -12,12 +12,19 @@ define(['marionette',
         template: template,
         
         initialize: function(options) {
-            Backbone.Validation.bind(this);
-            console.log(this.model)
+            Backbone.Validation.bind(this)
+            
+            this.countries = new Countries()
+            this.countries.state.pageSize = 9999
+            this.ready = this.countries.fetch()
         },
         
         
         onRender: function() {
+            $.when(this.ready).done(this.doOnRender.bind(this))
+        },
+
+        doOnRender: function() {
             var edit = new Editable({ model: this.model, el: this.$el })
             if (!this.model.get('LOGIN')) {
                 edit.create('GIVENNAME', 'text')
@@ -29,7 +36,7 @@ define(['marionette',
             edit.create('ADDRESS', 'textarea')
             edit.create('CITY', 'text')
             edit.create('POSTCODE', 'text')
-            edit.create('COUNTRY', 'text')
+            edit.create('COUNTRY', 'select', { data: this.countries.kv() });
         },
         
     })
