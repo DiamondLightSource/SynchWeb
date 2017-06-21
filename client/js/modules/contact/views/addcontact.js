@@ -1,5 +1,6 @@
 define(['views/form',
     'models/labcontact',
+    'collections/countries',
     'tpl!templates/contact/contactadd.html',
     'jquery',
     'backbone',
@@ -8,17 +9,35 @@ define(['views/form',
     'backbone-validation',
     
     ], function(FormView,
-        Contact,
+        Contact, Countries,
         template, $_, Backbone) {
 
 
     return FormView.extend({
         template: template,
         
+        ui: {
+            country: 'select[name=COUNTRY]',
+        },
+
+        initialize: function() {
+            this.countries = new Countries()
+            this.countries.state.pageSize = 9999
+            this.ready = this.countries.fetch()
+        },
+
         createModel: function() {
             this.model = new Contact()
         },
         
+        onRender: function() {
+            $.when(this.ready).done(this.populateCountries.bind(this))
+        },
+
+        populateCountries: function() {
+            this.ui.country.html(this.countries.opts())
+        },
+
         success: function(model, response, options) {
             console.log('success from contact add')
             if (this.getOption('dialog')) {
