@@ -61,8 +61,7 @@
             $tmp = $this->db->pq("SELECT api.datacollectionid, app.processingprograms, app.processingstatus 
                 FROM autoprocprogram app
                 INNER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE api.datacollectionid in ($ids)",
-                $args);
+                WHERE api.datacollectionid in ($ids)");
 
             $statuses = array();
             foreach ($tmp as $i => $s) {
@@ -73,8 +72,7 @@
             $tmp = $this->db->pq("SELECT count(p.particleid) as particles, p.datacollectionid
                 FROM particle p
                 WHERE p.datacollectionid in ($ids)
-                GROUP BY p.datacollectionid",
-                $args);
+                GROUP BY p.datacollectionid");
 
             foreach ($tmp as $i => $p) {
                 if (!array_key_exists($p['DATACOLLECTIONID'], $statuses)) $statuses[$p['DATACOLLECTIONID']] = array();
