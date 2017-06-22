@@ -1723,7 +1723,7 @@
             if (!$this->has_arg('DEWARS')) $this->_error('No dewars specified');
             if (!is_array($this->arg('DEWARS'))) $this->_error('No dewars specified');
             
-            $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, s.deliveryagent_agentcode, s.deliveryagent_flightcode, s.deliveryagent_shippingdate, s.deliveryagent_pickupconfirmation, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation
+            $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, s.deliveryagent_agentcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, s.deliveryagent_pickupconfirmation, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation
                 FROM shipping s 
                 WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
             if (!sizeof($ship)) $this->_error('No such shipment');
@@ -1805,6 +1805,7 @@
                         'payee' => $payee,
                         'accountnumber' => $accno,
                         'service' => $user['country'] == $facility_country ? $dhl_service : $dhl_int_service,
+                        'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
                         'declaredvalue' => $this->arg('DECLAREDVALUE'),
                         'description' => $this->arg('DESCRIPTION'),
 
