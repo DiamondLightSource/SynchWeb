@@ -255,7 +255,7 @@ define(['marionette',
             var cedit = new Editable({ model: this.lc, el: this.$el })
             _.each(this._lcFields, function(a) {
                 if (a == 'COUNTRY') return
-                cedit.create(a, a == 'ADDRESS'? 'textedit' : 'text')
+                cedit.create(a, a == 'ADDRESS'? 'textarea' : 'text')
             }, this)
             cedit.create('COUNTRY', 'select', { data: this.countries.kv() });
         },
@@ -302,6 +302,9 @@ define(['marionette',
                 return
             }
 
+            this.$el.addClass('loading')
+            app.alert({ message: 'Creating Airway Bill and Booking Pickup, Please Wait...'})
+
             var self = this
             Backbone.ajax({
                 url: app.apiurl+'/shipment/awb/'+this.shipment.get('SHIPPINGID'),
@@ -316,6 +319,8 @@ define(['marionette',
                     setTimeout(function() {
                         app.trigger('shipment:show', self.shipment.get('SHIPPINGID'))
                     }, 1000)
+
+                    self.$el.removeClass('loading')
                 },
 
                 error: function(xhr, status, error) {
@@ -329,6 +334,7 @@ define(['marionette',
                     }
                     app.alert({ message: json.message })
                     self.ui.submit.prop('disabled', false)
+                    self.$el.removeClass('loading')
                 }
 
 
