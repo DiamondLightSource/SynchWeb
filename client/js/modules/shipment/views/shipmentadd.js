@@ -86,6 +86,7 @@ define(['marionette', 'views/form',
             })
             
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE], input[name=DELIVERYAGENT_DELIVERYDATE]')
+            this.time('input[name=READYBYTIME], input[name=CLOSETIME]')
 
             this.fcodes = new Backbone.Collection()
             this.$el.find('li.d .floated').append(new FCodes({ collection: this.fcodes }).render().el)
