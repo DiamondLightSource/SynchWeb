@@ -171,6 +171,7 @@
 
 
     # DHL API Details
+    $dhl_enable = true;
     $dhl_user = 'user';
     $dhl_pass = 'password';
     $dhl_acc = '12345678';
