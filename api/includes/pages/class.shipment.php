@@ -639,7 +639,7 @@
         }
 
         function _dewar_tracking($dewar) {
-            if ($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) $status = $dhl->get_tracking_info(array('AWB' => $dewar['TRACKINGNUMBERFROMSYNCHROTRON']));
+            if ($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) $status = $this->dhl->get_tracking_info(array('AWB' => $dewar['TRACKINGNUMBERFROMSYNCHROTRON']));
             else $status = $this->dhl->get_tracking_info(array('AWB' => (string)($dewar['TRACKINGNUMBERTOSYNCHROTRON'])));
 
             if ($status->Response->Status) $this->_error($status->Response->Status);
