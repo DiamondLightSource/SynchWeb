@@ -18,6 +18,9 @@ use DHL\Client\Web as WebserviceClient;
 
 class DHL {
     
+    public $log = false;
+    public $env = 'staging';
+
     public $region = 'EU';
 
     public $_country_codes = array(
@@ -129,8 +132,12 @@ class DHL {
         $request->LevelOfDetails = array_key_exists('LAST_ONLY', $options) ? 'LAST_CHECK_POINT_ONLY' : 'ALL_CHECK_POINTS';
         $request->PiecesEnabled = 'S';
 
-        $client = new WebserviceClient();
+        if ($this->log) file_put_contents('logs/trackingrequest_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['AWB'].'.xml'), $request->toXML());
+
+        $client = new WebserviceClient($this->env);
         $xml = $client->call($request);
+
+        if ($this->log) file_put_contents('logs/trackingresponse_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['AWB'].'.xml'), $xml);
 
         $xml = simplexml_load_string(str_replace('req:', '', $xml));
         return $xml;
@@ -211,12 +218,12 @@ class DHL {
 
         $shipment->LabelImageFormat = 'PDF';
 
-        // echo $shipment->toXML();
+        if ($this->log) file_put_contents('logs/shipmentrequest_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['sender']['name'].'.xml'), $shipment->toXML());
 
-        $client = new WebserviceClient('staging');
+        $client = new WebserviceClient($this->env);
         $xml = $client->call($shipment);
 
-        // echo $xml;
+        if ($this->log) file_put_contents('logs/shipmentresponse_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['sender']['name'].'.xml'), $xml);
 
         $response = new ShipmentResponse();
         $response->initFromXML($xml);
@@ -272,12 +279,12 @@ class DHL {
         $pickup->ShipmentDetails->Weight = $options['weight'];
         $pickup->ShipmentDetails->DoorTo = 'DD';
 
-        // echo $pickup->toXML();
+        if ($this->log) file_put_contents('logs/pickuprequest_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['requestor']['name'].'.xml'), $pickup->toXML());
 
-        $client = new WebserviceClient('staging');
+        $client = new WebserviceClient($this->env);
         $xml = $client->call($pickup);
 
-        // echo $xml;
+        if ($this->log) file_put_contents('logs/pickupresponse_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['requestor']['name'].'.xml'), $xml);
 
         $response = new BookPUResponse();
         $response->initFromXML($xml);
@@ -308,10 +315,12 @@ class DHL {
         $cancelpickup->PickupDate = $options['pickupdate'];
         $cancelpickup->CancelTime = date('H:m');
         
-        // echo $cancelpickup->toXML();
+        if ($this->log) file_put_contents('logs/cancelpickuprequest_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['confirmationnumber'].'.xml'), $cancelpickup->toXML());
 
         $client = new WebserviceClient('staging');
         $xml = $client->call($cancelpickup);
+
+        if ($this->log) file_put_contents('logs/cancelpickupresponse_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['confirmationnumber'].'.xml'), $xml);
 
         $response = new CancelPUResponse();
         $response->initFromXML($xml);
