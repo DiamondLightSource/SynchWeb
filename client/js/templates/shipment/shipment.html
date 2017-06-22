@@ -3,6 +3,14 @@
     <p class="help">This page shows details and contents of the selected shipment. Most parameters can be edited by simply clicking on them.</p>
     <p class="help excl">Shipments need to have an outgoing and return home lab contact before shipment labels can be printed</p>
 
+    <% if (DHL_ENABLE) { %>
+        <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
+            <p class="message notify">You can print your Airway Bill by clicking &quot;Print Airway Bill&quot; below</p>
+        <% } else { %>
+            <p class="message notify">You can now book your shipment with DHL using &quot;Create Airway Bill&quot; below</p>
+        <% } %>
+    <% } %>
+
     <% if (LCOUT && LCRET) { %>
     <div class="ra">
         <% if (SHIPPINGSTATUS == 'opened') { %>
