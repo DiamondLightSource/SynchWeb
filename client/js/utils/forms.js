@@ -7,7 +7,11 @@ define(['jquery', 'jquery-ui','jquery-ui.combobox'], function($) {
         
         
         date: function(selector) {
-            this.$el.find(selector).datepicker({ dateFormat: "dd-mm-yy" });
+            this.$el.find(selector).datepicker({ dateFormat: "dd-mm-yy" })
+        },
+
+        time: function(selector) {
+            this.$el.find(selector).timepicker()
         },
         
         combobox: function(options) {
