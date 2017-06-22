@@ -1729,9 +1729,11 @@
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
 
+            $ids = range(2,sizeof($this->arg('DEWARS'))+1);
+            $args = array_merge(array($ship['SHIPPINGID']), $this->arg('DEWARS'));
             $dewars = $this->db->pq("SELECT d.dewarid, d.weight
                 FROM dewar d
-                WHERE d.shippingid=:1 AND d.dewarid IN (:2)", array($ship['SHIPPINGID'], implode(',', $this->arg('DEWARS'))));
+                WHERE d.shippingid=:1 AND d.dewarid IN (:".implode(',:', $ids).")", $args);
 
             $terms = $this->db->pq("SELECT cta.couriertermsacceptedid
                 FROM couriertermsaccepted cta
