@@ -41,6 +41,7 @@ define(['marionette',
         templateHelpers: {
             APIURL: app.apiurl,
             PROP: app.prop,
+            DHL_ENABLE: app.options.get('dhl_enable'),
         },
 
         events: {
