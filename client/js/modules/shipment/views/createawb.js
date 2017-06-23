@@ -388,7 +388,7 @@ define(['marionette',
             }
 
             var prod = null
-            if (app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1) {
+            if (app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1 || !this.terms.get('ACCEPTED')) {
                 var prod = this.$el.find('input[type=radio]:checked').val()
                 if (!prod) {
                     app.alert({ message: 'You must select a quote' })
