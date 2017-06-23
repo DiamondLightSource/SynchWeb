@@ -395,6 +395,7 @@ class DHL {
                 'cutofftime' => str_replace('PT', '', $q->PickupCutoffTime),
                 'bookingtime' => str_replace('PT', '', $q->BookingTime),
                 'deliverydate' => $del[2].'-'.$del[1].'-'.$del[0],
+                'deliverytime' => str_replace('PT', '', $q->DeliveryTime),
                 'totalprice' => (float)$q->ShippingCharge,
                 'totaltax' => (float)$q->TotalTaxAmount,
                 'currencycode' => (string)$q->CurrencyCode,
