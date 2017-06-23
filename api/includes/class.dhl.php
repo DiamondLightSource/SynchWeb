@@ -370,12 +370,12 @@ class DHL {
         $quote->Dutiable->DeclaredValue = $options['declaredvalue'];
         $quote->Dutiable->DeclaredCurrency = 'GBP';
 
-        if ($this->log) file_put_contents('logs/quoterequest_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['requestor']['city'].'.xml'), $quote->toXML());
+        if ($this->log) file_put_contents('logs/quoterequest_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['sender']['city'].'.xml'), $quote->toXML());
 
         $client = new WebserviceClient($this->env);
         $xml = $client->call($quote);
 
-        if ($this->log) file_put_contents('logs/quoteresponse_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['requestor']['city'].'.xml'), $xml);
+        if ($this->log) file_put_contents('logs/quoteresponse_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['sender']['city'].'.xml'), $xml);
 
         $xml = simplexml_load_string(str_replace('req:', '', $xml));
         if (isset($xml->Response->Status->Condition->ConditionCode) && (string) $xml->Response->Status->Condition->ConditionCode != '') {
