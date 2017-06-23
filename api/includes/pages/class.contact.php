@@ -8,7 +8,7 @@
                               'PHONENUMBER' => '.*',
                               'EMAILADDRESS' => '.*',
                               'LABNAME' => '([\w\s-])+',
-                              'ADDRESS' => '([\w\s-\n])+',
+                              'ADDRESS' => '([\w\s-\n,])+',
                               'COUNTRY' => '([\w\s-])+',
                               'CITY' => '([\w\s-])+',
                               'POSTCODE' => '([\w\s-])+',
