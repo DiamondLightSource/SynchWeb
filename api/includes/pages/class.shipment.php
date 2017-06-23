@@ -101,6 +101,7 @@
                               'PHYSICALLOCATION' => '[\s|\w|-]+',
                               'READYBYTIME' => '\d\d:\d\d',
                               'CLOSETIME' => '\d\d:\d\d',
+                              'PRODUCTCODE' => '\w',
 
                               );
         
@@ -164,6 +165,7 @@
                               array('/terms/:sid', 'patch', '_accept_terms'),
 
                               array('/awb/:sid', 'post', '_create_awb'),
+                              array('/awb/quote', 'get', '_quote_awb'),
         );
 
         // Keep session open so we can cache data
@@ -1713,7 +1715,7 @@
 
 
         function _create_awb() {
-            global $dhl_service, $dhl_int_service, $dhl_acc, $facility_courier_countries;
+            global $dhl_service, $dhl_acc, $facility_courier_countries;
 
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
@@ -1753,9 +1755,13 @@
             if (in_array($cont['COUNTRY'], $facility_courier_countries) && $terms) {
                 $accno = $dhl_acc;
                 $payee = 'R';
+                $product =  $dhl_service;
             } else {
                 $accno = $ship['DELIVERYAGENT_AGENTCODE'];
                 $payee = 'S';
+
+                if (!$this->has_arg('PRODUCTCODE')) $this->_error('No product code specified');
+                $product = $this->arg('PRODUCTCODE');
             }
 
             if ($this->has_arg('RETURN')) {
@@ -1798,13 +1804,14 @@
                 $totalweight += $d['WEIGHT'];
             }
 
+
             $awb = null;
             if (!$ship['DELIVERYAGENT_FLIGHTCODE']) {
                 try {
                     $awb = $this->dhl->create_awb(array(
                         'payee' => $payee,
                         'accountnumber' => $accno,
-                        'service' => $user['country'] == $facility_country ? $dhl_service : $dhl_int_service,
+                        'service' => $product,
                         'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
                         'declaredvalue' => $this->arg('DECLAREDVALUE'),
                         'description' => $this->arg('DESCRIPTION'),
@@ -1858,6 +1865,79 @@
             }
 
             $this->_output(array('AWB' => $awb ? 1 : 0, 'PICKUP' => $pickup ? 1 : 0));
+        }
+
+
+        function _quote_awb() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
+
+            if (!$this->has_arg('DECLAREDVALUE')) $this->_error('No delcared value specified');
+            if (!$this->has_arg('DEWARS')) $this->_error('No dewars specified');
+            if (!is_array($this->arg('DEWARS'))) $this->_error('No dewars specified');
+            
+            $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime
+                FROM shipping s 
+                WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
+            if (!sizeof($ship)) $this->_error('No such shipment');
+            $ship = $ship[0];
+
+            $ids = range(2,sizeof($this->arg('DEWARS'))+1);
+            $args = array_merge(array($ship['SHIPPINGID']), $this->arg('DEWARS'));
+            $dewars = $this->db->pq("SELECT d.dewarid, d.weight
+                FROM dewar d
+                WHERE d.shippingid=:1 AND d.dewarid IN (:".implode(',:', $ids).")", $args);
+
+            $cont = $this->db->pq("SELECT l.city, l.country, l.postcode
+                FROM labcontact c 
+                INNER JOIN person p ON p.personid = c.personid 
+                INNER JOIN laboratory l ON l.laboratoryid = p.laboratoryid 
+                WHERE c.labcontactid=:1 and c.proposalid=:2", array($this->has_arg('RETURN') ? $ship['RETURNLABCONTACTID'] : $ship['SENDINGLABCONTACTID'], $this->proposalid));
+
+            if (!sizeof($cont)) $this->_error('No such lab contact');
+            $cont = $cont[0];
+
+            $user = array(
+                'city' => $cont['CITY'],
+                'postcode' => $cont['POSTCODE'],
+                'country' => $cont['COUNTRY'],
+            );
+
+            global $facility_city, $facility_postcode, $facility_country;
+            $facility = array(
+                'city' => $facility_city,
+                'postcode' => $facility_postcode,
+                'country' => $facility_country,
+            );
+
+            $pieces = array();
+            foreach ($dewars as $d) {
+                array_push($pieces, array(
+                    'weight' => $d['WEIGHT'],
+                    'width' => 40,
+                    'height' => 60,
+                    'depth' => 40,
+                ));
+            }
+
+
+            try {
+                $products = $this->dhl->get_quote(array(
+                    'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
+                    'declaredvalue' => $this->arg('DECLAREDVALUE'),
+                    'readyby' => $ship['READYBYTIME'],
+
+                    'sender' => $this->has_arg('RETURN') ? $facility : $user,
+                    'receiver' => $this->has_arg('RETURN') ? $user : $facility,
+
+                    'pieces' => $pieces,
+                ));
+
+                $this->_output($products);
+
+            } catch (Exception $e) {
+                $this->_error($e->getMessage());
+            }
         }
 
 
