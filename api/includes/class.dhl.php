@@ -10,6 +10,9 @@ use DHL\Entity\GB\BookPUResponse;
 use DHL\Entity\GB\CancelPURequest;
 use DHL\Entity\GB\CancelPUResponse;
 
+use DHL\Entity\AM\GetQuote;
+use DHL\Datatype\AM\PieceType;
+
 use DHL\Entity\GB\KnownTrackingRequest as Tracking;
 use DHL\Entity\GB\TrackingResponse as TrackingResponse;
 
@@ -327,6 +330,78 @@ class DHL {
         // echo $response->toXML();
 
         return array();
+    }
+
+
+    function get_quote($options) {
+        $quote = new GetQuote();
+        $quote->SiteID = $this->_user;
+        $quote->Password = $this->_password;
+
+        $quote->MessageTime = date('c');
+        $quote->MessageReference = (string)rand(100000000000000000,999999999999999999).'0000000000';
+
+        $quote->BkgDetails->Date = array_key_exists('date', $options) ? $options['date'] : date('Y-m-d');
+
+        foreach ($options['pieces'] as $i => $d) {
+            $piece = new PieceType();
+            $piece->PieceID = ($i + 1);
+            $piece->Weight = $d['weight'];
+            $piece->Width = $d['width'];
+            $piece->Height = $d['height'];
+            $piece->Depth = $d['depth'];
+            $quote->BkgDetails->addPiece($piece);
+        }
+
+        $hm = explode(':', $options['readyby']);
+        $quote->BkgDetails->ReadyTime = 'PT'.$hm[0].'H'.$hm[1].'M';
+        $quote->BkgDetails->DimensionUnit = 'CM';
+        $quote->BkgDetails->WeightUnit = 'KG';
+        $quote->BkgDetails->PaymentCountryCode = $this->_country_codes[$options['receiver']['country']];
+        
+        $quote->From->CountryCode = $this->_country_codes[$options['sender']['country']];
+        $quote->From->Postalcode = $options['sender']['postcode'];
+        $quote->From->City = $options['sender']['city'];
+
+        $quote->To->CountryCode = $this->_country_codes[$options['receiver']['country']];
+        $quote->To->Postalcode = $options['receiver']['postcode'];
+        $quote->To->City = $options['receiver']['city'];
+
+        $quote->Dutiable->DeclaredValue = $options['declaredvalue'];
+        $quote->Dutiable->DeclaredCurrency = 'GBP';
+
+        if ($this->log) file_put_contents('logs/quoterequest_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['requestor']['city'].'.xml'), $quote->toXML());
+
+        $client = new WebserviceClient($this->env);
+        $xml = $client->call($quote);
+
+        if ($this->log) file_put_contents('logs/quoteresponse_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['requestor']['city'].'.xml'), $xml);
+
+        $xml = simplexml_load_string(str_replace('req:', '', $xml));
+        if (isset($xml->Response->Status->Condition->ConditionCode) && (string) $xml->Response->Status->Condition->ConditionCode != '') {
+            $errorMsg = ((string) $xml->Response->Status->Condition->ConditionCode) . ' : ' . ((string) $xml->Response->Status->Condition->ConditionData);
+            throw new \Exception('Error returned from DHL webservice : ' . $errorMsg);
+        }
+
+        $products = array();
+        foreach ($xml->GetQuoteResponse->BkgDetails->QtdShp as $q) {
+            $pkup = explode('-', (string)$q->PickupDate);
+            $del = explode('-', (string)$q->DeliveryDate);
+
+            array_push($products, array(
+                'productcode' => (string)$q->GlobalProductCode,
+                'productname' => (string)$q->ProductShortName,
+                'shippingdate' => $pkup[2].'-'.$pkup[1].'-'.$pkup[0],
+                'cutofftime' => str_replace('PT', '', $q->PickupCutoffTime),
+                'bookingtime' => str_replace('PT', '', $q->BookingTime),
+                'deliverydate' => $del[2].'-'.$del[1].'-'.$del[0],
+                'totalprice' => (float)$q->ShippingCharge,
+                'totaltax' => (float)$q->TotalTaxAmount,
+                'currencycode' => (string)$q->CurrencyCode,
+            ));
+        }
+
+        return $products;
     }
 
 
