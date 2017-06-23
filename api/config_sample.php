@@ -178,7 +178,6 @@
     $dhl_terms = '/path/to/terms.html';
     // N = Domestic Express, P = Worldwide Express
     $dhl_service = 'N';
-    $dhl_int_service = 'P';
 
   
     # VMXi 
