@@ -3,13 +3,15 @@ define(['marionette',
     'models/labcontact',
     'collections/dewars',
     'collections/countries',
+    'modules/shipment/collections/quotes',
+    'views/table',
     'utils/editable',
 
     'tpl!templates/shipment/createawb.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, 
-        Shipment, LabContact, Dewars, Countries,
-        Editable, template, Backbone) {
+        Shipment, LabContact, Dewars, Countries, Quotes,
+        TableView, Editable, template, Backbone) {
     
     
     /*
@@ -78,12 +80,22 @@ define(['marionette',
     })
 
 
+
+    var RadioCell = Backgrid.Cell.extend({
+        render: function() {
+            this.$el.html('<input type="radio" name="value" value="'+this.model.get('productcode')+'" />')
+            return this
+        }
+    })
+
+
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
 
         regions: {
             rdew: '.DEWARS',
+            qt: '.quotes'
         },
 
         ui: {
@@ -95,12 +107,15 @@ define(['marionette',
             free: '.free',
             weight: '.WEIGHT',
             acc_msg: '.acc_msg',
-            submit: '.submit',
+            submit: 'button[name=submit]',
+            quote: 'button[name=quote]',
+            qwrap: '.qwrap',
         },
 
         events: {
             'click @ui.facc': 'showTerms',
-            'click button.submit': 'createAWB',
+            'click @ui.submit': 'createAWB',
+            'click @ui.quote': 'quoteAWB',
             'change input':  'validateField',
             'blur input':  'validateField',
             'keyup input':  'validateField',
@@ -123,10 +138,14 @@ define(['marionette',
                     this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
                     this.ui.acc_msg.text('Paid for by Facility')
                     this.ui.facc.hide()
+                    this.ui.quote.hide()
+                    this.ui.submit.show()
                 } else {
                     this.ui.facc.show()
                 }
-            } else this.ui.facc.hide()
+            } else {
+                this.ui.facc.hide()                
+            } 
         },
 
         updateWeight: function() {
@@ -156,6 +175,9 @@ define(['marionette',
             this.countries.state.pageSize = 9999
             this.ready.push(this.countries.fetch())
 
+            this.quotes = new Quotes()
+            this.quotes.queryParams.sid = this.shipment.get('SHIPPINGID')
+
             this.shipment.__proto__.validation.DELIVERYAGENT_SHIPPINGDATE.required = true
             this.shipment.__proto__.validation.PHYSICALLOCATION.required = true
             this.shipment.__proto__.validation.READYBYTIME.required = true
@@ -166,9 +188,7 @@ define(['marionette',
             this.awb = new AWBModel()
 
             this.setupValidation(this.shipment)
-            console.log(this.shipment)
             this.setupValidation(this.lc)
-            console.log(this.lc)
 
             Backbone.Validation.unbind(this)
             Backbone.Validation.bind(this, {
@@ -225,6 +245,8 @@ define(['marionette',
         
         onRender: function() {
             this.ui.facc.hide()
+            this.ui.submit.hide()
+            this.ui.qwrap.hide()
 
             if (app.options.get('facility_courier_countries').length) this.ui.free.text('[Free For: '+app.options.get('facility_courier_countries').join(', ')+']')
             this.ui.DESCRIPTION.val(app.options.get('package_description'))
@@ -245,6 +267,25 @@ define(['marionette',
 
             this.rdew.show(new DewarsView({ collection: this.dewars }))
             this.updateWeight()
+
+                
+            var columns = [
+                    { label: '', cell: RadioCell, editable: false },
+                    { name: 'productname', label: 'Product', cell: 'string', editable: false },
+                    { name: 'deliverydate', label: 'Delivery', cell: 'string', editable: false },
+                    { name: 'cutofftime', label: 'Cut Off Time', cell: 'string', editable: false },
+                    { name: 'bookingtime', label: 'Booking Time', cell: 'string', editable: false },
+                    { name: 'totalprice', label: 'Price', cell: 'string', editable: false },
+                    { name: 'currencycode', label: '', cell: 'string', editable: false },
+                ]
+
+
+            this.qtable = new TableView({
+                collection: this.quotes,
+                columns: columns, tableClass: 'quote', loading: true, noPageUrl: true, noSearchUrl: true, pages: false,
+                backgrid: { emptyText: 'No quotes found' } 
+            })
+            this.qt.show(this.qtable)
 
             $.when.apply($, this.ready).done(this.doOnRender.bind(this))
         },
@@ -281,8 +322,45 @@ define(['marionette',
         },   
 
 
-        createAWB: function() {
-            this.ui.submit.prop('disabled', true)
+        quoteAWB: function() {
+            var ids = this.checkValid()
+            if (!ids) {
+                return
+            }
+
+            var self = this
+
+            this.ui.quote.prop('disabled', true)
+            this.quotes.queryParams.DEWARS = ids
+            this.quotes.queryParams.DECLAREDVALUE = this.ui.DECLAREDVALUE.val(),
+            this.quotes.fetch({
+                success: function() {
+                    self.ui.submit.show()
+                    self.selectQuote()
+                    self.ui.quote.prop('disabled', false)
+                },
+                error: function(model, xhr, status) {
+                    self.ui.quote.prop('disabled', false)
+                    var json;
+                    if (xhr.responseText) {
+                        try {
+                            json = $.parseJSON(xhr.responseText)
+                        } catch(err) {
+
+                        }
+                    }
+                    app.alert({ message: json.message })
+                }
+            })
+            self.ui.qwrap.slideDown()
+        },
+
+        selectQuote: function() {
+            this.$el.find('input[type=radio]').eq(0).prop('checked', true)
+        },
+
+
+        checkValid: function() {
             var sel = this.dewars.where({ isSelected: true })
             var ids = (new Backbone.Collection(sel)).pluck('DEWARID')
             
@@ -297,9 +375,35 @@ define(['marionette',
             if (!this.shipment.isValid(true)) valid = false
             if (!this.awb.isValid(true)) valid = false
 
-            if (!valid) {
+            return valid ? ids : false
+        },
+
+        createAWB: function() {
+            this.ui.submit.prop('disabled', true)
+            
+            var ids = this.checkValid()
+            if (!ids) {
                 this.ui.submit.prop('disabled', false)
                 return
+            }
+
+            var prod = null
+            if (app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1) {
+                var prod = this.$el.find('input[type=radio]:checked').val()
+                if (!prod) {
+                    app.alert({ message: 'You must select a quote' })
+                    this.ui.submit.prop('disabled', false)
+                    return
+
+                } else {
+                    var q = this.quotes.findWhere({ productcode: prod})
+                    if (q) {
+                        this.shipment.set({ DELIVERYAGENT_DELIVERYDATE: q.get('deliverydate')})
+                        this.shipment.save(this.shipment.changedAttributes(), {
+                            patch: true
+                        })
+                    }
+                }
             }
 
             this.$el.addClass('loading')
@@ -312,7 +416,8 @@ define(['marionette',
                 data: {
                     DEWARS: ids,
                     DECLAREDVALUE: this.ui.DECLAREDVALUE.val(),
-                    DESCRIPTION: this.ui.DESCRIPTION.val()
+                    DESCRIPTION: this.ui.DESCRIPTION.val(),
+                    PRODUCTCODE: prod,
                 },
                 success: function(resp) {
                     app.alert({ message: 'Airway Bill Successfully Created'})
