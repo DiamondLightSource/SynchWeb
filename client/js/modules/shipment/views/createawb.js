@@ -60,7 +60,7 @@ define(['marionette',
 
     var DewarView = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<label><input type="checkbox" /> <% if (FACILITYCODE) { %><%=FACILITYCODE%><% } else { %><%=CODE%>%><% } %></label>'),
+        template: _.template('<label><input type="checkbox" /> <% if (FACILITYCODE) { %><%=FACILITYCODE%><% } else { %><%=CODE%><% } %></label>'),
         events: {
             'click @ui.sel': 'select',
         },
