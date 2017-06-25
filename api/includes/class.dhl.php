@@ -388,8 +388,11 @@ class DHL {
             $pkup = explode('-', (string)$q->PickupDate);
             $del = explode('-', (string)$q->DeliveryDate);
 
+            $code = (string)$q->GlobalProductCode;
+            if ($code == 'C') continue;
+
             array_push($products, array(
-                'productcode' => (string)$q->GlobalProductCode,
+                'productcode' => $code,
                 'productname' => (string)$q->ProductShortName,
                 'shippingdate' => $pkup[2].'-'.$pkup[1].'-'.$pkup[0],
                 'cutofftime' => str_replace('PT', '', $q->PickupCutoffTime),
