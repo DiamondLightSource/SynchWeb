@@ -75,13 +75,26 @@ define(['marionette',
         popuateRuns: function() {
             this.ui.run.html(this.runs.opts())
 
-            var last = this.runs.first()
-            this.ui.run.val(last.get('RUNID'))
+            var last
+            if (this.getOption('params')) {
+                var p = this.getOption('params')
+                if (p.run) last = p.run
+            } else last = this.runs.first().get('RUNID')
+
+            this.ui.run.val(last)
             this.changeRun()
         },
 
 
         changeRun: function() {
+            if (!this.first) {
+                var url = window.location.pathname.replace(new RegExp('\\/run\\/(\\d)+'), '')+'/run/'+this.ui.run.val()
+                window.history.pushState({}, '', url)
+            }
+            
+            this.first = false
+
+            this.ui.run.val()
             this.breakdown.fetch({
                 data: {
                     bl: this.getOption('bl'),
@@ -136,6 +149,7 @@ define(['marionette',
 
 
         onRender: function() {
+            this.first = true
             $.when(this.ready).done(this.popuateRuns.bind(this))
         },
 
