@@ -47,7 +47,8 @@ require.config({
 
     three: 'vendor/three.min',
     uglymol: 'vendor/uglymol',
-    
+
+    moment: 'vendor/moment',
   },
     
   shim: {
