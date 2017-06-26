@@ -121,7 +121,8 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
             }
         },
         
-        onDomRefresh: function() {
+        onDomRefresh: function(e) {
+            if (!e) return
             if (this.model.get('data')) {
                 this.options = {
                   grid: {
@@ -209,6 +210,7 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                 this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3)
                 this.showSpan()
 
+                console.log('rend bd', this.params, this.first)
                 if (this.params && this.first) {
                     this.first = false
                     if (this.params.from && this.params.to) this.zoomTime(null, {
