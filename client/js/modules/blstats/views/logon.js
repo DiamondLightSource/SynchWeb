@@ -37,7 +37,7 @@ define(['marionette', 'views/filter', 'modules/blstats/models/logons'], function
         },
         
         switchType: function(type, name) {
-            this.ui.plot.addClass('loading')
+            this.ui.plot.parent().addClass('loading')
             this.logons.set({ type: type }).fetch()
             this.ui.type.text(name)
         },
@@ -68,7 +68,7 @@ define(['marionette', 'views/filter', 'modules/blstats/models/logons'], function
             if (this.logons.get('type') == 'wd') ops.xaxis.ticks = [[0,'Mon'], [1,'Tue'], [2,'Wed'], [3,'Thu'], [4,'Fri'], [5,'Sat'], [6,'Sun']]
            
             this.plot = $.plot(this.ui.plot, this.logons.get('data'), ops)
-            this.ui.plot.removeClass('loading')
+            this.ui.plot.parent().removeClass('loading')
         },
         
     onDestroy: function () {

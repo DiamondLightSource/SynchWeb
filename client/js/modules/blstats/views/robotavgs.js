@@ -9,7 +9,7 @@ define(['marionette', 'modules/blstats/models/robotavgs', 'jquery', 'jquery.flot
         
         initialize: function(options) {
             this.plot = null
-            this.$el.addClass('loading')
+            this.$el.parent().addClass('loading')
             this.model = new RobotAverages()
             this.model.fetch()
         },
@@ -46,7 +46,7 @@ define(['marionette', 'modules/blstats/models/robotavgs', 'jquery', 'jquery.flot
             })
 
             this.plot = $.plot(this.$el, data, ops)
-            this.$el.removeClass('loading')
+            this.$el.parent().removeClass('loading')
         },
         
         getToolTip: function(label, x, y, item) {

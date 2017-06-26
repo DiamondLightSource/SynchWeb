@@ -9,7 +9,7 @@ define(['marionette', 'jquery', 'jquery.flot'], function(Marionette, $) {
         
         initialize: function(options) {
             this.plot = null
-            this.$el.addClass('loading')
+            this.$el.parent().addClass('loading')
         },
         
         onRender: function() {
@@ -48,7 +48,7 @@ define(['marionette', 'jquery', 'jquery.flot'], function(Marionette, $) {
             }
 
             this.plot = $.plot(this.$el, [data], ops)
-            this.$el.removeClass('loading')
+            this.$el.parent().removeClass('loading')
         },
         
         getToolTip: function(label, x, y, item) {
