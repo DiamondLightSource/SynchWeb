@@ -36,7 +36,7 @@ define(['marionette',
         },
         
         onShow: function() {
-            this.bd.show(new BreakdownView({ model: this.getOption('breakdown') }))
+            this.bd.show(new BreakdownView({ model: this.getOption('breakdown'), params: this.getOption('params') }))
             this.det.show(new DetailsView({ model: this.getOption('breakdown') }))
             this.hrs.show(new HourliesView({ visit: this.model.get('VISIT') }))
             if (app.staff) this.call.show(new EHCLogView({ visit: this.model.get('VISIT') }))

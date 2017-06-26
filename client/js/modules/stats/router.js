@@ -4,7 +4,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
     var Router = LazyRouter.extend({
         appRoutes: {
             'stats(/page/:page)': 'proposal',
-            'stats/visit/:visit': 'visit',
+            'stats/visit/:visit(/from/:from)(/to/:to)': 'visit',
             'stats/overview(/s/:s)(/page/:page)': 'overview',
             'stats/overview/beamlines(/s/:s)(/page/:page)': 'bls_overview',
             'stats/overview/bl/:bl': 'bl_overview',

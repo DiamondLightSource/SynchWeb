@@ -20,7 +20,7 @@ define(['marionette',
     var controller = {
         
         // Visit Stats
-        visit:  function(visit) {
+        visit:  function(visit, from, to) {
             var prop = visit.replace(/-\d+/,'')
             app.cookie(prop)
             
@@ -39,7 +39,7 @@ define(['marionette',
                             else view = GenericVisitView
                             
                             app.bc.reset([bc, { title: app.prop, url: '/stats' }, { title: visit, url : '/dc/visit/'+visit }]),
-                            app.content.show(new view({ model: vis, breakdown: breakdown }))
+                            app.content.show(new view({ model: vis, breakdown: breakdown, params: { from: parseInt(from), to: parseInt(to) } }))
                         },
                         error: function() {
                             app.bc.reset([bc, { title: 'No Data' }])
