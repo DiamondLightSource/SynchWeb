@@ -21,10 +21,36 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
             'plotclick #avg_time': 'showDC',
             'plotselected #overview': 'zoomOverview',
             'click a[name=reset]': 'resetPlots',
+            'click a.next': 'nextTimeSpan',
+            'click a.prev': 'prevTimeSpan',
         },
         
         ui: {
             span: '.span',
+        },
+
+        nextTimeSpan: function(e) {
+            e.preventDefault()
+            this.gotoTimeSpan()
+        },
+
+        prevTimeSpan: function(e) {
+            e.preventDefault()
+            this.gotoTimeSpan(true)
+        },
+
+        gotoTimeSpan: function(prev) {
+            var opts = this.main.getOptions()
+            var range = opts.xaxes[0].max - opts.xaxes[0].min
+            if (prev) range = -range
+
+            this.zoomTime(null, {
+                xaxis: { 
+                    from: opts.xaxes[0].min + range,
+                    to: opts.xaxes[0].max + range
+                }
+            })
+
         },
 
         onRender: function() {
