@@ -1,11 +1,12 @@
 define(['marionette', 'tpl!templates/stats/breakdown.html',
     'utils',
+    'moment',
     'jquery',
     'jquery.flot',
     'jquery.flot.time',
     'jquery.flot.selection',
     'jquery.flot.tooltip',
-    ], function(Marionette, template, utils, $) {
+    ], function(Marionette, template, utils, moment, $) {
 
     return Marionette.ItemView.extend({
         template: template,
@@ -22,6 +23,10 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
             'click a[name=reset]': 'resetPlots',
         },
         
+        ui: {
+            span: '.span',
+        },
+
         onRender: function() {
             if (this.getOption('large')) this.$el.find('#avg_time').addClass('large')
         },
@@ -43,7 +48,19 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                 p.clearSelection()
             })
 
+            this.showSpan()
             this.overview.setSelection(ranges, true);
+        },
+
+
+        showSpan: function() {
+            var opts = this.main.getOptions()
+
+            var from = moment(opts.xaxes[0].min).format('MMMM Do YYYY')
+            var to = moment(opts.xaxes[0].max).format('MMMM Do YYYY')
+
+            if (from != to) this.ui.span.html(from+' - '+to)
+            else this.ui.span.html(from)
         },
         
         zoomOverview: function(e, ranges) {
@@ -82,6 +99,7 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
               
                   xaxis: {
                         mode: 'time',
+                        // timeformat: '%m %b %H:%M',
                         timezone: 'Europe/London',
                         min: this.model.get('info').start,
                         max: this.model.get('info').end,
@@ -147,8 +165,8 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
 
                     yaxes: [{ position: 'right' }, { position: 'right' }, { position: 'right' }],
                 }
-                this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3);
-
+                this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3)
+                this.showSpan()
             }
             
         },
