@@ -53,6 +53,11 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
 
         },
 
+        initialize: function(options) {
+            this.first = true
+            this.params = options.params
+        },
+
         onRender: function() {
             if (this.getOption('large')) this.$el.find('#avg_time').addClass('large')
         },
@@ -75,7 +80,17 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
             })
 
             this.showSpan()
-            this.overview.setSelection(ranges, true);
+            this.overview.setSelection(ranges, true)
+
+            if (ranges.xaxis.from && ranges.xaxis.to) {
+                var url = window.location.pathname.replace(new RegExp('\\/from\\/(\\w|-)+\\/to\\/(\\w|-)+'), '')
+                if (ranges.xaxis.from != this.model.get('info').start)
+                    url += '/from/'+parseInt(ranges.xaxis.from)
+                if (ranges.xaxis.to != this.model.get('info').end)
+                    url += '/to/'+parseInt(ranges.xaxis.to)
+                    
+                window.history.pushState({}, '', url)
+            }
         },
 
 
@@ -193,6 +208,16 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
                 }
                 this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3)
                 this.showSpan()
+
+                if (this.params && this.first) {
+                    this.first = false
+                    if (this.params.from && this.params.to) this.zoomTime(null, {
+                        xaxis: {
+                            from: this.params.from, 
+                            to: this.params.to
+                        }
+                    })
+                }
             }
             
         },

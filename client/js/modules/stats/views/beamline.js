@@ -141,7 +141,7 @@ define(['marionette',
 
         
         onShow: function() {
-            this.bd.show(new BreakdownView({ large: true, model: this.breakdown }))
+            this.bd.show(new BreakdownView({ large: true, model: this.breakdown, params: this.getOption('params') }))
             this.en.show(new HistgramPlot({ collection: new Backbone.Collection([this.henergy]) }))
             this.ex.show(new HistgramPlot({ collection: new Backbone.Collection([this.exp]) }))
             this.rbsx.show(new HistgramPlot({ collection: new Backbone.Collection([this.bsx]) }))

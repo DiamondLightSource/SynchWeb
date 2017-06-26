@@ -8,7 +8,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
             'stats/overview(/s/:s)(/page/:page)': 'overview',
             'stats/overview/beamlines(/s/:s)(/page/:page)': 'bls_overview',
             'stats/overview/bl/:bl': 'bl_overview',
-            'stats/bl/:bl': 'beamline',
+            'stats/bl/:bl(/from/:from)(/to/:to)': 'beamline',
         },
         
         loadEvents: ['stats:show'],
