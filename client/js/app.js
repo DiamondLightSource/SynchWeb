@@ -397,7 +397,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
               
               var is_routable = function(href) {
                   console.log('routable', href.indexOf('/'))
-                  return href.indexOf("#") === -1 && (is_relative_to_page(href) || href.indexOf(Backbone.history.root) > -1 || href.indexOf('/') == 0) && (href.indexOf(app.apiurl) != 0);
+                  return href.indexOf("#") === -1 && (is_relative_to_page(href) || href.indexOf(Backbone.history.root) == 0 || href.indexOf('/') == 0) && (href.indexOf(app.apiurl) != 0);
               };
               
               $document.keydown(function(e) {
