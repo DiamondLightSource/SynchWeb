@@ -119,6 +119,10 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
             if (item.series.id) {
                 app.trigger('dc:show', types[item.series.type], item.series.id, item.series.visit)
             }
+
+            if (item.series.type == 'visit' || item.series.type == 'visit_ns') {
+                app.trigger('dclist:show', item.series.visit)
+            }
         },
         
         onDomRefresh: function(e) {
