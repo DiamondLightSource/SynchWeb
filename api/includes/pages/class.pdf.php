@@ -17,6 +17,7 @@
                               'did' => '\d+',
                               'sid' => '\d+',
                               'labels' => '[\w-]+',
+                              'month' => '\d\d-\d\d\d\d',
                               );
 
         public static $dispatch = array(array('/sid/:sid/prop/:prop', 'get', '_shipment_label'),
@@ -24,8 +25,56 @@
                               array('/report/visit/:visit', 'get', '_visit_report'),
                               array('/sheets', 'get', '_generate_sheets'),
                               array('/awb/sid/:sid', 'get', '_get_awb'),
+                              array('/manifest', 'get', '_get_manifest'),
         );
         
+        # ------------------------------------------------------------------------
+        # Shipment Labels
+        function _get_manifest() {
+            if (!$this->user->has('view_manifest')) $this->_error('Access denied');
+
+            $month = $this->has_arg('month') ? $this->arg('month') : date('m-Y');
+
+            $d = new DateTime('01-'.$month);
+            $d->modify('first day of this month');
+            $start = $d->format('d-m-Y');
+            $d->modify('last day of this month');
+            $end = $d->format('d-m-Y');
+
+            $this->period = $start.' to '.$end;
+
+            $this->shipments = $this->db->pq("SELECT s.shippingid, s.deliveryagent_agentcode, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, count(distinct d.dewarid) as dewars, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop
+                FROM shipping s 
+                INNER JOIN dewar d ON s.shippingid = d.shippingid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
+                INNER JOIN labcontact c ON c.labcontactid = s.sendinglabcontactid
+                INNER JOIN person pe ON c.personid = pe.personid 
+                INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
+                WHERE s.deliveryagent_flightcodetimestamp is NOT NULL
+                    AND d.deliveryagent_barcode IS NOT NULL
+                    AND s.deliveryagent_shippingdate >= TO_DATE(:1, 'DD-MM-YYYY')
+                    AND s.deliveryagent_shippingdate <= TO_DATE(:2, 'DD-MM-YYYY')
+                GROUP BY s.shippingid", array($start, $end));
+
+            $totals = array('WEIGHT' => 0, 'PIECES' => 0, 'SHIPMENTS' => 0);
+            foreach ($this->shipments as $s) {
+                $totals['WEIGHT'] += $s['WEIGHT'];
+                $totals['PIECES'] += $s['DEWARS'];
+                $totals['SHIPMENTS']++;
+            }
+
+            $this->totals = $totals;
+
+            global $facility_company, $facility_address, $facility_city, $facility_postcode, $facility_country, $facility_phone, $dhl_acc;
+            $addr = array(str_replace("\n", '<br />', $facility_address), $facility_city, $facility_postcode, $facility_country, $facility_phone);
+            $this->facility = $facility_company;
+            $this->facility_address = implode("<br />", $addr);
+            $this->facility_account = $dhl_acc;
+
+            $this->_render('shipping_manifest', 'L');
+        }
+
         
         # ------------------------------------------------------------------------
         # Shipment Labels
@@ -33,7 +82,7 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
             if (!$this->has_arg('sid')) $this->_error('No shipment specified', 'No shipment id was specified');
             
-            $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, '' as postcode, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, '' as postcode2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany 
+            $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, l.postcode, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, '' as postcode2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany 
                 FROM shipping s 
                 INNER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
                 INNER JOIN person pe ON c.personid = pe.personid 
