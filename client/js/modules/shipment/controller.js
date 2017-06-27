@@ -31,6 +31,7 @@ define(['marionette',
 
         'collections/dewars',
         'modules/shipment/views/dewaroverview',
+        'modules/shipment/views/manifest',
 
         'modules/shipment/views/createawb',
     
@@ -40,7 +41,7 @@ define(['marionette',
     Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
-    DispatchView, TransferView, Dewars, DewarOverview, CreateAWBView) {
+    DispatchView, TransferView, Dewars, DewarOverview, ManifestView, CreateAWBView) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
         
@@ -286,6 +287,11 @@ define(['marionette',
                 app.message({ title: 'No dewars', message: 'Couldnt fetch dewar list'})
             },
         })
+    },
+
+
+    manifest: function() {
+        app.content.show(new ManifestView())
     }
 
   }
