@@ -1823,17 +1823,21 @@
                     ));
 
                     $this->db->pq("UPDATE shipping 
-                    SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2 
-                    WHERE shippingid=:3", array($awb['awb'], $awb['label'], $ship['SHIPPINGID']));
+                    SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2, deliveryagent_productcode=:3 
+                    WHERE shippingid=:4", array($awb['awb'], $awb['label'], $product, $ship['SHIPPINGID']));
 
                     $tno = $this->has_arg('RETURN') ? 'trackingnumberfromsynchrotron' : 'trackingnumbertosynchrotron';
-                    $this->db->pq("UPDATE dewar SET $tno=:1 WHERE shippingid=:2", array($awb['awb'], $ship['SHIPPINGID']));
+                    foreach ($dewars as $i => $d) {
+                        if ($i >= sizeof($awb['pieces'])) continue;
+
+                        $p = $awb['pieces'][$i];
+                        $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2 WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
+                    }
 
                     $ship['DELIVERYAGENT_FLIGHTCODE'] = $awb['awb'];
 
                 } catch (Exception $e) {
                     $this->_error($e->getMessage());
-                    // return;
                 }
             }
 
