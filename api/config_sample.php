@@ -176,6 +176,7 @@
     $dhl_pass = 'password';
     $dhl_acc = '12345678';
     $dhl_terms = '/path/to/terms.html';
+    $dhl_link = 'http://link/to/dhl/instructions';
     // N = Domestic Express, P = Worldwide Express
     $dhl_service = 'N';
 
