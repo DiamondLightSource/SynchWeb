@@ -41,7 +41,7 @@ define(['marionette',
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Dewar Overview</h1><p class="help">This page shows all dewars for all current visits</p><div class="filter bl"></div><div class="filter img"></div><div class="wrapper"></div></div>',
+        template: _.template('<h1>Dewar Overview</h1><p class="help">This page shows all dewars for all current visits</p><div class="filter bl"></div><div class="filter img"></div><div class="wrapper"></div>'),
         regions: { wrap: '.wrapper', type: '.bl', img: '.img' },
         
         initialize: function(options) {
