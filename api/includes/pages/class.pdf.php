@@ -82,7 +82,7 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
             if (!$this->has_arg('sid')) $this->_error('No shipment specified', 'No shipment id was specified');
             
-            $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, l.postcode, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, '' as postcode2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany 
+            $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, l.postcode, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, l2.postcode as postcode2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany 
                 FROM shipping s 
                 INNER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
                 INNER JOIN person pe ON c.personid = pe.personid 
