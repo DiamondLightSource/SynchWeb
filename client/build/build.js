@@ -10,7 +10,7 @@
         {
             name: "main",
             include: ['backbone', 'marionette', 'jquery', 'underscore', 'backgrid', 'backbone.paginator', 'backgrid-paginator',
-                
+                'jquery.flot.time',
                 'views/pages', 'views/filter', 'views/table', 'views/form', 'utils/table',
                 
                 'modules/types/mx/menu',
