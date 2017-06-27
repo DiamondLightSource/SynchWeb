@@ -31,7 +31,8 @@ function(Marionette, Pages, DCListView,
     template: template,
     regions: {
         data_collections: '.data_collections',
-        pages: '.page_wrap',
+        pages: '.page_wrap.one',
+        pages2: '.page_wrap.two',
         search: '.srch',
         type: '.type',
         sc: '.sc',
@@ -117,6 +118,7 @@ function(Marionette, Pages, DCListView,
 
         this.dclist = new (this.getOption('dcListView'))({ collection: options.collection, params: options.params, model: this.model })
         this.paginator = new Pages({ collection: options.collection, noUrl: options.noPageUrl })
+        this.paginator2 = new Pages({ collection: options.collection, noUrl: options.noPageUrl })
         this.filter = new Search({ value: options.params.search, collection: options.collection, url: !options.noSearchUrl })
         if (this.getOption('filters')) this.ty = new Filter({ value: options.params.type, collection: options.collection, mobile: true, url: !options.noFilterUrl })
     },
@@ -124,6 +126,7 @@ function(Marionette, Pages, DCListView,
     onRender: function() {    
         this.data_collections.show(this.dclist)
         this.pages.show(this.paginator)
+        this.pages2.show(this.paginator2)
         this.search.show(this.filter)
         if (this.getOption('filters')) this.type.show(this.ty)
         
