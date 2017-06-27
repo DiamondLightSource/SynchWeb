@@ -22,8 +22,6 @@ use DHL\Client\Web as WebserviceClient;
 class DHL {
     
     public $log = false;
-    public $env = 'staging';
-
     public $region = 'EU';
 
     public $_country_codes = array(
@@ -97,7 +95,7 @@ class DHL {
     );    
 
 
-    function __construct($user=null, $password=null) {
+    function __construct($user=null, $password=null, $env='staging') {
         if (!defined('DHL_API_DIR')) define('DHL_API_DIR', dirname(__FILE__).'/../lib/DHL-API/');
         require_once(DHL_API_DIR . 'vendor/autoloadManager/autoloadManager.php');
 
@@ -118,6 +116,7 @@ class DHL {
 
         $this->_user = $user;
         $this->_password = $password;
+        $this->env = $env;
     }
 
 

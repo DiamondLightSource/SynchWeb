@@ -174,6 +174,7 @@
     $dhl_enable = true;
     $dhl_user = 'user';
     $dhl_pass = 'password';
+    $dhl_env = 'staging';
     $dhl_acc = '12345678';
     $dhl_terms = '/path/to/terms.html';
     $dhl_link = 'http://link/to/dhl/instructions';

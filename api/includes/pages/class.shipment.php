@@ -175,9 +175,9 @@
         function __construct() {
             call_user_func_array(array('parent', '__construct'), func_get_args());
 
-            global $dhl_user, $dhl_pass;
+            global $dhl_user, $dhl_pass, $dhl_env;
             require_once('includes/class.dhl.php');
-            $this->dhl = new DHL($dhl_user, $dhl_pass);
+            $this->dhl = new DHL($dhl_user, $dhl_pass, $dhl_env);
         }
 
 
