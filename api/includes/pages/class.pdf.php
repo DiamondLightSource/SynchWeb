@@ -43,7 +43,7 @@
 
             $this->period = $start.' to '.$end;
 
-            $this->shipments = $this->db->pq("SELECT s.shippingid, s.deliveryagent_agentcode, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, count(distinct d.dewarid) as dewars, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop
+            $shipments = $this->db->pq("SELECT s.shippingid, s.deliveryagent_agentcode, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, count(distinct d.dewarid) as dewars, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop
                 FROM shipping s 
                 INNER JOIN dewar d ON s.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -58,12 +58,15 @@
                 GROUP BY s.shippingid", array($start, $end));
 
             $totals = array('WEIGHT' => 0, 'PIECES' => 0, 'SHIPMENTS' => 0);
-            foreach ($this->shipments as $s) {
+            foreach ($shipments as &$s) {
                 $totals['WEIGHT'] += $s['WEIGHT'];
                 $totals['PIECES'] += $s['DEWARS'];
                 $totals['SHIPMENTS']++;
+
+                $s['DELIVERYAGENT_BARCODE'] = str_replace(',', '<br />', $s['DELIVERYAGENT_BARCODE']);
             }
 
+            $this->shipments = $shipments;
             $this->totals = $totals;
 
             global $facility_company, $facility_address, $facility_city, $facility_postcode, $facility_country, $facility_phone, $dhl_acc;
