@@ -232,11 +232,19 @@ class DHL {
         $response->initFromXML($xml);
         // echo $response->toXML();
 
+        $pieces = array();
+        foreach ($response->Pieces as $p) {
+            array_push($pieces, array(
+                'piecenumber' => $p->PieceNumber,
+                'licenseplate' => $p->LicensePlate,
+            ));
+        }
+
         return array(
             'awb' => $response->AirwayBillNumber,
             'label' => $response->LabelImage->OutputImage,
             'weight' => $response->ChargeableWeight,
-            'pieces' => sizeof($options['pieces']),
+            'pieces' => $pieces,
         );
     }
 
