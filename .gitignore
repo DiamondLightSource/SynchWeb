@@ -15,3 +15,8 @@ sftp-config.json
 
 .sass-cache/
 .DS_Store
+
+api/lib/*
+.project
+api/config.php
+client/js/config.json
