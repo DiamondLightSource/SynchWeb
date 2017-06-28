@@ -291,6 +291,7 @@ define(['marionette',
 
 
     manifest: function() {
+        app.bc.reset([bc, { title: 'Manifest' }])
         app.content.show(new ManifestView())
     }
 
