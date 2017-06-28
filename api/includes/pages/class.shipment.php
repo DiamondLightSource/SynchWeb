@@ -187,14 +187,12 @@
         # ------------------------------------------------------------------------
         # List of shipments for a proposal
         function _get_shipments() {
-            if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
-
-            if ($this->has_arg('all') && $this->staff) {
+            if ($this->has_arg('all') && $this->user->has('view_manifest')) {
                 $args = array();
                 $where = '1=1';
 
             } else {
-                $join = '';
+                if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
                 $args = array($this->proposalid);
                 $where = 'p.proposalid=:1';
             }
