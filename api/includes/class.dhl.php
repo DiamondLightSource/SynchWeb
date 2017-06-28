@@ -391,25 +391,27 @@ class DHL {
         }
 
         $products = array();
-        foreach ($xml->GetQuoteResponse->BkgDetails->QtdShp as $q) {
-            $pkup = explode('-', (string)$q->PickupDate);
-            $del = explode('-', (string)$q->DeliveryDate);
+        if ($xml->GetQuoteResponse->BkgDetails->QtdShp) {
+            foreach ($xml->GetQuoteResponse->BkgDetails->QtdShp as $q) {
+                $pkup = explode('-', (string)$q->PickupDate);
+                $del = explode('-', (string)$q->DeliveryDate);
 
-            $code = (string)$q->GlobalProductCode;
-            if ($code == 'C') continue;
+                $code = (string)$q->GlobalProductCode;
+                if ($code == 'C') continue;
 
-            array_push($products, array(
-                'productcode' => $code,
-                'productname' => (string)$q->ProductShortName,
-                'shippingdate' => $pkup[2].'-'.$pkup[1].'-'.$pkup[0],
-                'cutofftime' => str_replace('PT', '', $q->PickupCutoffTime),
-                'bookingtime' => str_replace('PT', '', $q->BookingTime),
-                'deliverydate' => $del[2].'-'.$del[1].'-'.$del[0],
-                'deliverytime' => str_replace('PT', '', $q->DeliveryTime),
-                'totalprice' => (float)$q->ShippingCharge,
-                'totaltax' => (float)$q->TotalTaxAmount,
-                'currencycode' => (string)$q->CurrencyCode,
-            ));
+                array_push($products, array(
+                    'productcode' => $code,
+                    'productname' => (string)$q->ProductShortName,
+                    'shippingdate' => $pkup[2].'-'.$pkup[1].'-'.$pkup[0],
+                    'cutofftime' => str_replace('PT', '', $q->PickupCutoffTime),
+                    'bookingtime' => str_replace('PT', '', $q->BookingTime),
+                    'deliverydate' => $del[2].'-'.$del[1].'-'.$del[0],
+                    'deliverytime' => str_replace('PT', '', $q->DeliveryTime),
+                    'totalprice' => (float)$q->ShippingCharge,
+                    'totaltax' => (float)$q->TotalTaxAmount,
+                    'currencycode' => (string)$q->CurrencyCode,
+                ));
+            }
         }
 
         return $products;
