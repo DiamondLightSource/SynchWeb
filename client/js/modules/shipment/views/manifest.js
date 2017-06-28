@@ -1,11 +1,19 @@
 define(['marionette', 
-  'utils'], 
-    function(Marionette, utils) {
+    'collections/shipments',
+    'views/table',
+    'utils/table',
+    'utils'], 
+    function(Marionette, Shipments, TableView, table, utils) {
     
+    var ClickableRow = table.ClickableRow.extend({
+        event: 'ship:show',
+        argument: 'SHIPPINGID'
+    })
+
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Shipping Manifest</h1><select name="month"></select><a href="'+app.apiurl+'/pdf/manifest" class="button manifest"><i class="fa fa-print"></i> Print Shipping Manifest</a>'),
-        regions: { wrap: '.wrapper', type: '.bl', img: '.img' },
+        template: _.template('<h1>Shipping Manifest</h1><select name="month"></select><a href="'+app.apiurl+'/pdf/manifest" class="button manifest"><i class="fa fa-print"></i> Print Shipping Manifest</a><div class="shipments"></div>'),
+        regions: { rshps: '.shipments' },
         
         events: {
             'click a.manifest': 'loadManifest',
@@ -29,6 +37,13 @@ define(['marionette',
             })
         },
 
+        initialize: function() {
+            this.shipments = new Shipments()
+            this.shipments.queryParams.manifest = 1
+            this.shipments.queryParams.all = 1
+            this.shipments.fetch()
+        },
+
         onRender: function() {
             this.ui.month.empty()
             var d = new Date()
@@ -36,6 +51,29 @@ define(['marionette',
                 var m = (m < 10 ? ('0'+m) : m)+'-'+d.getFullYear()
                 this.ui.month.append('<option value="'+m+'">'+m+'</option>')
             }, this)
+
+            var columns = [
+                { name: 'PROP', label: 'Proposal', cell: 'string', editable: false },
+                { name: 'SHIPPINGNAME', label: 'Shipment', cell: 'string', editable: false },
+                { name: 'DELIVERYAGENT_FLIGHTCODETIMESTAMP', label: 'Created', cell: 'string', editable: false },
+                { name: 'DELIVERYAGENT_SHIPPINGDATE', label: 'Shipped', cell: 'string', editable: false },
+                { label: 'Account', cell: table.TemplateCell, editable: false, template: '<% if (TERMSACCEPTED == "1") { %>Facility<% } else { %><%=DELIVERYAGENT_AGENTCODE%><% } %>' },
+                { name: 'DELIVERYAGENT_FLIGHTCODE', label: 'Flightcode', cell: 'string', editable: false },
+                { name: 'DELIVERYAGENT_PRODUCTCODE', label: 'Product', cell: 'string', editable: false },
+                { name: 'DEWARCOUNT', label: 'Pieces', cell: 'string', editable: false },
+                { name: 'DELIVERYAGENT_BARCODE', label: 'Piece Barcodes', cell: 'string', editable: false },
+                { name: 'WEIGHT', label: 'Weight', cell: 'string', editable: false },
+                { label: 'Sender', cell: table.TemplateCell, editable: false, template: '<%=GIVENNAME%> <%=FAMILYNAME%> <%=LABNAME%>' },
+                { label: 'Origin', cell: table.TemplateCell, editable: false, template: '<%=CITY%> <%=POSTCODE%> <%=COUNTRY%>' },
+            ]
+        
+            if (app.mobile()) {
+                _.each([2,3,5,6], function(v) {
+                    columns[v].renderable = false
+                })
+            }
+
+            this.rshps.show(new TableView({ collection: this.shipments, columns: columns, filter: 's', tableClass: 'shipments', backgrid: { row: ClickableRow, emptyText: 'No shipments found' } }))
 
         }
         
