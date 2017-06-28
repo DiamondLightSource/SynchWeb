@@ -47,10 +47,17 @@ define(['marionette',
         onRender: function() {
             this.ui.month.empty()
             var d = new Date()
-            _.each(_.range(1,13), function(m) {
-                var m = (m < 10 ? ('0'+m) : m)+'-'+d.getFullYear()
-                this.ui.month.append('<option value="'+m+'">'+m+'</option>')
+            _.each([d.getFullYear(), d.getFullYear()-1], function(y) {
+                _.each(_.range(1,13), function(m) {
+                    var m = (m < 10 ? ('0'+m) : m)+'-'+y
+                    this.ui.month.append('<option value="'+m+'">'+m+'</option>')
+                }, this)
             }, this)
+
+
+            var m = d.getMonth() +1
+            var cur = (m < 10 ? ('0'+m) : m)+'-'+d.getFullYear()
+            this.ui.month.val(cur)
 
             var columns = [
                 { name: 'PROP', label: 'Proposal', cell: 'string', editable: false },
