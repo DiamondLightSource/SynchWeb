@@ -6,8 +6,9 @@ define(['marionette',
     function(Marionette, Shipments, TableView, table, utils) {
     
     var ClickableRow = table.ClickableRow.extend({
-        event: 'ship:show',
-        argument: 'SHIPPINGID'
+        event: 'shipment:show',
+        argument: 'SHIPPINGID',
+        cookie: true
     })
 
     return Marionette.LayoutView.extend({
