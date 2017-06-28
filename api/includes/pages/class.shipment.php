@@ -103,6 +103,8 @@
                               'CLOSETIME' => '\d\d:\d\d',
                               'PRODUCTCODE' => '\w',
 
+                              'manifest' => '\d',
+
                               );
         
 
@@ -186,27 +188,84 @@
         # List of shipments for a proposal
         function _get_shipments() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
-            $args = array($this->proposalid);
-            $where = '';
-            
+
+            if ($this->has_arg('all') && $this->staff) {
+                $args = array();
+                $where = '1=1';
+
+            } else {
+                $join = '';
+                $args = array($this->proposalid);
+                $where = 'p.proposalid=:1';
+            }
+
             if ($this->has_arg('sid')) {
-                $where = 'AND s.shippingid=:2';
+                $where .= ' AND s.shippingid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('sid'));
             }
             
-            $rows = $this->db->pq("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime
-              FROM proposal p 
+            if ($this->has_arg('manifest')) {
+                $where .= ' AND s.deliveryagent_flightcodetimestamp is NOT NULL
+                    AND d.deliveryagent_barcode IS NOT NULL';
+            }
+
+            if ($this->has_arg('s')) {
+                $st = sizeof($args)+1;
+                $where .= " AND (lower(s.shippingname) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
+                array_push($args, $this->arg('s'));
+                array_push($args, $this->arg('s'));
+            }
+
+            $tot = $this->db->pq("SELECT count(distinct s.shippingid) as tot 
+                FROM proposal p 
               INNER JOIN shipping s ON p.proposalid = s.proposalid 
               LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
               LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
               LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid 
-              WHERE p.proposalid = :1 $where 
-              GROUP BY s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode, s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'), s.isstorageshipping, s.shippingtype, s.comments, s.creationdate ORDER BY s.creationdate DESC", $args);
+              WHERE $where", $args);
+            $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
+            
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
+            $start = $pg*$pp;
+            $end = $pg*$pp+$pp;
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+            
+            $order = 's.creationdate';
+            if ($this->has_arg('sort_by')) {
+                $cols = array('SHIPPINGNAME' => 's.shippingname');
+                $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+                if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
+            }
+
+            $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, count(distinct d.dewarid) as dewarcount, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode
+              FROM proposal p 
+              INNER JOIN shipping s ON p.proposalid = s.proposalid 
+              LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
+              LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid 
+              LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
+              LEFT OUTER JOIN labcontact c ON c.labcontactid = s.sendinglabcontactid
+              LEFT OUTER JOIN person pe ON c.personid = pe.personid 
+              LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
+              WHERE $where 
+              GROUP BY s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode, s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'), s.isstorageshipping, s.shippingtype, s.comments, s.creationdate 
+              ORDER BY $order DESC", $args);
+
+            foreach ($rows as &$s) {
+                $s['DELIVERYAGENT_BARCODE'] = str_replace(',', ', ', $s['DELIVERYAGENT_BARCODE']);
+            }
             
             if ($this->has_arg('sid')) {
                 if (sizeof($rows)) $this->_output($rows[0]);
                 else $this->_error('No such shipment');
-            } else $this->_output($rows);
+            } else $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
         }
         
         
