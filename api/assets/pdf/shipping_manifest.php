@@ -18,7 +18,8 @@
 <table class="small border hund pad">
     <thead>
         <tr class="head">
-            <th>Proposal</th>
+            <th>Proposal / Shipment</th>
+            <th>Dewars</th>
             <th>Created</th>
             <th>Shipped</th>
             <th>Account</th>
@@ -34,13 +35,14 @@
 
 <?php foreach($shipments as $i => $s): ?>
     <tr>
-        <td><?php echo $s['PROP'] ?></td>
+        <td><?php echo $s['PROP'] ?><br /><?php echo $s['SHIPPINGNAME'] ?></td>
+        <td><?php echo $s['DEWARS'] ?></td>
         <td><?php echo $s['DELIVERYAGENT_FLIGHTCODETIMESTAMP'] ?></td>
         <td><?php echo $s['DELIVERYAGENT_SHIPPINGDATE'] ?></td>
         <td><?php echo $s['TERMSACCEPTED'] ? $facility_account : $s['DELIVERYAGENT_AGENTCODE'] ?></td>
         <td><?php echo $s['DELIVERYAGENT_FLIGHTCODE'] ?></td>
         <td><?php echo $s['DELIVERYAGENT_PRODUCTCODE'] ?></td>
-        <td><?php echo $s['DEWARS'] ?></td>
+        <td><?php echo $s['DEWARCOUNT'] ?></td>
         <td><?php echo $s['DELIVERYAGENT_BARCODE'] ?></td>
         <td><?php echo $s['WEIGHT'] ?></td>
         <td><?php echo $s['GIVENNAME'] ?> <?php echo $s['FAMILYNAME'] ?><br /><?php echo $s['LABNAME'] ?></td>

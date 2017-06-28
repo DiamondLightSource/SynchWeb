@@ -43,7 +43,7 @@
 
             $this->period = $start.' to '.$end;
 
-            $shipments = $this->db->pq("SELECT s.shippingid, s.deliveryagent_agentcode, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, count(distinct d.dewarid) as dewars, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop
+            $shipments = $this->db->pq("SELECT s.shippingname, s.shippingid, s.deliveryagent_agentcode, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI<br/>DD-MM-YYYY') as deliveryagent_flightcodetimestamp, count(distinct d.dewarid) as dewarcount, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars
                 FROM shipping s 
                 INNER JOIN dewar d ON s.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -60,10 +60,11 @@
             $totals = array('WEIGHT' => 0, 'PIECES' => 0, 'SHIPMENTS' => 0);
             foreach ($shipments as &$s) {
                 $totals['WEIGHT'] += $s['WEIGHT'];
-                $totals['PIECES'] += $s['DEWARS'];
+                $totals['PIECES'] += $s['DEWARCOUNT'];
                 $totals['SHIPMENTS']++;
 
                 $s['DELIVERYAGENT_BARCODE'] = str_replace(',', '<br />', $s['DELIVERYAGENT_BARCODE']);
+                $s['DEWARS'] = str_replace(',', '<br />', $s['DEWARS']);
             }
 
             $this->shipments = $shipments;
@@ -85,7 +86,7 @@
             if (!$this->has_arg('prop')) $this->_error('No proposal specified', 'Please select a proposal first');
             if (!$this->has_arg('sid')) $this->_error('No shipment specified', 'No shipment id was specified');
             
-            $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, l.postcode, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, l2.postcode as postcode2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany 
+            $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, l.postcode, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, l2.postcode as postcode2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany
                 FROM shipping s 
                 INNER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
                 INNER JOIN person pe ON c.personid = pe.personid 
