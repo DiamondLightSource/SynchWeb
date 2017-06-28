@@ -45,7 +45,7 @@ define(['backbone'], function(Backbone) {
             },
             ARRAY: {
                 required: function() {
-                    return (this.get('START') || this.get('STOP') || this.get('STEP'))
+                    return !(this.get('START') || this.get('STOP') || this.get('STEP'))
                 },
                 pattern: 'array'
             },
