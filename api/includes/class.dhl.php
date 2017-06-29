@@ -189,6 +189,8 @@ class DHL {
         $shipment->ShipmentDetails->DoorTo = 'DD';
         // $shipment->ShipmentDetails->IsDutiable = 'Y';
 
+        if (array_key_exists('notification', $options)) $shipment->Notification->EmailAddress = $options['notification'];
+        if (array_key_exists('message', $options)) $shipment->Notification->Message = $options['message'];
 
         $weight = 0;
         foreach ($options['pieces'] as $i => $d) {
