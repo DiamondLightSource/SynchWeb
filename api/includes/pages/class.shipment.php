@@ -1782,15 +1782,16 @@
             if (!$this->has_arg('DEWARS')) $this->_error('No dewars specified');
             if (!is_array($this->arg('DEWARS'))) $this->_error('No dewars specified');
             
-            $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, s.deliveryagent_agentcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, s.deliveryagent_pickupconfirmation, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation
+            $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, s.deliveryagent_agentcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, s.deliveryagent_pickupconfirmation, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingname
                 FROM shipping s 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
 
             $ids = range(2,sizeof($this->arg('DEWARS'))+1);
             $args = array_merge(array($ship['SHIPPINGID']), $this->arg('DEWARS'));
-            $dewars = $this->db->pq("SELECT d.dewarid, d.weight
+            $dewars = $this->db->pq("SELECT d.dewarid, d.weight, IF(d.facilitycode, d.facilitycode, d.code) as name
                 FROM dewar d
                 WHERE d.shippingid=:1 AND d.dewarid IN (:".implode(',:', $ids).")", $args);
 
@@ -1851,6 +1852,7 @@
 
             $pieces = array();
             $totalweight = 0;
+            $names = array();
             foreach ($dewars as $d) {
                 array_push($pieces, array(
                     'weight' => $d['WEIGHT'],
@@ -1859,11 +1861,15 @@
                     'depth' => 40,
                 ));
                 $totalweight += $d['WEIGHT'];
+                array_push($names, $d['NAME']);
             }
 
+            $emails = array($cont['EMAILADDRESS']);
+            global $shipbooked_email;
+            array_push($emails, str_replace(',', ';', $shipbooked_email));
 
             $awb = null;
-            if (!$ship['DELIVERYAGENT_FLIGHTCODE']) {
+            if ($ship['DELIVERYAGENT_FLIGHTCODE']) {
                 try {
                     $awb = $this->dhl->create_awb(array(
                         'payee' => $payee,
@@ -1877,6 +1883,8 @@
                         'receiver' => $this->has_arg('RETURN') ? $user : $facility,
 
                         'pieces' => $pieces,
+                        'notification' => implode(';', $emails),
+                        'message' => $facility_company.': Shipment booked from ISPyB for '.$ship['PROP'].' '.$ship['SHIPPINGNAME'].' containing '.implode(',', $names)
                     ));
 
                     $this->db->pq("UPDATE shipping 

@@ -118,6 +118,8 @@
     # and for RED experiments
     $cl3_email = 'cl3team@server.ac.uk, goods@server.ac.uk';
 
+    # and for shipment booked, 
+    $shipbooked_email = 'goods@server.ac.uk';
 
     # Industrial Contacts
     # - Industrial users get a personalised email with in contact details, 
