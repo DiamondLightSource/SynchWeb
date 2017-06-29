@@ -1869,7 +1869,7 @@
             array_push($emails, str_replace(',', ';', $shipbooked_email));
 
             $awb = null;
-            if ($ship['DELIVERYAGENT_FLIGHTCODE']) {
+            if (!$ship['DELIVERYAGENT_FLIGHTCODE']) {
                 try {
                     $awb = $this->dhl->create_awb(array(
                         'payee' => $payee,
