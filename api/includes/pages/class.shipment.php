@@ -359,14 +359,13 @@
             $dew['TRACKINGNUMBERFROMSYNCHROTRON'] = $track;
 
             if (strtolower($this->arg('LOCATION')) == 'stores-in' && $dew['LCOUTEMAIL']) {
-                $lcs = $this->db->pq("SELECT CONCAT(p.givenname, p.familyname) as name
+                $lcs = $this->db->pq("SELECT p.login
                   FROM person p 
                   INNER JOIN session_has_person shp ON shp.personid = p.personid
-                  WHERE shp.sessionid=:1 AND shp.role = 'Local Contact' OR shp.role = 'Local Contact 2'", array($dew['FIRSTEXPERIMENTID']));
-
+                  WHERE shp.sessionid=:1 AND (shp.role = 'Local Contact' OR shp.role = 'Local Contact 2')", array($dew['FIRSTEXPERIMENTID']));
                 $emails = array($dew['LCOUTEMAIL'],$transfer_email);
                 foreach ($lcs as $lc) {
-                    array_push($emails, $this->_get_email_fn($lc['NAME']));
+                    array_push($emails, $this->_get_email($lc['LOGIN']));
                 }
 
                 require_once('includes/class.email.php');
