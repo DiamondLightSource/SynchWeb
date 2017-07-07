@@ -9,7 +9,7 @@
                               'EMAILADDRESS' => '.*',
                               'LABNAME' => '([\w\s-])+',
                               'ADDRESS' => '([\w\s-\n,])+',
-                              'COUNTRY' => '([\w\s-])+',
+                              'COUNTRY' => '([\w\s-,\(\)\'])+',
                               'CITY' => '([\w\s-])+',
                               'POSTCODE' => '([\w\s-])+',
                               'DEFAULTCOURRIERCOMPANY' => '([\w\s-])+',
