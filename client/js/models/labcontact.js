@@ -38,7 +38,7 @@ define(['backbone'], function(Backbone) {
             },
             COUNTRY: {
                 required: true,
-                pattern: 'wwsdash',
+                pattern: 'country',
             },
             POSTCODE: {
                 required: true,
