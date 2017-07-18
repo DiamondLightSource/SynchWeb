@@ -1,6 +1,8 @@
 # SynchWeb
 New ISPyB web application which consists of a PHP REST API and a Backbone/Marionette javascript client
 
+Read More: http://diamondlightsource.github.io/SynchWeb/
+
 Acknowledgements
 ----------------
 If you make use of code from this repository, please reference:
