@@ -24,7 +24,7 @@
             'BOXSIZEX' => '\d+',
             'BOXSIZEY' => '\d+',
             'NUMBEROFIMAGES' => '\d+',
-            'AXISSTART' => '\d+(.\d+)?',
+            'AXISSTART' => '-?\d+(.\d+)?',
             'AXISRANGE' => '\d+(.\d+)?',
             'TRANSMISSION' => '\d+(.\d+)?',
             'ENERGY' => '\d+(.\d+)?',
