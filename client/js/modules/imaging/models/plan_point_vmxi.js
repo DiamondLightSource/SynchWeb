@@ -47,7 +47,7 @@ define(['backbone'], function(Backbone) {
             AXISSTART: {
                 required: true,
                 pattern: 'number',
-                range: [-25,25]
+                range: [-30,30]
             },
 
             NUMBEROFIMAGES: {
