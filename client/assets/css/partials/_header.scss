@@ -144,13 +144,32 @@
 
 
 #footer {
-    //background: $footer-background url(/templates/images/ispyb_gs_medium.png) center center no-repeat;
+    margin-top: 70px;
     background: $footer-background inline-image('ispyb_gs_medium.png') center center no-repeat;
-    padding: 1%;
-    height: 150px;
+    height: 200px;
+    background-position: 50% 85%;
     
     @media (max-width: $breakpoint-medium) {
         clear: both;
+    }
+
+    .whatnow {
+        border-top: 1px solid #bbb;
+        font-size: 16px;
+        font-family: $page-header-font;
+        text-align: center;
+
+        a {
+            display: block;
+            padding: 0.5%;
+            color: #222;
+            background: #eee;
+            transition: 0.3s ease-in-out;
+
+            &:hover {
+                color: #000;
+            };
+        }
     }
 
     a {
@@ -163,6 +182,7 @@
     }
     
     p {
+        padding: 1%;
         text-align: center;
         color: $footer-color;
         font-size: 10px;
