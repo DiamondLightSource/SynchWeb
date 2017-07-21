@@ -71,6 +71,7 @@ define(['marionette',
                 { name: 'DCOUNT', label: 'Pieces', cell: 'string', editable: false },
                 { name: 'DELIVERYAGENT_BARCODE', label: 'Piece Barcodes', cell: 'string', editable: false },
                 { name: 'WEIGHT', label: 'Weight', cell: 'string', editable: false },
+                { name: 'DELIVERYAGENT_FLIGHTCODEPERSON', label: 'Creator', cell: 'string', editable: false },
                 { label: 'Sender', cell: table.TemplateCell, editable: false, template: '<%=GIVENNAME%> <%=FAMILYNAME%> <%=LABNAME%>' },
                 { label: 'Origin', cell: table.TemplateCell, editable: false, template: '<%=CITY%> <%=POSTCODE%> <%=COUNTRY%>' },
             ]
