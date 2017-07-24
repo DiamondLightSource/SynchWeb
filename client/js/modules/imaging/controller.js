@@ -53,7 +53,7 @@ define(['marionette',
 
 
         view_schedule: function(sid) {
-            if (!app.user_can('schedule_comp')) {
+            if (!app.user_can('schedule_comps')) {
                 app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
                 return
             }
