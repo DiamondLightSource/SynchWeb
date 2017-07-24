@@ -168,7 +168,7 @@ class Users extends Page {
         $where = 'p.login IS NOT NULL';
         $join = '';
         $extc = '';
-        $group = '';
+        $group = 'GROUP BY p.personid';
 
         if ($this->has_arg('all')) {
             $where = '1=1';
