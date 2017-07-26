@@ -184,7 +184,7 @@
 
                 $data = array(
                     'proposalId' => strtoupper($cont['EXTERNALID']),
-                    'sampleIds' => array_unique($samples),
+                    'sampleIds' => array_values(array_unique($samples)),
                     'startAt' => date('Y-m-d\TH:i:s.000\Z'),
                     // 'startAt': "2012-04-23T18:25:43.511Z",
                     'facility' => 'I02-2',
