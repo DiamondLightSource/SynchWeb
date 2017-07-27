@@ -244,7 +244,7 @@ define(['marionette', 'views/pages',
         },
 
         updateName: function() {
-            if (this.name.get('name')) this.ui.name.html(' - '+this.name.get('name'))
+            if (this.name && this.name.get('name')) this.ui.name.html(' - '+this.name.get('name'))
         },
         
         updateCollection: function() {
@@ -258,6 +258,7 @@ define(['marionette', 'views/pages',
                 accept: '.container',
                 hoverClass: 'bl_puck_drag',
             })
+            this.updateName()
         },
         
         handleDrop: function(e, ui) {
