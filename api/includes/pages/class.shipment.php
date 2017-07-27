@@ -1888,7 +1888,7 @@
                     ));
 
                     $this->db->pq("UPDATE shipping 
-                    SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2, deliveryagent_productcode=:3, deliveryagent_flightcodepersonid=:4 
+                    SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2, deliveryagent_productcode=:3, deliveryagent_flightcodepersonid=:4, shippingstatus='awb created' 
                     WHERE shippingid=:5", array($awb['awb'], $awb['label'], $product, $this->user->personid, $ship['SHIPPINGID']));
 
                     $tno = $this->has_arg('RETURN') ? 'trackingnumberfromsynchrotron' : 'trackingnumbertosynchrotron';
@@ -1896,7 +1896,11 @@
                         if ($i >= sizeof($awb['pieces'])) continue;
 
                         $p = $awb['pieces'][$i];
-                        $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2 WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
+                        $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2, dewarstatus='awb created' WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
+
+                        $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
+                        VALUES (s_dewartransporthistory.nextval,:1,'awb created',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+                        array($d['DEWARID']));
                     }
 
                     $ship['DELIVERYAGENT_FLIGHTCODE'] = $awb['awb'];
@@ -1925,8 +1929,15 @@
                     ));
 
                     $this->db->pq("UPDATE shipping 
-                    SET deliveryagent_pickupconfirmation=:1, deliveryagent_pickupconfirmationtimestamp=CURRENT_TIMESTAMP, deliveryAgent_readybytime=TO_DATE(:2, 'HH24:MI'), deliveryAgent_callintime=TO_DATE(:3, 'HH24:MI')
+                    SET deliveryagent_pickupconfirmation=:1, deliveryagent_pickupconfirmationtimestamp=CURRENT_TIMESTAMP, deliveryAgent_readybytime=TO_DATE(:2, 'HH24:MI'), deliveryAgent_callintime=TO_DATE(:3, 'HH24:MI'), shippingstatus='pickup booked'
                     WHERE shippingid=:4", array($pickup['confirmationnumber'], $pickup['readybytime'], $pickup['callintime'], $ship['SHIPPINGID']));
+
+                    foreach ($dewars as $i => $d) {
+                        $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked' WHERE dewarid=:1", array($d['DEWARID']));
+                        $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
+                        VALUES (s_dewartransporthistory.nextval,:1,'pickup booked',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+                        array($d['DEWARID']));
+                    }
 
                 } catch (Exception $e) {
                     $this->_error($e->getMessage());
