@@ -1,11 +1,3 @@
-html {
-    scroll-behavior: smooth;
-}
-
-body{
-    scroll-behavior: smooth;
-}
-
 section {
     padding-top: 1%;
     padding-bottom: 2%;
@@ -18,12 +10,22 @@ section {
         /*margin-bottom: 3%;*/
     }
 
+    a {
+        text-decoration: none
+    }
+
+    .super {
+        position: relative; 
+        top: -0.5em; 
+        font-size: 70%;
+    }
+
     ul {
         @include clearfix;
         padding: 5% 5% 0 5%;
     }
 
-    li {
+    ul li {
         text-align: center;
         display: inline-block;
         float: left;
@@ -364,4 +366,47 @@ section.alt2 {
     @media (max-width: $breakpoint-small) {
         border-radius: 5px;
     }
+}
+
+ol.rounded {
+    margin-top: 35px;
+    counter-reset: li;
+    list-style: none;
+    *list-style: decimal;
+    font: 18px $content-header-font;
+    padding: 0;
+    text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    
+    li {
+        position: relative;
+        display: block;
+        color: $content-filter-color;
+        transition: all .3s ease-out;
+        padding: .7em .7em .7em 3em;
+
+        &:before{
+            content: counter(li);
+            counter-increment: li;
+            position: absolute;
+            left: 0;
+            top: 55%;
+            margin-top: -1.3em;
+            background: $content-log-title-color;
+            height: 2em;
+            width: 2em;
+            line-height: 2em;
+            border: .2em solid #ccc;
+            text-align: center;
+            border-radius: 2em;
+            transition: all .3s ease-out;
+        }
+
+        &:hover{
+            &:before{
+                transform: rotate(360deg);
+            }
+
+        }
+    }
+
 }
