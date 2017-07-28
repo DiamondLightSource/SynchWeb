@@ -304,7 +304,7 @@
                 $l = end($dc);
                 if (strtotime($f['EN'] ? $f['EN'] : $f['ST']) > strtotime($info['EN'])) $last = $f['EN'] ? $f['EN'] : $f['ST'];
                 if (strtotime($l['ST']) < strtotime($info['ST'])) $first = $l['ST'];
-                $info['LAST'] = $dc[0]['ST'];
+                $info['LAST'] = $l['ST'];
             } else $info['LAST'] = '';
                                     
             $info['start'] = $this->jst($first);
