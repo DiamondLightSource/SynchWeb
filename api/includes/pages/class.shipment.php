@@ -340,17 +340,17 @@
 
             $track = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : $dew['TRACKINGNUMBERFROMSYNCHROTRON'];
 
-            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,'at DLS',lower(:2),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,'at facility',lower(:2),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $this->arg('LOCATION')));
             $dhid = $this->db->id();
 
-            $this->db->pq("UPDATE dewar set dewarstatus='at DLS', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track));
-            $this->db->pq("UPDATE shipping set shippingstatus='at DLS' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+            $this->db->pq("UPDATE dewar set dewarstatus='at facility', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track));
+            $this->db->pq("UPDATE shipping set shippingstatus='at facility' WHERE shippingid=:1", array($dew['SHIPPINGID']));
 
             $containers = $this->db->pq("SELECT containerid 
                 FROM container 
                 WHERE dewarid=:1", array($dew['DEWARID']));
             foreach ($containers as $c) {
-                $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['CONTAINERID'], 'at DLS'));
+                $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['CONTAINERID'], 'at facility'));
             }
 
             // Email
@@ -965,8 +965,8 @@
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
             
-            $this->db->pq("UPDATE shipping SET shippingstatus='sent to DLS' where shippingid=:1", array($ship['SHIPPINGID']));
-            $this->db->pq("UPDATE dewar SET dewarstatus='sent to DLS' where shippingid=:1", array($ship['SHIPPINGID']));
+            $this->db->pq("UPDATE shipping SET shippingstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
+            $this->db->pq("UPDATE dewar SET dewarstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
             
             $dewars = $this->db->pq("SELECT d.dewarid, s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
               FROM dewar d 
@@ -974,7 +974,7 @@
               WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
             foreach ($dewars as $d) {
                 $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                  VALUES (s_dewartransporthistory.nextval,:1,'sent to DLS',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+                  VALUES (s_dewartransporthistory.nextval,:1,'sent to facility',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
                   array($d['DEWARID']));
             }
 
