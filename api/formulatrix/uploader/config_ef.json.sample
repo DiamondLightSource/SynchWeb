@@ -1,0 +1,25 @@
+{
+	"task": "EF",
+    "user":	"username",
+	"pw":	"password",
+	"db":	"database",
+	"host":	"hostname",
+	"holding_dir":	  "/dls/holding/directory",
+	"archive_dir":    "/dls/archive/directory",
+	"upload_dir":	  "/dls/mx/data",
+    "upload_dir_old": "/dls/i02-2/data",
+	"web_user":	"myuser",
+	"thumb_width":	200,
+	"thumb_height":	150,
+	"types": {
+		"CrystalQuickX": { "well_per_row": 12, "drops_per_well": 2 },
+		"MitegenInSitu": { "well_per_row": 12, "drops_per_well": 2 },
+		"FilmBatch": { "well_per_row": 12, "drops_per_well": 1 },
+		"ReferencePlate": { "well_per_row": 2, "drops_per_well": 1 }
+	},
+	"logging": {
+		"rotating_file": {"filename": "/tmp/fmlx_ul_ef.log", "max_bytes": 1000000, "no_files": 20, "format": "* %(asctime)s [id=%(thread)d] <%(levelname)s> %(message)s", "level": "debug"},
+		"syslog": {"host": "my-server", "port": 514, "format": "fmlx_ul_ef:%(message)s", "level": "error"}
+	},
+	"pid_file": "/tmp/formulatrix_uploader_ef.pid"
+}
