@@ -565,7 +565,7 @@
             $this->user->can('all_prop_stats');
 
             global $bl_types;
-            $bls = implode("', '", $bl_types[$this->ptype->ty]);
+            $bls = implode("', '", $bl_types[$this->ty]);
 
             $where = " AND p.proposalcode NOT IN ('cm') AND s.beamlinename in ('$bls')";
             $args = array();
@@ -710,7 +710,7 @@
         // Histogram of beamline parameters
         function _parameter_histogram() {
             global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
 
             $types = array(
                 'energy' => array('unit' => 'eV', 'st' => 5000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),

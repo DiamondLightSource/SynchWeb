@@ -37,6 +37,7 @@
                               array('/data/visit/:visit', 'get', '_download_visit'),
                               array('/attachments', 'get', '_get_attachments'),
                               array('/attachment/id/:id/aid/:aid', 'get', '_get_attachment'),
+                              array('/dc/id/:id', 'get', '_download'),
             );
 
         
@@ -496,6 +497,32 @@
             $this->app->response->headers->set("Content-length", $size);
             $this->_header(basename($rows[0]['FILEFULLPATH']));
             readfile($rows[0]['FILEFULLPATH']);
+        }
+
+
+
+        # ------------------------------------------------------------------------
+        # Download Data
+        function _download() {
+            session_write_close();
+            if (!$this->has_arg('id')) {
+                $this->_error('No data collection id specified');
+                return;
+            }
+            
+            $info = $this->db->pq('SELECT ses.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir FROM datacollection dc INNER JOIN blsession ses ON dc.sessionid = ses.sessionid WHERE datacollectionid=:1', array($this->arg('id')));
+            if (sizeof($info) == 0) {
+                $this->_error('No data for that collection id');
+                return;
+            } else $info = $info[0];
+            
+            $info['VISIT'] = $this->arg('prop') .'-'.$info['VISIT_NUMBER'];
+            
+            $data = str_replace($info['VISIT'], $info['VISIT'].'/.ispyb', $this->ads($info['DIR']).$info['IMP'].'/download/download.zip');
+            if (file_exists($data)) {
+                $this->_header($this->arg('id').'_download.zip');
+                readfile($data);
+            }
         }
 
 

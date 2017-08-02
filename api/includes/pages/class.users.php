@@ -65,7 +65,7 @@ class Users extends Page {
                 'permissions' => $this->user->perms, 
                 'is_staff' => $this->staff, 
                 'visits' => $this->visits, 
-                'ty' => $this->ptype->ty));
+                'ty' => $this->ty));
     }
 
     function _login() {

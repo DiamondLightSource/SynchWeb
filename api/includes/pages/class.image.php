@@ -142,13 +142,7 @@
 
             $this->db->close();
             
-            $images = array();
-            foreach (array_reverse(array('X1', 'X2', 'X3', 'X4')) as $i) {
-                if (file_exists($row[$i])) {
-                    array_push($images, $row[$i]);
-                }
-            }
-            
+            $images = array($row['X1'], $row['X2'], $row['X3'], $row['X4']);
             $n = $this->has_arg('n') ? ($this->arg('n')-1) : 0;
             if ($n < sizeof($images)) {
                 $file = $this->has_arg('f') ? $images[$n] : str_replace('.png', 't.png', $images[$n]);

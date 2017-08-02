@@ -56,7 +56,7 @@
         function _get_types() {
             global $bl_types;
 
-            $bls = implode("', '", $bl_types[$this->ptype->ty]);
+            $bls = implode("', '", $bl_types[$this->ty]);
             $rows = $this->db->pq("SELECT distinct p.proposalcode 
                 FROM proposal p
                 INNER JOIN blsession s ON s.proposalid = p.proposalid
@@ -78,7 +78,7 @@
                 $where .= " AND CONCAT(p.proposalcode,p.proposalnumber) LIKE :".(sizeof($args)+1);
                 array_push($args, $id);
             }
-            
+
             if ($this->staff) {
                 if (!$this->user->has('super_admin')) {
                     $bls = array();
@@ -93,12 +93,9 @@
                     $where .= " AND s.beamlinename in ('".implode("','", $bls)."')";
                 }
             } else {
-                #$where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
                 $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid  ".$where;
                 $where .= " AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
-                
-                #$where .= " AND s.sessionid in ('".implode("','", $this->sessionids)."')";
             }
             
             if ($this->has_arg('s')) {
@@ -192,9 +189,9 @@
                 return;
             }
             
-            if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
+            // if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
             
-            if ($this->has_arg('all') && $this->staff) {
+            if ($this->has_arg('all')) {
                 $args = array();
                 $where = 'WHERE 1=1';
                 
@@ -264,7 +261,6 @@
             
             
             if (!$this->staff) {
-                // $where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
                 $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid ".$where;
                 $where .= " AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
@@ -351,9 +347,9 @@
             global $bl_types;
             unset($this->args['current']);
 
-            if (!array_key_exists($this->ptype->ty, $bl_types)) $this->_error('No such proposal type');
+            if (!array_key_exists($this->ty, $bl_types)) $this->_error('No such proposal type');
 
-            $beamlines = $bl_types[$this->ptype->ty];
+            $beamlines = $bl_types[$this->ty];
 
             $this->args['per_page'] = 1;
             $this->args['page'] = 1;

@@ -110,7 +110,7 @@
             $where = $sc ? 'dc.overlap != 0' : 'dc.axisrange > 0 AND dc.overlap = 0';
             $where = $all ? '1=1' : $where;
 
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
             
             $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, run, bl FROM (
                     SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
@@ -138,7 +138,7 @@
         // Images / Hour
         function _images() {
             global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
 
             $dcs = $this->db->pq("SELECT AVG(images) as avg, run, bl FROM (
                     SELECT sum(dc.numberofimages) as images, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
@@ -163,7 +163,7 @@
         // Data collection times
         function _data_collection_time() {
             global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
 
             $dcs = $this->db->pq("SELECT avg(TIMESTAMPDIFF('SECOND', dc.starttime, dc.endtime)/60) as dctime, vr.run, ses.beamlinename as bl
                                  FROM datacollection dc
@@ -190,7 +190,7 @@
         // Samples Loaded / Hour
         function _samples_loaded() {
             global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
 
             $dcs = $this->db->pq("SELECT AVG(count) as avg, count(count) as count, run, bl FROM (
                     SELECT count(r.robotactionid) as count, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
@@ -218,7 +218,7 @@
                                  
         function _daily_usage() {
             global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
 
             $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, dh as hour, bl FROM (
                     SELECT count(dc.datacollectionid) as datacollections, HOUR(dc.starttime) as dh, ses.beamlinename as bl
