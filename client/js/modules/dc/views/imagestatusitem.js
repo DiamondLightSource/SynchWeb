@@ -67,7 +67,11 @@ define(['marionette',
                 if (this.model.get('SN')) this.ui.sn.attr('data-src', app.apiurl+'/image/id/'+id).addClass('lazy')
         
                 var sns = ''
-                for (var i = 1; i < this.model.get('SNS').length; i++) sns += ('<a href="'+app.apiurl+'/image/id/'+id+'/f/1/n/'+(i+1)+'" title="Crystal Snapshot '+(i+1)+'"></a>')
+                for (var i = 1; i < this.model.get('SNS').length; i++) {
+                    if (this.model.get('SNS')[i]) {
+                        sns += ('<a href="'+app.apiurl+'/image/id/'+id+'/f/1/n/'+(i+1)+'" title="Crystal Snapshot '+(i+1)+'"></a>')
+                    }
+                }
                                                          
                 if (this.model.get('SNS').length > 1 && this.getOption('TYPE') == 'Grid Scan') {
                     this.ui.sn.attr('data-src', app.apiurl+'/image/id/'+id+'/f/1/n/2').addClass('lazy')
