@@ -4,15 +4,11 @@ define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
         'jquery.flot.resize',
         'jquery.flot.selection',
 ], function(Marionette, DatModel, utils, $) {
-       
-  var DriftModel = DatModel.extend({
-    urlRoot: '/dc/drift'
-  })
 
   // Drift Plot
   return Marionette.ItemView.extend({
       template: false,
-      model: DriftModel,
+      model: DatModel,
       modelEvents: { 'change': 'render' },
                                                
       initialize: function(options) {
@@ -48,7 +44,7 @@ define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
                     },
               })
                   
-              var d = [{ data: this.model.get('data'), label: 'Drift' }]
+              var d = [{ data: this.model.get('data')[0], label: 'Drift' }]
                   
 
               this.plot = $.plot(this.$el, d, options)

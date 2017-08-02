@@ -97,7 +97,7 @@ define(['marionette',
                 
             } else {
                 _.each(['next', 'prev'], function(d) {
-                    var p = {}
+                    var p = { all: 1 }
                     p[d] = 1
                     this[d] = new Visits(null, { state: { pageSize: 5 }, queryParams: p })
                     this.deferreds.push(this[d].fetch())
