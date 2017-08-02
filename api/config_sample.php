@@ -188,6 +188,10 @@
     $vmxi_user = 'vmxi';
     $vmxi_pass = 'pass';
     $uas_url = 'http://path.to.uas';
+
+    # Risk statements
+    $sample_hazard = 'Samples will be handled following the beamline risk assessment';
+    $exp_hazard = 'VMXi will be operated following the beamline risk assessment';
     
   
     # Proposal codes to list
