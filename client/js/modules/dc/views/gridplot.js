@@ -116,7 +116,7 @@ define(['jquery', 'marionette',
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
             if (m.get('SNS').length)
                 if (m.get('SNS')[2] && this.hasSnapshot == false) {
-                this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/3')
+                this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')
                 //this.draw()
             }
         },
@@ -161,11 +161,11 @@ define(['jquery', 'marionette',
             if (this.hasSnapshot) {
                 var scalef = this.snapshot.width/1024
 
-                var stx = (Math.floor(this.grid.get('SNAPSHOT_OFFSETXPIXEL'))+1)*scalef
-                var sty = (Math.floor(this.grid.get('SNAPSHOT_OFFSETYPIXEL'))+1)*scalef
+                var stx = this.grid.get('SNAPSHOT_OFFSETXPIXEL')*scalef
+                var sty = this.grid.get('SNAPSHOT_OFFSETYPIXEL')*scalef
 
-                var w = bw*this.grid.get('STEPS_X')*scalef*0.97
-                var h = bh*this.grid.get('STEPS_Y')*scalef*0.97
+                var w = bw*this.grid.get('STEPS_X')*scalef
+                var h = bh*this.grid.get('STEPS_Y')*scalef
 
                 var cvratio = this.canvas.width / this.canvas.height
                 var snratio = w/h
@@ -179,7 +179,7 @@ define(['jquery', 'marionette',
                 this.scale = this.canvas.width/(w+this.offset_w)
 
                 this.ctx.globalAlpha = 1
-                this.ctx.drawImage(this.snapshot, stx-this.offset_w/2, sty-this.offset_h/2, w+this.offset_w, h+this.offset_h-1, 0, 0, this.canvas.width, this.canvas.height)
+                this.ctx.drawImage(this.snapshot, stx-this.offset_w/2, sty-this.offset_h/2, w+this.offset_w, h+this.offset_h, 0, 0, this.canvas.width, this.canvas.height)
             }
 
             var d = []
