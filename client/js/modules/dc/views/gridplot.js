@@ -50,6 +50,13 @@ define(['jquery', 'marionette',
             this.draw()
         },
 
+        gridPromise: function() {
+            return this._gridPromise
+        },
+
+        gridInfo: function() {
+            return this.grid
+        },
 
 
         initialize: function(options) {
@@ -65,7 +72,7 @@ define(['jquery', 'marionette',
             this.distl.fetch()
             var self = this
             this.gridFetched = false
-            this.grid.fetch().done(function() {
+            this._gridPromise = this.grid.fetch().done(function() {
                 self.gridFetched = true
                 if (self.grid.get('ORIENTATION')) self.vertical = self.grid.get('ORIENTATION') == 'vertical'
                 else self.vertical = (self.grid.get('STEPS_Y') > self.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation

@@ -21,6 +21,8 @@ define(['marionette', 'views/tabs',
       z: '.z',
       val: '.val',
       img: '.img',
+      bx: '.boxx',
+      by: '.boxy'
     },
 
     initialize: function(options) {
@@ -53,6 +55,14 @@ define(['marionette', 'views/tabs',
       var edit = new Editable({ model: this.model, el: this.$el })
       edit.create('COMMENTS', 'text')
         
+      this.gridplot.gridPromise().done(this.showBox.bind(this))
+    },
+
+
+    showBox: function() {
+        var gi = this.gridplot.gridInfo()
+        this.ui.bx.text((gi.get('DX_MM')*1000).toFixed(0))
+        this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
     },
                                       
     onDestroy: function() {
