@@ -72,10 +72,6 @@ define(['marionette',
                         sns += ('<a href="'+app.apiurl+'/image/id/'+id+'/f/1/n/'+(i+1)+'" title="Crystal Snapshot '+(i+1)+'"></a>')
                     }
                 }
-                                                         
-                if (this.model.get('SNS').length > 1 && this.getOption('TYPE') == 'Grid Scan') {
-                    this.ui.sn.attr('data-src', app.apiurl+'/image/id/'+id+'/f/1/n/2').addClass('lazy')
-                }
            
                 if (this.ui.sns.find('a').length == 1) this.ui.sns.append(sns)
                 this.ui.sns.magnificPopup({
