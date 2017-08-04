@@ -1,9 +1,12 @@
 define(['marionette',
     'views/tabs', 'modules/dc/collections/autointegrations',
     'modules/dc/views/rdplot',
+    'modules/dc/views/aiplots',
     'views/log',
     'utils',
-    'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, AutoIntegrations, RDPlotView, LogView, utils, template) {
+    'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, AutoIntegrations, 
+        RDPlotView, AIPlotsView, LogView, 
+        utils, template) {
        
     var EmptyAP = Marionette.ItemView.extend({ template: '<p>No auto processing available for this data collection</p>', tagName: 'p' })
     
@@ -14,6 +17,7 @@ define(['marionette',
         events: {
             'click .logf': 'showLog',
             'click .rd': 'showRD',
+            'click .plot': 'showPlots',
             'click .dll': utils.signHandler,
         },
         
@@ -34,6 +38,11 @@ define(['marionette',
         showRD: function(e) {
             e.preventDefault()
             app.dialog.show(new DialogView({ title: 'RD Plot', view: new RDPlotView({ aid: this.model.get('AID'), id: this.getOption('templateHelpers').DCID }), autoSize: true }))
+        },
+
+        showPlots: function(e) {
+            e.preventDefault()
+            app.dialog.show(new DialogView({ title: 'Integration Statistic Plots', view: new AIPlotsView({ aid: this.model.get('AID'), id: this.getOption('templateHelpers').DCID }), autoSize: true }))
         },
         
     })
