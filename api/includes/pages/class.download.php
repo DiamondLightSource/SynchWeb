@@ -27,6 +27,7 @@
     
         public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/dt/:dt)(/ppl/:ppl)(/id/:id)(/map/:map)', 'get', '_map'),
                               array('/id/:id/aid/:aid(/log/:log)(/1)(/LogFiles/:LogFiles)(/archive/:archive)', 'get', '_auto_processing'),
+                              array('/plots', 'get', '_auto_processing_plots'),
                               array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
                               array('/dimple/id/:id(/log/:log)', 'get', '_dimple_mtz'),
                               array('/mrbump/id/:id(/log/:log)', 'get', '_mrbump_mtz'),
@@ -63,6 +64,43 @@
                 $this->_header($this->arg('visit').'_download.zip');
                 readfile($data);
             } else $this->_error('There doesnt seem to be a data archive available for this visit');
+        }
+
+        # ------------------------------------------------------------------------
+        # Download mtz/log file for Fast DP / XIA2
+        function _auto_processing_plots() {
+            global $ap_types;
+            if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
+            
+            $rows = $this->db->pq("SELECT appa.filename, appa.filepath, api.autoprocprogramid, app.processingcommandline as type
+                FROM autoprocintegration api 
+                INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
+                INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+                INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
+                WHERE appa.filetype='Graph' AND api.datacollectionid = :1", array($this->arg('id')));
+
+            foreach ($rows as &$r) {
+                foreach ($ap_types as $id => $name) {
+                    if (strpos($r['TYPE'], $id)) {
+                        $r['TYPE'] = $name;
+                        break;
+                    }
+                }
+
+                $json = $r['FILEPATH'].'/'.$r['FILENAME'];
+                $r['PLOTS'] = array();
+                if (file_exists($json)) {
+                    $cont = file_get_contents($json);
+                    $r['PLOTS'] = json_decode($cont);
+                }
+
+                unset($r['FILENAME']);
+                unset($r['FILEPATH']);
+            }
+            
+            $this->_output($rows);
         }
 
 
