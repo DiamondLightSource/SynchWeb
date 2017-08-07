@@ -316,6 +316,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
   app.loadopts = function() {
       app.options = new Options()
       return app.options.fetch({
+          data: { t: new Date().getTime() },
           success: function() {
               if (app.options.get('motd')) {
                   var options = {
