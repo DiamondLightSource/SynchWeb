@@ -15,7 +15,7 @@ define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
           var pm = options.parent
                                                
           var timestamp = utils._date_to_unix(pm.get('ST'))
-          this.model = new DriftModel({ id: pm.get('ID'), timestamp: timestamp})
+          this.model = new DatModel({ id: pm.get('ID'), timestamp: timestamp})
           this.model.fetch()
           this.$el.css('opacity', 0)
       },
