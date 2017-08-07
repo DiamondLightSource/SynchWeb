@@ -49,8 +49,8 @@ define(['marionette',
             if (this.aps.length) {
                 var e = this.aps.at(0)
                 var c = e.get('CELL')
-                this.ui.cells.html(c['CELL_A']+','+c['CELL_B']+','+c['CELL_C']+','+c['CELL_AL']+','+c['CELL_BE']+','+c['CELL_GA'])
-            } else this.ui.cells.html('N/A')
+                this.ui.cells.text(c['CELL_A']+','+c['CELL_B']+','+c['CELL_C']+','+c['CELL_AL']+','+c['CELL_BE']+','+c['CELL_GA'])
+            } else this.ui.cells.text('N/A')
         },
 
 

@@ -100,8 +100,8 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
             var from = moment(opts.xaxes[0].min).format('MMMM Do YYYY')
             var to = moment(opts.xaxes[0].max).format('MMMM Do YYYY')
 
-            if (from != to) this.ui.span.html(from+' - '+to)
-            else this.ui.span.html(from)
+            if (from != to) this.ui.span.text(from+' - '+to)
+            else this.ui.span.text(from)
         },
         
         zoomOverview: function(e, ranges) {

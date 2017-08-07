@@ -36,8 +36,8 @@ define(['marionette',
         },
         
         onRender: function() {
-            this.ui.val.html(this.model.get('val').VAL)
-            this.ui.rbv.html(this.model.get('val').RBV)
+            this.ui.val.text(this.model.get('val').VAL)
+            this.ui.rbv.text(this.model.get('val').RBV)
             
             var statuses = {
                 'SEVR': { MAJOR: 'inactive', MINOR: 'minor' },

@@ -40,7 +40,7 @@ define(['marionette', 'jquery'], function(Marionette, $) {
                       '</ul>'
             }
 
-           this.ui.state.html(val[(this.model.get('INT') - 1)]+stats)
+           this.ui.state.text(val[(this.model.get('INT') - 1)]+stats)
         }
     })
        

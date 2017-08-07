@@ -244,7 +244,7 @@ define(['marionette', 'views/pages',
         },
 
         updateName: function() {
-            if (this.name && this.name.get('name')) this.ui.name.html(' - '+this.name.get('name'))
+            if (this.name && this.name.get('name')) this.ui.name.text(' - '+this.name.get('name'))
         },
         
         updateCollection: function() {

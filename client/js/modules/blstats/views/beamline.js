@@ -126,7 +126,7 @@ define(['marionette', 'views/filter', 'modules/blstats/models/blstats',
             ops.yaxes[0].axisLabel = this.stats.get('yaxis')
             
             $.plot(this.ui.plot, data, ops)
-            this.ui.title.html(this.stats.get('title'))
+            this.ui.title.text(this.stats.get('title'))
             this.ui.plot.removeClass('loading')
         },
         

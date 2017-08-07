@@ -130,7 +130,7 @@ define(['marionette',
             this.$el.empty()
             var name = this.column.get('type').getName(this.model.get('LOCATION'))
             var drop = this.column.get('type').getDrop(this.model.get('LOCATION'))
-            this.$el.html(name+'d'+drop)
+            this.$el.text(name+'d'+drop)
             
             this.delegateEvents()
             return this

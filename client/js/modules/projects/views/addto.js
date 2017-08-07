@@ -50,7 +50,7 @@ define(['marionette',
         },
         
         onRender: function() {
-            this.$el.find('.title').html(this.getOption('name'))
+            this.$el.find('.title').text(this.getOption('name'))
         },
         
         processItem: function() {

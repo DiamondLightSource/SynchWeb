@@ -8,8 +8,8 @@ define(['modules/dc/views/apstatusitem'], function(APStatusItem, $) {
                 var pcount = '('+this.model.get('STATES')['PARTICLES']+') '
             }
           
-            this.ui.holder.eq(0).html('Auto Picker '+pcount+this.getIcon('pfinder'))
-            this.ui.holder.eq(1).html('2d Class '+this.getIcon('2dclass')+' 3d Class '+this.getIcon('3dclass'))
+            this.ui.holder.eq(0).text('Auto Picker '+pcount+this.getIcon('pfinder'))
+            this.ui.holder.eq(1).text('2d Class '+this.getIcon('2dclass')+' 3d Class '+this.getIcon('3dclass'))
         },
 
 

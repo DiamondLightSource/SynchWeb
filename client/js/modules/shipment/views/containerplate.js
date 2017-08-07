@@ -349,17 +349,17 @@ define(['marionette',
             if (this.ui.ads.hasClass('button-highlight')) {
                 this.ui.ads.removeClass('button-highlight')
                 this.image.setAddSubsample(false)
-                this.ui.ads.find('span').html('Mark Point')
+                this.ui.ads.find('span').text('Mark Point')
                 
             } else {
                 this.ui.ads.addClass('button-highlight')
                 this.image.setAddSubsample(true)
-                this.ui.ads.find('span').html('Finish')
+                this.ui.ads.find('span').text('Finish')
             }
 
             this.ui.adr.removeClass('button-highlight')
             this.image.setAddSubsampleRegion(false)
-            this.ui.adr.find('span').html('Mark Region')
+            this.ui.adr.find('span').text('Mark Region')
         },
 
 
@@ -369,17 +369,17 @@ define(['marionette',
             if (this.ui.adr.hasClass('button-highlight')) {
                 this.ui.adr.removeClass('button-highlight')
                 this.image.setAddSubsampleRegion(false)
-                this.ui.adr.find('span').html('Mark Region')
+                this.ui.adr.find('span').text('Mark Region')
                 
             } else {
                 this.ui.adr.addClass('button-highlight')
                 this.image.setAddSubsampleRegion(true)
-                this.ui.adr.find('span').html('Finish')
+                this.ui.adr.find('span').text('Finish')
             }
 
             this.ui.ads.removeClass('button-highlight')
             this.image.setAddSubsample(false)
-            this.ui.ads.find('span').html('Mark Point')
+            this.ui.ads.find('span').text('Mark Point')
         },
 
 

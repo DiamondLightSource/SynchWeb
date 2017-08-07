@@ -68,7 +68,7 @@ define(['views/dialog',
         selectSample: function(e, ui) {
             e.preventDefault()
 
-            this.ui.sn.html(ui.item.label)
+            this.ui.sn.text(ui.item.label)
             console.log(ui.item.label, ui.item.value)
             this.sample = ui.item
             this.ui.sample.val('')

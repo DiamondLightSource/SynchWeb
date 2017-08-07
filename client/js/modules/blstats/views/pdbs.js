@@ -52,7 +52,7 @@ define(['marionette',
     	},
 
         updateDiff: function(e) {
-            this.ui.cd.html(Math.sqrt(Math.pow(this.ui.dist.val(), 2)/3).toFixed(2))
+            this.ui.cd.text(Math.sqrt(Math.pow(this.ui.dist.val(), 2)/3).toFixed(2))
             this.autoproc.fetch()
         },
 
@@ -162,7 +162,7 @@ define(['marionette',
     			return
     		}
 
-			this.ui.state.html(id+'/'+this.toprocess.length+' PDB files processed, '+this.counts.success+' successful, '+this.counts.fail+' failures')
+			this.ui.state.text(id+'/'+this.toprocess.length+' PDB files processed, '+this.counts.success+' successful, '+this.counts.fail+' failures')
 
     		var p = this.toprocess[id]
     		var self = this

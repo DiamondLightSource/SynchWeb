@@ -260,7 +260,7 @@ define(['marionette',
         setJobs: function() {
             var n = this.status.get('NUMBER')
             console.log('jobs', n)
-            this.ui.jobs.html(n)
+            this.ui.jobs.text(n)
             n > 0 ? this.ui.jobs.parent('li').addClass('running') : this.ui.jobs.parent('li').removeClass('running')
         },
 

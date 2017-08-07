@@ -147,7 +147,7 @@ define(['marionette',
             this.nv.show(new VisitList({ collection: this.next }))
             if (app.staff) this.com.show(new VisitList({ collection: this.cm }))
 
-            this.ui.time.html(this.time.time())
+            this.ui.time.text(this.time.time())
         },
         
         

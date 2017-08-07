@@ -121,16 +121,16 @@ define(['marionette', 'modules/cell/collections/datacollections', 'views/pages',
                                 self.ui[k].val($(r).find('dimStructure\\.'+v).text())
                             })
                                     
-                            self.$el.find('.pdb_details .title').html(self.ui.pdb.val()+': '+$(r).find('dimStructure\\.structureTitle').text())
+                            self.$el.find('.pdb_details .title').text(self.ui.pdb.val()+': '+$(r).find('dimStructure\\.structureTitle').text())
                                                    
                             var res = $(r).find('dimStructure\\.resolution').text()
-                            $('.pdb_details .res').html(res)
+                            $('.pdb_details .res').text(res)
                             self.ui.res.val(res)
                                                    
                             self.ui.sg.val($(r).find('dimStructure\\.spaceGroup').text().replace(/\s+/g, ''))
                                                    
-                            if ($(r).find('dimStructure\\.diffractionSource').text() != 'null') $('.pdb_details .beamline').html($(r).find('dimStructure\\.diffractionSource').text())
-                            self.$el.find('.pdb_details .author').html($(r).find('dimStructure\\.structureAuthor').text())
+                            if ($(r).find('dimStructure\\.diffractionSource').text() != 'null') $('.pdb_details .beamline').text($(r).find('dimStructure\\.diffractionSource').text())
+                            self.$el.find('.pdb_details .author').text($(r).find('dimStructure\\.structureAuthor').text())
                                                    
                             var cit = $(r).find('dimStructure\\.title').text()
                             if (cit) {
@@ -139,8 +139,8 @@ define(['marionette', 'modules/cell/collections/datacollections', 'views/pages',
                                 })
                             } else cit = 'N/A'
                                                    
-                            self.$el.find('.pdb_details .citation').html(cit)
-                            self.$el.find('.pdb_details .date').html($(r).find('dimStructure\\.releaseDate').text())
+                            self.$el.find('.pdb_details .citation').text(cit)
+                            self.$el.find('.pdb_details .date').text($(r).find('dimStructure\\.releaseDate').text())
                             self.$el.find('.pdb_details').slideDown()
 
                             self.search()
@@ -172,7 +172,7 @@ define(['marionette', 'modules/cell/collections/datacollections', 'views/pages',
         },
         
         onSearch: function(a,b,c) {
-            this.ui.count.html(this.collection.state.totalRecords)
+            this.ui.count.text(this.collection.state.totalRecords)
             this.$el.find('.data_collections, .page_wrap').show()
         },
         

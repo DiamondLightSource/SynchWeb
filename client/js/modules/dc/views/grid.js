@@ -81,7 +81,7 @@ define(['marionette', 'views/tabs',
       
     renderFlag: function() {
       this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
-      this.$el.find('.COMMENTS').html(this.model.get('COMMENTS'))
+      this.$el.find('.COMMENTS').text(this.model.get('COMMENTS'))
     },
       
     events: {
@@ -95,7 +95,7 @@ define(['marionette', 'views/tabs',
     expandPath: function(e) {
         e.preventDefault()
 
-        this.ui.temp.html(this.fullPath ? (this.model.get('DIR')+this.model.get('FILETEMPLATE')) : (this.model.get('DIRFULL')+this.model.get('FILETEMPLATE')))
+        this.ui.temp.text(this.fullPath ? (this.model.get('DIR')+this.model.get('FILETEMPLATE')) : (this.model.get('DIRFULL')+this.model.get('FILETEMPLATE')))
         this.ui.exp.toggleClass('fa-caret-right')
         this.ui.exp.toggleClass('fa-caret-left')
         

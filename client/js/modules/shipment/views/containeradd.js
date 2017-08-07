@@ -164,10 +164,10 @@ define(['marionette',
         updateBarcode: function(resp) {
             if (resp) {
                 this.model.set('BARCODECHECK', 0)
-                this.$el.find('.message').html('This barcode is already registered to '+resp).addClass('ferror')
+                this.$el.find('.message').text('This barcode is already registered to '+resp).addClass('ferror')
             } else {
                 this.model.set('BARCODECHECK', 1)
-                this.$el.find('.message').html('').removeClass('ferror')
+                this.$el.find('.message').text('').removeClass('ferror')
             }
         },
 
