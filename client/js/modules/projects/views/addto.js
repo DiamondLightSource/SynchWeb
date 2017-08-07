@@ -21,11 +21,7 @@ define(['marionette',
             this.projects = new Projects()
             var self = this
             this.projects.fetch().done(function() {
-                var opts = []
-                self.projects.each(function(p) {
-                    opts.push('<option value="'+p.get('PROJECTID')+'">'+p.get('ACRONYM')+'</option>')
-                })
-                self.ui.project.html(opts.join(''))
+                self.ui.project.html(self.projects.opts())
                 self.checkItem()
             })
         },
