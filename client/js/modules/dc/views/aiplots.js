@@ -63,6 +63,11 @@ define(['marionette', 'modules/dc/collections/aiplots',
 
             this.rprogs.show(new SeriesSelector({ collection: this.plots }))
 
+            if (!this.plots.length) {
+                this.$el.find('.plot').text('No plots available for this datacollection')
+                return
+            }
+
             this.availplots.reset(_.map(
                 _.filter(Object.keys(this.plots.at(0).get('PLOTS')), 
                     function(v) {
