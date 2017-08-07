@@ -8,7 +8,7 @@ define(['backbone'], function(Backbone) {
                     if (options && options.addClass && options.classProperty) {
                         if (m.get(options.classProperty) == options.classPropertyValue) cl = options.addClass
                     }
-                    return '<option class="'+cl+'" value="'+m.get(this.valueAttribute)+'">'+m.get(this.keyAttribute)+'</option>' 
+                    return '<option class="'+cl+'" value="'+m.escape(this.valueAttribute)+'">'+m.escape(this.keyAttribute)+'</option>' 
                 }, this)
         },
 
@@ -17,7 +17,7 @@ define(['backbone'], function(Backbone) {
             if (options && options.empty) kv[''] = ' - '
                 
             this.each(function(m) {
-                kv[m.get(this.valueAttribute)] = m.get(this.keyAttribute)
+                kv[m.escape(this.valueAttribute)] = m.escape(this.keyAttribute)
             }, this)
 
             return kv
