@@ -27,7 +27,7 @@ define(['marionette',
     var ImageCell = Backgrid.Cell.extend({ 
         render: function() {
             this.$el.empty()
-            this.$el.html('<a class="popup" href="'+app.apiurl+'/image/dr/'+this.model.get('DEWARREPORTID')+'"><img class="img" alt="attachment" /></a>')
+            this.$el.html('<a class="popup" href="'+app.apiurl+'/image/dr/'+this.model.escape('DEWARREPORTID')+'"><img class="img" alt="attachment" /></a>')
 
             var self = this
             var img = new XHRImage()

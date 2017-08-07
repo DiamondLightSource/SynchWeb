@@ -9,7 +9,7 @@ define(['backbone', 'modules/samples/models/pdb'], function(Backbone, PDB) {
         },
         
         opts: function() {
-            return '<option value="">N/A</option>' + this.map(function(p) { return '<option value="'+p.get('PDBID')+'">'+p.get('NAME')+' ('+(p.get('CODE') ? 'Code' : 'File')+')</option>' })
+            return '<option value="">N/A</option>' + this.map(function(p) { return '<option value="'+p.escape('PDBID')+'">'+p.escape('NAME')+' ('+(p.escape('CODE') ? 'Code' : 'File')+')</option>' })
         },
         
     })

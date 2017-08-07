@@ -92,7 +92,7 @@ define(['marionette', 'views/table', 'modules/dc/collections/apstatuses', 'modul
                     { label: 'Dimple', cell: APItemCell, editable: false },
                     { label: 'MrBUMP', cell: APItemCell, editable: false },
                     { label: '', cell: RPCell, template: '<a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>', editable: false },
-                    { label: '', cell: APCell, template: '<a href="/dc/visit/'+this.model.get('VISIT')+'/id/<%-ID%>" class="button button-notext dll" title="Open data collection"><i class="fa fa-arrow-right"></i> <span>Open data collection</span></a>', editable: false },
+                    { label: '', cell: APCell, template: '<a href="/dc/visit/'+this.model.escape('VISIT')+'/id/<%-ID%>" class="button button-notext dll" title="Open data collection"><i class="fa fa-arrow-right"></i> <span>Open data collection</span></a>', editable: false },
                     ]
         },
          

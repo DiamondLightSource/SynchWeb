@@ -127,13 +127,13 @@ define(['marionette', 'utils/canvas', 'utils',
         showSample: function() {
             if (this.current_sample) {
                 var s = this.current_sample
-                this.$el.find('.details .sname').html('<a href="/samples/sid/'+s.get('BLSAMPLEID')+'">'+s.get('NAME')+'</a>')
-                this.$el.find('.details .pname').html('<a href="/proteins/pid/'+s.get('PROTEINID')+'">'+s.get('ACRONYM')+'</a>')
+                this.$el.find('.details .sname').html('<a href="/samples/sid/'+s.escape('BLSAMPLEID')+'">'+s.escape('NAME')+'</a>')
+                this.$el.find('.details .pname').html('<a href="/proteins/pid/'+s.escape('PROTEINID')+'">'+s.escape('ACRONYM')+'</a>')
                 this.$el.find('.details .comps').html(s.get('COMPONENTACRONYMS') ? s.get('COMPONENTACRONYMS').join(',') : 'No Components')
-                this.$el.find('.details .cname').html('<a href="/shipment/cid/'+s.get('CONTAINERID')+'">'+s.get('CONTAINER')+'</a>')
+                this.$el.find('.details .cname').html('<a href="/shipment/cid/'+s.escape('CONTAINERID')+'">'+s.escape('CONTAINER')+'</a>')
                 this.$el.find('.details .loaded').html(s.get('R') > 0 ? 'Yes': 'No')
-                this.$el.find('.details .screened').html((s.get('SC') > 0 ? 'Yes': 'No') + (s.get('AI') > 0 ? ' (Indexed: ' + s.get('SCRESOLUTION') + '&#8491;)' : ''))
-                this.$el.find('.details .data').html((s.get('DC') > 0 ? 'Yes': 'No') + (s.get('AP') > 0 ? ' (Integrated: '+s.get('DCRESOLUTION')+'&#8491;)' : ''))
+                this.$el.find('.details .screened').html((s.get('SC') > 0 ? 'Yes': 'No') + (s.get('AI') > 0 ? ' (Indexed: ' + s.escape('SCRESOLUTION') + '&#8491;)' : ''))
+                this.$el.find('.details .data').html((s.get('DC') > 0 ? 'Yes': 'No') + (s.get('AP') > 0 ? ' (Integrated: '+s.escape('DCRESOLUTION')+'&#8491;)' : ''))
           
             }
         },

@@ -83,7 +83,7 @@ define(['marionette',
 
     var RadioCell = Backgrid.Cell.extend({
         render: function() {
-            this.$el.html('<input type="radio" name="value" value="'+this.model.get('productcode')+'" />')
+            this.$el.html('<input type="radio" name="value" value="'+this.model.escape('productcode')+'" />')
             return this
         }
     })
