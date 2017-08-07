@@ -23,7 +23,7 @@ define(['marionette',
     })
             
     var TCDialog = DialogView.extend({
-        template: _.template('<%-TERMS%>'),
+        template: _.template('<%=TERMS%>'),
         title: 'Terms & Conditions',
         buttons: {
             'Accept': 'accept',
