@@ -9,11 +9,11 @@
     <li><a href="/proposal">Proposals</a></li>
     
     <li>
-        <span class="current"><%=PROPOSAL ? PROPOSAL : 'No Proposal'%> <i class="fa fa-angle-double-down"></i></span>
+        <span class="current"><%-PROPOSAL ? PROPOSAL : 'No Proposal'%> <i class="fa fa-angle-double-down"></i></span>
         <% if (PROPOSAL) { %>
         <ul>
             <% _.each(MENUS.menu, function(i,l) { %>
-                <li><a href="/<%=l%>"><%=i%></a></li>
+                <li><a href="/<%-l%>"><%-i%></a></li>
             <% }) %>
         </ul>
         <% } %>
@@ -21,7 +21,7 @@
 
     <% if (PROPOSAL) { %>
         <% _.each(MENUS.extra, function(i,l) { %>
-            <li><a href="/<%=l%>"><%=i%></a></li>
+            <li><a href="/<%-l%>"><%-i%></a></li>
         <% }) %>
     <% } %>
     

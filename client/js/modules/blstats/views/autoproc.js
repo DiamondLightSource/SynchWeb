@@ -8,7 +8,7 @@ define(['marionette', 'views/filter', 'modules/blstats/models/plstats',
     
     var SeriesItem = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<label><input type="checkbox" name="<%=name%>" checked="checked" /> <%=name%><label>'),
+        template: _.template('<label><input type="checkbox" name="<%-name%>" checked="checked" /> <%-name%><label>'),
         events: {
             'change input': 'setStatus',
         },

@@ -23,7 +23,7 @@ define(['marionette',
     })
             
     var TCDialog = DialogView.extend({
-        template: _.template('<%=TERMS%>'),
+        template: _.template('<%-TERMS%>'),
         title: 'Terms & Conditions',
         buttons: {
             'Accept': 'accept',
@@ -60,7 +60,7 @@ define(['marionette',
 
     var DewarView = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<label><input type="checkbox" /> <% if (FACILITYCODE) { %><%=FACILITYCODE%><% } else { %><%=CODE%><% } %></label>'),
+        template: _.template('<label><input type="checkbox" /> <% if (FACILITYCODE) { %><%-FACILITYCODE%><% } else { %><%-CODE%><% } %></label>'),
         events: {
             'click @ui.sel': 'select',
         },

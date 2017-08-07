@@ -5,12 +5,12 @@ define(['marionette'], function(Marionette) {
         tagName: 'li',
         getTemplate: function() {
             var temps = {
-                data: '<span class="title">New data collection</span> <a href="#"><%=DIR%><%=FILETEMPLATE%></a>',
-                grid: '<span class="title">New grid scan</span> <a href="#"><%=DIR%><%=FILETEMPLATE%></a>',
-                edge: '<span class="title">New edge scan</span> <a href="#"><%=DIR%></a>',
-                mca: '<span class="title">New MCA fluorescence spectrum</span> <a href="#"><%=DIR%></a>',
-                load: '<span class="title">New sample loaded</span> <a href="#">Puck: <%=EXPOSURETIME%> Pin: <%=RESOLUTION%> Barcode: <%=DIR%></a>',
-                action: '<span class="title">New sample action</span> <a href="#"><%=IMP%></a>',
+                data: '<span class="title">New data collection</span> <a href="#"><%-DIR%><%-FILETEMPLATE%></a>',
+                grid: '<span class="title">New grid scan</span> <a href="#"><%-DIR%><%-FILETEMPLATE%></a>',
+                edge: '<span class="title">New edge scan</span> <a href="#"><%-DIR%></a>',
+                mca: '<span class="title">New MCA fluorescence spectrum</span> <a href="#"><%-DIR%></a>',
+                load: '<span class="title">New sample loaded</span> <a href="#">Puck: <%-EXPOSURETIME%> Pin: <%-RESOLUTION%> Barcode: <%-DIR%></a>',
+                action: '<span class="title">New sample action</span> <a href="#"><%-IMP%></a>',
             }
             
             return _.template(this.model.get('ST').replace(/\d+-\d+-\d+ /, '')+' - '+temps[this.model.get('TYPE')])

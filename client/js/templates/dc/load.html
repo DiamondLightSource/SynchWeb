@@ -1,8 +1,8 @@
-<div class="data_collection" dcid="<%=ID%>" type="robot">
-    <h1><%=ST%> - Robot <% print(IMP.toLowerCase()) %>ing puck <%= EXPOSURETIME %> pin <%=RESOLUTION%> (Barcode: <%=DIR%>) Status: <%=SPOS%> - <%=SAN%> (Took <%=BSX%>s) <% if (BLSAMPLEID) { %>
-    	<span class="wrap">Sample: <a href="/samples/sid/<%=BLSAMPLEID%>"><%=SAMPLE%></a></span>
+<div class="data_collection" dcid="<%-ID%>" type="robot">
+    <h1><%-ST%> - Robot <% print(IMP.toLowerCase()) %>ing puck <%- EXPOSURETIME %> pin <%-RESOLUTION%> (Barcode: <%-DIR%>) Status: <%-SPOS%> - <%-SAN%> (Took <%-BSX%>s) <% if (BLSAMPLEID) { %>
+    	<span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span>
 		<% if (FILETEMPLATE && DIR != 'null' && FILETEMPLATE != DIR && DIR != 'NR') { %>
-			<p class="message alert">Barcode Mismatch - Sample: <%=FILETEMPLATE%> Read: <%=DIR%></p>
+			<p class="message alert">Barcode Mismatch - Sample: <%-FILETEMPLATE%> Read: <%-DIR%></p>
 		<% } %>
     <% } %>
     </h1>

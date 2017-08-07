@@ -77,7 +77,7 @@ define(['marionette', 'views/table', 'modules/dc/collections/apstatuses', 'modul
             this.statuses = new APStatuses()
             this.columns = [
                     { name: 'FILETEMPLATETRIM', label: 'Prefix', cell: 'string', editable: false },
-                    { label: 'Sample', cell: APCell, template: '<% if (BLSAMPLEID) { %><a href="/samples/sid/<%=BLSAMPLEID%>" class="wrap sample"><%=SAMPLE%></a><% } %>', editable: false },
+                    { label: 'Sample', cell: APCell, template: '<% if (BLSAMPLEID) { %><a href="/samples/sid/<%-BLSAMPLEID%>" class="wrap sample"><%-SAMPLE%></a><% } %>', editable: false },
                     { name: 'ST', label: 'Date', cell: 'string', editable: false },
                     { label: 'Fast DP', cell: APItemCell, editable: false },
                     { label: 'Xia2/3d', cell: APItemCell, editable: false },
@@ -92,7 +92,7 @@ define(['marionette', 'views/table', 'modules/dc/collections/apstatuses', 'modul
                     { label: 'Dimple', cell: APItemCell, editable: false },
                     { label: 'MrBUMP', cell: APItemCell, editable: false },
                     { label: '', cell: RPCell, template: '<a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>', editable: false },
-                    { label: '', cell: APCell, template: '<a href="/dc/visit/'+this.model.get('VISIT')+'/id/<%=ID%>" class="button button-notext dll" title="Open data collection"><i class="fa fa-arrow-right"></i> <span>Open data collection</span></a>', editable: false },
+                    { label: '', cell: APCell, template: '<a href="/dc/visit/'+this.model.get('VISIT')+'/id/<%-ID%>" class="button button-notext dll" title="Open data collection"><i class="fa fa-arrow-right"></i> <span>Open data collection</span></a>', editable: false },
                     ]
         },
          

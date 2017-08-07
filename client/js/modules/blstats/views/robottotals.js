@@ -12,7 +12,7 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
             var columns = [
                 { name: 'ST', label: 'Time', cell: 'string', editable: false },
                 { name: 'BL', label: 'Beamline', cell: 'string', editable: false },
-                { label: 'Visit', cell: table.TemplateCell, editable: false, template: '<a href="/stats/visit/<%=VIS%>"><%=VIS%></a>' },
+                { label: 'Visit', cell: table.TemplateCell, editable: false, template: '<a href="/stats/visit/<%-VIS%>"><%-VIS%></a>' },
                 { name: 'NUM', label: 'Actions', cell: 'string', editable: false },
                 { name: 'SUCCESS', label: 'Success', cell: 'string', editable: false },
                 { name: 'AVGT', label: 'Avg Time', cell: 'string', editable: false },

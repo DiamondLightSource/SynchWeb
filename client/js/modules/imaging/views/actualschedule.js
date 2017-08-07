@@ -18,8 +18,8 @@ define(['marionette', 'views/table', 'utils/table', 'modules/imaging/collections
                            { name: 'BLTIMESTAMP', label: 'Processed', cell: 'string', editable: false },
                            { name: 'DELTA', label: 'Delta (d)', cell: 'string', editable: false },
                            { name: 'INSPECTIONTYPE', label: 'Type', cell: 'string', editable: false },
-                           { label: 'Adhoc', cell: table.TemplateCell, template: "<%=SCHEDULECOMPONENTID ? 'No' : 'Yes' %>", editable: false },
-                           { label: 'Manual', cell: table.TemplateCell, template: "<%=MANUAL == 1 ? 'Yes' : 'No' %>", editable: false },
+                           { label: 'Adhoc', cell: table.TemplateCell, template: "<%-SCHEDULECOMPONENTID ? 'No' : 'Yes' %>", editable: false },
+                           { label: 'Manual', cell: table.TemplateCell, template: "<%-MANUAL == 1 ? 'Yes' : 'No' %>", editable: false },
             ]
                           
             this.table = new TableView({ collection: this.inspections, columns: columns, tableClass: 'inspections', pages: false, loading: true, backgrid: { emptyText: 'No inspections found', } })

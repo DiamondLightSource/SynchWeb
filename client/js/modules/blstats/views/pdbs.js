@@ -86,11 +86,11 @@ define(['marionette',
                 { name: 'PDBBEAMLINENAMESTRIPPED', label: 'PDB Bl', cell: 'string', editable: false },
                 { name: 'BEAMLINEMATCHTEXT', label: 'Bl Match', cell: 'string', editable: false },
                 { name: 'AUTHORMATCHTEXT', label: 'Author Match', cell: 'string', editable: false },
-                { label: 'Nearest', cell: table.TemplateCell, editable: false, test: 'BEAMLINENAME', template: '<%=BEAMLINENAME%> (<%=DISTANCE%>)' },
+                { label: 'Nearest', cell: table.TemplateCell, editable: false, test: 'BEAMLINENAME', template: '<%-BEAMLINENAME%> (<%-DISTANCE%>)' },
                 { name: 'BEAMLINES', label: 'Beamlines', cell: 'string', editable: false },
                 { name: 'AUTOPROCCOUNT', label: 'Integrations', cell: 'string', editable: false },
                 { name: 'STATUS', label: 'Status', cell: 'string', editable: false },
-                { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/cell/pdb/<%=CODE%>" class="button"><i class="fa fa-search"></i></a> <a class="button" href="http://www.rcsb.org/pdb/explore/explore.do?structureId=<%=CODE%>"><i class="fa fa-external-link"></i></a>' },
+                { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/cell/pdb/<%-CODE%>" class="button"><i class="fa fa-search"></i></a> <a class="button" href="http://www.rcsb.org/pdb/explore/explore.do?structureId=<%-CODE%>"><i class="fa fa-external-link"></i></a>' },
             ]
             
             if (app.mobile()) {

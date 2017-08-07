@@ -8,24 +8,24 @@
         <% if (PARENTSAMPLEID) { %>
         <li>
             <span class="label">Parent</span>
-            <span><%=PARENTSAMPLE%> <a href="/samples/sid/<%=PARENTSAMPLEID%>" class="button"><i class="fa fa-search"></i> View</a></span>
+            <span><%-PARENTSAMPLE%> <a href="/samples/sid/<%-PARENTSAMPLEID%>" class="button"><i class="fa fa-search"></i> View</a></span>
         </li>
         <% } %>
         
         <li>
             <span class="label">Name</span>
-            <span class="NAME"><%=NAME%></span>
+            <span class="NAME"><%-NAME%></span>
         </li>
         
         <li>
             <span class="label">Protein Acronym</span>
-            <span class="ACRONYM"><%=ACRONYM%></span> 
-            <a href="/proteins/pid/<%=PROTEINID%>" class="button"><i class="fa fa-search"></i> View All</a>
+            <span class="ACRONYM"><%-ACRONYM%></span> 
+            <a href="/proteins/pid/<%-PROTEINID%>" class="button"><i class="fa fa-search"></i> View All</a>
         </li>
 
         <li>
             <span class="label">Abundance</span>
-            <span class="ABUNDANCE"><%=ABUNDANCE%></span><%=SYMBOL%>
+            <span class="ABUNDANCE"><%-ABUNDANCE%></span><%-SYMBOL%>
         </li>
 
         <li class="clearfix">
@@ -37,12 +37,12 @@
         
         <li>
             <span class="label">Volume</span>
-            <span class="VOLUME"><%=VOLUME%></span>
+            <span class="VOLUME"><%-VOLUME%></span>
         </li>
 
         <li>
             <span class="label">Spacegroup</span>
-            <span class="SPACEGROUP"><%=SPACEGROUP%></span>
+            <span class="SPACEGROUP"><%-SPACEGROUP%></span>
         </li>
 
         <li class="clearfix reorder">
@@ -60,12 +60,12 @@
                     </thead>
                     <tbody>
                         <tr>                                
-                            <td><span class="CELL_A"><%=CELL_A%></span></td>
-                            <td><span class="CELL_B"><%=CELL_B%></span></td>
-                            <td><span class="CELL_C"><%=CELL_C%></span></td>
-                            <td><span class="CELL_ALPHA"><%=CELL_ALPHA%></span></td>
-                            <td><span class="CELL_BETA"><%=CELL_BETA%></span></td> 
-                            <td><span class="CELL_GAMMA"><%=CELL_GAMMA%></span></td>
+                            <td><span class="CELL_A"><%-CELL_A%></span></td>
+                            <td><span class="CELL_B"><%-CELL_B%></span></td>
+                            <td><span class="CELL_C"><%-CELL_C%></span></td>
+                            <td><span class="CELL_ALPHA"><%-CELL_ALPHA%></span></td>
+                            <td><span class="CELL_BETA"><%-CELL_BETA%></span></td> 
+                            <td><span class="CELL_GAMMA"><%-CELL_GAMMA%></span></td>
                         </tr> 
                     </tbody>    
                 </table>
@@ -75,43 +75,43 @@
 
         <li>
             <span class="label">Anomalous Scatterer</span>
-            <span class="ANOMALOUSSCATTERER"><%=ANOMALOUSSCATTERER%></span>
+            <span class="ANOMALOUSSCATTERER"><%-ANOMALOUSSCATTERER%></span>
         </li>
 
         <li>
             <span class="label">Required Resolution</span>
-            <span class="REQUIREDRESOLUTION"><%=REQUIREDRESOLUTION%></span>
+            <span class="REQUIREDRESOLUTION"><%-REQUIREDRESOLUTION%></span>
         </li>
     
 
         <li>
             <span class="label">Comment</span>
-            <span class="COMMENTS"><%=COMMENTS%></span>
+            <span class="COMMENTS"><%-COMMENTS%></span>
         </li>
 
         <li>
             <span class="label">Barcode</span>
-            <span class="CODE"><%=CODE%></span>
+            <span class="CODE"><%-CODE%></span>
         </li>
         
         <% if (CONTAINERID) { %>
         <li>
             <span class="label">Container</span>
-            <span class="cont"><a href="/containers/cid/<%=CONTAINERID%>"><%=CONTAINER%></a></span>
+            <span class="cont"><a href="/containers/cid/<%-CONTAINERID%>"><%-CONTAINER%></a></span>
         </li>
         <% } %>
         
         <% if (DEWAR) { %>
         <li>
             <span class="label">Dewar</span>
-            <span class="dew"><%=DEWAR%></span>
+            <span class="dew"><%-DEWAR%></span>
         </li>
         <% } %>
         
         <% if (SHIPPINGID) { %>
         <li>
             <span class="label">Shipment</span>
-            <span class="ship"><a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a></span>
+            <span class="ship"><a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a></span>
         </li>
         <% } %>
         

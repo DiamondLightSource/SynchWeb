@@ -562,11 +562,11 @@ define(['marionette',
         
         
         onRender: function() {
-            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%=(RID+1)%>' },
+            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
                            { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
                            { name: 'PROTEIN', label: 'Protein', cell: 'string', editable: false },
                            { label: 'Location', cell: LocationCell, editable: false, type: this.type },
-                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%=(X2 ? "Region" : "Point")%>' },
+                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
                            { label: '', cell: AddCell, editable: false, disable: this.model.get('CONTAINERQUEUEID') },
             ]
 
@@ -586,10 +586,10 @@ define(['marionette',
 
             this.asmps.show(this.table)
 
-            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%=(RID+1)%>' },
+            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
                            { label: '', cell: 'select-row', headerCell: 'select-all', editable: false },
                            { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
-                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%=(X2 ? "Region" : "Point")%>' },
+                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
                            { label: 'Experiment', cell: ExperimentKindCell, editable: false },
                            { label: 'Parameters', cell: ExperimentCell, editable: false },
                            { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
@@ -611,7 +611,7 @@ define(['marionette',
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
                 columns.push({ label: '', cell: table.StatusCell, editable: false })
-                columns.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%=BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
+                columns.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
             }
 
             this.table2 = new TableView({ 

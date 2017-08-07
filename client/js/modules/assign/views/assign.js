@@ -23,7 +23,7 @@ define(['marionette', 'views/pages',
             
     
     var ContainerView = Marionette.CompositeView.extend({
-        template: _.template('<span class="r"><a class="button button-notext" title="Click to view container contents" href="/containers/cid/<%=CONTAINERID%>"><i class="fa fa-search"></i> <span>View Container</span></a></span><h1><%=NAME%></h1>'),
+        template: _.template('<span class="r"><a class="button button-notext" title="Click to view container contents" href="/containers/cid/<%-CONTAINERID%>"><i class="fa fa-search"></i> <span>View Container</span></a></span><h1><%-NAME%></h1>'),
         className: function() { return  'container' + (this.getOption('assigned') ? ' assigned' : '') },
         
         initialize: function(options) {
@@ -129,7 +129,7 @@ define(['marionette', 'views/pages',
             
     // List of Dewars in Shipment
     var DewarView = Marionette.CompositeView.extend({
-        template: _.template('<h1 class="clearfix"><%=CODE%><span class="r deactivate"><a class="button deact"><i class="fa  fa-power-off"></i> Deactivate Dewar</a></span></h1><div class="containers clearfix"></div>'),
+        template: _.template('<h1 class="clearfix"><%-CODE%><span class="r deactivate"><a class="button deact"><i class="fa  fa-power-off"></i> Deactivate Dewar</a></span></h1><div class="containers clearfix"></div>'),
         className: function() {
             var classes = 'dewar clearfix'
             if (this.model.get('DEWARSTATUS') == 'processing') classes += ' active'
@@ -182,7 +182,7 @@ define(['marionette', 'views/pages',
             
     // List of Shipments
     var ShipmentView = Marionette.CompositeView.extend({
-        template: _.template('<h1><%=SHIPPINGNAME%></h1>'),
+        template: _.template('<h1><%-SHIPPINGNAME%></h1>'),
         childView: DewarView,
         className: 'shipment',
         
@@ -196,7 +196,7 @@ define(['marionette', 'views/pages',
     // Sample Changer Positions
     var PositionView = Marionette.CompositeView.extend({
         className:'bl_puck',
-        template: _.template('<%=id%> <span class="name"></span><div class="ac"></div>'),
+        template: _.template('<%-id%> <span class="name"></span><div class="ac"></div>'),
         
         childView: ContainerView,
         childViewOptions: {

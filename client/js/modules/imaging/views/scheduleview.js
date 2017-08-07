@@ -4,7 +4,7 @@ define(['marionette', 'views/table', 'utils/table',
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Schedule for <%=NAME%></h1><p class="help">This page lists the components for the selected schedule</p><div class="wrapper"></div>'),
+        template: _.template('<h1>Schedule for <%-NAME%></h1><p class="help">This page lists the components for the selected schedule</p><div class="wrapper"></div>'),
         regions: { 'wrap': '.wrapper' },
         
         initialize: function(options) {

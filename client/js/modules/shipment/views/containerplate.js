@@ -610,13 +610,13 @@ define(['marionette',
 
             if (this.model.get('INSPECTIONS') > 0) {
                 var columns = [
-                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%=(RID+1)%>' },
-                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%=(X2 ? "Region" : "Point")%>' },
+                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
+                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
                         { name: 'X', label: 'X', cell: 'string', editable: false },
                         { name: 'Y', label: 'Y', cell: 'string', editable: false },
                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
                         { label: '', cell: table.StatusCell, editable: false },
-                        { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%=BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
+                        { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
                 ]
 
                 if (!this.model.get('CONTAINERQUEUEID')) columns.push({ label: '', cell: ActionCell, editable: false })

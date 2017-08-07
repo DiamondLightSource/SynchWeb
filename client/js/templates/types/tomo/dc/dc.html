@@ -1,38 +1,38 @@
-<div class="data_collection" dcid="<%=ID%>" type="data">
+<div class="data_collection" dcid="<%-ID%>" type="data">
     <h1>
-        <a href="#" class="atp button button-notext" ty="dc" iid="<%=DCG%>" name="<%=DIR%><%=FILETEMPLATE%>"><i class="fa fa-book"></i> <span>Add to Project</span></a>
+        <a href="#" class="atp button button-notext" ty="dc" iid="<%-DCG%>" name="<%-DIR%><%-FILETEMPLATE%>"><i class="fa fa-book"></i> <span>Add to Project</span></a>
         <a href="#" class="button button-notext flag <% if (FLAG) { %>button-highlight<% } %>" title="Click to add this data collection to the list of favourite data collections"><i class="fa fa-star-o"></i> <span>Favourite</span></a>
-        <a href="/dc/visit/<%=VIS_LINK%>/id/<%=ID%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
+        <a href="/dc/visit/<%-VIS_LINK%>/id/<%-ID%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
         
-        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%=VIS_LINK%>"><%=VIS_LINK%></a>]<% } %> <%=ST%></span><span class="spacer"> - </span><span class="temp"><%=DIR%><%=FILETEMPLATE%></span>
+        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%-VIS_LINK%>"><%-VIS_LINK%></a>]<% } %> <%-ST%></span><span class="spacer"> - </span><span class="temp"><%-DIR%><%-FILETEMPLATE%></span>
         
     </h1>
 
     <div class="diffraction" title="Click to view diffraction image">
-        <a href="<%=APIURL%>/image/id/<%=ID%>/f/1/n/4"><img dsrc="" alt="Diffraction Image 1" /></a>
+        <a href="<%-APIURL%>/image/id/<%-ID%>/f/1/n/4"><img dsrc="" alt="Diffraction Image 1" /></a>
     </div>
     <div class="snapshots" title="View sample snapshots for the current data collection">
-        <a href="<%=APIURL%>/image/id/<%=ID%>/f/1" title="Crystal Snapshot 1"><img dsrc="" alt="Crystal Snapshot 1" /></a>
+        <a href="<%-APIURL%>/image/id/<%-ID%>/f/1" title="Crystal Snapshot 1"><img dsrc="" alt="Crystal Snapshot 1" /></a>
     </div>
     
     <div class="links">
-        <a href="/dc/view/id/<%=ID%>"><i class="fa fa-picture-o fa-2x"></i> Images</a> 
+        <a href="/dc/view/id/<%-ID%>"><i class="fa fa-picture-o fa-2x"></i> Images</a> 
         <a class="sn" href="#snapshots"><i class="fa fa-camera fa-2x"></i> Snapshots</a> 
         <a class="dl" href="#distl"><i class="fa fa-bar-chart-o fa-2x"></i> Data Plot</a>
     </div>
     
     <ul class="clearfix">
-        <li>Wavelength: <%=WAVELENGTH%>&#197;</li>
+        <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
         <li>Calibrant: </li>
-        <li>Exposure: <%=EXPOSURETIME%>s</li>
-        <li>Resolution: <%=RESOLUTION%>&#197;</li>
-        <li>Beamsize: <%=BSX%>x<%=BSY%>&mu;m</li>
+        <li>Exposure: <%-EXPOSURETIME%>s</li>
+        <li>Resolution: <%-RESOLUTION%>&#197;</li>
+        <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
         
-        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%=COMMENTS%></span></li>
+        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (!STATE) { %><li>Status: <b>Stopped</b></li><% } %>
         </ul>
     
     <div class="holder">
-        <h1 title="Download Data">Data Files <span class="r"><i class="fa fa-download"></i> <a href="<%=APIURL%>/dc/dl/id/<%=ID%>" title="Download files">Download</a></span></h1>
+        <h1 title="Download Data">Data Files <span class="r"><i class="fa fa-download"></i> <a href="<%-APIURL%>/dc/dl/id/<%-ID%>" title="Download files">Download</a></span></h1>
     </div>
 </div>

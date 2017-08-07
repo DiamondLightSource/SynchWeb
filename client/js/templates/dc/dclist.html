@@ -16,22 +16,22 @@
     <% } %>
 
     <div class="links">
-        <a class="button" href="/assign/visit/<%=VISIT%>" title="Assign Containers" class="summary"><i class="fa fa-arrows"></i> <span>Assign Containers</span></a>
-        <a class="button" href="/dc/summary/visit/<%=VISIT%>" title="Data Summary" class="summary"><i class="fa fa-file-o"></i> <span>Summary</span></a>
-        <a class="button"  href="/dc/apstatussummary/visit/<%=VISIT%>" title="Autoprocessing Summary"><i class="fa fa-magic"></i> <span>Auto Processing</span></a>
-        <a class="button"  href="/stats/visit/<%=VISIT%>" title="Visit Statistics"><i class="fa fa-pie-chart"></i> <span>Visit Stats</span></a>
-        <a class="button queue"  href="/dc/queue/visit/<%=VISIT%>" title="Build GDA Queue"><i class="fa fa-cog"></i> <span>Build GDA Queue</span></a>
+        <a class="button" href="/assign/visit/<%-VISIT%>" title="Assign Containers" class="summary"><i class="fa fa-arrows"></i> <span>Assign Containers</span></a>
+        <a class="button" href="/dc/summary/visit/<%-VISIT%>" title="Data Summary" class="summary"><i class="fa fa-file-o"></i> <span>Summary</span></a>
+        <a class="button"  href="/dc/apstatussummary/visit/<%-VISIT%>" title="Autoprocessing Summary"><i class="fa fa-magic"></i> <span>Auto Processing</span></a>
+        <a class="button"  href="/stats/visit/<%-VISIT%>" title="Visit Statistics"><i class="fa fa-pie-chart"></i> <span>Visit Stats</span></a>
+        <a class="button queue"  href="/dc/queue/visit/<%-VISIT%>" title="Build GDA Queue"><i class="fa fa-cog"></i> <span>Build GDA Queue</span></a>
         <a href="#" class="button users"><i class="fa fa-users"></i> <span>Users</span></a>
         <a href="#" class="button dewars"><i class="fa fa-truck"></i> <span>Dewars</span></a>
-        <a class="button"  href="/dc/sc/visit/<%=VISIT%>" title="Sample Changer"><i class="fa fa-exchange"></i> <span>Sample Changer</span></a>
+        <a class="button"  href="/dc/sc/visit/<%-VISIT%>" title="Sample Changer"><i class="fa fa-exchange"></i> <span>Sample Changer</span></a>
         <% if (app.staff) { %>
-        <a class="button"  href="/status/bl/<%=BL%>" title="Beamline Status" class="blstat"><i class="fa fa-wrench"></i> <span>Beamline Status</span></a>
+        <a class="button"  href="/status/bl/<%-BL%>" title="Beamline Status" class="blstat"><i class="fa fa-wrench"></i> <span>Beamline Status</span></a>
         <% } %>
     </div>
     <% } %>
 
     <% if (IS_SINGLE) { %>
-    <h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%=VISIT%><% } %>">View All Data Collections</a></h1>
+    <h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%-VISIT%><% } %>">View All Data Collections</a></h1>
     <% } %>
 
     <div class="st"></div>

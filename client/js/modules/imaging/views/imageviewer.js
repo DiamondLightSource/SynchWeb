@@ -34,7 +34,7 @@ define(['marionette',
             this.model.set('isSelected', true)
         },
         
-        template: _.template('<%=SCORE%>'),
+        template: _.template('<%-SCORE%>'),
         onRender: function() {
             this.model.get('isSelected') ? this.$el.addClass('current') : this.$el.removeClass('current')
             console.log('render score', this.model.get('isSelected'))

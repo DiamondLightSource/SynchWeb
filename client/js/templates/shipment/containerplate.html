@@ -1,4 +1,4 @@
-<h1>Container: <span class="NAME"><%=NAME%></span></h1>
+<h1>Container: <span class="NAME"><%-NAME%></span></h1>
 
 <a name="top"></a>
 <p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
@@ -14,48 +14,48 @@
         <ul>
             <li>
                 <span class="label">Shipment</span>
-                <span><a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a></span>
+                <span><a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a></span>
             </li>
             
             <li>
                 <span class="label">Dewar</span>
-                <span><%=DEWAR%></span>
+                <span><%-DEWAR%></span>
             </li>
             <li>
                 <span class="label">Container Type</span>
-                <span class="CONTAINERTYPE"><%=CONTAINERTYPE%></span>
+                <span class="CONTAINERTYPE"><%-CONTAINERTYPE%></span>
             </li>
 
             <li>
                 <span class="label">Barcode</span>
-                <span class="BARCODE"><%=BARCODE%></span>
+                <span class="BARCODE"><%-BARCODE%></span>
             </li>
 
             <% if (REQUESTEDIMAGERID) { %>
             <li>
                 <span class="label">Requested Imager Location</span>
-                <span class="IMAGERID"><%=REQUESTEDIMAGER%></span>
+                <span class="IMAGERID"><%-REQUESTEDIMAGER%></span>
             </li>
             <% } %>
 
             <% if (IMAGERID) { %>
             <li>
                 <span class="label">Current Imager Location</span>
-                <span class="IMAGERID"><%=IMAGER%></span>
+                <span class="IMAGERID"><%-IMAGER%></span>
             </li>
             <% } %>
 
             <% if (SCHEDULEID) { %>
             <li>
                 <span class="label">Imaging Schedule</span>
-                <span><span class="SCHEDULEID"><%=SCHEDULE%></span> <a href="#" class="button view_sched"><i class="fa fa-search"></i> <span>View</span></a></span>
+                <span><span class="SCHEDULEID"><%-SCHEDULE%></span> <a href="#" class="button view_sched"><i class="fa fa-search"></i> <span>View</span></a></span>
             </li>
             <% } %>
 
             <% if (SCREENID) { %>
             <li>
                 <span class="label">Crystallisation Screen</span>
-                <span><span class="SCREENID"><%=SCREEN%></span> <a href="/imaging/screen/<%=SCREENID%>" class="button view_scr"><i class="fa fa-search"></i> <span>View</span></a></span>
+                <span><span class="SCREENID"><%-SCREEN%></span> <a href="/imaging/screen/<%-SCREENID%>" class="button view_scr"><i class="fa fa-search"></i> <span>View</span></a></span>
             </li>
             <% } %>
             
@@ -67,7 +67,7 @@
             </li>
             
             <li class="clearfix reorder">
-                <div class="COMMENTS text"><%=COMMENTS%></div>
+                <div class="COMMENTS text"><%-COMMENTS%></div>
                 <span class="label">Comments</span>
             </li>
 

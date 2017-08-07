@@ -6,7 +6,7 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
 ], function(Marionette, Histogram, utils, $) {
     
     return Marionette.ItemView.extend({
-        template: _.template('<div id="visit_pie"></div><p><%=title%></p>'),
+        template: _.template('<div id="visit_pie"></div><p><%-title%></p>'),
                               
         events: {
             'plotselected': 'zoom',

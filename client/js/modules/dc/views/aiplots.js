@@ -9,7 +9,7 @@ define(['marionette', 'modules/dc/collections/aiplots',
        
 
     var SeriesSelect = Marionette.ItemView.extend({
-        template: _.template('<label><input type="checkbox"> <%=TYPE%></label>'),
+        template: _.template('<label><input type="checkbox"> <%-TYPE%></label>'),
         tagName: 'li',
         ui: {
             check: 'input[type=checkbox]',

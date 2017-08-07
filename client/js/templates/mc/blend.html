@@ -1,14 +1,14 @@
 
     <p class="help">This page allows you to &quot;Blend&quot; integrated data sets together</p>
 
-    <h1>Blended Data Sets for <%=VISIT%></h1>
+    <h1>Blended Data Sets for <%-VISIT%></h1>
 
     <p class="help">This table lists successful blend runs, you can view scaling statistics and download the relevent mtz files</p>
 
     <div class="filter filter-nohide">
         <ul class="clearfix">
-            <li title="Reintegrate data sets"><a href="/mc/visit/<%=VISIT%>">Integrate</a></li>
-            <li title="Blend integrated data sets together" class="current"><a href="/mc/blend/visit/<%=VISIT%>">Blend</a></li>
+            <li title="Reintegrate data sets"><a href="/mc/visit/<%-VISIT%>">Integrate</a></li>
+            <li title="Blend integrated data sets together" class="current"><a href="/mc/blend/visit/<%-VISIT%>">Blend</a></li>
             <li><span class="jobs">-</span> job(s) running</li>
         </ul>
     </div>
@@ -16,7 +16,7 @@
     <div class="blended"></div>
 
 
-    <h1>Integrated Data Collections for <%=VISIT%></h1>
+    <h1>Integrated Data Collections for <%-VISIT%></h1>
 
     <p class="help">This table list successful integrations with XIA2. Select which of these data sets to blend by clicking on the relevent row in the table. Then press &quot;Blend&quot;</p>
 

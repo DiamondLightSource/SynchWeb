@@ -40,7 +40,7 @@ define(['marionette', 'views/dialog', 'jquery', 'jquery.color'], function(Marion
     // Generic Message View
     generic_msg: Marionette.ItemView.extend({
         className: 'content',
-        template: _.template('<h1><%=title%></h1><div><p><%=msg%></p></div>'),
+        template: _.template('<h1><%-title%></h1><div><p><%=msg%></p></div>'),
         templateHelpers: function() {        
             return {
                 msg: this.message,

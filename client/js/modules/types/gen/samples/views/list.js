@@ -18,7 +18,7 @@ define(['modules/samples/views/list',
 	        { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
 
 	        { name: 'CONTAINER', label: 'Container', cell: 'string', editable: false },
-	        // { label: 'Snapshot', cell: table.TemplateCell, test: 'DCID', editable: false, template: '<img class="img" src="'+app.apiurl+'/image/id/<%=DCID%>" /> <img class="img" src="'+app.apiurl+'/image/id/<%=DCID%>/n/2" />' },
+	        // { label: 'Snapshot', cell: table.TemplateCell, test: 'DCID', editable: false, template: '<img class="img" src="'+app.apiurl+'/image/id/<%-DCID%>" /> <img class="img" src="'+app.apiurl+'/image/id/<%-DCID%>/n/2" />' },
 	        { label: 'Snapshot', cell: SampleList.SnapshotCell, editable: false },
 	        // { name: 'SC', label: 'SCs', cell: 'string', editable: false },
 	        // { name: 'SCRESOLUTION', label: 'Res', cell: 'string', editable: false },

@@ -3,7 +3,7 @@ define(['marionette', 'collections/dewars'], function(Marionette, Dewars) {
     
     var DewarItem = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<a class="show" href="#"><%=SHIPPINGNAME%></a>: <%=CODE%> <%=FACILITYCODE%> - <%=DEWARSTATUS%>'),
+        template: _.template('<a class="show" href="#"><%-SHIPPINGNAME%></a>: <%-CODE%> <%-FACILITYCODE%> - <%-DEWARSTATUS%>'),
         className: function() {
             return this.model.get('VISITS') == 0 ? 'new' : ''
         },

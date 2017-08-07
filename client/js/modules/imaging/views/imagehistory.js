@@ -7,7 +7,7 @@ define(['marionette',
         
     var ThumbView = Marionette.ItemView.extend({
         tagName: 'figure',
-        template: _.template('<a href="/containers/cid/<%=CONTAINERID%>/iid/<%=CONTAINERINSPECTIONID%>/sid/<%=BLSAMPLEID%>"><img /></a><figcaption>+<%=DELTA%>d</figcaption>'),
+        template: _.template('<a href="/containers/cid/<%-CONTAINERID%>/iid/<%-CONTAINERINSPECTIONID%>/sid/<%-BLSAMPLEID%>"><img /></a><figcaption>+<%-DELTA%>d</figcaption>'),
         
         events: {
             'mouseover': 'hover',

@@ -106,7 +106,7 @@ define(['marionette',
     var ContainerView = Marionette.CompositeView.extend({
         tagName: 'li',
         className: 'container',
-        template: _.template('<a href="#"><h3><%=NAME%></h3></a>'),
+        template: _.template('<a href="#"><h3><%-NAME%></h3></a>'),
         events: {
             click: 'doClick',
         },
@@ -133,7 +133,7 @@ define(['marionette',
             'data-content-theme': "a",
             'data-collapsed': 'false'
         },
-        template: _.template('<h3><%=CODE%></h3><button data-role="button" class="deact">Deactivate Dewar</button><ul data-role="listview" data-inset="true" class="responsive dewar"></ul><div class="clear"></div>'),
+        template: _.template('<h3><%-CODE%></h3><button data-role="button" class="deact">Deactivate Dewar</button><ul data-role="listview" data-inset="true" class="responsive dewar"></ul><div class="clear"></div>'),
         
         events: {
             'click button.deact': 'deactivateDewar',
@@ -172,7 +172,7 @@ define(['marionette',
             'data-content-theme': "a",
             'data-collapsed': 'false'
         },
-        template: _.template('<h3><%=SHIPPINGNAME%></h3><div data-role="collapsible-set" class="shipment"></div>'),
+        template: _.template('<h3><%-SHIPPINGNAME%></h3><div data-role="collapsible-set" class="shipment"></div>'),
         childView: DewarView,
         className: 'shipment',
         childViewContainer: '.shipment',
@@ -215,7 +215,7 @@ define(['marionette',
             return 'ui-block-'+String.fromCharCode((this.model.collection.indexOf(this.model)%4)+97)
         },
         
-        template: _.template('<div class="pos assigned" data-role="collapsible" data-content-theme="a" data-collapsed="false"><h3>Position <%=id%></h3><ul data-role="listview" data-inset="true"></ul></div>'),
+        template: _.template('<div class="pos assigned" data-role="collapsible" data-content-theme="a" data-collapsed="false"><h3>Position <%-id%></h3><ul data-role="listview" data-inset="true"></ul></div>'),
         
         childView: ContainerView,
         childViewOptions: {

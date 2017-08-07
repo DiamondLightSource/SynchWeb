@@ -4,7 +4,7 @@ define(['marionette',
         
     var TutorialListItem = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<%=title%>'),
+        template: _.template('<%-title%>'),
         
         modelEvents: {
             'change': 'render',
@@ -60,7 +60,7 @@ define(['marionette',
         
     var TutorialItem = Marionette.ItemView.extend({
         className: 'content',
-        template: _.template('<%=content%>'),
+        template: _.template('<%-content%>'),
         
         templateHelpers: function() {
             return {

@@ -7,7 +7,7 @@ define(['marionette',
 
     var EPButton = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<a href="#" class="button"><%=NAME%></a>'),
+        template: _.template('<a href="#" class="button"><%-NAME%></a>'),
         
         events: {
             'click a.button': 'showMotors',
