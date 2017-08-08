@@ -11,7 +11,38 @@
 
         <script type="text/javascript" src="js/smooth-scroll.min.js"></script>
         <script type="text/javascript">
-            smoothScroll.init()
+            smoothScroll.init();
+
+            (function() {
+                // https://stackoverflow.com/questions/487073/check-if-element-is-visible-after-scrolling/22480938#22480938
+                var isScrolledIntoView = function (el) {
+                    var elemTop = el.getBoundingClientRect().top
+                    var elemBottom = el.getBoundingClientRect().bottom
+
+                    var isVisible = ((elemTop >= 0) && (elemTop <= window.innerHeight))
+                        || ((elemBottom <= window.innerHeight) && elemBottom >= 0)
+                    return isVisible;
+                }
+
+                function attachEvent(element, event, callbackFunction) {
+                    if (element.addEventListener) {
+                        element.addEventListener(event, callbackFunction, false);
+                    } else if (element.attachEvent) {
+                        element.attachEvent('on' + event, callbackFunction);
+                    }
+                }
+
+                var update = function() {
+                    Array.prototype.forEach.call(document.getElementsByClassName('carousel-slides'), function(el,i) {
+                        isScrolledIntoView(el) ? el.classList.add('atten') : el.classList.remove('atten')
+                    })
+                }
+
+                attachEvent(window, "resize", update)
+                attachEvent(window, "scroll", update)
+                update()
+
+            })();
         </script>
 
         <title>SynchWeb</title>
@@ -58,7 +89,7 @@
                         </div>
                     </div>
                     <div class="screenshot">
-                        <img class="spotlight" src="assets/images/overview/dclist1.png" />
+                        <img class="" src="assets/images/overview/laptop_dclist_small_mob.png" />
                     </div>
                 </div>
             </div>
