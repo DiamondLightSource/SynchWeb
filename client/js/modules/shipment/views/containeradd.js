@@ -437,7 +437,7 @@ define(['marionette',
         },
 
         finished: function() {
-            app.alert({ message: 'New container &quot;'+this.model.get('NAME')+'&quot; created, Click <a href="/containers/cid/'+this.model.get('CONTAINERID')+'">here</a> to view it', persist: 'cadd'+this.model.get('CONTAINERID'), className: 'message notify' })
+            app.alert({ message: 'New container &quot;'+this.model.escape('NAME')+'&quot; created, Click <a href="/containers/cid/'+this.model.escape('CONTAINERID')+'">here</a> to view it', persist: 'cadd'+this.model.escape('CONTAINERID'), className: 'message notify' })
             this.clearPuck()
             this.clearPlate()
             this.model.set({ CONTAINERID: null })
