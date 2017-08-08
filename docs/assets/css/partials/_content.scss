@@ -144,8 +144,11 @@ section.intro {
 
     img {
         width: 100%;
-        box-shadow: 5px 5px 5px #ddd;
-        border-radius: 10px;
+
+        &.snapshot {
+            box-shadow: 5px 5px 5px #ddd;
+            border-radius: 10px;
+        }
     }
 
     .top {
@@ -184,6 +187,8 @@ section.alt2 {
 .annotated {
     position: relative;
     overflow: hidden;
+    width: calc(100% - 20px);
+    margin: 10px auto;
 
     img {
         max-width: 100%;
@@ -276,7 +281,6 @@ section.alt2 {
             }
         }
 
-
         &:hover ~ img {
         /*& ~ img {*/
             box-shadow: 1px 1px 6px rgba(0,0,0,0.2);
@@ -303,6 +307,15 @@ section.alt2 {
 }
 
 
+@keyframes pulse {
+    0% {
+       box-shadow: 0 0 0 0px rgba(180,180,180, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 0 10px rgba(180,180,180, 0);
+    }
+}
+
 .carousel {
     overflow: hidden;
     text-align: center;
@@ -319,6 +332,14 @@ section.alt2 {
     .carousel-slides {
         width: 100%;
         overflow: hidden;
+
+        &.atten {
+            .carousel-slide figure {
+                border-radius: 5px;
+                animation: pulse 2s ease;
+                animation-iteration-count: 2;
+            }
+        }
 
         .carousel-inner {
             width: (100% * $carousel-slides);
