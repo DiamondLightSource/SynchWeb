@@ -1,6 +1,7 @@
 define(['marionette', 'modules/shipment/views/movecontainer', 
+    'views/pages',
     'utils',
-    'tpl!templates/shipment/containerli.html'], function(Marionette, MoveContainerView, 
+    'tpl!templates/shipment/containerli.html'], function(Marionette, MoveContainerView, PagesView,
         utils, template) {
     
     var EmptyDewar = Marionette.ItemView.extend({
@@ -33,7 +34,7 @@ define(['marionette', 'modules/shipment/views/movecontainer',
         },
     })
     
-    return Marionette.CollectionView.extend({
+    var ContainersView = Marionette.CollectionView.extend({
         className: 'containers',
         tagName: 'ul',
         childView: ContainerItemView,
@@ -46,6 +47,19 @@ define(['marionette', 'modules/shipment/views/movecontainer',
         triggerRefresh: function() {
             this.trigger('refresh:dewars')
         },
+    })
+
+    return Marionette.LayoutView.extend({
+        template: _.template('<div class="rcont"></div><div class="rpages page_wrap"></div>'),
+        regions: {
+            rcont: '.rcont',
+            rpages: '.rpages',
+        },
+
+        onRender: function() {
+            this.rcont.show(new ContainersView({ collection: this.getOption('collection') }))
+            this.rpages.show(new PagesView({ collection: this.getOption('collection') }))
+        }
     })
     
 })
