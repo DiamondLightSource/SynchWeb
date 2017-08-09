@@ -353,9 +353,12 @@ section.alt2 {
             }
 
             &:after {
+                width: 100%;
+                left: 0;
+                margin: auto;
                 top: 50%;
                 font-family: $icon-font;
-                font-size: 6em;
+                font-size: 4em;
                 opacity: 0;
                 content:'\f25a';
                 position: absolute;
