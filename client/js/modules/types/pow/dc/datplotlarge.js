@@ -85,8 +85,7 @@ define(['marionette',
                 this.$el.addClass('loading')
             }
 
-            var timestamp = utils._date_to_unix(pm.get('ST'))
-            this.model = new Dat({ id: pm.get('ID'), timestamp: timestamp, start: pm.get('ST') })
+            this.model = new Dat({ id: pm.get('ID'), pm: pm })
             this.model.fetch().done(this.addRoot.bind(this))
 
             this.$el.css('opacity', 0)
@@ -101,10 +100,9 @@ define(['marionette',
             var ready = []
             this.dcs.each(function(dc) {
                 var self = this
-                var m = new Dat({ id: dc.get('ID') })
+                var m = new Dat({ id: dc.get('ID'), pm: dc })
                 m.stop()
                 ready.push(m.fetch().done(function() {
-                    m.set('start', dc.get('ST'))
                     self.models.add(m)
                 }))
             }, this)
