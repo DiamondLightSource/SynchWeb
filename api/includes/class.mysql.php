@@ -246,7 +246,12 @@
                             'XRFFluorescenceMapping',
                             'XRFFluorescenceMappingROI',
 
-                            'Particle',
+                            'GridImageMap',
+
+                            // EM
+                            'MotionCorrection',
+                            'MotionCorrectionDrift',
+                            'CTF',
 
                             '',
 
