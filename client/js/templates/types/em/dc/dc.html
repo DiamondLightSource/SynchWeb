@@ -21,11 +21,6 @@
     <div class="image ov image-third"></div>
     <div class="image mg image-third"></div>
     
-    <div class="links">
-        <a class="sn" href="#snapshots"><i class="fa fa-camera fa-2x"></i> Snapshots</a> 
-        <a class="dl" href="#distl"><i class="fa fa-bar-chart-o fa-2x"></i> Per Movie Analysis</a>
-    </div>
-    
     <ul class="clearfix">
         <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
         
@@ -48,6 +43,7 @@
 
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
 
+        <li>Detector: <%-DETECTORMANUFACTURER%> <%-DETECTORMODEL%></li>
         <li>Detector Mode: <%-DETECTORMODE%></li>
         <li>Sample Pixel Size: <%-DETECTORPIXELSIZEHORIZONTAL/MAGNIFICATION%>&#197;/pix</li>
         <li>Binning: <%-BINNING%>pix</li>
