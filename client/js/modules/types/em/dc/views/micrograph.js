@@ -29,6 +29,7 @@ define(['marionette',
         },
 
         setMicrograph: function(im) {
+            if (!im) return
             this.imagenumber = im
             this.loadMicrograph()
         },
