@@ -23,6 +23,7 @@ define([
             'click a.sn': 'showSnapshots',
             'click a.assoc': 'associateSample',
             'click a.dd': utils.signHandler,
+            'click a.attach': 'attachments',
         },
 
         associateSample: function(e) {
