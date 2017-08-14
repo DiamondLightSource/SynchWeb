@@ -28,7 +28,7 @@ define(['backbone.paginator'],
         poll: function() {
             if (this.running) {
                 clearTimeout(this.refresh_thread)
-                setTimeout(this.fetch, 5000)
+                this.refresh_thread = setTimeout(this.fetch, 5000)
             }
         }
 
