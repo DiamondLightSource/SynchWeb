@@ -12,7 +12,7 @@ define(['marionette',
        
 
     return Marionette.LayoutView.extend({
-        template: _.template('<div class="mc"></div><div class="ctf"></div>'),
+        template: _.template('<div class="mc dcap"></div><div class="ctf dcap"></div>'),
         regions: {
             rmc: '.mc',
             rctf: '.ctf',
