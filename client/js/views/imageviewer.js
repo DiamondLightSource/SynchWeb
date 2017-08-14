@@ -26,6 +26,7 @@ define(['marionette',
                 'mouseup @ui.canvas': 'mouseUpCanvas',
                 'DOMMouseScroll @ui.canvas': 'mouseWheelCanvas',
                 'mousewheel @ui.canvas': 'mouseWheelCanvas',
+                'touchstart @ui.canvas': 'mouseDownCanvas',
                 'touchmove @ui.canvas': 'touchMoveCanvas',
                 'touchend @ui.canvas': 'touchEndCanvas',
             }
@@ -200,7 +201,7 @@ define(['marionette',
         mouseMoveCanvas: function(e) {
             e.preventDefault()
             if (e.originalEvent.touches && e.originalEvent.touches.length >  1) return
-                if (e.originalEvent.touches && e.originalEvent.touches.length) e = e.originalEvent.touches[0];
+            if (e.originalEvent.touches && e.originalEvent.touches.length) e = e.originalEvent.touches[0]
             var c = utils.get_xy(e, this.ui.canvas)
             
             if (this.record) {
@@ -228,7 +229,7 @@ define(['marionette',
         },
                 
         touchMoveCanvas: function(e) {
-            this.mouseMove(e)
+            this.mouseMoveCanvas(e)
             if (e.originalEvent.touches && e.originalEvent.touches.length == 2) {
                 x = e.originalEvent.touches[0]
                 y = e.originalEvent.touches[1]
