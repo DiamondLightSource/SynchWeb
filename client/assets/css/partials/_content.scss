@@ -528,6 +528,14 @@ ol.rounded {
             background: $content-sub-background;
             display: none;
             overflow: auto;
+
+            .dcap {
+                padding: 1% 1% 0 1%;
+
+                .data_collection {
+                    margin-bottom: 0;
+                }
+            }
             
             > h1 {
                 border-bottom: 1px solid;
@@ -1881,3 +1889,5 @@ textarea[name=pasted] {
     }
 
 }
+
+
