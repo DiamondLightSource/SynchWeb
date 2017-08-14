@@ -14,7 +14,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       AttachmentsView,
       template) {
 
-  return Marionette.ItemView.extend({
+  return Marionette.LayoutView.extend({
     template: template,
     plotView: DCDISTLView,
     imageStatusItem: DCImageStatusItem,
