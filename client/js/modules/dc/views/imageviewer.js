@@ -349,7 +349,7 @@ define(['jquery', 'marionette',
         prev: function() {
             val = parseInt(this.ui.num.val())
             if (val > 1) {
-              if (val > parseInt(this.model.get('NI'))) val = ni
+              if (val > parseInt(this.model.get('NUMIMG'))) val = ni
               val--
               this.change(val)
               this.ui.num.val(val)
@@ -358,7 +358,7 @@ define(['jquery', 'marionette',
           
         next: function() {
             val = parseInt(this.ui.num.val())
-            if (val < parseInt(this.model.get('NI'))) {
+            if (val < parseInt(this.model.get('NUMIMG'))) {
               val++
               this.change(val)
               this.ui.num.val(val)
@@ -378,7 +378,7 @@ define(['jquery', 'marionette',
                 img.onload = function() {
                     self.ui.loadprog.text('Cached Image '+self.ci)
                     self.ui.loadprog.show()
-                    if (self.ci < self.model.get('NI')) {
+                    if (self.ci < self.model.get('NUMIMG')) {
                         self.ci++
                         self.cache_thread = setTimeout(self.precache.bind(self), 500)
                     }
@@ -725,9 +725,9 @@ define(['jquery', 'marionette',
         keyPressNum: function(e) {
             var n = parseInt(this.ui.num.val())
             if(e.which == 13) {
-                if (n < this.model.get('NI')) {
+                if (n < this.model.get('NUMIMG')) {
                     this.change(n)
-                } else this.ui.num.val(this.model.get('NI'))
+                } else this.ui.num.val(this.model.get('NUMIMG'))
             }
         },
           
