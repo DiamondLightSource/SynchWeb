@@ -744,12 +744,12 @@
             }
 
             if ($this->has_arg('visit')) { 
-                $where = "CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)=:".(sizeof($args)+1);
+                $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)=:".(sizeof($args)+1);
                 array_push($args, $this->arg('visit'));
             }
 
             if ($this->has_arg('bl')) { 
-                $where = 'se.beamlinename=:'.(sizeof($args)+1);
+                $where .= ' AND se.beamlinename=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('bl'));
             }
 
