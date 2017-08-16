@@ -253,6 +253,9 @@
                             'MotionCorrectionDrift',
                             'CTF',
 
+                            // Sample groups
+                            'BLSampleGroup',
+                            'BLSampleGroup_has_BLSample',
                             '',
 
                 );
