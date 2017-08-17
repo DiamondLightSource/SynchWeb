@@ -27,6 +27,7 @@
                               array('/chi', 'post', '_chk_image'),
                               array('/imq/:id', 'get', '_image_qi'),
                               array('/grid/:id', 'get', '_grid_info'),
+                              array('/grid/map', 'get', '_grid_map'),
                               array('/ed/:id', 'get', '_edge', array('id' => '\d+'), 'edge'),
                               array('/mca/:id', 'get', '_mca', array('id' => '\d+'), 'mca'),
                               array('/dp/:id', 'get', '_dc_downstream'),
@@ -296,10 +297,23 @@
                     dc.c2lens,
                     dc.objaperture,
                     dc.magnification,
-                    dc.totalabsorbeddose,
+                    dc.totalabsorbeddose as totaldose,
                     d.detectorpixelsizehorizontal,
                     d.detectorpixelsizevertical,
-                    TIMESTAMPDIFF('MINUTE', dc.starttime, CURRENT_TIMESTAMP) as age
+                    d.detectormanufacturer,
+                    d.detectormodel,
+                    TIMESTAMPDIFF('MINUTE', dc.starttime, CURRENT_TIMESTAMP) as age,
+
+                    dc.numberofpasses,
+                    dc.c1aperture,
+                    dc.c3aperture,
+                    dc.c1lens,
+                    dc.c3lens,
+                    dc.detectormode,
+                    dc.slitgaphorizontal,
+                    dc.slitgapvertical,
+                    dc.binning,
+                    dc.averagetemperature
                     ";
                 $groupby = 'GROUP BY smp.name,smp.blsampleid,ses.visit_number,dc.kappastart,dc.phistart, dc.startimagenumber, dc.experimenttype, dc.datacollectiongroupid, dc.runstatus, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.overlap, dc.flux, dc.imageprefix, dc.datacollectionnumber, dc.filetemplate, dc.datacollectionid, dc.numberofimages, dc.imagedirectory, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages, TO_CHAR(dc.starttime, \'DD-MM-YYYY HH24:MI:SS\'), dc.transmission, dc.axisrange, dc.wavelength, dc.comments, dc.xtalsnapshotfullpath1, dc.xtalsnapshotfullpath2, dc.xtalsnapshotfullpath3, dc.xtalsnapshotfullpath4, dc.starttime, dc.detectordistance, dc.xbeam, dc.ybeam, dc.chistart';
                 // $this->db->set_debug(True);
@@ -322,11 +336,22 @@
                     max(dc.objaperture) as objaperture,
                     max(dc.magnification) as magnification,
                     sum(dc.totalabsorbeddose) as totaldose,
+                    max(d.detectormanufacturer) as detectormanufacturer,
+                    max(d.detectormodel) as detectormodel,
                     max(d.detectorpixelsizehorizontal) as detectorpixelsizehorizontal,
                     max(d.detectorpixelsizevertical) as detectorpixelsizevertical,
-                    max(TIMESTAMPDIFF('MINUTE', dc.starttime, CURRENT_TIMESTAMP)) as age";
+                    max(TIMESTAMPDIFF('MINUTE', dc.starttime, CURRENT_TIMESTAMP)) as age,
+                    max(dc.numberofpasses) as numberofpasses,
+                    max(dc.c1aperture) as c1aperture,
+                    max(dc.c3aperture) as c3aperture,
+                    max(dc.c1lens) as c1lens,
+                    max(dc.c3lens) as c3lens,
+                    max(dc.detectormode) as detectormode,
+                    max(dc.slitgaphorizontal) as slitgaphorizontal,
+                    max(dc.slitgapvertical) as slitgapvertical,
+                    max(dc.binning) as binning,
+                    max(dc.averagetemperature) as averagetemperature";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
-
             }
 
 
@@ -378,7 +403,8 @@
                    
              UNION
              SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',es.beamsizehorizontal,es.beamsizevertical,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.peakfdoubleprime, 1, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1, 0, 
-                1, 1, 1, 1, 1, 1, 1, 1, 0
+                1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', es.starttime, CURRENT_TIMESTAMP) as age,
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0
             FROM energyscan es
             INNER JOIN blsession ses ON ses.sessionid = es.sessionid
             LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid
@@ -387,7 +413,8 @@
                    
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',xrf.beamsizehorizontal,xrf.beamsizevertical,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, 1, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1, 0,
-                1, 1, 1, 1, 1, 1, 1, 1, 0
+                1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', xrf.starttime, CURRENT_TIMESTAMP) as age,
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0
             FROM xfefluorescencespectrum xrf
             INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
             LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid     
@@ -396,7 +423,8 @@
                    
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)), 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, smp.code, r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, 'A', 'A', 'A', 'A', r.starttimestamp as sta, 1, 1, 1, 0,
-                1, 1, 1, 1, 1, 1, 1, 1, 0
+                1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', r.starttimestamp, CURRENT_TIMESTAMP) as age,
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0
             FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
             LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
@@ -574,6 +602,14 @@
                                 
             $where = '('.implode(' OR ', $where).')';
             
+            if ($this->has_arg('visit')) {
+                $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :".(sizeof($ids)+1);
+                array_push($ids, $this->arg('visit'));
+            } else {
+                $where .= " AND s.proposalid = :".(sizeof($ids)+1);
+                array_push($ids, $this->proposalid);
+            }
+
             $this->profile('start');
             
             $aps1 = array(
@@ -603,7 +639,11 @@
             $out = array();
             
             # DC Details
-            $dct = $this->db->pq("SELECT dc.overlap, dc.blsampleid, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid WHERE $where", $ids);
+            $dct = $this->db->pq("SELECT dc.overlap, dc.blsampleid, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number 
+                FROM datacollection dc 
+                INNER JOIN blsession s ON s.sessionid=dc.sessionid 
+                INNER JOIN proposal p ON p.proposalid=s.proposalid
+                WHERE $where", $ids);
 
             $ids = array();
             $wcs = array();
@@ -1345,7 +1385,7 @@
             $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked
                 FROM gridinfo g
                 INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
-                INNER JOIN position p ON dc.positionid = p.positionid
+                LEFT OUTER JOIN position p ON dc.positionid = p.positionid
                 WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
 
             if (!sizeof($info)) $this->_output(array());
@@ -1356,6 +1396,17 @@
                 }    
                 $this->_output($info[0]);
             }
+        }
+
+
+        function _grid_map() {
+            if (!$this->has_arg('id')) $this->_error('No datacollection id specified');
+
+            $map = $this->db->pq("SELECT positionx, positiony, imagenumber, outputfileid
+                FROM gridimagemap
+                WHERE datacollectionid=:1", array($this->arg('id')));
+
+            $this->_output($map);
         }
 
         # ------------------------------------------------------------------------
