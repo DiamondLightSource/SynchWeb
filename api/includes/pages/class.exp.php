@@ -595,7 +595,7 @@
 
             foreach (array('ORDER') as $f) {
                 if ($this->has_arg($f)) {
-                    $this->db->pq('UPDATE blsample_has_datacollectionplan SET '.$f.'=:1 WHERE datacollectionplanid=:2', array($this->arg($f), $this->has_arg('DIFFRACTIONPLANID')));
+                    $this->db->pq("UPDATE blsample_has_datacollectionplan SET `$f`=:1 WHERE datacollectionplanid=:2", array($this->arg($f), $this->has_arg('DIFFRACTIONPLANID')));
                     $this->_output(array($f => $this->arg($f)));
                 }   
             }
