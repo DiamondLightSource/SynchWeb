@@ -16,10 +16,14 @@ define(['marionette',
         'modules/proposal/views/users', 
         'modules/proposal/views/dewars', 
 
+        'modules/dc/views/reprocessoverview',
+
         'tpl!templates/dc/dclist.html',
         ],
 function(Marionette, Pages, DCListView,
-         SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, UserView, DewarsView, template) {
+         SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, UserView, DewarsView, 
+         ReprocessOverview,
+         template) {
 
              
   return Marionette.LayoutView.extend({
@@ -53,6 +57,7 @@ function(Marionette, Pages, DCListView,
       'mouseout a.dewars': 'hideDewars',
       'click a.refresh': 'refreshDCs',
       'click @ui.ar': 'setAutoRefresh',
+      'click a.rpo': 'showReprocess',
     },
 
     setAutoRefresh: function(e) {
@@ -97,6 +102,12 @@ function(Marionette, Pages, DCListView,
     showQueueBuilder: function(e) {
         if (e) e.preventDefault()
         app.dialog.show(new DialogView({ title: 'Generate GDA Queue', view: new QueueBuilderView({ visit: this.model.get('VISIT'), bl: this.model.get('BL'), dcs: this.collection }), autoSize: 1 }))
+        return false
+    },
+
+    showReprocess: function(e) {
+        if (e) e.preventDefault()
+        app.dialog.show(new DialogView({ title: 'Reprocessing', view: new ReprocessOverview({ visit: this.model.get('VISIT') }), autoSize: 1 }))
         return false
     },
     
