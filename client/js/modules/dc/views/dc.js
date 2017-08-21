@@ -48,19 +48,8 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       this.imagestatus = new (this.getOption('imageStatusItem'))({ ID: this.model.get('ID'), TYPE: this.model.get('DCT'), statuses: this.getOption('imagestatuses'), el: this.$el })
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), SCREEN: (this.model.get('OVERLAP') != 0 && this.model.get('AXISRANGE')), statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
-
-      this.listenTo(this.getOption('reprocstatuses'), 'sync', this.updateReprocStatus, this)
     },
 
-    updateReprocStatus: function() {
-        if (this.getOption('reprocstatuses').get('IDS').indexOf(this.model.get('ID')) > -1) {
-            // this.ui.rp.addClass('active')
-            this.ui.rp.find('i').addClass('fa-spin')
-        } else {
-            // this.ui.rp.removeClass('active')
-            this.ui.rp.find('i').removeClass('fa-spin')
-        }
-    },
 
     updateAP: function(e) {
         setTimeout(this.doUpdateAP.bind(this), 1000)
