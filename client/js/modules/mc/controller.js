@@ -18,15 +18,9 @@ define(['marionette',
             dcs.state.currentPage = page
 
             dcs.fetch().done(function() {
-                app.bc.reset([bc, { title: visit, url: '/dc/visit/'+visit }, { title: 'Integrate Data Collections' }])
+                app.bc.reset([bc, { title: visit, url: '/dc/visit/'+visit }, { title: 'Merge Data Collections' }])
                 app.content.show(new DataCollectionsView({ collection: dcs, params: { visit: visit, search: search } }))
             })
-        },
-        
-        // Integrated dcs to blend
-        blend: function(visit) {
-            app.bc.reset([bc, { title: visit, url: '/dc/visit/'+visit }, { title: 'Blend Integrated Data Collections' }])
-            app.content.show(new BlendView({ visit: visit }))
         },
             
     }

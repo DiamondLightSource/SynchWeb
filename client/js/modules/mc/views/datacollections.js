@@ -1,44 +1,49 @@
 define(['marionette', 
-    'modules/mc/collections/intstatuses',
-    'modules/mc/models/jobstatus',
     'modules/mc/views/dcdistl',
 
     'views/pages',
     'views/search',
+
+    'modules/dc/views/reprocessoverview',
+    'models/reprocessing',
+    'collections/reprocessings',
+    'models/reprocessingparameter',
+    'collections/reprocessingparameters',
+    'models/reprocessingimagesweep',
+    'collections/reprocessingimagesweeps',
+
+    'utils/kvcollection',
+
     'tpl!templates/mc/datacollections.html',
-    ], function(Marionette, IntegrationStatuses, JobStatus, DCDISTLView, Pages, Search, template) {
+    ], function(Marionette, DCDISTLView, Pages, Search, 
+        ReprocessOverview, Reprocessing, Reprocessings, 
+        ReprocessingParameter, ReprocessingParameters,
+        ReprocessingImageSweep, ReprocessingImageSweeps,
+        KVCollection,
+        template) {
 
 
     var DCsDISTLView = Marionette.CollectionView.extend({
         childView: DCDISTLView,
-
-        childViewOptions: function(m) {
-            return {
-                intstatuses: this.intstatuses,
-            }
-        },
-      
-        initialize: function(options) {
-          this.intstatuses = new IntegrationStatuses()
-        
-          this.listenTo(this.collection, 'sync', this._onSync, this)
-          this._onSync()
-        },
-                                                            
-        _onSync: function() {
-            var ids = this.collection.pluck('ID')
-            this.intstatuses.fetch({ data: { ids:  ids }, type: 'POST' })
-        },
     })
 
 
+    var Pipelines = Backbone.Collection.extend(_.extend({
+        keyAttribute: 'NAME',
+        valueAttribute: 'VALUE',
+    }, KVCollection))
 
 
 
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
-        regions: { dcs: '.dcs', srch: '.srch', pages: '.page_wrap' },
+        regions: { 
+            dcs: '.dcs', 
+            srch: '.srch', 
+            pages: '.page_wrap',
+            rps: '.rps',
+        },
     
         events: {
             'click .integrate': 'integrate',
@@ -46,6 +51,8 @@ define(['marionette',
 
         ui: {
             jobs: '.jobs',
+            wait: '.wait',
+            met: 'select[name=method]',
         },
 
         templateHelpers: function() {
@@ -57,6 +64,7 @@ define(['marionette',
 
         integrate: function(e) {
             e.preventDefault()
+
             var s = this.collection.where({ selected: true })
 
             if (!s.length) {
@@ -64,30 +72,73 @@ define(['marionette',
                 return
             }
 
-            var data = { visit: this.getOption('params').visit }
-            var integrate = []
-            _.each(s, function(s, i) {
-                integrate.push([s.get('ID'), s.get('selection')[0], s.get('selection')[1]])
+            var self = this
+            var p = this.pipelines.findWhere({ VALUE: self.ui.met.val() })
+            var reprocessing = new Reprocessing({
+                DATACOLLECTIONID: s[0].get('ID'),
+                COMMENTS: 'Multicrystal integrator',
+                DISPLAYNAME: p.get('NAME')
             })
 
-            data.int = integrate
-            _.each(['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'res', 'sg'], function(f, i) {
-                data[f] = this.$el.find('input[name='+f+']').val().replace(/\s/g, '')
-            }, this)
-
-            Backbone.ajax({
-                url: app.apiurl+'/mc/integrate',
-                data: data,
-                type: 'POST',
-
+            reprocessing.save({}, {
                 success: function() {
-                    app.alert({ message: s.length+' job(s) successfully submitted'})
+                    var reprocessingparams = new ReprocessingParameters([{ 
+                        REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                        PARAMETERKEY: 'pipeline', 
+                        PARAMETERVALUE: self.ui.met.val() 
+                    }])
+
+                    var res = self.$el.find('input[name=res]').val()
+                    if (res) reprocessingparams.add(new ReprocessingParameter({ 
+                        REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                        PARAMETERKEY: 'd_min', 
+                        PARAMETERVALUE: res
+                    }))
+
+                    var hascell = true
+                    var cell = []
+                    _.each(['a', 'b', 'c', 'alpha', 'beta', 'gamma'], function(f, i) {
+                        var val = self.$el.find('input[name='+f+']').val().replace(/\s/g, '')
+                        if (!val) hascell = false
+                        else cell.push(val)
+                    })
+
+                    if (hascell) reprocessingparams.add(new ReprocessingParameter({ 
+                        REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                        PARAMETERKEY: 'unit_cell', 
+                        PARAMETERVALUE: cell.join(',')
+                    }))
+
+                    var sg = self.$el.find('input[name=sg]').val().replace(/\s/g, '')
+                    if (sg) reprocessingparams.add(new ReprocessingParameter({ 
+                        REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                        PARAMETERKEY: 'spacegroup', 
+                        PARAMETERVALUE: sg
+                    }))
+
+                    reprocessingparams.save()
+
+
+                    var sweeps = []
+                    _.each(s, function(sw) {
+                        sweeps.push({
+                            REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                            DATACOLLECTIONID: sw.get('ID'),
+                            STARTIMAGE: sw.get('selection')[0], 
+                            ENDIMAGE: sw.get('selection')[1],
+                        })
+                    })
+                    var reprocessingsweeps = new ReprocessingImageSweeps(sweeps)
+                    reprocessingsweeps.save()
+
+                    app.alert({ message: '1 reprocessing job successfully submitted'})
                 },
 
                 error: function() {
-                    app.alert({ message: 'Something went wrong submitting these jobs, please try again'})
+                    app.alert({ message: 'Something went wrong starting that reprocessing run' })
                 }
             })
+
         },
 
 
@@ -95,15 +146,18 @@ define(['marionette',
             this.paginator = new Pages({ collection: options.collection, noUrl: options.noPageUrl })
             this.search = new Search({ value: options.params.search, collection: options.collection, url: !options.noSearchUrl })
 
-            this.status = new JobStatus()
-            this.listenTo(this.status, 'sync', this.setJobs, this)
-            this.status.fetch()
+            this.reprocessings = new Reprocessings()
+            this.reprocessings.queryParams.visit = options.visit
+            this.reprocessings.state.pageSize = 5 
+            this.listenTo(this.reprocessings, 'sync', this.setJobs)
+            this.reprocessings.fetch()
         },
 
         setJobs: function() {
-            var n = this.status.get('NUMBER')
-            console.log('jobs', n)
-            this.ui.jobs.html(n)
+            var n = this.reprocessings.where({ STATUS: 'running' }).length
+            var w = this.reprocessings.where({ STATUS: 'submitted' }).length
+            this.ui.jobs.text(n)
+            this.ui.wait.text(w)
             n > 0 ? this.ui.jobs.parent('li').addClass('running') : this.ui.jobs.parent('li').removeClass('running')
         },
                                           
@@ -114,6 +168,16 @@ define(['marionette',
             var distlview = new DCsDISTLView({ collection: this.collection })
             this.dcs.show(distlview)
             this.listenTo(distlview, 'childview:set:cell', this.setCell, this)
+
+            this.rps.show(new ReprocessOverview({ collection: this.reprocessings, embed: true, results: true }))
+
+            this.pipelines = new Pipelines([
+                { NAME: 'Xia2 3dii', VALUE: 'xia2-3dii' },
+                { NAME: 'Xia2 DIALS', VALUE: 'xia2-dials' },
+                { NAME: 'Fast DP', VALUE: 'fast_dp' },
+            ])
+
+            this.ui.met.html(this.pipelines.opts())
         },
           
         setCell: function(view, ap) {
@@ -126,8 +190,8 @@ define(['marionette',
         },
 
         onDestroy: function() {
+            this.reprocessings.stop()
             this.collection.stop()
-            this.status.stop()
         },
 
     })
