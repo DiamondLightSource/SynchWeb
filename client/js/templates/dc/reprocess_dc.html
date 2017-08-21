@@ -1,37 +1,38 @@
 <h1 class="clearfix">
-	<a href="#" class="button button-notext rem r"><i class="fa fa-times"></i> <span>Remove</span></a> 
-	<a href="#" class="button button-notext add r"><i class="fa fa-plus"></i> <span>Add</span></a>
+    <a href="#" class="button button-notext rem r"><i class="fa fa-times"></i> <span>Remove</span></a> 
+    <a href="#" class="button button-notext add r"><i class="fa fa-plus"></i> <span>Add</span></a>
 
-	<%-IMP%>_<%-RUN%> - <%-DIR%>
+    <%-IMP%>_<%-RUN%> - <%-DIR%>
 </h1>
-<div class="distl" title="DISTL: Number of spots plotted for each image. Select which images to integrate by dragging across the graph"></div>
 
-<div class="r ind">
-	Pipeline <select name="method"></select><br />
-	High Res <input type="text" name="res" /> &#197; | 
-	<a href="#" class="button sg">Space Group / Cell</a> <br />
+<div class="ind data_collection">
+    Pipeline <select name="method"></select>
+    High Res <input type="text" name="res" /> &#197; | 
+    <a href="#" class="button sg">Space Group / Cell</a> <br />
 </div>
 
+<div class="distl" title="DISTL: Number of spots plotted for each image. Select which images to integrate by dragging across the graph"></div>
+
 <ul class="clearfix reproc">
-	<% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
+    <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
     <li>&Omega; Start: <%-AXISSTART%>&deg;, Osc: <%-AXISRANGE%>&deg;</li>
     <% if (SI != 1 ) { %> <li>First Image: <%-SI%></li><% } %>
     <li>Resolution: <%-RESOLUTION%>&#197;</li>
     <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
-	<li>
-		Start <input type="text" name="start" /> 
-		End <input type="text" name="end" /> 
-		<a href="#" class="button button-notext all r"><i class="fa fa-arrows"></i> <span>All</span></a>
-	</li>
+    <li>
+        Start <input type="text" name="start" /> 
+        End <input type="text" name="end" /> 
+        <a href="#" class="button button-notext all r"><i class="fa fa-arrows"></i> <span>All</span></a>
+    </li>
 </ul>
 
 <div class="cell data_collection">
-	<a href="#" class="button apcell"><i class="fa"></i> Use AP Cell</a> | 
-	<label>Spacegroup: <input type="text" name="sg" /></label> | 
-    <label>a <input type="text" name="a" /></label>
-    <label>b <input type="text" name="b" /></label>
-    <label>c <input type="text" name="c" /></label>
-    <label>&alpha; <input type="text" name="alpha" /></label>
-    <label>&beta; <input type="text" name="beta" /></label>
-    <label>&gamma; <input type="text" name="gamma" /></label>
+    <a href="#" class="button apcell"><i class="fa"></i> Use AP Cell</a> | 
+    <label>Spacegroup: <input type="text" name="SG" /></label> | 
+    <label>a <input type="text" name="CELL_A" /></label>
+    <label>b <input type="text" name="CELL_B" /></label>
+    <label>c <input type="text" name="CELL_C" /></label>
+    <label>&alpha; <input type="text" name="CELL_ALPHA" /></label>
+    <label>&beta; <input type="text" name="CELL_BETA" /></label>
+    <label>&gamma; <input type="text" name="CELL_GAMMA" /></label>
 </div>
