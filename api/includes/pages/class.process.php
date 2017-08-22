@@ -1,8 +1,11 @@
 <?php
 
+    use Stomp\Stomp;
+    use Stomp\Message\Map;
+
+
     class Process extends Page {
         
-
         public static $arg_list = array(
             'REPROCESSINGID' => '\d+',
             'DATACOLLECTIONID' => '\d+',
@@ -28,6 +31,8 @@
 
             array('/sweeps(/:REPROCESSINGIMAGESWEEPID)', 'get', '_get_reprocessing_sweeps'),
             array('/sweeps', 'post', '_add_reprocessing_sweeps'),
+
+            array('/enqueue', 'post', '_enqueue'),
         );
 
 
@@ -268,6 +273,42 @@
             $this->db->pq("INSERT INTO reprocessingimagesweep (reprocessingid, datacollectionid, startimage, endimage) VALUES (:1, :2, :3, :4)", array($args['REPROCESSINGID'], $args['DATACOLLECTIONID'], $args['STARTIMAGE'], $args['ENDIMAGE']));
 
             $this->_output(array('REPROCESSINGIMAGESWEEPID' => $this->db->id()));
+        }
+
+
+        function _enqueue() {
+            global $loader;
+            $loader->addNamespace('Stomp',  dirname(__FILE__).'/../../lib/stomp-php/src/Stomp');
+
+            global $activemq_server, $activemq_rp_queue;
+            if (!$activemq_server || !$activemq_rp_queue) return;
+
+            if (!$this->has_arg('REPROCESSINGID')) $this->_error('No reprocessingid specified');
+
+            $chk = $this->db->pq("SELECT rp.reprocessingid
+                FROM reprocessing rp
+                INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
+                INNER JOIN blsession s ON dc.sessionid = s.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE p.proposalid = :1 AND rp.reprocessingid = :2", array($this->proposalid, $this->arg('REPROCESSINGID')));
+
+            if (!sizeof($chk)) $this->_error('No such reprocessing');
+
+            $body = array(
+                'parameters' => array(
+                    array('ispby_process' => $this->arg('REPROCESSINGID')),
+                )
+            );
+
+            $header['transformation'] = 'jms-map-json';
+            $mapMessage = new Map($body, $header);
+
+            $client = new Stomp($activemq_server);
+            $client->connect();
+            $client->send($activemq_rp_queue, $mapMessage);
+            $client->disconnect();
+
+            $this->_output(new stdClass);
         }
 
     }
