@@ -4,11 +4,10 @@ define(['marionette',
     'modules/types/em/models/ctf',
     'modules/types/em/dc/views/mc',
     'modules/types/em/dc/views/ctf',
-    'utils',
-    'tpl!templates/types/em/dc/dc_autoproc.html'], function(Marionette, TabView, 
+    'utils'], function(Marionette, TabView, 
         MotionCorrection, CTFCorrection, 
         MotionCorrectionView, CTFCorrectionView,
-        utils, template) {
+        utils) {
        
 
     return Marionette.LayoutView.extend({
