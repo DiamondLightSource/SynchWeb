@@ -679,6 +679,7 @@
 
             // Register entire container
             if ($this->has_arg('collection')) {
+                $this->db->start_transaction();
                 $col = array();
                 foreach ($this->arg('collection') as $s) {
                     $id = $this->_do_add_sample($this->_prepare_sample_args($s));
@@ -689,6 +690,7 @@
                     }
                 }
 
+                $this->db->end_transaction();
                 $this->user->set_cache('container', null);
                 $this->_output($col);
 
