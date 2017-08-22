@@ -10,6 +10,8 @@
         var $debug = False;
         var $stat = '';
         var $stats = False;
+        var $transaction = False;
+        var $errors = 0;
         
         function __construct($user, $pass, $db, $port=null) {
             list($host, $dbn) = explode('/', $db);
@@ -20,6 +22,22 @@
             if (mysqli_connect_errno()) {
                 $this->error('There was an error connecting to MySQL: ', htmlentities(mysqli_connect_errno()));
             }
+        }
+
+        function start_transaction() {
+            $this->transaction = True;
+            $this->conn->autocommit(False);
+        }
+
+        function end_transaction() {
+            if ($this->errors > 0) $this->conn->rollback();
+            else $this->conn->commit();
+            
+            $this->conn->autocommit(True);
+            $this->transaction = False;
+
+            if ($this->errors > 0) $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
+            $this->errors = 0;
         }
 
 
@@ -291,7 +309,8 @@
             $stmt = $this->conn->prepare($query);
             
             if (!$stmt) {
-                $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
+                if ($this->transaction) $this->errors++;
+                else $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
             }
             
             if (sizeof($args)) {
@@ -309,7 +328,8 @@
             }
             
             if (!$stmt->execute()) {
-                $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
+                if ($this->transaction) $this->errors++;
+                else $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
             }
 
             $data = array();
