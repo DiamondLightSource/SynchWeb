@@ -1,8 +1,7 @@
 define(['marionette',
     'modules/mc/views/datacollections',
-    'modules/mc/views/blend',
     'collections/datacollections',
-    ], function(Marionette, DataCollectionsView, BlendView, DCs) {
+    ], function(Marionette, DataCollectionsView, DCs) {
 
     var bc = { title: 'Multicrystal Processing', url: '/mc' }
     
