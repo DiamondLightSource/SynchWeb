@@ -167,7 +167,7 @@ define(['marionette', 'views/dialog',
 
         templateHelpers: function() {
             return {
-                VISIT: this.getOption('VISIT')
+                VISIT: this.getOption('visit')
             }
         },
 
