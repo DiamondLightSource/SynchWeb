@@ -29,6 +29,7 @@ class Dispatch {
         'stats',
         
         'imaging',
+        'process',
     );
     
 
