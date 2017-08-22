@@ -3,12 +3,10 @@ define(['marionette',
     'collections/reprocessingparameters',
     'collections/reprocessingimagesweeps',
     'views/table',
-    'utils/table',
-    'tpl!templates/dc/reprocessing.html'],
+    'utils/table'],
     function(Marionette,
         Reprocessings, ReprocessingParamters, ReprocessingImageSweeps,
-        TableView, table,
-        template) {
+        TableView, table) {
 
 
         var StatusCell = Backgrid.Cell.extend({
