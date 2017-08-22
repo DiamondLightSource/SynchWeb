@@ -2,15 +2,20 @@
 		Select data sets to reintegrate by selecting a number of images in the DISTL plot. Provide unit cell parameters, space group, and high resolution cut off as needed.
 	</p>
 
+    <div class="ra">
+        <a href="/mc/visit/<%-VISIT%>" class="button" title="Multicrystal Integrator"><i class="fa fa-diamond"></i> <span>Multi Crystal</span></a>
+    </div>
 	<div class="data_collection">
-        <!--<label><input type="checkbox" name="individual" /> Process Individually</label>-->
+        <!-- <label><input type="checkbox" name="individual" /> Process Individually</label> -->
 
-        <span class="multi">
-            <!--| -->
-            Pipeline <select name="method"></select>
-            High Res <input type="text" name="res" /> &#197; |
+        <span class="multi form">
+            <!-- |  -->
+            Pipeline :<select name="method"></select>
+            High Res :<input type="text" name="res" /> &#197; |
             <a href="#" class="button sgm">Space Group / Cell</a> 
-            <a href="#" class="button opt">Options</a> 
+            <a href="#" class="button opt">Options</a>
+            <br />
+            <!-- Comments: <input type="text" name="comments" class="full" /> -->
         </span>
     </div>
 

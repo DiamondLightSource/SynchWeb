@@ -165,6 +165,12 @@ define(['marionette', 'views/dialog',
             'click @ui.ind': 'toggleIndividual',
         },
 
+        templateHelpers: function() {
+            return {
+                VISIT: this.getOption('VISIT')
+            }
+        },
+
         toggleIndividual: function(e) {
             var st = this.ui.ind.is(':checked')
             st ? this.ui.mul.hide() : this.ui.mul.show()
