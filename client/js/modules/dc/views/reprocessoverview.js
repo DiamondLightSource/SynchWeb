@@ -152,9 +152,11 @@ define(['marionette',
 
                 this.parameters = new ReprocessingParamters()
                 this.parameters.queryParams.visit = options.visit
+                this.parameters.state.pageSize = 9999
 
                 this.sweeps = new ReprocessingImageSweeps()
                 this.sweeps.queryParams.visit = options.visit
+                this.sweeps.state.pageSize = 9999
                 
                 this.listenTo(this.collection, 'sync', this.refreshArgs)
             },
