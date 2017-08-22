@@ -15,6 +15,11 @@
     limitations under the License.
     */
 
+    include_once('includes/class.autoloader.php');
+    $loader = new Psr4AutoloaderClass;
+    $loader->register();
+
+
     require 'lib/Slim/Slim.php';
     \Slim\Slim::registerAutoloader();
 
