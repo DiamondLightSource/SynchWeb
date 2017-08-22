@@ -13,13 +13,14 @@ define(['marionette',
     'collections/reprocessingimagesweeps',
 
     'utils/kvcollection',
+    'utils',
 
     'tpl!templates/mc/datacollections.html',
     ], function(Marionette, DCDISTLView, Pages, Search, 
         ReprocessOverview, Reprocessing, Reprocessings, 
         ReprocessingParameter, ReprocessingParameters,
         ReprocessingImageSweep, ReprocessingImageSweeps,
-        KVCollection,
+        KVCollection, utils,
         template) {
 
 
