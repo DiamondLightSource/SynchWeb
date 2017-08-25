@@ -32,22 +32,23 @@
 
         <li>Obj Aperture: <%-OBJAPERTURE%>&mu;m</li>
 
-        <li>Magnification: <%-MAGNIFICATION%>x Nominal: <%-MAGNIFICATION%>x</li>
+        <li>Magnification: <%-MAGNIFICATION%>x Nominal: <%-NOMINALMAGNIFICATION%>x</li>
+        <li>Nominal Defocus: <%-NOMINALDEFOCUS%>&#197;</li>
 
         <% if (SLITGAPHORIZONTAL) { %>
         <li>Energy Filter: <%-SLITGAPHORIZONTAL%></li>
         <% } %>
 
-        <li>Phase Plate:</li>
+        <li>Phase Plate: <%- PHASEPLATE==1 ? 'Yes' : 'No' %></li>
 
 
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
 
         <li>Detector: <%-DETECTORMANUFACTURER%> <%-DETECTORMODEL%></li>
         <li>Detector Mode: <%-DETECTORMODE%></li>
-        <li>Sample Pixel Size: <%-DETECTORPIXELSIZEHORIZONTAL/MAGNIFICATION%>&#197;/pix</li>
+        <li>Sample Pixel Size: <%-PIXELSIZEONIMAGE%>&#197;/pix</li>
         <li>Binning: <%-BINNING%>pix</li>
-        <li>Image Size: x pix</li>
+        <li>Image Size: <%-IMAGESIZEX%>x<%-IMAGESIZEY%> pix</li>
         
 
         <li>No. Movies: <%-NUMIMG%></li>
