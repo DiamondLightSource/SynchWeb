@@ -21,7 +21,6 @@ class Dispatch {
         'pdf',
         'robot',
         'dc',
-        'mc',
         'assign',
         'status',
         'cell',
