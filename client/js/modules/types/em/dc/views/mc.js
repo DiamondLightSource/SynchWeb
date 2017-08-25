@@ -8,7 +8,9 @@ define(['marionette',
         template, utils, XHRImage) {
     
     return Marionette.ItemView.extend({
-        template: template,
+        getTemplate: function() {
+            return this.model.get('MOTIONCORRECTIONID') ? template : '<p>No Motion Correction for this movie</p>'
+        },
         modelEvents: { 'change': 'render' },
         className: 'clearfix',
     

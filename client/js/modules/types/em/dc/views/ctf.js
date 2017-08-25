@@ -5,7 +5,9 @@ define(['marionette',
     'utils/xhrimage'], function(Marionette, LogView, template, utils, XHRImage) {
     
     return Marionette.ItemView.extend({
-        template: template,
+        getTemplate: function() {
+            return this.model.get('CTFID') ? template : '<p>No CTF Correction for this movie</p>'
+        },
         modelEvents: { 'change': 'render' },
         className: 'clearfix', 
         

@@ -8,15 +8,6 @@ define(['marionette',
         MotionCorrection, CTFCorrection, 
         MotionCorrectionView, CTFCorrectionView,
         utils) {
-       
-    var EmptyCorrectionView = Marionette.ItemView.extend({
-        template: _.template('<p>No Motion Correction for this movie')
-    })
-
-    var EmptyCTFView = Marionette.ItemView.extend({
-        template: _.template('<p>No CTF Correction for this movie')
-    })
-
 
     return Marionette.LayoutView.extend({
         template: _.template('<div class="mc dcap"></div><div class="ctf dcap"></div>'),
@@ -26,13 +17,23 @@ define(['marionette',
         },
         
         initialize: function(options) {
+            this.id = options.id
             this.imagenumber = 1
             this.mc = new MotionCorrection({ id: options.id, TYPE: 'Motion Correction' })
             this.ctf = new CTFCorrection({ id: options.id, TYPE: 'CTF' })
 
-            this.listenTo(this.mc, 'sync error', this.mcRender)
-            this.listenTo(this.ctf, 'sync error', this.ctfRender)
+            this.listenTo(this.mc, 'error', this.mcReset)
+            this.listenTo(this.ctf, 'error', this.ctfReset)
+            this.fetch()
             this.render()
+        },
+
+        mcReset: function() {
+            this.mc.clear().set({ id: this.id, TYPE: 'Motion Correction' }, { silent: true })
+        },
+
+        ctfReset: function() {
+            this.ctf.clear().set({ id: this.id, TYPE: 'CTF' }, { silent: true })
         },
 
         fetch: function(n) {
@@ -42,18 +43,10 @@ define(['marionette',
         },
         
         onRender: function() {
-            console.log('render ap em')
-            this.fetch()
+            this.rmc.show(new MotionCorrectionView({ model: this.mc }))
+            this.rctf.show(new CTFCorrectionView({ model: this.ctf }))
             this.$el.slideDown()
         },
-
-        mcRender: function() {
-            this.rmc.show(this.mc.get('MOTIONCORRECTIONID') ? new MotionCorrectionView({ model: this.mc }) : new EmptyCorrectionView())
-        },
-
-        ctfRender: function() {
-            this.rctf.show(this.ctf.get('CTFID') ? new CTFCorrectionView({ model: this.ctf }) : new EmptyCTFView())
-        }
 
     })
 
