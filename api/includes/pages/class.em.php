@@ -281,6 +281,16 @@
 
             $bls = array();
             foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
+            if ($this->has_arg('visit')) {
+                if (!sizeof(array_keys($bls))) {
+                    $bl_temp = $this->db->pq("SELECT s.beamlinename 
+                        FROM blsession s
+                        INNER JOIN proposal p ON p.proposalid = s.proposalid
+                        WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
+
+                    if (sizeof($bl_temp)) $bls[$bl_temp[0]['BEAMLINENAME']] = 1;
+                }
+            }
 
             $data = array();
             foreach ($bls as $bl => $y) {
