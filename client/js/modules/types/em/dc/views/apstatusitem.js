@@ -6,6 +6,7 @@ define(['modules/dc/views/apstatusitem'], function(APStatusItem) {
             var ps = []
             _.each({'Motion Correction': 'MC', 'CTF': 'CTF'}, function(p,n) {
                 var tys = []
+
                 var cts = _.countBy(Object.values(this.model.get(p)), function(v) { return v })
                 _.each({
                     null: '<i class="fa icon grey fa-cog fa-spin alt="Running"></i>',
@@ -14,8 +15,9 @@ define(['modules/dc/views/apstatusitem'], function(APStatusItem) {
                 }, function(icon, state) {
                     if (cts[state]) tys.push(cts[state]+' '+icon)
                 }, this)
+                
 
-                ps.push('<span>'+n+': '+tys.join(' ')+'</span>')
+                ps.push('<span>'+n+': '+(tys.length ? tys.join(' ') : '<i class="fa icon blue fa-question-circle alt="N/A"></i>')+'</span>')
             }, this)
           
             this.ui.holder.eq(0).html(ps.join(' '))
