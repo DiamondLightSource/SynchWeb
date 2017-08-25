@@ -9,6 +9,14 @@ define(['marionette',
         MotionCorrectionView, CTFCorrectionView,
         utils) {
        
+    var EmptyCorrectionView = Marionette.ItemView.extend({
+        template: _.template('<p>No Motion Correction for this movie')
+    })
+
+    var EmptyCTFView = Marionette.ItemView.extend({
+        template: _.template('<p>No CTF Correction for this movie')
+    })
+
 
     return Marionette.LayoutView.extend({
         template: _.template('<div class="mc dcap"></div><div class="ctf dcap"></div>'),
@@ -21,13 +29,10 @@ define(['marionette',
             this.imagenumber = 1
             this.mc = new MotionCorrection({ id: options.id, TYPE: 'Motion Correction' })
             this.ctf = new CTFCorrection({ id: options.id, TYPE: 'CTF' })
-            this.collection = new Backbone.Collection([this.mc, this.ctf])
 
-            this.ready = []
-            this.ready.push(this.mc.fetch({ data: { IMAGENUMBER: this.imagenumber } }))
-            this.ready.push(this.ctf.fetch({ data: { IMAGENUMBER: this.imagenumber } }))
-
-            $.when.apply($, this.ready).done(this.render.bind(this))
+            this.listenTo(this.mc, 'sync error', this.mcRender)
+            this.listenTo(this.ctf, 'sync error', this.ctfRender)
+            this.render()
         },
 
         fetch: function(n) {
@@ -37,10 +42,19 @@ define(['marionette',
         },
         
         onRender: function() {
-            this.rmc.show(new MotionCorrectionView({ model: this.mc }))
-            this.rctf.show(new CTFCorrectionView({ model: this.ctf }))
+            console.log('render ap em')
+            this.fetch()
             this.$el.slideDown()
         },
+
+        mcRender: function() {
+            this.rmc.show(this.mc.get('MOTIONCORRECTIONID') ? new MotionCorrectionView({ model: this.mc }) : new EmptyCorrectionView())
+        },
+
+        ctfRender: function() {
+            this.rctf.show(this.ctf.get('CTFID') ? new CTFCorrectionView({ model: this.ctf }) : new EmptyCTFView())
+        }
+
     })
 
 })
