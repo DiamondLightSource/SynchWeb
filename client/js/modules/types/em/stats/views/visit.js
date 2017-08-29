@@ -9,10 +9,11 @@ define(['marionette',
 
         'modules/blstats/models/histogram',
         'modules/blstats/views/histogram',
+        'modules/types/em/stats/views/interframe',
     
         'tpl!templates/types/em/stats/visit.html'], function(Marionette, Faults, FaultListView,
         BreakdownView, DetailsView, PieView, HourliesView, EHCLogView,
-        Histogram, HistgramPlot,
+        Histogram, HistgramPlot, InterFramePlot,
         template) {
 
 
@@ -70,6 +71,12 @@ define(['marionette',
                     ty: 'resolution'
                 }
             })
+
+            this.drift.fetch({
+                data: {
+                    visit: this.model.get('VISIT'),
+                }
+            })
         },
         
         
@@ -88,6 +95,7 @@ define(['marionette',
             this.rdefocus.show(new HistgramPlot({ collection: new Backbone.Collection([this.defocus]) }))
             this.rastimatigm.show(new HistgramPlot({ collection: new Backbone.Collection([this.astigmatism]) }))
             this.rresolution.show(new HistgramPlot({ collection: new Backbone.Collection([this.resolution]) }))
+            this.rdrift.show(new InterFramePlot({ collection: new Backbone.Collection([this.drift]) }))
         },
     })
 
