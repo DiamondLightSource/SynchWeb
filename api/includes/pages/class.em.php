@@ -180,7 +180,81 @@
 
 
         function _mc_drift_histogram() {
+            $where = '';
+            $args = array();
 
+            if ($this->has_arg('bl')) {
+                $where .= ' AND s.beamlinename=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('bl'));
+            }
+
+            if ($this->has_arg('visit')) {
+                $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('visit'));
+            }
+
+            if ($this->has_arg('runid')) {
+                $where .= ' AND vr.runid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('runid'));
+            }
+
+            $bs = 1;
+            $hist = $this->db->pq("SELECT 
+                AVG(diff) as avgdiff, MIN(diff) as mindiff, MAX(diff) as maxdiff, COUNT(diff) as countdiff,
+                framediff, beamlinename FROM (
+                    SELECT SQRT(POW(mcd.deltax - @diffx,2) + POW(mcd.deltay - @diffy, 2)) as diff,
+                        mcd.deltax - @diffx as diffx, @diffx := mcd.deltax as deltax, mcd.deltay - @diffy as diffy, @diffy := mcd.deltay as deltay, 
+                        CONCAT(ABS(mcd.framenumber-1), '-', mcd.framenumber) as framediff, s.beamlinename
+                    FROM motioncorrectiondrift mcd
+                    JOIN (SELECT @diffx := 0) r
+                    JOIN (SELECT @diffy := 0) r2
+                    INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
+                    INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE 1=1 $where
+                    GROUP BY s.beamlinename,CONCAT(ABS(mcd.framenumber-1), '-', mcd.framenumber), mcd.motioncorrectionid
+                    ORDER BY mcd.motioncorrectionid,mcd.framenumber
+                    ) inr
+                    GROUP BY framediff, beamlinename
+                ", $args);
+
+            // print_r($hist);
+
+            $bls = array();
+            foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
+            if ($this->has_arg('visit')) {
+                if (!sizeof(array_keys($bls))) {
+                    $bl_temp = $this->db->pq("SELECT s.beamlinename 
+                        FROM blsession s
+                        INNER JOIN proposal p ON p.proposalid = s.proposalid
+                        WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
+
+                    if (sizeof($bl_temp)) $bls[$bl_temp[0]['BEAMLINENAME']] = 1;
+                }
+            }
+
+            $data = array();
+            $ticks = array();
+            foreach ($bls as $bl => $y) {
+                $ha = array();
+                $max = array();
+                $min = array();
+                
+                foreach ($hist as $i => &$h) {
+                    if ($h['FRAMEDIFF'] == '0-1') continue;
+                    if ($h['BEAMLINENAME'] != $bl) continue;
+                    $ha[$i-1] = floatval($h['AVGDIFF']);
+                    $min[$i-1] = floatval($h['MINDIFF']);
+                    $max[$i-1] = floatval($h['MAXDIFF']);
+                    $ticks[$h['FRAMEDIFF']] = 1;
+                }
+
+                array_push($data, array('label' => $bl, 'min' => $min, 'max' => $max, 'avg' => $ha));
+            }
+
+            $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
         }
 
 
