@@ -54,7 +54,7 @@ function(DataCollections, DCList, DCItemView, EMAPStatuses,
 
         onShow: function() {
             // EMDataCollections.__super__.onShow.call(this)
-            this.rbd.show(new BreakdownView({ model: this.breakdown, scatters: true, hideOverview: true }))
+            if (!this.getOption('params').id) this.rbd.show(new BreakdownView({ model: this.breakdown, scatters: true, hideOverview: true }))
         }
     })
 
