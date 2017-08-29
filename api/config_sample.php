@@ -88,6 +88,9 @@
     # Crystal alignment programs
     $strat_align = array('XOalign', 'dials.align_crystal');
 
+    # Active MQ - Set to empty string to disable
+    $activemq_server = 'tcp://activemq.server.ac.uk';
+    $activemq_rp_queue = '/queue/zocolo.name';
 
     # Paths
     # - These map files to physical locations on disk
