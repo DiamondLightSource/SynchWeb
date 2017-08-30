@@ -430,9 +430,9 @@
         
         # Get a PV
         function pv($pvs,$full=false) {
-            putenv('EPICS_CA_ADDR_LIST=172.23.240.13');
-            putenv('PATH=/dls_sw/epics/R3.14.11/base/bin/linux-x86_64/:$PATH');
-            exec('caget ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
+            global $bl_pv_prog, $bl_pv_env;
+            putenv($bl_pv_env);
+            exec($bl_pv_prog . implode(' ', $pvs) . ' 2>/dev/null', $ret);
             $output = array();
             
             foreach ($ret as $i => $v) {

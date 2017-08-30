@@ -229,6 +229,8 @@
     # - Defines what type of system the beamline parameters use
     #   For future implementation of Tango, currently only support EPICS
     $bl_pv_type = 'EPICS';
+    $bl_pv_prog = '/path/to/caget';
+    $bl_pv_env = 'EPICS_CA_ADDR_LIST=123.45.678.9';
 
     # PVs for beamline status
     # - These are displayed on an active visit so remote users can see beamline status
