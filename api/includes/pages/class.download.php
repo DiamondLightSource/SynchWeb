@@ -213,7 +213,8 @@
         # Return pdb/mtz/log file for fast_ep and dimple
         function _use_rel_path($pat, $pth, $root_pth) {
             $regex_pat = str_replace("*", "\w+", $pat);
-            $rel_path =  array_pop(preg_split('`'.$regex_pat.'`', $pth));
+            $sp = preg_split('`'.$regex_pat.'`', $pth);
+            $rel_path =  array_pop($sp);
             $res =  $root_pth . $rel_path;
             return $res;
         }
