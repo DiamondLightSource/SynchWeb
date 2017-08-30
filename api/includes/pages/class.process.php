@@ -19,6 +19,8 @@
             'REPROCESSINGPARAMETERID' => '\d+',
             'PARAMETERKEY' => '\w+',
             'PARAMETERVALUE' => '([\w-\.,])+',
+
+            'RECIPE' => '([\w-])+',
         );
         
 
@@ -54,12 +56,13 @@
             }
 
             $rows = $this->db->pq("SELECT
-                rp.reprocessingid, rp.displayname, rp.status, rp.comments, TO_CHAR(rp.recordtimestamp, 'DD-MM-YYYY HH24:MI') as recordtimestamp, TO_CHAR(rp.startedtimestamp, 'DD-MM-YYYY HH24:MI') as startedtimestamp, TO_CHAR(rp.lastupdatetimestamp, 'DD-MM-YYYY HH24:MI') as lastupdatetimestamp, rp.lastupdatemessage,
+                rp.reprocessingid, rp.displayname, rp.comments, TO_CHAR(rp.recordtimestamp, 'DD-MM-YYYY HH24:MI') as recordtimestamp, 
                 dc.filetemplate, dc.imagedirectory, dc.datacollectionid, dc.imageprefix,
                 smp.name as sample, smp.blsampleid as blsampleid, pr.acronym as protein, pr.proteinid,
                 CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) as visit,
 
-                apss.cchalf, apss.ccanomalous, apss.anomalous, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi
+                apss.cchalf, apss.ccanomalous, apss.anomalous, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi,
+                IF(app.autoprocprogramid, IF(api.autoprocintegrationid, 1, app.processingstatus), 2) as status
                 FROM reprocessing rp
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 LEFT OUTER JOIN blsample smp ON smp.blsampleid = dc.blsampleid
@@ -90,6 +93,7 @@
         function _add_reprocessing() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('DATACOLLECTIONID')) $this->_error('No datacollection specified');
+            if (!$this->has_arg('RECIPE')) $this->_error('No recipe specified');
 
             $chk = $this->db->pq("SELECT dc.datacollectionid
                 FROM datacollection dc
@@ -103,8 +107,8 @@
             $comments = $this->has_arg('COMMENTS') ? $this->arg('COMMENTS') : null;
             $display = $this->has_arg('DISPLAYNAME') ? $this->arg('DISPLAYNAME') : null;
 
-            $this->db->pq("INSERT INTO reprocessing (datacollectionid, displayname, comments) 
-                VALUES (:1, :2, :3)", array($this->arg('DATACOLLECTIONID'), $display, $comments));
+            $this->db->pq("INSERT INTO reprocessing (datacollectionid, displayname, comments, source, recipe) 
+                VALUES (:1, :2, :3, :4, :5)", array($this->arg('DATACOLLECTIONID'), $display, $comments, 'ISPyB', $this->arg('RECIPE')));
 
             $this->_output(array('REPROCESSINGID' => $this->db->id()));
         }
@@ -296,7 +300,7 @@
 
             $body = array(
                 'parameters' => array(
-                    array('ispby_process' => $this->arg('REPROCESSINGID')),
+                    'ispby_process' => $this->arg('REPROCESSINGID'),
                 )
             );
 
