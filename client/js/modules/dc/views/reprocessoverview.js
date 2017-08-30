@@ -12,10 +12,10 @@ define(['marionette',
         var StatusCell = Backgrid.Cell.extend({
             render: function() {
                 var icons = {
-                    submitted: '<i class="fa icon grey fa-pause alt="Waiting" title="Waiting"></i>',
-                    running: '<i class="fa icon grey fa-cog fa-spin alt="Running" title="Running"></i>',
-                    finished: '<i class="fa icon green fa-check alt="Completed" title="Completed"></i>',
-                    failed: '<i class="fa icon red fa-times alt="Failed" title="Failed"></i>',
+                    2: '<i class="fa icon grey fa-pause alt="Waiting" title="Waiting"></i>',
+                    null: '<i class="fa icon grey fa-cog fa-spin alt="Running" title="Running"></i>',
+                    1: '<i class="fa icon green fa-check alt="Completed" title="Completed"></i>',
+                    0: '<i class="fa icon red fa-times alt="Failed" title="Failed"></i>',
                 }
 
                 if (this.model.get('STATUS') in icons) this.$el.append(icons[this.model.get('STATUS')])

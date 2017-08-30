@@ -78,16 +78,13 @@ define(['marionette',
             var reprocessing = new Reprocessing({
                 DATACOLLECTIONID: s[0].get('ID'),
                 COMMENTS: 'Multicrystal integrator',
-                DISPLAYNAME: p.get('NAME')
+                DISPLAYNAME: p.get('NAME'),
+                RECIPE: self.ui.met.val(),
             })
 
             reprocessing.save({}, {
                 success: function() {
-                    var reprocessingparams = new ReprocessingParameters([{ 
-                        REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
-                        PARAMETERKEY: 'pipeline', 
-                        PARAMETERVALUE: self.ui.met.val() 
-                    }])
+                    var reprocessingparams = new ReprocessingParameters()
 
                     var res = self.$el.find('input[name=res]').val()
                     if (res) reprocessingparams.add(new ReprocessingParameter({ 
@@ -117,7 +114,7 @@ define(['marionette',
                         PARAMETERVALUE: sg
                     }))
 
-                    reprocessingparams.save()
+                    if (reprocessingparams.length) reprocessingparams.save()
 
 
                     var sweeps = []
@@ -133,6 +130,7 @@ define(['marionette',
                     reprocessingsweeps.save()
 
                     app.alert({ message: '1 reprocessing job successfully submitted'})
+                    self._enqueue({ REPROCESSINGID: reprocessing.get('REPROCESSINGID') })
                 },
 
                 error: function() {
@@ -140,6 +138,17 @@ define(['marionette',
                 }
             })
 
+        },
+
+
+        _enqueue: function(options) {
+            Backbone.ajax({
+                url: app.apiurl+'/process/enqueue',
+                method: 'POST',
+                data: {
+                    REPROCESSINGID: options.REPROCESSINGID
+                },
+            })
         },
 
 
@@ -155,8 +164,8 @@ define(['marionette',
         },
 
         setJobs: function() {
-            var n = this.reprocessings.where({ STATUS: 'running' }).length
-            var w = this.reprocessings.where({ STATUS: 'submitted' }).length
+            var n = this.reprocessings.fullCollection.where({ STATUS: null }).length
+            var w = this.reprocessings.fullCollection.where({ STATUS: '2' }).length
             this.ui.jobs.text(n)
             this.ui.wait.text(w)
             n > 0 ? this.ui.jobs.parent('li').addClass('running') : this.ui.jobs.parent('li').removeClass('running')
