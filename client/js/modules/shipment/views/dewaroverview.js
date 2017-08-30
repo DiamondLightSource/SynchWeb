@@ -58,6 +58,7 @@ define(['marionette',
                            { name: 'DELIVERYAGENT_AGENTNAME', label: 'Courier', cell: 'string', editable: false },
                            { name: 'TRACKINGNUMBERTOSYNCHROTRON', label: 'Track # to', cell: 'string', editable: false },
                            { name: 'DEWARSTATUS', label: 'Status', cell: 'string', editable: false },
+                           { name: 'STORAGELOCATION', label: 'Location', cell: 'string', editable: false },
                            { label: 'Tracking', cell: TrackingCell, editable: false }]
                           
             this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'dewars', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: 'No dewars found', } })
