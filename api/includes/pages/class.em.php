@@ -86,7 +86,7 @@
                 WHERE $where", $ids);
 
             foreach ($ctf as $c) {
-                $statuses[$m['DATACOLLECTIONID']]['CTF'][$m['IMAGENUMBER']] = $m['PROCESSINGSTATUS'];
+                $statuses[$c['DATACOLLECTIONID']]['CTF'][$c['IMAGENUMBER']] = $c['PROCESSINGSTATUS'];
             }
 
             $this->_output(array_values($statuses));
