@@ -220,7 +220,7 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
 
                     this.options3.series = { 
                         lines: { show: false },
-                        points: { show: true }
+                        points: { show: true, radius: 1 }
                     }
 
                     this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('scatters'), this.options3)
