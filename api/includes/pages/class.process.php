@@ -57,7 +57,7 @@
 
             $rows = $this->db->pq("SELECT
                 rp.reprocessingid, rp.displayname, rp.comments, TO_CHAR(rp.recordtimestamp, 'DD-MM-YYYY HH24:MI') as recordtimestamp, rp.automatic, 
-                dc.filetemplate, dc.imagedirectory, dc.datacollectionid, dc.imageprefix,
+                dc.filetemplate, dc.imagedirectory, dc.datacollectionid, dc.imageprefix, dc.datacollectionnumber,
                 smp.name as sample, smp.blsampleid as blsampleid, pr.acronym as protein, pr.proteinid,
                 CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) as visit,
 
@@ -208,7 +208,7 @@
 
             $rows = $this->db->pq("SELECT
                 ris.reprocessingimagesweepid, ris.reprocessingid, ris.startimage, ris.endimage, ris.datacollectionid,
-                dc.filetemplate, dc.imagedirectory, dc.imageprefix, dc.datacollectionid,
+                dc.filetemplate, dc.imagedirectory, dc.imageprefix, dc.datacollectionid, dc.datacollectionnumber,
                 smp.name as sample, smp.blsampleid as blsampleid, pr.acronym as protein, pr.proteinid,
                 CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) as visit
                 FROM reprocessingimagesweep ris
