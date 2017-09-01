@@ -609,6 +609,20 @@
               VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
               array($dew['DEWARID'], $this->arg('LOCATION')));
 
+
+            if ($this->has_arg('NEXTVISIT')) {
+                $sessions = $this->db->pq("SELECT s.sessionid
+                  FROM blsession s
+                  INNER JOIN proposal p ON p.proposalid = s.proposalid
+                  WHERE p.proposalid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2", 
+                    array($this->proposalid, $this->arg('NEXTVISIT')));
+
+                if (sizeof($sessions)) {
+                    $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", 
+                      array($sessions[0]['SESSIONID'], $dew['DEWARID']));
+                }
+            }
+
             require_once('includes/class.email.php');
             $email = new Email('dewar-transfer', '*** Dewar ready for internal transfer ***');
 
@@ -1077,6 +1091,10 @@
                 } else if ($this->arg('ty') == 'todispose') {
                     $where .= " AND c.imagerid IS NOT NULL";
                     $having .= " HAVING (TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24) > 42";
+                } else if ($this->arg('ty') == 'data') {
+                    $having .= " HAVING COUNT(distinct dc.datacollectionid) > 0";
+                } else if ($this->arg('ty') == 'queued') {
+                    $where .= " AND cq.containerqueueid IS NOT NULL";
                 } 
             }
 
@@ -1138,8 +1156,11 @@
                 LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
                 LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                 LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
+                LEFT OUTER JOIN datacollection dc ON dc.blsampleid = s.blsampleid
+                LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
                 $join 
                 WHERE $where
+                GROUP BY c.containerid
                 $having", $args);
             $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
             
