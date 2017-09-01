@@ -43,7 +43,7 @@ define(['marionette',
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Dewar Overview</h1><p class="help">This page shows all dewars for all current visits</p><div class="filter bl"></div><div class="filter img"></div><div class="filter"><ul><li>First Experiment: <input type="text" name="firstexperiment" /></li></ul><div class="wrapper"></div>'),
+        template: _.template('<h1>Dewar Overview</h1><p class="help">This page shows all dewars for all current visits</p><div class="filter bl"></div><div class="filter img"></div><div class="filter"><ul><li>First Experiment: <input type="text" name="firstexperiment" /></li></ul></div><div class="wrapper"></div>'),
         regions: { wrap: '.wrapper', type: '.bl', img: '.img' },
         
         ui: {
