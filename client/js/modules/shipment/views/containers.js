@@ -51,6 +51,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
     initialize: function(options) {
       var columns = [{ name: 'NAME', label: 'Name', cell: 'string', editable: false },
                      { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
+                     { name: 'BARCODE', label: 'Barcode', cell: 'string', editable: false },
                      { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
                      { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
                      { name: 'DCCOUNT', label: '# DCs', cell: 'string', editable: false },
@@ -79,6 +80,12 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
           filters.push({ id: 'todispose', name: 'To Dispose'})
       }
 
+      columns[2].renderable = false
+      if (options.barcode) {
+          columns[1].renderable = false
+          columns[2].renderable = true
+      }
+
       if (app.mobile()) {
         _.each([1,2,5,6], function(v) {
             columns[v].renderable = false
@@ -94,6 +101,17 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
         name: 'ty',
         filters: filters
       })
+
+      this.listenTo(this.ty, 'selected:change', this.updateCols)
+    },
+
+    updateCols: function(selected) {
+        var isPuck = (selected == null || selected == 'puck')
+
+        var dew = this.table.grid.columns.findWhere({ name: 'DEWAR' })
+        var bc = this.table.grid.columns.findWhere({ name: 'BARCODE' })
+        dew.set('renderable', isPuck)
+        bc.set('renderable', !isPuck)
     },
                                       
     onRender: function() {
