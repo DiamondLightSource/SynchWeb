@@ -53,6 +53,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
                      { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
                      { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
                      { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
+                     { name: 'DCCOUNT', label: '# DCs', cell: 'string', editable: false },
                      { name: 'CONTAINERTYPE', label: 'Type', cell: 'string', editable: false },
                      { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
                      { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
