@@ -126,7 +126,7 @@ define(['marionette',
             this.ty = new FilterView({ collection: this.inspections, filters: filters, mobile: true, url: false, name: 'ty' })
             this.insf.show(this.ty)
 
-            this.ctrs.show(new ContainersView({ collection: this.containers, params: {} }))
+            this.ctrs.show(new ContainersView({ collection: this.containers, params: {}, barcode: true }))
         },
         
     })
