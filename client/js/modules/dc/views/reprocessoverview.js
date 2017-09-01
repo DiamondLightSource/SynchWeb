@@ -65,7 +65,7 @@ define(['marionette',
                 this.$el.html(ptable.render().$el)
 
                 var columns = [
-                   { label: 'Files', cell: table.TemplateCell, editable: false, template: '<a href="/dc/visit/<%-VISIT%>/id/<%-DATACOLLECTIONID%>"><%-IMAGEDIRECTORY%><%-IMAGEPREFIX%></a>' },
+                   { label: 'Files', cell: table.TemplateCell, editable: false, template: '<a href="/dc/visit/<%-VISIT%>/id/<%-DATACOLLECTIONID%>"><%-IMAGEDIRECTORY%><%-IMAGEPREFIX%>_<%-DATACOLLECTIONNUMBER%></a>' },
                    { label: 'Image #', cell: table.TemplateCell, editable: false, template: '<%-STARTIMAGE%> - <%-ENDIMAGE%>' },
                 ]
 
