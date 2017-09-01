@@ -66,6 +66,8 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
           { id: 'plate', name: 'Plates'},
           { id: 'puck', name: 'Pucks'},
           { id: 'imager', name: 'In Imager'},
+          { id: 'queued', name: 'Queued'},
+          { id: 'data', name: 'Has Data'},
       ]  
 
       if (app.user_can('disp_cont')) {
