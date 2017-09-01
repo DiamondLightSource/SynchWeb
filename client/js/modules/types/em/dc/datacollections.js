@@ -48,7 +48,7 @@ function(DataCollections, DCList, DCItemView, EMAPStatuses,
 
         queueRefresh: function() {
             if (this.model && this.model.get('ACTIVE') == 1) {
-                setTimeout(this.breakdown.fetch.bind(this), 10000)
+                setTimeout(this.breakdown.fetch.bind(this.breakdown), 10000)
             }
         },
 
