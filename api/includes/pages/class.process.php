@@ -56,7 +56,7 @@
             }
 
             $rows = $this->db->pq("SELECT
-                rp.reprocessingid, rp.displayname, rp.comments, TO_CHAR(rp.recordtimestamp, 'DD-MM-YYYY HH24:MI') as recordtimestamp, 
+                rp.reprocessingid, rp.displayname, rp.comments, TO_CHAR(rp.recordtimestamp, 'DD-MM-YYYY HH24:MI') as recordtimestamp, rp.automatic, 
                 dc.filetemplate, dc.imagedirectory, dc.datacollectionid, dc.imageprefix,
                 smp.name as sample, smp.blsampleid as blsampleid, pr.acronym as protein, pr.proteinid,
                 CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) as visit,
@@ -107,8 +107,8 @@
             $comments = $this->has_arg('COMMENTS') ? $this->arg('COMMENTS') : null;
             $display = $this->has_arg('DISPLAYNAME') ? $this->arg('DISPLAYNAME') : null;
 
-            $this->db->pq("INSERT INTO reprocessing (datacollectionid, displayname, comments, source, recipe) 
-                VALUES (:1, :2, :3, :4, :5)", array($this->arg('DATACOLLECTIONID'), $display, $comments, 'ISPyB', $this->arg('RECIPE')));
+            $this->db->pq("INSERT INTO reprocessing (datacollectionid, displayname, comments, automatic, recipe) 
+                VALUES (:1, :2, :3, :4, :5)", array($this->arg('DATACOLLECTIONID'), $display, $comments, 0, $this->arg('RECIPE')));
 
             $this->_output(array('REPROCESSINGID' => $this->db->id()));
         }
