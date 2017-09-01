@@ -380,6 +380,7 @@ define(['marionette',
             'click button.submit': 'queueContainer',
             'click a.apply': 'applyPreset',
             'click a.unqueue': 'unqueueContainer',
+            'click a.addall': 'queueAllSamples',
         },
 
         ui: {
@@ -387,6 +388,29 @@ define(['marionette',
             rpreset: '.rpreset',
             xtal: '.xtalpreview',
         },
+
+
+        queueAllSamples: function() {
+            var reqs = []
+            this.subsamples.each(function(s,i) {
+                setTimeout(function() {
+                    reqs.push(Backbone.ajax({
+                        url: app.apiurl+'/sample/sub/queue/'+s.get('BLSUBSAMPLEID'),
+                        success: function(resp) {
+                            s.set('READYFORQUEUE', '1')
+                        },
+                    }))
+                }, 200)
+            }, this)
+
+            var self = this
+            $.when.apply($, reqs).done(function() {
+                setTimeout(function() {
+                    self.subsamples.fetch()
+                }, 200)
+            })
+        },
+
 
         unqueueContainer: function(e) {
             e.preventDefault()
