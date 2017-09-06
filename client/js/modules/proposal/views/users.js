@@ -3,7 +3,7 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
     
     var UserItem = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template("<%-FULLNAME%> - <% if (LAST) { %><%-VISITS%> Visits (Last Visit: <%-LAST%>)<% } else { %>*NEW*<% } %> [<%-REMOTE=='1' ? 'Remote' : 'On-site'%>]"),
+        template: _.template("<%-FULLNAME%> - <% if (LAST) { %><%-VISITS%> Visits (Last Visit: <%-LAST%>)<% } else { %>*NEW*<% } %> [<%-REMOTE=='1' ? 'Remote' : 'On-site'%>] [<%-ROLE%>]"),
         className: function() {
             return this.model.get('VISITS') == 0 ? 'new' : ''
         },
