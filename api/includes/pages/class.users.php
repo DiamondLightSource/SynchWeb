@@ -223,7 +223,7 @@ class Users extends Page {
         }
 
         if ($this->has_arg('visit')) {
-            $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, shp.remote,";
+            $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, shp.remote, shp.role,";
             $join = 'INNER JOIN session_has_person shp ON shp.personid = p.personid
                      INNER JOIN blsession s ON shp.sessionid = s.sessionid
                      INNER JOIN proposal pr ON pr.proposalid = s.proposalid
