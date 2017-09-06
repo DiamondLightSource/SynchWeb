@@ -5,12 +5,13 @@ define(['marionette',
     'modules/blstats/views/roboterrors',
     'modules/blstats/views/robottotals',
     'modules/blstats/views/robottotalplot',
+    'utils'
     
-    ], function(Marionette, RobotAveragesView, RobotErrors, RobotTotals, RobotErrorsView, RobotTotalsView, RobotTotalsPlot) {
+    ], function(Marionette, RobotAveragesView, RobotErrors, RobotTotals, RobotErrorsView, RobotTotalsView, RobotTotalsPlot, utils) {
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Robot Averages</h1><div class="plot_container"><div id="avg_time"></div></div><div class="wrapper"></div><h1>Totals</h1><div class="plot_container"><div id="tots" style="height:250px"></div></div><div class="totals"></div>'),
+        template: _.template('<h1>Robot Averages</h1><div class="plot_container"><div id="avg_time"></div></div><a href="#" class="button download"><i class="fa fa-download"></i> Download</a><div class="wrapper"></div><h1>Totals</h1><div class="plot_container"><div id="tots" style="height:250px"></div></div><div class="totals"></div>'),
         
         regions: {
             wrap: '.wrapper',
@@ -25,6 +26,18 @@ define(['marionette',
         events: {
             'click .legend table tr': 'filterBL',
             'plotclick #avg_time': 'filterRun',
+            'click a.download': 'downloadData',
+        },
+
+        downloadData: function(e) {
+            e.preventDefault()
+            var url = app.apiurl+'/robot/averages?download=1'
+            utils.sign({ 
+                url: url,
+                callback: function(resp) {
+                    window.location = url+'&token='+resp.token
+                }
+            })
         },
 
         filterRun: function (e, pos, item) {

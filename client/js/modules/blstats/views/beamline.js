@@ -1,9 +1,10 @@
 define(['marionette', 'views/filter', 'modules/blstats/models/blstats',
+    'utils',
     'jquery',
     'jquery.flot',
     'jquery.flot.tooltip',
     'jquery.flot.tickrotor',
-    ], function(Marionette, FilterView, BLStats, $) {
+    ], function(Marionette, FilterView, BLStats, utils, $) {
     
     
     var SeriesItem = Marionette.ItemView.extend({
@@ -28,7 +29,7 @@ define(['marionette', 'views/filter', 'modules/blstats/models/blstats',
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Beamline Statistics</h1><div class="filter filter-nohide types"></div><div class="filter filter-nohide series"></div><div class="plot_wrap"><div class="plot_container"><div id="logon"></div><p class="plot_title"></p></div></div>'),
+        template: _.template('<h1>Beamline Statistics</h1><div class="filter filter-nohide types"></div><div class="filter filter-nohide series"></div><div class="plot_wrap"><div class="plot_container"><div id="logon"></div><p class="plot_title"></p></div></div><a href="#" class="button download"><i class="fa fa-download"></i> Download</a>'),
         
         regions: {
             types: '.types',
@@ -40,6 +41,11 @@ define(['marionette', 'views/filter', 'modules/blstats/models/blstats',
             title: '.plot_title',
             plot: '#logon',
         },
+
+        events: {
+            'click a.download': 'downloadData'
+        },
+
         
         initialize: function(options) {
             this.stats = new BLStats()
@@ -73,6 +79,17 @@ define(['marionette', 'views/filter', 'modules/blstats/models/blstats',
         switchType: function(type) {
             this.ui.plot.addClass('loading')
             this.stats.set({ type: type }).fetch()
+        },
+
+        downloadData: function(e) {
+            e.preventDefault()
+            var url = app.apiurl+this.stats.url()+'?download=1'
+            utils.sign({ 
+                url: url,
+                callback: function(resp) {
+                    window.location = url+'&token='+resp.token
+                }
+            })
         },
         
         processData: function() {

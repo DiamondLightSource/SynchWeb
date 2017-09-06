@@ -1,9 +1,10 @@
 define(['marionette', 'views/filter', 'modules/blstats/models/plstats',
+    'utils',
     'jquery',
     'jquery.flot',
     'jquery.flot.tooltip',
     'jquery.flot.tickrotor',
-    ], function(Marionette, FilterView, PLStats, $) {
+    ], function(Marionette, FilterView, PLStats, utils, $) {
     
     
     var SeriesItem = Marionette.ItemView.extend({
@@ -28,7 +29,7 @@ define(['marionette', 'views/filter', 'modules/blstats/models/plstats',
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Auto Processing Statistics</h1><div class="filter types"></div><div class="filter series"></div><div class="plot_wrap"><div class="plot_container"><div id="logon"></div><p class="plot_title"></p></div></div>'),
+        template: _.template('<h1>Auto Processing Statistics</h1><div class="filter types"></div><div class="filter series"></div><div class="plot_wrap"><div class="plot_container"><div id="logon"></div><p class="plot_title"></p></div></div><a href="#" class="button download"><i class="fa fa-download"></i> Download</a>'),
         
         regions: {
             types: '.types',
@@ -39,6 +40,21 @@ define(['marionette', 'views/filter', 'modules/blstats/models/plstats',
         ui: {
             title: '.plot_title',
             plot: '#logon',
+        },
+
+        events: {
+            'click a.download': 'downloadData'
+        },
+
+        downloadData: function(e) {
+            e.preventDefault()
+            var url = app.apiurl+this.stats.url()+'?download=1'
+            utils.sign({ 
+                url: url,
+                callback: function(resp) {
+                    window.location = url+'&token='+resp.token
+                }
+            })
         },
         
         initialize: function(options) {
