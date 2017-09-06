@@ -3,7 +3,9 @@
     class Stats extends Page {
         
 
-        public static $arg_list = array('t' => '\w+',
+        public static $arg_list = array(
+            't' => '\w+',
+            'download' => '\d',
         );
         
 
@@ -131,7 +133,7 @@
             $json['yaxis'] = 'Average No. '.$dct.' / Hour';
             $json['title'] = 'Average Number of '.$dct.' / Hour vs. Run Number';
             
-            $this->_output($json);
+            $this->has_arg('download') ? $this->_write_csv($json, 'number_'.($sc?'screening':($all?'alldc':'fulldc'))) : $this->_output($json);
         }
 
         
@@ -157,7 +159,7 @@
             $json['yaxis'] = 'Average Number of Images / Hour';
             $json['title'] = 'Average Number of Images Collected / Hour vs. Run Number';
             
-            $this->_output($json);
+            $this->has_arg('download') ? $this->_write_csv($json, 'images') : $this->_output($json);
         }        
         
         // Data collection times
@@ -183,7 +185,7 @@
             $json['yaxis'] = 'Average Data Collection Time (Minutes)';
             $json['title'] = 'Average Full Data Collection Time vs. Run Number';
                                  
-            $this->_output($json);
+            $this->has_arg('download') ? $this->_write_csv($json, 'dctimes') : $this->_output($json);
         }
         
         
@@ -211,7 +213,7 @@
             $json['yaxis'] = 'Average Number of Samples Loaded / Hour';
             $json['title'] = 'Average Number of Samples Loaded / Hour by Robot vs. Run Number';                                 
                                  
-            $this->_output($json);
+            $this->has_arg('download') ? $this->_write_csv($json, 'samples_loaded') : $this->_output($json);
         }
         
                                  
@@ -238,7 +240,7 @@
             $json['yaxis'] = 'Average Number of Data Collections';
             $json['title'] = 'Average Number of Full Data Collections vs. Hour of the Day';
                                  
-            $this->_output($json);
+            $this->has_arg('download') ? $this->_write_csv($json, 'daily_usage') : $this->_output($json);
         }
                                  
                                  
@@ -259,7 +261,7 @@
                                  
         function _auto_indexing() {
             global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
 
             $dcs = $this->db->pq("SELECT avg(TIMESTAMPDIFF('SECOND', dc.endtime, s.bltimestamp)) as duration, count(s.screeningid) as count, s.shortcomments as ty, vr.run
                 FROM screening s
@@ -276,13 +278,13 @@
             $json['yaxis'] = 'Average Process Time (seconds)';
             $json['title'] = 'Average Run Time for EDNA vs. Run Number';
                                  
-            $this->_output($json);
+            $this->has_arg('download') ? $this->_write_csv($json, 'autoindexing_times') : $this->_output($json);
         }
                
                                  
         function _auto_integration() {
             global $ap_types, $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
 
             $ty_tmp = array();
             foreach ($ap_types as $search => $replace) {
@@ -311,7 +313,7 @@
             $json['yaxis'] = 'Average Process Time (Seconds)';
             $json['title'] = 'Average Run Time for Auto Integration vs. Run Number';
              
-            $this->_output($json);
+            $this->has_arg('download') ? $this->_write_csv($json, 'autointegration_times') : $this->_output($json);
         }
                                  
                                  
@@ -340,7 +342,10 @@
                 }
                 
                 foreach ($data_cols as $i => $k) {
-                    array_push($data[$d[$type_col]][$i]['data'], array(array_search($d[$tick_col], $ticks)+array_search($d[$type_col], $tys)*$w-0.5, floatval($d[$k])));
+                    $pos = $this->has_arg('download') 
+                        ? array_search($d[$tick_col], $ticks)
+                        : array_search($d[$tick_col], $ticks)+array_search($d[$type_col], $tys)*$w-0.5;
+                    array_push($data[$d[$type_col]][$i]['data'], array($pos, floatval($d[$k])));
                 }
                                  
                                  
@@ -370,6 +375,32 @@
             foreach ($ticks as $i => $t) array_push($ta, array($i, $t));
             
             return array('ticks' => $ta, 'data' => $data);
+        }
+
+
+        function _write_csv($json, $filename) {
+            header('Content-Type:application/csv'); 
+            header("Content-Disposition:attachment;filename=$filename.csv"); 
+
+            print $json['title']."\n";
+            print 'Run,'.implode(',',array_keys($json['data']))."\n";
+
+            foreach ($json['ticks'] as $t) {
+                $row = array($t[1]);
+                foreach ($json['data'] as $k => $d) {
+                    $found = false;
+                    foreach ($d[0]['data'] as $pt) {
+                        if ($pt[0] == $t[0]) {
+                            array_push($row, $pt[1]);
+                            $found = true;
+                        }
+                    }
+
+                    if (!$found) array_push($row, '');
+                }
+
+                print implode(',', $row)."\n";
+            }
         }
 
         

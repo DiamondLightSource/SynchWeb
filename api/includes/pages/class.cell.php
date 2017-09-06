@@ -25,6 +25,7 @@
                               'page' => '\d+',
                               'dist' => '\d+(.\d+)?',
                               'pdb' => '\w+',
+                              'download' => '\d',
                               );
         
 
@@ -173,6 +174,17 @@
         }
         
 
+        function _write_csv($data, $filename) {
+            header('Content-Type:application/csv'); 
+            header("Content-Disposition:attachment;filename=$filename.csv"); 
+
+            print implode(',',array_keys($data[0]))."\n";
+
+            foreach ($data as $d) {
+                print implode(',', array_values($d))."\n";
+            }
+        }
+
         # ------------------------------------------------------------------------
         # Autoprocessing stats
         function _autoproc() {
@@ -194,7 +206,7 @@
                 $tot['AP'] += $s['AP'];
             }
 
-            $this->_output(array($tot, $stats));
+            $this->has_arg('download') ? $this->_write_csv($stats, 'pdb_apvman') : $this->_output(array($tot, $stats));
         }
 
 
