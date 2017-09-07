@@ -30,6 +30,7 @@ define(['marionette',
         // Assign containers to visit
         assignVisit: function(vis, page) {
             app.loading()
+            app.cookie(vis.split('-')[0])
             var visit = new Visit({ VISIT: vis })
             
             visit.fetch({

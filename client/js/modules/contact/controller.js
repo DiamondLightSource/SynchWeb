@@ -9,7 +9,9 @@ define(['marionette',
         'models/user',
         'modules/contact/views/viewuser',
 
-], function(Marionette, Contact, Contacts, ContactList, ContactView, AddContactView, User, ViewUser) {
+        'models/proplookup',
+
+], function(Marionette, Contact, Contacts, ContactList, ContactView, AddContactView, User, ViewUser, ProposalLookup) {
     
     var bc = { title: 'Home Lab Contacts', url: '/contacts' }
     
@@ -26,19 +28,30 @@ define(['marionette',
         
         view: function(cid) {
             app.loading()
-            var contact = new Contact({ LABCONTACTID: cid })
-            contact.fetch({
+            var lookup = new ProposalLookup({ field: 'LABCONTACTID', value: cid })
+            lookup.find({
                 success: function() {
-                    app.bc.reset([bc,{ title: contact.get('CARDNAME') }])
-                    app.content.show(new ContactView({ model: contact }))
+                    var contact = new Contact({ LABCONTACTID: cid })
+                    contact.fetch({
+                        success: function() {
+                            app.bc.reset([bc,{ title: contact.get('CARDNAME') }])
+                            app.content.show(new ContactView({ model: contact }))
+                        },
+                        error: function() {
+                            app.bc.reset([bc,{ title: 'No such contact' }])
+                            app.message({ title: 'No such contact', message: 'The specified contact doesn\'t exist'})
+                        },
+                        
+                    })
+
                 },
+
                 error: function() {
                     app.bc.reset([bc,{ title: 'No such contact' }])
                     app.message({ title: 'No such contact', message: 'The specified contact doesn\'t exist'})
                 },
-                
+
             })
-            
         },
         
         add: function() {

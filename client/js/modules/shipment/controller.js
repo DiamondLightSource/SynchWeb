@@ -34,6 +34,8 @@ define(['marionette',
         'modules/shipment/views/manifest',
 
         'modules/shipment/views/createawb',
+
+        'models/proplookup',
     
 ], function(Marionette,
     Dewar, Shipment, Shipments, 
@@ -41,7 +43,8 @@ define(['marionette',
     Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
-    DispatchView, TransferView, Dewars, DewarOverview, ManifestView, CreateAWBView) {
+    DispatchView, TransferView, Dewars, DewarOverview, ManifestView, CreateAWBView,
+    ProposalLookup) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
         
@@ -59,17 +62,27 @@ define(['marionette',
     },
                                                 
     view: function(sid) {
-      app.log('ship view', sid)
-      var shipment = new Shipment({ SHIPPINGID: sid })
-        shipment.fetch({
+        var lookup = new ProposalLookup({ field: 'SHIPPINGID', value: sid })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }])
-                app.content.show(new ShipmentView({ model: shipment }))
-            },
+                app.log('ship view', sid)
+                var shipment = new Shipment({ SHIPPINGID: sid })
+                  shipment.fetch({
+                      success: function() {
+                          app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }])
+                          app.content.show(new ShipmentView({ model: shipment }))
+                      },
+                      error: function() {
+                          app.bc.reset([bc])
+                          app.message({ title: 'No such shipment', message: 'The specified shipment could not be found'})
+                      },
+                  })
+            }, 
+
             error: function() {
-                app.bc.reset([bc])
+                app.bc.reset([bc, { title: 'No such shipment' }])
                 app.message({ title: 'No such shipment', message: 'The specified shipment could not be found'})
-            },
+            }
         })
     },
       
@@ -109,20 +122,30 @@ define(['marionette',
       
       
     view_container: function(cid, iid, sid) {
-      app.log('cont view', cid, iid, sid)
-      var container = new Container({ CONTAINERID: cid })
-        container.fetch({
+        var lookup = new ProposalLookup({ field: 'CONTAINERID', value: cid })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }])
-                var is_plate = !(['Puck', 'PCRStrip', null].indexOf(container.get('CONTAINERTYPE')) > -1)
-                console.log('is plate', is_plate)
-                if (is_plate) app.content.show(new ContainerPlateView({ model: container, params: { iid: iid, sid: sid } }))
-                  else app.content.show(new ContainerView({ model: container }))
+                app.log('cont view', cid, iid, sid)
+                var container = new Container({ CONTAINERID: cid })
+                container.fetch({
+                    success: function() {
+                        app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }])
+                        var is_plate = !(['Puck', 'PCRStrip', null].indexOf(container.get('CONTAINERTYPE')) > -1)
+                        console.log('is plate', is_plate)
+                        if (is_plate) app.content.show(new ContainerPlateView({ model: container, params: { iid: iid, sid: sid } }))
+                          else app.content.show(new ContainerView({ model: container }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'No such container' }])
+                        app.message({ title: 'No such container', message: 'The specified container could not be found'})
+                    },
+                })
             },
+
             error: function() {
-                app.bc.reset([bc, { title: 'Error' }])
+                app.bc.reset([bc, { title: 'No such container' }])
                 app.message({ title: 'No such container', message: 'The specified container could not be found'})
-            },
+            }
         })
     },
 
