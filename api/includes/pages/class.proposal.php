@@ -29,6 +29,15 @@
                               'current' => '\d',
 
                               'COMMENTS' => '(\w|\s|-)+',
+
+
+                              'BLSAMPLEID' => '\d+',
+                              'PROTEINID' => '\d+',
+                              'CONTAINERID' => '\d+',
+                              'DEWARID' => '\d+',
+                              'SHIPPINGID' => '\d+',
+                              'LABCONTACTID' => '\d+',
+                              'DATACOLLECTIONID' => '\d+',
                                );
         
 
@@ -37,6 +46,7 @@
                                         array('/visits/:visit', 'patch', '_update_visit'),
                                         array('/bls/:ty', 'get', '_get_beamlines'),
                                         array('/type', 'get', '_get_types'),
+                                        array('/lookup', 'post', '_lookup'),
                              );
         
         
@@ -397,6 +407,85 @@
                     $this->_output(array($f => $this->arg($f)));
                 }
             }
+        }
+
+
+
+
+        function _lookup() {
+            global $bl_types;
+
+            $fields = array(
+                'BLSAMPLEID' => 's.blsampleid',
+                'PROTEINID' => 'pr.proteinid',
+                'CONTAINERID' => 'c.containerid',
+                'DEWARID' => 'd.dewarid',
+                'SHIPPINGID' => 'sh.shippingid',
+                'LABCONTACTID' => 'lc.labcontactid',
+                'DATACOLLECTIONID' => 'dc.datacollectionid',
+            );
+
+            $field = null;
+            foreach ($fields as $f => $v) {
+                if ($this->has_arg($f)) {
+                    $field = $f;
+                    break;
+                }
+            }
+
+            if (!$field) $this->_error('No id specified');
+
+            $where = "WHERE 1=1";
+            $args = array();
+
+
+            if ($this->staff) {
+                if (!$this->user->has('super_admin')) {
+                    $bls = array();
+                    foreach ($this->user->perms as $p) {
+                        if (strpos($p, '_admin')) {
+                            $parts = explode('_', $p);
+                            $ty = $parts[0];
+                            if (array_key_exists($ty, $bl_types)) $bls = array_merge($bls, $bl_types[$ty]);
+                        }
+                    }
+
+                    $where .= " AND ses.beamlinename in ('".implode("','", $bls)."')";
+                }
+            } else {
+                $where = " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid  ".$where;
+                $where .= " AND shp.personid=:".(sizeof($args)+1);
+                array_push($args, $this->user->personid);
+            }
+
+            $where .= ' AND '.$fields[$field].'=:'.(sizeof($args)+1);
+            array_push($args, $this->arg($field));
+
+            // $this->db->set_debug(True);
+            $rows = $this->db->pq("SELECT distinct CONCAT(p.proposalcode, p.proposalnumber) as prop
+                FROM proposal p
+                LEFT OUTER JOIN blsession ses ON ses.proposalid = p.proposalid
+                LEFT OUTER JOIN datacollection dc ON dc.sessionid = ses.sessionid
+
+                LEFT OUTER JOIN protein pr ON pr.proposalid = p.proposalid
+                LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
+                LEFT OUTER JOIN blsample s ON s.crystalid = cr.crystalid
+
+                LEFT OUTER JOIN shipping sh ON sh.proposalid = p.proposalid
+                LEFT OUTER JOIN dewar d ON d.shippingid = sh.shippingid
+                LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
+
+                LEFT OUTER JOIN labcontact lc ON lc.proposalid = p.proposalid
+                $where
+            ", $args);
+
+
+            if (sizeof($rows)) {
+                $this->_output($rows[0]);
+            } else {
+                $this->_error('No such proposal');
+            }
+
         }
 
     
