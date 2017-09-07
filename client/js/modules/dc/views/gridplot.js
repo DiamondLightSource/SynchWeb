@@ -63,8 +63,7 @@ define(['jquery', 'marionette',
             this.draw = _.debounce(this.draw, 10)
             this.listenTo(options.imagestatuses, 'sync', this.getModel, this)
 
-            var timestamp = utils._date_to_unix(this.getOption('ST'))
-            this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), timestamp: timestamp })
+            this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.distl, 'change', this.draw, this)
             this.grid = new GridInfo({ id: this.getOption('ID') })
 
