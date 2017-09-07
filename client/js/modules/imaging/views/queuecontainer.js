@@ -249,6 +249,13 @@ define(['marionette',
             })
 
             this.plan.set(this.model.toJSON())
+            this.listenTo(this.plan, 'computed:changed', this.updateComputed)
+        },
+
+        updateComputed: function() {
+            _.each(this.plan.computed(), function(k) {
+                this.$el.find('[name='+k+']').val(this.plan.get(k)).trigger('change')
+            }, this)
         },
 
         render: function(e) {
@@ -269,6 +276,7 @@ define(['marionette',
             this.bindModel()
             // this.preSave()
             this.model.set('_valid', this.plan.isValid(true))
+            this.updateComputed()
 
             return this
         },
