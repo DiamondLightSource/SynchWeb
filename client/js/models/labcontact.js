@@ -28,9 +28,19 @@ define(['backbone'], function(Backbone) {
                 required: true,
                 pattern: 'wwsdash',
             },
-            ADDRESS: {
-                required: true,
-                pattern: 'address',
+            ADDRESS: function(value, attr, state) {
+                if (!value) {
+                    return Backbone.Validation.messages.required
+                }
+
+                if (!Backbone.Validation.patterns.address.test(value)) {
+                    return Backbone.Validation.messages.address
+                }
+
+                var lines = value.split('\n')
+                if (lines.length > 3) {
+                    return 'Address can only be a maximum of three lines'
+                }
             },
             CITY: {
                 required: true,
