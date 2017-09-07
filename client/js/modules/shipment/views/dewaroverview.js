@@ -55,6 +55,12 @@ define(['marionette',
             'change @ui.fe': 'updateDate'
         },
 
+        templateHelpers: function() {
+            return {
+                can: app.user_can
+            }
+        },
+
         updateDate: function() {
             this.collection.queryParams.firstexperimentdate = this.ui.fe.val() ? this.ui.fe.val() : null
             this.collection.fetch()

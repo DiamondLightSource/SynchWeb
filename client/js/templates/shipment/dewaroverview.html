@@ -1,7 +1,7 @@
 <div class="filter filter-nohide">
     <ul class="clearfix">
         <li title="View Dewar Overview" class="current"><a href="/dewars/overview">Dewar Overview</a></li>
-        <li title="View Shipment Manifest"><a href="/shipments/manifest">Shipping Manifest</a></li>
+        <% if (can('view_manifest')) { %><li title="View Shipment Manifest"><a href="/shipments/manifest">Shipping Manifest</a></li><% } %>
     </ul>
 </div>
 
