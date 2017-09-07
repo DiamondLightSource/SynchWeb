@@ -4,8 +4,13 @@ define(['marionette', 'views/tabs',
     'backbone',
     'modules/dc/views/imageviewer',
     'modules/dc/views/gridplot',
+    'views/dialog',
+    'modules/dc/views/dccomments', 
+    'modules/dc/views/attachments',
     'tpl!templates/dc/grid.html', 'backbone-validation'], 
-    function(Marionette, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, template) {
+    function(Marionette, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, 
+      DialogView, DCCommentsView, AttachmentsView,
+      template) {
 
   return Marionette.ItemView.extend({
     template: template,
@@ -52,8 +57,8 @@ define(['marionette', 'views/tabs',
 
       Backbone.Validation.unbind(this)
       Backbone.Validation.bind(this)
-      var edit = new Editable({ model: this.model, el: this.$el })
-      edit.create('COMMENTS', 'text')
+      // var edit = new Editable({ model: this.model, el: this.$el })
+      // edit.create('COMMENTS', 'text')
         
       this.gridplot.gridPromise().done(this.showBox.bind(this))
     },
@@ -89,8 +94,22 @@ define(['marionette', 'views/tabs',
       'click .flag': 'flag',
       'click li.sample a': 'setProposal',
       'click @ui.exp': 'expandPath',
+      'click .comments': 'showComments',
+      'click a.attach': 'attachments',
     },
       
+    attachments: function(e) {
+        e.preventDefault()
+        app.dialog.show(new DialogView({ 
+            title: 'Attachments', 
+            view: new AttachmentsView({ id: this.model.get('ID') })
+        }))
+    },
+
+    showComments: function(e) {
+      e.preventDefault()
+      app.dialog.show(new DialogView({ title: 'Data Collection Comments', view: new DCCommentsView({ model: this.model }), autoSize: true }))
+    },
 
     expandPath: function(e) {
         e.preventDefault()
