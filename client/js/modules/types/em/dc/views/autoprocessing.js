@@ -10,12 +10,48 @@ define(['marionette',
         utils) {
 
     return Marionette.LayoutView.extend({
-        template: _.template('<div class="mc dcap"></div><div class="ctf dcap"></div>'),
+        template: _.template('<div class="dcap">Movie: <a href="#" class="button prev"><i class="fa fa-angle-left"></i></a><input type="text" name="movie" value="<%-IMAGENUMBER%>" /><a href="#" class="button next"><i class="fa fa-angle-right"></i></a></div><div class="mc dcap"></div><div class="ctf dcap"></div>'),
         regions: {
             rmc: '.mc',
             rctf: '.ctf',
         },
+
+        ui: {
+            mov: 'input[name=movie]',
+        },
+
+        events: {
+            'click a.next': 'nextMovie',
+            'click a.prev': 'prevMovie',
+            'change @ui.mov': 'loadMovie',
+        },
+
+        templateHelpers: function() {
+            return {
+                IMAGENUMBER: this.imagenumber
+            }
+        },
         
+        loadMovie: function(e) {
+            this.fetch(this.ui.mov.val())
+        },
+
+        nextMovie: function(e) {
+            e.preventDefault()
+            var next = this.imagenumber + 1
+            this.fetch(next)
+            this.ui.mov.val(next)
+        },
+
+        prevMovie: function(e) {
+            e.preventDefault()
+            var prev = this.imagenumber - 1
+            if (prev > 0) {
+                this.fetch(prev)
+                this.ui.mov.val(prev)
+            }
+        },
+
         initialize: function(options) {
             this.id = options.id
             this.imagenumber = 1
