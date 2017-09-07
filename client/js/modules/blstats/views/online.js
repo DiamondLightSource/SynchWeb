@@ -1,8 +1,9 @@
 define(['marionette', 'views/table',
         'modules/blstats/collections/online',
         'modules/blstats/collections/actions',
+        'utils/table',
     ], function(Marionette, TableView,
-        OnlineUsers, Actions) {
+        OnlineUsers, Actions, table) {
 
 
     return Marionette.LayoutView.extend({
@@ -24,7 +25,7 @@ define(['marionette', 'views/table',
         onRender: function() {
             var columns = [
                 { name: 'NAME', label: 'User', cell: 'string', editable: false },
-                { name: 'COMMENTS', label: 'Location', cell: 'string', editable: false },
+                { label: 'Location', cell: table.TemplateCell, editable: false, template: '<a href="<%-COMMENTS.replace(\'ISPyB2: \', \'\')%>"><%-COMMENTS%></a>' },
                 { name: 'TIME', label: 'Time', cell: 'string', editable: false },
             ]
             
