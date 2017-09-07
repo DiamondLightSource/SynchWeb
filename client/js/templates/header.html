@@ -1,7 +1,9 @@
 <ul id="menu">
     <% if (IS_STAFF && PROPOSAL) { %>
         <% _.each(MENUS.admin, function(i,l) { %>
+        	<% if (i.permission && can(i.permission) || !i.permission) { %>
             <li><a href="/<%-l%>"><i class="fa fa-2x fa-<%-i.icon%>"></i> <span class="icon-label"><%-i.title%></span></a></li>
+            <% } %>
         <% }) %>
     <% } %>
     <li><a href="#" title="Logout" class="logout"><i class="fa fa-sign-out fa-2x"></i> <span class="icon-label">Logout</span></a></li>
