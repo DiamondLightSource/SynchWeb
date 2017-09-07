@@ -466,7 +466,7 @@
                     $nf = array(1 => array('AXISSTART'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE'), 3 => array('EXPOSURETIME'), 4 => array('WAVELENGTH'));
 
                     $dc['DIRFULL'] = $dc['DIR'];
-                    $dc['DIR'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $dc['DIR']);
+                    $dc['DIR'] = preg_replace('/.*\/'.$this->arg('prop').'-'.$dc['VN'].'\//', '', $dc['DIR']);
                     
                     $dc['BSX'] = round($dc['BSX']*1000);
                     $dc['BSY'] = round($dc['BSY']*1000);
@@ -493,7 +493,7 @@
                     # Transmission factor rather than transmission :(
                     $dc['TRANSMISSION'] *= 100;
                     
-                    $dc['FILETEMPLATE'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $dc['FILETEMPLATE']);
+                    $dc['FILETEMPLATE'] = preg_replace('/.*\/'.$this->arg('prop').'-'.$dc['VN'].'\//', '', $dc['FILETEMPLATE']);
                     
                     $nf = array(2 => array('EXPOSURETIME'), 2 => array('AXISSTART', 'RESOLUTION', 'TRANSMISSION'));
                     $this->profile('edge');  
