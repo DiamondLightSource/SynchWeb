@@ -32,8 +32,12 @@ define(['marionette', 'utils', 'utils/xhrimage', 'tpl!templates/dc/load.html'],
         },
 
         onRender: function() {
-            this.lazyLoad()
+            this.$el.find('.snapshots a').magnificPopup({ type: 'image' })
             if (!this.model.get('X2')) this.ui.sns.hide()
+        },
+
+        onDomRefresh: function() {
+            this.lazyLoad()
         },
     })
        

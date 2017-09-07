@@ -12,7 +12,7 @@ define(['marionette', 'utils', 'utils/xhrimage', 'tpl!templates/dc/action.html']
             var inview = this.$el.find('.lazy').not('.enabled').filter(function() {
                 return utils.inView($(this))
             })
-            
+
             var self = this
             inview.each(function(j,i) {
                 var image = new XHRImage()
@@ -28,8 +28,12 @@ define(['marionette', 'utils', 'utils/xhrimage', 'tpl!templates/dc/action.html']
         },
 
         onRender: function() {
-            this.lazyLoad()
+            this.$el.find('.snapshots a').magnificPopup({ type: 'image' })
         },
+
+        onDomRefresh: function() {
+            this.lazyLoad()
+        }
     })
        
 })
