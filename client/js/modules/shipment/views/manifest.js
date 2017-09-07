@@ -2,8 +2,9 @@ define(['marionette',
     'collections/shipments',
     'views/table',
     'utils/table',
-    'utils'], 
-    function(Marionette, Shipments, TableView, table, utils) {
+    'utils',
+    'tpl!templates/shipment/manifest.html'], 
+    function(Marionette, Shipments, TableView, table, utils, template) {
     
     var ClickableRow = table.ClickableRow.extend({
         event: 'shipment:show',
@@ -13,9 +14,13 @@ define(['marionette',
 
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Shipping Manifest</h1><select name="month"></select><a href="'+app.apiurl+'/pdf/manifest" class="button manifest"><i class="fa fa-print"></i> Print Shipping Manifest</a><div class="shipments"></div>'),
+        template: template,
         regions: { rshps: '.shipments' },
         
+        templateHelpers: function() {
+            APIURL: app.apiurl
+        },
+
         events: {
             'click a.manifest': 'loadManifest',
         },
