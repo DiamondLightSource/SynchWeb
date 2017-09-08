@@ -363,7 +363,7 @@
                 FROM containerinspection i
                 LEFT OUTER JOIN containerinspection i2 ON i.containerid = i2.containerid AND i2.schedulecomponentid IS NOT NULL
                 LEFT OUTER JOIN schedulecomponent sc ON sc.schedulecomponentid = i.schedulecomponentid
-                LEFT OUTER JOIN blsampleimage im ON im.containerinspectionid = i.containerinspectionid
+                LEFT OUTER JOIN blsampleimage im ON im.containerinspectionid = i.containerinspectionid AND im.blsampleimagescoreid IS NOT NULL
                 INNER JOIN inspectiontype it ON it.inspectiontypeid = i.inspectiontypeid
                 INNER JOIN container c ON c.containerid = i.containerid
                 LEFT OUTER JOIN imager img ON img.imagerid = i.imagerid
