@@ -345,7 +345,13 @@
                             while($row = $result->fetch_assoc()) {
                                 $c = array();
                                 // oracle inheritance ;(
-                                foreach ($row as $key => $val) $c[strtoupper($key)] = $val === null ? null : strval($val);
+                                foreach ($row as $key => $val) {
+                                    if ($val !== null) {
+                                        if (gettype($val) == gettype(0.1)) $val = round($val, 5);
+                                        $val = strval($val);
+                                    }
+                                    $c[strtoupper($key)] = $val;
+                                }
                                 array_push($data, $c);
                             }
                         }
