@@ -693,7 +693,7 @@
                 $args = array($this->arg('DEWARID'));
             }
 
-            $dew = $this->db->pq("SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron 
+            $dew = $this->db->pq("SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron, LOWER(s.deliveryagent_agentname) as deliveryagent_agentname
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid 
               INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -702,14 +702,18 @@
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            $tr = $this->_dewar_tracking($dew);
+            if ($dew['DELIVERYAGENT_AGENTNAME'] == 'dhl') {
+                $tr = $this->_dewar_tracking($dew);
 
-            $this->_output(array(
-              'ORIGIN' => (string)$tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
-              'DESTINATION' => (string)$tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
-              'EVENTS' => $tr['events']
-            ));
+                $this->_output(array(
+                  'ORIGIN' => (string)$tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
+                  'DESTINATION' => (string)$tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
+                  'EVENTS' => $tr['events']
+                ));
 
+            } else {
+                $this->_output(new StdClass);
+            }
         }
 
         function _dewar_tracking($dewar) {
