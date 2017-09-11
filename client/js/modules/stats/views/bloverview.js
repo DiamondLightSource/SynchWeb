@@ -88,8 +88,8 @@ define(['marionette',
 
         selectFirst: function() {
             if (this.collection.length) {
-                var m = this.collection.at(0)
-                m.trigger("backgrid:select", m, true)
+                var m = this.collection.filter(function(m) { return m.get('REM') != null })
+                if (m.length) m[0].trigger("backgrid:select", m[0], true)
             }
         },
 
