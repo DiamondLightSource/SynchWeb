@@ -146,7 +146,7 @@ define(['marionette',
                         ty: t
                     }}).done(function() {
                         var his = h.get('histograms')
-                        his[0].label = m.get('RUN')+': '+his[0].label
+                        if (his.length) his[0].label = m.get('RUN')+': '+his[0].label
                         h.set('histograms', his)
                         self.hists[i].add(h)
                     })

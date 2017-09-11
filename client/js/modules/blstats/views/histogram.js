@@ -74,6 +74,7 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
             var fh = this.collection.first()
             if (!fh) return
             if (!fh.get('histograms')) return
+            if (!fh.get('histograms').length) return
             var f = fh.get('histograms')[0]
             
             var ticks = []
