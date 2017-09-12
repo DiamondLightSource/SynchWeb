@@ -4,6 +4,10 @@ define(['backbone'], function(Backbone) {
         idAttribute: 'DIFFRACTIONPLANID',
         urlRoot: '/sample/plan',
 
+        computed: function() {
+            return []
+        },
+
         validation: {
             EXPERIMENTKIND: {
                 required: true,
