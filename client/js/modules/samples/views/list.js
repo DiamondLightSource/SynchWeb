@@ -73,7 +73,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
         { label: ' ', cell: table.ProjectCell, itemname: 'NAME', itemid: 'BLSAMPLEID', itemtype:'sample', editable: false },
     ],
 
-    hiddenColumns: [2,3,4,5,6,7,8,10],
+    hiddenColumns: [1,2,3,4,5,6,7,8,10],
 
     
     initialize: function(options) {
