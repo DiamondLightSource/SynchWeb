@@ -150,34 +150,56 @@ define(['marionette',
     },
 
     add_container: function(did, visit) {
-      app.log('cont view')
-        
-      var dewar = new Dewar({ DEWARID: did})
-        dewar.fetch({
+      var lookup = new ProposalLookup({ field: 'DEWARID', value: did })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc, { title: dewar.get('SHIPPINGNAME'), url: '/shipments/sid/'+dewar.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Add Container' }])
-                app.content.show(new ContainerAddView({ dewar: dewar, visit: visit }))
+                app.log('cont view')
+                  
+                var dewar = new Dewar({ DEWARID: did})
+                  dewar.fetch({
+                      success: function() {
+                          app.bc.reset([bc, { title: dewar.get('SHIPPINGNAME'), url: '/shipments/sid/'+dewar.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Add Container' }])
+                          app.content.show(new ContainerAddView({ dewar: dewar, visit: visit }))
+                      },
+                      error: function() {
+                          app.bc.reset([bc, { title: 'Error' }])
+                          app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+                      },
+                  })
             },
+
             error: function() {
                 app.bc.reset([bc, { title: 'Error' }])
                 app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
             },
+
         })
     },
 
 
 
     queue_container: function(cid) {
-        var container = new Container({ CONTAINERID: cid })
-        container.fetch({
+        var lookup = new ProposalLookup({ field: 'CONTAINERID', value: cid })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }, { title: 'Queue Samples' }])
-                app.content.show(new QueueContainerView({ model: container }))
+                var container = new Container({ CONTAINERID: cid })
+                container.fetch({
+                    success: function() {
+                        app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }, { title: 'Queue Samples' }])
+                        app.content.show(new QueueContainerView({ model: container }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'Error' }])
+                        app.message({ title: 'No such container', message: 'The specified container could not be found'})
+                    },
+                })
             },
+
             error: function() {
                 app.bc.reset([bc, { title: 'Error' }])
                 app.message({ title: 'No such container', message: 'The specified container could not be found'})
             },
+
         })
     },
       
