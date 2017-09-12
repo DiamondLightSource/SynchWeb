@@ -55,6 +55,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
                      { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
                      { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
                      { name: 'DCCOUNT', label: '# DCs', cell: 'string', editable: false },
+                     { name: 'SUBSAMPLES', label: '# Subsamples', cell: 'string', editable: false },
                      { name: 'CONTAINERTYPE', label: 'Type', cell: 'string', editable: false },
                      { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
                      { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
@@ -69,6 +70,8 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
           { id: 'imager', name: 'In Imager'},
           { id: 'queued', name: 'Queued'},
           { id: 'data', name: 'Has Data'},
+          { id: 'processing', name: 'Processing'},
+          { id: 'subsamples', name: 'Has Subsamples'},
       ]  
 
       if (app.user_can('disp_cont')) {
