@@ -74,7 +74,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
           { id: 'subsamples', name: 'Has Subsamples'},
       ]  
 
-      if (app.user_can('disp_cont')) {
+      if (app.user_can('disp_cont') && !app.mobile()) {
           columns.push({ name: 'VISIT', label: 'Visit', cell: 'string', editable: false })
           columns.push({ name: 'REQUESTEDIMAGER', label: 'Req. Imager', cell: 'string', editable: false })
           columns.push({ name: 'IMAGER', label: 'Imager', cell: 'string', editable: false })
@@ -90,7 +90,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
       }
 
       if (app.mobile()) {
-        _.each([1,2,5,6], function(v) {
+        _.each([1,2,5,6,9,10,11], function(v) {
             columns[v].renderable = false
         })
       }
