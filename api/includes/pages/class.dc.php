@@ -1480,8 +1480,8 @@
             else $info = $info[0];
             $this->db->close();
             
-            $file = $info['FILEPATH'].'/'.str_replace('fast_dp.log', 'xdsstat.log', $info['FILENAME']);
-            
+            $file = $info['FILEPATH'].'/xdsstat.log';
+
             $rows = array();
             if (file_exists($file)) {
                 $log = file_get_contents($file);
