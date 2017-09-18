@@ -669,6 +669,7 @@
 
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
+            if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
