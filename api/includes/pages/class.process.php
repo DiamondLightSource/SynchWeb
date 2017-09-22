@@ -300,7 +300,7 @@
 
             $body = array(
                 'parameters' => array(
-                    'ispyb_process' => $this->arg('REPROCESSINGID'),
+                    'ispyb_process' => intval($this->arg('REPROCESSINGID')),
                 )
             );
 
