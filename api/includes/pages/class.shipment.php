@@ -1324,7 +1324,7 @@
             $where = 'c.containerid=:1';
             $args = array($this->arg('cid'));
 
-            if (!$this->user->can('disp_cont')) {
+            if (!$this->user->has('disp_cont')) {
                 $where .= ' AND p.proposalid=:'.(sizeof($args)+1);
                 array_push($args, $this->proposalid);
             }
@@ -1341,7 +1341,7 @@
                 }
             }
 
-            if ($this->user->can('disp_cont') && $this->has_arg('DISPOSE')) {
+            if ($this->user->has('disp_cont') && $this->has_arg('DISPOSE')) {
                 $this->db->pq("UPDATE container SET imagerid=NULL,containerstatus='disposed' WHERE containerid=:1", array($this->arg('cid')));
                 $this->_output(array('IMAGERID' => null));
             }
