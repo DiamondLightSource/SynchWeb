@@ -62,7 +62,7 @@
                 CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) as visit,
 
                 apss.cchalf, apss.ccanomalous, apss.anomalous, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi,
-                IF(app.autoprocprogramid, IF(api.autoprocintegrationid, 1, app.processingstatus), 2) as status
+                IF(app.autoprocprogramid, IF(api.autoprocintegrationid, 1, app.processingstatus), 2) as status, app.processingmessage, TO_CHAR(app.processingendtime, 'DD-MM-YYYY HH24:MI') as lastupdatetimestamp
                 FROM reprocessing rp
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 LEFT OUTER JOIN blsample smp ON smp.blsampleid = dc.blsampleid
