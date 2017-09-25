@@ -171,9 +171,8 @@ define(['marionette',
                     { label: 'DC', cell: table.TemplateCell, editable: false, template: '<a href="/dc/visit/<%-VISIT%>/id/<%-DATACOLLECTIONID%>"><%-IMAGEPREFIX%></a>' },
                     { name: 'DISPLAYNAME', label: 'Process', cell: 'string', editable: false },
                     { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: false },
-                    // { name: 'RECORDTIMESTAMP', label: 'Created', cell: 'string', editable: false },
                     { name: 'LASTUPDATETIMESTAMP', label: 'Last Updated', cell: 'string', editable: false },
-                    { name: 'LASTUPDATEMESSAGE', label: 'Last Message', cell: 'string', editable: false },
+                    { name: 'PROCESSINGMESSAGE', label: 'Last Message', cell: 'string', editable: false },
                     { label: 'Arguments', cell: ArgsCell, editable: false, sweeps: this.sweeps, params: this.parameters },
                 ]
 
