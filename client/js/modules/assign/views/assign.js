@@ -322,6 +322,7 @@ define(['marionette', 'views/pages',
             this.paginator = new Pages({ collection: this.containers })
 
             this.pucknames = new PuckNames()
+            this.pucknames.state.pageSize = 100
             this.pucknames.queryParams.bl = this.getOption('visit').get('BL')
             this.pucknames.fetch()
         },
