@@ -4,7 +4,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
     'backbone',
     'modules/dc/views/imagestatusitem',
     'modules/dc/views/apstatusitem',
-    'modules/dc/views/reprocess',
+    'modules/dc/views/reprocess2',
     'modules/dc/views/attachments',
     'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, 
       TabView, DCCommentsView, DCDISTLView, 
@@ -42,8 +42,8 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
 
       Backbone.Validation.unbind(this)
       Backbone.Validation.bind(this)
-      var edit = new Editable({ model: this.model, el: this.$el })
-      edit.create('COMMENTS', 'text')
+      // var edit = new Editable({ model: this.model, el: this.$el })
+      // edit.create('COMMENTS', 'text')
         
       this.imagestatus = new (this.getOption('imageStatusItem'))({ ID: this.model.get('ID'), TYPE: this.model.get('DCT'), statuses: this.getOption('imagestatuses'), el: this.$el })
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), SCREEN: (this.model.get('OVERLAP') != 0 && this.model.get('AXISRANGE')), statuses: this.getOption('apstatuses'), el: this.$el })

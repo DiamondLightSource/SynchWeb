@@ -20,10 +20,11 @@
         <a class="button" href="/dc/summary/visit/<%-VISIT%>" title="Data Summary" class="summary"><i class="fa fa-file-o"></i> <span>Summary</span></a>
         <a class="button"  href="/dc/apstatussummary/visit/<%-VISIT%>" title="Autoprocessing Summary"><i class="fa fa-magic"></i> <span>Auto Processing</span></a>
         <a class="button"  href="/stats/visit/<%-VISIT%>" title="Visit Statistics"><i class="fa fa-pie-chart"></i> <span>Visit Stats</span></a>
-        <a class="button queue"  href="/dc/queue/visit/<%-VISIT%>" title="Build GDA Queue"><i class="fa fa-cog"></i> <span>Build GDA Queue</span></a>
+        <!-- <a class="button queue"  href="/dc/queue/visit/<%-VISIT%>" title="Build GDA Queue"><i class="fa fa-cog"></i> <span>Build GDA Queue</span></a> -->
         <a href="#" class="button users"><i class="fa fa-users"></i> <span>Users</span></a>
         <a href="#" class="button dewars"><i class="fa fa-truck"></i> <span>Dewars</span></a>
         <a class="button"  href="/dc/sc/visit/<%-VISIT%>" title="Sample Changer"><i class="fa fa-exchange"></i> <span>Sample Changer</span></a>
+        <a href="#" class="button rpo" title="Reprocessing Overview"><i class="fa fa-cog"></i> <span>Reprocessing</span></a>
         <% if (app.staff) { %>
         <a class="button"  href="/status/bl/<%-BL%>" title="Beamline Status" class="blstat"><i class="fa fa-wrench"></i> <span>Beamline Status</span></a>
         <% } %>
