@@ -120,6 +120,8 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
     onRender: function() {
       this.wrap.show(this.table)
       this.type.show(this.ty)
+
+      this.updateCols(this.ty.selected())
     }
   })
 
