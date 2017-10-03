@@ -167,7 +167,7 @@
                         } $this->_error('No such file', 'The specified auto processing file doesnt exist');
                         
                     // FastDP
-                    } else if ($r['FILETYPE'] == 'Log' && $r['FILENAME'] == 'fast_dp.log') {
+                    } else if ($r['FILETYPE'] == 'Log' && ($r['FILENAME'] == 'fast_dp.log' || $r['FILENAME'] == 'fast_dp-report.html')) {
                         $f = $r['FILEPATH'].'/fast_dp.mtz';
                         if (file_exists($f)) {
                             $this->_header($this->arg('aid').'_fast_dp.mtz');
