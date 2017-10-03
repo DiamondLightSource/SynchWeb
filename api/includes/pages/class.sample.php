@@ -102,7 +102,7 @@
                               'COMPONENTLATTICEID' => '\d+',
 
                               'BLSAMPLEGROUPID' => '\d+',
-                              'ORDER' => '\d+',
+                              'GROUPORDER' => '\d+',
                               'TYPE' => '\w+',
 
                                );
@@ -1463,7 +1463,7 @@
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->paginate("SELECT b.blsampleid, bshg.blsamplegroupid, bshg.order, bshg.type
+            $rows = $this->db->paginate("SELECT b.blsampleid, bshg.blsamplegroupid, bshg.grouporder, bshg.type
                 FROM blsample b
                 INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
                 INNER JOIN crystal cr ON cr.crystalid = b.crystalid
@@ -1519,11 +1519,11 @@
 
             if ($chk[0]['SAMPLES'] != $in_proposal) $this->_error('No such sample group');
 
-            $order = $this->has_arg('ORDER') ? $this->arg('ORDER') : 1;
+            $order = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : 1;
             $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
 
-            $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, order, type) 
-                VALUES (:1,:2)", array($this->arg('BLSAMPLEID'), $sgid, $order, $type));
+            $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
+                VALUES (:1,:2, :3, :4)", array($this->arg('BLSAMPLEID'), $sgid, $order, $type));
 
             $this->_output(array('BLSAMPLEID' => $this->arg('BLSAMPLEID'), 'BLSAMPLEGROUPID' => $sgid));
         }
@@ -1544,10 +1544,10 @@
             else $samp = $samp[0];
 
             $types = array('sample', 'container', 'background', 'calibrant');
-            $fields = array('ORDER', 'TYPE');
+            $fields = array('GROUPORDER', 'TYPE');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE blsamplegroup_has_blsample SET `$f`=:1 WHERE blsampleid=:2 AND blsamplegroupid=:3", array($this->arg($f), $this->arg('BLSAMPLEID'), $this->arg('BLSAMPLEGROUPID')));
+                    $this->db->pq("UPDATE blsamplegroup_has_blsample SET $f=:1 WHERE blsampleid=:2 AND blsamplegroupid=:3", array($this->arg($f), $this->arg('BLSAMPLEID'), $this->arg('BLSAMPLEGROUPID')));
                     $this->_output(array($f => $this->arg($f)));
                 }
             }
