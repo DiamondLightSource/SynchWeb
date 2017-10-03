@@ -41,7 +41,7 @@ define(['backbone'], function(Backbone) {
             EXPOSURETIME: {
                 required: true,
                 pattern: 'number',
-                range: [0.04, 30],
+                range: [0.001333333, 30],
             },
 
             PREFERREDBEAMSIZEX: {
