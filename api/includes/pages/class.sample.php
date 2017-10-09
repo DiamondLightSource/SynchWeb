@@ -138,9 +138,9 @@
                               array('/proteins/lattice/:lid', 'patch', '_update_protein_lattice'),
 
 
-                              array('/crystals(/:crid)', 'get', '_crystals'),
+                              array('/crystals(/:CRYSTALID)', 'get', '_crystals'),
                               array('/crystals', 'post', '_add_crystal'),
-                              array('/crystals/:crid', 'patch', '_update_crystal'),
+                              array('/crystals/:CRYSTALID', 'patch', '_update_crystal'),
 
                               array('/pdbs(/pid/:pid)', 'get', '_get_pdbs'),
                               array('/pdbs', 'post', '_add_pdb'),
@@ -1198,9 +1198,9 @@
             }
             
             # For a particular crystal
-            if ($this->has_arg('crid')) {
+            if ($this->has_arg('CRYSTALID')) {
                 $where .= ' AND cr.crystalid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('crid'));                
+                array_push($args, $this->arg('CRYSTALID'));                
             }
             
             
@@ -1272,7 +1272,7 @@
             }
 
 
-            if ($this->has_arg('crid')) {
+            if ($this->has_arg('CRYSTALID')) {
                 if (sizeof($rows))$this->_output($rows[0]);
                 else $this->_error('No such crystal');
             } else $this->_output(array('total' => $tot,
