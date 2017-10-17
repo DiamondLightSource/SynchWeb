@@ -9,6 +9,9 @@
 	$username = 'changeMe';
 	$password = 'changeMe';
 
+	// Risk statements for VMXi
+	$sample_hazard = 'Samples will be handled following the beamline risk assessment';
+	$exp_hazard = 'VMXi will be operated following the beamline risk assessment';
 
 	// Plate type mappings
 	$plate_types = array(
