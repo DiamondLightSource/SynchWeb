@@ -307,7 +307,7 @@
         function _ctf_histogram() {
             $types = array(
                 'defocus' => array('unit' => 'A', 'st' => 0, 'en' => 60000, 'bin_size' => 1000, 'col' => 'c.estimateddefocus', 'count' => 'c.estimateddefocus'),
-                'astigmatism' => array('unit' => 'A', 'st' => 0, 'en' => 400, 'bin_size' => 20, 'col' => 'c.astigmatism', 'count' => 'c.astigmatism'),
+                'astigmatism' => array('unit' => '*1000', 'st' => 500, 'en' => 1500, 'bin_size' => 5, 'col' => 'c.astigmatism*1000', 'count' => 'c.astigmatism'),
                 'resolution' => array('unit' => 'A', 'st' => 0, 'en' => 30, 'bin_size' => 1, 'col' => 'c.estimatedresolution', 'count' => 'c.estimatedresolution'),
             );
 
