@@ -156,7 +156,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
    Monitor all ajax requests to detect when user needs to login and/or
    is disconnected from the interwebs
   */
-  $(document).ajaxError(function(event, xhr, settings, error) {
+  $(document).ajaxError(_.debounce(function(event, xhr, settings, error) {
     console.log('ajax error', 'status', xhr.status, 'code', settings, error)
 
     var json;
@@ -174,7 +174,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
     if (xhr.status == 401) app.login(xhr)
     if (xhr.status == 500) app.alert({ message: 'An application error has occured <pre>'+msg+'</pre>', persist: 'e500' })
     if (xhr.status == 503) app.alert({ message: 'A database error has occured <pre>'+msg+'</pre>', persist: 'e503' })
-  })
+  }, 300))
     
   
 
@@ -316,6 +316,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
   app.loadopts = function() {
       app.options = new Options()
       return app.options.fetch({
+          data: { t: new Date().getTime() },
           success: function() {
               if (app.options.get('motd')) {
                   var options = {

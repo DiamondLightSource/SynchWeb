@@ -1,4 +1,4 @@
-<h1><%=FACILITYCODE%></h1>
+<h1><%-FACILITYCODE%></h1>
 
 <div class="form clearfix puck_wrap">
     <div class="puck" title="Click to jump to a position in the puck"></div>
@@ -6,32 +6,32 @@
     <ul>
         <li>
             <span class="label">Purchase Date</span>
-            <span class="PURCHASEDATE"><%=PURCHASEDATE%></span> (Age: <%=AGE%> months)
+            <span class="PURCHASEDATE"><%-PURCHASEDATE%></span> (Age: <%-AGE%> months)
         </li>
 
         <li>
             <span class="label">Lab Contact</span>
-            <span class="LABCONTACTID"><%=CARDNAME%></span>
+            <span class="LABCONTACTID"><%-CARDNAME%></span>
         </li>
         
         <li>
             <span class="label">Name</span>
-            <span><%=GIVENNAME%> <%=FAMILYNAME%></span>
+            <span><%-GIVENNAME%> <%-FAMILYNAME%></span>
         </li>
 
         <li class="clearfix reorder">
-            <div class=" text"><%=LABNAME%><br /><%=ADDRESS%><br /><%=CITY%><br /><%=POSTCODE%><br /><%=COUNTRY%></div>
+            <div class=" text"><%-LABNAME%><br /><%-ADDRESS%><br /><%-CITY%><br /><%-POSTCODE%><br /><%-COUNTRY%></div>
             <span class="label">Address</span>
         </li>
 
         <li>
             <span class="label">Email</span>
-            <span><%=EMAILADDRESS%></span>
+            <span><%-EMAILADDRESS%></span>
         </li>
 
         <li>
             <span class="label">Phone</span>
-            <span><%=PHONENUMBER%></span>
+            <span><%-PHONENUMBER%></span>
         </li>
 
     </ul>

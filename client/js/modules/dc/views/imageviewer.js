@@ -156,7 +156,7 @@ define(['jquery', 'marionette',
             
             if (!this.getOption('embed')) this.load(1)
             else if (this.getOption('readyText')) {
-                this.ui.loadprog.html(this.getOption('readyText'))
+                this.ui.loadprog.text(this.getOption('readyText'))
                 this.ui.loadprog.show()
             }
             this.onResize()
@@ -284,11 +284,11 @@ define(['jquery', 'marionette',
         },
 
         onImageProgress: function(pc) {
-            this.ui.loadprog.html(pc+'% loaded')
+            this.ui.loadprog.text(pc+'% loaded')
         },
 
         showProgressBar: function() {
-            this.ui.loadprog.html('0% loaded')
+            this.ui.loadprog.text('0% loaded')
             this.ui.loadprog.show()
         },
 
@@ -349,7 +349,7 @@ define(['jquery', 'marionette',
         prev: function() {
             val = parseInt(this.ui.num.val())
             if (val > 1) {
-              if (val > parseInt(this.model.get('NI'))) val = ni
+              if (val > parseInt(this.model.get('NUMIMG'))) val = ni
               val--
               this.change(val)
               this.ui.num.val(val)
@@ -358,7 +358,7 @@ define(['jquery', 'marionette',
           
         next: function() {
             val = parseInt(this.ui.num.val())
-            if (val < parseInt(this.model.get('NI'))) {
+            if (val < parseInt(this.model.get('NUMIMG'))) {
               val++
               this.change(val)
               this.ui.num.val(val)
@@ -376,9 +376,9 @@ define(['jquery', 'marionette',
                 var url = app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+self.ci
                 var img = new XHRImage()
                 img.onload = function() {
-                    self.ui.loadprog.html('Cached Image '+self.ci)
+                    self.ui.loadprog.text('Cached Image '+self.ci)
                     self.ui.loadprog.show()
-                    if (self.ci < self.model.get('NI')) {
+                    if (self.ci < self.model.get('NUMIMG')) {
                         self.ci++
                         self.cache_thread = setTimeout(self.precache.bind(self), 500)
                     }
@@ -448,7 +448,7 @@ define(['jquery', 'marionette',
         _calc_zoom: function() {
             this.ui.zoom.slider('option', 'min', 100*this.ui.canvas.width()/this.width)
             this.scalef = this.ui.zoom.slider('value')/100
-            this.ui.zval.html((this.scalef*100).toFixed(0))
+            this.ui.zval.text((this.scalef*100).toFixed(0))
         },
 
                 
@@ -653,7 +653,7 @@ define(['jquery', 'marionette',
                          
             this._clamp_offset()
             if (this.scalef < 2) this.ui.zoom.slider('value', this.scalef*100)
-            this.ui.zval.html((this.scalef*100).toFixed(0))
+            this.ui.zval.text((this.scalef*100).toFixed(0))
                          
             this.draw()
             this.readjust()
@@ -714,7 +714,7 @@ define(['jquery', 'marionette',
           
             var res = this._dist_to_res(this._xy_to_dist(posx,posy))
     
-            this.ui.resc.html(res.toFixed(2))
+            this.ui.resc.text(res.toFixed(2))
         },
                 
                 
@@ -725,9 +725,9 @@ define(['jquery', 'marionette',
         keyPressNum: function(e) {
             var n = parseInt(this.ui.num.val())
             if(e.which == 13) {
-                if (n < this.model.get('NI')) {
+                if (n < this.model.get('NUMIMG')) {
                     this.change(n)
-                } else this.ui.num.val(this.model.get('NI'))
+                } else this.ui.num.val(this.model.get('NUMIMG'))
             }
         },
           
@@ -756,7 +756,7 @@ define(['jquery', 'marionette',
         // Bind zoom slider
         slideChangeZoom: function( e, ui ) {
             this.scalef = this.ui.zoom.slider('value')/100.0
-            this.ui.zval.html((this.scalef*100).toFixed(0))
+            this.ui.zval.text((this.scalef*100).toFixed(0))
             if (e.originalEvent) {
               this._clamp_offset()
               this.draw()

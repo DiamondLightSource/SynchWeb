@@ -64,19 +64,30 @@
             }
 
             if (array_key_exists('DCID', $options)) {
-                $where = "INNER JOIN datacollection dc ON dc.sessionid = s.sessionid WHERE dc.datacollectionid=:1";
                 array_push($args, $options['DCID']);
+
+                $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, dc.imagedirectory
+                    FROM blsession s 
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN datacollection dc ON dc.sessionid = s.sessionid 
+                    WHERE dc.datacollectionid=:1", $args);
+
+                if (sizeof($visit)) $visit = $visit[0];
+                else return;
+
+                $this->params['VISITDIR'] = preg_replace('/'.$visit['VISIT'].'\/.*/', $visit['VISIT'], $visit['IMAGEDIRECTORY']);
+
+            } else {
+                $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
+                    FROM blsession s 
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    $where", $args);
+
+                if (sizeof($visit)) $visit = $visit[0];
+                else return;
+
+                $this->params['VISITDIR'] = $this->interpolate($visit_directory, $visit);
             }
-
-            $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
-                FROM blsession s 
-                INNER JOIN proposal p ON p.proposalid = s.proposalid
-                $where", $args);
-
-            if (sizeof($visit)) $visit = $visit[0];
-            else return;
-
-            $this->params['VISITDIR'] = $this->interpolate($visit_directory, $visit);
             return $this->params['VISITDIR'];
         }
 

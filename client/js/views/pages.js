@@ -14,7 +14,7 @@ define(['marionette', 'backgrid', 'backgrid-paginator'], function(Marionette, Ba
             this.paginator = new Backgrid.Extension.Paginator({ className: 'pages pp', collection: options.collection, url: !options.noUrl })
         },
         
-        pages: [5,15,25,50,100,500],
+        pages: [5,10,15,25,50,100,500],
         
         onRender: function() {
             var current = this.getOption('collection').state.pageSize

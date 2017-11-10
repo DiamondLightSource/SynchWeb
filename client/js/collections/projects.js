@@ -1,6 +1,6 @@
-define(['backbone.paginator', 'models/project'], function(PageableCollection, Project) {
+define(['backbone.paginator', 'models/project', 'utils/kvcollection'], function(PageableCollection, Project, KVCollection) {
     
-    return PageableCollection.extend({
+    return PageableCollection.extend(_.extend({
         model: Project,
         mode: 'server',
         url: '/projects',
@@ -16,5 +16,9 @@ define(['backbone.paginator', 'models/project'], function(PageableCollection, Pr
         parseRecords: function(r, options) {
             return r.data
         },
-    })
+
+        keyAttribute: 'ACRONYM',
+        valueAttribute: 'PROJECTID'
+
+    }, KVCollection))
 })

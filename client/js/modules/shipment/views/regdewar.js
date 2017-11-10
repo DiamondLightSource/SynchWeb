@@ -27,7 +27,7 @@ define(['marionette',
     var ImageCell = Backgrid.Cell.extend({ 
         render: function() {
             this.$el.empty()
-            this.$el.html('<a class="popup" href="'+app.apiurl+'/image/dr/'+this.model.get('DEWARREPORTID')+'"><img class="img" alt="attachment" /></a>')
+            this.$el.html('<a class="popup" href="'+app.apiurl+'/image/dr/'+this.model.escape('DEWARREPORTID')+'"><img class="img" alt="attachment" /></a>')
 
             var self = this
             var img = new XHRImage()
@@ -57,7 +57,7 @@ define(['marionette',
 
             var columns = [
                 //{ name: 'VISIT', label: 'First Exp', cell: 'string', editable: false },
-                //{ label: 'First Exp', cell: table.TemplateCell, editable: false, template: '<%=VISIT%> (<%=BL%>)' },
+                //{ label: 'First Exp', cell: table.TemplateCell, editable: false, template: '<%-VISIT%> (<%-BL%>)' },
                 //{ name: 'LOCALCONTACT', label: 'Local Contact', cell: 'string', editable: false },
                 { name: 'ARRIVAL', label: 'Date', cell: 'string', editable: false },
                 { name: 'DEWARSTATUS', label: 'Status', cell: 'string', editable: false },
@@ -80,7 +80,7 @@ define(['marionette',
 
             var columns = [
                 { name: 'CODE', label: 'Name', cell: 'string', editable: false },
-                { label: 'Shipment', cell: table.TemplateCell, editable: false, template: '<a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPPINGNAME%></a>' },
+                { label: 'Shipment', cell: table.TemplateCell, editable: false, template: '<a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPPINGNAME%></a>' },
                 { name: 'EXP', label: 'First Exp', cell: 'string', editable: false },
                 { name: 'FIRSTEXPERIMENTST', label: 'First Exp Start', cell: 'string', editable: false },
                 { name: 'LOCALCONTACT', label: 'Local Contact', cell: 'string', editable: false },

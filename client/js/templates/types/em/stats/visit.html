@@ -1,0 +1,34 @@
+        <h1>Visit Statistics for <%-VISIT%></h1>
+
+        <p class="help">This page shows statistics for the selected visit. The plots below show each action and when they happened. Drag to zoom in on the plot. Click the refresh icon to reset the zoom level</p>
+
+        <p class="ra">
+            <a href="/dc/visit/<%-VISIT%>" class="button"><i class="fa fa-search"></i> Data Collections</a>
+        </p>
+
+        <div class="breakdown"></div>
+        <div class="details"></div>
+
+        <div class="plot_wrap clearfix">
+            <div class="plot_container left">
+                <div id="visit_pie"></div>
+                <p>Breakdown of Total Visit Time</p>
+            </div>
+
+            <div class="plot_container right hrs"></div>
+        </div>
+
+        <h1>Histograms</h1>
+        <div class="plot_wrap clearfix">
+            <div class="plot_container left defocus"></div>
+            <div class="plot_container right astigmatism"></div>
+        </div>
+
+        <div class="plot_wrap clearfix">
+            <div class="plot_container left resolution"></div>
+            <div class="plot_container right drift"></div>
+        </div>
+
+        <div class="faults"></div>
+
+        <div class="ehclogs"></div>

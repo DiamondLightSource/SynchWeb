@@ -1,0 +1,109 @@
+@import "compass";
+@import "modules/all";
+@import "compass/css3/transition";
+
+* {
+	padding: 0;
+	margin: 0;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    background: $body-background;
+    font-family: $main-font;
+    font-size: $main-font-size;
+    line-height: $main-line-height;
+    min-height: 100%;
+    
+    &.active {
+        background: $body-background;
+    }
+}
+
+a {
+    color: $link-color;
+    
+    &:hover {
+        color: $link-hover-color;
+    }
+}
+
+
+header.wrapper {
+    background: $header-background;
+
+    nav {
+        font-size: 14px;
+        color: $header-menu-color;
+    }
+
+    nav li {
+        display: inline-block;
+        padding: 10px;
+
+        a {
+            color: $header-color;
+            transition: 0.3s ease-in-out;
+            text-decoration: none;
+
+            &:hover {
+                color: $header-hover-color;
+            }
+
+            &.current {
+                color: lighten($header-hover-color, 20%);
+            }
+        }
+    }
+}
+
+footer {
+    padding: 2%;
+    background: $footer-background;
+    color: $footer-color;
+    text-align: center;
+    font-size: 18px;
+    font-family: $page-header-font;
+
+    img {
+        height: 50px;
+        vertical-align: middle;
+    }
+
+    li {
+        display: inline-block;
+        padding: 2%;
+    }
+
+    a {
+        text-decoration: none;
+        display: block;
+        transition: 0.5s ease-in-out;
+        filter: brightness(70%); 
+
+        &:hover {
+            color: lighten($footer-color, 20%);
+            filter: brightness(120%); 
+        }
+    }
+}
+
+.wrapper {
+    background: $content-background;
+
+    .container {
+        margin: 0 15%;
+
+        @media (max-width: $breakpoint-small) {
+            margin: 0 10%;
+        }
+
+        @media (max-width: $breakpoint-vsmall) {
+            margin: 0 2%;
+        }
+    }
+}
+

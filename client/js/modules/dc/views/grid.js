@@ -4,8 +4,13 @@ define(['marionette', 'views/tabs',
     'backbone',
     'modules/dc/views/imageviewer',
     'modules/dc/views/gridplot',
+    'views/dialog',
+    'modules/dc/views/dccomments', 
+    'modules/dc/views/attachments',
     'tpl!templates/dc/grid.html', 'backbone-validation'], 
-    function(Marionette, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, template) {
+    function(Marionette, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, 
+      DialogView, DCCommentsView, AttachmentsView,
+      template) {
 
   return Marionette.ItemView.extend({
     template: template,
@@ -21,12 +26,14 @@ define(['marionette', 'views/tabs',
       z: '.z',
       val: '.val',
       img: '.img',
+      bx: '.boxx',
+      by: '.boxy'
     },
 
     initialize: function(options) {
       this.fullPath = false
 
-      this.gridplot = new GridPlot({ ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), ST: this.model.get('ST'), imagestatuses: this.getOption('imagestatuses') })
+      this.gridplot = new GridPlot({ ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
       this.listenTo(this.gridplot, 'current', this.loadImage, this)
     },
 
@@ -50,9 +57,17 @@ define(['marionette', 'views/tabs',
 
       Backbone.Validation.unbind(this)
       Backbone.Validation.bind(this)
-      var edit = new Editable({ model: this.model, el: this.$el })
-      edit.create('COMMENTS', 'text')
+      // var edit = new Editable({ model: this.model, el: this.$el })
+      // edit.create('COMMENTS', 'text')
         
+      this.gridplot.gridPromise().done(this.showBox.bind(this))
+    },
+
+
+    showBox: function() {
+        var gi = this.gridplot.gridInfo()
+        this.ui.bx.text((gi.get('DX_MM')*1000).toFixed(0))
+        this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
     },
                                       
     onDestroy: function() {
@@ -71,7 +86,7 @@ define(['marionette', 'views/tabs',
       
     renderFlag: function() {
       this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
-      this.$el.find('.COMMENTS').html(this.model.get('COMMENTS'))
+      this.$el.find('.COMMENTS').text(this.model.get('COMMENTS'))
     },
       
     events: {
@@ -79,13 +94,27 @@ define(['marionette', 'views/tabs',
       'click .flag': 'flag',
       'click li.sample a': 'setProposal',
       'click @ui.exp': 'expandPath',
+      'click .comments': 'showComments',
+      'click a.attach': 'attachments',
     },
       
+    attachments: function(e) {
+        e.preventDefault()
+        app.dialog.show(new DialogView({ 
+            title: 'Attachments', 
+            view: new AttachmentsView({ id: this.model.get('ID') })
+        }))
+    },
+
+    showComments: function(e) {
+      e.preventDefault()
+      app.dialog.show(new DialogView({ title: 'Data Collection Comments', view: new DCCommentsView({ model: this.model }), autoSize: true }))
+    },
 
     expandPath: function(e) {
         e.preventDefault()
 
-        this.ui.temp.html(this.fullPath ? (this.model.get('DIR')+this.model.get('FILETEMPLATE')) : (this.model.get('DIRFULL')+this.model.get('FILETEMPLATE')))
+        this.ui.temp.text(this.fullPath ? (this.model.get('DIR')+this.model.get('FILETEMPLATE')) : (this.model.get('DIRFULL')+this.model.get('FILETEMPLATE')))
         this.ui.exp.toggleClass('fa-caret-right')
         this.ui.exp.toggleClass('fa-caret-left')
         

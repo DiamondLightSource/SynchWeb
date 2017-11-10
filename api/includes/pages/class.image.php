@@ -113,20 +113,19 @@
             
             $this->db->close();
             
-            $images = array();
-            foreach (array('XTALSNAPSHOTBEFORE', 'XTALSNAPSHOTAFTER') as $i) {
-                if (file_exists($image[$i])) array_push($images, $image[$i]);
-            }
-
-            //print_r($images);
-            //$n = $this->has_arg('n') ? ($this->arg('n')-1) : 0;
-
+            $images = array($image['XTALSNAPSHOTAFTER'],$image['XTALSNAPSHOTBEFORE']);
             $n = $this->has_arg('n') ? $this->arg('n') - 1 : 0;
             if ($n < sizeof($images)) {
                 $this->_browser_cache();
-                //header('Content-Type:image/png');
-                $this->app->contentType('image/png');
-                readfile($this->has_arg('f') ? $images[$n] : str_replace('.png', 't.png', $images[$n]));
+                $ext = pathinfo($images[$n], PATHINFO_EXTENSION);
+                $file = $this->has_arg('f') ? $images[$n] : str_replace('.'.$ext, 't.'.$ext, $images[$n]);
+                if (file_exists($file)) {
+                    $this->app->contentType('image/'.$ext);
+                    readfile($file);
+                } else {
+                    $this->_error('Not found', 'That image is no longer available');
+                }
+                
             }
             
         }
@@ -142,19 +141,15 @@
 
             $this->db->close();
             
-            $images = array();
-            foreach (array_reverse(array('X1', 'X2', 'X3', 'X4')) as $i) {
-                if (file_exists($row[$i])) {
-                    array_push($images, $row[$i]);
-                }
-            }
-            
+            $images = array($row['X1'], $row['X2'], $row['X3'], $row['X4']);
             $n = $this->has_arg('n') ? ($this->arg('n')-1) : 0;
             if ($n < sizeof($images)) {
-                $file = $this->has_arg('f') ? $images[$n] : str_replace('.png', 't.png', $images[$n]);
+                $ext = pathinfo($images[$n], PATHINFO_EXTENSION);
+
+                $file = $this->has_arg('f') ? $images[$n] : str_replace('.'.$ext, 't.'.$ext, $images[$n]);
                 if (file_exists($file)) {
                     $this->_browser_cache();
-                    $this->app->contentType('image/png');
+                    $this->app->contentType('image/'.$ext);
                     readfile($file);
 
                 } else {

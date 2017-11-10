@@ -12,7 +12,7 @@ define(['marionette', 'backbone', 'modules/dc/views/mcaplot', 'modules/projects/
       
     renderFlag: function() {
       this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
-      this.$el.find('.COMMENTS').html(this.model.get('COMMENTS'))
+      this.$el.find('.COMMENTS').text(this.model.get('COMMENTS'))
     },
 
     ui: {
@@ -30,7 +30,7 @@ define(['marionette', 'backbone', 'modules/dc/views/mcaplot', 'modules/projects/
     expandPath: function(e) {
         e.preventDefault()
 
-        this.ui.temp.html(this.fullPath ? this.model.get('DIR') : this.model.get('DIRFULL'))
+        this.ui.temp.text(this.fullPath ? this.model.get('DIR') : this.model.get('DIRFULL'))
         this.ui.exp.toggleClass('fa-caret-right')
         this.ui.exp.toggleClass('fa-caret-left')
         

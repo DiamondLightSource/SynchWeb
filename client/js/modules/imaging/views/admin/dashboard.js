@@ -93,15 +93,15 @@ define(['marionette',
                          { name: 'CONTAINERID', label: 'Container ID', cell: 'string', editable: false },
                          { name: 'CONTAINERINSPECTIONID', label: 'Inspection ID', cell: 'string', editable: false },
                          { name: 'STATE', label: 'State', cell: 'string', editable: false },
-                         { label: 'Adhoc', cell: table.TemplateCell, editable: false, template: "<%=SCHEDULECOMPONENTID ? 'No' : 'Yes' %>" },
-                         { label: 'Manual', cell: table.TemplateCell, editable: false, template: "<%=MANUAL == '1' ? 'Yes':'No' %>" },
+                         { label: 'Adhoc', cell: table.TemplateCell, editable: false, template: "<%-SCHEDULECOMPONENTID ? 'No' : 'Yes' %>" },
+                         { label: 'Manual', cell: table.TemplateCell, editable: false, template: "<%-MANUAL == '1' ? 'Yes':'No' %>" },
                          { name: 'INSPECTIONTYPE', label: 'Type', cell: 'string', editable: false },
                          { name: 'SCHEDULEDTIMESTAMP', label: 'Scheduled', cell: 'string', editable: false },
                          { name: 'BLTIMESTAMP', label: 'Started', cell: 'string', editable: false },
                          { name: 'DURATION', label: 'Took (m)', cell: 'string', editable: false },
                          { name: 'DWELL', label: 'Dwell (d)', cell: 'string', editable: false },
                          { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
-                         { label: 'Scored', cell: table.TemplateCell, editable: false, template: "<%=IMAGESSCORED == '1' ? 'Yes' : 'No' %>" },
+                         { label: 'Scored', cell: table.TemplateCell, editable: false, template: "<%-IMAGESSCORED == '1' ? 'Yes' : 'No' %>" },
 
             ]
                         
@@ -126,7 +126,7 @@ define(['marionette',
             this.ty = new FilterView({ collection: this.inspections, filters: filters, mobile: true, url: false, name: 'ty' })
             this.insf.show(this.ty)
 
-            this.ctrs.show(new ContainersView({ collection: this.containers, params: {} }))
+            this.ctrs.show(new ContainersView({ collection: this.containers, params: {}, barcode: true }))
         },
         
     })

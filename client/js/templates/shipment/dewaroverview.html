@@ -1,0 +1,19 @@
+<div class="filter filter-nohide">
+    <ul class="clearfix">
+        <li title="View Dewar Overview" class="current"><a href="/dewars/overview">Dewar Overview</a></li>
+        <% if (can('view_manifest')) { %><li title="View Shipment Manifest"><a href="/shipments/manifest">Shipping Manifest</a></li><% } %>
+    </ul>
+</div>
+
+
+<h1>Dewar Overview</h1>
+<p class="help">This page shows all dewars for all current visits</p>
+<div class="filter bl"></div>
+<div class="filter img"></div>
+<div class="filter">
+	<ul>
+		<li>First Experiment: <input type="text" name="firstexperiment" /></li>
+	</ul>
+</div>
+
+<div class="wrapper"></div>

@@ -1,20 +1,20 @@
-<div class="data_collection" dcid="<%=ID%>" type="mca">
+<div class="data_collection" dcid="<%-ID%>" type="mca">
     <div class="mca"></div>
     <h1>
-        <a href="#" class="atp button button-notext" ty="mca" iid="<%=ID%>" name="<%=DIR%><%=FILETEMPLATE%>"><i class="fa fa-book"></i> <span>Add to Project</span></a>
+        <a href="#" class="atp button button-notext" ty="mca" iid="<%-ID%>" name="<%-DIR%><%-FILETEMPLATE%>"><i class="fa fa-book"></i> <span>Add to Project</span></a>
         <a href="#" class="button button-notext flag <% if (FLAG) { %>button-highlight<% } %>" title="Click to add this data collection to the list of favourite data collections"><i class="fa fa-star-o"></i> <span>Favourite</span></a>
-        <a href="/dc/visit/<%=VIS_LINK%>/ty/mca/id/<%=ID%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
+        <a href="/dc/visit/<%-VIS_LINK%>/ty/mca/id/<%-ID%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
         
-        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%=VIS_LINK%>"><%=VIS_LINK%></a>]<% } %>  <%=ST%></span>
-        <span class="spacer"> - </span><i class="button fa fa-caret-right expand"></i> <span class="temp"><%=DIR%></span>
+        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%-VIS_LINK%>"><%-VIS_LINK%></a>]<% } %>  <%-ST%></span>
+        <span class="spacer"> - </span><i class="button fa fa-caret-right expand"></i> <span class="temp"><%-DIR%></span>
     </h1>
     
     <ul class="clearfix half">
-        <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%=BLSAMPLEID%>"><%=SAMPLE%></a></span></li><% } %>
-        <li>Energy: <%=WAVELENGTH%>eV</li>
-        <li>Exposure: <%=EXPOSURETIME%>s</li>
-        <li>Transmission: <%=TRANSMISSION%>%</li>
-        <li>Beamsize: <%=BSX%>x<%=BSY%>&mu;m</li>
-        <li class="comment" title="Click to edit the comment for this mca spectrum">Comment: <span class="COMMENTS"><%=COMMENTS%></span></li>
+        <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
+        <li>Energy: <%-WAVELENGTH%>eV</li>
+        <li>Exposure: <%-EXPOSURETIME%>s</li>
+        <li>Transmission: <%-TRANSMISSION%>%</li>
+        <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
+        <li class="comment" title="Click to edit the comment for this mca spectrum">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
     </ul>
 </div>

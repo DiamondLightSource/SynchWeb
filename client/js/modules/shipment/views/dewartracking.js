@@ -18,8 +18,8 @@ define(['marionette', 'views/table',
         },
 
         update: function() {
-            this.ui.origin.html(this.collection.ORIGIN)
-            this.ui.dest.html(this.collection.DESTINATION)
+            this.ui.origin.text(this.collection.ORIGIN)
+            this.ui.dest.text(this.collection.DESTINATION)
         },
 
         onRender: function() {

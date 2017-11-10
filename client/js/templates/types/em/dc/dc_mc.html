@@ -1,0 +1,31 @@
+<h2>Motion Correction</h2>
+
+<p class="ra">
+    <a class="dll button" href="<%-APIURL%>/download/id/<%-DATACOLLECTIONID%>/aid/<%-AUTOPROCPROGRAMID%>"><i class="fa fa-download"></i> Micrograph</a>
+        <a class="view button logf" href="<%-APIURL%>/download/id/<%-DATACOLLECTIONID%>/aid/<%-AUTOPROCPROGRAMID%>/log/1"><i class="fa fa-search"></i> Log file</a>
+</p>
+
+<div class="data_collection" type="data">
+
+    <div class="distl" title="Drift Plot"></div>
+    
+    <div class="diffraction fft2" title="Click to view FFT">
+        <a href="<%-APIURL%>/em/mc/fft/image/<%-DATACOLLECTIONID%>/n/<%-IMAGENUMBER%>/t/2" title="FFT Drift Corrected"><img dsrc="" alt="FFT Drift Corrected" /></a>
+    </div>
+    <div class="diffraction fft" title="Click to view drift corrected FFT">
+        <a href="<%-APIURL%>/em/mc/fft/image/<%-DATACOLLECTIONID%>/n/<%-IMAGENUMBER%>" title="FFT"><img dsrc="" alt="FFT" /></a>
+    </div>
+
+    <ul class="clearfix">
+        <li>Movie Number: <%-IMAGENUMBER%></li>
+        <li>First Frame: <%-FIRSTFRAME%></li>
+        <li>Last Frame: <%-LASTFRAME%></li>
+        <li>Dose Per Frame: <%-DOSEPERFRAME%>e<span class="super">-</span>/&#197;<span class="super">2</span></li>
+        <li>Dose Weight: <%-DOSEWEIGHT%>?</li>
+        <li>Total Motion: <%-TOTALMOTION%>&#197;</li>
+        <li>Average Motion / Frame: <%-AVERAGEMOTIONPERFRAME%>&#197;</li>
+        <li>Patches Used: <%-PATCHESUSEDX%>x<%-PATCHESUSEDY%></li>
+        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
+    </ul>
+
+</div>

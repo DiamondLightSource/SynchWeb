@@ -528,6 +528,14 @@ ol.rounded {
             background: $content-sub-background;
             display: none;
             overflow: auto;
+
+            .dcap {
+                padding: 1% 1% 0 1%;
+
+                .data_collection {
+                    margin-bottom: 0;
+                }
+            }
             
             > h1 {
                 border-bottom: 1px solid;
@@ -760,6 +768,20 @@ ol.rounded {
         width: 40.5%;
         height: 300px;
 
+        &.image-third {
+            width: 32.4%;
+
+            @media (max-width: $breakpoint-small) {
+                width: 49.5%;
+            }
+
+            @media (max-width: $breakpoint-vsmall) {
+                width: auto;
+                float: none;
+                height: 150px;
+            }
+        }
+
         @media (max-width: $breakpoint-small) {
             width: 49.5%;
         }
@@ -770,6 +792,8 @@ ol.rounded {
             height: 150px;
         }
     }
+
+
 
     .image {
         cursor: pointer;
@@ -1758,7 +1782,7 @@ textarea[name=pasted] {
     }
     
     li {
-        padding: 0 0 1px 0;
+        /*padding: 0 0 1px 0;*/
     }
     
     h1 {
@@ -1865,3 +1889,5 @@ textarea[name=pasted] {
     }
 
 }
+
+

@@ -1,7 +1,10 @@
 define(['marionette', 
   'views/table', 'views/filter', 
-  'collections/bls', 'modules/shipment/collections/dhl-tracking'], 
-  function(Marionette, TableView, FilterView, Beamlines, DHLTracking) {
+  'collections/bls', 'modules/shipment/collections/dhl-tracking', 
+  'tpl!templates/shipment/dewaroverview.html',
+  'jquery', 'jquery-ui'], 
+  function(Marionette, TableView, FilterView, Beamlines, DHLTracking,
+    template, $) {
     
   var TrackingCell = Backgrid.Cell.extend({
       render: function() {
@@ -41,9 +44,28 @@ define(['marionette',
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Dewar Overview</h1><p class="help">This page shows all dewars for all current visits</p><div class="filter bl"></div><div class="filter img"></div><div class="wrapper"></div>'),
+        template: template,
         regions: { wrap: '.wrapper', type: '.bl', img: '.img' },
         
+        ui: {
+            fe: 'input[name=firstexperiment]'
+        },
+
+        events: {
+            'change @ui.fe': 'updateDate'
+        },
+
+        templateHelpers: function() {
+            return {
+                can: app.user_can
+            }
+        },
+
+        updateDate: function() {
+            this.collection.queryParams.firstexperimentdate = this.ui.fe.val() ? this.ui.fe.val() : null
+            this.collection.fetch()
+        },
+
         initialize: function(options) {
             this.beamlines = new Beamlines(null, { ty: app.type })
             this.ready = this.beamlines.fetch()
@@ -55,9 +77,11 @@ define(['marionette',
                            { name: 'SHIPPINGNAME', label: 'Shipment', cell: 'string', editable: false },
                            { name: 'CODE', label: 'Dewar Name', cell: 'string', editable: false },
                            { name: 'FACILITYCODE', label: 'Dewar Code', cell: 'string', editable: false },
+                           { name: 'CONTAINERS', label: 'Containers', cell: 'string', editable: false },
                            { name: 'DELIVERYAGENT_AGENTNAME', label: 'Courier', cell: 'string', editable: false },
                            { name: 'TRACKINGNUMBERTOSYNCHROTRON', label: 'Track # to', cell: 'string', editable: false },
                            { name: 'DEWARSTATUS', label: 'Status', cell: 'string', editable: false },
+                           { name: 'STORAGELOCATION', label: 'Location', cell: 'string', editable: false },
                            { label: 'Tracking', cell: TrackingCell, editable: false }]
                           
             this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'dewars', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: 'No dewars found', } })
@@ -66,6 +90,7 @@ define(['marionette',
         onRender: function() {
             this.wrap.show(this.table)
             $.when(this.ready).done(this.showFilter.bind(this))
+            this.ui.fe.datepicker({ dateFormat: "dd-mm-yy" })
         },
 
         showFilter: function() {

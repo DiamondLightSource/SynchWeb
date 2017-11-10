@@ -1,0 +1,56 @@
+// Mixins
+
+
+// Flexible grid
+@mixin cols($n, $pad: 1%, $marg: 0, $multi: 1) {
+    $p: 0;
+    $m: 0;
+    
+    @if length($pad) == 1 {
+        $p: $pad*2;
+    } @else if length($pad) == 2 {
+        $p: nth($pad, 2)*2;
+    } @else if length($pad) == 4 {
+        $p: nth($pad, 2) + nth($pad, 4);
+    }
+    
+
+    @if length($marg) == 1 {
+        $m: $marg*2;
+    } @else if length($marg) == 2 {
+        $m: nth($marg, 2)*2;
+    } @else if length($pad) == 4 {
+        $m: nth($marg, 2) + nth($marg, 4);
+    }
+    
+    
+    $col: (100%/$n)*$multi - $p - $m;
+    
+    width: $col;
+    margin: $marg;
+    padding: $pad;
+}
+
+
+// Calc
+@mixin calc($property, $expression) {
+    #{$property}: -moz-calc(#{$expression});
+    #{$property}: -o-calc(#{$expression});
+    #{$property}: -webkit-calc(#{$expression});
+    #{$property}: calc(#{$expression});
+}
+
+
+@mixin clearfix() {
+    &:before,
+    &:after {
+        content: " ";
+        display: table;
+    }
+    
+    &:after {
+        clear: both;
+    }
+         
+    *zoom: 1;
+}

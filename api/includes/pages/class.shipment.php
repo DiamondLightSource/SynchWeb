@@ -20,6 +20,7 @@
                               'imid' => '\d+',
 
                               'requestedimager' => '\d',
+                              'firstexperimentdate' => '\d\d-\d\d-\d\d\d\d',
 
                               // cache name
                               'name' => '\w+',
@@ -240,7 +241,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
 
-            $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode
+            $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, pe2.login as deliveryagent_flightcodeperson
               FROM proposal p 
               INNER JOIN shipping s ON p.proposalid = s.proposalid 
               LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
@@ -249,6 +250,7 @@
               LEFT OUTER JOIN labcontact c ON c.labcontactid = s.sendinglabcontactid
               LEFT OUTER JOIN person pe ON c.personid = pe.personid 
               LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
+              LEFT OUTER JOIN person pe2 ON pe2.personid = s.deliveryagent_flightcodepersonid
               WHERE $where 
               GROUP BY s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode, s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'), s.isstorageshipping, s.shippingtype, s.comments, s.creationdate 
               ORDER BY $order DESC", $args);
@@ -339,17 +341,17 @@
 
             $track = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : $dew['TRACKINGNUMBERFROMSYNCHROTRON'];
 
-            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,'at DLS',lower(:2),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,'at facility',lower(:2),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $this->arg('LOCATION')));
             $dhid = $this->db->id();
 
-            $this->db->pq("UPDATE dewar set dewarstatus='at DLS', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track));
-            $this->db->pq("UPDATE shipping set shippingstatus='at DLS' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+            $this->db->pq("UPDATE dewar set dewarstatus='at facility', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track));
+            $this->db->pq("UPDATE shipping set shippingstatus='at facility' WHERE shippingid=:1", array($dew['SHIPPINGID']));
 
             $containers = $this->db->pq("SELECT containerid 
                 FROM container 
                 WHERE dewarid=:1", array($dew['DEWARID']));
             foreach ($containers as $c) {
-                $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['CONTAINERID'], 'at DLS'));
+                $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['CONTAINERID'], 'at facility'));
             }
 
             // Email
@@ -608,6 +610,20 @@
               VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
               array($dew['DEWARID'], $this->arg('LOCATION')));
 
+
+            if ($this->has_arg('NEXTVISIT')) {
+                $sessions = $this->db->pq("SELECT s.sessionid
+                  FROM blsession s
+                  INNER JOIN proposal p ON p.proposalid = s.proposalid
+                  WHERE p.proposalid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2", 
+                    array($this->proposalid, $this->arg('NEXTVISIT')));
+
+                if (sizeof($sessions)) {
+                    $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", 
+                      array($sessions[0]['SESSIONID'], $dew['DEWARID']));
+                }
+            }
+
             require_once('includes/class.email.php');
             $email = new Email('dewar-transfer', '*** Dewar ready for internal transfer ***');
 
@@ -653,6 +669,7 @@
 
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
+            if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
@@ -677,7 +694,7 @@
                 $args = array($this->arg('DEWARID'));
             }
 
-            $dew = $this->db->pq("SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron 
+            $dew = $this->db->pq("SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron, LOWER(s.deliveryagent_agentname) as deliveryagent_agentname
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid 
               INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -686,14 +703,18 @@
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            $tr = $this->_dewar_tracking($dew);
+            if ($dew['DELIVERYAGENT_AGENTNAME'] == 'dhl') {
+                $tr = $this->_dewar_tracking($dew);
 
-            $this->_output(array(
-              'ORIGIN' => (string)$tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
-              'DESTINATION' => (string)$tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
-              'EVENTS' => $tr['events']
-            ));
+                $this->_output(array(
+                  'ORIGIN' => (string)$tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
+                  'DESTINATION' => (string)$tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
+                  'EVENTS' => $tr['events']
+                ));
 
+            } else {
+                $this->_output(new StdClass);
+            }
         }
 
         function _dewar_tracking($dewar) {
@@ -743,12 +764,12 @@
             }
 
             if ($this->has_arg('visit')) { 
-                $where = "CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)=:".(sizeof($args)+1);
+                $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)=:".(sizeof($args)+1);
                 array_push($args, $this->arg('visit'));
             }
 
             if ($this->has_arg('bl')) { 
-                $where = 'se.beamlinename=:'.(sizeof($args)+1);
+                $where .= ' AND se.beamlinename=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('bl'));
             }
 
@@ -780,6 +801,11 @@
 
             if ($this->has_arg('requestedimager')) {
                 $where .= ' AND c.requestedimagerid IS NOT NULL';
+            }
+
+            if ($this->has_arg('firstexperimentdate')) {
+                $where .= " AND DATE(se.startdate) = TO_DATE(:".(sizeof($args)+1).", 'DD-MM-YYYY')";
+                array_push($args, $this->arg('firstexperimentdate'));
             }
 
 
@@ -815,7 +841,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight
+            $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight, GROUP_CONCAT(c.code SEPARATOR ', ') as containers
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -964,8 +990,8 @@
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
             
-            $this->db->pq("UPDATE shipping SET shippingstatus='sent to DLS' where shippingid=:1", array($ship['SHIPPINGID']));
-            $this->db->pq("UPDATE dewar SET dewarstatus='sent to DLS' where shippingid=:1", array($ship['SHIPPINGID']));
+            $this->db->pq("UPDATE shipping SET shippingstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
+            $this->db->pq("UPDATE dewar SET dewarstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
             
             $dewars = $this->db->pq("SELECT d.dewarid, s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
               FROM dewar d 
@@ -973,7 +999,7 @@
               WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
             foreach ($dewars as $d) {
                 $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                  VALUES (s_dewartransporthistory.nextval,:1,'sent to DLS',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+                  VALUES (s_dewartransporthistory.nextval,:1,'sent to facility',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
                   array($d['DEWARID']));
             }
 
@@ -1076,6 +1102,14 @@
                 } else if ($this->arg('ty') == 'todispose') {
                     $where .= " AND c.imagerid IS NOT NULL";
                     $having .= " HAVING (TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24) > 42";
+                } else if ($this->arg('ty') == 'data') {
+                    $having .= " HAVING COUNT(distinct dc.datacollectionid) > 0";
+                } else if ($this->arg('ty') == 'queued') {
+                    $where .= " AND cq.containerqueueid IS NOT NULL";
+                } else if ($this->arg('ty') == 'processing') {
+                    $where .= " AND c.containerstatus = 'processing'";
+                } else if ($this->arg('ty') == 'subsamples') {
+                    $having .= " HAVING COUNT(distinct ss.blsubsampleid) > 0";
                 } 
             }
 
@@ -1127,16 +1161,18 @@
                 array_push($args, $this->arg('CONTAINERREGISTRYID'));
             }
                 
-
             $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
                 FROM container c 
                 INNER JOIN dewar d ON d.dewarid = c.dewarid 
                 INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = sh.proposalid
                 LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
+                LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid
                 LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
                 LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                 LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
+                LEFT OUTER JOIN datacollection dc ON dc.blsampleid = s.blsampleid
+                LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
                 $join 
                 WHERE $where
                 $having", $args);
@@ -1170,16 +1206,19 @@
             }
             
             if ($this->has_arg('sort_by')) {
-                $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)');
+                $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
+                  'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)'
+                  );
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             // $this->db->set_debug(True);
-            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, cq.createdtimestamp as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, COUNT(distinct dc.datacollectionid) as dccount, GROUP_CONCAT(DISTINCT CONCAT(CONCAT(bpr.proposalcode, bpr.proposalnumber,'-',bls.visit_number)),':',bls.beamlinename) as dcvisits, GROUP_CONCAT(DISTINCT TO_CHAR(bls.startdate, 'HH24:MI DD-MM-YYYY')) as dcdates
+            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, cq.createdtimestamp as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, COUNT(distinct dc.datacollectionid) as dccount, GROUP_CONCAT(DISTINCT CONCAT(CONCAT(bpr.proposalcode, bpr.proposalnumber,'-',bls.visit_number)),':',bls.beamlinename) as dcvisits, GROUP_CONCAT(DISTINCT TO_CHAR(bls.startdate, 'HH24:MI DD-MM-YYYY')) as dcdates, count(distinct ss.blsubsampleid) as subsamples
                                   FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
                                   LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
+                                  LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid
                                   LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
                                   LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                                   LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
@@ -1285,7 +1324,7 @@
             $where = 'c.containerid=:1';
             $args = array($this->arg('cid'));
 
-            if (!$this->user->can('disp_cont')) {
+            if (!$this->user->has('disp_cont')) {
                 $where .= ' AND p.proposalid=:'.(sizeof($args)+1);
                 array_push($args, $this->proposalid);
             }
@@ -1302,7 +1341,7 @@
                 }
             }
 
-            if ($this->user->can('disp_cont') && $this->has_arg('DISPOSE')) {
+            if ($this->user->has('disp_cont') && $this->has_arg('DISPOSE')) {
                 $this->db->pq("UPDATE container SET imagerid=NULL,containerstatus='disposed' WHERE containerid=:1", array($this->arg('cid')));
                 $this->_output(array('IMAGERID' => null));
             }
@@ -1887,15 +1926,19 @@
                     ));
 
                     $this->db->pq("UPDATE shipping 
-                    SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2, deliveryagent_productcode=:3 
-                    WHERE shippingid=:4", array($awb['awb'], $awb['label'], $product, $ship['SHIPPINGID']));
+                    SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2, deliveryagent_productcode=:3, deliveryagent_flightcodepersonid=:4, shippingstatus='awb created', deliveryagent_agentname='DHL'
+                    WHERE shippingid=:5", array($awb['awb'], $awb['label'], $product, $this->user->personid, $ship['SHIPPINGID']));
 
                     $tno = $this->has_arg('RETURN') ? 'trackingnumberfromsynchrotron' : 'trackingnumbertosynchrotron';
                     foreach ($dewars as $i => $d) {
                         if ($i >= sizeof($awb['pieces'])) continue;
 
                         $p = $awb['pieces'][$i];
-                        $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2 WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
+                        $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2, dewarstatus='awb created' WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
+
+                        $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
+                        VALUES (s_dewartransporthistory.nextval,:1,'awb created',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+                        array($d['DEWARID']));
                     }
 
                     $ship['DELIVERYAGENT_FLIGHTCODE'] = $awb['awb'];
@@ -1924,8 +1967,15 @@
                     ));
 
                     $this->db->pq("UPDATE shipping 
-                    SET deliveryagent_pickupconfirmation=:1, deliveryagent_pickupconfirmationtimestamp=CURRENT_TIMESTAMP, deliveryAgent_readybytime=TO_DATE(:2, 'HH24:MI'), deliveryAgent_callintime=TO_DATE(:3, 'HH24:MI')
+                    SET deliveryagent_pickupconfirmation=:1, deliveryagent_pickupconfirmationtimestamp=CURRENT_TIMESTAMP, deliveryAgent_readybytime=TO_DATE(:2, 'HH24:MI'), deliveryAgent_callintime=TO_DATE(:3, 'HH24:MI'), shippingstatus='pickup booked'
                     WHERE shippingid=:4", array($pickup['confirmationnumber'], $pickup['readybytime'], $pickup['callintime'], $ship['SHIPPINGID']));
+
+                    foreach ($dewars as $i => $d) {
+                        $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked' WHERE dewarid=:1", array($d['DEWARID']));
+                        $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
+                        VALUES (s_dewartransporthistory.nextval,:1,'pickup booked',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+                        array($d['DEWARID']));
+                    }
 
                 } catch (Exception $e) {
                     $this->_error($e->getMessage());

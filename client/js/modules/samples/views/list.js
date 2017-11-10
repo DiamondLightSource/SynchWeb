@@ -55,7 +55,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
         { name: 'NAME', label: 'Name', cell: 'string', editable: false },
         { name: 'RECORDTIMESTAMP', label: 'Created', cell: 'string', editable: false },
         { name: 'ACRONYM', label: 'Protein', cell: 'string', editable: false },
-        { label: 'Abundance', cell: table.TemplateCell, editable: false, template: '<% if (ABUNDANCE) { %><%=ABUNDANCE%><%=SYMBOL%><% } %>' },
+        { label: 'Abundance', cell: table.TemplateCell, editable: false, template: '<% if (ABUNDANCE) { %><%-ABUNDANCE%><%-SYMBOL%><% } %>' },
         { name: 'COMPONENTACRONYMS', label: 'Components', cell: 'string', editable: false },
         { name: 'SPACEGROUP', label: 'SG', cell: 'string', editable: false },
         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: false },
@@ -63,7 +63,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
         { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
 
         { name: 'CONTAINER', label: 'Container', cell: 'string', editable: false },
-        // { label: 'Snapshot', cell: table.TemplateCell, test: 'DCID', editable: false, template: '<img class="img" src="'+app.apiurl+'/image/id/<%=DCID%>" /> <img class="img" src="'+app.apiurl+'/image/id/<%=DCID%>/n/2" />' },
+        // { label: 'Snapshot', cell: table.TemplateCell, test: 'DCID', editable: false, template: '<img class="img" src="'+app.apiurl+'/image/id/<%-DCID%>" /> <img class="img" src="'+app.apiurl+'/image/id/<%-DCID%>/n/2" />' },
         { label: 'Snapshot', cell: SnapshotCell, editable: false },
         { name: 'SC', label: 'SCs', cell: 'string', editable: false },
         { name: 'SCRESOLUTION', label: 'Res', cell: 'string', editable: false },
@@ -73,7 +73,7 @@ define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/add
         { label: ' ', cell: table.ProjectCell, itemname: 'NAME', itemid: 'BLSAMPLEID', itemtype:'sample', editable: false },
     ],
 
-    hiddenColumns: [2,3,4,5,6,7,8,10],
+    hiddenColumns: [1,2,3,4,5,6,7,8,10],
 
     
     initialize: function(options) {

@@ -8,9 +8,11 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
     'models/sample', 'models/visit', 'models/proposal',
     'modules/dc/views/samplechangerfull',
     'modules/dc/views/queuebuilder',
+    'models/proplookup',
     
     ], function(Marionette, GetView, ImageViewer, MapModelViewer, ReciprocalSpaceViewer,
-        Summary, APStatusSummary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder) {
+        Summary, APStatusSummary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder,
+        ProposalLookup) {
     
     var bc = { title: 'Data Collections', url: '/dc' }
     
@@ -56,16 +58,26 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
       
     // Diffraction Image Viewer
     di_viewer: function(id) {
-      console.log('di viewer')
-      var dc = new DataCollection({ ID: id })
-        dc.fetch({
+        console.log('di viewer')
+        var lookup = new ProposalLookup({ field: 'DATACOLLECTIONID', value: id })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc,
-                    {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
-                    { title: 'Image Viewer' },
-                    { title: dc.get('FILETEMPLATE') }])
-                app.content.show(new ImageViewer({ model: dc }))
+                var dc = new DataCollection({ ID: id })
+                dc.fetch({
+                    success: function() {
+                        app.bc.reset([bc,
+                            {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
+                            { title: 'Image Viewer' },
+                            { title: dc.get('FILETEMPLATE') }])
+                        app.content.show(new ImageViewer({ model: dc }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'Image Viewer' }])
+                        app.message({ title: 'No such data collection', message: 'The specified data collection doesnt exist' })
+                    }
+                })
             },
+
             error: function() {
                 app.bc.reset([bc, { title: 'Image Viewer' }])
                 app.message({ title: 'No such data collection', message: 'The specified data collection doesnt exist' })
@@ -77,15 +89,25 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
     // Map / Model Viewer
     mapmodelviewer: function(id, ty, dt, ppl) {
         if (!ty) ty = 'dimple'
-        var dc = new DataCollection({ ID: id })
-        dc.fetch({
+        var lookup = new ProposalLookup({ field: 'DATACOLLECTIONID', value: id })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc,
-                    {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
-                    { title: 'Map/Model Viewer' },
-                    { title: dc.get('FILETEMPLATE') }])
-                app.content.show(new MapModelViewer({ ty: ty, dt: dt, ppl: ppl, model: dc }))
+                var dc = new DataCollection({ ID: id })
+                dc.fetch({
+                    success: function() {
+                        app.bc.reset([bc,
+                            {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
+                            { title: 'Map/Model Viewer' },
+                            { title: dc.get('FILETEMPLATE') }])
+                        app.content.show(new MapModelViewer({ ty: ty, dt: dt, ppl: ppl, model: dc }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'Map/Model Viewer' }])
+                        app.message({ title: 'No such data collection', message: 'The specified data collection doesnt exist' })
+                    }
+                })
             },
+
             error: function() {
                 app.bc.reset([bc, { title: 'Map/Model Viewer' }])
                 app.message({ title: 'No such data collection', message: 'The specified data collection doesnt exist' })
@@ -96,26 +118,38 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
 
     // Reciprocal Space Viewer
     rsviewer: function(id) {
-        var dc = new DataCollection({ ID: id })
-        dc.fetch({
+        var lookup = new ProposalLookup({ field: 'DATACOLLECTIONID', value: id })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc,
-                    {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
-                    { title: 'Reciprocal Space Viewer' },
-                    { title: dc.get('FILETEMPLATE') }])
-                app.content.show(new ReciprocalSpaceViewer({ model: dc }))
+                var dc = new DataCollection({ ID: id })
+                dc.fetch({
+                    success: function() {
+                        app.bc.reset([bc,
+                            {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
+                            { title: 'Reciprocal Space Viewer' },
+                            { title: dc.get('FILETEMPLATE') }])
+                        app.content.show(new ReciprocalSpaceViewer({ model: dc }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'Reciprocal Space Viewer' }])
+                        app.message({ title: 'No such data collection', message: 'The specified data collection doesnt exist' })
+                    }
+                })
             },
+
             error: function() {
-                app.bc.reset([bc, { title: 'Reciprocal Space Viewer' }])
+                app.bc.reset([bc, { title: 'Map/Model Viewer' }])
                 app.message({ title: 'No such data collection', message: 'The specified data collection doesnt exist' })
             }
         })
+
     },
       
     // Data Collection Summary
     summary: function(visit) {
         console.log('summary')
         app.loading()
+        app.cookie(visit.split('-')[0])
         var vis = new Visit({ VISIT: visit })
         vis.fetch({
             success: function() {
@@ -139,6 +173,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
     apstatussummary: function(visit) {
         console.log('apstatussummary')
         app.loading()
+        app.cookie(visit.split('-')[0])
         var vis = new Visit({ VISIT: visit })
         vis.fetch({
             success: function() {
@@ -160,6 +195,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
       
     sampleChanger: function(visit) {
         app.loading()
+        app.cookie(visit.split('-')[0])
         var vis = new Visit({ VISIT: visit })
         vis.fetch({
             success: function() {

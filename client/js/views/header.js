@@ -3,7 +3,7 @@ define(['marionette', 'backbone', 'tpl!templates/header.html'], function(Marione
     
     var BreadItemView = Marionette.ItemView.extend({
         getTemplate: function(m) {
-            return this.model.get('url') ? _.template('<a href="<%=url%>"><%=title%></a>') : _.template('<%=title%>')
+            return this.model.get('url') ? _.template('<a href="<%-url%>"><%-title%></a>') : _.template('<%-title%>')
         },
         tagName: 'li',
     })
@@ -26,6 +26,7 @@ define(['marionette', 'backbone', 'tpl!templates/header.html'], function(Marione
                 IS_STAFF: app.staff,
                 PROPOSAL: app.prop,
                 APIURL: app.apiurl,
+                can: app.user_can
             }
         },
         

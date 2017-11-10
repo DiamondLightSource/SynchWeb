@@ -67,7 +67,7 @@ define(['marionette',
             var xhr = new window.XMLHttpRequest()
             var self = this
             xhr.addEventListener('progress', function(e) {
-                self.ui.hud.html(title+' '+((e.loaded/e.total)*100).toFixed(0) + '%')
+                self.ui.hud.text(title+' '+((e.loaded/e.total)*100).toFixed(0) + '%')
             })
             return xhr
         },

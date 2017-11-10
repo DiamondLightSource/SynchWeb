@@ -2,8 +2,9 @@ define(['marionette',
     'collections/shipments',
     'views/table',
     'utils/table',
-    'utils'], 
-    function(Marionette, Shipments, TableView, table, utils) {
+    'utils',
+    'tpl!templates/shipment/manifest.html'], 
+    function(Marionette, Shipments, TableView, table, utils, template) {
     
     var ClickableRow = table.ClickableRow.extend({
         event: 'shipment:show',
@@ -13,9 +14,15 @@ define(['marionette',
 
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Shipping Manifest</h1><select name="month"></select><a href="'+app.apiurl+'/pdf/manifest" class="button manifest"><i class="fa fa-print"></i> Print Shipping Manifest</a><div class="shipments"></div>'),
+        template: template,
         regions: { rshps: '.shipments' },
         
+        templateHelpers: function() {
+            return {
+                APIURL: app.apiurl
+            }
+        },
+
         events: {
             'click a.manifest': 'loadManifest',
         },
@@ -65,14 +72,15 @@ define(['marionette',
                 { name: 'SHIPPINGNAME', label: 'Shipment', cell: 'string', editable: false },
                 { name: 'DELIVERYAGENT_FLIGHTCODETIMESTAMP', label: 'Created', cell: 'string', editable: false },
                 { name: 'DELIVERYAGENT_SHIPPINGDATE', label: 'Shipped', cell: 'string', editable: false },
-                { label: 'Account', cell: table.TemplateCell, editable: false, template: '<% if (TERMSACCEPTED == "1") { %>Facility<% } else { %><%=DELIVERYAGENT_AGENTCODE%><% } %>' },
+                { label: 'Account', cell: table.TemplateCell, editable: false, template: '<% if (TERMSACCEPTED == "1") { %>Facility<% } else { %><%-DELIVERYAGENT_AGENTCODE%><% } %>' },
                 { name: 'DELIVERYAGENT_FLIGHTCODE', label: 'Flightcode', cell: 'string', editable: false },
                 { name: 'DELIVERYAGENT_PRODUCTCODE', label: 'Product', cell: 'string', editable: false },
                 { name: 'DCOUNT', label: 'Pieces', cell: 'string', editable: false },
                 { name: 'DELIVERYAGENT_BARCODE', label: 'Piece Barcodes', cell: 'string', editable: false },
                 { name: 'WEIGHT', label: 'Weight', cell: 'string', editable: false },
-                { label: 'Sender', cell: table.TemplateCell, editable: false, template: '<%=GIVENNAME%> <%=FAMILYNAME%> <%=LABNAME%>' },
-                { label: 'Origin', cell: table.TemplateCell, editable: false, template: '<%=CITY%> <%=POSTCODE%> <%=COUNTRY%>' },
+                { name: 'DELIVERYAGENT_FLIGHTCODEPERSON', label: 'Creator', cell: 'string', editable: false },
+                { label: 'Sender', cell: table.TemplateCell, editable: false, template: '<%-GIVENNAME%> <%-FAMILYNAME%> <%-LABNAME%>' },
+                { label: 'Origin', cell: table.TemplateCell, editable: false, template: '<%-CITY%> <%-POSTCODE%> <%-COUNTRY%>' },
             ]
         
             if (app.mobile()) {

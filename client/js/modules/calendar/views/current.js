@@ -52,7 +52,7 @@ define(['marionette',
             app.trigger('dclist:show', this.model.get('VISIT'))
         },
         
-        template: _.template('<div class="r"><a class="button" href="/stats/visit/<%=VISIT%>"><i class="fa fa-pie-chart"></i></a> <a href="#" class="button users"><i class="fa fa-users"></i></a> <a href="#" class="button dewars"><i class="fa fa-truck"></i></a></div><h1><%=BL%>. <%=LC%></h1><h3><a href="/dc/visit/<%=VISIT%>"><%=VISIT%></a></h3><ul><li>Start: <%=ST%></li><li>End: <%=EN%></li><li>&nbsp; <% if (SESSIONTYPE) { %><%=SESSIONTYPE%><% }%></li></ul>'),
+        template: _.template('<div class="r"><a class="button" href="/stats/visit/<%-VISIT%>"><i class="fa fa-pie-chart"></i></a> <a href="#" class="button users"><i class="fa fa-users"></i></a> <a href="#" class="button dewars"><i class="fa fa-truck"></i></a></div><h1><%-BL%>. <%-LC%></h1><h3><a href="/dc/visit/<%-VISIT%>"><%-VISIT%></a></h3><ul><li>Start: <%-ST%></li><li>End: <%-EN%></li><li>&nbsp; <% if (SESSIONTYPE) { %><%-SESSIONTYPE%><% }%></li></ul>'),
         
     })
     
@@ -97,7 +97,7 @@ define(['marionette',
                 
             } else {
                 _.each(['next', 'prev'], function(d) {
-                    var p = {}
+                    var p = { all: 1 }
                     p[d] = 1
                     this[d] = new Visits(null, { state: { pageSize: 5 }, queryParams: p })
                     this.deferreds.push(this[d].fetch())
@@ -147,7 +147,7 @@ define(['marionette',
             this.nv.show(new VisitList({ collection: this.next }))
             if (app.staff) this.com.show(new VisitList({ collection: this.cm }))
 
-            this.ui.time.html(this.time.time())
+            this.ui.time.text(this.time.time())
         },
         
         

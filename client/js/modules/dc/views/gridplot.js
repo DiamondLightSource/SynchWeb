@@ -50,14 +50,20 @@ define(['jquery', 'marionette',
             this.draw()
         },
 
+        gridPromise: function() {
+            return this._gridPromise
+        },
+
+        gridInfo: function() {
+            return this.grid
+        },
 
 
         initialize: function(options) {
             this.draw = _.debounce(this.draw, 10)
             this.listenTo(options.imagestatuses, 'sync', this.getModel, this)
 
-            var timestamp = utils._date_to_unix(this.getOption('ST'))
-            this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), timestamp: timestamp })
+            this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.distl, 'change', this.draw, this)
             this.grid = new GridInfo({ id: this.getOption('ID') })
 
@@ -65,7 +71,7 @@ define(['jquery', 'marionette',
             this.distl.fetch()
             var self = this
             this.gridFetched = false
-            this.grid.fetch().done(function() {
+            this._gridPromise = this.grid.fetch().done(function() {
                 self.gridFetched = true
                 if (self.grid.get('ORIENTATION')) self.vertical = self.grid.get('ORIENTATION') == 'vertical'
                 else self.vertical = (self.grid.get('STEPS_Y') > self.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
@@ -116,7 +122,7 @@ define(['jquery', 'marionette',
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
             if (m.get('SNS').length)
                 if (m.get('SNS')[2] && this.hasSnapshot == false) {
-                this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/3')
+                this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')
                 //this.draw()
             }
         },
@@ -161,11 +167,11 @@ define(['jquery', 'marionette',
             if (this.hasSnapshot) {
                 var scalef = this.snapshot.width/1024
 
-                var stx = (Math.floor(this.grid.get('SNAPSHOT_OFFSETXPIXEL'))+1)*scalef
-                var sty = (Math.floor(this.grid.get('SNAPSHOT_OFFSETYPIXEL'))+1)*scalef
+                var stx = this.grid.get('SNAPSHOT_OFFSETXPIXEL')*scalef
+                var sty = this.grid.get('SNAPSHOT_OFFSETYPIXEL')*scalef
 
-                var w = bw*this.grid.get('STEPS_X')*scalef*0.97
-                var h = bh*this.grid.get('STEPS_Y')*scalef*0.97
+                var w = bw*this.grid.get('STEPS_X')*scalef
+                var h = bh*this.grid.get('STEPS_Y')*scalef
 
                 var cvratio = this.canvas.width / this.canvas.height
                 var snratio = w/h
@@ -179,7 +185,7 @@ define(['jquery', 'marionette',
                 this.scale = this.canvas.width/(w+this.offset_w)
 
                 this.ctx.globalAlpha = 1
-                this.ctx.drawImage(this.snapshot, stx-this.offset_w/2, sty-this.offset_h/2, w+this.offset_w, h+this.offset_h-1, 0, 0, this.canvas.width, this.canvas.height)
+                this.ctx.drawImage(this.snapshot, stx-this.offset_w/2, sty-this.offset_h/2, w+this.offset_w, h+this.offset_h, 0, 0, this.canvas.width, this.canvas.height)
             }
 
             var d = []

@@ -4,8 +4,26 @@ define(['backbone'], function(Backbone) {
         idAttribute: 'DIFFRACTIONPLANID',
         urlRoot: '/sample/plan',
 
+        initialize: function(attrs, options) {
+            this.on('change:AXISRANGE change:NUMBEROFIMAGES change:AXISSTART', this.calculateAxisEnd)
+            this.calculateAxisEnd()
+        },
+
+        calculateAxisEnd: function() {
+            this.set('AXISEND', parseFloat(this.get('AXISSTART'))+(parseInt(this.get('NUMBEROFIMAGES'))*parseFloat(this.get('AXISRANGE'))))
+            this.trigger('computed:changed')
+        },
+
+        computed: function() {
+            return [
+                'AXISEND'
+            ]
+        },
+
+
         defaults: {
             WAVELENGTH: 12658,
+            AXISEND: 0,
         },
 
         validation: {
@@ -23,7 +41,7 @@ define(['backbone'], function(Backbone) {
             EXPOSURETIME: {
                 required: true,
                 pattern: 'number',
-                range: [0.04, 30],
+                range: [0.001333333, 30],
             },
 
             PREFERREDBEAMSIZEX: {
@@ -41,13 +59,17 @@ define(['backbone'], function(Backbone) {
             AXISRANGE: {
                 required: false,
                 pattern: 'number',
-                range: [0,10],
+                range: [0,1],
             },
 
             AXISSTART: {
                 required: true,
                 pattern: 'number',
-                range: [-25,25]
+                range: [-30,30]
+            },
+
+            AXISEND: {
+                range: [-30,30]
             },
 
             NUMBEROFIMAGES: {

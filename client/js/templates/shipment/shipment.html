@@ -1,4 +1,4 @@
-    <h1>Shipment: <span class="SHIPPINGNAME"><%=SHIPPINGNAME%></span></h1>
+    <h1>Shipment: <span class="SHIPPINGNAME"><%-SHIPPINGNAME%></span></h1>
 
     <p class="help">This page shows details and contents of the selected shipment. Most parameters can be edited by simply clicking on them.</p>
     <p class="help excl">Shipments need to have an outgoing and return home lab contact before shipment labels can be printed</p>
@@ -13,22 +13,22 @@
 
     <% if (LCOUT && LCRET) { %>
     <div class="ra">
-        <% if (SHIPPINGSTATUS == 'opened') { %>
+        <% if (SHIPPINGSTATUS == 'opened' || SHIPPINGSTATUS == 'awb created' || SHIPPINGSTATUS == 'pickup booked') { %>
             <a class="button send" href="#"><i class="fa fa-plane"></i> Mark as Sent</a>
         <% } %>
 
         <% if (DHL_ENABLE) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
-            <a class="button pdf" href="<%=APIURL%>/pdf/awb/sid/<%=SHIPPINGID%>"><i class="fa fa-print"></i> Print Airway Bill</a>
+            <a class="button pdf" href="<%-APIURL%>/pdf/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-print"></i> Print Airway Bill</a>
             <!-- <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a> -->
         <% } else { %>
-            <a class="button awb" href="/shipments/awb/sid/<%=SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create Airway Bill</a>
+            <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create Airway Bill</a>
         <% } %>
         <% } %>
 
-        <a href="<%=APIURL%>/pdf/sid/<%=SHIPPINGID%>/prop/<%=PROP%>" class="label button pdf" title="Print Shipment Labels"><i class="fa fa-print"></i> Print Shipment Labels</a>
+        <a href="<%-APIURL%>/pdf/sid/<%-SHIPPINGID%>/prop/<%-PROP%>" class="label button pdf" title="Print Shipment Labels"><i class="fa fa-print"></i> Print Shipment Labels</a>
 
-        <a href="<%=APIURL%>/pdf/container/sid/<%=SHIPPINGID%>/prop/<%=PROP%>" class="label button pdf" title="Print Shipment Contents"><i class="fa fa-print"></i> Print Contents</a>
+        <a href="<%-APIURL%>/pdf/container/sid/<%-SHIPPINGID%>/prop/<%-PROP%>" class="label button pdf" title="Print Shipment Contents"><i class="fa fa-print"></i> Print Contents</a>
     </div>
     <% } %>
 
@@ -37,85 +37,85 @@
 
             <li>
                 <span class="label">Created</span>
-                <span class="created"><%=CREATED%></span>
+                <span class="created"><%-CREATED%></span>
             </li>
 
             <li>
                 <span class="label">Status</span>
-                <span class="stat"><%=SHIPPINGSTATUS%></span>
+                <span class="stat"><%-SHIPPINGSTATUS%></span>
             </li>
 
             <li>
                 <span class="label">Outgoing Lab Contact</span>
-                <span class="SENDINGLABCONTACTID"><%=LCOUT%></span>
+                <span class="SENDINGLABCONTACTID"><%-LCOUT%></span>
             </li>
 
             <li>
                 <span class="label">Return Lab Contact</span>
-                <span class="RETURNLABCONTACTID"><%=LCRET%></span>
+                <span class="RETURNLABCONTACTID"><%-LCRET%></span>
             </li>
             <li>
                 <span class="label">Safety Level</span>
-                <span class="SAFETYLEVEL"><%=SAFETYLEVEL%></span>
+                <span class="SAFETYLEVEL"><%-SAFETYLEVEL%></span>
             </li>
             <li>
                 <span class="label">Courier</span>
-                <span class="DELIVERYAGENT_AGENTNAME"><%=DELIVERYAGENT_AGENTNAME%></span>
+                <span class="DELIVERYAGENT_AGENTNAME"><%-DELIVERYAGENT_AGENTNAME%></span>
             </li>
 
             <li>
                 <span class="label">Courier Account No.</span>
-                <span class="DELIVERYAGENT_AGENTCODE"><%=DELIVERYAGENT_AGENTCODE%></span>
+                <span class="DELIVERYAGENT_AGENTCODE"><%-DELIVERYAGENT_AGENTCODE%></span>
             </li>
 
             <li>
                 <span class="label">Shipping Date</span>
-                <span class="DELIVERYAGENT_SHIPPINGDATE"><%=DELIVERYAGENT_SHIPPINGDATE%></span>
+                <span class="DELIVERYAGENT_SHIPPINGDATE"><%-DELIVERYAGENT_SHIPPINGDATE%></span>
             </li>
 
             <li>
                 <span class="label">Shipping Airway Bill</span>
-                <span class="DELIVERYAGENT_FLIGHTCODE"><%=DELIVERYAGENT_FLIGHTCODE%></span>
+                <span class="DELIVERYAGENT_FLIGHTCODE"><%-DELIVERYAGENT_FLIGHTCODE%></span>
             </li>
 
             <li>
                 <span class="label">Shipping Pickup Location</span>
-                <span class="PHYSICALLOCATION"><%=PHYSICALLOCATION%></span>
+                <span class="PHYSICALLOCATION"><%-PHYSICALLOCATION%></span>
             </li>
 
             <li>
                 <span class="label">Shipping Ready By</span>
-                <span class="READYBYTIME"><%=READYBYTIME%></span>
+                <span class="READYBYTIME"><%-READYBYTIME%></span>
             </li>
 
             <li>
                 <span class="label">Shipping Close Time</span>
-                <span class="CLOSETIME"><%=CLOSETIME%></span>
+                <span class="CLOSETIME"><%-CLOSETIME%></span>
             </li>
 
             <% if (DELIVERYAGENT_PICKUPCONFIRMATION) { %>
             <li>
                 <span class="label">Shipping Pickup Confirmed</span>
-                Yes - Confirmation Number: <span class="DELIVERYAGENT_PICKUPCONFIRMATION"><%=DELIVERYAGENT_PICKUPCONFIRMATION%></span>
+                Yes - Confirmation Number: <span class="DELIVERYAGENT_PICKUPCONFIRMATION"><%-DELIVERYAGENT_PICKUPCONFIRMATION%></span>
             </li>
             <li>
                 <span class="label">Shipping Confirmed Ready By</span>
-                <span class="DELIVERYAGENT_READYBYTIME"><%=DELIVERYAGENT_READYBYTIME%></span>
+                <span class="DELIVERYAGENT_READYBYTIME"><%-DELIVERYAGENT_READYBYTIME%></span>
             </li>
 
             <li>
                 <span class="label">Shipping Confirmed Call In</span>
-                <span class="DELIVERYAGENT_CALLINTIME"><%=DELIVERYAGENT_CALLINTIME%></span>
+                <span class="DELIVERYAGENT_CALLINTIME"><%-DELIVERYAGENT_CALLINTIME%></span>
             </li>
             <% } %>
 
             <li>
                 <span class="label">Estimated Delivery Date</span>
-                <span class="DELIVERYAGENT_DELIVERYDATE"><%=DELIVERYAGENT_DELIVERYDATE%></span>
+                <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
 
             <li class="clearfix reorder">
-                <div class="COMMENTS text"><%=COMMENTS%></div>
+                <div class="COMMENTS text"><%-COMMENTS%></div>
                 <span class="label">Comments</span>
             </li>
 

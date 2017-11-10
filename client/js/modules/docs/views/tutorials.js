@@ -4,7 +4,7 @@ define(['marionette',
         
     var TutorialListItem = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<%=title%>'),
+        template: _.template('<%-title%>'),
         
         modelEvents: {
             'change': 'render',
@@ -58,14 +58,10 @@ define(['marionette',
     })
         
         
-    var TutorialItem = Marionette.ItemView.extend({
-        className: 'content',
-        template: _.template('<%=content%>'),
-        
-        templateHelpers: function() {
-            return {
-                content: this.content
-            }
+    var TutorialItem = Marionette.LayoutView.extend({
+        template: _.template('<div class="wrap"></div>'),
+        regions: {
+            cont: '.wrap'
         },
         
         modelEvents: {
@@ -81,9 +77,11 @@ define(['marionette',
             var sel = this.collection.findWhere({ isSelected: true })
             if (sel) {
                 var self = this
-                $.get('/doc/'+sel.get('page')+'/index.html', function(resp) {
-                    self.content = resp
-                    self.render()
+                require(['tpl!/doc/'+sel.get('page')+'/index.html'], function(template) {
+                    self.cont.show(new Marionette.ItemView({
+                        template: template,
+                        className: 'content',
+                    }))
                 })
             }
         },

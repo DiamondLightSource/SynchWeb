@@ -23,6 +23,7 @@ define([
             'click a.sn': 'showSnapshots',
             'click a.assoc': 'associateSample',
             'click a.dd': utils.signHandler,
+            'click a.attach': 'attachments',
         },
 
         associateSample: function(e) {
@@ -36,7 +37,7 @@ define([
             console.log(s.length, this.$el.find('ul'))
             if (s.length) {
                 var a = s.eq(0).find('a')
-                a.html(this.model.get('SAMPLE')).attr('href', '/samples/sid/'+this.model.get('BLSAMPLEID'))
+                a.text(this.model.get('SAMPLE')).attr('href', '/samples/sid/'+this.model.get('BLSAMPLEID'))
 
             } else {
                 this.$el.find('ul').prepend('<li class="sample"><span class="wrap">Sample: <a href="/samples/sid/'+this.model.get('BLSAMPLEID')+'">'+this.model.get('SAMPLE')+'</a></span></li>')

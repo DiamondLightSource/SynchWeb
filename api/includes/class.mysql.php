@@ -10,6 +10,8 @@
         var $debug = False;
         var $stat = '';
         var $stats = False;
+        var $transaction = False;
+        var $errors = 0;
         
         function __construct($user, $pass, $db, $port=null) {
             list($host, $dbn) = explode('/', $db);
@@ -20,6 +22,22 @@
             if (mysqli_connect_errno()) {
                 $this->error('There was an error connecting to MySQL: ', htmlentities(mysqli_connect_errno()));
             }
+        }
+
+        function start_transaction() {
+            $this->transaction = True;
+            $this->conn->autocommit(False);
+        }
+
+        function end_transaction() {
+            if ($this->errors > 0) $this->conn->rollback();
+            else $this->conn->commit();
+            
+            $this->conn->autocommit(True);
+            $this->transaction = False;
+
+            if ($this->errors > 0) $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
+            $this->errors = 0;
         }
 
 
@@ -246,9 +264,21 @@
                             'XRFFluorescenceMapping',
                             'XRFFluorescenceMappingROI',
 
-                            'Particle',
+                            'GridImageMap',
 
-                            '',
+                            // EM
+                            'MotionCorrection',
+                            'MotionCorrectionDrift',
+                            'CTF',
+
+                            // Sample groups
+                            'BLSampleGroup',
+                            'BLSampleGroup_has_BLSample',
+
+                            // Reprocessing
+                            'Reprocessing',
+                            'ReprocessingParameter',
+                            'ReprocessingImageSweep',
 
                 );
 
@@ -279,7 +309,8 @@
             $stmt = $this->conn->prepare($query);
             
             if (!$stmt) {
-                $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
+                if ($this->transaction) $this->errors++;
+                else $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
             }
             
             if (sizeof($args)) {
@@ -297,7 +328,8 @@
             }
             
             if (!$stmt->execute()) {
-                $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
+                if ($this->transaction) $this->errors++;
+                else $this->error('There was an error with MySQL', $this->conn->error.__LINE__);
             }
 
             $data = array();
@@ -313,7 +345,13 @@
                             while($row = $result->fetch_assoc()) {
                                 $c = array();
                                 // oracle inheritance ;(
-                                foreach ($row as $key => $val) $c[strtoupper($key)] = $val === null ? null : strval($val);
+                                foreach ($row as $key => $val) {
+                                    if ($val !== null) {
+                                        if (gettype($val) == gettype(0.1)) $val = round($val, 5);
+                                        $val = strval($val);
+                                    }
+                                    $c[strtoupper($key)] = $val;
+                                }
                                 array_push($data, $c);
                             }
                         }

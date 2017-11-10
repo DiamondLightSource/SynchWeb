@@ -31,8 +31,8 @@ define(['marionette',
 
     var ProposalView = Marionette.ItemView.extend({
         tagName: 'li',
-        // template: _.template('<%=PROPOSAL%>'),
-        template: _.template('<%=PROPOSAL%> <% if (STAFF) { %><span class="r"><a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a></span><% } %>'),
+        // template: _.template('<%-PROPOSAL%>'),
+        template: _.template('<%-PROPOSAL%> <% if (STAFF) { %><span class="r"><a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a></span><% } %>'),
         
         templateHelpers: function () {
             return { STAFF: app.staff }
@@ -174,12 +174,12 @@ define(['marionette',
             this.containers.fetch().done(this.getHistory.bind(this))
 
             var columns = [
-                // { label: 'Name', cell: table.TemplateCell, editable: false, template: '<a href="/containers/cid/<%=CONTAINERID%>"><%=NAME%></a>' },
+                // { label: 'Name', cell: table.TemplateCell, editable: false, template: '<a href="/containers/cid/<%-CONTAINERID%>"><%-NAME%></a>' },
                 { name: 'NAME', label: 'Name', cell: 'string', editable: false },
                 { name: 'BLTIMESTAMP', label: 'Created', cell: 'string', editable: false },
                 { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
                 // { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
-                { label: 'Shipment', cell: table.TemplateCell, editable: false, template: '<a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a>' },
+                { label: 'Shipment', cell: table.TemplateCell, editable: false, template: '<a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a>' },
                 { name: 'DCCOUNT', label: '# DCs', cell: 'string', editable: false },
                 { name: 'DCVISITS', label: 'Visits', cell: 'string', editable: false },
                 { name: 'DCDATES', label: 'Dates', cell: 'string', editable: false },

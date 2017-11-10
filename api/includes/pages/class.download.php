@@ -27,6 +27,7 @@
     
         public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/dt/:dt)(/ppl/:ppl)(/id/:id)(/map/:map)', 'get', '_map'),
                               array('/id/:id/aid/:aid(/log/:log)(/1)(/LogFiles/:LogFiles)(/archive/:archive)', 'get', '_auto_processing'),
+                              array('/plots', 'get', '_auto_processing_plots'),
                               array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
                               array('/dimple/id/:id(/log/:log)', 'get', '_dimple_mtz'),
                               array('/mrbump/id/:id(/log/:log)', 'get', '_mrbump_mtz'),
@@ -37,6 +38,7 @@
                               array('/data/visit/:visit', 'get', '_download_visit'),
                               array('/attachments', 'get', '_get_attachments'),
                               array('/attachment/id/:id/aid/:aid', 'get', '_get_attachment'),
+                              array('/dc/id/:id', 'get', '_download'),
             );
 
         
@@ -62,6 +64,43 @@
                 $this->_header($this->arg('visit').'_download.zip');
                 readfile($data);
             } else $this->_error('There doesnt seem to be a data archive available for this visit');
+        }
+
+        # ------------------------------------------------------------------------
+        # Download mtz/log file for Fast DP / XIA2
+        function _auto_processing_plots() {
+            global $ap_types;
+            if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
+            
+            $rows = $this->db->pq("SELECT appa.filename, appa.filepath, api.autoprocprogramid, app.processingcommandline as type
+                FROM autoprocintegration api 
+                INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
+                INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+                INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
+                WHERE appa.filetype='Graph' AND api.datacollectionid = :1", array($this->arg('id')));
+
+            foreach ($rows as &$r) {
+                foreach ($ap_types as $id => $name) {
+                    if (strpos($r['TYPE'], $id)) {
+                        $r['TYPE'] = $name;
+                        break;
+                    }
+                }
+
+                $json = $r['FILEPATH'].'/'.$r['FILENAME'];
+                $r['PLOTS'] = array();
+                if (file_exists($json)) {
+                    $cont = file_get_contents($json);
+                    $r['PLOTS'] = json_decode($cont);
+                }
+
+                unset($r['FILENAME']);
+                unset($r['FILEPATH']);
+            }
+            
+            $this->_output($rows);
         }
 
 
@@ -128,7 +167,7 @@
                         } $this->_error('No such file', 'The specified auto processing file doesnt exist');
                         
                     // FastDP
-                    } else if ($r['FILETYPE'] == 'Log' && $r['FILENAME'] == 'fast_dp.log') {
+                    } else if ($r['FILETYPE'] == 'Log' && ($r['FILENAME'] == 'fast_dp.log' || $r['FILENAME'] == 'fast_dp-report.html')) {
                         $f = $r['FILEPATH'].'/fast_dp.mtz';
                         if (file_exists($f)) {
                             $this->_header($this->arg('aid').'_fast_dp.mtz');
@@ -174,7 +213,8 @@
         # Return pdb/mtz/log file for fast_ep and dimple
         function _use_rel_path($pat, $pth, $root_pth) {
             $regex_pat = str_replace("*", "\w+", $pat);
-            $rel_path =  array_pop(preg_split('`'.$regex_pat.'`', $pth));
+            $sp = preg_split('`'.$regex_pat.'`', $pth);
+            $rel_path =  array_pop($sp);
             $res =  $root_pth . $rel_path;
             return $res;
         }
@@ -496,6 +536,32 @@
             $this->app->response->headers->set("Content-length", $size);
             $this->_header(basename($rows[0]['FILEFULLPATH']));
             readfile($rows[0]['FILEFULLPATH']);
+        }
+
+
+
+        # ------------------------------------------------------------------------
+        # Download Data
+        function _download() {
+            session_write_close();
+            if (!$this->has_arg('id')) {
+                $this->_error('No data collection id specified');
+                return;
+            }
+            
+            $info = $this->db->pq('SELECT ses.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir FROM datacollection dc INNER JOIN blsession ses ON dc.sessionid = ses.sessionid WHERE datacollectionid=:1', array($this->arg('id')));
+            if (sizeof($info) == 0) {
+                $this->_error('No data for that collection id');
+                return;
+            } else $info = $info[0];
+            
+            $info['VISIT'] = $this->arg('prop') .'-'.$info['VISIT_NUMBER'];
+            
+            $data = str_replace($info['VISIT'], $info['VISIT'].'/.ispyb', $this->ads($info['DIR']).$info['IMP'].'/download/download.zip');
+            if (file_exists($data)) {
+                $this->_header($this->arg('id').'_download.zip');
+                readfile($data);
+            }
         }
 
 

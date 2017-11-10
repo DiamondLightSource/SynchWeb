@@ -106,12 +106,12 @@ define(['marionette', 'views/table',
                 { name: 'AXISRANGE', label: 'Osc', cell: 'string', editable: false },
                 { name: 'EXPOSURETIME', label: 'Exposure', cell: 'string', editable: false },
                 { name: 'TRANSMISSION', label: 'Transmission', cell: 'string', editable: false },
-                { label: 'Spacegroup', cell: APCell, template: '<%=SG%> <br /><%=TYPE%>', editable: false },
-                { label: 'Unit Cell', cell: APCell, template: '<%=CELL.CELL_A%> (<%=CELL.CELL_AL%>)<br /><%=CELL.CELL_B%> (<%=CELL.CELL_BE%>)<br /><%=CELL.CELL_C%> (<%=CELL.CELL_GA%>)', editable: false },
-                { label: 'Resolution', cell: APCell, template: '<%=SHELLS.overall.RLOW%> - <%=SHELLS.overall.RHIGH%><br /><%=SHELLS.innerShell.RLOW%> - <%=SHELLS.innerShell.RHIGH%><br /><%=SHELLS.outerShell.RLOW%> - <%=SHELLS.outerShell.RHIGH%>', editable: false },
-                { label: 'Rmeas', cell: APCell, template: '<span class="<%=CLASS.RMEAS.overall%>"><%=SHELLS.overall.RMEAS%></span><br /><span class="<%=CLASS.RMEAS.innerShell%>"><%=SHELLS.innerShell.RMEAS%></span><br /><span class="<%=CLASS.RMEAS.outerShell%>"><%=SHELLS.outerShell.RMEAS%></span>', editable: false },
-                { label: 'Completeness', cell: APCell, template: '<span class="<%=CLASS.COMPLETENESS.overall%>"><%=SHELLS.overall.COMPLETENESS%></span><br /><span class="<%=CLASS.COMPLETENESS.innerShell%>"><%=SHELLS.innerShell.COMPLETENESS%></span><br /><span class="<%=CLASS.COMPLETENESS.outerShell%>"><%=SHELLS.outerShell.COMPLETENESS%></span>', editable: false },
-                { label: '', cell: APCell, template: '<a href="'+app.apiurl+'/download/id/<%=DCID%>/aid/<%=AID%>" class="button button-notext dll" title="Download MTZ file"><i class="fa fa-download"></i> <span>Download MTZ file</span></a>', editable: false },
+                { label: 'Spacegroup', cell: APCell, template: '<%-SG%> <br /><%-TYPE%>', editable: false },
+                { label: 'Unit Cell', cell: APCell, template: '<%-CELL.CELL_A%> (<%-CELL.CELL_AL%>)<br /><%-CELL.CELL_B%> (<%-CELL.CELL_BE%>)<br /><%-CELL.CELL_C%> (<%-CELL.CELL_GA%>)', editable: false },
+                { label: 'Resolution', cell: APCell, template: '<%-SHELLS.overall.RLOW%> - <%-SHELLS.overall.RHIGH%><br /><%-SHELLS.innerShell.RLOW%> - <%-SHELLS.innerShell.RHIGH%><br /><%-SHELLS.outerShell.RLOW%> - <%-SHELLS.outerShell.RHIGH%>', editable: false },
+                { label: 'Rmeas', cell: APCell, template: '<span class="<%-CLASS.RMEAS.overall%>"><%-SHELLS.overall.RMEAS%></span><br /><span class="<%-CLASS.RMEAS.innerShell%>"><%-SHELLS.innerShell.RMEAS%></span><br /><span class="<%-CLASS.RMEAS.outerShell%>"><%-SHELLS.outerShell.RMEAS%></span>', editable: false },
+                { label: 'Completeness', cell: APCell, template: '<span class="<%-CLASS.COMPLETENESS.overall%>"><%-SHELLS.overall.COMPLETENESS%></span><br /><span class="<%-CLASS.COMPLETENESS.innerShell%>"><%-SHELLS.innerShell.COMPLETENESS%></span><br /><span class="<%-CLASS.COMPLETENESS.outerShell%>"><%-SHELLS.outerShell.COMPLETENESS%></span>', editable: false },
+                { label: '', cell: APCell, template: '<a href="'+app.apiurl+'/download/id/<%-DCID%>/aid/<%-AID%>" class="button button-notext dll" title="Download MTZ file"><i class="fa fa-download"></i> <span>Download MTZ file</span></a>', editable: false },
                 
             ]
             

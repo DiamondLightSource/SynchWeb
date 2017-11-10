@@ -1,4 +1,4 @@
-<h1>Container: <span class="NAME"><%=NAME%></span></h1>
+<h1>Container: <span class="NAME"><%-NAME%></span></h1>
 
 <a name="top"></a>
 <p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
@@ -13,41 +13,41 @@
     <ul>
         <li>
             <span class="label">Shipment</span>
-            <span><a href="/shipments/sid/<%=SHIPPINGID%>"><%=SHIPMENT%></a></span>
+            <span><a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a></span>
         </li>
         
         <li>
             <span class="label">Dewar</span>
-            <span><%=DEWAR%></span>
+            <span><%-DEWAR%></span>
         </li>
         <li>
             <span class="label">Container Type</span>
-            <span><%=CONTAINERTYPE%></span>
+            <span><%-CONTAINERTYPE%></span>
         </li>
         <li>
             <span class="label">Registered Container</span>
-            <span class="CONTAINERREGISTRYID"><%=REGISTRY%></span>
-            <% if (CONTAINERREGISTRYID) { %><a class="crlink" href="/containers/registry/<%=CONTAINERREGISTRYID%>">[View]</a><% } %>
+            <span class="CONTAINERREGISTRYID"><%-REGISTRY%></span>
+            <% if (CONTAINERREGISTRYID) { %><a class="crlink" href="/containers/registry/<%-CONTAINERREGISTRYID%>">[View]</a><% } %>
         </li>
         <li>
             <span class="label">Barcode</span>
-            <span class="BARCODE"><%=BARCODE%></span>
+            <span class="BARCODE"><%-BARCODE%></span>
         </li>
         <% if (EXPERIMENTTYPE) { %>
         <li>
             <span class="label">Experiment Type</span>
-            <span class="EXPERIMENTTYPE"><%=EXPERIMENTTYPE%></span>
+            <span class="EXPERIMENTTYPE"><%-EXPERIMENTTYPE%></span>
         </li>
         <% } %>
         <% if (STORAGETEMPERATURE) { %>
         <li>
             <span class="label">Storage Temperature</span>
-            <span class="STORAGETEMPERATURE"><%=STORAGETEMPERATURE%></span>
+            <span class="STORAGETEMPERATURE"><%-STORAGETEMPERATURE%></span>
         </li>
         <% } %>
         <li>
             <span class="label">Comments</span>
-            <span class="COMMENTS"><%=COMMENTS%></span>
+            <span class="COMMENTS"><%-COMMENTS%></span>
         </li>
 
         <li class="clearfix reorder">

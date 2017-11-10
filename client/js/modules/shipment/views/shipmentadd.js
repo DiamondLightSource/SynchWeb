@@ -23,7 +23,7 @@ define(['marionette', 'views/form',
     */
     var FCode = Marionette.ItemView.extend({
         tagName: 'span',
-        template: _.template('<input type="text" name=FCODES[] value="" placeholder="DLS-XX-000<%=id%>" />')
+        template: _.template('<input type="text" name=FCODES[] value="" placeholder="DLS-XX-000<%-id%>" />')
     })
             
     var FCodes = Marionette.CollectionView.extend({

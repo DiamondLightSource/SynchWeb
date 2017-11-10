@@ -15,7 +15,7 @@ define(['marionette', 'modules/dc/models/rd', 'utils',
       this.model = new RDModel({ id: options.id, aid: options.aid })
       this.model.fetch()
         
-      this.$el.css('opactiy', 0)
+      this.$el.css('opacity', 0)
     },
       
     onRender: function() {
@@ -29,7 +29,7 @@ define(['marionette', 'modules/dc/models/rd', 'utils',
           })
             
           this.plot = $.plot(this.$el.find('.rd_plot'), [this.model.get('data')], options)
-          this.$el.css('opactiy', 1)
+          this.$el.css('opacity', 1)
       }
     },
 

@@ -2,14 +2,12 @@ define(['marionette',
     'modules/dc/collections/autointegrations',
 
     'modules/dc/views/distl',
-    'modules/mc/views/intstatusitem',
     'tpl!templates/mc/datacollection.html',
-    ], function(Marionette, AutoIntegrations, DISTLView, IntegrationStatusItem, dctemplate) {
+    ], function(Marionette, AutoIntegrations, DISTLView, dctemplate) {
 
 
     return Marionette.ItemView.extend({
         template: dctemplate,
-        intStatus: true,
         className: 'dc',
         modelEvents: {
             change: 'setSelected',
@@ -35,7 +33,6 @@ define(['marionette',
             $('.distl', this.$el).height(h*($(window).width() > 800 ? 0.4 : 1.2))
 
             this.plotview = new DISTLView({ selection: true, parent: this.model, el: this.$el.find('.distl') })
-            if (this.getOption('intStatus')) this.intstatus = new IntegrationStatusItem({ ID: this.model.get('ID'), statuses: this.getOption('intstatuses'), el: this.$el })
             this.aps = new AutoIntegrations(null, { id: this.model.get('ID') })
             this.listenTo(this.aps, 'sync', this.setCell, this)
             this.aps.fetch()
@@ -49,8 +46,8 @@ define(['marionette',
             if (this.aps.length) {
                 var e = this.aps.at(0)
                 var c = e.get('CELL')
-                this.ui.cells.html(c['CELL_A']+','+c['CELL_B']+','+c['CELL_C']+','+c['CELL_AL']+','+c['CELL_BE']+','+c['CELL_GA'])
-            } else this.ui.cells.html('N/A')
+                this.ui.cells.text(c['CELL_A']+','+c['CELL_B']+','+c['CELL_C']+','+c['CELL_AL']+','+c['CELL_BE']+','+c['CELL_GA'])
+            } else this.ui.cells.text('N/A')
         },
 
 

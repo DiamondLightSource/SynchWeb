@@ -3,7 +3,7 @@ define(['marionette', 'tpl!templates/assign/selectvisit.html'], function(Marione
     
     var VisitView = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<a href="/assign/visit/<%=VISIT%>"><%=VISIT%></a>: <%=BL%> - <%=ST%>'),
+        template: _.template('<a href="/assign/visit/<%-VISIT%>"><%-VISIT%></a>: <%-BL%> - <%-ST%>'),
         className: function() {
             if (this.model.get('ACTIVE') == 1) return 'active'
         },

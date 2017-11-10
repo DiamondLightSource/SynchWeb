@@ -349,17 +349,17 @@ define(['marionette',
             if (this.ui.ads.hasClass('button-highlight')) {
                 this.ui.ads.removeClass('button-highlight')
                 this.image.setAddSubsample(false)
-                this.ui.ads.find('span').html('Mark Point')
+                this.ui.ads.find('span').text('Mark Point')
                 
             } else {
                 this.ui.ads.addClass('button-highlight')
                 this.image.setAddSubsample(true)
-                this.ui.ads.find('span').html('Finish')
+                this.ui.ads.find('span').text('Finish')
             }
 
             this.ui.adr.removeClass('button-highlight')
             this.image.setAddSubsampleRegion(false)
-            this.ui.adr.find('span').html('Mark Region')
+            this.ui.adr.find('span').text('Mark Region')
         },
 
 
@@ -369,17 +369,17 @@ define(['marionette',
             if (this.ui.adr.hasClass('button-highlight')) {
                 this.ui.adr.removeClass('button-highlight')
                 this.image.setAddSubsampleRegion(false)
-                this.ui.adr.find('span').html('Mark Region')
+                this.ui.adr.find('span').text('Mark Region')
                 
             } else {
                 this.ui.adr.addClass('button-highlight')
                 this.image.setAddSubsampleRegion(true)
-                this.ui.adr.find('span').html('Finish')
+                this.ui.adr.find('span').text('Finish')
             }
 
             this.ui.ads.removeClass('button-highlight')
             this.image.setAddSubsample(false)
-            this.ui.ads.find('span').html('Mark Point')
+            this.ui.ads.find('span').text('Mark Point')
         },
 
 
@@ -610,13 +610,13 @@ define(['marionette',
 
             if (this.model.get('INSPECTIONS') > 0) {
                 var columns = [
-                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%=(RID+1)%>' },
-                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%=(X2 ? "Region" : "Point")%>' },
+                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
+                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
                         { name: 'X', label: 'X', cell: 'string', editable: false },
                         { name: 'Y', label: 'Y', cell: 'string', editable: false },
                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
                         { label: '', cell: table.StatusCell, editable: false },
-                        { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%=BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
+                        { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
                 ]
 
                 if (!this.model.get('CONTAINERQUEUEID')) columns.push({ label: '', cell: ActionCell, editable: false })

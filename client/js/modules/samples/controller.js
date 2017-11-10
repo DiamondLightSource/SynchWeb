@@ -1,30 +1,17 @@
 define(['marionette',
         'modules/samples/views/getsampleview',
-        // 'modules/samples/views/list',
-        // 'modules/samples/views/view',
-    
-        // 'modules/types/gen/samples/views/list',
-
         'models/sample',
         'collections/samples',
-    
-        // 'modules/samples/views/proteinlist',
-        // 'modules/samples/views/proteinview',
-        // 'modules/samples/views/proteinadd',
-
-        // 'modules/types/gen/samples/views/componentlist',
-        // 'modules/types/gen/samples/views/componentadd',
-
         'models/protein',
         'collections/proteins',
+
+        'models/proplookup',
     
 ], function(Marionette, 
   GetView,
-  // SampleList, SampleView, GenSampleList, 
   Sample, Samples, 
-  // ProteinList, ProteinView, AddProteinView, 
-  // GenComponentList, GenComponentAdd,
-  Protein, Proteins) {
+  Protein, Proteins,
+  ProposalLookup) {
     
   var sbc =  { title: 'Samples', url: '/samples' }
   var pbc =  { title: 'Proteins', url: '/proteins' }
@@ -42,14 +29,24 @@ define(['marionette',
     },
       
     view: function(sid) {
-      app.loading()
-        var sample = new Sample({ BLSAMPLEID: sid })
-        sample.fetch({
+        app.loading()
+        var lookup = new ProposalLookup({ field: 'BLSAMPLEID', value: sid })
+        lookup.find({
             success: function() {
-                app.bc.reset([sbc, { title: sample.get('NAME') }])
-                app.content.show(GetView.SampleView.get(app.type, { model: sample }))
-            },
-            
+                var sample = new Sample({ BLSAMPLEID: sid })
+                sample.fetch({
+                    success: function() {
+                        app.bc.reset([sbc, { title: sample.get('NAME') }])
+                        app.content.show(GetView.SampleView.get(app.type, { model: sample }))
+                    },
+                    
+                    error: function() {
+                        app.bc.reset([sbc])
+                        app.message({ title: 'No such sample', message: 'The specified sample could not be found'})
+                    }
+                })
+            }, 
+
             error: function() {
                 app.bc.reset([sbc])
                 app.message({ title: 'No such sample', message: 'The specified sample could not be found'})
@@ -70,17 +67,28 @@ define(['marionette',
     },
       
     proteinview: function(pid) {
-      app.loading()
-        var protein = new Protein({ PROTEINID: pid })
-        protein.fetch({
+        app.loading()
+
+        var lookup = new ProposalLookup({ field: 'PROTEINID', value: pid })
+        lookup.find({
             success: function() {
-                app.bc.reset([pbc, { title: protein.get('NAME') }])
-                app.content.show(GetView.ProteinView.get(app.type, { model: protein }))
+                var protein = new Protein({ PROTEINID: pid })
+                protein.fetch({
+                    success: function() {
+                        app.bc.reset([pbc, { title: protein.get('NAME') }])
+                        app.content.show(GetView.ProteinView.get(app.type, { model: protein }))
+                    },
+                    error: function() {
+                        app.bc.reset([pbc])
+                        app.message({ title: 'No such protein', message: 'The specified protein could not be found'})      
+                    },
+                })
             },
+
             error: function() {
                 app.bc.reset([pbc])
                 app.message({ title: 'No such protein', message: 'The specified protein could not be found'})      
-            },
+            }
         })
     },
       

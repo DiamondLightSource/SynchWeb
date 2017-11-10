@@ -38,6 +38,9 @@ define(['views/form',
 
         // Hack for CAS SSO
         checkExistingSession: function() {
+            app.alert({ message: 'Checking for an existing session' })
+            this.$el.find('form').addClass('loading')
+
             var self = this
             var fr = $('iframe')
             fr.load(function() {
@@ -54,6 +57,7 @@ define(['views/form',
                         }
 
                         if ('error' in response) {
+                            self.$el.find('form').removeClass('loading')
                             self.redirect()
 
                         }
@@ -61,6 +65,7 @@ define(['views/form',
                         // Not valid JSON
                         console.log('catching error')
                         self.redirect()
+                        self.$el.find('form').removeClass('loading')
                     }
                 }
             })

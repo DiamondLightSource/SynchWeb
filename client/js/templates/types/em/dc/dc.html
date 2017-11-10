@@ -1,59 +1,69 @@
-<div class="data_collection" dcid="<%=ID%>" type="data">
+<div class="data_collection" dcid="<%-ID%>" type="data">
     <h1>
-        <a href="#" class="atp button button-notext" ty="dc" iid="<%=DCG%>" name="<%=DIR%><%=FILETEMPLATE%>"><i class="fa fa-book"></i> <span>Add to Project</span></a>
+        <a href="#" class="atp button button-notext" ty="dc" iid="<%-DCG%>" name="<%-DIR%><%-FILETEMPLATE%>"><i class="fa fa-book"></i> <span>Add to Project</span></a>
         <a href="#" class="button button-notext flag <% if (FLAG) { %>button-highlight<% } %>" title="Click to add this data collection to the list of favourite data collections"><i class="fa fa-star-o"></i> <span>Favourite</span></a>
         <% if (DCC > 1) { %>
-            <a href="/dc/visit/<%=VIS_LINK%>/dcg/<%=DCG%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
+            <a href="/dc/visit/<%-VIS_LINK%>/dcg/<%-DCG%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
         <% } else { %>
-            <a href="/dc/visit/<%=VIS_LINK%>/id/<%=ID%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
+            <a href="/dc/visit/<%-VIS_LINK%>/id/<%-ID%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
         <% } %>
         
-        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%=VIS_LINK%>"><%=VIS_LINK%></a>]<% } %> <%=ST%></span><span class="spacer"> - </span><span class="temp"><%=DIR%><%=FILETEMPLATE%></span>
+        <a href="#" class="comments button button-notext" title="Comments"><i class="fa fa-comments"></i> <b class="dcc"><%-DCCC%></b> <span>Comment(s)</span></a>
+
+        <a href="#" class="button attach"><i class="fa fa-file"></i> <%-DCAC%></a>
+
+        <!-- <a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a> -->
+        
+        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%-VIS_LINK%>"><%-VIS_LINK%></a>]<% } %> <%-ST%></span><span class="spacer"> - </span><i class="button fa fa-caret-right expand"></i> <span class="temp"><%-DIR%><%-FILETEMPLATE%></span>
         
     </h1>
 
-    
-    <div class="distl"></div>
-    <div class="snapshots" title="View power spectra for the current data collection">
-        <a href="<%=APIURL%>/image/id/<%=ID%>/f/1" title="Powerspectra"><img dsrc="" alt="Powerspectrum 1" /></a>
-    </div>
-
-    <div class="diffraction" title="Click to view Electron Micrograph">
-        <a href="<%=APIURL%>/image/id/<%=ID%>/f/1/n/4"><img dsrc="" alt="Electron Micrograph" /></a>
-    </div>
-    
-    <div class="links">
-        <a href="/dc/view/id/<%=ID%>"><i class="fa fa-picture-o fa-2x"></i> Images</a> 
-        <a class="sn" href="#snapshots"><i class="fa fa-camera fa-2x"></i> Snapshots</a> 
-        <a class="dl" href="#distl"><i class="fa fa-bar-chart-o fa-2x"></i> Data Plot</a>
-    </div>
+    <div class="image ov image-third"></div>
+    <div class="image mg image-third"></div>
     
     <ul class="clearfix">
-        <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%=BLSAMPLEID%>"><%=SAMPLE%></a></span></li><% } %>
+        <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
         
-        <li>No. Images: <%=NUMIMG%></li>
-        <li>Frame Length: <%=EXPOSURETIME%></li>
-        <li>Voltage: <%=VOLTAGE%>kV</li>
+        <li>Voltage: <%-KV%>kV</li>
 
-        <li>C2 Aperture: <%=C2APERTURE%>&mu;m</li>
-        <li>C2 Lense: <%=C2LENS%></li>
-        <li>Obj Aperture: <%=OBJAPERTURE%>&mu;m</li>
-        <li>Magnification: <%=MAGNIFICATION%>x</li>
+        <li>C1 Lens: <%-C1LENS%>% Aperture: <%-C1APERTURE%>&mu;m</li>
+        <li>C2 Lens: <%-C2LENS%>% Aperture: <%-C2APERTURE%>&mu;m</li>
+        <li>C3 Lens: <%-C3LENS%>% Aperture: <%-C3APERTURE%>&mu;m</li>
 
-        <li>Sample Pixel Size: <%=DETECTORPIXELSIZEHORIZONTAL/MAGNIFICATION%> A/pix</li>
+        <li>Obj Aperture: <%-OBJAPERTURE%>&mu;m</li>
 
-        <li>Total Dose: <%=TOTALDOSE%>e-/A^2</li>
-        <li>Total Exposure: <%=EXPOSURETIME*NUMIMG%>s</li>
+        <li>Magnification: <%-MAGNIFICATION%>x Nominal: <%-NOMINALMAGNIFICATION%>x</li>
+        <li>Nominal Defocus: <%-NOMINALDEFOCUS%>&#197;</li>
+
+        <% if (SLITGAPHORIZONTAL) { %>
+        <li>Energy Filter: <%-SLITGAPHORIZONTAL%></li>
+        <% } %>
+
+        <li>Phase Plate: <%- PHASEPLATE==1 ? 'Yes' : 'No' %></li>
+
+
+        <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
+
+        <li>Detector: <%-DETECTORMANUFACTURER%> <%-DETECTORMODEL%></li>
+        <li>Detector Mode: <%-DETECTORMODE%></li>
+        <li>Sample Pixel Size: <%-PIXELSIZEONIMAGE%>&#197;/pix</li>
+        <li>Binning: <%-BINNING%>pix</li>
+        <li>Image Size: <%-IMAGESIZEX%>x<%-IMAGESIZEY%> pix</li>
         
-        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%=COMMENTS%></span></li>
+
+        <li>No. Movies: <%-NUMIMG%></li>
+        <li>Frames/Movie: <%-NUMBEROFPASSES%></li>
+        <li>Frame Length: <%-EXPOSURETIME/NUMBEROFPASSES%>s</li>
+
+        <li>Total Dose: <%-TOTALDOSE%>e<span class="super">-</span>/&#197;<span class="super">2</span></li>
+        
+        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (!STATE) { %><li>Status: <b>Stopped</b></li><% } %>
     </ul>
 
     <div class="holder">
         <h1 title="Click to show autoprocessing results" class="ap">Auto Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
         <div class="autoproc"></div>
-        <h1 title="Click to show downstream processing results" class="dp">Downstream Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
-        <div class="downstream"></div>
     </div>
     
 </div>

@@ -88,6 +88,9 @@
     # Crystal alignment programs
     $strat_align = array('XOalign', 'dials.align_crystal');
 
+    # Active MQ - Set to empty string to disable
+    $activemq_server = 'tcp://activemq.server.ac.uk';
+    $activemq_rp_queue = '/queue/zocolo.name';
 
     # Paths
     # - These map files to physical locations on disk
@@ -188,6 +191,10 @@
     $vmxi_user = 'vmxi';
     $vmxi_pass = 'pass';
     $uas_url = 'http://path.to.uas';
+
+    # Risk statements
+    $sample_hazard = 'Samples will be handled following the beamline risk assessment';
+    $exp_hazard = 'VMXi will be operated following the beamline risk assessment';
     
   
     # Proposal codes to list
@@ -222,6 +229,8 @@
     # - Defines what type of system the beamline parameters use
     #   For future implementation of Tango, currently only support EPICS
     $bl_pv_type = 'EPICS';
+    $bl_pv_prog = '/path/to/caget';
+    $bl_pv_env = 'EPICS_CA_ADDR_LIST=123.45.678.9';
 
     # PVs for beamline status
     # - These are displayed on an active visit so remote users can see beamline status

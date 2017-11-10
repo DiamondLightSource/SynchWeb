@@ -23,7 +23,7 @@ define(['marionette', 'views/table', 'views/filter',
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: _.template('<h1><%=title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal</p><div class="ra"><a class="button" href="/proteins/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
+    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal</p><div class="ra"><a class="button" href="/proteins/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper', type: '.type' },
     
     title: 'Protein',

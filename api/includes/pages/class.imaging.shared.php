@@ -150,9 +150,10 @@
         // Functions for formulatrix
         // Return plate info from barcode
         function _get_plate_info($args) {
+            global $exp_hazard, $sample_hazard;
             if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
 
-            $cont = $this->db->pq("SELECT pe.emailaddress, pe.givenname, pe.familyname, pe.login, c.sessionid, s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop, i.temperature, c.containerid, HEX(p.externalid) as externalid, p.proposalid, HEX(pe.externalid) as pexternalid
+            $cont = $this->db->pq("SELECT pe.emailaddress, pe.givenname, pe.familyname, pe.login, c.sessionid, s.shippingname as shipment, c.imagerid, i.serial, c.containertype, TO_CHAR(c.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, d.code as dewar, CONCAT(p.proposalcode, p.proposalnumber) as prop, i.temperature, c.containerid, HEX(p.externalid) as externalid, p.proposalid, HEX(pe.externalid) as pexternalid, c.barcode
                 FROM container c
                 LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -167,6 +168,10 @@
             if (array_key_exists('SERIAL', $args)) {
                 if ($args['SERIAL'] != $cont['SERIAL']) $this->_set_imager(array('BARCODE' => $args['BARCODE'], 'SERIAL' => $args['SERIAL']));
             }
+
+            // Update barcode with correct casing
+            if ($args['BARCODE'] != $cont['BARCODE']) $this->_update_barcode(array('BARCODE' => $args['BARCODE']));
+
 
             // No sessionid, need to create a visit using UAS REST API
             // make sure PEXTERNALID is not null
@@ -184,11 +189,17 @@
 
                 $data = array(
                     'proposalId' => strtoupper($cont['EXTERNALID']),
-                    'sampleIds' => array_unique($samples),
+                    'sampleIds' => array_values(array_unique($samples)),
                     'startAt' => date('Y-m-d\TH:i:s.000\Z'),
                     // 'startAt': "2012-04-23T18:25:43.511Z",
                     'facility' => 'I02-2',
                     'investigators' => array(array('personId' => strtoupper($cont['PEXTERNALID']), 'role' => 'TEAM_LEADER' )),
+                    'experimentalMethods' => array(array(
+                        'state' => 'Submitted', 
+                        'experimentHazard' => array('description' => $exp_hazard),
+                        'preparationHazard' => array('description' => $sample_hazard)
+                    )),
+                    'eraState' => 'Submitted'
                 );
 
                 require_once(dirname(__FILE__).'/../class.uas.php');
@@ -276,6 +287,13 @@
             $imager = $imager[0];
 
             $this->db->pq("UPDATE container SET imagerid=:1,containerstatus='in_storage' WHERE barcode=:2", array($imager['IMAGERID'], $args['BARCODE']));
+        }
+
+
+        // Update barcode
+        function _update_barcode($args) {
+            if (!array_key_exists('BARCODE', $args)) $this->error('No barcode specified');
+            $this->db->pq("UPDATE container SET barcode=:1 WHERE barcode=:2", array($args['BARCODE'], $args['BARCODE']));
         }
 
 

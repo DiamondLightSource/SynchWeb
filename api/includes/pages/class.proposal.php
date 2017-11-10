@@ -29,6 +29,15 @@
                               'current' => '\d',
 
                               'COMMENTS' => '(\w|\s|-)+',
+
+
+                              'BLSAMPLEID' => '\d+',
+                              'PROTEINID' => '\d+',
+                              'CONTAINERID' => '\d+',
+                              'DEWARID' => '\d+',
+                              'SHIPPINGID' => '\d+',
+                              'LABCONTACTID' => '\d+',
+                              'DATACOLLECTIONID' => '\d+',
                                );
         
 
@@ -37,6 +46,7 @@
                                         array('/visits/:visit', 'patch', '_update_visit'),
                                         array('/bls/:ty', 'get', '_get_beamlines'),
                                         array('/type', 'get', '_get_types'),
+                                        array('/lookup', 'post', '_lookup'),
                              );
         
         
@@ -56,7 +66,7 @@
         function _get_types() {
             global $bl_types;
 
-            $bls = implode("', '", $bl_types[$this->ptype->ty]);
+            $bls = implode("', '", $bl_types[$this->ty]);
             $rows = $this->db->pq("SELECT distinct p.proposalcode 
                 FROM proposal p
                 INNER JOIN blsession s ON s.proposalid = p.proposalid
@@ -78,7 +88,7 @@
                 $where .= " AND CONCAT(p.proposalcode,p.proposalnumber) LIKE :".(sizeof($args)+1);
                 array_push($args, $id);
             }
-            
+
             if ($this->staff) {
                 if (!$this->user->has('super_admin')) {
                     $bls = array();
@@ -93,12 +103,9 @@
                     $where .= " AND s.beamlinename in ('".implode("','", $bls)."')";
                 }
             } else {
-                #$where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
                 $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid  ".$where;
                 $where .= " AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
-                
-                #$where .= " AND s.sessionid in ('".implode("','", $this->sessionids)."')";
             }
             
             if ($this->has_arg('s')) {
@@ -192,9 +199,9 @@
                 return;
             }
             
-            if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
+            // if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
             
-            if ($this->has_arg('all') && $this->staff) {
+            if ($this->has_arg('all')) {
                 $args = array();
                 $where = 'WHERE 1=1';
                 
@@ -264,7 +271,6 @@
             
             
             if (!$this->staff) {
-                // $where = " INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode || p.proposalnumber || '-' || s.visit_number INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id inner join user_@DICAT_RO u on u.id = iu.user_id ".$where." AND u.name=:".(sizeof($args)+1);
                 $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid ".$where;
                 $where .= " AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
@@ -351,9 +357,9 @@
             global $bl_types;
             unset($this->args['current']);
 
-            if (!array_key_exists($this->ptype->ty, $bl_types)) $this->_error('No such proposal type');
+            if (!array_key_exists($this->ty, $bl_types)) $this->_error('No such proposal type');
 
-            $beamlines = $bl_types[$this->ptype->ty];
+            $beamlines = $bl_types[$this->ty];
 
             $this->args['per_page'] = 1;
             $this->args['page'] = 1;
@@ -401,6 +407,85 @@
                     $this->_output(array($f => $this->arg($f)));
                 }
             }
+        }
+
+
+
+
+        function _lookup() {
+            global $bl_types;
+
+            $fields = array(
+                'BLSAMPLEID' => 's.blsampleid',
+                'PROTEINID' => 'pr.proteinid',
+                'CONTAINERID' => 'c.containerid',
+                'DEWARID' => 'd.dewarid',
+                'SHIPPINGID' => 'sh.shippingid',
+                'LABCONTACTID' => 'lc.labcontactid',
+                'DATACOLLECTIONID' => 'dc.datacollectionid',
+            );
+
+            $field = null;
+            foreach ($fields as $f => $v) {
+                if ($this->has_arg($f)) {
+                    $field = $f;
+                    break;
+                }
+            }
+
+            if (!$field) $this->_error('No id specified');
+
+            $where = "WHERE 1=1";
+            $args = array();
+
+
+            if ($this->staff) {
+                if (!$this->user->has('super_admin')) {
+                    $bls = array();
+                    foreach ($this->user->perms as $p) {
+                        if (strpos($p, '_admin')) {
+                            $parts = explode('_', $p);
+                            $ty = $parts[0];
+                            if (array_key_exists($ty, $bl_types)) $bls = array_merge($bls, $bl_types[$ty]);
+                        }
+                    }
+
+                    $where .= " AND ses.beamlinename in ('".implode("','", $bls)."')";
+                }
+            } else {
+                $where = " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid  ".$where;
+                $where .= " AND shp.personid=:".(sizeof($args)+1);
+                array_push($args, $this->user->personid);
+            }
+
+            $where .= ' AND '.$fields[$field].'=:'.(sizeof($args)+1);
+            array_push($args, $this->arg($field));
+
+            // $this->db->set_debug(True);
+            $rows = $this->db->pq("SELECT distinct CONCAT(p.proposalcode, p.proposalnumber) as prop
+                FROM proposal p
+                LEFT OUTER JOIN blsession ses ON ses.proposalid = p.proposalid
+                LEFT OUTER JOIN datacollection dc ON dc.sessionid = ses.sessionid
+
+                LEFT OUTER JOIN protein pr ON pr.proposalid = p.proposalid
+                LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
+                LEFT OUTER JOIN blsample s ON s.crystalid = cr.crystalid
+
+                LEFT OUTER JOIN shipping sh ON sh.proposalid = p.proposalid
+                LEFT OUTER JOIN dewar d ON d.shippingid = sh.shippingid
+                LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
+
+                LEFT OUTER JOIN labcontact lc ON lc.proposalid = p.proposalid
+                $where
+            ", $args);
+
+
+            if (sizeof($rows)) {
+                $this->_output($rows[0]);
+            } else {
+                $this->_error('No such proposal');
+            }
+
         }
 
     

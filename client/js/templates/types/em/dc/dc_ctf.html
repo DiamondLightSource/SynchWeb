@@ -1,0 +1,30 @@
+<h2>CTF Correction</h2>
+
+<p class="ra">
+    <a class="dll button" href="<%-APIURL%>/download/id/<%-DATACOLLECTIONID%>/aid/<%-AUTOPROCPROGRAMID%>"><i class="fa fa-download"></i> Output</a>
+        <a class="view button logf" href="<%-APIURL%>/download/id/<%-DATACOLLECTIONID%>/aid/<%-AUTOPROCPROGRAMID%>/log/1"><i class="fa fa-search"></i> Log file</a>
+</p>
+
+<div class="data_collection" type="data">
+
+    <div class="diffraction fft" title="Click to view FFT">
+        <a href="<%-APIURL%>/em/ctf/image/<%-DATACOLLECTIONID%>/n/<%-IMAGENUMBER%>" title="FFT Theoretical"><img dsrc="" alt="FFT Theoretical" /></a>
+    </div>
+
+    <ul class="clearfix">
+        <li>Movie Number: <%-IMAGENUMBER%></li>
+        <li>Boxsize: <%-BOXSIZEX%>x<%-BOXSIZEY%>&micro;m</li>
+        <li>Resolution: <%-MINRESOLUTION%> - <%-MAXRESOLUTION%>&#197;</li>
+        <li>Defocus: <%-MINDEFOCUS%> - <%-MINDEFOCUS%>&#197;</li>
+        <li>Defocus Step Size: <%-DEFOCUSSTEPSIZE%>&#197;</li>
+        <li>Astigmatism: <%-ASTIGMATISM%>&#197;</li>
+        <li>Astigmatism Angle: <%-ASTIGMATISMANGLE%>&deg;</li>
+        <li>Estimated Resolution: <%-ESTIMATEDRESOLUTION%>&#197;</li>
+        <li>Estimated Defocus: <%-ESTIMATEDDEFOCUS%>&#197;</li>
+        <li>Amplitude Contrast: <%-AMPLITUDECONTRAST%></li>
+        <li>CC Value: <%-CCVALUE%></li>
+        
+        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
+    </ul>
+
+</div>

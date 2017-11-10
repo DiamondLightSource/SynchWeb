@@ -10,7 +10,7 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
     
     
     var EventItemView = Marionette.ItemView.extend({
-        template: _.template('<%=BL%>: <a href="/dc/visit/<%=VISIT%>"><%=VISIT%></a> (<%=LEN%>h)<% if(LC) { %><br />&nbsp; - <%=LC%><% } %><%if(SESSIONTYPE) { %><br />[<%=SESSIONTYPE%>]<% } %>'),
+        template: _.template('<%-BL%>: <a href="/dc/visit/<%-VISIT%>"><%-VISIT%></a> (<%-LEN%>h)<% if(LC) { %><br />&nbsp; - <%-LC%><% } %><%if(SESSIONTYPE) { %><br />[<%-SESSIONTYPE%>]<% } %>'),
         tagName: 'li',
         
         className: function() {
@@ -24,7 +24,7 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
     
     
     var EventHourView = Marionette.CompositeView.extend({
-        template: _.template('<% if (hour < 10) {%>0<% } %><%=hour%>:00 <ul></ul>'),
+        template: _.template('<% if (hour < 10) {%>0<% } %><%-hour%>:00 <ul></ul>'),
         tagName: 'li',
         
         childView: EventItemView,
@@ -69,9 +69,9 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
         
         getTemplate: function() {
             if (this.model.get('type') == 'head') {
-                return _.template('<%=dayNames[day]%>')
+                return _.template('<%-dayNames[day]%>')
             } else if (this.model.get('type') == 'day') {
-                return _.template('<span class="full"><%=dayNames[date.getDay()]%></span> <%=date.getDate()%> <span class="full"><%=monthNames[date.getMonth()]%></span><ul></ul>')
+                return _.template('<span class="full"><%-dayNames[date.getDay()]%></span> <%-date.getDate()%> <span class="full"><%-monthNames[date.getMonth()]%></span><ul></ul>')
             } else {
                 return _.template('&nbsp')
             }
@@ -117,7 +117,7 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
             this.trigger('gotoDay', this.model.get('date').getDate())
         },
 
-        template: _.template('<span class="day"><%=dayNames[date.getDay()].substr(0,3)%></span><span class="number"><%=date.getDate()%></span>'),
+        template: _.template('<span class="day"><%-dayNames[date.getDay()].substr(0,3)%></span><span class="number"><%-date.getDate()%></span>'),
 
         
         className: function() {
@@ -339,12 +339,12 @@ define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/
         
         generateLinks: function() {
             console.log(this.month, this.year)
-            this.ui.mnext.html(Months[(this.month+1)%12])
+            this.ui.mnext.text(Months[(this.month+1)%12])
             // javascript modulus doesnt work for negative numbers :(
-            this.ui.mprev.html(Months[((this.month-1%12)+12)%12])
-            this.ui.yprev.html(this.year-1)
-            this.ui.ynext.html(this.year+1)
-            this.ui.title.html(Months[this.month]+' '+this.year)
+            this.ui.mprev.text(Months[((this.month-1%12)+12)%12])
+            this.ui.yprev.text(this.year-1)
+            this.ui.ynext.text(this.year+1)
+            this.ui.title.text(Months[this.month]+' '+this.year)
         },
         
         

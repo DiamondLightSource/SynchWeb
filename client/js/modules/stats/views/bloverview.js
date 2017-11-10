@@ -88,8 +88,8 @@ define(['marionette',
 
         selectFirst: function() {
             if (this.collection.length) {
-                var m = this.collection.at(0)
-                m.trigger("backgrid:select", m, true)
+                var m = this.collection.filter(function(m) { return m.get('REM') != null })
+                if (m.length) m[0].trigger("backgrid:select", m[0], true)
             }
         },
 
@@ -146,7 +146,7 @@ define(['marionette',
                         ty: t
                     }}).done(function() {
                         var his = h.get('histograms')
-                        his[0].label = m.get('RUN')+': '+his[0].label
+                        if (his.length) his[0].label = m.get('RUN')+': '+his[0].label
                         h.set('histograms', his)
                         self.hists[i].add(h)
                     })

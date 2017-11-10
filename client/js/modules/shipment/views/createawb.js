@@ -60,7 +60,7 @@ define(['marionette',
 
     var DewarView = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<label><input type="checkbox" /> <% if (FACILITYCODE) { %><%=FACILITYCODE%><% } else { %><%=CODE%><% } %></label>'),
+        template: _.template('<label><input type="checkbox" /> <% if (FACILITYCODE) { %><%-FACILITYCODE%><% } else { %><%-CODE%><% } %></label>'),
         events: {
             'click @ui.sel': 'select',
         },
@@ -83,7 +83,7 @@ define(['marionette',
 
     var RadioCell = Backgrid.Cell.extend({
         render: function() {
-            this.$el.html('<input type="radio" name="value" value="'+this.model.get('productcode')+'" />')
+            this.$el.html('<input type="radio" name="value" value="'+this.model.escape('productcode')+'" />')
             return this
         }
     })
@@ -110,6 +110,8 @@ define(['marionette',
             submit: 'button[name=submit]',
             quote: 'button[name=quote]',
             qwrap: '.qwrap',
+            terms: '.terms',
+            termsq: '.terms-quote',
         },
 
         events: {
@@ -140,8 +142,11 @@ define(['marionette',
                     this.ui.facc.hide()
                     this.ui.quote.hide()
                     this.ui.submit.show()
+                    this.ui.termsq.hide()
+                    this.ui.terms.show()
                 } else {
                     this.ui.facc.show()
+
                 }
             } else {
                 this.ui.facc.hide()                
@@ -247,6 +252,7 @@ define(['marionette',
             this.ui.facc.hide()
             this.ui.submit.hide()
             this.ui.qwrap.hide()
+            this.ui.terms.hide()
 
             if (app.options.get('facility_courier_countries').length) this.ui.free.text('[Free For: '+app.options.get('facility_courier_countries').join(', ')+']')
             this.ui.DESCRIPTION.val(app.options.get('package_description'))

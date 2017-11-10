@@ -20,7 +20,8 @@ define(['marionette', 'backgrid',
             events: {
                 'click': 'onClick',
             },
-            onClick: function() {
+            onClick: function(e) {
+                if ($(e.target).is('input[type=checkbox]')) return
                 this.model.trigger('backgrid:select', this.model, !this.$el.find('input[type=checkbox]').is(':checked'))
             },
         }),

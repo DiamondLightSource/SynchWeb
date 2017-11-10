@@ -5,7 +5,7 @@ define(['marionette',
     
     var LogEntry = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<%=LINE%>'),
+        template: _.template('<%-LINE%>'),
         
         modelEvents: {
             'change': 'render',

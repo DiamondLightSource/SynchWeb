@@ -1,5 +1,5 @@
 <% if (DCCOUNT > 0) { %>
-<a class="button button-notext" title="View Statistics" href="/stats/visit/<%=VISIT%>"><i class="fa fa-pie-chart"></i> <span>View Statistics</span></a>
-<a class="button button-notext dll" title="Download PDF Report" href="<%=APIURL%>/pdf/report/visit/<%=VISIT%>"><i class="fa fa-list"></i> <span>Download Report</span></a>
-<a class="button button-notext dll" title="Export Data Collections to CSV" href="<%=APIURL%>/download/csv/visit/<%=VISIT%>"><i class="fa fa-file-o"></i> <span>Download CSV</span></a>
+<a class="button button-notext" title="View Statistics" href="/stats/visit/<%-VISIT%>"><i class="fa fa-pie-chart"></i> <span>View Statistics</span></a>
+<a class="button button-notext dll" title="Download PDF Report" href="<%-APIURL%>/pdf/report/visit/<%-VISIT%>"><i class="fa fa-list"></i> <span>Download Report</span></a>
+<a class="button button-notext dll" title="Export Data Collections to CSV" href="<%-APIURL%>/download/csv/visit/<%-VISIT%>"><i class="fa fa-file-o"></i> <span>Download CSV</span></a>
 <% } %>

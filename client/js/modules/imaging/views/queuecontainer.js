@@ -130,7 +130,7 @@ define(['marionette',
             this.$el.empty()
             var name = this.column.get('type').getName(this.model.get('LOCATION'))
             var drop = this.column.get('type').getDrop(this.model.get('LOCATION'))
-            this.$el.html(name+'d'+drop)
+            this.$el.text(name+'d'+drop)
             
             this.delegateEvents()
             return this
@@ -249,6 +249,13 @@ define(['marionette',
             })
 
             this.plan.set(this.model.toJSON())
+            this.listenTo(this.plan, 'computed:changed', this.updateComputed)
+        },
+
+        updateComputed: function() {
+            _.each(this.plan.computed(), function(k) {
+                this.$el.find('[name='+k+']').val(this.plan.get(k)).trigger('change')
+            }, this)
         },
 
         render: function(e) {
@@ -269,6 +276,7 @@ define(['marionette',
             this.bindModel()
             // this.preSave()
             this.model.set('_valid', this.plan.isValid(true))
+            this.updateComputed()
 
             return this
         },
@@ -380,6 +388,7 @@ define(['marionette',
             'click button.submit': 'queueContainer',
             'click a.apply': 'applyPreset',
             'click a.unqueue': 'unqueueContainer',
+            'click a.addall': 'queueAllSamples',
         },
 
         ui: {
@@ -387,6 +396,29 @@ define(['marionette',
             rpreset: '.rpreset',
             xtal: '.xtalpreview',
         },
+
+
+        queueAllSamples: function() {
+            var reqs = []
+            this.subsamples.each(function(s,i) {
+                setTimeout(function() {
+                    reqs.push(Backbone.ajax({
+                        url: app.apiurl+'/sample/sub/queue/'+s.get('BLSUBSAMPLEID'),
+                        success: function(resp) {
+                            s.set('READYFORQUEUE', '1')
+                        },
+                    }))
+                }, 200)
+            }, this)
+
+            var self = this
+            $.when.apply($, reqs).done(function() {
+                setTimeout(function() {
+                    self.subsamples.fetch()
+                }, 200)
+            })
+        },
+
 
         unqueueContainer: function(e) {
             e.preventDefault()
@@ -562,11 +594,11 @@ define(['marionette',
         
         
         onRender: function() {
-            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%=(RID+1)%>' },
+            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
                            { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
                            { name: 'PROTEIN', label: 'Protein', cell: 'string', editable: false },
                            { label: 'Location', cell: LocationCell, editable: false, type: this.type },
-                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%=(X2 ? "Region" : "Point")%>' },
+                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
                            { label: '', cell: AddCell, editable: false, disable: this.model.get('CONTAINERQUEUEID') },
             ]
 
@@ -586,10 +618,10 @@ define(['marionette',
 
             this.asmps.show(this.table)
 
-            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%=(RID+1)%>' },
+            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
                            { label: '', cell: 'select-row', headerCell: 'select-all', editable: false },
                            { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
-                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%=(X2 ? "Region" : "Point")%>' },
+                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
                            { label: 'Experiment', cell: ExperimentKindCell, editable: false },
                            { label: 'Parameters', cell: ExperimentCell, editable: false },
                            { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
@@ -611,7 +643,7 @@ define(['marionette',
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
                 columns.push({ label: '', cell: table.StatusCell, editable: false })
-                columns.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%=BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
+                columns.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
             }
 
             this.table2 = new TableView({ 

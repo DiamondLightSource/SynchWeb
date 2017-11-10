@@ -1,6 +1,6 @@
 define([
         'modules/dc/dclist',
-        'modules/types/gen/dc/collections/imagestatuses',
+        'modules/dc/collections/imagestatuses',
         'modules/types/gen/dc/dc',
         ],
 function(DCList, DCImageStatusCollection, DCItemView) {

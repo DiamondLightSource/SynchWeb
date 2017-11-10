@@ -24,13 +24,14 @@
             'BOXSIZEX' => '\d+',
             'BOXSIZEY' => '\d+',
             'NUMBEROFIMAGES' => '\d+',
-            'AXISSTART' => '\d+(.\d+)?',
+            'AXISSTART' => '-?\d+(.\d+)?',
             'AXISRANGE' => '\d+(.\d+)?',
             'TRANSMISSION' => '\d+(.\d+)?',
             'ENERGY' => '\d+(.\d+)?',
             'MONOCHROMATOR' => '\w+',
             'MONOBANDWIDTH' => '\d+(.\d+)?',
             'COMMENTS' => '.*',
+            'PLANORDER' => '\d+',
 
 
             // Detector
@@ -255,7 +256,7 @@
                 'm.scanparametersmodelid DESC'
             );
 
-            $rows = $this->db->paginate("SELECT m.scanparametersmodelid,sv.name as scanparametersservice, m.scanparametersserviceid, m.datacollectionplanid, s.blsampleid, c.containerid, m.sequencenumber, m.start, m.stop, m.step
+            $rows = $this->db->paginate("SELECT m.scanparametersmodelid,sv.name as scanparametersservice, m.scanparametersserviceid, m.datacollectionplanid, s.blsampleid, c.containerid, m.sequencenumber, m.start, m.stop, m.step, m.array
                 FROM scanparametersmodel m
                 INNER JOIN scanparametersservice sv ON sv.scanparametersserviceid = m.scanparametersserviceid
                 INNER JOIN blsample_has_datacollectionplan shdp ON shdp.datacollectionplanid = m.datacollectionplanid
@@ -524,7 +525,7 @@
             );
 
 
-            $rows = $this->db->paginate("SELECT dp.diffractionplanid, dp.comments, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 2) as exposuretime, ROUND(dp.requiredresolution, 2) as requiredresolution, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy as energy, dp.monochromator, dp.monobandwidth, s.blsampleid, s.name as sample, p.proteinid, p.acronym as protein
+            $rows = $this->db->paginate("SELECT dp.diffractionplanid, dp.comments, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 2) as exposuretime, ROUND(dp.requiredresolution, 2) as requiredresolution, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy as energy, dp.monochromator, dp.monobandwidth, s.blsampleid, s.name as sample, p.proteinid, p.acronym as protein, hp.planorder
               FROM diffractionplan dp
               INNER JOIN blsample_has_datacollectionplan hp ON hp.datacollectionplanid = dp.diffractionplanid
               INNER JOIN blsample s ON s.blsampleid = hp.blsampleid
@@ -564,8 +565,10 @@
             $this->db->pq("INSERT INTO diffractionplan (comments, experimentkind, requiredresolution, preferredbeamsizex, preferredbeamsizey, exposuretime, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy, monochromator, monobandwidth)
               VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15)", $args);
 
+            $order = $this->has_arg('PLANORDER') ? $this->arg('PLANORDER') : 1;
+
             $dpid = $this->db->id();
-            $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid) VALUES (:1,:2)", array($this->arg('BLSAMPLEID'), $dpid));
+            $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid, planorder) VALUES (:1,:2, :3)", array($this->arg('BLSAMPLEID'), $dpid, $order));
 
             $this->_output(array('DIFFRACTIONPLANID' => $dpid));
         }
@@ -589,6 +592,13 @@
                     $this->_output(array($f => $this->arg($f)));
                 }
             }
+
+            foreach (array('PLANORDER') as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE blsample_has_datacollectionplan SET $f=:1 WHERE datacollectionplanid=:2", array($this->arg($f), $this->has_arg('DIFFRACTIONPLANID')));
+                    $this->_output(array($f => $this->arg($f)));
+                }   
+            }
         }
 
 
@@ -608,7 +618,7 @@
             $this->db->pq("DELETE FROM scanparametersmodel WHERE datacollectionplanid=:1", array($this->arg('DIFFRACTIONPLANID')));
             $this->db->pq("DELETE FROM diffractionplan WHERE diffractionplanid=:1", array($this->arg('DIFFRACTIONPLANID')));
 
-            $this->_output(new stdClass);            
+            $this->_output(new stdClass);
         }        
 
 

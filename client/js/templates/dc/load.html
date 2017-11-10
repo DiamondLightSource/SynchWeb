@@ -1,9 +1,21 @@
-<div class="data_collection" dcid="<%=ID%>" type="robot">
-    <h1><%=ST%> - Robot <% print(IMP.toLowerCase()) %>ing puck <%= EXPOSURETIME %> pin <%=RESOLUTION%> (Barcode: <%=DIR%>) Status: <%=SPOS%> - <%=SAN%> (Took <%=BSX%>s) <% if (BLSAMPLEID) { %>
-    	<span class="wrap">Sample: <a href="/samples/sid/<%=BLSAMPLEID%>"><%=SAMPLE%></a></span>
-		<% if (FILETEMPLATE && DIR != 'null' && FILETEMPLATE != DIR) { %>
-			<p class="message alert">Barcode Mismatch - Sample: <%=FILETEMPLATE%> Read: <%=DIR%></p>
-		<% } %>
-    <% } %>
-    </h1>
+<div class="data_collection clearfix" dcid="<%-ID%>" type="robot">
+	<div class="snapshots">
+        <a href="<%-APIURL%>/image/ai/visit/<%-VIS_LINK%>/aid/<%-ID%>/f/1" title="Crystal After Before"><img class="lazy" data-src="<%-APIURL%>/image/ai/visit/<%-VIS_LINK%>/aid/<%-ID%>" alt="Crystal After Before" /></a>
+    </div>
+
+    <h1><%-ST%> - Robot <% print(IMP.toLowerCase()) %></h1>
+
+    <% if (FILETEMPLATE && DIR != 'null' && FILETEMPLATE != DIR && DIR != 'NR') { %>
+		<p class="message alert">Barcode Mismatch - Sample: <%-FILETEMPLATE%> Read: <%-DIR%></p>
+	<% } %>
+
+    <ul class="clearfix half">
+        <% if (BLSAMPLEID) { %>
+        	<li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li>
+        <% } %>
+        <li>Took: <%-BSX%>s</li>
+        <li>Barcode: <%-DIR%></li>
+        <li>Puck: <%- EXPOSURETIME %> Pin: <%-RESOLUTION%></li>
+        <li class="comment">Status: <%-SPOS%> - <%-SAN%></li>
+    </ul>
 </div>

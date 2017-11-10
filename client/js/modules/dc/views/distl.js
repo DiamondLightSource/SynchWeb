@@ -33,8 +33,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
       initialize: function(options) {
           var pm = options.parent
                                                
-          var timestamp = utils._date_to_unix(pm.get('ST'))
-          this.model = new DCDISTLModel({ id: pm.get('ID'), nimg: pm.get('NUMIMG'), timestamp: timestamp})
+          this.model = new DCDISTLModel({ id: pm.get('ID'), nimg: pm.get('NUMIMG'), pm: pm })
           this.model.fetch()
           this.$el.css('opacity', 0)
           //this.listenTo(app, 'window:scroll', this.lazyLoad, this)

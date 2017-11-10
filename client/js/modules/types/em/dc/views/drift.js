@@ -1,26 +1,20 @@
-define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
+define(['marionette', 
+        'modules/types/em/models/drift',
+        'utils',
         'jquery',
         'jquery.flot',
         'jquery.flot.resize',
         'jquery.flot.selection',
-], function(Marionette, DatModel, utils, $) {
-       
-  var DriftModel = DatModel.extend({
-    urlRoot: '/dc/drift'
-  })
+], function(Marionette, DriftModel, utils, $) {
 
   // Drift Plot
   return Marionette.ItemView.extend({
       template: false,
-      model: DriftModel,
       modelEvents: { 'change': 'render' },
                                                
       initialize: function(options) {
-          var pm = options.parent
-                                               
-          var timestamp = utils._date_to_unix(pm.get('ST'))
-          this.model = new DriftModel({ id: pm.get('ID'), timestamp: timestamp})
-          this.model.fetch()
+          this.model = new DriftModel({ id: options.id })
+          this.model.fetch({ data: { IMAGENUMBER: this.getOption('imagenumber') }})
           this.$el.css('opacity', 0)
       },
       
@@ -50,7 +44,7 @@ define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
                   
               var d = [{ data: this.model.get('data'), label: 'Drift' }]
                   
-
+              console.log('drift', d)
               this.plot = $.plot(this.$el, d, options)
               this.$el.css('opacity', 1)
           }

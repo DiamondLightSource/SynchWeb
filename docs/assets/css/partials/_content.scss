@@ -1,0 +1,460 @@
+section {
+    padding-top: 1%;
+    padding-bottom: 2%;
+
+    h1 {
+        font-family: $content-header-font;
+        font-size: $content-header-size;
+        text-align: center;
+        margin-top: 2%;
+        /*margin-bottom: 3%;*/
+    }
+
+    a {
+        text-decoration: none
+    }
+
+    .super {
+        position: relative; 
+        top: -0.5em; 
+        font-size: 70%;
+    }
+
+    ul {
+        @include clearfix;
+        padding: 5% 5% 0 5%;
+    }
+
+    ul li {
+        text-align: center;
+        display: inline-block;
+        float: left;
+        @include cols(3);
+        padding-bottom: 5%;
+        min-height: 25%;
+
+        @media (max-width: $breakpoint-small) {
+            @include cols(1);
+        }
+
+        h2 {
+            font-size: 18px;
+            margin: 10px;
+        }
+
+        p {
+            font-size: 16px;
+        }
+
+        a {
+            padding: 25px;
+            display: block;
+            text-decoration: none;
+            border-radius: 15px;
+            transition: 0.3s ease-in-out;
+
+            &:hover {
+                background: #fff;
+            }
+        }
+        
+    }
+
+    ul.list {
+        list-style: square;
+        li {
+            float: none;
+            width: auto;
+            min-height: auto;
+        }
+    }
+
+    .gtop {
+        margin-top: 10px;
+        display: inline-block;
+        border-radius: 3px;
+        padding: 5px 10px;
+        text-decoration: none;
+        background: #fff;
+        transition: 0.3s ease-in-out;
+
+        &:hover {
+            color: #000;
+            padding: 0 10px 10px 10px;
+        }
+    }
+}
+
+section.intro {
+    padding-top: 0;
+    background: $content-background;
+
+    .download, .title {
+        padding: 5% 5% 10% 5%;
+    }
+
+    .download {
+        text-align: center;
+        margin-top: 35%;
+        padding-bottom: 15px;
+
+        @media (max-width: $breakpoint-small) {
+            margin-top:0;
+        }
+    }
+
+    .links {
+        text-align: center;
+        @media (max-width: $breakpoint-small) {
+            margin-bottom: 10px;
+        }
+    }
+
+    .title {
+        @media (max-width: $breakpoint-small) {
+            padding-bottom: 0;
+        }
+
+        .title-wrap {
+            background: inline-image('ispyb_gs_medium.png') left top no-repeat;
+            background-size: 30%;
+            padding-left: 30%;
+            padding-top: 22%;
+            position: relative;
+        }
+
+        h1 {
+            position: absolute;
+            top: calc(50% - 35px);
+            width: 62%;
+            text-align: center;
+            font-family: $page-header-font;
+            font-size: $page-header-size;
+            color: $content-log-title-color;
+            filter: drop-shadow(2px 2px 2px #aaa);
+        }
+
+        p {
+            padding-top: 5px;
+            font-family: $page-header-font;
+            font-size: 18px;
+            text-align: center;
+        }
+    }
+
+    img {
+        width: 100%;
+
+        &.snapshot {
+            box-shadow: 5px 5px 5px #ddd;
+            border-radius: 10px;
+        }
+    }
+
+    .top {
+        background: $sidebar-grad-start;
+        @include background(linear-gradient(top, darken($sidebar-grad-end,25%), darken($sidebar-grad-start, 5%)));
+        background-size: 100% 60%;
+        background-repeat: no-repeat;
+        box-shadow: 3px 3px 3px #ddd;
+    }
+}
+
+.blurb {
+    p {
+        font-size: 18px;
+        padding: 2% 5%;
+        text-align: justify;
+        text-align-last: center;
+
+        &.center {
+            text-align: center;
+        }
+    }
+}
+
+section.alt {
+    background: $content-log-background;
+}
+
+
+section.alt2 {
+    background: $sidebar-grad-start;
+    @include background(linear-gradient(top, darken($sidebar-grad-end,5%), darken($sidebar-grad-start, 5%)));
+}
+
+
+.annotated {
+    position: relative;
+    overflow: hidden;
+    width: calc(100% - 20px);
+    margin: 10px auto;
+
+    img {
+        max-width: 100%;
+        width: 100%;
+        display: block;
+        opacity: 1;
+        box-shadow: 5px 5px 5px #ddd;
+        border-radius: 10px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .annotations {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        background: rgba(33,62,68,0.2);
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+        border-radius: 10px;
+        opacity: 0;
+        z-index: 5;
+        transform: scale(0.95);
+        transition: all 0.3s ease-in-out;
+
+        @for $i from 1 through 15 {
+            &:hover span:nth-child(#{$i}) {
+                transition-delay: #{(0.2+(0.1*$i))}s
+            }
+        }
+
+        span {
+            display: block;
+            position: absolute;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 2px 2px 2px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+            background: #eee;
+            border-radius: 5px;
+            max-width: 12%;
+
+
+            &.right:after {
+                content: '';
+                position: absolute;
+                width: 0; 
+                height: 0;
+                top: calc(50% - 15px);
+                right: -10px;
+                border-top: 15px solid transparent;
+                border-bottom: 15px solid transparent;
+                border-left: 15px solid #eee;
+            }
+
+            &.left:after {
+                content: '';
+                position: absolute;
+                width: 0; 
+                height: 0;
+                top: calc(50% - 15px);
+                left: -10px;
+                border-top: 15px solid transparent;
+                border-bottom: 15px solid transparent;
+                border-right: 15px solid #eee;
+            }
+
+            &.bottom:after {
+                content: '';
+                position: absolute;
+                width: 0; 
+                height: 0;
+                bottom: -10px;
+                left: calc(50% - 15px);
+                border-right: 15px solid transparent;
+                border-top: 15px solid #eee;
+                border-left: 15px solid transparent;
+            }
+            &.top:after {
+                content: '';
+                position: absolute;
+                width: 0; 
+                height: 0;
+                top: -10px;
+                left: calc(50% - 15px);
+                border-right: 15px solid transparent;
+                border-bottom: 15px solid #eee;
+                border-left: 15px solid transparent;
+            }
+        }
+
+        &:hover ~ img {
+        /*& ~ img {*/
+            box-shadow: 1px 1px 6px rgba(0,0,0,0.2);
+            opacity: 0.9;
+            transform: scale(0.95);
+        }
+
+        &:hover,
+        &:hover span{
+        /*&,
+        & span{*/
+            opacity: 1;
+            transform: scale(1);
+            cursor: pointer;
+        }
+    }
+}
+
+.annotated ~ figcaption {
+    margin-top: 10px;
+    font-style: italic;
+    font-family: $content-header-font;
+    font-size: 16px;
+}
+
+
+@keyframes pulse {
+    0% {
+       box-shadow: 0 0 0 0px rgba(180,180,180, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 0 10px rgba(180,180,180, 0);
+    }
+}
+
+@keyframes pulse-fade {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.2;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.carousel {
+    overflow: hidden;
+    text-align: center;
+    position: relative;
+    padding: 0;
+    list-style: none;
+
+    .carousel-activator {
+        display: none;
+    }
+
+    $carousel-slides: 8;
+
+    .carousel-slides {
+        width: 100%;
+        overflow: hidden;
+
+        &.atten {
+            .carousel-slide figure {
+                border-radius: 5px;
+                animation: pulse 2s ease;
+                animation-iteration-count: 2;
+            }
+
+            &:after {
+                width: 100%;
+                left: 0;
+                margin: auto;
+                top: 50%;
+                font-family: $icon-font;
+                font-size: 4em;
+                opacity: 0;
+                content:'\f25a';
+                position: absolute;
+                animation: pulse-fade 2s ease;
+                animation-iteration-count: 2;
+            }
+        }
+
+        .carousel-inner {
+            width: (100% * $carousel-slides);
+            transition: margin 1s;
+            display: flex;
+            align-items: center;
+        }
+     
+        .carousel-slide {
+            float: left;
+            width: (100% / $carousel-slides);
+        }
+    }
+
+    @for $i from 1 through $carousel-slides {
+        .carousel-activator:nth-of-type(#{$i}):checked ~ .carousel-slides .carousel-inner {
+            margin-left: (#{(($i - 1)*-100%)});
+        }
+
+        .carousel-activator:nth-of-type(#{$i}):checked ~ .carousel-indicators .carousel-indicator:nth-of-type(#{$i}) {
+            opacity: 1;
+        }
+    }
+}
+
+.carousel-indicators {
+    margin-bottom: 2%;
+}
+
+.carousel-indicator {
+    font-family: $content-header-font;
+    margin: 1% 0.5%;
+    padding: 1%;
+    display: inline-block;
+    cursor: pointer;
+    opacity: 0.35;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.1);
+    background: #eee;
+    border-radius: 8px;
+    min-width: 100px;
+
+    &::hover {
+        opacity: 0.75;
+    }
+
+    @media (max-width: $breakpoint-small) {
+        border-radius: 5px;
+    }
+}
+
+ol.rounded {
+    margin-top: 35px;
+    counter-reset: li;
+    list-style: none;
+    *list-style: decimal;
+    font: 18px $content-header-font;
+    padding: 0;
+    text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    
+    li {
+        position: relative;
+        display: block;
+        color: $content-filter-color;
+        transition: all .3s ease-out;
+        padding: .7em .7em .7em 3em;
+
+        &:before{
+            content: counter(li);
+            counter-increment: li;
+            position: absolute;
+            left: 0;
+            top: 55%;
+            margin-top: -1.3em;
+            background: $content-log-title-color;
+            height: 2em;
+            width: 2em;
+            line-height: 2em;
+            border: .2em solid #ccc;
+            text-align: center;
+            border-radius: 2em;
+            transition: all .3s ease-out;
+        }
+
+        &:hover{
+            &:before{
+                transform: rotate(360deg);
+            }
+
+        }
+    }
+
+}

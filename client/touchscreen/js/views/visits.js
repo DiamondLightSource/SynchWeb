@@ -1,7 +1,7 @@
 define(['marionette', 'tpl!templates/visits.html'], function(Marionette, template) {
 
     var VisitItem = Marionette.ItemView.extend({
-        template: _.template('<a data-role="nav-main" href="/visit/<%=VISIT%>"><%=VISIT%> - <%=ST%></a>'),
+        template: _.template('<a data-role="nav-main" href="/visit/<%-VISIT%>"><%-VISIT%> - <%-ST%></a>'),
         tagName: 'li',
         
         events: {

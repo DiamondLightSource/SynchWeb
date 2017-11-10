@@ -15,6 +15,11 @@
     limitations under the License.
     */
 
+    include_once('includes/class.autoloader.php');
+    $loader = new Psr4AutoloaderClass;
+    $loader->register();
+
+
     require 'lib/Slim/Slim.php';
     \Slim\Slim::registerAutoloader();
 
@@ -85,9 +90,8 @@
         }
     }
     
-    
-    include_once('includes/class.type.php');
-    $type = new ProposalType($app, $db, $user);
-    $type->get_type();
+    include_once('includes/class.dispatch.php');
+    $type = new Dispatch($app, $db, $user);
+    $type->dispatch();
     
 ?>

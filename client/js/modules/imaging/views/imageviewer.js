@@ -34,7 +34,7 @@ define(['marionette',
             this.model.set('isSelected', true)
         },
         
-        template: _.template('<%=SCORE%>'),
+        template: _.template('<%-SCORE%>'),
         onRender: function() {
             this.model.get('isSelected') ? this.$el.addClass('current') : this.$el.removeClass('current')
             console.log('render score', this.model.get('isSelected'))
@@ -470,12 +470,12 @@ define(['marionette',
 
         onImageProgress: function(pc) {
             if (!this.rendered) return
-            this.ui.progress.html(pc+'% loaded')
+            this.ui.progress.text(pc+'% loaded')
         },
 
         showProgressBar: function() {
             if (!this.rendered) return
-            this.ui.progress.html('0% loaded')
+            this.ui.progress.text('0% loaded')
             this.ui.progress.show()
         },
 
@@ -490,7 +490,7 @@ define(['marionette',
             this.height = this.img.height
             
             this.ui.score.val(this.model.get('BLSAMPLEIMAGESCOREID'))
-            this.ui.com.html(this.model.get('COMMENTS'))
+            this.ui.com.text(this.model.get('COMMENTS'))
             
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('COMMENTS', 'text')
@@ -530,7 +530,7 @@ define(['marionette',
         
         onZoomChange: function(e) {
             this.scalef = this.ui.zoom.slider('value')/100.0
-            this.ui.zval.html((this.scalef*100).toFixed(0))
+            this.ui.zval.text((this.scalef*100).toFixed(0))
             if (e && e.originalEvent) {
                 this.clampOffsets()
                 this.draw()
@@ -578,7 +578,7 @@ define(['marionette',
                          
             this.clampOffsets()
             if (this.scalef < 2) this.ui.zoom.slider('value', this.scalef*100)
-            this.ui.zval.html((this.scalef*100).toFixed(0))
+            this.ui.zval.text((this.scalef*100).toFixed(0))
                          
             this.draw()
             this.plotObjects()

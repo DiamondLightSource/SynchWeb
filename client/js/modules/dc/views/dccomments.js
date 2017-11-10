@@ -6,7 +6,7 @@ define(['marionette', 'modules/dc/collections/dccomments',
        
     var CommentView = Marionette.ItemView.extend({
         tagName: 'li',
-        template: _.template('<h1><%=GIVENNAME%> <%=FAMILYNAME%><span class="r"><%=CREATETIME%></h1><div class="COMMENTS"><%=COMMENTSMD%></div>'),
+        template: _.template('<h1><%-GIVENNAME%> <%-FAMILYNAME%><span class="r"><%-CREATETIME%></h1><div class="COMMENTS"><%=COMMENTSMD%></div>'),
 
         onRender: function() {
             if (this.model.get('PERSONID') == app.personid) {

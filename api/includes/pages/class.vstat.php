@@ -125,9 +125,20 @@
 
                 $sched = array();
 
+                $ctf = $this->db->pq("SELECT TO_CHAR(app.processingendtime, 'DD-MM-YYYY HH24:MI:SS') as st, c.astigmatism, c.estimatedresolution, c.estimateddefocus
+                    FROM ctf c
+                    INNER JOIN autoprocprogram app ON app.autoprocprogramid = c.autoprocprogramid
+                    INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
+                    INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE 1=1 $where ORDER BY app.processingendtime", $args);
+
             } else {
                 $ai = array();
                 $cent = array();
+                $ctf = array();
 
                 $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
                     FROM blsession s
@@ -168,6 +179,17 @@
             $lines = array();
             foreach ($linecols as $c) array_push($lines, array('data' => array()));
 
+            $scattercols = array('ASTIGMATISM', 'ESTIMATEDDEFOCUS', 'ESTIMATEDRESOLUTION');
+            $scatters = array();
+            foreach ($scattercols as $c) array_push($scatters, array('data' => array()));
+
+            foreach ($ctf as $c) {
+                foreach ($scattercols as $i => $f) {
+                    $scatters[$i]['label'] = $f;
+                    if ($i > 0) $scatters[$i]['yaxis'] = $i;
+                    array_push($scatters[$i]['data'], array($this->jst($c['ST']), floatval(round($c[$f],4))));
+                }
+            }
 
             $queued = 0;
             $vis_map = array();
@@ -304,13 +326,13 @@
                 $l = end($dc);
                 if (strtotime($f['EN'] ? $f['EN'] : $f['ST']) > strtotime($info['EN'])) $last = $f['EN'] ? $f['EN'] : $f['ST'];
                 if (strtotime($l['ST']) < strtotime($info['ST'])) $first = $l['ST'];
-                $info['LAST'] = $dc[0]['ST'];
+                $info['LAST'] = $l['ST'];
             } else $info['LAST'] = '';
                                     
             $info['start'] = $this->jst($first);
             $info['end'] = $this->jst($last);
                                     
-            $this->_output(array('info' => $info, 'data' => $data, 'lines' => $lines));
+            $this->_output(array('info' => $info, 'data' => $data, 'lines' => $lines, 'scatters' => $scatters));
         }
         
        
@@ -565,7 +587,7 @@
             $this->user->can('all_prop_stats');
 
             global $bl_types;
-            $bls = implode("', '", $bl_types[$this->ptype->ty]);
+            $bls = implode("', '", $bl_types[$this->ty]);
 
             $where = " AND p.proposalcode NOT IN ('cm') AND s.beamlinename in ('$bls')";
             $args = array();
@@ -710,7 +732,7 @@
         // Histogram of beamline parameters
         function _parameter_histogram() {
             global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ptype->ty]);
+            $bls = implode('\', \'', $bl_types[$this->ty]);
 
             $types = array(
                 'energy' => array('unit' => 'eV', 'st' => 5000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
@@ -778,7 +800,6 @@
 
             $this->_output(array('histograms' => $data));
         }
-
 
 
         // Return a list of runs

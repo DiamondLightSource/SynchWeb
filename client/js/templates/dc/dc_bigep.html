@@ -15,13 +15,13 @@
             </thead>
             <% _.each(SETTINGS, function(ppl, key) { %>
                 <tr>
-                    <td><%=key%></td>
-                    <td><%=ppl.atom%></td>
-                    <td><%=ppl.spacegroup%></td>
-                    <td><%=ppl.nsites%></td>
-                    <td><%=ppl.dataset%></td>
-                    <td><%=ppl.compound%></td>
-                    <td><div class="bepm-seq seq"><%=ppl.sequence%></div></td>
+                    <td><%-key%></td>
+                    <td><%-ppl.atom%></td>
+                    <td><%-ppl.spacegroup%></td>
+                    <td><%-ppl.nsites%></td>
+                    <td><%-ppl.dataset%></td>
+                    <td><%-ppl.compound%></td>
+                    <td><div class="bepm-seq seq"><%-ppl.sequence%></div></td>
                 </tr>
             <% }) %>
         </table>
@@ -30,7 +30,7 @@
 <% if (typeof SHELXC !== 'undefined') { %>
     <% _.each(SHELXC.PLOTS, function(ppl, key) { %>
         <section class="bigep-stats clearfix">
-            <h2><%=key%></h2>
+            <h2><%-key%></h2>
             <% if (typeof PROC !== 'undefined' && PROC.hasOwnProperty(key)) { %>
             <section class="bigep-models clearfix">
                 <table class="bepm_stats bepm_stats2 reflow">
@@ -44,20 +44,20 @@
                     </thead>
                     <% _.each(PROC[key], function(val, prop) { %>
                     <tr>
-                        <td><%=prop%></td>
-                        <td><%=val.RESID%> / <%=val.FRAGM%> / <%=val.MAXLEN%></td>
-                        <td><%=val.MAPCC%> (<%=val.MAPRESOL%>)</td>
+                        <td><%-prop%></td>
+                        <td><%-val.RESID%> / <%-val.FRAGM%> / <%-val.MAXLEN%></td>
+                        <td><%-val.MAPCC%> (<%-val.MAPRESOL%>)</td>
                         <td>
-                            <a class="view button" href="/dc/map/id/<%=DCID%>/ty/bigep/dt/<%=TAG%>/ppl/<%=prop%>"><i class="fa fa-search"></i> Map / Model Viewer</a> 
-                            <a class="dll button" href="<%=APIURL%>/download/bigep/id/<%=DCID%>/dt/<%=TAG%>/ppl/<%=prop%>"><i class="fa fa-download"></i> PDB/MTZ file</a> 
-                            <a class="view button logf" href="<%=APIURL%>/download/bigep/id/<%=DCID%>/dt/<%=TAG%>/ppl/<%=prop%>/log/1"><i class="fa fa-search"></i> Log file</a>
+                            <a class="view button" href="/dc/map/id/<%-DCID%>/ty/bigep/dt/<%-TAG%>/ppl/<%-prop%>"><i class="fa fa-search"></i> Map / Model Viewer</a> 
+                            <a class="dll button" href="<%-APIURL%>/download/bigep/id/<%-DCID%>/dt/<%-TAG%>/ppl/<%-prop%>"><i class="fa fa-download"></i> PDB/MTZ file</a> 
+                            <a class="view button logf" href="<%-APIURL%>/download/bigep/id/<%-DCID%>/dt/<%-TAG%>/ppl/<%-prop%>/log/1"><i class="fa fa-search"></i> Log file</a>
                         </td>
                     </tr>
                     <% }) %>
                 </table>
             </section>
             <% } %>
-            <div class="plot_shelx-<%=key%>"></div>
+            <div class="plot_shelx-<%-key%>"></div>
         </section>
     <% }) %>
 <% } %>

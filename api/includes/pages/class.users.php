@@ -65,7 +65,7 @@ class Users extends Page {
                 'permissions' => $this->user->perms, 
                 'is_staff' => $this->staff, 
                 'visits' => $this->visits, 
-                'ty' => $this->ptype->ty));
+                'ty' => $this->ty));
     }
 
     function _login() {
@@ -168,7 +168,7 @@ class Users extends Page {
         $where = 'p.login IS NOT NULL';
         $join = '';
         $extc = '';
-        $group = '';
+        $group = 'GROUP BY p.personid';
 
         if ($this->has_arg('all')) {
             $where = '1=1';
@@ -223,7 +223,7 @@ class Users extends Page {
         }
 
         if ($this->has_arg('visit')) {
-            $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, shp.remote,";
+            $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, shp.remote, shp.role,";
             $join = 'INNER JOIN session_has_person shp ON shp.personid = p.personid
                      INNER JOIN blsession s ON shp.sessionid = s.sessionid
                      INNER JOIN proposal pr ON pr.proposalid = s.proposalid

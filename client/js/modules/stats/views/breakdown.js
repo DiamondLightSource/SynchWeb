@@ -54,12 +54,15 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
         },
 
         initialize: function(options) {
+            this.hideOverview = options.hideOverview
+            this.scatters = options.scatters
             this.first = true
             this.params = options.params
         },
 
         onRender: function() {
             if (this.getOption('large')) this.$el.find('#avg_time').addClass('large')
+                if (this.hideOverview) this.$el.find('.overview').hide()
         },
 
         resetPlots: function(e) {
@@ -95,13 +98,14 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
 
 
         showSpan: function() {
+            if (this.hideOverview) return
             var opts = this.main.getOptions()
 
             var from = moment(opts.xaxes[0].min).format('MMMM Do YYYY')
             var to = moment(opts.xaxes[0].max).format('MMMM Do YYYY')
 
-            if (from != to) this.ui.span.html(from+' - '+to)
-            else this.ui.span.html(from)
+            if (from != to) this.ui.span.text(from+' - '+to)
+            else this.ui.span.text(from)
         },
         
         zoomOverview: function(e, ranges) {
@@ -192,8 +196,8 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
 
                 // this.options2.grid.markings = markings
 
-                this.main = $.plot(this.$el.find('#avg_time'), this.model.get('data'), this.options2);
-                this.overview = $.plot(this.$el.find('#overview'), this.model.get('data'), this.options);
+                if (!this.hideOverview) this.main = $.plot(this.$el.find('#avg_time'), this.model.get('data'), this.options2);
+                if (!this.hideOverview) this.overview = $.plot(this.$el.find('#overview'), this.model.get('data'), this.options);
 
                 this.options3 = {
                     xaxis: {
@@ -211,7 +215,18 @@ define(['marionette', 'tpl!templates/stats/breakdown.html',
 
                     yaxes: [{ position: 'right' }, { position: 'right' }, { position: 'right' }],
                 }
-                this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3)
+
+                if (this.scatters) {
+
+                    this.options3.series = { 
+                        lines: { show: false },
+                        points: { show: true, radius: 1 }
+                    }
+
+                    this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('scatters'), this.options3)
+                } else {
+                    this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3)
+                }
                 this.showSpan()
 
                 console.log('rend bd', this.params, this.first)

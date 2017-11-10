@@ -33,7 +33,7 @@
         }
 
         
-        function __construct($app, $db, $type) {
+        function __construct($app, $db, $user) {
             $this->_arg_list = array();
             $this->_dispatch = array();
             $class = $this;
@@ -42,11 +42,8 @@
                 $this->_dispatch = array_merge($class::$dispatch, $this->_dispatch);
                 $class = get_parent_class($class);
             }
-            //print_r(self::$dispatch);
-            
 
             $this->app = $app;
-            $this->ptype = $type;
             
             $this->last_profile = microtime(True);
             $this->db = $db;
@@ -56,9 +53,183 @@
 
             $this->_setup_routes();
 
-            $this->user = $type->user;
+            $this->user = $user;
         }
-        
+    
+
+        function _get_type() {
+            global $prop_types, $bl_types;
+            $this->ty = 'gen';
+
+            if ($this->user) {
+                $ty = 'gen';
+                if ($this->has_arg('prop')) {
+                    if (preg_match('/([A-z]+)\d+/', $this->arg('prop'), $m)) {
+                        $prop_code = $m[1];
+                        
+                        // See if proposal code matches list in config
+                        $found = False;
+                        foreach ($prop_types as $pty) {
+                            if ($prop_code == $pty) {
+                                $ty = $pty;
+                                $found = True;
+                            }
+                        }
+                        
+                        // Proposal code didnt match, work out what beamline the visits are on
+                        if (!$found) {
+                            $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode,p.proposalnumber) LIKE :1", array($m[0]));
+                            
+                            if (sizeof($bls)) {
+                                foreach ($bls as $bl) {
+                                    $b = $bl['BEAMLINENAME'];
+                                    foreach ($bl_types as $tty => $bls) {
+                                        if (in_array($b, $bls)) {
+                                            $ty = $tty;
+                                            break 2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                // get default type from type of admin
+                }
+                else {
+                    foreach ($this->user->perms as $p) {
+                        if (strpos($p, '_admin')) {
+                            $parts = explode('_', $p);
+                            $ty = $parts[0];
+                            break;
+                        }
+                    }
+                }
+
+                $this->ty = $ty;
+            }
+        }
+
+
+
+        function auth($require_staff) {
+            if ($require_staff) {
+                $auth = $this->staff;
+                
+            // Beamline Sample Registration
+            } else if ($this->blsr() && !$this->user->login) {
+                $auth = false;
+
+                if ($this->has_arg('visit')) {
+                    $blsr_visits = array();
+                    foreach ($this->blsr_visits() as $v) array_push($blsr_visits, $v['VISIT']);
+                    
+                    if (in_array($this->arg('visit'), $blsr_visits)) $auth = True;
+                    
+                } else {
+                    $auth = true;
+                }
+
+            // Barcode Scanners
+            } else if ($this->bcr() && !$this->user->login) {
+                $auth = true;
+                
+            // Normal validation
+            } else {
+                $auth = False;
+                
+                // Registered visit or staff
+                if ($this->staff) {
+                    $auth = True;
+                    
+                    if ($this->has_arg('prop')) {
+                        $prop = $this->db->pq('SELECT p.proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
+                        
+                        if (sizeof($prop)) $this->proposalid = $prop[0]['PROPOSALID'];
+                    }
+                    
+                // Normal users
+                } else {
+                    $rows = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
+                        FROM proposal p
+                        INNER JOIN blsession s ON p.proposalid = s.proposalid
+                        INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid
+                        WHERE shp.personid=:1", array($this->user->personid));
+
+                    foreach ($rows as $row) {
+                        array_push($this->visits, strtolower($row['VIS']));
+                    }
+                    
+                    /*$ids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE p.proposalcode || p.proposalnumber || '-' || s.visit_number in ('".implode("','", $this->visits)."')");
+                    
+                    $this->sessionids = array();
+                    foreach ($ids as $id) {
+                        array_push($this->sessionids, $id['SESSIONID']);
+                    }*/
+                    #print_r($this->sessionids);
+                                         
+                    if ($this->has_arg('id') || $this->has_arg('visit') || $this->has_arg('prop')) {
+                        
+                        // Check user is in this visit
+                        if ($this->has_arg('id')) {
+                            $types = array('data' => array('datacollection', 'datacollectionid'),
+                                           'edge' => array('energyscan', 'energyscanid'),
+                                           'mca' => array('xfefluorescencespectrum', 'xfefluorescencespectrumid'),
+                                           );
+                            
+                            $table = 'datacollection';
+                            $col = 'datacollectionid';
+                            if ($this->has_arg('t')) {
+                                if (array_key_exists($this->arg('t'), $types)) {
+                                    $table = $types[$this->arg('t')][0];
+                                    $col = $types[$this->arg('t')][1];
+                                }
+                            }
+                            
+                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN $table dc ON s.sessionid = dc.sessionid WHERE dc.$col = :1", array($this->arg('id')));
+
+                            if (sizeof($vis)) $this->proposalid = $vis[0]['PROPOSALID'];
+                            $vis = sizeof($vis) ? $vis[0]['VIS'] : '';
+                            
+                            
+                        } else if ($this->has_arg('visit')) {
+                            $vis = $this->arg('visit');
+                            
+                            $visp = $this->db->pq("SELECT p.proposalid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
+                            
+                            if (sizeof($visp)) $this->proposalid = $visp[0]['PROPOSALID'];
+                            
+                        // Check user is in this proposal
+                        } else if ($this->has_arg('prop')) {
+                            $viss = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
+                            
+                            $vis = array();
+                            foreach ($viss as $v) array_push($vis, $v['VIS']);
+                            $this->proposalid = $viss[0]['PROPOSALID'];
+                        }
+                        
+                        if ($this->has_arg('id') || $this->has_arg('visit')) {
+                            if (in_array($vis, $this->visits)) $auth = True;
+                        } else {
+                            if (sizeof(array_intersect($vis, $this->visits))) $auth = True;
+                        }
+                        
+                    // No id or visit, anyone ok to view
+                    } else {
+                        $auth = True;
+                    }
+                }
+            }
+
+            
+            // End execution, show not authed page template
+            if (!$auth) {
+                $this->_error('Access Denied', 'You dont have access to that page');
+            }
+            
+            return $auth;
+        }
+
         
         function _setup_routes() {
             foreach ($this->_dispatch as $args) {
@@ -70,6 +241,8 @@
         
         function execute($route) {
             $this->_parse_args();
+            $this->_get_type();
+            $this->staff = $this->user->has($this->ty.'_admin');
 
             if (in_array($route->getName(), array('edge', 'mca'))) {
                 $this->args['t'] = $route->getName();
@@ -86,12 +259,7 @@
             }
             $this->args = array_merge($this->args, $extra);
 
-            $this->ptype->set_args($this->args);
-
-            $ret = $this->ptype->auth($this->require_staff, $this);
-
-            $this->staff = $this->ptype->is_staff();
-            $this->proposalid = $this->ptype->pid();
+            $ret = $this->auth($this->require_staff, $this);
 
             return $ret;
         }
@@ -262,9 +430,9 @@
         
         # Get a PV
         function pv($pvs,$full=false) {
-            putenv('EPICS_CA_ADDR_LIST=172.23.240.13');
-            putenv('PATH=/dls_sw/epics/R3.14.11/base/bin/linux-x86_64/:$PATH');
-            exec('caget ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
+            global $bl_pv_prog, $bl_pv_env;
+            putenv($bl_pv_env);
+            exec($bl_pv_prog . ' ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
             $output = array();
             
             foreach ($ret as $i => $v) {

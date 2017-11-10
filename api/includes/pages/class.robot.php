@@ -7,6 +7,7 @@
                               'run' => '\d+',
                               'visit' => '\w+\d+-\d+',
                               'year' => '\d\d\d\d',
+                              'download' => '\d',
                               );
             
         public static $dispatch = array(array('/averages', 'get', '_averages'),
@@ -70,9 +71,35 @@
                 $bld[$bl] = $rd;
             }
 
-            $this->_output(array('details' => $bls, 'data' => $bld, 'ticks' => $ticks, 'rids' => $rids));
+            $this->has_arg('download') ? $this->_write_csv($bld, $ticks, 'robot_load') : $this->_output(array('details' => $bls, 'data' => $bld, 'ticks' => $ticks, 'rids' => $rids));
         }
         
+
+        function _write_csv($data, $ticks, $filename) {
+            header('Content-Type:application/csv'); 
+            header("Content-Disposition:attachment;filename=$filename.csv"); 
+
+            print "Robot Load Times\n";
+            print 'Run,'.implode(',',array_keys($data))."\n";
+
+            foreach ($ticks as $t) {
+                $row = array($t[1]);
+                foreach ($data as $k => $d) {
+                    $found = false;
+                    foreach ($d as $pt) {
+                        if ($pt[0] == $t[0]) {
+                            array_push($row, $pt[1]);
+                            $found = true;
+                        }
+                    }
+
+                    if (!$found) array_push($row, '');
+                }
+
+                print implode(',', $row)."\n";
+            }
+        }
+
         
         # List of robot errors for beamline / run / visit
         function _errors() {
