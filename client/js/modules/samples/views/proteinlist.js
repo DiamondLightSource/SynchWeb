@@ -1,7 +1,7 @@
-define(['marionette', 'views/table', 'views/filter', 
+define(['marionette', 'backgrid', 'views/table', 'views/filter', 
   'collections/componenttypes', 
   'modules/projects/views/addto', 'utils/table'], 
-  function(Marionette, TableView, FilterView, ComponentTypes, AddToProjectView, table) {
+  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, AddToProjectView, table) {
     
     
   var ClickableRow = table.ClickableRow.extend({
@@ -9,28 +9,23 @@ define(['marionette', 'views/table', 'views/filter',
     argument: 'PROTEINID',
     cookie: true,
   })
-    
-  /*var ClickableRow = Backgrid.Row.extend({
-    events: {
-      'click': 'onClick',
-    },
-    onClick: function() {
-      if ($(e.target).is('i') || $(e.target).is('a')) return        
-      app.cookie(this.model.get('PROP'))
-      app.trigger('proteins:view', this.model.get('PROTEINID'))
-    },
-  })*/
+
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal</p><div class="ra"><a class="button" href="/proteins/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
+    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal</p><div class="ra"><a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper', type: '.type' },
+
+    clickableRow: ClickableRow,
+    showFilter: true,
     
     title: 'Protein',
+    url: 'protein',
 
     templateHelpers: function() {
         return {
-          title: this.getOption('title')
+          title: this.getOption('title'),
+          url: this.getOption('url')
         }
     },
 
@@ -46,19 +41,33 @@ define(['marionette', 'views/table', 'views/filter',
         { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
     ],
 
-    hiddenColumns: [2,3, 5],
+    hiddenColumns: [2,3,5],
 
-    initialize: function(options) {  
+    
+    selectModel: function(m, checked) {
+        console.log('model seleted in grid')
+        m.set({ isGridSelected: checked })
+    },
+
+
+    initialize: function(options) {
       if (app.mobile()) {
         _.each(this.getOption('hiddenColumns'), function(v) {
             this.getOption('columns')[v].renderable = false
         }, this)
       }
-        
+
+      var cols = this.getOption('columns').slice(0)
+      if (options.selectable) {
+          cols.unshift({ label: '', cell: 'select-row', headerCell: 'select-all', editable: false })
+          this.options.clickableRow = Backgrid.Row
+          this.listenTo(this.collection, 'backgrid:selected', this.selectModel, this)
+      }
+
       var self = this
-      this.table = new TableView({ collection: options.collection, columns: this.getOption('columns'), tableClass: 'proposals', filter: 's', search: options.params && options.params.s, loading: true, 
+      this.table = new TableView({ collection: options.collection, columns: cols, tableClass: 'proposals', filter: 's', search: options.params && options.params.s, loading: true, 
         backgrid: { 
-          row: ClickableRow, 
+          row: this.getOption('clickableRow'), 
           emptyText: function() { 
             return self.collection.fetched ? 'No '+self.getOption('title')+'s found' : 'Retrieving '+self.getOption('title')+'s' 
           } 
@@ -70,7 +79,7 @@ define(['marionette', 'views/table', 'views/filter',
                                       
     onRender: function() {
       this.wrap.show(this.table)
-      this.tr.done(this.showFilter.bind(this))
+      if (this.getOption('showFilter')) this.tr.done(this.showFilter.bind(this))
     },
 
     showFilter: function() {
