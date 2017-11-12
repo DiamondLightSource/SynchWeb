@@ -60,8 +60,13 @@ define(['backbone', 'views/dialog', 'modules/samples/models/pdb', 'modules/sampl
             this.ui.prog.progressbar({ 'value': value })
         },
         
-        initialize: function(options) {
+
+        createModel: function(options) {
             this.model = new PDB({ PROTEINID: options.pid })
+        },
+
+        initialize: function(options) {
+            this.createModel(options)
             this.setupValidation()
             this.listenTo(this.model, 'model:progress', this.updateProgress, this)
             
@@ -74,7 +79,7 @@ define(['backbone', 'views/dialog', 'modules/samples/models/pdb', 'modules/sampl
         
         onRender: function() {
             this.showType()
-            this.ui.prog.progressbar({ value: 0 });
+            this.ui.prog.progressbar({ value: 0 })
             this.ui.prog.hide()
         },
         
