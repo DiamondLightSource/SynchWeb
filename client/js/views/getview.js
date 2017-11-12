@@ -1,23 +1,32 @@
 define([], function() {
-	
-	var GetView = Marionette.Object.extend({
-		views: {},
-		get: function(type, arguments) {
-			var views = this.getOption('views')
+    
+    var GetView = Marionette.Object.extend({
+        views: {},
+        default: null,
 
-			if (type in views) view = views[type]
-          	else view = this.getOption('default')
+        titles: {},
+        default_title: '',
 
-          	console.log('using view', view, type)
+        get: function(type, arguments) {
+            var views = this.getOption('views')
 
-          	return new view(arguments)
-		},
+            if (type in views) view = views[type]
+            else view = this.getOption('default')
 
-		// initialize: function(options) {
-		// 	return this.get
-		// }
-	})
+            console.log('using view', view, type)
 
-	return GetView
+            return new view(arguments)
+        },
+
+        title: function(type) {
+            var titles = this.getOption('titles')
+            if (type in titles) var title = titles[type]
+            else var title = this.getOption('default_title')
+
+            return title
+        },
+    })
+
+    return GetView
 
 })
