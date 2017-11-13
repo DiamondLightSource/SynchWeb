@@ -1,10 +1,14 @@
-define(['underscore', 'backbone.paginator', 'models/crystal'], function(_, PageableCollection, Crystal) {
+define(['backbone.paginator', 'models/crystal', 'utils/kvcollection'], 
+    function(PageableCollection, Crystal, KVCollection) {
     
-    return PageableCollection.extend({
+    return PageableCollection.extend(_.extend({}, KVCollection, {
         model: Crystal,
         mode: 'server',
         url: '/sample/crystals',
             
+        keyAttribute: 'NAME',
+        valueAttribute: 'CRYSTALID',
+
         state: {
             pageSize: 15,
         },
@@ -29,5 +33,5 @@ define(['underscore', 'backbone.paginator', 'models/crystal'], function(_, Pagea
           this.fetched = true
           this.trigger('reset')
         },
-    })
+    }))
 })
