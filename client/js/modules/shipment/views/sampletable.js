@@ -76,14 +76,16 @@ define(['marionette',
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION'], function(f) {
+            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE'], function(f) {
                 var el = this.$el.find('[name='+f+']')
-                if (el) data[f] = this.$el.find('[name='+f+']').val()
+                if (el.length) data[f] = el.attr('type') == 'checkbox'? (el.is(':checked')?1:null) : el.val()
             }, this)
 
             data['COMPONENTIDS'] = this.model.get('components').pluck('PROTEINID')
             data['COMPONENTAMOUNTS'] = this.model.get('components').pluck('ABUNDANCE')
             this.model.set(data)
+
+            console.log('set data', data)
         },
             
         success: function(m,r,o) {
@@ -137,7 +139,7 @@ define(['marionette',
             this.model.set({ 
                 PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '', SYMBOL: '',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: '',
-                CRYSTALID: -1, PACKINGFRACTION: ''
+                CRYSTALID: -1, PACKINGFRACTION: '', LOOPTYPE: '',
             })
             this.model.get('components').reset()
             this.render()
