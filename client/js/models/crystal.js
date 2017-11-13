@@ -1,13 +1,18 @@
-define(['backbone', 'markdown'], function(Backbone, markdown) {
+define(['backbone', 'collections/components'], function(Backbone, Components) {
     
     return Backbone.Model.extend({
         idAttribute: 'CRYSTALID',
         urlRoot: '/sample/crystals',
         
+        initialize: function(attrs, options) {
+            var addPrimary = (options && options.addPrimary) || (this.collection && this.collection.state.addPrimary)
+            this.set('components', new Components(null, { pmodel: this, addPrimary: addPrimary }))
+        },
+
         validation: {
             NAME: {
                 required: true,
-                pattern: 'wwsdash',
+                pattern: 'wwdash',
             },
             PROTEINID: {
                 required: true,
