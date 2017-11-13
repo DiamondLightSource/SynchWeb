@@ -508,7 +508,8 @@ define(['marionette',
         initialize: function(options) {
             this._lastSample = null
 
-            this.type = PlateTypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
+            this.platetypes = new PlateTypes()
+            this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
 
             this.subsamples = new SubSamples()
             this.subsamples.queryParams.cid = this.model.get('CONTAINERID')

@@ -120,7 +120,8 @@ define(['marionette',
             if (this.model.get('CONTAINERTYPE') == 'PCRStrip') {
                 this.$el.find('.puck').css('width', '50%')
                 // this.puck.$el.width(this.puck.$el.parent().width()/2)
-                this.type = PlateTypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
+                this.platetypes = new PlateTypes()
+                this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
             } else this.puck.show(new PuckView({ collection: this.samples }))
             this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type }))

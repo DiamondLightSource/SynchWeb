@@ -478,7 +478,7 @@ define(['marionette',
             
             this.proteins = new DistinctProteins()
             this.proteins.fetch()
-            this.ctypes = PlateTypes
+            this.ctypes = new PlateTypes()
 
             this.gproteins = new DistinctProteins()
             

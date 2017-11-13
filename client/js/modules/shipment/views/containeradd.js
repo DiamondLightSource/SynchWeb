@@ -418,7 +418,7 @@ define(['marionette',
                 s.set({ CONTAINERID: this.model.get('CONTAINERID') }, { silent: true })
             }, this)
 
-            var samples = new Samples(this.samples.filter(function(m) { return m.get('PROTEINID') > - 1 }))
+            var samples = new Samples(this.samples.filter(function(m) { return m.get('PROTEINID') > - 1 || m.get('CRYSTALID') > - 1 }))
             if (samples.length) {
                 this.$el.find('form').addClass('loading')
                 this.ui.submit.prop('disabled', true)
@@ -491,8 +491,9 @@ define(['marionette',
             this.cache = new Cache({ name: 'container' })
             this.ready2 = this.cache.fetch()
 
-            if (!app.user_can('disp_cont')) PlateTypes.remove(PlateTypes.findWhere({ name: 'ReferencePlate' }))
-            this.ctypes = PlateTypes
+            
+            this.ctypes = new PlateTypes()
+            if (!app.user_can('disp_cont')) this.ctypes.remove(this.ctypes.findWhere({ name: 'ReferencePlate' }))
             
             this.cacheContainer = _.debounce(this.cacheContainer, 3000)
 
@@ -529,7 +530,7 @@ define(['marionette',
         buildCollection: function() {
             var samples = []
             _.each(_.range(1,this.type.get('capacity')+1), function(i) {
-                samples.push(new LocationSample({ LOCATION: i.toString(), PROTEINID: -1, new: true }))
+                samples.push(new LocationSample({ LOCATION: i.toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
             }, this)
             this.samples.reset(samples)
             this.samples.at(0).set('isSelected', true)

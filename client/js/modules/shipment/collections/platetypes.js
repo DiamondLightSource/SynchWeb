@@ -105,13 +105,15 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
         },
     ]
 
-    var PlateTypes = Backbone.Collection.extend(_.extend({}, KVCollection, {
+    return Backbone.Collection.extend(_.extend({}, KVCollection, {
+        plateTypes: plate_types,
         model: PlateType,
       
         keyAttribute: 'name',
         valueAttribute: 'name',
         
         initialize: function(options) {
+            this.reset(this.plateTypes)
             this.on('change:isSelected', this.onSelectedChanged, this);
         },
         
@@ -127,6 +129,5 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
         
         
     }))
-    
-    return new PlateTypes(plate_types)
+
 })
