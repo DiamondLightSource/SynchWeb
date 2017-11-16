@@ -1,4 +1,5 @@
 define(['marionette',
+    'backgrid',
     'collections/detectors',
     'collections/scanservices',
 
@@ -19,10 +20,14 @@ define(['marionette',
 
     'tpl!templates/types/xpdf/plan.html',
     'tpl!templates/types/xpdf/planparams.html',
+    'tpl!templates/types/xpdf/planparamsstatic.html',
     'tpl!templates/types/xpdf/planaxis.html',
-    'tpl!templates/types/xpdf/plandetector.html'
+    'tpl!templates/types/xpdf/planaxisstatic.html',
+    'tpl!templates/types/xpdf/plandetector.html',
+    'tpl!templates/types/xpdf/plandetectorstatic.html'
 
     ], function(Marionette,
+        Backgrid,
         Detectors,
         ScanServices,
 
@@ -41,7 +46,13 @@ define(['marionette',
         SortableTableView,
         table,
 
-        template, planparams, planaxis, plandetector
+        template,
+        planparams,
+        planparamsstatic,
+        planaxis,
+        planaxisstatic,
+        plandetector,
+        plandetectorstatic
     ) {
 
 
@@ -53,12 +64,12 @@ define(['marionette',
         addPlan: function(e) {
             e.preventDefault()
             var plans = this.column.get('datacollectionplans')
-
             var p = new DataCollectionPlan({
                 BLSAMPLEID: this.model.get('BLSAMPLEID'),
                 SAMPLE: this.model.get('NAME'),
                 PROTEINID: this.model.get('PROTEINID'),
                 PROTEIN: this.model.get('ACRONYM'),
+                PLANORDER: plans.length,
             })
 
             p.save({}, {
@@ -157,10 +168,10 @@ define(['marionette',
                 model: this.model,
                 selector: 'name',
                 valid: function(view, attr) {
-                  view.valid(view.$el.find('[name="'+attr+'"]'))
+                    view.valid(view.$el.find('[name='+attr+']'))
                 },
                 invalid: function(view, attr, error) {
-                  view.invalid(view.$el.find('[name="'+attr+'"]'), error)
+                    view.invalid(view.$el.find('[name='+attr+']'), error)
                 }
             })
         },
@@ -169,12 +180,49 @@ define(['marionette',
 
 
     var DCPlanCell = ValidatedCell.extend({
+
+        events: _.extend({}, ValidatedCell.prototype.events, {
+            'click a.locked': 'doUnlock',
+            'click a.unlocked': 'doLock',
+        }),
+        
+        initialize: function(options) {
+            DCPlanCell.__super__.initialize.call(this, options)
+
+            this.listenTo(this.model, 'row:collapse', this.doCollapse)
+            this.listenTo(this.model, 'row:expand', this.doExpand)
+        },
+        
         render: function() {
             this.$el.empty()
-            this.$el.html(planparams(this.model.toJSON()))
             this.bindModel()
+            
+            this.doCollapse()
+            
             return this
-        }
+        },
+
+        doCollapse: function() {
+            this.$el.html(planparamsstatic(this.model.toJSON()))
+            this.$el.find('a.locked').hide()
+            this.$el.find('p.warnusers').hide()
+        },
+        
+        doExpand: function() {
+            this.$el.find('a.locked').show()
+            this.$el.find('p.warnusers').show()
+        },
+        
+        doUnlock: function(e) {
+            e.preventDefault()
+            this.$el.html(planparams(this.model.toJSON()))
+        },
+
+        doLock: function(e) {
+            e.preventDefault()
+            this.$el.html(planparamsstatic(this.model.toJSON()))
+        },
+        
     })
 
 
@@ -185,14 +233,72 @@ define(['marionette',
             this.$el.html(planaxis(this.model.toJSON()))
             this.bindModel()
             return this
+        },
+    })
+
+
+    var SequenceOrderCell = Backgrid.Cell.extend({
+        events: {
+            'click a.moveup': 'decrementSequence',
+            'click a.movedown': 'incrementSequence',
+        },
+        
+        incrementSequence: function(e) {
+            e.preventDefault()
+            if (this.model.get('SEQUENCENUMBER') < (this.column.get('parameterscollection').length-1)) {
+                
+                var sn = parseInt(this.model.get('SEQUENCENUMBER'))
+                var next = this.column.get('parameterscollection').findWhere({ SEQUENCENUMBER: (sn+1).toString() })
+
+                this.model.set({ SEQUENCENUMBER: (sn + 1).toString() })
+                next.set({ SEQUENCENUMBER: sn.toString() })
+            }
+        },
+        decrementSequence: function(e) {
+            e.preventDefault()
+            if (this.model.get('SEQUENCENUMBER') > 0) {
+                var sn = parseInt(this.model.get('SEQUENCENUMBER'))
+                var prev = this.column.get('parameterscollection').findWhere({ SEQUENCENUMBER: (sn-1).toString() })
+
+                this.model.set({ SEQUENCENUMBER: (sn - 1).toString() })
+                prev.set({ SEQUENCENUMBER: sn.toString() })
+            }
+        },
+        render: function() {
+            this.$el.html('<span>'+(parseInt(this.model.get('SEQUENCENUMBER'))+1)+'</span><a href="#" class="button movedown" title="Move later in the sequence"><i class="fa fa-chevron-down"></i></a><a href="#" class="button moveup" title="Move earlier in the sequence"><i class="fa fa-chevron-up"></i></a>')
+            return this
         }
     })
 
+    var StaticAxisCell = Backgrid.Cell.extend({
+        render: function() {
+            this.$el.empty()
+            this.$el.html(planaxisstatic(this.model.toJSON()))
+            return this
+        },
+    })
+
     var AxesCell = Backgrid.Cell.extend({
-        template: _.template('<select name="services"></select><a href="#" class="button add"><i class="fa fa-plus"></i></a><div class="axes"></div>'),
+        template: _.template('<select name="services"></select><a href="#" class="button add"><i class="fa fa-plus"></i></a><div class="axes"></div><div class="axesstatic"></div>'),
 
         events: {
             'click a.add': 'addAxis',
+        },
+
+        initialize: function(options) {
+            AxesCell.__super__.initialize.apply(this, [options])
+
+            this.listenTo(this.model, 'row:collapse', this.doCollapse)
+            this.listenTo(this.model, 'row:expand', this.doExpand)
+            this.listenTo(this.model.get('SCANPARAMETERSMODELS'), 'change:SEQUENCENUMBER', this.saveOrder)
+        },
+        
+        saveOrder: function() {
+            console.log('seq saving order')
+            this.model.get('SCANPARAMETERSMODELS').each(function(m) {
+                var ca = m.changedAttributes()
+                if (Object.keys(ca).length) m.save(ca, { patch: true })
+            })
         },
 
         addAxis: function(e) {
@@ -204,7 +310,8 @@ define(['marionette',
             var axis = new ScanModel({
                 DATACOLLECTIONPLANID: this.model.get('DIFFRACTIONPLANID'),
                 SCANPARAMETERSSERVICEID: serviceid,
-                SCANPARAMETERSSERVICE: service.get('NAME')
+                SCANPARAMETERSSERVICE: service.get('NAME'),
+                SEQUENCENUMBER: this.model.get('SCANPARAMETERSMODELS').length
             })
 
             var self = this
@@ -222,12 +329,13 @@ define(['marionette',
 
         render: function() {
             var columns = [
+               { label: 'Order', cell: SequenceOrderCell, editable: false, parameterscollection: this.model.get('SCANPARAMETERSMODELS') },
                { label: 'Axis', cell: table.TemplateCell, editable: false, template: '<%-SCANPARAMETERSSERVICE%>' },
                { label: 'Parameters', cell: AxisCell, editable: false },
                { label: '', cell: DeleteCell, editable: false },
             ]
-
-            var atable = new TableView({ 
+            
+            this.atable = new TableView({ 
                 collection: this.model.get('SCANPARAMETERSMODELS'), 
                 columns: columns, 
                 tableClass: 'axes', 
@@ -236,15 +344,46 @@ define(['marionette',
                 backgrid: { emptyText: 'No axes found' },
             })
 
+            var staticColumns = [
+                { label: 'Order', cell: table.TemplateCell, editable: false, template: '<%-parseInt(SEQUENCENUMBER)+1%>' },
+                { label: 'Axis', cell: table.TemplateCell, editable: false, template: '<%-SCANPARAMETERSSERVICE%>' },
+                { label: 'Parameters', cell: StaticAxisCell, editable: false },
+            ]
+
+            this.stable = new TableView({ 
+                collection: this.model.get('SCANPARAMETERSMODELS'), 
+                columns: staticColumns, 
+                tableClass: 'axesstatic', 
+                loading: false,
+                pages: false,
+                backgrid: { emptyText: 'No axes found' },
+            })
+           
             this.$el.empty()
             this.$el.html(this.template)
-            this.$el.find('.axes').html(atable.render().$el)
-            // this.$el.append(atable.render().$el)
+            this.$el.find('.axes').html(this.atable.render().$el)
+            this.$el.find('.axesstatic').html(this.stable.render().$el)
             this.$el.find('select[name=services]').html(this.column.get('scanservices').opts())
 
+            this.doCollapse()
+            
             return this
         },
 
+        doCollapse: function() {
+            this.$el.find('a.add').hide()
+            this.$el.find('select[name=services]').hide()
+            this.$el.find('.axes').hide()
+            this.$el.find('.axesstatic').show()
+
+        },
+        
+        doExpand: function() {
+            this.$el.find('a.add').show()
+            this.$el.find('select[name=services]').show()
+            this.$el.find('.axes').show()
+            this.$el.find('.axesstatic').hide()
+        },
     })
 
 
@@ -257,14 +396,29 @@ define(['marionette',
             return this
         }
     })
+    
+    var StaticDetectorCell = Backgrid.Cell.extend({
+        render: function() {
+            this.$el.empty()
+            this.$el.html(plandetectorstatic(this.model.toJSON()))
+            return this
+        },
+    })
 
     var DetectorsCell = Backgrid.Cell.extend({
-        template: _.template('<select name="detectors"></select><a href="#" class="button add"><i class="fa fa-plus"></i></a><div class="detectors"></div>'),
+        template: _.template('<select name="detectors"></select><a href="#" class="button add"><i class="fa fa-plus"></i></a><div class="detectors"></div><div class="detectorsstatic"></div>'),
 
         events: {
             'click a.add': 'addDetector',
         },
 
+        initialize: function(options) {
+            DetectorsCell.__super__.initialize.apply(this, [options])
+            
+            this.listenTo(this.model, 'row:collapse', this.doCollapse)
+            this.listenTo(this.model, 'row:expand', this.doExpand)
+        },
+        
         addDetector: function(e) {
             e.preventDefault()
 
@@ -299,7 +453,7 @@ define(['marionette',
                { label: '', cell: DeleteCell, editable: false },
             ]
 
-            var dtable = new TableView({ 
+            this.dtable = new TableView({ 
                 collection: this.model.get('DETECTORS'), 
                 columns: columns, 
                 tableClass: 'detectors', 
@@ -308,15 +462,80 @@ define(['marionette',
                 backgrid: { emptyText: 'No detectors found' },
             })
 
+            var staticColumns = [
+                { label: 'Detector', cell: table.TemplateCell, editable: false, template: '<%-DETECTORTYPE%><br /><%-DETECTORMANUFACTURER%><br /><%-DETECTORMODEL%><br />' },
+                { label: 'Parameters', cell: StaticDetectorCell, editable: false },
+            ]
+            
+            this.stable = new TableView({
+                collection: this.model.get('DETECTORS'),
+                columns: staticColumns,
+                tableClass: 'detectorsstatic',
+                loading: false,
+                pages: false,
+                backgrid: { emptyText: 'No detectors found' },
+            })
+            
             this.$el.empty()
             this.$el.html(this.template)
-            this.$el.find('.detectors').html(dtable.render().$el)
+            this.$el.find('.detectors').html(this.dtable.render().$el)
+            this.$el.find('.detectorsstatic').html(this.stable.render().$el)
             this.$el.find('select[name=detectors]').html(this.column.get('detectors').opts())
-
+            
+            this.doCollapse()
+            
             return this
+        },
+
+        doCollapse: function() {
+            this.$el.find('a.add').hide()
+            this.$el.find('select[name=detectors]').hide()
+            this.$el.find('.detectorsstatic').show()
+            this.$el.find('.detectors').hide()
+            
+        },
+        
+        doExpand: function() {
+            this.$el.find('a.add').show()
+            this.$el.find('select[name=detectors]').show()
+            this.$el.find('.detectorsstatic').hide()
+            this.$el.find('.detectors').show()
         },
     })
 
+    var CollapseExpandCell = table.TemplateCell.extend({
+        events: {
+            'click a.collapsar': 'toggleExpansion',
+        },
+        
+        initialize: function(options) {
+            CollapseExpandCell.__super__.initialize.apply(this, [options])
+            this.collapsed = true
+        },
+        
+        toggleExpansion: function(e) {
+            e.preventDefault()
+            
+            if (this.collapsed) {
+                this.collapsed = false
+                this.model.trigger('row:expand')
+                this.doExpand()
+            } else {
+                this.collapsed = true
+                this.model.trigger('row:collapse')
+                this.doCollapse()
+            }
+        },
+        
+        doCollapse: function() {
+            this.$el.find('i.expcol').removeClass('fa-chevron-down').addClass('fa-chevron-right')
+        },
+        
+        doExpand: function() {
+            this.$el.find('i.expcol').removeClass('fa-chevron-right').addClass('fa-chevron-down')
+        },
+
+    })
 
 
     return Marionette.LayoutView.extend({
@@ -349,6 +568,7 @@ define(['marionette',
             this.datacollectionplandetectors.queryParams.CONTAINERID = this.model.get('CONTAINERID')
             this.datacollectionplandetectors.fetch()
 
+
             this.datacollectionplans = new DataCollectionPlans()
             this.datacollectionplans.queryParams.CONTAINERID = this.model.get('CONTAINERID')
             // hmm this is not what you'd expect
@@ -367,7 +587,7 @@ define(['marionette',
             var columns = [
                 { label: '#', cell: table.TemplateCell, editable: false, template: '<%-LOCATION%>' },
                 { name: 'NAME', label: 'Name', cell: 'string', editable: false },
-                { name: 'ACRONYM', label: 'Component', cell: 'string', editable: false },
+                { name: 'CRYSTAL', label: 'Instance of', cell: 'string', editable: false },
                 { label: '', cell: AddCell, editable: false, datacollectionplans: this.datacollectionplans },
             ]
 
@@ -376,18 +596,19 @@ define(['marionette',
                 columns: columns, 
                 tableClass: 'asamples', 
                 loading: true,
-                backgrid: { emptyText: 'No samples found' },
+                backgrid: { emptyText: 'No instances found' },
             })
 
             this.asmps.show(this.table)
 
 
             var columns = [
-                // { label: '#', cell: table.TemplateCell, editable: false, template: '<%-ORDER%>' },
+                { label: '', cell: CollapseExpandCell, editable: false, template: '<a class="button collapsar" href="#"><i class="expcol fa fa-chevron-right"></i></a>' },
+                { label: '#', cell: table.TemplateCell, editable: false, template: '<%-parseInt(PLANORDER)+1%>' },
                 { label: 'Instance', cell: table.TemplateCell, editable: false, template: '<%-SAMPLE%>' },
-                { label: 'Parameters', cell: DCPlanCell, editable: false },
                 { label: 'Axes', cell: AxesCell, editable: false, scanservices: this.scanservices, scanmodels: this.scanmodels },
                 { label: 'Detectors', cell: DetectorsCell, editable: false, detectors: this.detectors, dpdetectors: this.datacollectionplandetectors },
+                { label: 'Parameters', cell: DCPlanCell, editable: false },
             ]
 
             this.table2 = new SortableTableView({ 
@@ -395,11 +616,24 @@ define(['marionette',
                 columns: columns, 
                 tableClass: 'subsamples', 
                 loading: true,
-                backgrid: { emptyText: 'No plans found' },
+                backgrid: {
+                    emptyText: 'No data collection plans found'
+                }
             })
 
+            this.listenTo(this.datacollectionplans, 'order:updated', this.saveOrder)
+            
             this.psmps.show(this.table2)
         },
+        
+        saveOrder: function() {
+            console.log('saving order')
+            this.datacollectionplans.each(function(m) {
+                var ca = m.changedAttributes()
+                if (Object.keys(ca).length) m.save(ca, { patch: true })
+            })
+        },
+        
 
     })
 
