@@ -30,6 +30,10 @@ define(['backbone', 'collections/components'], function(Backbone, Components) {
             EXPERIMENTALDENSITY: '',
             COMPOSITION: '',
             LOOPTYPE: '',
+            DIMENSION1: '',
+            DIMENSION2: '',
+            DIMENSION3: '',
+            SHAPE: '',
         },
         
         validation: {
