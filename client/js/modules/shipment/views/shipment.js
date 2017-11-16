@@ -83,7 +83,7 @@ define(['marionette',
             this.dewarcontent = new Containers()
             this.dewarhistory = new DewarHistory()
             this.dewartracking = new DewarTracking()
-            this.dewars = new Dewars([], { id: this.model.get('SHIPPINGID') })
+            this.dewars = new Dewars(null, { id: this.model.get('SHIPPINGID') })
             this.fetchDewars()
             
             this.listenTo(app, 'shipment:showdewar', this.showDewar)

@@ -27,7 +27,7 @@ define([
         template: template,   
 
         createSamples: function() {
-            this.samples = new Instances([], { state: { pageSize: 9999, addPrimary: true } })
+            this.samples = new Instances(null, { state: { pageSize: 9999, addPrimary: true } })
             this.samples.queryParams.seq = 1
         },
 

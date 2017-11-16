@@ -59,7 +59,7 @@ define(['marionette',
         },
 
         createSamples: function() {
-            this.samples = new Samples([], { state: { pageSize: 9999 } })
+            this.samples = new Samples(null, { state: { pageSize: 9999 } })
         },
 
         initialize: function(options) {
