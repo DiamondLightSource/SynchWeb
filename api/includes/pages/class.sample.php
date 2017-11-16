@@ -583,8 +583,6 @@
                                   
                                   FROM blsample b
 
-                                  LEFT OUTER JOIN blsamplegroup_has_blsample bsg ON bsg.blsampleid = b.blsampleid
-
                                   INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                                   INNER JOIN protein pr ON pr.proteinid = cr.proteinid
                                   LEFT OUTER JOIN concentrationtype pct ON pr.concentrationtypeid = pct.concentrationtypeid
