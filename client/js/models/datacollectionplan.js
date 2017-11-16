@@ -39,6 +39,9 @@ define(['backbone',
                 this.listenTo(this.detectors, 'sync reset change add remove', this.syncDetectors)
                 this.syncDetectors()
             }
+
+            this.listenTo(this, 'change:ENERGY', this.updateKevEnergy)
+            this.updateKevEnergy()
         },
 
         syncModels: function() {
@@ -53,6 +56,9 @@ define(['backbone',
             this.get('DETECTORS').reset(dets)
         },
 
+        updateKevEnergy: function() {
+            this.set('KEVENERGY', (this.get('ENERGY')*0.001).toPrecision(3))
+        },
 
         validation: {
             BLSAMPLEID: {
@@ -116,7 +122,7 @@ define(['backbone',
             },
 
             ENERGY: {
-                required: true,
+                required: false,
                 pattern: 'digits',
             },
 
