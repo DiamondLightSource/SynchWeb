@@ -466,7 +466,8 @@ define(['marionette',
             this.caching = !app.mobile()
 
             var self = this
-            this.samples = new Samples([], { containerID: options.model.get('CONTAINERID'), state: {pageSize: 9999} })
+            this.samples = new Samples(null, { state: {pageSize: 9999} })
+            this.samples.queryParams.cid = options.model.get('CONTAINERID')
             this.listenTo(this.samples, 'selected:change', this.selectSample)
 
             this.subsamples = new Subsamples()

@@ -1,7 +1,6 @@
 define(['underscore', 'backbone.paginator', 'models/sample'], function(_, PageableCollection, Sample) {
     
     return PageableCollection.extend({
-        containerID: null,
         model: Sample,
         mode: 'server',
         url: '/sample',
