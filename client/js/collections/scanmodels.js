@@ -8,6 +8,10 @@ define(['backbone.paginator', 'models/scanmodel'], function(PageableCollection, 
         state: {
             pageSize: 15,
         },
+
+        comparator: function(m) {
+            return parseInt(m.get('SEQUENCENUMBER'))
+        },
                                           
         parseState: function(r, q, state, options) {
             return { totalRecords: r.total }
