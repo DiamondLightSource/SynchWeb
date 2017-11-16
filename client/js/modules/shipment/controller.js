@@ -1,5 +1,6 @@
 define(['marionette',
-    
+        'modules/shipment/views/getshipmentview',
+
         'models/dewar',
         'models/shipment',
         'collections/shipments',
@@ -11,7 +12,7 @@ define(['marionette',
         'collections/containers',
         'modules/shipment/views/container',
         'modules/shipment/views/containerplate',
-        'modules/shipment/views/containeradd',
+        // 'modules/shipment/views/containeradd',
         'modules/shipment/views/containers',
         'modules/imaging/views/queuecontainer',
 
@@ -34,16 +35,19 @@ define(['marionette',
         'modules/shipment/views/manifest',
 
         'modules/shipment/views/createawb',
+        'modules/types/xpdf/views/plan',
 
         'models/proplookup',
     
 ], function(Marionette,
+    GetView,
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView,
-    Container, Containers, ContainerView, ContainerPlateView, ContainerAddView, ContainersView, QueueContainerView,
+    Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
     DispatchView, TransferView, Dewars, DewarOverview, ManifestView, CreateAWBView,
+    PlanView,
     ProposalLookup) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
@@ -116,7 +120,7 @@ define(['marionette',
       page = page ? parseInt(page) : 1
       var containers = new Containers(null, { state: { currentPage: page }, queryParams: { s: s, ty: ty } })
       containers.fetch().done(function() {
-          app.content.show(new ContainersView({ collection: containers, params: { s: s, ty: ty } }))
+          app.content.show(GetView.ContainersList.get(app.type, { collection: containers, params: { s: s, ty: ty } }))
       })
     },
       
@@ -130,10 +134,11 @@ define(['marionette',
                 container.fetch({
                     success: function() {
                         app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }])
-                        var is_plate = !(['Puck', 'PCRStrip', null].indexOf(container.get('CONTAINERTYPE')) > -1)
+                        var is_plate = !(['Box', 'Puck', 'PCRStrip', null].indexOf(container.get('CONTAINERTYPE')) > -1)
+                        if (is_plate && container.get('CONTAINERTYPE').includes('Xpdf')) is_plate = false
                         console.log('is plate', is_plate)
                         if (is_plate) app.content.show(new ContainerPlateView({ model: container, params: { iid: iid, sid: sid } }))
-                          else app.content.show(new ContainerView({ model: container }))
+                          else app.content.show(GetView.ContainerView.get(app.type, {model: container}))
                     },
                     error: function() {
                         app.bc.reset([bc, { title: 'No such container' }])
@@ -159,7 +164,7 @@ define(['marionette',
                   dewar.fetch({
                       success: function() {
                           app.bc.reset([bc, { title: dewar.get('SHIPPINGNAME'), url: '/shipments/sid/'+dewar.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Add Container' }])
-                          app.content.show(new ContainerAddView({ dewar: dewar, visit: visit }))
+                          app.content.show(GetView.ContainerAddView.get(app.type, { dewar: dewar, visit: visit }))
                       },
                       error: function() {
                           app.bc.reset([bc, { title: 'Error' }])
@@ -200,6 +205,31 @@ define(['marionette',
                 app.message({ title: 'No such container', message: 'The specified container could not be found'})
             },
 
+        })
+    },
+
+
+    plan_container: function(cid) {
+        var lookup = new ProposalLookup({ field: 'CONTAINERID', value: cid })
+        lookup.find({
+            success: function() {
+                var container = new Container({ CONTAINERID: cid })
+                container.fetch({
+                    success: function() {
+                        app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }, { title: 'Plan Experiment' }])
+                        app.content.show(new PlanView({ model: container }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'Error' }])
+                        app.message({ title: 'No such container', message: 'The specified container could not be found'})
+                    },
+                })
+            },
+
+            error: function() {
+                app.bc.reset([bc, { title: 'Error' }])
+                app.message({ title: 'No such container', message: 'The specified container could not be found'})
+            }
         })
     },
       

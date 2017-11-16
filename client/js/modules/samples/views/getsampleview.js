@@ -1,5 +1,5 @@
 define(['views/getview',
-		'modules/samples/views/list',
+        'modules/samples/views/list',
         'modules/samples/views/view',
     
         'modules/types/gen/samples/views/list',
@@ -12,68 +12,163 @@ define(['views/getview',
         'modules/types/gen/samples/views/componentlist',
         'modules/types/gen/samples/views/componentadd',
         'modules/types/gen/samples/views/componentview',
+
+        'modules/types/xpdf/samples/views/phaselist',
+        'modules/types/xpdf/samples/views/phaseview',
+        'modules/types/xpdf/samples/views/phaseadd',
+
+        'modules/types/xpdf/samples/views/samplelist',
+        'modules/types/xpdf/samples/views/sampleview',
+        'modules/types/xpdf/samples/views/sampleadd',
+
+        'modules/types/xpdf/samples/views/instancelist',
+        'modules/types/xpdf/samples/views/instanceview',
+
 ], function(GetView,
-	SampleList, SampleView,
-	GenSampleList, GenSampleView,
+    SampleList, SampleView,
+    GenSampleList, GenSampleView,
 
-	ProteinList, ProteinView, AddProteinView,
-	GenComponentList, GenComponentAdd, GenComponentView
-	){
+    ProteinList, ProteinView, AddProteinView,
+    GenComponentList, GenComponentAdd, GenComponentView,
+
+    XPDFPhaseList, XPDFPhaseView, XPDFPhaseAdd,
+    XPDFSampleList, XPDFSampleView, XPDFAddSampleView,
+    XPDFInstanceList, XPDFInstanceView
+    ){
 
 
-	return {
+    var SampleTitles = {
+        xpdf: 'Instance',
+    }
 
-		SampleList: new GetView({
-			views: {
+    var SampleDefault = 'Sample'
+
+
+    var ProteinTitles = {
+        mx: 'Protein',
+        gen: 'Component',
+        xpdf: 'Phase',
+    }
+
+    var ProteinDefault = 'Component'
+
+
+    var CrystalTitles = {
+        xpdf: 'Sample',
+    }
+
+    var CrystalDefault = 'Crystal'
+
+
+    return {
+
+        SampleList: new GetView({
+            views: {
                 mx: SampleList,
- 				saxs: SampleList,
-              	gen: GenSampleList,
-			},
-			default: GenSampleList,
-		}),
+                saxs: SampleList,
+                gen: GenSampleList,
+                xpdf: XPDFInstanceList,
+            },
+            default: GenSampleList,
 
-		SampleView: new GetView({
-        	views: {
+            titles: SampleTitles,
+            default_title: SampleDefault,
+        }),
+
+        SampleView: new GetView({
+            views: {
                 mx: SampleView,
-        		saxs: SampleView,
+                saxs: SampleView,
                 gen: GenSampleView,
-        	},
-        	default: GenSampleView,
+                xpdf: XPDFInstanceView,
+            },
+            default: GenSampleView,
+
+            titles: SampleTitles,
+            default_title: SampleDefault,
         }),
 
 
 
-		ProteinList: new GetView({
-			views: {
+        ProteinList: new GetView({
+            views: {
                 mx: ProteinList,
-				saxs: ProteinList,
-            	gen: GenComponentList,
+                saxs: ProteinList,
+                gen: GenComponentList,
+                xpdf: XPDFPhaseList,
             },
             default: GenComponentList,
+
+            titles: ProteinTitles,
+            default_title: ProteinDefault,
         }),
 
 
         ProteinAdd: new GetView({
-        	views: {
+            views: {
                 mx: AddProteinView,
-        		saxs: AddProteinView,
-            	gen: GenComponentAdd,
-        	},
-        	default: GenComponentAdd
+                saxs: AddProteinView,
+                gen: GenComponentAdd,
+                xpdf: XPDFPhaseAdd
+            },
+            default: GenComponentAdd,
+
+            titles: ProteinTitles,
+            default_title: ProteinDefault,
         }),
 
 
         ProteinView: new GetView({
-        	views: {
+            views: {
                 mx: ProteinView,
-        		saxs: ProteinView,
+                saxs: ProteinView,
                 gen: GenComponentView,
-        	},
-        	default: GenComponentView,
+                xpdf: XPDFPhaseView,
+            },
+            default: GenComponentView,
+
+            titles: ProteinTitles,
+            default_title: ProteinDefault,
+        }),
+
+
+
+        CrystalList: new GetView({
+            views: {
+                xpdf: XPDFSampleList,
+            },
+
+            // default: CrystalList,
+            
+            titles: CrystalTitles,
+            default_title: CrystalDefault,
+        }),
+
+
+        CrystalView: new GetView({
+            views: {
+                xpdf: XPDFSampleView,
+            },
+
+            // default: CrystalView,
+            
+            titles: CrystalTitles,
+            default_title: CrystalDefault,
+        }),
+
+
+        CrystalAdd: new GetView({
+            views: {
+                xpdf: XPDFAddSampleView,
+            },
+
+            // default: CrystalAddView
+            
+            titles: CrystalTitles,
+            default_title: CrystalDefault,
         })
 
-
-	}
+    }
 
 
 })
