@@ -1,0 +1,38 @@
+<h1>View Phase</h1>
+<p class="help">This page shows the details of a phase</p>
+
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Name</span>
+            <span class="NAME"><%-NAME%></span>
+        </li>
+
+        <li>
+            <span class="label">Composition</span>
+            <span class="SEQUENCE"><%-SEQUENCE%></span>
+        </li>
+
+        <li>
+            <span class="label">Density</span>
+            <span class="DENSITY"><%-DENSITY%></span> g cm<span class="super">-3</span>
+        </li>
+
+        <li>
+            <span class="label">Molecular Mass</span>
+            <span class="MOLECULARMASS"><%-MOLECULARMASS%></span> a.m.u.
+        </li>
+
+        <li class="clearfix">
+            <span class="label">
+                Associated CIF Files<br />
+                <a href="#" class="button add"><i class="fa fa-plus"></i> Add CIF File</a>
+            </span>
+            <span class="cif floated">
+                <ul class="visits clearfix"></ul>
+            </span>
+        </li>
+    </ul>
+</div> 
+
+<div class="samples"></div>

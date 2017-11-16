@@ -1,0 +1,98 @@
+<h1>Instance</h1>
+
+<p class="help"> This page shows the details and history for an instance</p>
+<div class="ra buttons">
+    <a class ="button expplan" href="/containers/plan/<%-CONTAINERID%>" title="Plan experiments for this sample changer"><i class="fa fa-wrench"></i> Plan Experiment</a>
+</div>
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Name</span>
+            <span class="NAME"><%-NAME%></span>
+        </li>
+        
+        <li>
+            <span class="label">Instance of</span>
+            <span class="CRYSTALID"><%-CRYSTAL%></span>
+            <a class="button" href="/xsamples/cid/<%-CRYSTALID%>"><i class="fa fa-search"></i> <span>View</span></a>
+        </li>
+
+        <li>
+            <span class="label">Is Container</span>
+            <span class="LOOPTYPE"><%-LOOPTYPE=='1'?'Yes':'No'%></span>
+        </li>
+
+        <li>
+            <span class="label">Packing fraction</span>
+            <span class="PACKINGFRACTION"><%-PACKINGFRACTION%></span>
+        </li>
+        
+        <li>
+            <span class="label">Crystallographic density</span>
+            <span class="THEORETICALDENSITY"><%-THEORETICALDENSITY%></span> g cm<span class="super">-3</span>
+        </li>
+        
+        <li>
+            <span class="label">Experimental Density</span>
+            <span class="EXPERIMENTALDENSITY"><%-EXPERIMENTALDENSITY%></span> g cm<span class="super">-3</span>
+
+        <li>
+            <span class="label">Overall Composition</span>
+            <span class="COMPOSITION"><%-COMPOSITION%></span>
+        </li>
+        <li>
+            <span class="label">Comment</span>
+            <span class="COMMENTS"><%-COMMENTS%></span>
+        </li>
+        
+        <li>
+            <span class="label">QR Barcode</span>
+            <span class="CODE"><%-CODE%></span>
+        </li>
+
+        <li>
+            <span class="label">Shipment</span>
+            <span><a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a></span>
+        </li>
+        
+        <li>
+            <span class="label">Parcel</span>
+            <span><%-DEWAR%></span>
+        </li>
+
+        <li>
+            <span class="label">Stage</span>
+            <span class="cont"><a href="/containers/cid/<%-CONTAINERID%>"><%-CONTAINER%></a></span>
+        </li>        
+    </ul>
+</div>
+
+<h2>Phases</h2>
+<div class="phases"></div>
+
+<h2>Shape</h2>
+<div class="form shape">
+    <ul>
+        <li>
+            <span class="label">Width</span>
+            <span class="DIMENSION1"><%-DIMENSION1%></span> mm
+        </li>
+        <li>
+            <span class="label">Height</span>
+            <span class="DIMENSION2"><%-DIMENSION2%></span> mm
+        </li>
+        <li>
+            <span class="label">Length</span>
+            <span class="DIMENSION3"><%-DIMENSION3%></span> mm
+        </li>
+        <li>
+            <span class="label">Shape</span>
+            <span class="SHAPE"><%-SHAPE%></span>
+        </li>
+    </ul>
+</div>
+
+<h2>Container Groups</h2>
+<div class="containers"></div>
+
+<div class="history"></div>

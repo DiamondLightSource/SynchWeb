@@ -1,0 +1,34 @@
+
+<td><%-LOCATION%></td>
+<td><select name="CRYSTALID"></select>
+<td><input type="text" name="NAME" value="<%-NAME%>" /></td>
+<td><input type="text" name="PACKINGFRACTION" value="<%-PACKINGFRACTION%>" /></td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td><input type="text" name="COMMENTS" value="<%-COMMENTS%>" /></td>
+<td><input type="checkbox" name="LOOPTYPE" value="1" <%-LOOPTYPE=='1'?'checked=\"checked\"':''%> /></td>
+<td>
+    <table>
+        <tr>
+            <td>Width</td>
+            <td><input type="text" name="DIMENSION1" value="<%-DIMENSION1%>" /></td>
+        </tr>
+        <tr>
+            <td>Height</td>
+            <td><input type="text" name="DIMENSION2" value="<%-DIMENSION2%>" /></td>
+        </tr>
+        <tr>
+            <td>Length</td>
+            <td><input type="text" name="DIMENSION3" value="<%-DIMENSION3%>" /></td>
+        </tr>
+        <tr>
+            <td>Shape</td>
+            <td><input type="text" name="SHAPE" value="<%-SHAPE%>" /></td>
+        </tr>
+    </table>
+</td>
+<td>&nbsp;</td>
+<td>
+    <a href="#" class="button button-notext save"><i class="fa fa-check"></i> <span>Save Changes</span></a>
+    <a href="#" class="button button-notext cancel"><i class="fa fa-times"></i> <span>Cancel</span></a>
+</td>

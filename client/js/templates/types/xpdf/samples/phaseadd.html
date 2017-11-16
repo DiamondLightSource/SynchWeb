@@ -1,0 +1,38 @@
+<h1>Add Phase</h1>
+<form method="post" id="add_protein">
+
+    <div class="form">
+
+        <ul>
+
+            <li>
+                <label>Name
+                <span class="small">Name of the phase</span></label>
+                <span class="name"><input type="text" name="NAME" /></span>
+            </li>
+
+            <li>
+                <label>Composition
+                <span class="small">Chemical formula of the material</span></label>
+                <span class="composition"><input type="text" name="SEQUENCE" /></span>              
+            </li>
+
+            <li>
+                <label>Molecular Mass</label>
+                <span><input type="text" name="MOLECULARMASS" disabled="disabled" />  a.m.u.</span>
+            </li>
+            
+            <li>
+                <label>Density
+                <span class="small">Crystallographic density of the phase (g cm<span class="super">-3</span>)</span></label>
+                <span><input type="text" name="DENSITY" /></span>
+            </li>
+
+        </ul>
+        
+        <input class="acronym" type="hidden" name="ACRONYM" />
+        <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Phase</button>
+
+    </div>
+
+</form>

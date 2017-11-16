@@ -1,0 +1,53 @@
+
+    <td><%-LOCATION%></td>
+
+    <% if (CRYSTALID == -1) { %>
+    <td colspan="9">&nbsp;</td>
+    <% } else { %>
+
+    <td><%-CRYSTAL%></td>
+    <td><%-NAME%></td>
+    <td><%-PACKINGFRACTION%></td>
+    <td><%-EXPERIMENTALDENSITY%></td>
+    <td><%-COMPOSITION%></td>
+    <td><%-COMMENTS%></td>
+    <td><%-LOOPTYPE=='1'?'Yes':'No'%></td>
+    <td>
+        <table>
+            <tr>
+                <td>Width</td>
+                <td><%-DIMENSION1%></td>
+            </tr>
+            <tr>
+                <td>Height</td>
+                <td><%-DIMENSION2%></td>
+            </tr>
+            <tr>
+                <td>Length</td>
+                <td><%-DIMENSION3%></td>
+            </tr>
+            <tr>
+                <td>Shape</td>
+                <td><%-SHAPE%></td>
+            </tr>
+        </table>
+    </td>
+
+    <td>
+        <% if (BLSAMPLEID && STATUS) { %>
+        <ul class="status">
+            <li class="<%-STATUS%>"></li>
+        </ul>
+        <% } %>
+    </td>
+
+    <% } %>
+    <td>
+        <% if (!IN_USE) { %>
+            <a href="#" class="edit button button-notext" title="Edit instance details"><i class="fa fa-pencil"></i> <span>Edit Instance</span></a>
+        <% } %>
+        <% if (PROTEINID > -1) { %>
+        <a href="#" class="cont button button-notext" title="Edit instance containers"><i class="fa fa-cubes"></i> <span>Edit Containers</span></a>
+        <a href="/instances/sid/<%-BLSAMPLEID%>" class="view button button-notext" title="View instance details"><i class="fa fa-search"></i> <span>View Instance</span></a>
+        <% } %>        
+    </td>
