@@ -49,6 +49,15 @@ define(['backbone', 'collections/components'], function(Backbone, Components) {
                 pattern: 'number'
             },
 
+            ABUNDANCE: {
+                required: false,
+                pattern: 'number',
+            },
+            THEORETICALDENSITY: {
+                required: false,
+                pattern: 'number',
+            },
+
 
         },
     })

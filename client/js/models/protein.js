@@ -48,10 +48,10 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
                 required: false,
                 pattern: 'number',  
             },
-            // ABUNDANCE: {
-            //     required: false,
-            //     pattern: 'number',
-            // },
+            ABUNDANCE: {
+                required: false,
+                pattern: 'number',
+            },
         },
     })
     
