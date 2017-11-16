@@ -2,8 +2,37 @@ define(['marionette', 'backgrid',
     'utils',
     'modules/projects/views/addto'], function(Marionette, Backgrid, utils, AddToProjectView) {
     
+
+    var ValidatedCell = Backgrid.Cell.extend({
+        fromRaw: function (value, model) {
+            return value
+        },
+
+        toRaw: function(value, model) {
+            var prop = this.column.get('name')
+            var msg = this.model.preValidate(prop, value)
+            console.log(prop, msg, model.validation[prop])
+
+            if (msg) this.$el.find('input').addClass('ferror')
+            else this.$el.find('input').removeClass('ferror')
+
+            return msg ? undefined : value
+        },
+
+        initialize: function(options) {
+            ValidatedCell.__super__.initialize.call(this,options)
+
+            this.formatter.toRaw = this.toRaw.bind(this)
+            this.formatter.fromRaw = this.fromRaw.bind(this)
+
+            _.extend(this.model, Backbone.Validation.mixin)
+        }
+    })
+
   
     return {
+        ValidatedCell: ValidatedCell,
+
         ClickableRow: Backgrid.Row.extend({
             events: {
                 'click': 'onClick',
@@ -106,7 +135,7 @@ define(['marionette', 'backgrid',
 
                 return this
             }
-        })
+        }),
     }
     
 })
