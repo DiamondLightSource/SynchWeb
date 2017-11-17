@@ -84,7 +84,6 @@ define(['marionette',
             this.rcont.show(new SampleContainersView({ 
                 collection: this.groups, 
                 containers: this.containers,
-                // PARENTBLSAMPLEID: this.model.get('BLSAMPLEID')
                 parent: this.model,
             }))
 
