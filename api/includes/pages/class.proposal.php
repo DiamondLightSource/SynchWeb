@@ -32,6 +32,7 @@
 
 
                               'BLSAMPLEID' => '\d+',
+                              'CRYSTALID' => '\d+',
                               'PROTEINID' => '\d+',
                               'CONTAINERID' => '\d+',
                               'DEWARID' => '\d+',
@@ -42,8 +43,17 @@
         
 
         public static $dispatch = array(array('(/:prop)', 'get', '_get_proposals'),
+                                        array('/', 'post', '_add_proposal'),
+                                        array('/:prop', 'patch', '_update_proposal'),
+
                                         array('/visits(/:visit)', 'get', '_get_visits'),
                                         array('/visits/:visit', 'patch', '_update_visit'),
+                                        array('/visits', 'post', '_add_visit'),
+
+                                        array('/visits/users', 'get', '_get_visit_users'),
+                                        array('/visits/users', 'post', '_add_visit_user'),
+                                        array('/visits/users', 'delete', '_remove_visit_user'),
+
                                         array('/bls/:ty', 'get', '_get_beamlines'),
                                         array('/type', 'get', '_get_types'),
                                         array('/lookup', 'post', '_lookup'),
@@ -78,11 +88,10 @@
         # ------------------------------------------------------------------------
         # List proposals for current user
         function _get_proposals($id=null) {
-            global $prop_types, $bl_types, $prop_codes;
+            global $prop_types, $bl_types;
 
             $args = array();
-            $codes = implode("', '", (array)$prop_codes);
-            $where = "WHERE p.proposalcode in ('$codes')";
+            $where = "WHERE 1=1";
 
             if ($id) {
                 $where .= " AND CONCAT(p.proposalcode,p.proposalnumber) LIKE :".(sizeof($args)+1);
@@ -188,7 +197,22 @@
                            ));
         }
         
+
+
+        # ------------------------------------------------------------------------
+        # Add a proposal
+        function _add_proposal() {
+            if (!$this->user->can('manage_proposals')) $this->_error('No access');
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Update a proposal
+        function _update_proposal() {
+            if (!$this->user->can('manage_proposals')) $this->_error('No access');
+        }
     
+
         # ------------------------------------------------------------------------
         # Get visits for a proposal
         function _get_visits($visit=null, $output=true) {
@@ -352,7 +376,8 @@
         }
         
 
-
+        # ------------------------------------------------------------------------
+        # Get current visits
         function _current_visits() {
             global $bl_types;
             unset($this->args['current']);
@@ -390,8 +415,8 @@
         }
 
 
-
-
+        # ------------------------------------------------------------------------
+        # Update visit
         function _update_visit() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
@@ -410,13 +435,45 @@
         }
 
 
+        # ------------------------------------------------------------------------
+        # Add visit
+        function _add_visit() {
+            if (!$this->user->can('manage_visits')) $this->_error('No access');
+        }
 
 
+
+        # ------------------------------------------------------------------------
+        # Get users on a visit
+        function _get_visit_users() {
+            if (!$this->user->can('manage_vusers')) $this->_error('No access');
+        }
+
+
+
+        # ------------------------------------------------------------------------
+        # Add user to a visit
+        function _add_visit_user() {
+            if (!$this->user->can('manage_vusers')) $this->_error('No access');
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Remove user from a visit
+        function _remove_visit_user() {
+            if (!$this->user->can('manage_vusers')) $this->_error('No access');
+        }
+
+
+
+        # ------------------------------------------------------------------------
+        # Lookup visit from container, dewar, sample, etc, ...
         function _lookup() {
             global $bl_types;
 
             $fields = array(
                 'BLSAMPLEID' => 's.blsampleid',
+                'CRYSTALID' => 'cr.crystalid',
                 'PROTEINID' => 'pr.proteinid',
                 'CONTAINERID' => 'c.containerid',
                 'DEWARID' => 'd.dewarid',
