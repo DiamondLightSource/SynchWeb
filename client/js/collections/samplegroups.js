@@ -41,7 +41,7 @@ define(['backbone',
         initialize: function(options) {
             this._groups = new SampleGroupCollection()
             this._groups.parent = this
-            this.listenTo(this, 'sync add remove reset', this.generateGroups, this)
+            this.listenTo(this, 'sync update', this.generateGroups, this)
             this.generateGroups()
         },
 
