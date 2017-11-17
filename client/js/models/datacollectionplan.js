@@ -47,7 +47,7 @@ define(['backbone',
         syncModels: function() {
             if (!this.get('DIFFRACTIONPLANID')) return
             var mods = this.models.where({ DATACOLLECTIONPLANID: this.get('DIFFRACTIONPLANID')})
-            console.log('syncing models', this.get('DIFFRACTIONPLANID'), mods)
+            // console.log('syncing models', this.get('DIFFRACTIONPLANID'), mods)
             this.get('SCANPARAMETERSMODELS').reset(mods)
         },
 

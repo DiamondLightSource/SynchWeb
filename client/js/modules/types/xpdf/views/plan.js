@@ -70,6 +70,16 @@ define(['marionette',
                 PROTEINID: this.model.get('PROTEINID'),
                 PROTEIN: this.model.get('ACRONYM'),
                 PLANORDER: plans.length,
+
+                // TODO: this is not the right place to store this info
+                // long term this info will come from beamlinesetup
+                ENERGY: 76600,
+                MONOBANDWIDTH: 0.1,
+                PREFERREDBEAMSIZEX: 70,
+                PREFERREDBEAMSIZEY: 70
+            }, {
+                SCANPARAMETERSMODELS: this.column.get('scanmodels'),
+                DETECTORS: this.column.get('dpdetectors')
             })
 
             p.save({}, {
@@ -122,7 +132,7 @@ define(['marionette',
 
         updateModel: function(e) {
             console.log('up mod', $(e.target).attr('name'))
-            this.model.set($(e.target).attr('name'), $(e.target).val(), { silent: true })
+            this.model.set($(e.target).attr('name'), $(e.target).val())
             this.validate({ attr: $(e.target).attr('name'), val: $(e.target).val() })
             this.preSave()
         },
@@ -318,6 +328,7 @@ define(['marionette',
             axis.save({}, {
                 success: function() {
                     // add our new model to the 'full' collection, datacollectionplan sub collections will autoupdate
+                    console.log('saved axes', axis, self.column.get('scanmodels'))
                     self.column.get('scanmodels').add(axis)
                 }, 
 
@@ -588,7 +599,7 @@ define(['marionette',
                 { label: '#', cell: table.TemplateCell, editable: false, template: '<%-LOCATION%>' },
                 { name: 'NAME', label: 'Name', cell: 'string', editable: false },
                 { name: 'CRYSTAL', label: 'Instance of', cell: 'string', editable: false },
-                { label: '', cell: AddCell, editable: false, datacollectionplans: this.datacollectionplans },
+                { label: '', cell: AddCell, editable: false, datacollectionplans: this.datacollectionplans, scanmodels: this.scanmodels, dpdetectors: this.datacollectionplandetectors },
             ]
 
             this.table = new TableView({ 
