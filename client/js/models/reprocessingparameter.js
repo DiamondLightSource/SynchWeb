@@ -1,11 +1,11 @@
 define(['backbone'], function(Backbone) {
 
     return Backbone.Model.extend({
-        idAttribute: 'REPROCESSINGPARAMETERID',
+        idAttribute: 'PROCESSINGJOBPARAMETERID',
         urlRoot: '/shipment/dewars',
             
         validation: {
-            REPROCESSINGID: {
+            PROCESSINGJOBID: {
                 pattern: 'digits',
                 required: true,
             },

@@ -39,12 +39,12 @@ define(['marionette',
             },
 
             syncParams: function() {
-                var sw = this.column.get('params').where({ REPROCESSINGID: this.model.get('REPROCESSINGID') })
+                var sw = this.column.get('params').where({ PROCESSINGJOBID: this.model.get('PROCESSINGJOBID') })
                 this.params.reset(sw)
             },
 
             syncSweeps: function() {
-                var sw = this.column.get('sweeps').where({ REPROCESSINGID: this.model.get('REPROCESSINGID') })
+                var sw = this.column.get('sweeps').where({ PROCESSINGJOBID: this.model.get('PROCESSINGJOBID') })
                 this.sweeps.reset(sw)
             },
 

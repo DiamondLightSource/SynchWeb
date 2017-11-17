@@ -17,7 +17,7 @@ define(['backbone.paginator', 'models/reprocessingimagesweep'],
             options = _.extend({}, options)
             
             var col = this
-            var success = options.success;
+            var success = options.success
             options.success = function(resp) {
                 col.reset(resp, { silent: true })
                 if (success) success(col, resp, options)

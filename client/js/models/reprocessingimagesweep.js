@@ -1,11 +1,11 @@
 define(['backbone'], function(Backbone) {
 
     return Backbone.Model.extend({
-        idAttribute: 'REPROCESSINGIMAGESWEEPID',
+        idAttribute: 'PROCESSINGJOBIMAGESWEEPID',
         urlRoot: '/process/sweeps',
             
         validation: {
-            REPROCESSINGID: {
+            PROCESSINGJOBID: {
                 required: true,
                 pattern: 'digits',
             },
