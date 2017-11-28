@@ -43,10 +43,6 @@ define(['jquery', 'marionette',
         },
 
         setType: function() {
-            var types  = { 1: 0, 2: 1, 3: 3 }
-
-            this.type = types[parseInt(this.ui.ty.val())] 
-            console.log('ty', this.type)
             this.draw()
         },
 
@@ -61,14 +57,13 @@ define(['jquery', 'marionette',
 
         initialize: function(options) {
             this.draw = _.debounce(this.draw, 10)
-            this.listenTo(options.imagestatuses, 'sync', this.getModel, this)
+            this.statusesLoaded = false
+            this.listenTo(options.imagestatuses, 'sync', this.setStatues, this)
 
             this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.distl, 'change', this.draw, this)
             this.grid = new GridInfo({ id: this.getOption('ID') })
 
-
-            this.distl.fetch()
             var self = this
             this.gridFetched = false
             this._gridPromise = this.grid.fetch().done(function() {
@@ -91,15 +86,22 @@ define(['jquery', 'marionette',
             this.current = -1
 
             this.heatmapToggle = false
-            this.type = 1
+
+            this.snapshotLoading = false
+            this.listenTo(app, 'window:scroll', this.lazyLoad, this)
         },
 
         toggleFluo: function() {
             if (this.ui.flu.is(':checked')) {
                 this.ui.ty.prop('disabled', true)
+
+                var tmp = _.where(this.xfm.get('data'), { ELEMENT: this.ui.el.val() })
+                this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: 'rgb('+tmp[0]['R']+','+tmp[0]['G']+','+tmp[0]['B']+')' } })
                 this.draw()
             } else {
                 this.ui.ty.prop('disabled', false)
+
+                this.heatmap.configure({ maxOpacity: .4, gradient: { 0.25: 'rgb(0,0,255)', 0.55: 'rgb(0,255,0)', 0.85: 'yellow', 1.0: 'rgb(255,0,0)'} })
                 this.draw()
             }
         },
@@ -118,11 +120,28 @@ define(['jquery', 'marionette',
             this.ui.el.html(opts.join())
         },
 
+        setStatues: function() {
+            this.statusesLoaded = true
+            this.lazyLoad()
+        },
+
+        lazyLoad: function() {
+            // console.log('lazy loadjg')
+            if (!this.snapshotLoading && this.statusesLoaded && utils.inView(this.$el)) {
+                this.distl.fetch()
+                console.log('in view')
+                this.getModel()
+            }
+        },
+
+
         getModel: function() {
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
             if (m.get('SNS').length)
                 if (m.get('SNS')[2] && this.hasSnapshot == false) {
-                this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')
+                    this.snapshotLoading = true
+                    this.$el.addClass('loading')
+                    this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')
                 //this.draw()
             }
         },
@@ -130,6 +149,7 @@ define(['jquery', 'marionette',
         snapshotLoaded: function() {
             console.log('snapshot loaded')
             this.hasSnapshot = true
+            this.$el.removeClass('loading')
             this.draw()
         },
 
@@ -149,6 +169,9 @@ define(['jquery', 'marionette',
                 container: this.$el[0],
                 maxOpacity: .4,
             })
+
+            this.ui.ty.val(1)
+            this.lazyLoad()
         },
 
 
@@ -194,10 +217,8 @@ define(['jquery', 'marionette',
                 _.each(tmp, function(r) {
                     d.push([r.IMAGENUMBER, r.COUNTS])
                 })
-                this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: 'rgb('+tmp[0]['R']+','+tmp[0]['G']+','+tmp[0]['B']+')' } })
             } else {
-                if (this.distl.get('data')) d = this.distl.get('data')[this.type] 
-                this.heatmap.configure({ maxOpacity: .4, gradient: { 0.25: 'rgb(0,0,255)', 0.55: 'rgb(0,255,0)', 0.85: 'yellow', 1.0: 'rgb(255,0,0)'} })
+                if (this.distl.get('data')) d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
             }
 
             // plot distl data
@@ -304,7 +325,7 @@ define(['jquery', 'marionette',
 
         _getVal: function(pos) {
             var val = null
-            var d = this.distl.get('data')[this.type] 
+            var d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
             _.each(d, function(v, i) {
                 // 1 indexed array
                 if (v[0] == pos+1) {
