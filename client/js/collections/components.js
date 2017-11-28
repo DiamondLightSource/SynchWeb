@@ -19,7 +19,7 @@ define(['collections/proteins'], function(Proteins){
 
         _update_component_ids: function() {
             var comps = this.slice(this.addPrimary ? 1 : 0)
-            console.log('updating comps', this.addPrimary, comps)
+            // console.log('updating comps', this.addPrimary, comps)
             var flds = { 
                 COMPONENTIDS: _.map(comps, function(m) { return m.get('PROTEINID') }),
                 COMPONENTAMOUNTS: _.map(comps, function(m) { return m.get('ABUNDANCE') }),
@@ -76,7 +76,7 @@ define(['collections/proteins'], function(Proteins){
                 }
             }
 
-            console.log('components', comps, this.addPrimary)
+            // console.log('components', comps, this.addPrimary)
 
             this.reset(comps)
         },
