@@ -319,12 +319,22 @@ define(['marionette',
     },
       
     dispatch_dewar: function(did) {
-        var dewar = new Dewar({ DEWARID: did })
-        dewar.fetch({
+        var lookup = new ProposalLookup({ field: 'DEWARID', value: did })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc, { title: 'Dispatch Dewar' }, { title: dewar.get('CODE') }])
-                app.content.show(new DispatchView({ dewar: dewar }))
+                var dewar = new Dewar({ DEWARID: did })
+                dewar.fetch({
+                    success: function() {
+                        app.bc.reset([bc, { title: 'Dispatch Dewar' }, { title: dewar.get('CODE') }])
+                        app.content.show(new DispatchView({ dewar: dewar }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'Error' }])
+                        app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+                    },
+                })
             },
+
             error: function() {
                 app.bc.reset([bc, { title: 'Error' }])
                 app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
@@ -333,12 +343,22 @@ define(['marionette',
     },
 
     transfer_dewar: function(did) {
-        var dewar = new Dewar({ DEWARID: did })
-        dewar.fetch({
+        var lookup = new ProposalLookup({ field: 'DEWARID', value: did })
+        lookup.find({
             success: function() {
-                app.bc.reset([bc, { title: 'Transfer Dewar' }, { title: dewar.get('CODE') }])
-                app.content.show(new TransferView({ dewar: dewar }))
+                var dewar = new Dewar({ DEWARID: did })
+                dewar.fetch({
+                    success: function() {
+                        app.bc.reset([bc, { title: 'Transfer Dewar' }, { title: dewar.get('CODE') }])
+                        app.content.show(new TransferView({ dewar: dewar }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'Error' }])
+                        app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+                    },
+                })
             },
+
             error: function() {
                 app.bc.reset([bc, { title: 'Error' }])
                 app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
