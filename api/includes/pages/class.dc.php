@@ -1349,7 +1349,7 @@
         # Image quality indicators from distl
         function _image_qi($id) {
             session_write_close();
-            $iqs = array(array(), array(), array(), array());
+            $iqs = array(array(), array(), array(), array(), array());
 
             #$this->db->set_debug(True);
 
@@ -1380,7 +1380,7 @@
             array_push($args, $int);*/
 
             #im.datacollectionid=:1 
-            $imqs = $this->db->pq("SELECT imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b 
+            $imqs = $this->db->pq("SELECT imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b, imq.dozor_score as d
                 FROM imagequalityindicators imq 
             	WHERE imq.datacollectionid IN ($where)
                 ORDER BY imq.imagenumber", $args);
@@ -1390,6 +1390,7 @@
                 array_push($iqs[1], array(intval($imq['NIM']), intval($imq['B'])));
                 array_push($iqs[2], array(intval($imq['NIM']), floatval($imq['RES'])));
                 array_push($iqs[3], array(intval($imq['NIM']), floatval($imq['TOTALINTEGRATEDSIGNAL'])));
+                array_push($iqs[4], array(intval($imq['NIM']), floatval($imq['D'])));
             }
 
             $this->_output($iqs);
