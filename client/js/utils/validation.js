@@ -13,6 +13,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         address: /^(\w|\s|\-|\n|,)+$/,
         array: /^[\d+(.\d+)?),]+$/,
         country: /^(\w|\s|\-|,|\(|\)|')+$/,
+        visit: /^\w+\d+-\d+$/,
     })
     
     _.extend(Backbone.Validation.messages, {
@@ -28,6 +29,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         address: 'This field may only contain word character, spaces, and line returns',
         array: 'This field may only contain numbers and commas',
         country: 'This field must contain only letters, numbers, spaces, underscores, dashes, and commas',
+        visit: 'This field must be of the format xxx123-123',
     })
 
 })

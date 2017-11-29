@@ -5,75 +5,82 @@ define(['backbone'], function(Backbone) {
 
     validation: {
         
-    	FACILITYCODE: {
-    		pattern: 'fcode',
-    		required: false,
-    	},
+        FACILITYCODE: {
+            pattern: 'fcode',
+            required: false,
+        },
 
         LOCATION: {
-        	required: true,
+            required: true,
+            pattern: 'wwsdash'
         },
 
         VISIT: {
-        	required: true,
+            required: true,
+            pattern: 'visit',
         },
 
         LOCALCONTACT: {
-        	required: true,
+            required: true,
+            pattern: 'wwsdash'
         },
 
 
 
         GIVENNAME: {
-        	required: true,
+            required: true,
+            pattern: 'wwdash',
         },
 
         FAMILYNAME: {
-        	required: true,
+            required: true,
+            pattern: 'wwdash',
         },
 
         PHONENUMBER: {
-        	required: true,
+            required: true,
         },
 
         EMAILADDRESS: {
-        	required: true,
-        	pattern: 'email',
+            required: true,
+            pattern: 'email',
         },
 
         LABNAME: {
-        	required: true,
+            required: true,
+            pattern: 'wwsdash',
         },
 
         ADDRESS: {
-        	required: true,
+            required: true
         },
 
 
 
         DESCRIPTION: {
-        	required: true,
+            required: true,
         },
 
         DELIVERYAGENT_SHIPPINGDATE: {
-        	pattern: 'edate',
-        	required: true,
+            pattern: 'edate',
+            required: true,
         },
 
         
         DELIVERYAGENT_AGENTNAME: {
-        	required: true
+            required: true,
+            pattern: 'wwsdash'
         },
 
         DELIVERYAGENT_AGENTCODE: {
-        	required: function() {
-        		return !(this.get('FACILITYCODE'))
-        	}	
+            required: function() {
+                return !(this.get('FACILITYCODE'))
+            }   
         },
 
         AWBNUMBER: {
-        	pattern: 'word',
-        	required: false,
+            pattern: 'word',
+            required: false,
         }
 
     },
