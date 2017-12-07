@@ -9,6 +9,7 @@ define([
     'utils/table',
     'models/samplegroup',
     'collections/samplegroups',
+    'modules/types/xpdf/models/instance',
     'modules/types/xpdf/collections/instances',
     ], function(
         Marionette,
@@ -17,6 +18,7 @@ define([
         table,
         SampleGroupMember,
         SampleGroups,
+        Instance,
         Instances
     ){
     
@@ -39,6 +41,7 @@ define([
                     DIMENSION1: c.get('DIMENSION1'),
                     DIMENSION2: c.get('DIMENSION2'),
                     DIMENSION3: c.get('DIMENSION3'),
+                    SHAPE: c.get('SHAPE'),
                 })
             }
         },
@@ -78,6 +81,36 @@ define([
                     // TODO: should be a better way to do this
                     delete self.model.collection
                     self.model.parent.add(self.model)
+                    
+                    // TODO: Could be a better place to assign the dimensions
+                    // But here will do?
+                    var containingInst = self.model
+                    var wrappedMember = self.model.parent.at(self.model.parent.length-2)
+                    var wrappedInst = new Instance({BLSAMPLEID: wrappedMember.get("BLSAMPLEID")})
+                    
+                    // Copy across dimension if appropriate
+                    // 'Appropriate' currently means a cylinder
+                    if (containingInst.get('SHAPE') === 'cylinder' && (wrappedMember.get('SHAPE') === null || wrappedMember.get('SHAPE') === 'cylinder')) {
+                    	wrappedInst.set({'SHAPE': 'cylinder'})
+                    	// inner dimension. Set to zero, unless already non-null
+                    	if (wrappedMember.get('DIMENSION1') === null) wrappedInst.set({'DIMENSION1': 0.0})
+                    	if (wrappedMember.get('DIMENSION1') !== null && wrappedMember.get('DIMENSION1') > containingInst.get('DIMENSION1')) {
+                    		console.error('Contained instance is already larger than the inner radius of the container.')
+                    	} else {
+                        	// the outer radius of the wrapped instance is the inner radius of the container
+                    		// the lengths are equal
+                    		wrappedInst.set({'DIMENSION2': containingInst.get('DIMENSION1')}) 
+                    	}
+                    	if (wrappedMember.get('DIMENSION3') === null || wrappedMember.get('DIMENSION3') > containingInst.get('DIMENSION3'))
+                    		wrappedInst.set({'DIMENSION3': containingInst.get('DIMENSION3')})
+
+                    	wrappedInst.save({
+                    		'SHAPE': wrappedInst.get('SHAPE'),
+                    		'DIMENSION1': wrappedInst.get('DIMENSION1'),
+                    		'DIMENSION2': wrappedInst.get('DIMENSION2'),
+                    		'DIMENSION3': wrappedInst.get('DIMENSION3'),
+                    		}, {patch:true})
+                    }
                 }
             })
         },
