@@ -115,7 +115,10 @@ define(['marionette',
     container_list: function(s, ty, page) {
       console.log('cont list')
       app.loading()
-      app.bc.reset([bc, { title: 'Containers' }])
+      if (app.type == 'xpdf')
+    	  app.bc.reset([bc, { title: 'Stages' }])
+      else
+    	  app.bc.reset([bc, { title: 'Containers' }])
         
       page = page ? parseInt(page) : 1
       var containers = new Containers(null, { state: { currentPage: page }, queryParams: { s: s, ty: ty } })
@@ -127,13 +130,14 @@ define(['marionette',
       
     view_container: function(cid, iid, sid) {
         var lookup = new ProposalLookup({ field: 'CONTAINERID', value: cid })
+        var containersName = (app.type == 'xpdf') ? 'Stages' : 'Containers'
         lookup.find({
             success: function() {
                 app.log('cont view', cid, iid, sid)
                 var container = new Container({ CONTAINERID: cid })
                 container.fetch({
                     success: function() {
-                        app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }])
+                        app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: containersName }, { title: container.get('NAME') }])
                         var is_plate = !(['Box', 'Puck', 'PCRStrip', null].indexOf(container.get('CONTAINERTYPE')) > -1)
                         if (is_plate && container.get('CONTAINERTYPE').includes('Xpdf')) is_plate = false
                         console.log('is plate', is_plate)
@@ -405,7 +409,10 @@ define(['marionette',
     })
       
     app.on('container:show', function(cid, iid, sid) {
-      app.navigate('containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
+      if (app.type =='xpdf')
+        app.navigate('stages/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
+      else
+    	app.navigate('containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
       controller.view_container(cid, iid, sid)
     })
 

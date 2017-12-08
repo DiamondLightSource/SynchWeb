@@ -26,6 +26,13 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'shipments/manifest': 'manifest',
 
       'containers/plan/:cid': 'plan_container',
+
+      // Alternative URLs for XPDF experiments
+      'stages/cid/:cid(iid/:iid)(/sid/:sid)': 'view_container',
+      'stages/add/did/:did': 'add_container',
+      'stages(/s/:s)(/ty/:ty)(/page/:page)': 'container_list',
+      
+      'stages/plan/:cid': 'plan_container',
     },
     
     loadEvents: ['shipments:show', 'shipment:show', 'container:show', 'dewar:show']

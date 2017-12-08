@@ -43,7 +43,7 @@ define([
         },
         
         doOnShow: function() {
-            console.log('Showing XPDF container')
+            console.log('Showing XPDF stage')
             this.types = new PlateTypes()
             this.type = this.types.findWhere({ name: this.model.get('CONTAINERTYPE') })
 
