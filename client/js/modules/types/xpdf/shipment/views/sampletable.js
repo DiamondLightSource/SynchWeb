@@ -46,6 +46,13 @@ define(['backgrid',
             this.updateCrystals()
 
             if (this.model.get('CRYSTALID') > -1) this.$el.find('select[name=CRYSTALID]').combobox('value', this.model.get('CRYSTALID'))
+            
+            this.$el.find('td.blockdim').show()
+            this.$el.find('td.cylinderdim').hide()
+            if (this.model.get('SHAPE') !== null && this.model.get('SHAPE') === 'cylinder') {
+            	this.$el.find('td.blockdim').hide()
+            	this.$el.find('td.cylinderdim').show()
+            }
         },
 
         invalidCrystal: function(ui, val) {
