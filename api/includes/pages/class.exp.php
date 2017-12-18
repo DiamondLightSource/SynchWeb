@@ -83,7 +83,7 @@
 
             array('/parameters/services(/:SCANPARAMETERSSERVICEID)', 'get', '_scan_services'),
             array('/parameters/services', 'post', '_add_scan_service'),
-            array('/parameters/services:SCANPARAMETERSSERVICEID', 'patch', '_update_scan_service'),
+            array('/parameters/services/:SCANPARAMETERSSERVICEID', 'patch', '_update_scan_service'),
 
             array('/parameters/models(/:SCANPARAMETERSMODELID)', 'get', '_scan_models'),
             array('/parameters/models', 'post', '_add_scan_model'),
