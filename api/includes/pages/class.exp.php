@@ -77,7 +77,7 @@
             array('/plans/:DIFFRACTIONPLANID', 'patch', '_update_diffraction_plan'),
             array('/plans/:DIFFRACTIONPLANID', 'delete', '_delete_diffraction_plan'),
 
-            array('/detectors(:DETECTORID)', 'get', '_detectors'),
+            array('/detectors(/:DETECTORID)', 'get', '_detectors'),
             array('/detectors', 'post', '_add_detector'),
             array('/detectors/:DETECTORID', 'patch', '_update_detector'),
 
