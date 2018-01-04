@@ -50,7 +50,7 @@ define(['marionette', 'backbone', 'views/table', 'views/filter',
             this.listenTo(this.collection, 'change:isSelected', this.setGroup, this)
             this.collection.fetch()
 
-            this.components = new Components()
+            this.components = new Components(null, { state: { pageSize: 9999 }})
             this.components.queryParams.scid = this.model.get('SCREENID')
             this.components.fetch()
 

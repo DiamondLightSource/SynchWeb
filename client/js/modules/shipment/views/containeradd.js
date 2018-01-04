@@ -516,7 +516,7 @@ define(['marionette',
             this.screencomponentgroups = new ScreenComponentGroups()
             this.screencomponentgroups.queryParams.scid = this.getScreen.bind(this)
 
-            this.screencomponents = new ScreenComponents()
+            this.screencomponents = new ScreenComponents(null, { state: { pageSize: 9999 }})
             this.screencomponents.queryParams.scid = this.getScreen.bind(this)
           
             this.checkBarcode = _.debounce(this.checkBarcode.bind(this), 200)
