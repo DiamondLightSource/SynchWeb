@@ -503,7 +503,7 @@ define(['marionette',
                 self.ui.schedule.html('<option value=""> - </option>'+self.schedules.opts())
             })
 
-            this.screens = new Screens()
+            this.screens = new Screens(null, { state: { pageSize: 9999 }})
             this.screens.fetch().done(function() {
                 self.ui.screen.html('<option value=""> - </option>'+self.screens.opts())
             })
