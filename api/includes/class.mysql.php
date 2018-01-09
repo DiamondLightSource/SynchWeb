@@ -270,6 +270,7 @@
                             'MotionCorrection',
                             'MotionCorrectionDrift',
                             'CTF',
+                            'Movie',
 
                             // Sample groups
                             'BLSampleGroup',
