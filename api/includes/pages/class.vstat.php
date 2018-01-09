@@ -125,15 +125,16 @@
 
                 $sched = array();
 
-                $ctf = $this->db->pq("SELECT TO_CHAR(app.processingendtime, 'DD-MM-YYYY HH24:MI:SS') as st, c.astigmatism, c.estimatedresolution, c.estimateddefocus
+                $ctf = $this->db->pq("SELECT TO_CHAR(m.createdtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, c.astigmatism, c.estimatedresolution, c.estimateddefocus
                     FROM ctf c
                     INNER JOIN autoprocprogram app ON app.autoprocprogramid = c.autoprocprogramid
                     INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-                    INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                    INNER JOIN movie m ON m.movieid = mc.movieid
+                    INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                     INNER JOIN blsession s ON s.sessionid = dc.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                    WHERE 1=1 $where ORDER BY app.processingendtime", $args);
+                    WHERE 1=1 $where ORDER BY m.createdtimestamp", $args);
 
             } else {
                 $ai = array();
