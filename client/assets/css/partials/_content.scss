@@ -791,6 +791,23 @@ ol.rounded {
             float: none;
             height: 150px;
         }
+
+        &.mg {
+            width: 26.2%;
+
+            figcaption {
+                position: absolute;
+                margin: 3px 0 0 4px;
+            }
+
+            img {
+                opacity: 0;
+
+                &.show {
+                    opacity: 1;
+                }
+            }
+        }
     }
 
 
