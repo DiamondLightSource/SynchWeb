@@ -49,16 +49,12 @@ define([
 
             this.model.set('KV', this.l2kV(this.model.get('WAVELENGTH')))
             this.overview = new Overview({ pm: this.model, imagestatuses: this.getOption('imagestatuses'), apstatus: this.getOption('apstatuses') })
-            // this.micrograph = new Micrograph({ pm: this.model, apstatuses: this.getOption('apstatuses') })
-            // 
-            this.listenTo(this.getOption('apstatuses'), 'sync', this.findFirst)
             this.listenTo(this.overview, 'current', this.loadPoint, this)
         },
 
 
         onShow: function() {
             EMDCView.__super__.onShow.apply(this)
-            // this.mg.show(this.micrograph)
             this.imagestatus = new ImageStatusItem({ pm: this.model, statuses: this.getOption('apstatuses'), el: this.$el })
             this.ov.show(this.overview)
         },
@@ -69,7 +65,7 @@ define([
         },  
 
         loadPoint: function(point) {
-            this.imagestatus.show(point)
+            if (point) this.imagestatus.show(point)
             if (this.ap) {
                 this.ap.fetch(point)
             }
