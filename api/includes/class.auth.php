@@ -205,6 +205,11 @@
 			if (!$login) $this->_error(400, 'No login specified');
 			if (!$password) $this->_error(400, 'No password specified');
 
+			$user = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($login));
+			if (!sizeof($user)) {
+				$this->_error(400, 'Invalid Credentials');
+			}
+
 			$file = "includes/class.auth-${authentication_type}.php";
 			if (file_exists($file)) {
 				require_once($file);
