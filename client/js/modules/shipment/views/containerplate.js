@@ -488,7 +488,7 @@ define(['marionette',
             this.inspections.setSorting('BLTIMESTAMP', 1)
             this._ready.push(this.inspections.fetch())
 
-            this.screencomponentgroups = new ScreenComponentGroups()
+            this.screencomponentgroups = new ScreenComponentGroups(null, { state: { pageSize: 9999 }})
             this.screencomponentgroups.queryParams.scid = this.model.get('SCREENID')
 
             this.screencomponents = new ScreenComponents(null, { state: { pageSize: 9999 }})

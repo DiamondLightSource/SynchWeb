@@ -513,7 +513,7 @@ define(['marionette',
                 self.ui.imager.html('<option value=""> - </option>'+self.imagers.opts())
             })
 
-            this.screencomponentgroups = new ScreenComponentGroups()
+            this.screencomponentgroups = new ScreenComponentGroups(null, { state: { pageSize: 9999 }})
             this.screencomponentgroups.queryParams.scid = this.getScreen.bind(this)
 
             this.screencomponents = new ScreenComponents(null, { state: { pageSize: 9999 }})
