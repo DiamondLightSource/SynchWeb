@@ -88,7 +88,7 @@ define(['marionette',
 
                     var res = self.$el.find('input[name=res]').val()
                     if (res) reprocessingparams.add(new ReprocessingParameter({ 
-                        REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                        PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                         PARAMETERKEY: 'd_min', 
                         PARAMETERVALUE: res
                     }))
@@ -102,14 +102,14 @@ define(['marionette',
                     })
 
                     if (hascell) reprocessingparams.add(new ReprocessingParameter({ 
-                        REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                        PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                         PARAMETERKEY: 'unit_cell', 
                         PARAMETERVALUE: cell.join(',')
                     }))
 
                     var sg = self.$el.find('input[name=sg]').val().replace(/\s/g, '')
                     if (sg) reprocessingparams.add(new ReprocessingParameter({ 
-                        REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                        PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                         PARAMETERKEY: 'spacegroup', 
                         PARAMETERVALUE: sg
                     }))
@@ -120,7 +120,7 @@ define(['marionette',
                     var sweeps = []
                     _.each(s, function(sw) {
                         sweeps.push({
-                            REPROCESSINGID: reprocessing.get('REPROCESSINGID'),
+                            PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                             DATACOLLECTIONID: sw.get('ID'),
                             STARTIMAGE: sw.get('selection')[0], 
                             ENDIMAGE: sw.get('selection')[1],
@@ -130,7 +130,7 @@ define(['marionette',
                     reprocessingsweeps.save()
 
                     app.alert({ message: '1 reprocessing job successfully submitted'})
-                    self._enqueue({ REPROCESSINGID: reprocessing.get('REPROCESSINGID') })
+                    self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
                 },
 
                 error: function() {
@@ -146,7 +146,7 @@ define(['marionette',
                 url: app.apiurl+'/process/enqueue',
                 method: 'POST',
                 data: {
-                    REPROCESSINGID: options.REPROCESSINGID
+                    PROCESSINGJOBID: options.PROCESSINGJOBID
                 },
             })
         },
