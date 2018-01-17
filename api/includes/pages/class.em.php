@@ -373,7 +373,7 @@
                 $range = $max - $min;
 
                 if ($range > 0) {
-                    $bs = $range / 80;
+                    $bs = $range / 50;
 
                     if ($bs < 0) {
                         $zeros = strspn($bs, '0', strpos($bs, '.')+1);
