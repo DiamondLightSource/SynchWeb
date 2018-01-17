@@ -317,7 +317,7 @@
         function _ctf_histogram() {
             $types = array(
                 'defocus' => array('unit' => 'A', 'st' => 0, 'en' => 60000, 'bin_size' => 1000, 'col' => 'c.estimateddefocus', 'count' => 'c.estimateddefocus'),
-                'astigmatism' => array('unit' => '*1000', 'st' => 500, 'en' => 1500, 'bin_size' => 5, 'col' => 'c.astigmatism*1000', 'count' => 'c.astigmatism'),
+                'astigmatism' => array('unit' => 'Number', 'st' => 0.5, 'en' => 1.5, 'bin_size' => 0.005, 'col' => 'c.astigmatism', 'count' => 'c.astigmatism'),
                 'resolution' => array('unit' => 'A', 'st' => 0, 'en' => 30, 'bin_size' => 1, 'col' => 'c.estimatedresolution', 'count' => 'c.estimatedresolution'),
             );
 
@@ -351,6 +351,46 @@
             $col = $t['col'];
             $ct = $t['count'];
             $bs = $t['bin_size'];
+
+            $limits = $this->db->pq("SELECT max($col) as max, min($col) as min, s.beamlinename
+                FROM ctf c
+                INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE 1=1 $where
+                GROUP BY s.beamlinename", $args);
+
+            // print_r($limits);
+
+            if (sizeof($limits)) {
+                $limits = $limits[0];
+                $max = floatval(($limits['MAX']));
+                $min = floatval(($limits['MIN']));
+
+                $range = $max - $min;
+
+                if ($range > 0) {
+                    $bs = $range / 80;
+
+                    if ($bs < 0) {
+                        $zeros = strspn($bs, '0', strpos($bs, '.')+1);
+                        $bs = round($bs, $zeros);
+                    } else if ($bs < 1) {
+                        $bs = round($bs, 3);
+                    } else {
+                        $zeros = strlen(number_format($bs,0, '.', ''));
+                        $mp = pow(1,$zeros);
+                        $bs = ceil($bs/$mp) * $mp;
+                    }
+
+                    $t['bin_size'] = $bs;
+                    $t['st'] = $min - fmod($min, $bs);
+                    $t['en'] = $max - fmod($max, $bs) + $bs;
+                }
+            }
 
             $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
                 FROM ctf c
@@ -387,7 +427,8 @@
 
                 $gram = array();
                 for($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
-                    $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
+                    $bin_s = number_format($bin, strlen(substr(strrchr($t['bin_size'], '.'), 1)), '.', '');
+                    $gram[$bin_s] = array_key_exists($bin_s, $ha) ? $ha[$bin_s] : 0;
                 }
 
                 $lab = ucfirst($k).' ('.$t['unit'].')';
