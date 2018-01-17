@@ -113,6 +113,10 @@
             $row['FFTCORRECTEDFULLPATH'] = file_exists($row['FFTCORRECTEDFULLPATH']) ? 1 : 0;
             $row['MICROGRAPHSNAPSHOTFULLPATH'] = file_exists($row['MICROGRAPHSNAPSHOTFULLPATH']) ? 1 : 0;
 
+            foreach (array('TOTALMOTION' => 1, 'AVERAGEMOTIONPERFRAME' => 2) as $k => $r) {
+                $row[$k] = number_format($row[$k], $r);
+            }
+
             $this->_output($row);
         }
 
@@ -282,6 +286,10 @@
 
             $row['FFTTHEORETICALFULLPATH'] = file_exists($row['FFTTHEORETICALFULLPATH']) ? 1 : 0;
 
+            foreach (array('ASTIGMATISM' => 2, 'ASTIGMATISMANGLE' => 1, 'ESTIMATEDRESOLUTION' => 2, 'ESTIMATEDDEFOCUS' => 0) as $k => $r) {
+                $row[$k] = number_format($row[$k], $r, '.', '');
+            }
+
             $this->_output($row);
         }
 
@@ -360,7 +368,7 @@
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                WHERE 1=1 $where
+                WHERE $col < 1e38 $where
                 GROUP BY s.beamlinename", $args);
 
             // print_r($limits);
@@ -400,7 +408,7 @@
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                WHERE 1=1 $where
+                WHERE $col < 1e38 $where
                 GROUP BY s.beamlinename,x
                 ORDER BY s.beamlinename", $args);
 

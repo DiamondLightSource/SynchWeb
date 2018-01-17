@@ -188,7 +188,7 @@
                 foreach ($scattercols as $i => $f) {
                     $scatters[$i]['label'] = $f;
                     if ($i > 0) $scatters[$i]['yaxis'] = $i+1;
-                    array_push($scatters[$i]['data'], array($this->jst($c['ST']), floatval(round($c[$f],4))));
+                    if (floatval($c[$f]) < 1e38) array_push($scatters[$i]['data'], array($this->jst($c['ST']), floatval(round($c[$f],4))));
                 }
             }
 
