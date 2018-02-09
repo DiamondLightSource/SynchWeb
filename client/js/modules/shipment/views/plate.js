@@ -214,6 +214,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                         // Show status
                         if (sample && this.showSampleStatus) {
                             var colors = {
+                                GR: '#fdfd96',
                                 SC: '#fdfd96',
                                 AI: '#ffb347',
                                 DC: '#87ceeb',
