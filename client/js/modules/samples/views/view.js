@@ -3,6 +3,9 @@ define(['marionette',
     'utils/sgs',
     'utils/anoms',
     'utils/editable',
+    'views/table',
+    'utils/table',
+    'collections/subsamples',
     'collections/datacollections',
     // 'modules/dc/datacollections',
     'modules/dc/views/getdcview',
@@ -14,18 +17,30 @@ define(['marionette',
 
     'tpl!templates/samples/sample.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, DistinctProteins, SG, Anom, Editable, DCCol, GetDCView, 
+    ], function(Marionette, DistinctProteins, SG, Anom, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
         ComponentsView,
         InspectionImages, ImageHistoryView,
         template, Backbone) {
     
     
+    var ClickableRow = Backgrid.Row.extend({
+        events: {
+            'click': 'onClick',
+        },
+        
+        onClick: function(e) {
+            if ($(e.target).is('i') || $(e.target).is('a') || $(e.target).is('input') || $(e.target).hasClass('editable')) return
+            this.model.set('isSelected', true)
+        },
+    })
+
         
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
         
         regions: {
+            rsubsamples: '.subsamples',
             history: '.history',
             imh: '.im_history',
             comps: '.components',
@@ -48,6 +63,21 @@ define(['marionette',
             }
 
             this.gproteins = new DistinctProteins()
+
+            this.subsamples = new SubSamples()
+            this.subsamples.queryParams.sid = this.model.get('BLSAMPLEID')
+            this.subsamples.fetch()
+
+            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubsample)
+        },
+
+
+        selectSubsample: function(e) {
+            var s = this.subsamples.findWhere({ isSelected: true })
+            if (s) {
+                this.dcs.queryParams.ssid = s.get('BLSUBSAMPLEID')
+                this.dcs.fetch()
+            } else this.dcs.queryParams.ssid = null
         },
         
         
@@ -84,6 +114,29 @@ define(['marionette',
                 source: this.getGlobalProteins.bind(this),
                 select: this.selectGlobalProtein.bind(this)
             })
+
+
+            var columns = [
+                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
+                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
+                        { name: 'X', label: 'X', cell: 'string', editable: false },
+                        { name: 'Y', label: 'Y', cell: 'string', editable: false },
+                        { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
+                        { name: 'GR', label: 'Grid Scans', cell: 'string', editable: true },
+                        { name: 'SC', label: 'SCs', cell: 'string', editable: true },
+                        { name: 'DC', label: 'DCs', cell: 'string', editable: true },
+                        { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: true },
+                        { label: 'Status', cell: table.StatusCell, editable: false },
+            ]
+
+            this.subtable = new TableView({
+                collection: this.subsamples, 
+                columns: columns, 
+                tableClass: 'subsamples', 
+                loading: false, pages: false, 
+                backgrid: { emptyText: 'No subsamples found', row: ClickableRow } 
+            })
+            this.rsubsamples.show(this.subtable)
         },
 
         selectGlobalProtein: function(e, ui) {
