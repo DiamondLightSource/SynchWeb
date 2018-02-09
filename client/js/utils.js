@@ -212,8 +212,22 @@ define(['marionette', 'views/dialog', 'jquery', 'jquery.color'], function(Marion
         }
 
         return array
+    },
+
+
+    jsonError: function(model, xhr, status) {
+        var json = {}
+        if (xhr.responseText) {
+            try {
+                json = $.parseJSON(xhr.responseText)
+            } catch(err) {
+
+            }
+        }
+        if (json.message) app.alert({ message: json.message })
     }
     
+
   }
 
   return utils
