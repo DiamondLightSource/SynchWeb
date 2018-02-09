@@ -792,8 +792,9 @@ ol.rounded {
             height: 150px;
         }
 
-        &.mg {
-            width: 26.2%;
+        &.mg, &.ov {
+            width: auto;
+            min-width: 22%;
 
             figcaption {
                 position: absolute;
@@ -801,7 +802,11 @@ ol.rounded {
             }
 
             img {
+                transition: opacity 0.2s ease-in-out;
                 opacity: 0;
+
+                width: auto;
+                height: 100%;
 
                 &.show {
                     opacity: 1;
@@ -1119,6 +1124,13 @@ ul.status {
             background-color: #ff6961;
         }
         
+        &.GR {
+            &:before {
+                content: 'Grid Scanned'
+            }
+            background-color: #fdfd96;
+        }
+
         &.SC {
             &:before {
                 content: 'Screened'
