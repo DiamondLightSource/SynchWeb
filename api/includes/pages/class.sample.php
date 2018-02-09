@@ -238,7 +238,7 @@
                 $where .= ' AND cqs.containerqueuesampleid IS NOT NULL';
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,2) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct dc.datacollectionid) as sc, count(distinct dc2.datacollectionid) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, min(dc.datacollectionid) as scid, min(dc2.datacollectionid) as dcid, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,2) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
@@ -255,18 +255,16 @@
 
               LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
 
-
-              LEFT OUTER JOIN datacollection dc ON ss.blsubsampleid = dc.blsubsampleid AND dc.overlap != 0
+              LEFT OUTER JOIN datacollection dc ON ss.blsubsampleid = dc.blsubsampleid
               LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
               LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
+              
               LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
               LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
-
-              LEFT OUTER JOIN datacollection dc2 ON ss.blsubsampleid = dc2.blsubsampleid AND dc2.overlap = 0 AND dc2.axisrange > 0
-              LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc2.datacollectionid
+              
+              LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
               LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
               LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
-
 
               WHERE p.proposalid=:1 $where
               GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx, po.posy, po.posz
@@ -406,6 +404,16 @@
 
         function _delete_sub_sample() {
             if (!$this->has_arg('ssid')) $this->_error('No subsample specified');
+
+            $can_delete = true;
+            $ref = null;
+            foreach (array('datacollection', 'energyscan', 'xfefluorescencespectrum', 'blsample') as $table) {
+                $chk = $this->db->pq("SELECT blsubsampleid FROM ${table} WHERE blsubsampleid=:1", array($this->arg('ssid')));
+                if (sizeof($chk)) $can_delete = false;
+                $ref = $table;
+            }
+
+            if (!$can_delete) $this->_error('Cannot delete that subsample as it is referenced by another entity: '.$ref);
 
             $ssamp = $this->db->pq("SELECT ss.blsubsampleid FROM blsubsample ss
               INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
@@ -577,7 +585,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype
+            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp
                                   
