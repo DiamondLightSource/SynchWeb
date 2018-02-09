@@ -87,7 +87,9 @@ define(['marionette',
                 title: 'Delete Subsample',
                 content: 'Are you sure you want to delete this subsample?',
                 callback: function() {
-                    self.model.destroy()
+                    self.model.destroy({
+                        error: utils.jsonError
+                    })
                 },
             })
         },
@@ -112,12 +114,18 @@ define(['marionette',
             var active = this.model.get('EXPERIMENTKIND') ? 'active' : ''
             var active2 = this.model.get('SAMPLES') > 0 ? 'active' : ''
 
+            var has_dc = false
+            _.each(['GR', 'SC', 'DC'], function(ty) {
+                if (this.model.get(ty) > 0) has_dc = true
+            }, this)
+            var del = has_dc ? '' : '<a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>'
+
             this.$el.html('<!--<a href="#" class="button button-notext measure" title="Measure"><i class="fa fa-arrows-h"></i> <span>Measure</span></a>-->\
              <a href="#" class="button button-notext fish '+active2+'" title="Fish into puck"><i class="fa fa-crosshairs"></i> <span>Fish</span></a>\
-             <a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>')
+             '+del)
             
-            this.delegateEvents();
-            return this;
+            this.delegateEvents()
+            return this
         }
     })
 
