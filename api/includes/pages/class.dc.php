@@ -4,6 +4,7 @@
         
 
         public static $arg_list = array('id' => '\d+', 'ids' => '\d+', 'visit' => '\w+\d+-\d+', 's' => '[\w\d-\/]+', 't' => '\w+', 'value' => '.*', 'sid' => '\d+', 'aid' => '\d+', 'pjid' => '\d+', 'imp' => '\d', 'pid' => '\d+', 'h' => '\d\d', 'dmy' => '\d\d\d\d\d\d\d\d',
+                              'ssid' => '\d+',
                               'dcg' => '\d+',
                               'a' => '\d+(.\d+)?',
                               'b' => '\d+(.\d+)?',
@@ -146,7 +147,22 @@
                 
                 $sess = array('dc.sessionid=:1', 'es.sessionid=:2', 'r.blsessionid=:3', 'xrf.sessionid=:4');
                 for ($i = 0; $i < 4; $i++) array_push($args, $info['SESSIONID']);
+            
+            # Subsamples
+            } else if ($this->has_arg('ssid') && $this->has_arg('prop')) {
+                $info = $this->db->pq("SELECT ss.blsubsampleid FROM blsubsample ss INNER JOIN blsample s ON s.blsampleid = ss.blsampleid INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE ss.blsubsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('ssid'), $this->arg('prop')));
                 
+                $tables2 = array('dc', 'es', 'r', 'xrf');
+                $ct = 0;
+                foreach ($tables2 as $i => $t) {
+                    if ($t == 'r') $sess[$i] = 'r.robotactionid<1';
+                    else {
+                        $sess[$i] = $t.'.blsubsampleid=:'.($ct+1);
+                        $ct++;
+                    }
+                }
+                for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('ssid'));
+
             # Samples
             } else if ($this->has_arg('sid') && $this->has_arg('prop')) {
                 $info = $this->db->pq("SELECT s.blsampleid FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE s.blsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('sid'), $this->arg('prop')));
@@ -248,17 +264,7 @@
             
             # If not staff check they have access to data collection
             if (!$this->has_arg('visit') && !$this->staff) {
-                // $where .= " AND u.name=:".(sizeof($args)+1);
-                // $where2 .= " AND u.name=:".(sizeof($args)+2);
-                // $where3 .= " AND u.name=:".(sizeof($args)+3);
-                // $where4 .= " AND u.name=:".(sizeof($args)+4);
-                
                 for ($i = 0; $i < 4; $i++) {
-                    // $extj[$i] .= " INNER JOIN proposal p ON p.proposalid = ses.proposalid 
-                    // INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode||p.proposalnumber||'-'||ses.visit_number 
-                    // INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id 
-                    // INNER JOIN user_@DICAT_RO u on u.id = iu.user_id";
-
                     $extj[$i] .= " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
                     array_push($args, $this->user->personid);
                 }
@@ -973,10 +979,10 @@
         
             $rows = $this->db->pq('SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga 
                 FROM autoprocintegration api 
-                INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
-                INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
-                INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
-                INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
+                LEFT OUTER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
+                LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+                LEFT OUTER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
+                LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
                 WHERE api.datacollectionid = :1 ORDER BY apss.scalingstatisticstype DESC', array($id));
