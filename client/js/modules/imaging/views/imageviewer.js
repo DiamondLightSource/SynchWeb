@@ -747,28 +747,32 @@ define(['marionette',
                 this.lineStart = {}
                 this.lineEnd = {}
 
-                var sub = new Subsample({
-                    BLSAMPLEID: this.model.get('BLSAMPLEID'),
-                    X: x1,
-                    Y: y1,
-                    X2: x2,
-                    Y2: y2
-                })
+                var length = Math.sqrt(Math.pow(Math.abs(x2-x1),2)+Math.pow(Math.abs(y2-y1),2))
+                console.log('region lenght', length, x2 !== undefined, x1 !== undefined, y2 !== undefined, y1 !== undefined)
+                if (length && x2 !== undefined && x1 !== undefined && y2 !== undefined && y1 !== undefined) {
+                    var sub = new Subsample({
+                        BLSAMPLEID: this.model.get('BLSAMPLEID'),
+                        X: x1,
+                        Y: y1,
+                        X2: x2,
+                        Y2: y2
+                    })
 
-                var self = this
-                sub.save(null, {
-                    success: function() {
-                        sub.set('RID', self.subsamples.length)
-                        self.subsamples.add(sub)
-                    
-                        self.draw()
-                        self.plotObjects()
-                    },
-                    
-                    error: function(model, response, options) {
-                        app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
-                    },
-                })
+                    var self = this
+                    sub.save(null, {
+                        success: function() {
+                            sub.set('RID', self.subsamples.length)
+                            self.subsamples.add(sub)
+                        
+                            self.draw()
+                            self.plotObjects()
+                        },
+                        
+                        error: function(model, response, options) {
+                            app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
+                        },
+                    })
+                }
             }
 
             if (!this.moved && this.lineStart.x) {
