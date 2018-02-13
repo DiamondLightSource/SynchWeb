@@ -45,12 +45,10 @@
 				$auth_handler = new $class();
 				$user = $auth_handler->check();
 
-				$userc = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($user));
-				if (!sizeof($userc)) {
-					$this->_error(400, 'No previous session');
-				}
+				if (!$user) $this->_error(400, 'No previous session');
 
-				if ($user) $this->_output(200, $this->generate_jwt($user));
+				$userc = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($user));
+				if (sizeof($userc)) $this->_output(200, $this->generate_jwt($user));
 				else $this->_error(400, 'No previous session');
 			}
 		}
