@@ -1810,7 +1810,7 @@
 
 
         function _create_awb() {
-            global $dhl_service, $dhl_acc, $facility_courier_countries;
+            global $dhl_service, $dhl_service_eu, $dhl_acc, $dhl_acc_import, $facility_courier_countries, $facility_courier_countries_nde;
 
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
@@ -1852,6 +1852,10 @@
                 $accno = $dhl_acc;
                 $payee = 'R';
                 $product =  $dhl_service;
+            } else if (in_array($cont['COUNTRY'], $facility_courier_countries_nde) && $terms) {
+                $accno = $dhl_acc_import;
+                $payee = 'R';
+                $product =  $dhl_service_eu;
             } else {
                 $accno = $ship['DELIVERYAGENT_AGENTCODE'];
                 $payee = 'S';

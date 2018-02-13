@@ -170,7 +170,11 @@
     $facility_contact = "A person";
     $facility_phone = "01234 567890";
     $facility_email = "stores@facility.co.uk";
+
+    // List of domestic free countries
     $facility_courier_countries = array('United Kingdom');
+    // List of non dom eu free countries
+    $facility_courier_countries_nde = array('France', 'Italy', 'Spain');
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
@@ -180,11 +184,18 @@
     $dhl_user = 'user';
     $dhl_pass = 'password';
     $dhl_env = 'staging';
+    
+    // Domestic acc number
     $dhl_acc = '12345678';
+    // Import acc number
+    $dhl_acc_import = '12345678';
+
     $dhl_terms = '/path/to/terms.html';
     $dhl_link = 'http://link/to/dhl/instructions';
     // N = Domestic Express, P = Worldwide Express
     $dhl_service = 'N';
+    // Non dom service (eu)
+    $dhl_service_eu = 'U';
 
   
     # VMXi 
