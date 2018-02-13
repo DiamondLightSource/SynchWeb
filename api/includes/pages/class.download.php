@@ -107,6 +107,8 @@
         # ------------------------------------------------------------------------
         # Download mtz/log file for Fast DP / XIA2
         function _auto_processing() {
+            ini_set('memory_limit', '512M');
+
             if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
             if (!$this->has_arg('aid')) $this->_error('No auto processing id', 'No auto processing id specified');
             
