@@ -135,7 +135,7 @@ define(['marionette',
         _lcFields: ['PHONENUMBER', 'EMAILADDRESS', 'LABNAME', 'ADDRESS', 'CITY', 'POSTCODE','COUNTRY', 'GIVENNAME', 'FAMILYNAME'],
 
         toggleFacilityCourier: function() {
-            if (app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1) {
+            if (app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1 || app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1 ) {
                 if (this.terms.get('ACCEPTED')) {
                     this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
                     this.ui.acc_msg.text('Paid for by Facility')
@@ -254,7 +254,7 @@ define(['marionette',
             this.ui.qwrap.hide()
             this.ui.terms.hide()
 
-            if (app.options.get('facility_courier_countries').length) this.ui.free.text('[Free For: '+app.options.get('facility_courier_countries').join(', ')+']')
+            if (app.options.get('facility_courier_countries').length || app.options.get('facility_courier_countries_nde').length) this.ui.free.text('[Free For: '+app.options.get('facility_courier_countries').concat(app.options.get('facility_courier_countries_nde')).sort().join(', ')+']')
             this.ui.DESCRIPTION.val(app.options.get('package_description'))
 
             
@@ -309,8 +309,11 @@ define(['marionette',
         },
 
         checkAvailability: function() {
-            if (this.shipment.get('DELIVERYAGENT_AGENTNAME').toLowerCase() != 'dhl' && !(app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1))
-                app.message({ title: 'Service Not Available', message: 'This service is only available for shipments from '+app.options.get('facility_courier_countries').join(',')+', or for user with DHL accounts. Please either update your labcontact or the shipment courier'})
+            if (this.shipment.get('DELIVERYAGENT_AGENTNAME').toLowerCase() != 'dhl' && (
+                    !(app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1) &&
+                    !(app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1)
+                ))
+                app.message({ title: 'Service Not Available', message: 'This service is only available for shipments from '+app.options.get('facility_courier_countries').concat(app.options.get('facility_courier_countries_nde')).join(',')+', or for user with DHL accounts. Please either update your labcontact or the shipment courier'})
         },
 
         populateLC: function() {            
@@ -395,7 +398,7 @@ define(['marionette',
             }
 
             var prod = null
-            if (app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1 || !this.terms.get('ACCEPTED')) {
+            if ((app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1 && app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) == -1) || !this.terms.get('ACCEPTED')) {
                 var prod = this.$el.find('input[type=radio]:checked').val()
                 if (!prod) {
                     app.alert({ message: 'You must select a quote' })
