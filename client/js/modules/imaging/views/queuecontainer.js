@@ -600,6 +600,7 @@ define(['marionette',
                            { name: 'PROTEIN', label: 'Protein', cell: 'string', editable: false },
                            { label: 'Location', cell: LocationCell, editable: false, type: this.type },
                            { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
+                           { label: '', cell: table.StatusCell, editable: false },
                            { label: '', cell: AddCell, editable: false, disable: this.model.get('CONTAINERQUEUEID') },
             ]
 
@@ -615,6 +616,7 @@ define(['marionette',
                 tableClass: 'subsamples', 
                 loading: true,
                 backgrid: { row: ClickableRow, emptyText: 'No sub samples found' },
+                noPageUrl: true,
             })
 
             this.asmps.show(this.table)
@@ -626,6 +628,7 @@ define(['marionette',
                            { label: 'Experiment', cell: ExperimentKindCell, editable: false },
                            { label: 'Parameters', cell: ExperimentCell, editable: false },
                            { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
+                           { name: '', cell: table.StatusCell, editable: false },
                            { label: '', cell: ActionsCell, editable: false, plans: this.plans },
             ]
 
