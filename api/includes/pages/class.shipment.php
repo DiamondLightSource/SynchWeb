@@ -169,6 +169,9 @@
 
                               array('/awb/:sid', 'post', '_create_awb'),
                               array('/awb/quote', 'get', '_quote_awb'),
+
+                              array('/pickup/:sid', 'post', '_rebook_pickup'),
+                              array('/pickup/cancel/:sid', 'delete', '_cancel_pickup'),
         );
 
         // Keep session open so we can cache data
@@ -841,7 +844,7 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight, GROUP_CONCAT(c.code SEPARATOR ', ') as containers
+            $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -1954,39 +1957,153 @@
 
             $pickup = null;
             if (!$ship['DELIVERYAGENT_PICKUPCONFIRMATION']) {
-                try {
-                    $pickup = $this->dhl->request_pickup(array(
-                        'accountnumber' => $accno,
-                        'requestor' => $this->has_arg('RETURN') ? $facility : $user,
-                        'packagelocation' => $ship['PHYSICALLOCATION'],
+                $pickup = $this->_do_request_pickup(array(
+                    'shippingid' => $ship['SHIPPINGID'],
+                    'accountnumber' => $accno,
+                    'requestor' => $this->has_arg('RETURN') ? $facility : $user,
+                    'packagelocation' => $ship['PHYSICALLOCATION'],
 
-                        'pickupdate' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
-                        'readyby' => $ship['READYBYTIME'],
-                        'closetime' => $ship['CLOSETIME'],
+                    'pickupdate' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
+                    'readyby' => $ship['READYBYTIME'],
+                    'closetime' => $ship['CLOSETIME'],
 
-                        'pieces' => sizeof($dewars),
-                        'weight' => $totalweight,
+                    'dewars' => $dewars,
+                    'weight' => $totalweight,
 
-                        'awbnumber' => $ship['DELIVERYAGENT_FLIGHTCODE'],
-                    ));
-
-                    $this->db->pq("UPDATE shipping 
-                    SET deliveryagent_pickupconfirmation=:1, deliveryagent_pickupconfirmationtimestamp=CURRENT_TIMESTAMP, deliveryAgent_readybytime=TO_DATE(:2, 'HH24:MI'), deliveryAgent_callintime=TO_DATE(:3, 'HH24:MI'), shippingstatus='pickup booked'
-                    WHERE shippingid=:4", array($pickup['confirmationnumber'], $pickup['readybytime'], $pickup['callintime'], $ship['SHIPPINGID']));
-
-                    foreach ($dewars as $i => $d) {
-                        $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked' WHERE dewarid=:1", array($d['DEWARID']));
-                        $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                        VALUES (s_dewartransporthistory.nextval,:1,'pickup booked',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
-                        array($d['DEWARID']));
-                    }
-
-                } catch (Exception $e) {
-                    $this->_error($e->getMessage());
-                }                
+                    'awbnumber' => $ship['DELIVERYAGENT_FLIGHTCODE'], 
+                ));        
             }
 
             $this->_output(array('AWB' => $awb ? 1 : 0, 'PICKUP' => $pickup ? 1 : 0));
+        }
+
+
+
+        function _rebook_pickup() {
+            global $dhl_acc, $dhl_acc_import, $facility_courier_countries, $facility_courier_countries_nde;
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $ship = $this->db->pq("SELECT s.shippingid, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, s.sendinglabcontactid, s.returnlabcontactid, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_flightcode, s.deliveryagent_agentcode
+                FROM shipping s 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
+            if (!sizeof($ship)) $this->_error('No such shipment');
+            $ship = $ship[0];
+
+            if (!$ship['DELIVERYAGENT_FLIGHTCODE']) $this->_error('That shipment does not have an airway bill');
+
+            $cont = $this->db->pq("SELECT p.givenname, p.familyname, p.phonenumber, p.emailaddress, l.name, l.address, l.city, l.country, l.postcode
+                FROM labcontact c 
+                INNER JOIN person p ON p.personid = c.personid 
+                INNER JOIN laboratory l ON l.laboratoryid = p.laboratoryid 
+                WHERE c.labcontactid=:1 and c.proposalid=:2", array($this->has_arg('RETURN') ? $ship['RETURNLABCONTACTID'] : $ship['SENDINGLABCONTACTID'], $this->proposalid));
+
+            if (!sizeof($cont)) $this->_error('No such lab contact');
+            $cont = $cont[0];
+
+            $terms = $this->db->pq("SELECT cta.couriertermsacceptedid
+                FROM couriertermsaccepted cta
+                INNER JOIN person p ON p.personid = cta.personid
+                WHERE cta.proposalid=:1 AND cta.shippingid=:2", array($this->proposalid, $ship['SHIPPINGID']));
+            $terms = sizeof($terms) ? true : false;
+            
+            if (in_array($cont['COUNTRY'], $facility_courier_countries) && $terms) {
+                $accno = $dhl_acc;
+            } else if (in_array($cont['COUNTRY'], $facility_courier_countries_nde) && $terms) {
+                $accno = $dhl_acc_import;
+            } else {
+                $accno = $ship['DELIVERYAGENT_AGENTCODE'];
+            }
+
+
+            $user = array(
+                'company' => $cont['NAME'],
+                'address' => $cont['ADDRESS'],
+                'city' => $cont['CITY'],
+                'postcode' => $cont['POSTCODE'],
+                'country' => $cont['COUNTRY'],
+                'name' => $cont['GIVENNAME'].' '.$cont['FAMILYNAME'],
+                'phone' => $cont['PHONENUMBER'],
+                'email' => $cont['EMAILADDRESS'],
+            );
+
+            global $facility_company, $facility_address, $facility_city, $facility_postcode, $facility_country, $facility_contact, $facility_phone, $facility_email;
+            $facility = array(
+                'company' => $facility_company,
+                'address' => $facility_address,
+                'city' => $facility_city,
+                'postcode' => $facility_postcode,
+                'country' => $facility_country,
+                'name' => $facility_contact,
+                'phone' => $facility_phone,
+                'email' => $facility_email,
+            );
+
+            $dewars = $this->db->pq("SELECT d.dewarid, d.weight
+                FROM dewar d
+                WHERE d.shippingid=:1 AND d.deliveryagent_barcode IS NOT NULL", array($this->arg('sid')));
+            if (!sizeof($dewars)) $this->_error('No dewars selected to ship');
+
+            $totalweight = 0;
+            foreach ($dewars as $d) {
+                $totalweight += $d['WEIGHT'];
+            }
+
+            $pickup = $this->_do_request_pickup(array(
+                'shippingid' => $ship['SHIPPINGID'],
+                'accountnumber' => $accno,
+                'requestor' => $this->has_arg('RETURN') ? $facility : $user,
+                'packagelocation' => $ship['PHYSICALLOCATION'],
+
+                'pickupdate' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
+                'readyby' => $ship['READYBYTIME'],
+                'closetime' => $ship['CLOSETIME'],
+
+                'dewars' => $dewars,
+                'weight' => $totalweight,
+
+                'awbnumber' => $ship['DELIVERYAGENT_FLIGHTCODE'],
+            ));
+
+            $this->_output(array('PICKUP' => $pickup ? 1 : 0));
+        }
+
+
+
+        function _do_request_pickup($options) {
+            $pickup = null;
+            try {
+                $pickup = $this->dhl->request_pickup(array(
+                    'accountnumber' => $options['accountnumber'],
+                    'requestor' => $options['requestor'],
+                    'packagelocation' => $options['packagelocation'],
+
+                    'pickupdate' => $options['pickupdate'],
+                    'readyby' => $options['readyby'],
+                    'closetime' => $options['closetime'],
+
+                    'pieces' => sizeof($options['dewars']),
+                    'weight' => $options['weight'],
+
+                    'awbnumber' => $options['awbnumber'],
+                ));
+
+                $this->db->pq("UPDATE shipping 
+                SET deliveryagent_pickupconfirmation=:1, deliveryagent_pickupconfirmationtimestamp=CURRENT_TIMESTAMP, deliveryAgent_readybytime=TO_DATE(:2, 'HH24:MI'), deliveryAgent_callintime=TO_DATE(:3, 'HH24:MI'), shippingstatus='pickup booked'
+                WHERE shippingid=:4", array($pickup['confirmationnumber'], $pickup['readybytime'], $pickup['callintime'], $options['shippingid']));
+
+                foreach ($options['dewars'] as $i => $d) {
+                    $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked' WHERE dewarid=:1", array($d['DEWARID']));
+                    $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
+                    VALUES (s_dewartransporthistory.nextval,:1,'pickup booked',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+                    array($d['DEWARID']));
+                }
+
+            } catch (Exception $e) {
+                $this->_error($e->getMessage());
+            }   
+
+            return $pickup;
         }
 
 
@@ -2061,6 +2178,60 @@
                 $this->_error($e->getMessage());
             }
         }
+
+
+        function _cancel_pickup() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $ship = $this->db->pq("SELECT s.shippingid, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, s.sendinglabcontactid, s.returnlabcontactid
+                FROM shipping s 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
+            if (!sizeof($ship)) $this->_error('No such shipment');
+            $ship = $ship[0];
+
+            $cont = $this->db->pq("SELECT l.country
+                FROM labcontact c 
+                INNER JOIN person p ON p.personid = c.personid 
+                INNER JOIN laboratory l ON l.laboratoryid = p.laboratoryid 
+                WHERE c.labcontactid=:1 and c.proposalid=:2", array($this->has_arg('RETURN') ? $ship['RETURNLABCONTACTID'] : $ship['SENDINGLABCONTACTID'], $this->proposalid));
+
+            if (!sizeof($cont)) $this->_error('No such lab contact');
+            $cont = $cont[0];
+
+            $dewars = $this->db->pq("SELECT d.dewarid
+                FROM dewar d
+                WHERE d.shippingid=:1 AND d.deliveryagent_barcode IS NOT NULL", array($this->arg('sid')));
+
+            $person = $this->user->givenname.' '.$this->user->familyname;
+
+            $cancel = null;
+            try {
+                $cancel = $this->dhl->cancel_pickup(array(
+                    'name' => $person,
+                    'country' => $cont['COUNTRY'],
+                    'confirmationnumber' => $ship['DELIVERYAGENT_PICKUPCONFIRMATION'],
+                    'pickupdate' => $ship['DELIVERYAGENT_SHIPPINGDATE']
+                ));
+
+                $this->db->pq("UPDATE shipping 
+                    SET deliveryagent_pickupconfirmation=NULL, deliveryagent_pickupconfirmationtimestamp=NULL, deliveryAgent_readybytime=NULL, deliveryAgent_callintime=NULL, shippingstatus='pickup cancelled'
+                    WHERE shippingid=:1", array($ship['SHIPPINGID']));
+
+                foreach ($dewars as $i => $d) {
+                    $this->db->pq("UPDATE dewar SET dewarstatus='pickup cancelled' WHERE dewarid=:1", array($d['DEWARID']));
+                    $this->db->pq("INSERT INTO dewartransporthistory (dewarid,dewarstatus,arrivaldate) 
+                    VALUES (:1,'pickup cancelled',CURRENT_TIMESTAMP)", 
+                    array($d['DEWARID']));
+                }
+
+            } catch (Exception $e) {
+                $this->_error($e->getMessage());
+            }
+
+            $this->_output(array('CANCEL' => $cancel ? 1 : 0));
+        }
+
 
 
         function _get_countries() {
