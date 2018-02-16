@@ -48,8 +48,47 @@ define(['marionette',
             'click #add_dewar': 'addDewar',
             'click a.send': 'sendShipment',
             'click a.pdf': utils.signHandler,
+            'click a.cancel_pickup': 'cancelPickup',
         },
         
+
+        cancelPickup: function(e) {
+            e.preventDefault()
+
+            utils.confirm({
+                title: 'Cancel Pickup',
+                content: 'Are you sure you want to cancel this pickup? This cannot be undone',
+                callback: this.doCancelPickup.bind(this)
+            })
+
+        },
+
+        doCancelPickup: function() {
+            var self = this
+
+            Backbone.ajax({
+                type: 'DELETE',
+                url: app.apiurl+'/shipment/pickup/cancel/'+this.model.get('SHIPPINGID'),
+                success: function() {
+                    self.model.set('DELIVERYAGENT_PICKUPCONFIRMATION', null)
+                    self.render()
+                    app.alert({ message: 'Pickup Cancelled' })
+                },
+
+                error: function(xhr, status, error) {
+                    var json;
+                    if (xhr.responseText) {
+                        try {
+                            json = $.parseJSON(xhr.responseText)
+                        } catch(err) {
+
+                        }
+                    }
+                    app.alert({ message: json.message })
+                }
+            })
+        },
+
         sendShipment: function(e) {
             e.preventDefault()
             var self = this
