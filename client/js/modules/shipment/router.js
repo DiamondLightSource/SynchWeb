@@ -7,6 +7,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'shipments/add': 'add',
       'shipments(/sid/:sid)': 'view',
       'shipments/awb/sid/:sid': 'create_awb',
+      'shipments/pickup/sid/:sid': 'rebook_pickup',
 
       'containers/cid/:cid(/iid/:iid)(/sid/:sid)': 'view_container',
       'containers/queue/:cid': 'queue_container',

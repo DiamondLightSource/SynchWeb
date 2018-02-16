@@ -35,6 +35,7 @@ define(['marionette',
         'modules/shipment/views/manifest',
 
         'modules/shipment/views/createawb',
+        'modules/shipment/views/rebookpickup',
         'modules/types/xpdf/views/plan',
 
         'models/proplookup',
@@ -46,7 +47,7 @@ define(['marionette',
     Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
-    DispatchView, TransferView, Dewars, DewarOverview, ManifestView, CreateAWBView,
+    DispatchView, TransferView, Dewars, DewarOverview, ManifestView, CreateAWBView, RebookPickupView,
     PlanView,
     ProposalLookup) {
     
@@ -103,6 +104,26 @@ define(['marionette',
             success: function() {
                 app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }, { title: 'Create Airway Bill' }])
                 app.content.show(new CreateAWBView({ shipment: shipment }))
+            },
+            error: function() {
+                app.bc.reset([bc])
+                app.message({ title: 'No such shipment', message: 'The specified shipment could not be found'})
+            },
+        })
+    },
+
+
+    rebook_pickup: function(sid) {
+        var shipment = new Shipment({ SHIPPINGID: sid })
+        shipment.fetch({
+            success: function() {
+                if (shipment.get('DELIVERYAGENT_FLIGHTCODE')) {
+                    app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }, { title: 'Rebook Pickup' }])
+                    app.content.show(new RebookPickupView({ shipment: shipment }))
+                } else {
+                    app.bc.reset([bc])
+                    app.message({ title: 'Shipment not booked', message: 'The specified shipment does not have a valid courier booking'})
+                }
             },
             error: function() {
                 app.bc.reset([bc])
