@@ -668,8 +668,10 @@
                 ORDER BY runid DESC", $args);
 
 
-            $dch = $this->db->pq("SELECT MAX(datacollections) as mdch, AVG(datacollections) as dch, SUM(datacollections) as dc, MAX(screenings) as msch, AVG(screenings) as sch, SUM(screenings) as sc, prop, beamlinename, 1 as total, typename, run, runid FROM (
-                    SELECT SUM(IF(dc.axisrange > 0 AND dc.overlap = 0, 1, 0)) as datacollections, SUM(IF(dc.overlap != 0, 1, 0)) as screenings, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid
+            $dch = $this->db->pq("SELECT MAX(datacollections) as mdch, AVG(datacollections) as dch, SUM(datacollections) as dc, MAX(screenings) as msch, AVG(screenings) as sch, SUM(screenings) as sc, prop, beamlinename, 1 as total, typename, run, runid, sum(multiaxis) as mx
+                FROM (
+                    SELECT SUM(IF(dc.axisrange > 0 AND dc.overlap = 0, 1, 0)) as datacollections, SUM(IF(dc.overlap != 0, 1, 0)) as screenings, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid,
+                        SUM(IF(dc.axisrange > 0 AND dc.overlap = 0 AND ((dc.kappastart is not NULL AND dc.kappastart != 0) OR (dc.chistart is not NULL AND dc.chistart != 0) OR (dc.phistart is not NULL AND dc.phistart != 0)), 1, 0)) as multiaxis
                     FROM datacollection dc
                     INNER JOIN blsession s ON s.sessionid = dc.sessionid
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
@@ -696,12 +698,12 @@
 
 
             foreach ($dc as &$d) {
-                foreach (array('DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC', 'MSLH', 'SLH', 'SL') as $k)
+                foreach (array('DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC', 'MSLH', 'SLH', 'SL', 'MX') as $k)
                     if (!array_key_exists($k, $d)) $d[$k] = 0;
 
                 foreach ($dch as $dh) 
                     if ($dh[$match] == $d[$match]) 
-                        foreach (array('DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC') as $k)
+                        foreach (array('DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC', 'MX') as $k)
                             $d[$k] = $dh[$k];
 
                 foreach ($slh as $sh) 
@@ -709,7 +711,7 @@
                         foreach (array('SLH', 'MSLH', 'SL') as $k)
                             $d[$k] = $sh[$k];
 
-                foreach(array('USED', 'REM', 'LEN', 'DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC', 'MSLH', 'SLH', 'SL') as $t) if ($d[$t]) $d[$t] = round(floatval($d[$t]), 1);
+                foreach(array('USED', 'REM', 'LEN', 'DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC', 'MSLH', 'SLH', 'SL', 'MX') as $t) if ($d[$t]) $d[$t] = round(floatval($d[$t]), 1);
             }
 
             if ($this->has_arg('download')) {
