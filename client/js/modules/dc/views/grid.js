@@ -27,8 +27,30 @@ define(['marionette', 'views/tabs',
       val: '.val',
       img: '.img',
       bx: '.boxx',
-      by: '.boxy'
+      by: '.boxy',
+      zoom: 'a.zoom',
     },
+
+    toggleZoom: function(e) {
+      e.preventDefault()
+
+      var i = this.ui.zoom.find('i')
+      var s = this.ui.zoom.find('span')
+      if (i.hasClass('fa-search-plus')) {
+        this.ui.di.height(this.ui.di.height()*2)
+        this.ui.im.height(this.ui.im.height()*2)
+        i.removeClass('fa-search-plus').addClass('fa-search-minus')
+        s.text('Shrink')
+
+      } else {
+        this.ui.di.height(this.ui.di.height()/2)
+        this.ui.im.height(this.ui.im.height()/2)
+        i.removeClass('fa-search-minus').addClass('fa-search-plus')
+        s.text('Expand')
+      }
+      this.onDomRefresh()
+    },
+
 
     initialize: function(options) {
       this.fullPath = false
@@ -96,6 +118,7 @@ define(['marionette', 'views/tabs',
       'click @ui.exp': 'expandPath',
       'click .comments': 'showComments',
       'click a.attach': 'attachments',
+      'click @ui.zoom': 'toggleZoom'
     },
       
     attachments: function(e) {
