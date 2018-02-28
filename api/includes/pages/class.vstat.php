@@ -585,13 +585,17 @@
 
         // BAG Overview Stats
         function _overview() {
-            $this->user->can('all_prop_stats');
-
             global $bl_types;
             $bls = implode("', '", $bl_types[$this->ty]);
 
             $where = " AND p.proposalcode NOT IN ('cm') AND s.beamlinename in ('$bls')";
             $args = array();
+
+            if (!$this->user->has('all_prop_stats')) {
+                if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+                $where .= ' AND p.proposalid = :'.(sizeof($args)+1);
+                array_push($args, $this->proposalid);
+            }
 
             if ($this->has_arg('ty')) {
                 if ($this->arg('ty') == 'yearly') $where .= " AND TIMESTAMPDIFF('MONTH', s.startdate, CURRENT_TIMESTAMP) <= 12";
@@ -651,12 +655,20 @@
                     $match = 'TOTAL';
                 }
 
+                if ($this->arg('group_by') == 'visit') {
+                    $group = 'GROUP BY visit';
+                    $match = 'VISIT';
+
+                    $where .= ' AND p.proposalid = :'.(sizeof($args)+1);
+                    array_push($args, $this->proposalid);
+                }
+
             } else $group = 'GROUP BY prop';
 
 
             $dc = $this->db->pq("
-                SELECT COUNT(visit_number) as visits, prop, SUM(rem) as rem, SUM(len) as len, ((SUM(len) - SUM(rem)) / SUM(len))*100 as used, beamlinename, 1 as total, typename, run, runid FROM (
-                    SELECT GREATEST(TIMESTAMPDIFF('SECOND', MAX(dc.endtime), MAX(s.enddate))/3600,0) as rem, TIMESTAMPDIFF('SECOND', MAX(s.startdate), MAX(s.enddate))/3600 as len, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.visit_number, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid
+                SELECT COUNT(visit_number) as visits, visit, prop, SUM(rem) as rem, SUM(len) as len, ((SUM(len) - SUM(rem)) / SUM(len))*100 as used, beamlinename, 1 as total, typename, run, runid, startdate FROM (
+                    SELECT GREATEST(TIMESTAMPDIFF('SECOND', MAX(dc.endtime), MAX(s.enddate))/3600,0) as rem, TIMESTAMPDIFF('SECOND', MAX(s.startdate), MAX(s.enddate))/3600 as len, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.visit_number, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, s.startdate
                     FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid)
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
                     LEFT OUTER JOIN datacollection dc ON dc.sessionid = s.sessionid
@@ -665,13 +677,13 @@
                     GROUP BY p.proposalid, s.visit_number
                     ) inq
                 $group
-                ORDER BY runid DESC", $args);
+                ORDER BY startdate DESC,runid DESC", $args);
 
 
-            $dch = $this->db->pq("SELECT MAX(datacollections) as mdch, AVG(datacollections) as dch, SUM(datacollections) as dc, MAX(screenings) as msch, AVG(screenings) as sch, SUM(screenings) as sc, prop, beamlinename, 1 as total, typename, run, runid, sum(multiaxis) as mx
+            $dch = $this->db->pq("SELECT MAX(datacollections) as mdch, AVG(datacollections) as dch, SUM(datacollections) as dc, MAX(screenings) as msch, AVG(screenings) as sch, SUM(screenings) as sc, visit, prop, beamlinename, 1 as total, typename, run, runid, sum(multiaxis) as mx
                 FROM (
                     SELECT SUM(IF(dc.axisrange > 0 AND dc.overlap = 0, 1, 0)) as datacollections, SUM(IF(dc.overlap != 0, 1, 0)) as screenings, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid,
-                        SUM(IF(dc.axisrange > 0 AND dc.overlap = 0 AND ((dc.kappastart is not NULL AND dc.kappastart != 0) OR (dc.chistart is not NULL AND dc.chistart != 0) OR (dc.phistart is not NULL AND dc.phistart != 0)), 1, 0)) as multiaxis
+                        SUM(IF(dc.axisrange > 0 AND dc.overlap = 0 AND ((dc.kappastart is not NULL AND dc.kappastart != 0) OR (dc.chistart is not NULL AND dc.chistart != 0) OR (dc.phistart is not NULL AND dc.phistart != 0)), 1, 0)) as multiaxis, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
                     FROM datacollection dc
                     INNER JOIN blsession s ON s.sessionid = dc.sessionid
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
@@ -683,8 +695,8 @@
                 $group
                 ORDER BY runid DESC", $args);
                                     
-            $slh = $this->db->pq("SELECT MAX(samples) as mslh, AVG(samples) as slh, SUM(samples) as sl, prop, beamlinename, 1 as total, typename, run, runid FROM (
-                    SELECT count(r.robotactionid) as samples, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid
+            $slh = $this->db->pq("SELECT MAX(samples) as mslh, AVG(samples) as slh, SUM(samples) as sl, visit, prop, beamlinename, 1 as total, typename, run, runid FROM (
+                    SELECT count(r.robotactionid) as samples, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
                     FROM robotaction r
                     INNER JOIN blsession s ON s.sessionid = r.blsessionid
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
