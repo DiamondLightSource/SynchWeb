@@ -498,24 +498,31 @@
             if (!$this->has_arg('id')) $this->_error('No datacolectionid specified');
 
             $args = array($this->arg('id'));
-            $where = 'datacollectionid=:1';
+            $where = 'dca.datacollectionid=:1';
 
             if ($this->has_arg('aid')) {
-                $where .= ' AND datacollectionfileattachmentid=:2';
+                $where .= ' AND dca.datacollectionfileattachmentid=:2';
                 array_push($args, $this->arg('id'));
             }   
 
             if ($this->has_arg('filetype')) {
-                $where .= ' AND filetype LIKE :'.(sizeof($args)+1);
+                $where .= ' AND dca.filetype LIKE :'.(sizeof($args)+1);
                 array_push($args, $this->arg('filetype'));
             }
 
-            $rows = $this->db->pq("SELECT filefullpath, filetype, datacollectionfileattachmentid
-                FROM datacollectionfileattachment
+            $rows = $this->db->pq("SELECT dca.filefullpath, dca.filetype, dca.datacollectionfileattachmentid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
+                FROM datacollectionfileattachment dca
+                INNER JOIN datacollection dc ON dc.datacollectionid = dca.datacollectionid
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $args);
 
             foreach($rows as &$r) {
-                $r['FILEFULLPATH'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $r['FILEFULLPATH']);
+                $r['FILENAME'] = basename($r['FILEFULLPATH']);
+                $info = pathinfo($r['FILENAME']);
+                $r['NAME'] = basename($r['FILENAME'],'.'.$info['extension']);
+
+                $r['FILEFULLPATH'] = preg_replace('/.*\/'.$r['VISIT'].'\//', '', $r['FILEFULLPATH']);
             }
 
 
