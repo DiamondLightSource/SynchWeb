@@ -236,7 +236,7 @@ define(['jquery', 'marionette',
             var bw = 1000*this.grid.get('DX_MM')/this.grid.get('PIXELSPERMICRONX')
             var bh = 1000*this.grid.get('DY_MM')/this.grid.get('PIXELSPERMICRONY')
 
-            var radius = bw * 1.1
+            var radius = bh < bw ? (bh * 1.1) : (bw * 1.1)
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -281,7 +281,7 @@ define(['jquery', 'marionette',
                 _.each(tmp, function(r) {
                     d.push([r.IMAGENUMBER, r.COUNTS])
                 })
-            } else if (this.distl.get('data')[0].length) {
+            } else if (this.distl.get('data') && this.distl.get('data')[0].length) {
                 if (this.distl.get('data')) d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
             } else {
                 var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
