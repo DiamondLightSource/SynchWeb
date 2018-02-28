@@ -9,7 +9,7 @@ define(['backbone'], function(Backbone) {
                         if (m.get(options.classProperty) == options.classPropertyValue) cl = options.addClass
                     }
                     return '<option class="'+cl+'" value="'+m.escape(this.valueAttribute)+'">'+m.escape(this.keyAttribute)+'</option>' 
-                }, this)
+                }, this).join('\n')
         },
 
         kv: function(options) {
