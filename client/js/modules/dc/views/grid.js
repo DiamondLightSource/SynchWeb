@@ -73,6 +73,8 @@ define(['marionette', 'views/tabs',
       
 
     onShow: function() {
+      this.ui.zoom.hide()
+
       this.diviewer = new ImageViewer({ model: this.model, embed: true, readyText: 'Click on the grid to load a diffraction image' })      
       this.ui.di.append(this.diviewer.render().$el)
       this.ui.im.append(this.gridplot.render().$el)
@@ -90,6 +92,8 @@ define(['marionette', 'views/tabs',
         var gi = this.gridplot.gridInfo()
         this.ui.bx.text((gi.get('DX_MM')*1000).toFixed(0))
         this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
+
+        if (gi.get('STEPS_Y') > 10) this.ui.zoom.show()
     },
                                       
     onDestroy: function() {
