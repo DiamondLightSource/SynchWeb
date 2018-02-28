@@ -33,7 +33,7 @@ define(['marionette', 'views/tabs',
     initialize: function(options) {
       this.fullPath = false
 
-      this.gridplot = new GridPlot({ ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
+      this.gridplot = new GridPlot({ BL: this.model.get('BL'), ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
       this.listenTo(this.gridplot, 'current', this.loadImage, this)
     },
 
