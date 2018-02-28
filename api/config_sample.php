@@ -37,8 +37,9 @@
 
 
     # ldap server, used for lookup and authentication (if using)
-    $ldap_server = 'altfed.cclrc.ac.uk';
-    $ldap_search = 'dc=fed,dc=cclrc,dc=ac,dc=uk';
+    # Update the ldap(s) prefix, hostname and search settings as required
+    $ldap_server = 'ldaps://ldap.example.com';
+    $ldap_search = 'ou=people,dc=example,dc=com';
 
     # Upload directory
     # - used for user image uploads
