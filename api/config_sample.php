@@ -208,6 +208,9 @@
     $exp_hazard = 'VMXi will be operated following the beamline risk assessment';
     
   
+    # Beamlines on which to scale the gridplot to 1024
+    $scale_grid = array('i24');
+
     # Proposal codes to list
     $prop_codes = array('lb', 'cm', 'mx', 'nt', 'nr', 'sw', 'in', 'mt', 'ee', 'em', 'sm');
 
