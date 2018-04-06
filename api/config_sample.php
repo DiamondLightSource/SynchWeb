@@ -150,6 +150,11 @@
                  );
   
     
+    # Imaging API Machines
+    #  - The have free access to imaging/inspections
+    $img = array('1.2.3.4'
+                );
+
 
     # Facility Name for statuses, emails, etc
     # - Used throughout the app for labels
@@ -208,7 +213,11 @@
     $sample_hazard = 'Samples will be handled following the beamline risk assessment';
     $exp_hazard = 'VMXi will be operated following the beamline risk assessment';
     
-  
+
+    # Proposal to store beamline presets in
+    $preset_proposal = 'cm12345';
+
+
     # Beamlines on which to scale the gridplot to 1024
     $scale_grid = array('i24');
 
