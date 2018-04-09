@@ -76,6 +76,7 @@ define(['marionette',
             if (n) this.imagenumber = n
             this.mc.fetch({ data: { IMAGENUMBER: this.imagenumber } })
             this.ctf.fetch({ data: { IMAGENUMBER: this.imagenumber } })
+            this.trigger('load:movie', n)
         },
         
         onRender: function() {
