@@ -22,6 +22,17 @@ define(['backbone'], function(Backbone) {
 
             return kv
         },
+
+        array: function(options) {
+            var arr = []
+            if (options.none) arr.push(['-', ''])
+
+            this.each(function(m) {
+                arr.push([m.get(this.keyAttribute), m.get(this.valueAttribute)])
+            }, this)
+
+            return arr
+        }
     }
 
 })
