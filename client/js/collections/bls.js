@@ -1,6 +1,6 @@
-define(['backbone'], function(Backbone) {
+define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
     
-    return Backbone.Collection.extend({
+    return Backbone.Collection.extend(_.extend({}, {
         url: function() { return '/proposal/bls/'+this.ty },
             
         initialize: function(models, options) {
@@ -15,5 +15,9 @@ define(['backbone'], function(Backbone) {
             
             return d
         },
-    })
+
+        keyAttribute: 'BEAMLINE',
+        valueAttribute: 'BEAMLINE',
+
+    }, KVCollection))
 })
