@@ -2,11 +2,11 @@
 
 cd /tmp
 
-export CCP4_MASTER=/dls_sw/apps/ccp4/x86_64/6.4.0/11oct2013/
-export CINCL=$CCP4_MASTER/ccp4-6.4.0/include
-export CLIBD=$CCP4_MASTER/ccp4-6.4.0/lib/data
+export CCP4_MASTER=/dls_sw/apps/ccp4/7.0.052
+export CINCL=$CCP4_MASTER/ccp4-7.0/include
+export CLIBD=$CCP4_MASTER/ccp4-7.0/lib/data
 export CCP4_SCR=/tmp
-export root=$CCP4_MASTER/ccp4-6.4.0/bin
+export root=$CCP4_MASTER/ccp4-7.0/bin
 
 if [ $3 == 'dimple' -o $3 == 'mrbump' ]; then
 
