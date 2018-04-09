@@ -2,7 +2,7 @@ define([
     'modules/types/em/dc/views/imagestatusitem',
     'modules/types/gen/dc/dc',
     'modules/types/em/dc/views/apstatusitem',
-    'modules/types/em/dc/views/overview',
+    'modules/types/em/dc/views/overview2',
     'modules/types/em/dc/views/micrograph',
     'modules/types/em/dc/views/autoprocessing',
     'tpl!templates/types/em/dc/dc.html'], function(ImageStatusItem, DCItemView, 
@@ -75,6 +75,7 @@ define([
         loadAP: function(e) {
             if (!this.ap) {
                 this.ap = new EMAutoProcessingView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc') })
+                this.listenTo(this.ap, 'load:movie', this.imagestatus.show.bind(this.imagestatus))
             } else this.ap.$el.slideToggle()
         },
 
