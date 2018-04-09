@@ -1,6 +1,9 @@
 define(['marionette', 'backgrid', 
     'utils',
-    'modules/projects/views/addto'], function(Marionette, Backgrid, utils, AddToProjectView) {
+    'modules/projects/views/addto',
+    'backbone', 'backbone-validation'], function(Marionette, Backgrid, utils, 
+        AddToProjectView, 
+        Backbone) {
     
 
     var ValidatedCell = Backgrid.Cell.extend({
@@ -25,7 +28,7 @@ define(['marionette', 'backgrid',
             this.formatter.toRaw = this.toRaw.bind(this)
             this.formatter.fromRaw = this.fromRaw.bind(this)
 
-            _.extend(this.model, Backbone.Validation.mixin)
+            _.extend(this.model.__proto__, Backbone.Validation.mixin)
         }
     })
 
@@ -134,6 +137,12 @@ define(['marionette', 'backgrid',
                 if (col) this.$el.css('background-color', col)
 
                 return this
+            }
+        }),
+
+        SelectInputCell: Backgrid.SelectCell.extend({
+            optionValues: function() {
+                return this.column.get('options').array({ none: this.column.get('none')} )
             }
         }),
     }
