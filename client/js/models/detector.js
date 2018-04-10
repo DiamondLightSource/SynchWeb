@@ -40,8 +40,15 @@ define(['backbone'], function(Backbone) {
             COMPOSITION: {
                 required: false,
                 pattern: 'word',
-            }
-
+            },
+            RESOLUTIONMIN: {
+                required: false,
+                pattern: 'number',
+            },
+            RESOLUTIONMAX: {
+                required: false,
+                pattern: 'number',
+            },
         },
     
     })
