@@ -96,6 +96,8 @@
                               'TRANSMISSION' => '\d+(.\d+)?',
                               'ENERGY' => '\d+(.\d+)?',
                               'MONOCHROMATOR' => '\w+',
+                              'PRESET' => '\d',
+                              'BEAMLINENAME' => '[\w-]+',
 
                               'queued' => '\d',
                               'UNQUEUE' => '\d',
@@ -129,6 +131,7 @@
 
                               array('/plan', 'get', '_get_diffraction_plans'),
                               array('/plan', 'post', '_add_diffraction_plan'),
+                              array('/plan/:pid', 'patch', '_update_diffraction_plan'),
                               array('/plan/:pid', 'delete', '_delete_diffraction_plan'),
 
 
@@ -238,7 +241,7 @@
                 $where .= ' AND cqs.containerqueuesampleid IS NOT NULL';
             }
 
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,3) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,6) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
@@ -1170,16 +1173,33 @@
         }
 
 
+
+        # TODO: Consolidate this into clas.exp.php
+        # - Lazy workaround...
         function _get_diffraction_plans() {
-            $where = 'dp.presetforproposalid=:1 OR dp.presetforproposalid=:2';
-            $args = array($this->proposalid, 37159);
+            global $preset_proposal;
+            $where = 'dp.presetforproposalid=:1 OR (dp.presetforproposalid=:2)';
+
+            $preset = $this->db->pq("SELECT p.proposalid
+              FROM proposal p
+              WHERE CONCAT(p.proposalcode,p.proposalid) LIKE :1", array($preset_proposal));
+
+            if (sizeof($preset)) $presetid = $preset['PROPOSALID'];
+            else $presetid = 0;
+
+            $args = array($this->proposalid, $presetid);
 
             if ($this->has_arg('did')) {
                 $where .= ' AND dp.diffractionplanid = :'.(sizeof($args)+1);
                 array_push($args, $this->arg('did'));
             }
 
-            $dps = $this->db->pq("SELECT dp.diffractionplanid, dp.comments, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 3) as exposuretime, ROUND(dp.requiredresolution, 2) as requiredresolution, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy as energy, monochromator
+            if ($this->has_arg('BEAMLINENAME')) {
+                $where .= ' AND dp.beamlinename=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('BEAMLINENAME'));
+            }
+
+            $dps = $this->db->pq("SELECT dp.diffractionplanid, dp.comments, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, ROUND(dp.exposuretime, 6) as exposuretime, ROUND(dp.requiredresolution, 2) as requiredresolution, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy as energy, monochromator, beamlinename
               FROM diffractionplan dp
               WHERE $where
             ", $args);
@@ -1196,14 +1216,32 @@
             if (!$this->has_arg('COMMENTS')) $this->_error('No name specified');
 
             $args = array($this->arg('COMMENTS'), $this->proposalid);
-            foreach(array('EXPERIMENTKIND', 'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR') as $f) {
+            foreach(array('EXPERIMENTKIND', 'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR', 'BEAMLINENAME') as $f) {
                 array_push($args, $this->has_arg($f) ? $this->arg($f) : null);
             } 
 
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, comments, presetforproposalid, experimentkind, requiredresolution, preferredbeamsizex, preferredbeamsizey, exposuretime, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy, monochromator)
-              VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15) RETURNING diffractionplanid INTO :id", $args);
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, comments, presetforproposalid, experimentkind, requiredresolution, preferredbeamsizex, preferredbeamsizey, exposuretime, boxsizex, boxsizey, axisstart, axisrange, numberofimages, transmission, energy, monochromator, beamlinename)
+              VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16) RETURNING diffractionplanid INTO :id", $args);
 
             $this->_output(array('DIFFRACTIONPLANID' => $this->db->id()));
+        }
+
+
+        function _update_diffraction_plan() {
+            $dp = $this->db->pq("SELECT dp.diffractionplanid 
+              FROM diffractionplan dp
+              WHERE dp.diffractionplanid=:1 AND dp.presetforproposalid=:2", array($this->arg('pid'), $this->proposalid));
+
+            if (!sizeof($dp)) $this->_error('No such diffraction plan');
+            $dp = $dp[0];
+
+            $sfields = array('EXPERIMENTKIND', 'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR', 'COMMENTS', 'BEAMLINENAME');
+            foreach ($sfields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE diffractionplan SET $f=:1 WHERE diffractionplanid=:2", array($this->arg($f), $dp['DIFFRACTIONPLANID']));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
         }
 
 
