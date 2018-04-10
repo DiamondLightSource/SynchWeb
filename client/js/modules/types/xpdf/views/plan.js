@@ -122,76 +122,9 @@ define(['marionette',
     })        
 
 
-    var ValidatedCell = Backgrid.Cell.extend({
-        events: {
-            'change input': 'updateModel',
-            'blur input': 'updateModel',
-            'keyup input': 'updateModel',
-            'change select': 'updateModel',
-        },
+    var DCPlanCell = table.ValidatedTemplateCell.extend({
 
-        updateModel: function(e) {
-            console.log('up mod', $(e.target).attr('name'))
-            this.model.set($(e.target).attr('name'), $(e.target).val())
-            this.validate({ attr: $(e.target).attr('name'), val: $(e.target).val() })
-            this.preSave()
-        },
-
-        preSave: function() {
-            if (this.model.isValid(true)) {
-                var ch = this.model.changedAttributes()
-                if (ch && !(Object.keys(ch).length == 1 && ('isSelected' in ch || '_valid' in ch))) {
-                    console.log('attrs changed', this.model.changedAttributes())
-                    this.model.save(this.model.attributes, { patch: true })   
-                }
-
-            } else {
-                console.log('model invalid')
-            }
-        },
-
-        validate: function(options) {
-            var error = this.model.preValidate(options.attr, options.val)
-            var attr = this.$el.find('[name='+options.attr+']')
-            if (error) this.invalid(attr, error)
-            else this.valid(attr)
-        },
-
-        invalid: function(attr, error) {
-            $(attr).removeClass('fvalid').addClass('ferror')
-            if (!$(attr).siblings('span.errormessage').length) $(attr).after('<span class="errormessage ferror">'+error+'</span>')
-            else $(attr).siblings('span.errormessage').text(error)
-        },
-        
-        valid: function(attr) {
-            $(attr).removeClass('ferror').addClass('fvalid').siblings('span.errormessage').remove()
-        },
-
-        initialize: function(options) {
-            ValidatedCell.__super__.initialize.call(this,options)
-            this.preSave = _.debounce(this.preSave, 1000)
-        },
-
-        bindModel: function() {
-            Backbone.Validation.unbind(this)
-            Backbone.Validation.bind(this, {
-                model: this.model,
-                selector: 'name',
-                valid: function(view, attr) {
-                    view.valid(view.$el.find('[name='+attr+']'))
-                },
-                invalid: function(view, attr, error) {
-                    view.invalid(view.$el.find('[name='+attr+']'), error)
-                }
-            })
-        },
-    })
-
-
-
-    var DCPlanCell = ValidatedCell.extend({
-
-        events: _.extend({}, ValidatedCell.prototype.events, {
+        events: _.extend({}, table.ValidatedTemplateCell.prototype.events, {
             'click a.locked': 'doUnlock',
             'click a.unlocked': 'doLock',
         }),
@@ -237,7 +170,7 @@ define(['marionette',
 
 
 
-    var AxisCell = ValidatedCell.extend({
+    var AxisCell = table.ValidatedTemplateCell.extend({
         render: function() {
             this.$el.empty()
             this.$el.html(planaxis(this.model.toJSON()))
@@ -399,7 +332,7 @@ define(['marionette',
 
 
 
-    var DetectorCell = ValidatedCell.extend({
+    var DetectorCell = table.ValidatedTemplateCell.extend({
         render: function() {
             this.$el.empty()
             this.$el.html(plandetector(this.model.toJSON()))
