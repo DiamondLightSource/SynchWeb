@@ -281,6 +281,8 @@
                             'ProcessingJobParameter',
                             'ProcessingJobImageSweep',
 
+                            'BeamLineSetup',
+
                 );
 
             foreach ($tables as $table) {
