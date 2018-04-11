@@ -7,6 +7,13 @@ define(['backbone'], function(Backbone) {
         initialize: function(attrs, options) {
             this.on('change:AXISRANGE change:NUMBEROFIMAGES change:AXISSTART', this.calculateAxisEnd)
             this.calculateAxisEnd()
+
+            if (options && options.beamlinesetup) {
+                _.each(this.validation, function(v,k) {
+                    var range = options.beamlinesetup.getRange({ field: k })
+                    if (range) this.__proto__.validation[k].range = range
+                }, this)
+            }
         },
 
         calculateAxisEnd: function() {
@@ -18,15 +25,6 @@ define(['backbone'], function(Backbone) {
             return [
                 'AXISEND'
             ]
-        },
-
-        initialize: function(attrs, options) {
-            if (options && options.beamlinesetup) {
-                _.each(this.validation, function(v,k) {
-                    var range = options.beamlinesetup.getRange({ field: k })
-                    if (range) this.__proto__.validation[k].range = range
-                }, this)
-            }
         },
 
 
