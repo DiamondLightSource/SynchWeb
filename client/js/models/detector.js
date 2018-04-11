@@ -4,10 +4,18 @@ define(['backbone'], function(Backbone) {
         idAttribute: 'DETECTORID',
         urlRoot: '/exp/detectors',
       
+        defaults: [],
+
+        initialize: function(attrs, options) {
+            _.each(this.validation, function(v,k) {
+                this.defaults[k] = v.pattern == 'word' || v.pattern == 'wwsdash' || v.pattern == 'wwdash' ? '' : null
+            }, this)
+        },
+
         validation: {
             DETECTORTYPE: {
                 required: true,
-                pattern: 'wwdash',
+                pattern: 'wwsdash',
             },
             DETECTORMANUFACTURER: {
                 required: true,
@@ -15,7 +23,7 @@ define(['backbone'], function(Backbone) {
             },
             DETECTORMODEL: {
                 required: true,
-                pattern: 'wwdash',
+                pattern: 'wwsdash',
             },
             DETECTORPIXELSIZEHORIZONTAL: {
                 required: false,
@@ -41,13 +49,29 @@ define(['backbone'], function(Backbone) {
                 required: false,
                 pattern: 'word',
             },
-            RESOLUTIONMIN: {
+            DETECTORMAXRESOLUTION: {
                 required: false,
                 pattern: 'number',
             },
-            RESOLUTIONMAX: {
+            DETECTORMINRESOLUTION: {
                 required: false,
                 pattern: 'number',
+            },
+            SENSORTHICKNESS: {
+                required: false,
+                pattern: 'digits',
+            },
+            DETECTORSERIALNUMBER: {
+                required: false,
+                pattern: 'wwdash',
+            },
+            NUMBEROFPIXELSX: {
+                required: false,
+                pattern: 'digits',
+            },
+            NUMBEROFPIXELSY: {
+                required: false,
+                pattern: 'digits',
             },
         },
     
