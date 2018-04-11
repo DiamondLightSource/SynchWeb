@@ -8,7 +8,7 @@ define(['marionette', 'backgrid',
 
     var ValidatedCell = Backgrid.Cell.extend({
         fromRaw: function (value, model) {
-            return value
+            return value == null ? '' : value
         },
 
         toRaw: function(value, model) {
@@ -82,6 +82,7 @@ define(['marionette', 'backgrid',
         initialize: function(options) {
             ValidatedTemplateCell.__super__.initialize.call(this,options)
             this.preSave = _.debounce(this.preSave, 1000)
+            this.updateModel = _.debounce(this.updateModel, 100)
         },
 
         bindModel: function() {
