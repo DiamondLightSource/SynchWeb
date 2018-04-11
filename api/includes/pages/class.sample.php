@@ -1182,9 +1182,9 @@
 
             $preset = $this->db->pq("SELECT p.proposalid
               FROM proposal p
-              WHERE CONCAT(p.proposalcode,p.proposalid) LIKE :1", array($preset_proposal));
+              WHERE CONCAT(p.proposalcode,p.proposalnumber) LIKE :1", array($preset_proposal));
 
-            if (sizeof($preset)) $presetid = $preset['PROPOSALID'];
+            if (sizeof($preset)) $presetid = $preset[0]['PROPOSALID'];
             else $presetid = 0;
 
             $args = array($this->proposalid, $presetid);
