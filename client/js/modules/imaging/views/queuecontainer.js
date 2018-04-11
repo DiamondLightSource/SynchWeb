@@ -11,6 +11,8 @@ define(['marionette',
 
     'modules/imaging/models/plan',
     'modules/imaging/collections/plans',
+
+    'collections/beamlinesetups',
     
     'tpl!templates/imaging/queuecontainer.html', 'tpl!templates/imaging/queuepoint.html', 
     'tpl!templates/imaging/queuegrid.html', 'tpl!templates/imaging/queuexfe.html',
@@ -23,6 +25,7 @@ define(['marionette',
         SubSamples,
         TableView, table, FilterView, utils,
         DiffractionPlan, DiffractionPlans,
+        BeamlineSetups,
         template, pointemplate, gridtemplate, xfetemplate,
         VMXiPoint, VMXiGrid, VMXiXFE,
         Backgrid) {
@@ -233,7 +236,12 @@ define(['marionette',
 
         bindModel: function() {
             if (this.model.get('EXPERIMENTKIND') in this.plans) {
-                this.plan = new this.plans[this.model.get('EXPERIMENTKIND')]()
+                var options = {}
+                console.log('binding model', this.column.get('beamlinesetups'))
+                if (this.column.get('beamlinesetups') && this.column.get('beamlinesetups').length) {
+                    options.beamlinesetup = this.column.get('beamlinesetups').at(0)
+                }
+                this.plan = new this.plans[this.model.get('EXPERIMENTKIND')](null, options)
             } else this.plan = new DiffractionPlan()
 
             Backbone.Validation.unbind(this)
@@ -538,6 +546,11 @@ define(['marionette',
             this.listenTo(this.plans, 'add remove sync', this.populatePresets, this)
 
             this.listenTo(app, 'window:scroll', this.onScroll, this)
+
+            this.beamlinesetups = new BeamlineSetups()
+            this.beamlinesetups.queryParams.ACTIVE = 1
+            this.beamlinesetups.queryParams.BEAMLINENAME = 'i02-2'
+            this._ready = this.beamlinesetups.fetch()
         },
 
 
@@ -595,6 +608,10 @@ define(['marionette',
         
         
         onRender: function() {
+            this._ready.done(this.doOnRender.bind(this))
+        },
+
+        doOnRender: function() {
             var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
                            { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
                            { name: 'PROTEIN', label: 'Protein', cell: 'string', editable: false },
@@ -626,7 +643,7 @@ define(['marionette',
                            { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
                            { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
                            { label: 'Experiment', cell: ExperimentKindCell, editable: false },
-                           { label: 'Parameters', cell: ExperimentCell, editable: false },
+                           { label: 'Parameters', cell: ExperimentCell, editable: false, beamlinesetups: this.beamlinesetups },
                            { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
                            { name: '', cell: table.StatusCell, editable: false },
                            { label: '', cell: ActionsCell, editable: false, plans: this.plans },
