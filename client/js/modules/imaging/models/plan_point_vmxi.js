@@ -20,6 +20,15 @@ define(['backbone'], function(Backbone) {
             ]
         },
 
+        initialize: function(attrs, options) {
+            if (options && options.beamlinesetup) {
+                _.each(this.validation, function(v,k) {
+                    var range = options.beamlinesetup.getRange({ field: k })
+                    if (range) this.__proto__.validation[k].range = range
+                }, this)
+            }
+        },
+
 
         defaults: {
             WAVELENGTH: 12658,
@@ -35,59 +44,51 @@ define(['backbone'], function(Backbone) {
             REQUIREDRESOLUTION: {
                 required: true,
                 pattern: 'number',
-                range: [1.2,80],
             },
 
             EXPOSURETIME: {
                 required: true,
                 pattern: 'number',
-                range: [0.001333333, 30],
             },
 
             PREFERREDBEAMSIZEX: {
                 required: true,
                 pattern: 'digits',
-                range: [2,30],
             },
 
             PREFERREDBEAMSIZEY: {
                 required: true,
                 pattern: 'digits',
-                range: [2,30],
             },
 
             AXISRANGE: {
                 required: false,
                 pattern: 'number',
-                range: [0,1],
             },
 
             AXISSTART: {
                 required: true,
                 pattern: 'number',
-                range: [-30,30]
             },
 
             AXISEND: {
-                range: [-30,30]
+                required: false,
+                pattern: 'number',
             },
 
             NUMBEROFIMAGES: {
                 required: true,
                 pattern: 'digits',
-                range: [0,9999],
             },
 
             TRANSMISSION: {
                 required: true,
                 pattern: 'number',
-                range: [0, 100],
             },
 
             ENERGY: {
                 required: true,
                 pattern: 'digits',
-                range: [12658,12658]
             },
         },
       
