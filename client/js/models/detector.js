@@ -2,7 +2,7 @@ define(['backbone'], function(Backbone) {
 
     return Backbone.Model.extend({
         idAttribute: 'DETECTORID',
-        urlRoot: '/exp/detector',
+        urlRoot: '/exp/detectors',
       
         validation: {
             DETECTORTYPE: {
