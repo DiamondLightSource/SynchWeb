@@ -33,7 +33,7 @@ define(['marionette',
         },
         
         loadMovie: function(e) {
-            this.fetch(this.ui.mov.val())
+            this.fetch(parseInt(this.ui.mov.val()))
         },
 
         nextMovie: function(e) {
