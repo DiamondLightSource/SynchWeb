@@ -48,7 +48,7 @@
             'DETECTORMAXRESOLUTION' => '\d+(.\d+)?',
             'DETECTORMINRESOLUTION' => '\d+(.\d+)?',
             'SENSORTHICKNESS' => '\d+',
-            'DETECTORSERIALNUMBER' => '\w+',
+            'DETECTORSERIALNUMBER' => '[\w-]+',
             'NUMBEROFPIXELSX' => '\d+',
             'NUMBEROFPIXELSY' => '\d+',
 
