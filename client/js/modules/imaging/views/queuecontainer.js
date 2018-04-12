@@ -549,7 +549,7 @@ define(['marionette',
 
             this.beamlinesetups = new BeamlineSetups()
             this.beamlinesetups.queryParams.ACTIVE = 1
-            this.beamlinesetups.queryParams.BEAMLINENAME = 'i02-2'
+            this.beamlinesetups.queryParams.BEAMLINENAME = this.model.get('BEAMLINENAME')
             this._ready = this.beamlinesetups.fetch()
         },
 
