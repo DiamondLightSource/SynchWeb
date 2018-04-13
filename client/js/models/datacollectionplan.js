@@ -42,6 +42,12 @@ define(['backbone',
 
             this.listenTo(this, 'change:ENERGY', this.updateKevEnergy)
             this.updateKevEnergy()
+
+            if (options && options.BEAMLINESETUPS) {
+                this.beamlinesetups = options.BEAMLINESETUPS
+                this.listenTo(this.beamlinesetups, 'sync reset add remove', this.syncLimits)
+                this.syncLimits()
+            }
         },
 
         syncModels: function() {
@@ -56,6 +62,24 @@ define(['backbone',
             var dets = this.detectors.where({ DATACOLLECTIONPLANID: this.get('DIFFRACTIONPLANID')})
             // console.log('syncing dets', this.get('DIFFRACTIONPLANID'), dets)
             this.get('DETECTORS').reset(dets)
+        },
+
+        syncLimits: function() {
+            var beamlinesetup = this.beamlinesetups.findWhere({ DETECTORID: this.get('DETECTORID') })
+            if (!beamlinesetup) {
+                if (this.beamlinesetups.length) beamlinesetup = this.beamlinesetups.at(0)
+            }
+
+            if (beamlinesetup) {
+                this.validation = JSON.parse(JSON.stringify(this.__proto__.validation))
+                _.each(this.validation, function(v,k) {
+                    var range = beamlinesetup.getRange({ field: k })
+                    if (range) {
+                        v.range = range
+                    }
+                }, this)
+            }
+            console.log('sync limits', this.validation, beamlinesetup)
         },
 
         updateKevEnergy: function() {
