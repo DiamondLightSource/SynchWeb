@@ -137,7 +137,7 @@ define(['marionette',
                 return
             }
 
-            app.bc.reset([{ title: 'Manage Beamline Presets', url: '/admin/preset' }])
+            app.bc.reset([{ title: 'Manage Beamline Parameters', url: '/admin/params' }])
             app.content.show(new ParamAdmin())
         },
     }
