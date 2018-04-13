@@ -79,7 +79,6 @@ define(['backbone',
                     }
                 }, this)
             }
-            console.log('sync limits', this.validation, beamlinesetup)
         },
 
         updateKevEnergy: function() {
