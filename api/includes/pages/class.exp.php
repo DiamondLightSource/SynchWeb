@@ -47,8 +47,8 @@
             'COMPOSITION' => '\w+',
             'DETECTORMAXRESOLUTION' => '\d+(.\d+)?',
             'DETECTORMINRESOLUTION' => '\d+(.\d+)?',
-            'DETECTORROLLMIN' => '\d+(.\d+)?',
-            'DETECTORROLLMAX' => '\d+(.\d+)?',
+            'DETECTORROLLMIN' => '-?\d+(.\d+)?',
+            'DETECTORROLLMAX' => '-?\d+(.\d+)?',
             'SENSORTHICKNESS' => '\d+',
             'DETECTORSERIALNUMBER' => '[\w-]+',
             'NUMBEROFPIXELSX' => '\d+',
@@ -105,8 +105,8 @@
             'OMEGAMIN' => '-?\d+(.\d+)?',
             'PHIMAX' => '-?\d+(.\d+)?',
             'PHIMIN' => '-?\d+(.\d+)?',
-            'MONOBANDWIDTHMIN' => '-?\d+(.\d+)?',
-            'MONOBANDWIDTHMAX' => '-?\d+(.\d+)?',
+            'MONOBANDWIDTHMIN' => '\d+(.\d+)?',
+            'MONOBANDWIDTHMAX' => '\d+(.\d+)?',
             'ACTIVE' => '\d',
 
         );
