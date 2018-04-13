@@ -25,13 +25,16 @@ define(['backbone'], function(Backbone) {
             NUMBEROFIMAGES: ['NUMBEROFIMAGESMIN', 'NUMBEROFIMAGESMAX'],
             TRANSMISSION: ['MINTRANSMISSION', 'MAXTRANSMISSION'],
             ENERGY: ['ENERGYMIN', 'ENERGYMAX'],
+            DISTANCE: ['DETECTORDISTANCEMIN', 'DETECTORDISTANCEMAX'],
         },
 
         getRange: function(options) {
             if (options && options.field) {
                 if (options.field in this.map) {
                     var mm = this.map[options.field]
-                    return [parseFloat(this.get(mm[0])), parseFloat(this.get(mm[1]))]
+                    if (this.get(mm[0]) !== null && this.get(mm[1]) !== null) {
+                        return [parseFloat(this.get(mm[0])), parseFloat(this.get(mm[1]))]
+                    }
                 }
             }
         },
