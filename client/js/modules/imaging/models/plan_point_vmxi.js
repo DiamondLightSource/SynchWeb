@@ -9,9 +9,10 @@ define(['backbone'], function(Backbone) {
             this.calculateAxisEnd()
 
             if (options && options.beamlinesetup) {
+                this.validation = JSON.parse(JSON.stringify(this.__proto__.validation))
                 _.each(this.validation, function(v,k) {
                     var range = options.beamlinesetup.getRange({ field: k })
-                    if (range) this.__proto__.validation[k].range = range
+                    if (range) v.range = range
                 }, this)
             }
         },
