@@ -152,7 +152,7 @@
                 array_push($args, $this->arg('BEAMLINENAME'));
             }
 
-            $rows = $this->db->pq("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(dc.datacollectionid) as dcs, count(bls.beamlinesetupid) as blsetups, count(dphd.detectorid) as dps,count(dp.detectorid) as dps2, CONCAT(IFNULL(GROUP_CONCAT(ses.beamlinename),''),IFNULL(GROUP_CONCAT(bls.beamlinename),'')) as beamlines, numberofpixelsx, numberofpixelsy
+            $rows = $this->db->pq("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(dc.datacollectionid) as dcs, count(bls.beamlinesetupid) as blsetups, count(dphd.detectorid) as dps,count(dp.detectorid) as dps2, CONCAT(IFNULL(GROUP_CONCAT(distinct ses.beamlinename),''),IFNULL(GROUP_CONCAT(distinct bls.beamlinename),'')) as beamlines, numberofpixelsx, numberofpixelsy
                 FROM detector d
                 LEFT OUTER JOIN datacollection dc ON dc.detectorid = d.detectorid
                 LEFT OUTER JOIN blsession ses on dc.sessionid = ses.sessionid
