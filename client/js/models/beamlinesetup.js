@@ -26,6 +26,8 @@ define(['backbone'], function(Backbone) {
             TRANSMISSION: ['MINTRANSMISSION', 'MAXTRANSMISSION'],
             ENERGY: ['ENERGYMIN', 'ENERGYMAX'],
             DISTANCE: ['DETECTORDISTANCEMIN', 'DETECTORDISTANCEMAX'],
+            MONOBANDWIDTH: ['MONOBANDWIDTHMIN', 'MONOBANDWIDTHMAX'],
+            ROLL: ['DETECTORROLLMIN', 'DETECTORROLLMAX'],
         },
 
         getRange: function(options) {
@@ -152,7 +154,14 @@ define(['backbone'], function(Backbone) {
                 required: false,
                 pattern: 'number',
             },
-
+            MONOBANDWIDTHMIN: {
+                required: false,
+                pattern: 'number',
+            },
+            MONOBANDWIDTHMAX: {
+                required: false,
+                pattern: 'number',
+            },
         }
     })
        
