@@ -14,6 +14,8 @@ define(['marionette',
     'models/datacollectionplandetector',
     'collections/datacollectionplandetectors',
 
+    'collections/beamlinesetups',
+
     'views/table',
     'views/sortabletable',
     'utils/table',
@@ -41,6 +43,8 @@ define(['marionette',
 
         DataCollectionPlanDetector,
         DataCollectionPlanDetectors,
+
+        BeamlineSetups,
 
         TableView,
         SortableTableView,
@@ -375,7 +379,7 @@ define(['marionette',
                 DETECTORTYPE: det.get('DETECTORTYPE'),
                 DETECTORMANUFACTURER: det.get('DETECTORMANUFACTURER'),
                 DETECTORMODEL: det.get('DETECTORMODEL'),
-            })
+            }, { BEAMLINESETUPS: this.column.get('beamlinesetups') })
 
             var self = this
             pdet.save({}, {
@@ -500,6 +504,7 @@ define(['marionette',
             this.ready = []
 
             this.detectors = new Detectors()
+            this.detectors.queryParams.BEAMLINENAME = this.model.get('FIRSTEXPERIMENTBEAMLINE')
             this.ready.push(this.detectors.fetch())
             this.scanservices = new ScanServices()
             this.ready.push(this.scanservices.fetch())
@@ -508,10 +513,16 @@ define(['marionette',
             this.scanmodels.queryParams.CONTAINERID = this.model.get('CONTAINERID')
             this.scanmodels.fetch()
 
+            this.beamlinesetups = new BeamlineSetups()
+            this.beamlinesetups.queryParams.BEAMLINENAME = this.model.get('FIRSTEXPERIMENTBEAMLINE')
+            this.beamlinesetups.queryParams.ACTIVE = 1
+            this.ready.push(this.beamlinesetups.fetch())
+
             this.datacollectionplandetectors = new DataCollectionPlanDetectors(null, { state: { pageSize: 9999 }})
             this.datacollectionplandetectors.queryParams.CONTAINERID = this.model.get('CONTAINERID')
-            this.datacollectionplandetectors.fetch()
-
+            this.datacollectionplandetectors.fetch({
+                BEAMLINESETUPS: this.beamlinesetups
+            })
 
             this.datacollectionplans = new DataCollectionPlans()
             this.datacollectionplans.queryParams.CONTAINERID = this.model.get('CONTAINERID')
@@ -519,8 +530,8 @@ define(['marionette',
             this.datacollectionplans.fetch({
                 SCANPARAMETERSMODELS: this.scanmodels,
                 DETECTORS: this.datacollectionplandetectors,
+                BEAMLINESETUPS: this.beamlinesetups
             })
-
         },
 
         onRender: function() {
@@ -551,7 +562,7 @@ define(['marionette',
                 { label: '#', cell: table.TemplateCell, editable: false, template: '<%-parseInt(PLANORDER)+1%>' },
                 { label: 'Instance', cell: table.TemplateCell, editable: false, template: '<%-SAMPLE%>' },
                 { label: 'Axes', cell: AxesCell, editable: false, scanservices: this.scanservices, scanmodels: this.scanmodels },
-                { label: 'Detectors', cell: DetectorsCell, editable: false, detectors: this.detectors, dpdetectors: this.datacollectionplandetectors },
+                { label: 'Detectors', cell: DetectorsCell, editable: false, detectors: this.detectors, dpdetectors: this.datacollectionplandetectors, beamlinesetups: this.beamlinesetups },
                 { label: 'Parameters', cell: DCPlanCell, editable: false },
             ]
 
