@@ -183,12 +183,14 @@ define(['marionette',
             this.quotes = new Quotes()
             this.quotes.queryParams.sid = this.shipment.get('SHIPPINGID')
 
-            this.shipment.__proto__.validation.DELIVERYAGENT_SHIPPINGDATE.required = true
-            this.shipment.__proto__.validation.PHYSICALLOCATION.required = true
-            this.shipment.__proto__.validation.READYBYTIME.required = true
-            this.shipment.__proto__.validation.CLOSETIME.required = true
+            this.shipment.validation = JSON.parse(JSON.stringify(this.shipment.__proto__.validation))
+            this.shipment.validation.DELIVERYAGENT_SHIPPINGDATE.required = true
+            this.shipment.validation.PHYSICALLOCATION.required = true
+            this.shipment.validation.READYBYTIME.required = true
+            this.shipment.validation.CLOSETIME.required = true
 
-            this.lc.__proto__.validation.EMAILADDRESS.required = true
+            this.lc.validation = JSON.parse(JSON.stringify(this.lc.__proto__.validation))
+            this.lc.validation.EMAILADDRESS.required = true
 
             this.awb = new AWBModel()
 

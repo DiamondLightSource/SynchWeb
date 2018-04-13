@@ -40,10 +40,11 @@ define(['marionette',
             this.dewars.queryParams.sid = this.shipment.get('SHIPPINGID')
             this.ready = [this.dewars.fetch()]
 
-            this.shipment.__proto__.validation.DELIVERYAGENT_SHIPPINGDATE.required = true
-            this.shipment.__proto__.validation.PHYSICALLOCATION.required = true
-            this.shipment.__proto__.validation.READYBYTIME.required = true
-            this.shipment.__proto__.validation.CLOSETIME.required = true
+            this.shipment.validation = JSON.parse(JSON.stringify(this.shipment.__proto__.validation))
+            this.shipment.validation.DELIVERYAGENT_SHIPPINGDATE.required = true
+            this.shipment.validation.PHYSICALLOCATION.required = true
+            this.shipment.validation.READYBYTIME.required = true
+            this.shipment.validation.CLOSETIME.required = true
 
             this.setupValidation(this.shipment)
         },
