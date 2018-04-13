@@ -15,7 +15,7 @@ define(['backbone'], function(Backbone) {
         validation: {
             DETECTORTYPE: {
                 required: true,
-                pattern: 'wwsdash',
+                pattern: 'wwsldash',
             },
             DETECTORMANUFACTURER: {
                 required: true,
@@ -54,6 +54,14 @@ define(['backbone'], function(Backbone) {
                 pattern: 'number',
             },
             DETECTORMINRESOLUTION: {
+                required: false,
+                pattern: 'number',
+            },
+            DETECTORROLLMIN: {
+                required: false,
+                pattern: 'number',
+            },
+            DETECTORROLLMAX: {
                 required: false,
                 pattern: 'number',
             },
