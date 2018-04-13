@@ -182,9 +182,9 @@
             if (!$this->has_arg('DETECTORMODEL')) $this->_error('No detector model specified');
 
             $args = array($this->arg('DETECTORTYPE'), $this->arg('DETECTORMANUFACTURER'), $this->arg('DETECTORMODEL'));
-            foreach (array('DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION','DETECTORMINRESOLUTION','DETECTORMAXRESOLUTION','DETECTORROLLMIN', 'DETECTORROLLMAX') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
+            foreach (array('DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION','DETECTORMINRESOLUTION','DETECTORMAXRESOLUTION','DETECTORROLLMIN', 'DETECTORROLLMAX', 'SENSORTHICKNESS') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
 
-            $this->db->pq("INSERT INTO detector (detectortype,detectormanufacturer,detectormodel,detectorpixelsizehorizontal,detectorpixelsizevertical,detectordistancemin,detectordistancemax,density,composition,detectorminresolution,detectormaxresolution,detectorrollmin,detectorrollmax) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13)", $args);
+            $this->db->pq("INSERT INTO detector (detectortype,detectormanufacturer,detectormodel,detectorpixelsizehorizontal,detectorpixelsizevertical,detectordistancemin,detectordistancemax,density,composition,detectorminresolution,detectormaxresolution,detectorrollmin,detectorrollmax,sensorthickness) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14)", $args);
 
             $this->_output(array('DETECTORID' => $this->db->id()));
         }
@@ -742,8 +742,8 @@
             foreach (array('BEAMSIZEXMAX', 'BEAMSIZEXMIN', 'BEAMSIZEYMAX', 'BEAMSIZEYMIN', 'BOXSIZEXMAX', 'BOXSIZEXMIN', 'BOXSIZEYMAX', 'BOXSIZEYMIN', 'CS', 'ENERGYMAX', 'ENERGYMIN', 'GONIOSTATMAXOSCILLATIONWIDTH', 'GONIOSTATMINOSCILLATIONWIDTH', 'KAPPAMAX', 'KAPPAMIN', 'MAXEXPOSURETIMEPERIMAGE', 'MINEXPOSURETIMEPERIMAGE', 'MAXTRANSMISSION', 'MINTRANSMISSION', 'NUMBEROFIMAGESMAX', 'NUMBEROFIMAGESMIN', 'OMEGAMAX', 'OMEGAMIN', 'PHIMAX', 'PHIMIN', 'MONOBANDWIDTHMIN', 'MONOBANDWIDTHMAX') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
 
             $this->db->pq("INSERT INTO beamlinesetup (setupdate,beamlinename,detectorid,
-                beamsizexmin,beamsizexmax,beamsizeymin,beamsizeymax,boxsizexmax,boxsizexmin,boxsizeymax,boxsizeymin,cs,energymax,energymin,goniostatmaxoscillationwidth,goniostatminoscillationwidth,kappamax,kappamin,maxexposuretimeperimage,minexposuretimeperimage,maxtransmission,mintransmission,numberofimagesmax,numberofimagesmin,omegamax,omegamin,phimax,phimin,active) VALUES (CURRENT_TIMESTAMP,:1,:2
-                ,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,0)", $args);
+                beamsizexmin,beamsizexmax,beamsizeymin,beamsizeymax,boxsizexmax,boxsizexmin,boxsizeymax,boxsizeymin,cs,energymax,energymin,goniostatmaxoscillationwidth,goniostatminoscillationwidth,kappamax,kappamin,maxexposuretimeperimage,minexposuretimeperimage,maxtransmission,mintransmission,numberofimagesmax,numberofimagesmin,omegamax,omegamin,phimax,phimin,active,monobandwidthmin,monobandwidthmax) VALUES (CURRENT_TIMESTAMP,:1,:2
+                ,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,0,:28,:29)", $args);
 
             $this->_output(array('BEAMLINESETUPID' => $this->db->id(), 'SETUPDATE' => date('d-m-Y')));
         }
