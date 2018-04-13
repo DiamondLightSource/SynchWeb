@@ -47,6 +47,8 @@
             'COMPOSITION' => '\w+',
             'DETECTORMAXRESOLUTION' => '\d+(.\d+)?',
             'DETECTORMINRESOLUTION' => '\d+(.\d+)?',
+            'DETECTORROLLMIN' => '\d+(.\d+)?',
+            'DETECTORROLLMAX' => '\d+(.\d+)?',
             'SENSORTHICKNESS' => '\d+',
             'DETECTORSERIALNUMBER' => '[\w-]+',
             'NUMBEROFPIXELSX' => '\d+',
@@ -103,6 +105,8 @@
             'OMEGAMIN' => '-?\d+(.\d+)?',
             'PHIMAX' => '-?\d+(.\d+)?',
             'PHIMIN' => '-?\d+(.\d+)?',
+            'MONOBANDWIDTHMIN' => '-?\d+(.\d+)?',
+            'MONOBANDWIDTHMAX' => '-?\d+(.\d+)?',
             'ACTIVE' => '\d',
 
         );
@@ -152,7 +156,7 @@
                 array_push($args, $this->arg('BEAMLINENAME'));
             }
 
-            $rows = $this->db->pq("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(dc.datacollectionid) as dcs, count(bls.beamlinesetupid) as blsetups, count(dphd.detectorid) as dps,count(dp.detectorid) as dps2, CONCAT(IFNULL(GROUP_CONCAT(distinct ses.beamlinename),''),IFNULL(GROUP_CONCAT(distinct bls.beamlinename),'')) as beamlines, numberofpixelsx, numberofpixelsy
+            $rows = $this->db->pq("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(distinct dc.datacollectionid) as dcs, count(distinct bls.beamlinesetupid) as blsetups, count(distinct dphd.detectorid) as dps,count(distinct dp.detectorid) as dps2, CONCAT(IFNULL(GROUP_CONCAT(distinct ses.beamlinename),''),IFNULL(GROUP_CONCAT(distinct bls.beamlinename),'')) as beamlines, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax
                 FROM detector d
                 LEFT OUTER JOIN datacollection dc ON dc.detectorid = d.detectorid
                 LEFT OUTER JOIN blsession ses on dc.sessionid = ses.sessionid
@@ -178,9 +182,9 @@
             if (!$this->has_arg('DETECTORMODEL')) $this->_error('No detector model specified');
 
             $args = array($this->arg('DETECTORTYPE'), $this->arg('DETECTORMANUFACTURER'), $this->arg('DETECTORMODEL'));
-            foreach (array('DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
+            foreach (array('DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION','DETECTORMINRESOLUTION','DETECTORMAXRESOLUTION','DETECTORROLLMIN', 'DETECTORROLLMAX') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
 
-            $this->db->pq("INSERT INTO detector (detectortype,detectormanufacturer,detectormodel,detectorpixelsizehorizontal,detectorpixelsizevertical,detectordistancemin,detectordistancemax,density,composition) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9)", $args);
+            $this->db->pq("INSERT INTO detector (detectortype,detectormanufacturer,detectormodel,detectorpixelsizehorizontal,detectorpixelsizevertical,detectordistancemin,detectordistancemax,density,composition,detectorminresolution,detectormaxresolution,detectorrollmin,detectorrollmax) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13)", $args);
 
             $this->_output(array('DETECTORID' => $this->db->id()));
         }
@@ -193,7 +197,7 @@
             $chk = $this->db->pq("SELECT detectorid FROM detector WHERE detectorid=:1", array($this->arg('DETECTORID')));
             if (!sizeof($chk)) $this->_error('No such detector');
 
-            foreach(array('DETECTORTYPE','DETECTORMANUFACTURER','DETECTORMODEL','DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION','SENSORTHICKNESS','DETECTORSERIALNUMBER','DETECTORMINRESOLUTION','DETECTORMAXRESOLUTION','NUMBEROFPIXELSX','NUMBEROFPIXELSY') as $f) {
+            foreach(array('DETECTORTYPE','DETECTORMANUFACTURER','DETECTORMODEL','DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION','SENSORTHICKNESS','DETECTORSERIALNUMBER','DETECTORMINRESOLUTION','DETECTORMAXRESOLUTION','NUMBEROFPIXELSX','NUMBEROFPIXELSY','DETECTORROLLMIN','DETECTORROLLMAX') as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq('UPDATE detector SET '.$f.'=:1 WHERE detectorid=:2', array($this->arg($f), $this->arg('DETECTORID')));
                     $this->_output(array($f => $this->arg($f)));
@@ -708,8 +712,8 @@
 
             $rows = $this->db->paginate("SELECT bls.beamlinesetupid, TO_CHAR(bls.setupdate, 'DD-MM-YYYY') as setupdate, bls.minexposuretimeperimage, bls.goniostatminoscillationwidth, bls.mintransmission, bls.beamlinename, bls.cs, 
                 bls.active, bls.goniostatmaxoscillationwidth, bls.maxexposuretimeperimage, bls.maxtransmission, 
-                bls.beamsizexmin, bls.beamsizexmax, bls.beamsizeymin, bls.beamsizeymax, bls.omegamin, bls.omegamax, bls.kappamin, bls.kappamax, bls.phimin, bls.phimax, bls.energymin, bls.energymax, bls.numberofimagesmin, bls.numberofimagesmax, bls.boxsizexmin, bls.boxsizeymin, bls.boxsizexmax, bls.boxsizeymax,
-                bls.detectorid, d.detectorminresolution, d.detectormaxresolution, d.detectordistancemin, d.detectordistancemax, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.numberofpixelsx, d.numberofpixelsy,
+                bls.beamsizexmin, bls.beamsizexmax, bls.beamsizeymin, bls.beamsizeymax, bls.omegamin, bls.omegamax, bls.kappamin, bls.kappamax, bls.phimin, bls.phimax, bls.energymin, bls.energymax, bls.numberofimagesmin, bls.numberofimagesmax, bls.boxsizexmin, bls.boxsizeymin, bls.boxsizexmax, bls.boxsizeymax, bls.monobandwidthmin, bls.monobandwidthmax, 
+                bls.detectorid, d.detectorminresolution, d.detectormaxresolution, d.detectordistancemin, d.detectordistancemax, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax,
                 count(ses.sessionid) as sessions
               FROM beamlinesetup bls
               LEFT OUTER JOIN blsession ses ON ses.beamlinesetupid = bls.beamlinesetupid
@@ -735,7 +739,7 @@
             if (!$this->has_arg('DETECTORID')) $this->_error('No detector specified');
 
             $args = array($this->arg('BEAMLINENAME'), $this->arg('DETECTORID'));
-            foreach (array('BEAMSIZEXMAX', 'BEAMSIZEXMIN', 'BEAMSIZEYMAX', 'BEAMSIZEYMIN', 'BOXSIZEXMAX', 'BOXSIZEXMIN', 'BOXSIZEYMAX', 'BOXSIZEYMIN', 'CS', 'ENERGYMAX', 'ENERGYMIN', 'GONIOSTATMAXOSCILLATIONWIDTH', 'GONIOSTATMINOSCILLATIONWIDTH', 'KAPPAMAX', 'KAPPAMIN', 'MAXEXPOSURETIMEPERIMAGE', 'MINEXPOSURETIMEPERIMAGE', 'MAXTRANSMISSION', 'MINTRANSMISSION', 'NUMBEROFIMAGESMAX', 'NUMBEROFIMAGESMIN', 'OMEGAMAX', 'OMEGAMIN', 'PHIMAX', 'PHIMIN') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
+            foreach (array('BEAMSIZEXMAX', 'BEAMSIZEXMIN', 'BEAMSIZEYMAX', 'BEAMSIZEYMIN', 'BOXSIZEXMAX', 'BOXSIZEXMIN', 'BOXSIZEYMAX', 'BOXSIZEYMIN', 'CS', 'ENERGYMAX', 'ENERGYMIN', 'GONIOSTATMAXOSCILLATIONWIDTH', 'GONIOSTATMINOSCILLATIONWIDTH', 'KAPPAMAX', 'KAPPAMIN', 'MAXEXPOSURETIMEPERIMAGE', 'MINEXPOSURETIMEPERIMAGE', 'MAXTRANSMISSION', 'MINTRANSMISSION', 'NUMBEROFIMAGESMAX', 'NUMBEROFIMAGESMIN', 'OMEGAMAX', 'OMEGAMIN', 'PHIMAX', 'PHIMIN', 'MONOBANDWIDTHMIN', 'MONOBANDWIDTHMAX') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
 
             $this->db->pq("INSERT INTO beamlinesetup (setupdate,beamlinename,detectorid,
                 beamsizexmin,beamsizexmax,beamsizeymin,beamsizeymax,boxsizexmax,boxsizexmin,boxsizeymax,boxsizeymin,cs,energymax,energymin,goniostatmaxoscillationwidth,goniostatminoscillationwidth,kappamax,kappamin,maxexposuretimeperimage,minexposuretimeperimage,maxtransmission,mintransmission,numberofimagesmax,numberofimagesmin,omegamax,omegamin,phimax,phimin,active) VALUES (CURRENT_TIMESTAMP,:1,:2
@@ -754,7 +758,7 @@
                 WHERE beamlinesetupid=:1", array($this->arg('BEAMLINESETUPID')));
             if (!sizeof($chk)) $this->_error('No such beamline setup');
 
-            foreach(array('DETECTORID', 'BEAMLINENAME', 'BEAMSIZEXMAX', 'BEAMSIZEXMIN', 'BEAMSIZEYMAX', 'BEAMSIZEYMIN', 'BOXSIZEXMAX', 'BOXSIZEXMIN', 'BOXSIZEYMAX', 'BOXSIZEYMIN', 'CS', 'ENERGYMAX', 'ENERGYMIN', 'GONIOSTATMAXOSCILLATIONWIDTH', 'GONIOSTATMINOSCILLATIONWIDTH', 'KAPPAMAX', 'KAPPAMIN', 'MAXEXPOSURETIMEPERIMAGE', 'MINEXPOSURETIMEPERIMAGE', 'MAXTRANSMISSION', 'MINTRANSMISSION', 'NUMBEROFIMAGESMAX', 'NUMBEROFIMAGESMIN', 'OMEGAMAX', 'OMEGAMIN', 'PHIMAX', 'PHIMIN', 'ACTIVE') as $f) {
+            foreach(array('DETECTORID', 'BEAMLINENAME', 'BEAMSIZEXMAX', 'BEAMSIZEXMIN', 'BEAMSIZEYMAX', 'BEAMSIZEYMIN', 'BOXSIZEXMAX', 'BOXSIZEXMIN', 'BOXSIZEYMAX', 'BOXSIZEYMIN', 'CS', 'ENERGYMAX', 'ENERGYMIN', 'GONIOSTATMAXOSCILLATIONWIDTH', 'GONIOSTATMINOSCILLATIONWIDTH', 'KAPPAMAX', 'KAPPAMIN', 'MAXEXPOSURETIMEPERIMAGE', 'MINEXPOSURETIMEPERIMAGE', 'MAXTRANSMISSION', 'MINTRANSMISSION', 'NUMBEROFIMAGESMAX', 'NUMBEROFIMAGESMIN', 'OMEGAMAX', 'OMEGAMIN', 'PHIMAX', 'PHIMIN', 'ACTIVE', 'MONOBANDWIDTHMIN', 'MONOBANDWIDTHMAX') as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq('UPDATE beamlinesetup SET '.$f.'=:1 WHERE beamlinesetupid=:2', array($this->arg($f), $this->arg('BEAMLINESETUPID')));
                     $this->_output(array($f => $this->arg($f)));
