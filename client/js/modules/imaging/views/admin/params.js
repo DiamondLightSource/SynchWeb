@@ -3,7 +3,7 @@ define(['marionette',
     'collections/beamlinesetups',
     'models/detector',
     'collections/detectors',
-    'collections/bls',
+    'modules/fault/collections/bls',
     'views/table',
     'utils/table',
 
@@ -218,7 +218,7 @@ define(['marionette',
         initialize: function(options) {
             this._ready = []
 
-            this.beamlines = new Beamlines(null, { ty: app.type })
+            this.beamlines = new Beamlines()
             this._ready.push(this.beamlines.fetch())
 
             this.params = new BeamlineSetups()
