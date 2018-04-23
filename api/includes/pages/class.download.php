@@ -22,6 +22,7 @@
                               'ppl' => '\w+',
 
                               'filetype' => '\w+',
+                              'blsampleid' => '\d+'
                               );
 
     
@@ -107,6 +108,8 @@
         # ------------------------------------------------------------------------
         # Download mtz/log file for Fast DP / XIA2
         function _auto_processing() {
+            ini_set('memory_limit', '512M');
+
             if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
             if (!$this->has_arg('aid')) $this->_error('No auto processing id', 'No auto processing id specified');
             
@@ -493,27 +496,50 @@
         # ------------------------------------------------------------------------
         # Get dc attachmmnts
         function _get_attachments() {
-            if (!$this->has_arg('id')) $this->_error('No datacolectionid specified');
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('id') && !$this->has_arg('blsampleid')) $this->_error('No data collection or sample specified');
 
-            $args = array($this->arg('id'));
-            $where = 'datacollectionid=:1';
+            $args = array($this->proposalid);
+            $where = 'p.proposalid=:1';
+
+            if ($this->has_arg('id')) {
+                $where .= ' AND dca.datacollectionid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('id'));
+            }
 
             if ($this->has_arg('aid')) {
-                $where .= ' AND datacollectionfileattachmentid=:2';
-                array_push($args, $this->arg('id'));
+                $where .= ' AND dca.datacollectionfileattachmentid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('aid'));
             }   
 
             if ($this->has_arg('filetype')) {
-                $where .= ' AND filetype LIKE :'.(sizeof($args)+1);
+                $where .= ' AND dca.filetype LIKE :'.(sizeof($args)+1);
                 array_push($args, $this->arg('filetype'));
             }
 
-            $rows = $this->db->pq("SELECT filefullpath, filetype, datacollectionfileattachmentid
-                FROM datacollectionfileattachment
+            if ($this->has_arg('blsampleid')) {
+                $where .= ' AND dc.blsampleid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('blsampleid'));
+            }
+
+            $rows = $this->db->pq("SELECT dca.filefullpath, dca.filetype, dca.datacollectionfileattachmentid, dca.datacollectionid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, dc.blsampleid, dc.blsubsampleid, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.orientation, g.snaked
+                FROM datacollectionfileattachment dca
+                INNER JOIN datacollection dc ON dc.datacollectionid = dca.datacollectionid
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                LEFT OUTER JOIN gridinfo g ON g.datacollectiongroupid = dc.datacollectiongroupid
                 WHERE $where", $args);
 
             foreach($rows as &$r) {
-                $r['FILEFULLPATH'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $r['FILEFULLPATH']);
+                $r['FILENAME'] = basename($r['FILEFULLPATH']);
+                $info = pathinfo($r['FILENAME']);
+                $r['NAME'] = basename($r['FILENAME'],'.'.$info['extension']);
+
+                $r['FILEFULLPATH'] = preg_replace('/.*\/'.$r['VISIT'].'\//', '', $r['FILEFULLPATH']);
+
+                foreach (array('DX_MM', 'DY_MM', 'STEPS_X', 'STEPS_Y') as $k) {
+                    $r[$k] = floatval($r[$k]);
+                }
             }
 
 

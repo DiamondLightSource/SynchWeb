@@ -4,7 +4,12 @@ define(['backbone.paginator', 'models/datacollectionplan'], function(PageableCol
         model: DataCollectionPlan,
         mode: 'server',
         url: '/exp/plans',
-                                          
+
+        comparator: 'PLANORDER',
+        // comparator: function(m) {
+        //     return parseInt(m.get('PLANORDER'))
+        // },
+
         state: {
             pageSize: 15,
         },

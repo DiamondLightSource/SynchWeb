@@ -4,6 +4,7 @@
         
 
         public static $arg_list = array('id' => '\d+', 'ids' => '\d+', 'visit' => '\w+\d+-\d+', 's' => '[\w\d-\/]+', 't' => '\w+', 'value' => '.*', 'sid' => '\d+', 'aid' => '\d+', 'pjid' => '\d+', 'imp' => '\d', 'pid' => '\d+', 'h' => '\d\d', 'dmy' => '\d\d\d\d\d\d\d\d',
+                              'ssid' => '\d+',
                               'dcg' => '\d+',
                               'a' => '\d+(.\d+)?',
                               'b' => '\d+(.\d+)?',
@@ -146,7 +147,22 @@
                 
                 $sess = array('dc.sessionid=:1', 'es.sessionid=:2', 'r.blsessionid=:3', 'xrf.sessionid=:4');
                 for ($i = 0; $i < 4; $i++) array_push($args, $info['SESSIONID']);
+            
+            # Subsamples
+            } else if ($this->has_arg('ssid') && $this->has_arg('prop')) {
+                $info = $this->db->pq("SELECT ss.blsubsampleid FROM blsubsample ss INNER JOIN blsample s ON s.blsampleid = ss.blsampleid INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE ss.blsubsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('ssid'), $this->arg('prop')));
                 
+                $tables2 = array('dc', 'es', 'r', 'xrf');
+                $ct = 0;
+                foreach ($tables2 as $i => $t) {
+                    if ($t == 'r') $sess[$i] = 'r.robotactionid<1';
+                    else {
+                        $sess[$i] = $t.'.blsubsampleid=:'.($ct+1);
+                        $ct++;
+                    }
+                }
+                for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('ssid'));
+
             # Samples
             } else if ($this->has_arg('sid') && $this->has_arg('prop')) {
                 $info = $this->db->pq("SELECT s.blsampleid FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE s.blsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('sid'), $this->arg('prop')));
@@ -248,17 +264,7 @@
             
             # If not staff check they have access to data collection
             if (!$this->has_arg('visit') && !$this->staff) {
-                // $where .= " AND u.name=:".(sizeof($args)+1);
-                // $where2 .= " AND u.name=:".(sizeof($args)+2);
-                // $where3 .= " AND u.name=:".(sizeof($args)+3);
-                // $where4 .= " AND u.name=:".(sizeof($args)+4);
-                
                 for ($i = 0; $i < 4; $i++) {
-                    // $extj[$i] .= " INNER JOIN proposal p ON p.proposalid = ses.proposalid 
-                    // INNER JOIN investigation@DICAT_RO i ON lower(i.visit_id) LIKE p.proposalcode||p.proposalnumber||'-'||ses.visit_number 
-                    // INNER JOIN investigationuser@DICAT_RO iu on i.id = iu.investigation_id 
-                    // INNER JOIN user_@DICAT_RO u on u.id = iu.user_id";
-
                     $extj[$i] .= " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:".(sizeof($args)+1);
                     array_push($args, $this->user->personid);
                 }
@@ -319,7 +325,8 @@
                     dc.imagesizex,
                     dc.imagesizey,
                     dc.pixelsizeonimage,
-                    dc.phaseplate
+                    dc.phaseplate,
+                    ses.beamlinename as bl
                     ";
                 $groupby = 'GROUP BY smp.name,smp.blsampleid,ses.visit_number,dc.kappastart,dc.phistart, dc.startimagenumber, dc.experimenttype, dc.datacollectiongroupid, dc.runstatus, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.overlap, dc.flux, dc.imageprefix, dc.datacollectionnumber, dc.filetemplate, dc.datacollectionid, dc.numberofimages, dc.imagedirectory, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages, TO_CHAR(dc.starttime, \'DD-MM-YYYY HH24:MI:SS\'), dc.transmission, dc.axisrange, dc.wavelength, dc.comments, dc.xtalsnapshotfullpath1, dc.xtalsnapshotfullpath2, dc.xtalsnapshotfullpath3, dc.xtalsnapshotfullpath4, dc.starttime, dc.detectordistance, dc.xbeam, dc.ybeam, dc.chistart';
                 // $this->db->set_debug(True);
@@ -362,7 +369,8 @@
                     max(dc.imagesizex) as imagesizex,
                     max(dc.imagesizey) as imagesizey,
                     max(dc.pixelsizeonimage) as pixelsizeonimage,
-                    max(dc.phaseplate) as phaseplate";
+                    max(dc.phaseplate) as phaseplate,
+                    max(ses.beamlinename) as bl";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
             }
 
@@ -416,7 +424,7 @@
              UNION
              SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',es.beamsizehorizontal,es.beamsizevertical,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.peakfdoubleprime, 1, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1, 0, 
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', es.starttime, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl
             FROM energyscan es
             INNER JOIN blsession ses ON ses.sessionid = es.sessionid
             LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid
@@ -426,7 +434,7 @@
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',xrf.beamsizehorizontal,xrf.beamsizevertical,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, 1, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', xrf.starttime, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl
             FROM xfefluorescencespectrum xrf
             INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
             LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid     
@@ -436,7 +444,7 @@
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)), 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, smp.code, r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, r.xtalsnapshotbefore, r.xtalsnapshotafter, 'A', 'A', r.starttimestamp as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', r.starttimestamp, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl
             FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
             LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
@@ -973,10 +981,10 @@
         
             $rows = $this->db->pq('SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga 
                 FROM autoprocintegration api 
-                INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
-                INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
-                INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
-                INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
+                LEFT OUTER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
+                LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+                LEFT OUTER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
+                LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
                 WHERE api.datacollectionid = :1 ORDER BY apss.scalingstatisticstype DESC', array($id));
@@ -1349,7 +1357,7 @@
         # Image quality indicators from distl
         function _image_qi($id) {
             session_write_close();
-            $iqs = array(array(), array(), array(), array());
+            $iqs = array(array(), array(), array(), array(), array());
 
             #$this->db->set_debug(True);
 
@@ -1380,7 +1388,7 @@
             array_push($args, $int);*/
 
             #im.datacollectionid=:1 
-            $imqs = $this->db->pq("SELECT imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b 
+            $imqs = $this->db->pq("SELECT imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b, imq.dozor_score as d
                 FROM imagequalityindicators imq 
             	WHERE imq.datacollectionid IN ($where)
                 ORDER BY imq.imagenumber", $args);
@@ -1390,6 +1398,7 @@
                 array_push($iqs[1], array(intval($imq['NIM']), intval($imq['B'])));
                 array_push($iqs[2], array(intval($imq['NIM']), floatval($imq['RES'])));
                 array_push($iqs[3], array(intval($imq['NIM']), floatval($imq['TOTALINTEGRATEDSIGNAL'])));
+                array_push($iqs[4], array(intval($imq['NIM']), floatval($imq['D'])));
             }
 
             $this->_output($iqs);

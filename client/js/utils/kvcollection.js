@@ -9,7 +9,7 @@ define(['backbone'], function(Backbone) {
                         if (m.get(options.classProperty) == options.classPropertyValue) cl = options.addClass
                     }
                     return '<option class="'+cl+'" value="'+m.escape(this.valueAttribute)+'">'+m.escape(this.keyAttribute)+'</option>' 
-                }, this)
+                }, this).join('\n')
         },
 
         kv: function(options) {
@@ -22,6 +22,17 @@ define(['backbone'], function(Backbone) {
 
             return kv
         },
+
+        array: function(options) {
+            var arr = []
+            if (options.none) arr.push(['-', ''])
+
+            this.each(function(m) {
+                arr.push([m.get(this.keyAttribute), m.get(this.valueAttribute)])
+            }, this)
+
+            return arr
+        }
     }
 
 })

@@ -36,6 +36,8 @@ define(['marionette',
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
+        samplesCollection: Samples,
+
         regions: {
             table: '.sample',
             puck: '.puck',
@@ -56,16 +58,20 @@ define(['marionette',
             this.table.currentView.toggleExtra()
         },
 
+        createSamples: function() {
+            this.samples = new Samples(null, { state: { pageSize: 9999 } })
+        },
 
         initialize: function(options) {
             var self = this
-            this.samples = new Samples([], { containerID: options.model.get('CONTAINERID'), state: {pageSize: 9999} })
+            this.createSamples()
+            this.samples.queryParams.cid = options.model.get('CONTAINERID')
             this._ready = this.samples.fetch({ data: {'sort_by': 'POSITION' } }).done(function() {
                 console.log('samples')
                 var total = _.map(_.range(1, parseInt(self.model.get('CAPACITY'))+1), function(e) { return e.toString() })
                 var diff = _.difference(total, self.samples.pluck('LOCATION'))
                 _.each(diff, function(l) {
-                    self.samples.add(new Sample({ LOCATION: l.toString(), PROTEINID: -1, CONTAINERID: options.model.get('CONTAINERID'), new: true }))
+                    self.samples.add(new Sample({ LOCATION: l.toString(), CRYSTALID: -1, PROTEINID: -1, CONTAINERID: options.model.get('CONTAINERID'), new: true }))
                 })
             })
             
@@ -120,7 +126,8 @@ define(['marionette',
             if (this.model.get('CONTAINERTYPE') == 'PCRStrip') {
                 this.$el.find('.puck').css('width', '50%')
                 // this.puck.$el.width(this.puck.$el.parent().width()/2)
-                this.type = PlateTypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
+                this.platetypes = new PlateTypes()
+                this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
             } else this.puck.show(new PuckView({ collection: this.samples }))
             this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type }))

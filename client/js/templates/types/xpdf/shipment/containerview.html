@@ -1,0 +1,56 @@
+<h1>Container: <span class="NAME"><%-NAME%></span></h1>
+
+<a name="top"></a>
+<p class="help">This page shows the contents of the selected box or sample stage. Samples can be added by clicking the position in the table. Or will be, once ContainerId and Position can be changed.</p>
+
+<!-- 
+<% if (CONTAINERSTATUS == 'processing') { %>
+<p class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
+<% } %>
+-->
+<div class="form clearfix puck_wrap">
+    <div class="puck" title="Click to jump to a position in the sample changer"></div>
+    
+    <ul>
+        <li>
+            <span class="label">Shipment</span>
+            <span><a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a></span>
+        </li>
+        
+        <li>
+            <span class="label">Stage Parcel</span>
+            <span><%-DEWAR%></span>
+        </li>
+        <li>
+            <span class="label">Stage Type</span>
+            <span><%-CONTAINERTYPE%></span>
+        </li>
+        <li>
+            <span class="label">Barcode</span>
+            <span class="BARCODE"><%-BARCODE%></span>
+        </li>
+        <% if (EXPERIMENTTYPE) { %>
+        <li>
+            <span class="label">Experiment Type</span>
+            <span class="EXPERIMENTTYPE"><%-EXPERIMENTTYPE%></span>
+        </li>
+        <% } %>
+        <% if (STORAGETEMPERATURE) { %>
+        <li>
+            <span class="label">Storage Temperature</span>
+            <span class="STORAGETEMPERATURE"><%-STORAGETEMPERATURE%></span>
+        </li>
+        <% } %>
+        <li>
+            <span class="label">Comments</span>
+            <span class="COMMENTS"><%-COMMENTS%></span>
+        </li>
+        <li class="clearfix reorder">
+            <div class="history text_table half"></div>
+            <span class="label">Location History</span>
+        </li>
+    </ul>
+</div>
+<a class ="button expplan" href="/containers/plan/<%-CONTAINERID%>" title="Plan experiments for this sample changer"><i class="fa fa-wrench"></i> Plan Experiments</a>
+<div class="table sample"></div>
+

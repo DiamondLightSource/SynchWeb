@@ -5,12 +5,28 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'samples(/s/:s)(/page/:page)': 'list',
       'samples/sid/:sid(/visit/:visit)': 'view',
 
+      'instances(/s/:s)(/page/:page)': 'list',
+      'instances/sid/:sid(/visit/:visit)': 'view',
+
+      'crystals(/s/:s)(/page/:page)': 'crystallist',
+      'crystals/cid/:cid': 'crystalview',
+      'crystals/add': 'crystaladd',
+
+      'xsamples(/s/:s)(/page/:page)': 'crystallist',
+      'xsamples/cid/:cid': 'crystalview',
+      'xsamples/add': 'crystaladd',
+
       'proteins(/s/:s)(/page/:page)': 'proteinlist',
       'proteins/pid/:pid': 'proteinview',
       'proteins/add': 'proteinadd',
+
+      'phases(/s/:s)(/page/:page)': 'proteinlist',
+      'phases/pid/:pid': 'proteinview',
+      'phases/add': 'proteinadd',
     },
       
-    loadEvents: ['samples:show', 'proteins:show', 'samples:view', 'proteins:view'],
+    loadEvents: ['samples:show', 'proteins:show', 'samples:view', 'proteins:view', 
+      'phases:view', 'xsamples:view', 'instances:view'],
       
   })
        

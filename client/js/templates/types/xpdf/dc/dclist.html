@@ -1,0 +1,25 @@
+    <h1 class="no_mobile">
+        <div class="usage r"></div>
+        Data Collections
+    </h1>
+
+    <% if (IS_VISIT && !IS_SINGLE) { %>
+    <div>
+        <a class="button"  href="/stats/visit/<%-VISIT%>" title="Visit Statistics"><i class="fa fa-pie-chart"></i> <span>Visit Stats</span></a>
+        <a class="button"  href="/containers/add/visit/<%-VISIT%>" title="Create Instances"><i class="fa fa-plus"></i> <span>Create Instances</span></a>
+    </div>
+    <% } %>
+
+    <% if (IS_SINGLE) { %>
+    <h1 class="message nou"><a href="/dc<% if (IS_VISIT) { %>/visit/<%-VISIT%><% } %>">View All Data Collections</a></h1>
+    <% } %>
+
+    <div class="st"></div>
+    <div class="lg"></div>
+
+    <div class="srch clearfix"></div>
+
+    <div class="page_wrap one"></div>    
+    <div class="data_collections"></div>
+    <div class="page_wrap two"></div>
+    

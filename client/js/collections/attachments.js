@@ -1,12 +1,15 @@
-define(['backbone.paginator', 'models/scanmodel'], function(PageableCollection, Attachment) {
+define(['backbone.paginator', 'models/scanmodel', 'utils/kvcollection'], function(PageableCollection, Attachment, KVCollection) {
        
-    return PageableCollection.extend({
+    return PageableCollection.extend(_.extend({
         model: Attachment,
         mode: 'client',
         url: '/download/attachments',
+
+        keyAttribute: 'NAME',
+        valueAttribute: 'DATACOLLECTIONFILEATTACHMENTID',
                                           
         state: {
             pageSize: 15,
         },
-    })
+    }, KVCollection))
 })

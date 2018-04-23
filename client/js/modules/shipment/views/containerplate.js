@@ -87,7 +87,9 @@ define(['marionette',
                 title: 'Delete Subsample',
                 content: 'Are you sure you want to delete this subsample?',
                 callback: function() {
-                    self.model.destroy()
+                    self.model.destroy({
+                        error: utils.jsonError
+                    })
                 },
             })
         },
@@ -112,12 +114,18 @@ define(['marionette',
             var active = this.model.get('EXPERIMENTKIND') ? 'active' : ''
             var active2 = this.model.get('SAMPLES') > 0 ? 'active' : ''
 
+            var has_dc = false
+            _.each(['GR', 'SC', 'DC'], function(ty) {
+                if (this.model.get(ty) > 0) has_dc = true
+            }, this)
+            var del = has_dc ? '' : '<a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>'
+
             this.$el.html('<!--<a href="#" class="button button-notext measure" title="Measure"><i class="fa fa-arrows-h"></i> <span>Measure</span></a>-->\
              <a href="#" class="button button-notext fish '+active2+'" title="Fish into puck"><i class="fa fa-crosshairs"></i> <span>Fish</span></a>\
-             <a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>')
+             '+del)
             
-            this.delegateEvents();
-            return this;
+            this.delegateEvents()
+            return this
         }
     })
 
@@ -466,7 +474,8 @@ define(['marionette',
             this.caching = !app.mobile()
 
             var self = this
-            this.samples = new Samples([], { containerID: options.model.get('CONTAINERID'), state: {pageSize: 9999} })
+            this.samples = new Samples(null, { state: {pageSize: 9999} })
+            this.samples.queryParams.cid = options.model.get('CONTAINERID')
             this.listenTo(this.samples, 'selected:change', this.selectSample)
 
             this.subsamples = new Subsamples()
@@ -478,7 +487,7 @@ define(['marionette',
             
             this.proteins = new DistinctProteins()
             this.proteins.fetch()
-            this.ctypes = PlateTypes
+            this.ctypes = new PlateTypes()
 
             this.gproteins = new DistinctProteins()
             
@@ -487,10 +496,10 @@ define(['marionette',
             this.inspections.setSorting('BLTIMESTAMP', 1)
             this._ready.push(this.inspections.fetch())
 
-            this.screencomponentgroups = new ScreenComponentGroups()
+            this.screencomponentgroups = new ScreenComponentGroups(null, { state: { pageSize: 9999 }})
             this.screencomponentgroups.queryParams.scid = this.model.get('SCREENID')
 
-            this.screencomponents = new ScreenComponents()
+            this.screencomponents = new ScreenComponents(null, { state: { pageSize: 9999 }})
             this.screencomponents.queryParams.scid = this.model.get('SCREENID')
 
             if (this.model.get('SCREENID')) {

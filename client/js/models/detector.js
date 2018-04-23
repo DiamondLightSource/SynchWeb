@@ -2,12 +2,20 @@ define(['backbone'], function(Backbone) {
 
     return Backbone.Model.extend({
         idAttribute: 'DETECTORID',
-        urlRoot: '/exp/detector',
+        urlRoot: '/exp/detectors',
       
+        defaults: [],
+
+        initialize: function(attrs, options) {
+            _.each(this.validation, function(v,k) {
+                this.defaults[k] = v.pattern == 'word' || v.pattern == 'wwsdash' || v.pattern == 'wwdash' ? '' : null
+            }, this)
+        },
+
         validation: {
             DETECTORTYPE: {
                 required: true,
-                pattern: 'wwdash',
+                pattern: 'wwsldash',
             },
             DETECTORMANUFACTURER: {
                 required: true,
@@ -15,7 +23,7 @@ define(['backbone'], function(Backbone) {
             },
             DETECTORMODEL: {
                 required: true,
-                pattern: 'wwdash',
+                pattern: 'wwsdash',
             },
             DETECTORPIXELSIZEHORIZONTAL: {
                 required: false,
@@ -40,8 +48,39 @@ define(['backbone'], function(Backbone) {
             COMPOSITION: {
                 required: false,
                 pattern: 'word',
-            }
-
+            },
+            DETECTORMAXRESOLUTION: {
+                required: false,
+                pattern: 'number',
+            },
+            DETECTORMINRESOLUTION: {
+                required: false,
+                pattern: 'number',
+            },
+            DETECTORROLLMIN: {
+                required: false,
+                pattern: 'number',
+            },
+            DETECTORROLLMAX: {
+                required: false,
+                pattern: 'number',
+            },
+            SENSORTHICKNESS: {
+                required: false,
+                pattern: 'digits',
+            },
+            DETECTORSERIALNUMBER: {
+                required: false,
+                pattern: 'wwdash',
+            },
+            NUMBEROFPIXELSX: {
+                required: false,
+                pattern: 'digits',
+            },
+            NUMBEROFPIXELSY: {
+                required: false,
+                pattern: 'digits',
+            },
         },
     
     })

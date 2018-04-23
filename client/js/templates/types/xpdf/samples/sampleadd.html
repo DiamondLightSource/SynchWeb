@@ -1,0 +1,21 @@
+<h1>Add Sample</h1>
+<form method="post" id="new_crystal">
+    <div class="form">
+        <ul>
+            <li>
+                <label>Name
+                <span class="small">Name of the sample</span></label>
+                <span class="NAME"><input type="text" name="NAME" /></span>
+            </li>
+            <li>
+                <label>Crystallographic Density
+                <span class="small">Calculated density from all phases</span></label>
+                <span class="THEORETICALDENSITY"><input type="text" name="THEORETICALDENSITY" disabled="disabled" /> g cm<span class="super">-3</span></span>
+            </li>
+        </ul>
+
+        <div class="phase_table"></div>
+
+        <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Sample</button>
+    </div>
+</form>

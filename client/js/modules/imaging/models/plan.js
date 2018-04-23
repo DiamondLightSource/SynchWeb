@@ -4,6 +4,14 @@ define(['backbone'], function(Backbone) {
         idAttribute: 'DIFFRACTIONPLANID',
         urlRoot: '/sample/plan',
 
+        defaults: [],
+
+        initialize: function(attrs, options) {
+            _.each(this.validation, function(v,k) {
+                this.defaults[k] = v.pattern == 'word' || v.pattern == 'wwsdash' ? '' : null
+            }, this)
+        },
+
         validation: {
             COMMENTS: {
                 required: true,
@@ -73,6 +81,11 @@ define(['backbone'], function(Backbone) {
             MONOCHROMATOR: {
                 required: false,
                 pattern: 'word',
+            },
+
+            BEAMLINENAME: {
+                required: false,
+                pattern: 'wwdash',
             },
         },
       

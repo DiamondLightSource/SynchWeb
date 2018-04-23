@@ -329,7 +329,7 @@ class DHL {
         
         if ($this->log) file_put_contents('logs/cancelpickuprequest_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['confirmationnumber'].'.xml'), $cancelpickup->toXML());
 
-        $client = new WebserviceClient('staging');
+        $client = new WebserviceClient($this->env);
         $xml = $client->call($cancelpickup);
 
         if ($this->log) file_put_contents('logs/cancelpickupresponse_'.date('Ymd-Hi').'_'.str_replace(' ', '_', $options['confirmationnumber'].'.xml'), $xml);

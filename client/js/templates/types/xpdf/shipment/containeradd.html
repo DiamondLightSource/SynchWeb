@@ -1,0 +1,69 @@
+<div class="messages"></div>
+
+<h1 class="no_mobile">Add New Sample Stage</h1>
+
+<div class="ra">
+    <a class="button" href="/assign"><i class="fa fa-arrows"></i> <span>Assign Containers</span></a>
+</div>
+
+
+<p class="help">This page shows the contents of the selected stage. Sample instances can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
+
+<div class="form clearfix puck_wrap">
+    <form>
+    <a name="top"></a>
+    <div class="puck"></div>
+    
+    <ul>
+        <li>
+            <span class="label">Shipment</span>
+            <span><a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a></span>
+        </li>
+        
+        <li>
+            <span class="label">Parcel</span>
+            <span><%-DEWAR%></span>
+        </li>
+        <li>
+            <label>Stage Type</label>
+            <select name="CONTAINERTYPE"></select>
+        </li>
+        <li>
+            <label>Stage Name</label>
+            <input type="text" name="NAME" />
+        </li>
+
+        <li>
+            <label>Barcode</label>
+            <input type="text" name="BARCODE" /> <span class="message"></span>
+        </li>
+
+        <li>
+            <label>Owner
+                <span class="small">This user will be emailed with container updates. Check your email is up to date!</span>
+            </label>
+            <select name="PERSONID"></select> <a href="#" class="button edit_user"><i class="fa fa-search"></i> View</a>
+        </li>
+
+        <li>
+            <label>Comments
+                <span class="small">Comment for the container</span>
+            </label>
+            <input type="text" name="COMMENTS" />
+        </li>
+
+    </form>
+    <div class="left">
+        <div class="singlesamp"></div>
+    </div>
+    
+</div>
+
+<div class="la puck_controls">
+    <a class="button clearpuck" href="#" title="Clear entire sample changer"><i class="fa fa-times"></i> Clear Sample Changer</a>
+</div>
+<div class="table sample"></div>
+
+<div class="form">
+    <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Container</button>
+</div>

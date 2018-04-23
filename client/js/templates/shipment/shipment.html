@@ -21,6 +21,9 @@
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
             <a class="button pdf" href="<%-APIURL%>/pdf/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-print"></i> Print Airway Bill</a>
             <!-- <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a> -->
+            <% if (!DELIVERYAGENT_PICKUPCONFIRMATION) { %>
+                <a class="button awb" href="/shipments/pickup/sid/<%-SHIPPINGID%>"><i class="fa fa-truck"></i> Rebook Pickup</a>
+            <% } %>
         <% } else { %>
             <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create Airway Bill</a>
         <% } %>
@@ -97,6 +100,7 @@
             <li>
                 <span class="label">Shipping Pickup Confirmed</span>
                 Yes - Confirmation Number: <span class="DELIVERYAGENT_PICKUPCONFIRMATION"><%-DELIVERYAGENT_PICKUPCONFIRMATION%></span>
+                <a href="#" class="button cancel_pickup"><i class="fa fa-times"></i> Cancel</a>
             </li>
             <li>
                 <span class="label">Shipping Confirmed Ready By</span>

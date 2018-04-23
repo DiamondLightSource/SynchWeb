@@ -36,6 +36,14 @@ define(['views/table', 'backgrid', 'jquery', 'jquery-ui'], function(TableView, B
             row: SortableRow,
         },
 
+        initialize: function(options) {
+            if (options && options.backgrid) {
+                this.options.backgrid = _.extend({}, options.backgrid, this.options.backgrid)
+            }
+
+            SortableTable.__super__.initialize.call(this, options)
+        },
+
         onRender: function() {
             SortableTable.__super__.onRender.call(this)
 

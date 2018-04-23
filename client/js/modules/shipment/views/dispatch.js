@@ -90,6 +90,11 @@ define(['marionette', 'views/form',
                 this.ui.courier.html('<input type="text" name="DELIVERYAGENT_AGENTNAME" />')
             // }
             
+            var self = this
+            this.ready.done(function() {
+                self.ui.exp.html(self.visits.opts()).val(self.model.get('VISIT'))
+                self.updateLC()
+            })
         },
 
         initialize: function() {
@@ -99,10 +104,7 @@ define(['marionette', 'views/form',
 
             var self = this
             this.visits = new VVisits(null, { state: { pageSize: 9999 } })
-            this.visits.fetch().done(function() {
-                self.ui.exp.html(self.visits.opts()).val(self.model.get('VISIT'))
-                self.updateLC()
-            })
+            this.ready = this.visits.fetch()
 
             this.history = new DewarHistory(null, { queryParams: { did: this.getOption('dewar').get('DEWARID') }})
             this.history.fetch().done(function() {
@@ -114,7 +116,11 @@ define(['marionette', 'views/form',
         updateLC: function() {
             var vis = this.visits.findWhere({ VISIT: this.ui.exp.val() })
             if (vis) {
-                this.ui.lco.val(vis.get('LC'))
+                var lc = vis.get('LC')
+                if (lc) { 
+                    var lcs = lc.split(',')
+                    this.ui.lco.val(lcs[0].trim())
+                } else this.ui.lco.val('')
             }
 
         },

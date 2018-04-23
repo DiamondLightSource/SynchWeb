@@ -37,8 +37,9 @@
 
 
     # ldap server, used for lookup and authentication (if using)
-    $ldap_server = 'altfed.cclrc.ac.uk';
-    $ldap_search = 'dc=fed,dc=cclrc,dc=ac,dc=uk';
+    # Update the ldap(s) prefix, hostname and search settings as required
+    $ldap_server = 'ldaps://ldap.example.com';
+    $ldap_search = 'ou=people,dc=example,dc=com';
 
     # Upload directory
     # - used for user image uploads
@@ -149,6 +150,11 @@
                  );
   
     
+    # Imaging API Machines
+    #  - The have free access to imaging/inspections
+    $img = array('1.2.3.4'
+                );
+
 
     # Facility Name for statuses, emails, etc
     # - Used throughout the app for labels
@@ -170,7 +176,11 @@
     $facility_contact = "A person";
     $facility_phone = "01234 567890";
     $facility_email = "stores@facility.co.uk";
+
+    // List of domestic free countries
     $facility_courier_countries = array('United Kingdom');
+    // List of non dom eu free countries
+    $facility_courier_countries_nde = array('France', 'Italy', 'Spain');
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
@@ -180,11 +190,18 @@
     $dhl_user = 'user';
     $dhl_pass = 'password';
     $dhl_env = 'staging';
+    
+    // Domestic acc number
     $dhl_acc = '12345678';
+    // Import acc number
+    $dhl_acc_import = '12345678';
+
     $dhl_terms = '/path/to/terms.html';
     $dhl_link = 'http://link/to/dhl/instructions';
     // N = Domestic Express, P = Worldwide Express
     $dhl_service = 'N';
+    // Non dom service (eu)
+    $dhl_service_eu = 'U';
 
   
     # VMXi 
@@ -196,7 +213,14 @@
     $sample_hazard = 'Samples will be handled following the beamline risk assessment';
     $exp_hazard = 'VMXi will be operated following the beamline risk assessment';
     
-  
+
+    # Proposal to store beamline presets in
+    $preset_proposal = 'cm12345';
+
+
+    # Beamlines on which to scale the gridplot to 1024
+    $scale_grid = array('i24');
+
     # Proposal codes to list
     $prop_codes = array('lb', 'cm', 'mx', 'nt', 'nr', 'sw', 'in', 'mt', 'ee', 'em', 'sm');
 

@@ -36,15 +36,23 @@
 
             // Detector
             'DETECTORID' => '\d+',
-            'DETECTORTYPE' => '[\w-]+',
+            'DETECTORTYPE' => '[\w-\s]+',
             'DETECTORMANUFACTURER' => '[\w-]+',
-            'DETECTORMODEL' => '[\w-]+',
+            'DETECTORMODEL' => '[\w-\s]+',
             'DETECTORPIXELSIZEHORIZONTAL' => '\d+',
             'DETECTORPIXELSIZEVERTICAL' => '\d+',
             'DETECTORDISTANCEMIN' => '\d+',
             'DETECTORDISTANCEMAX' => '\d+',
             'DENSITY' => '\d+(.\d+)?',
             'COMPOSITION' => '\w+',
+            'DETECTORMAXRESOLUTION' => '\d+(.\d+)?',
+            'DETECTORMINRESOLUTION' => '\d+(.\d+)?',
+            'DETECTORROLLMIN' => '-?\d+(.\d+)?',
+            'DETECTORROLLMAX' => '-?\d+(.\d+)?',
+            'SENSORTHICKNESS' => '\d+',
+            'DETECTORSERIALNUMBER' => '[\w-]+',
+            'NUMBEROFPIXELSX' => '\d+',
+            'NUMBEROFPIXELSY' => '\d+',
 
 
             // Scan Param Service
@@ -68,6 +76,39 @@
             'DISTANCE' => '\d+(.\d+)?',
             'ROLL' => '\d+(.\d+)?',
 
+
+            // Beamline Setup
+            'BEAMLINESETUPID' => '\d+',
+            'BEAMLINENAME' => '[\w-]+',
+            'BEAMSIZEXMAX' => '\d+(.\d+)?',
+            'BEAMSIZEXMIN' => '\d+(.\d+)?',
+            'BEAMSIZEYMAX' => '\d+',
+            'BEAMSIZEYMIN' => '\d+',
+            'BOXSIZEXMAX' => '\d+(.\d+)?',
+            'BOXSIZEXMIN' => '\d+(.\d+)?',
+            'BOXSIZEYMAX' => '\d+(.\d+)?',
+            'BOXSIZEYMIN' => '\d+(.\d+)?',
+            'CS' => '\d+(.\d+)?',
+            'ENERGYMAX' => '\d+',
+            'ENERGYMIN' => '\d+',
+            'GONIOSTATMAXOSCILLATIONWIDTH' => '\d+(.\d+)?',
+            'GONIOSTATMINOSCILLATIONWIDTH' => '\d+(.\d+)?',
+            'KAPPAMAX' => '-?\d+(.\d+)?',
+            'KAPPAMIN' => '-?\d+(.\d+)?',
+            'MAXEXPOSURETIMEPERIMAGE' => '\d+(.\d+)?',
+            'MINEXPOSURETIMEPERIMAGE' => '\d+(.\d+)?',
+            'MAXTRANSMISSION' => '\d+',
+            'MINTRANSMISSION' => '\d+',
+            'NUMBEROFIMAGESMAX' => '\d+',
+            'NUMBEROFIMAGESMIN' => '\d+',
+            'OMEGAMAX' => '-?\d+(.\d+)?',
+            'OMEGAMIN' => '-?\d+(.\d+)?',
+            'PHIMAX' => '-?\d+(.\d+)?',
+            'PHIMIN' => '-?\d+(.\d+)?',
+            'MONOBANDWIDTHMIN' => '\d+(.\d+)?',
+            'MONOBANDWIDTHMAX' => '\d+(.\d+)?',
+            'ACTIVE' => '\d',
+
         );
         
         
@@ -77,13 +118,13 @@
             array('/plans/:DIFFRACTIONPLANID', 'patch', '_update_diffraction_plan'),
             array('/plans/:DIFFRACTIONPLANID', 'delete', '_delete_diffraction_plan'),
 
-            array('/detectors(:DETECTORID)', 'get', '_detectors'),
+            array('/detectors(/:DETECTORID)', 'get', '_detectors'),
             array('/detectors', 'post', '_add_detector'),
             array('/detectors/:DETECTORID', 'patch', '_update_detector'),
 
             array('/parameters/services(/:SCANPARAMETERSSERVICEID)', 'get', '_scan_services'),
             array('/parameters/services', 'post', '_add_scan_service'),
-            array('/parameters/services:SCANPARAMETERSSERVICEID', 'patch', '_update_scan_service'),
+            array('/parameters/services/:SCANPARAMETERSSERVICEID', 'patch', '_update_scan_service'),
 
             array('/parameters/models(/:SCANPARAMETERSMODELID)', 'get', '_scan_models'),
             array('/parameters/models', 'post', '_add_scan_model'),
@@ -94,6 +135,10 @@
             array('/plans/detectors', 'post', '_dp_add_detector'),
             array('/plans/detectors/:DATACOLLECTIONPLANHASDETECTORID', 'patch', '_dp_update_detector'),
             array('/plans/detectors/:DATACOLLECTIONPLANHASDETECTORID', 'delete', '_dp_remove_detector'),
+
+            array('/setup', 'get', '_get_beamline_setups'),
+            array('/setup', 'post', '_add_beamline_setup'),
+            array('/setup/:BEAMLINESETUPID', 'patch', '_update_beamline_setup'),
         );
 
 
@@ -106,9 +151,20 @@
                 array_push($args, $this->arg('DETECTORID'));
             }
 
-            $rows = $this->db->pq("SELECT detectorid, detectortype, detectormanufacturer, detectormodel, detectorpixelsizehorizontal, detectorpixelsizevertical, detectordistancemin, detectordistancemax, density, composition, concat(detectormanufacturer,' ',detectormodel, ' (',detectortype,')') as description
-                FROM detector
-                WHERE $where", $args);
+            if ($this->has_arg('BEAMLINENAME')) {
+                $where .= ' AND bls.beamlinename=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('BEAMLINENAME'));
+            }
+
+            $rows = $this->db->pq("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(distinct dc.datacollectionid) as dcs, count(distinct bls.beamlinesetupid) as blsetups, count(distinct dphd.detectorid) as dps,count(distinct dp.detectorid) as dps2, CONCAT(IFNULL(GROUP_CONCAT(distinct ses.beamlinename),''),IFNULL(GROUP_CONCAT(distinct bls.beamlinename),'')) as beamlines, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax
+                FROM detector d
+                LEFT OUTER JOIN datacollection dc ON dc.detectorid = d.detectorid
+                LEFT OUTER JOIN blsession ses on dc.sessionid = ses.sessionid
+                LEFT OUTER JOIN beamlinesetup bls ON bls.detectorid = d.detectorid
+                LEFT OUTER JOIN datacollectionplan_has_detector dphd ON dphd.detectorid = d.detectorid
+                LEFT OUTER JOIN diffractionplan dp ON dp.detectorid = d.detectorid
+                WHERE $where
+                GROUP BY d.detectorid", $args);
 
             if ($this->has_arg('DETECTORID')) {
                 if (sizeof($rows))$this->_output($rows[0]);
@@ -119,29 +175,29 @@
 
 
         function _add_detector() {
-            $this->user->can('manage_detectors');
+            $this->user->can('manage_detector');
 
             if (!$this->has_arg('DETECTORTYPE')) $this->_error('No detector type specified');
             if (!$this->has_arg('DETECTORMANUFACTURER')) $this->_error('No detector manufacturer specified');
             if (!$this->has_arg('DETECTORMODEL')) $this->_error('No detector model specified');
 
             $args = array($this->arg('DETECTORTYPE'), $this->arg('DETECTORMANUFACTURER'), $this->arg('DETECTORMODEL'));
-            foreach (array('DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
+            foreach (array('DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION','DETECTORMINRESOLUTION','DETECTORMAXRESOLUTION','DETECTORROLLMIN', 'DETECTORROLLMAX', 'SENSORTHICKNESS') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
 
-            $this->db->pq("INSERT INTO detector (detectortype,detectormanufacturer,detectormodel,detectorpixelsizehorizontal,detectorpixelsizevertical,detectordistancemin,detectordistancemax,density,composition) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9)", $args);
+            $this->db->pq("INSERT INTO detector (detectortype,detectormanufacturer,detectormodel,detectorpixelsizehorizontal,detectorpixelsizevertical,detectordistancemin,detectordistancemax,density,composition,detectorminresolution,detectormaxresolution,detectorrollmin,detectorrollmax,sensorthickness) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14)", $args);
 
             $this->_output(array('DETECTORID' => $this->db->id()));
         }
 
 
         function _update_detector() {
-            $this->user->can('manage_detectors');
+            $this->user->can('manage_detector');
             if (!$this->has_arg('DETECTORID')) $this->_error('No detector specified');
 
             $chk = $this->db->pq("SELECT detectorid FROM detector WHERE detectorid=:1", array($this->arg('DETECTORID')));
             if (!sizeof($chk)) $this->_error('No such detector');
 
-            foreach(array('DETECTORTYPE','DETECTORMANUFACTURER','DETECTORMODEL','DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION') as $f) {
+            foreach(array('DETECTORTYPE','DETECTORMANUFACTURER','DETECTORMODEL','DETECTORPIXELSIZEHORIZONTAL','DETECTORPIXELSIZEVERTICAL','DETECTORDISTANCEMIN','DETECTORDISTANCEMAX','DENSITY','COMPOSITION','SENSORTHICKNESS','DETECTORSERIALNUMBER','DETECTORMINRESOLUTION','DETECTORMAXRESOLUTION','NUMBEROFPIXELSX','NUMBEROFPIXELSY','DETECTORROLLMIN','DETECTORROLLMAX') as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq('UPDATE detector SET '.$f.'=:1 WHERE detectorid=:2', array($this->arg($f), $this->arg('DETECTORID')));
                     $this->_output(array($f => $this->arg($f)));
@@ -595,7 +651,7 @@
 
             foreach (array('PLANORDER') as $f) {
                 if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE blsample_has_datacollectionplan SET $f=:1 WHERE datacollectionplanid=:2", array($this->arg($f), $this->has_arg('DIFFRACTIONPLANID')));
+                    $this->db->pq("UPDATE blsample_has_datacollectionplan SET $f=:1 WHERE datacollectionplanid=:2", array($this->arg($f), $this->arg('DIFFRACTIONPLANID')));
                     $this->_output(array($f => $this->arg($f)));
                 }   
             }
@@ -623,6 +679,92 @@
 
 
 
+        function _get_beamline_setups() {
+            $where = '1=1';
+            $args = array();
+
+            if ($this->has_arg('BEAMLINESETUPID')) {
+                $where .= ' AND bls.beamlinesetupid = :'.(sizeof($args)+1);
+                array_push($args, $this->arg('BEAMLINESETUPID'));
+            }
+
+            if ($this->has_arg('BEAMLINENAME')) {
+                $where .= ' AND bls.beamlinename=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('BEAMLINENAME'));
+            }
+
+            if ($this->has_arg('ACTIVE')) {
+                $where .= ' AND bls.active=1';
+            }
+
+            $tot = $this->db->pq("SELECT count(bls.beamlinesetupid) as tot
+              FROM beamlinesetup bls
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $this->_get_start_end($args);
+
+            $order = $this->_get_order(
+                array('BEAMLINESETUPID' => 'bls.beamlinesetupid'),
+                'bls.beamlinesetupid DESC'
+            );
+
+
+            $rows = $this->db->paginate("SELECT bls.beamlinesetupid, TO_CHAR(bls.setupdate, 'DD-MM-YYYY') as setupdate, bls.minexposuretimeperimage, bls.goniostatminoscillationwidth, bls.mintransmission, bls.beamlinename, bls.cs, 
+                bls.active, bls.goniostatmaxoscillationwidth, bls.maxexposuretimeperimage, bls.maxtransmission, 
+                bls.beamsizexmin, bls.beamsizexmax, bls.beamsizeymin, bls.beamsizeymax, bls.omegamin, bls.omegamax, bls.kappamin, bls.kappamax, bls.phimin, bls.phimax, bls.energymin, bls.energymax, bls.numberofimagesmin, bls.numberofimagesmax, bls.boxsizexmin, bls.boxsizeymin, bls.boxsizexmax, bls.boxsizeymax, bls.monobandwidthmin, bls.monobandwidthmax, 
+                bls.detectorid, d.detectorminresolution, d.detectormaxresolution, d.detectordistancemin, d.detectordistancemax, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax,
+                count(ses.sessionid) as sessions
+              FROM beamlinesetup bls
+              LEFT OUTER JOIN blsession ses ON ses.beamlinesetupid = bls.beamlinesetupid
+              LEFT OUTER JOIN detector d ON d.detectorid = bls.detectorid
+              WHERE $where
+              GROUP BY bls.beamlinesetupid
+            ", $args);
+
+            if ($this->has_arg('BEAMLINESETUPID')) {
+                if (sizeof($dps)) $this->_output($dps[0]);
+                else $this->_error('No such beamline setup');
+
+            } else $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
+        }
+
+
+        function _add_beamline_setup() {
+            if (!$this->user->can('manage_params')) $this->_error('You do not have permission to add beamline parameters');
+            if (!$this->has_arg('BEAMLINENAME')) $this->_error('No beamline specified');
+            if (!$this->has_arg('DETECTORID')) $this->_error('No detector specified');
+
+            $args = array($this->arg('BEAMLINENAME'), $this->arg('DETECTORID'));
+            foreach (array('BEAMSIZEXMAX', 'BEAMSIZEXMIN', 'BEAMSIZEYMAX', 'BEAMSIZEYMIN', 'BOXSIZEXMAX', 'BOXSIZEXMIN', 'BOXSIZEYMAX', 'BOXSIZEYMIN', 'CS', 'ENERGYMAX', 'ENERGYMIN', 'GONIOSTATMAXOSCILLATIONWIDTH', 'GONIOSTATMINOSCILLATIONWIDTH', 'KAPPAMAX', 'KAPPAMIN', 'MAXEXPOSURETIMEPERIMAGE', 'MINEXPOSURETIMEPERIMAGE', 'MAXTRANSMISSION', 'MINTRANSMISSION', 'NUMBEROFIMAGESMAX', 'NUMBEROFIMAGESMIN', 'OMEGAMAX', 'OMEGAMIN', 'PHIMAX', 'PHIMIN', 'MONOBANDWIDTHMIN', 'MONOBANDWIDTHMAX') as $e) array_push($args, $this->has_arg($e) ? $this->arg($e) : null);
+
+            $this->db->pq("INSERT INTO beamlinesetup (setupdate,beamlinename,detectorid,
+                beamsizexmin,beamsizexmax,beamsizeymin,beamsizeymax,boxsizexmax,boxsizexmin,boxsizeymax,boxsizeymin,cs,energymax,energymin,goniostatmaxoscillationwidth,goniostatminoscillationwidth,kappamax,kappamin,maxexposuretimeperimage,minexposuretimeperimage,maxtransmission,mintransmission,numberofimagesmax,numberofimagesmin,omegamax,omegamin,phimax,phimin,active,monobandwidthmin,monobandwidthmax) VALUES (CURRENT_TIMESTAMP,:1,:2
+                ,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,0,:28,:29)", $args);
+
+            $this->_output(array('BEAMLINESETUPID' => $this->db->id(), 'SETUPDATE' => date('d-m-Y')));
+        }
+
+
+        function _update_beamline_setup() {
+            if (!$this->user->can('manage_params')) $this->_error('You do not have permission to update beamline parameters');
+            if (!$this->has_arg('BEAMLINESETUPID')) $this->_error('No beamline setup specified');
+
+            $chk = $this->db->pq("SELECT beamlinesetupid, detectorid, beamlinename
+                FROM beamlinesetup
+                WHERE beamlinesetupid=:1", array($this->arg('BEAMLINESETUPID')));
+            if (!sizeof($chk)) $this->_error('No such beamline setup');
+
+            foreach(array('DETECTORID', 'BEAMLINENAME', 'BEAMSIZEXMAX', 'BEAMSIZEXMIN', 'BEAMSIZEYMAX', 'BEAMSIZEYMIN', 'BOXSIZEXMAX', 'BOXSIZEXMIN', 'BOXSIZEYMAX', 'BOXSIZEYMIN', 'CS', 'ENERGYMAX', 'ENERGYMIN', 'GONIOSTATMAXOSCILLATIONWIDTH', 'GONIOSTATMINOSCILLATIONWIDTH', 'KAPPAMAX', 'KAPPAMIN', 'MAXEXPOSURETIMEPERIMAGE', 'MINEXPOSURETIMEPERIMAGE', 'MAXTRANSMISSION', 'MINTRANSMISSION', 'NUMBEROFIMAGESMAX', 'NUMBEROFIMAGESMIN', 'OMEGAMAX', 'OMEGAMIN', 'PHIMAX', 'PHIMIN', 'ACTIVE', 'MONOBANDWIDTHMIN', 'MONOBANDWIDTHMAX') as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq('UPDATE beamlinesetup SET '.$f.'=:1 WHERE beamlinesetupid=:2', array($this->arg($f), $this->arg('BEAMLINESETUPID')));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
+        }
 
 
 

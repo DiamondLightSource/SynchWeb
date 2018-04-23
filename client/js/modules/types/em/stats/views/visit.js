@@ -92,10 +92,10 @@ define(['marionette',
             
             this.flt.show(new FaultListView({ collection: this.faults, filters: false, search: false }))
 
-            this.rdefocus.show(new HistgramPlot({ collection: new Backbone.Collection([this.defocus]) }))
-            this.rastimatigm.show(new HistgramPlot({ collection: new Backbone.Collection([this.astigmatism]) }))
-            this.rresolution.show(new HistgramPlot({ collection: new Backbone.Collection([this.resolution]) }))
-            this.rdrift.show(new InterFramePlot({ collection: new Backbone.Collection([this.drift]) }))
+            this.rdefocus.show(new HistgramPlot({ collection: new Backbone.Collection([this.defocus]), title: 'Defocus Histogram' }))
+            this.rastimatigm.show(new HistgramPlot({ collection: new Backbone.Collection([this.astigmatism]), title: 'Astigmatism Histogram' }))
+            this.rresolution.show(new HistgramPlot({ collection: new Backbone.Collection([this.resolution]), title: 'Resolution Histogram' }))
+            this.rdrift.show(new InterFramePlot({ collection: new Backbone.Collection([this.drift]), title: 'Drift vs. Frame difference' }))
         },
     })
 

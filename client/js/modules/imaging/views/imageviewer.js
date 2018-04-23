@@ -7,15 +7,18 @@ define(['marionette',
     'modules/imaging/views/imagehistory',
     'modules/imaging/models/inspectionimage',
     
+    'collections/attachments',
+
     'utils/editable',
     'utils',
     'utils/xhrimage',
+    'heatmap',
     'tpl!templates/imaging/imageviewer.html',
     'jquery-ui',
     'backbone-validation',
     ], function(Marionette,
-        ImageScores, Subsample, Subsamples, ImageHistory, InspectionImage,
-        Editable, utils, XHRImage,
+        ImageScores, Subsample, Subsamples, ImageHistory, InspectionImage, Attachments,
+        Editable, utils, XHRImage, HeatMap,
         template) {
 
 
@@ -213,6 +216,9 @@ define(['marionette',
             this.img.onerror = this.onImageError.bind(this)
             this.img.onprogress = this.onImageProgress.bind(this)
             
+            this.attachments = new Attachments()
+            this.attachments.queryParams.filetype = 'pia'
+
             this.rendered = false
             this.scalef = 1
             this.width = null
@@ -306,6 +312,11 @@ define(['marionette',
             this.ui.zoom.slider({ min: 0, max: 200, step: 5 })
 
             this.rendered = true
+
+            this.heatmap = new HeatMap.create({ 
+                container: this.$el[0],
+                maxOpacity: .4,
+            })
         },
         
         onRender: function() {
@@ -515,6 +526,10 @@ define(['marionette',
             else if (this.drawingRegion) this.drawNewRegion()
             else this.drawLines()
             
+            this.heatmap._renderer.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
+            this.heatmap._renderer.shadowCtx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
+            this.heatmap._renderer.ctx.clearRect(0,0,this.width/this.scalef, this.height/this.scalef)
+            this.heatmap._renderer.shadowCtx.clearRect(0,0,this.width/this.scalef, this.height/this.scalef)  
         },
         
         resetZoom: function() {
@@ -747,28 +762,32 @@ define(['marionette',
                 this.lineStart = {}
                 this.lineEnd = {}
 
-                var sub = new Subsample({
-                    BLSAMPLEID: this.model.get('BLSAMPLEID'),
-                    X: x1,
-                    Y: y1,
-                    X2: x2,
-                    Y2: y2
-                })
+                var length = Math.sqrt(Math.pow(Math.abs(x2-x1),2)+Math.pow(Math.abs(y2-y1),2))
+                console.log('region lenght', length, x2 !== undefined, x1 !== undefined, y2 !== undefined, y1 !== undefined)
+                if (length && x2 !== undefined && x1 !== undefined && y2 !== undefined && y1 !== undefined) {
+                    var sub = new Subsample({
+                        BLSAMPLEID: this.model.get('BLSAMPLEID'),
+                        X: x1,
+                        Y: y1,
+                        X2: x2,
+                        Y2: y2
+                    })
 
-                var self = this
-                sub.save(null, {
-                    success: function() {
-                        sub.set('RID', self.subsamples.length)
-                        self.subsamples.add(sub)
-                    
-                        self.draw()
-                        self.plotObjects()
-                    },
-                    
-                    error: function(model, response, options) {
-                        app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
-                    },
-                })
+                    var self = this
+                    sub.save(null, {
+                        success: function() {
+                            sub.set('RID', self.subsamples.length)
+                            self.subsamples.add(sub)
+                        
+                            self.draw()
+                            self.plotObjects()
+                        },
+                        
+                        error: function(model, response, options) {
+                            app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
+                        },
+                    })
+                }
             }
 
             if (!this.moved && this.lineStart.x) {
@@ -907,15 +926,15 @@ define(['marionette',
         drawBeam: function(o) {
             if (!o.get('PREFERREDBEAMSIZEX') || !o.get('PREFERREDBEAMSIZEY')) return
 
-            var mppx = (this.model.get('MICRONSPERPIXELX') || 3) * this.scalef
-            var mppy = (this.model.get('MICRONSPERPIXELY') || 3) * this.scalef
+            var mppx = this.model.get('MICRONSPERPIXELX') || 3
+            var mppy = this.model.get('MICRONSPERPIXELY') || 3
 
             this.ctx.save()
             this.ctx.setLineDash([3/this.scalef,3/this.scalef])
             this.ctx.strokeStyle = 'red'
             this.ctx.lineWidth = 1
             this.ctx.beginPath()
-            this.ctx.ellipse(parseInt(o.get('X')), parseInt(o.get('Y')), (mppx * parseInt(o.get('PREFERREDBEAMSIZEX')))/2, (mppy * parseInt(o.get('PREFERREDBEAMSIZEY')))/2, 0, 0, Math.PI*2)
+            this.ctx.ellipse(parseInt(o.get('X')), parseInt(o.get('Y')), (parseInt(o.get('PREFERREDBEAMSIZEX'))/mppx)/2, (parseInt(o.get('PREFERREDBEAMSIZEY'))/mppy)/2, 0, 0, Math.PI*2)
             this.ctx.closePath()
             this.ctx.stroke()
             this.ctx.restore()
@@ -928,8 +947,8 @@ define(['marionette',
             var mppx = this.model.get('MICRONSPERPIXELX') || 3
             var mppy = this.model.get('MICRONSPERPIXELY') || 3
 
-            var px = mppx * parseInt(o.get('BOXSIZEX'))
-            var py = mppy * parseInt(o.get('BOXSIZEY'))
+            var px = parseInt(o.get('BOXSIZEX'))/mppx
+            var py = parseInt(o.get('BOXSIZEY'))/mppy
 
             this.ctx.save()
             this.ctx.setLineDash([5/this.scalef,5/this.scalef])
@@ -960,6 +979,13 @@ define(['marionette',
         replotObjects: function() {
             this.draw()
             this.plotObjects()
+
+            if (this.model.get('BLSAMPLEID')) {
+                this.attachments.queryParams.blsampleid = this.model.get('BLSAMPLEID')
+                this.attachments.fetch({
+                    success: this.generateHeatmap.bind(this)
+                })
+            }
         },
 
         plotObjects: function() {
@@ -967,8 +993,83 @@ define(['marionette',
             this.subsamples.each(function(o) {
                 this._drawObject({ o: o })
             }, this)
+
+            this.heatmap.repaint()
+        },
+
+
+        generateHeatmap: function() {
+            console.log('gen heat')
+            this.heatmap.setData({ data: [] })
+            var ready = []
+            var self = this
+            this.subsamples.each(function(ss) {
+                var att = this.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') })
+                if (att) {
+                    ready.push(Backbone.ajax({
+                        url: app.apiurl+'/download/attachment/id/'+att.get('DATACOLLECTIONID')+'/aid/'+att.get('DATACOLLECTIONFILEATTACHMENTID'),
+                        dataType: 'json',
+                    }))
+                }
+            }, this)
+
+            $.when.apply($, ready).done(function() {
+                var args = arguments
+                var data = [{ x: 10, y: 10, value: 1, radius: 1 }]
+                self.subsamples.each(function(ss, sid) {
+                    var att = self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') })
+                    if (att) {
+                        data = data.concat(self.parseAttachment(ss, att, args[sid]))
+                    }
+                }, self)
+
+                var max = 0
+                _.each(data, function(d) {
+                    max = Math.max(d.value, max)
+                }, this)
+                self.heatmap.setData({ data: data, max: max })
+            })
         },
         
+
+        parseAttachment: function(ss, att, resp) {
+            console.log('parse', att, resp)
+            var sw = att.get('DX_MM')*1000/parseFloat(this.model.get('MICRONSPERPIXELX'))
+            var sh = att.get('DY_MM')*1000/parseFloat(this.model.get('MICRONSPERPIXELY'))
+
+            var data = []
+            _.each(resp, function(v,k) {
+                // Account for vertical grid scans
+                if (att.get('ORIENTATION') == 'vertical') {
+                    var xstep = Math.floor(k / att.get('STEPS_Y'))
+                    var ystep = k % att.get('STEPS_Y')
+
+                    if (att.get('SNAKED') == 1) {
+                         if (xstep % 2 == 1) ystep = (att.get('STEPS_Y')-1) - ystep
+                    }
+
+                    var x = xstep * sw + sw/2 + parseInt(ss.get('X'))
+                    var y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
+
+                } else {
+                    var xstep = k % att.get('STEPS_X')
+                    var ystep = Math.floor(k / att.get('STEPS_X'))
+
+                    if (att.get('SNAKED') == 1) {
+                         if (ystep % 2 == 1) xstep = (att.get('STEPS_X')-1) - xstep
+                    }
+
+                    var x = xstep * sw + sw/2 + parseInt(ss.get('X'))
+                    var y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
+                }
+
+                data.push({ x: parseInt(x), y: parseInt(y), value: v < 1 ? 0 : v, 
+                    radius: sw < sh ? (sh * 1.8) : (sw * 1.8)
+                })
+            }, this)
+
+            return data
+        },
     })
 
 

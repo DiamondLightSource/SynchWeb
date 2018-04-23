@@ -10,9 +10,13 @@ define(['marionette',
     'modules/imaging/collections/screens',
     'modules/imaging/views/screenadmin',
     'modules/imaging/views/screencompadmin',
+
+    'modules/imaging/views/admin/params',
+    'modules/imaging/views/admin/presets',
     ], function(Marionette,
         Schedule, Schedules, ScheduleAdmin, ScheduleComponentAdmin, Dashboard,
-        Screen, Screens, ScreenAdmin, ScreenComponentAdmin
+        Screen, Screens, ScreenAdmin, ScreenComponentAdmin,
+        ParamAdmin, PresetAdmin
         ) {
 
     var bc = { title: 'Imaging Schedules', url: '/admin/imaging' }
@@ -25,7 +29,7 @@ define(['marionette',
                 return
             }
             app.content.show(new Dashboard())
-            app.bc.reset([bc, { title: 'Imaging Dashboard', url: '/admin/imaging' }])
+            app.bc.reset([{ title: 'Imaging Dashboard', url: '/admin/imaging' }])
         },
 
 
@@ -107,6 +111,34 @@ define(['marionette',
                     app.message({ title: 'Couldnt load screen', message: 'Couldnt load screen please try again' })
                 } 
             })
+        },
+
+
+        view_presets: function() {
+            if (!app.user_can('edit_presets')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+
+            app.bc.reset([{ title: 'Manage Beamline Presets', url: '/admin/preset' }])
+            if (app.options.get('preset_proposal')) {
+                app.cookie(app.options.get('preset_proposal')) 
+                app.content.show(new PresetAdmin())
+            } else {
+                app.message({ title: 'No Preset Proposal', message: 'No preset proposal is defined to store presets in' })
+            }
+            
+        },
+
+
+        view_params: function() {
+            if (!app.user_can('manage_params')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+
+            app.bc.reset([{ title: 'Manage Beamline Parameters', url: '/admin/params' }])
+            app.content.show(new ParamAdmin())
         },
     }
 

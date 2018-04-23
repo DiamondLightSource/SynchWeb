@@ -1,5 +1,7 @@
 define(['marionette', 'backbone',
         'views/validatedrow',
+
+        'views/pages',
     
         'modules/imaging/models/screen',
         'tpl!templates/imaging/screen.html',
@@ -7,7 +9,7 @@ define(['marionette', 'backbone',
         'tpl!templates/imaging/screenrownew.html',
     
         'backbone-validation',
-    ], function(Marionette, Backbone, ValidatedRow, Screen, template, rowtemplate, rowtemplatenew) {
+    ], function(Marionette, Backbone, ValidatedRow, PagesView, Screen, template, rowtemplate, rowtemplatenew) {
     
         
     var GridRow = ValidatedRow.extend({
@@ -80,6 +82,13 @@ define(['marionette', 'backbone',
             e.preventDefault()
             if (this.$el.find('.new').length) return
             this.collection.add(new Screen({ new: true }))
+        },
+
+
+        onRender: function() {
+            console.log('render screenadmin')
+            this.pages = new PagesView({ collection: this.collection, noUrl: true })
+            this.$el.find('.page_wrap').append(this.pages.render().$el)
         },
     })
     

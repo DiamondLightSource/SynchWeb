@@ -44,7 +44,11 @@
 				$class = strtoupper($authentication_type)."Authentication";
 				$auth_handler = new $class();
 				$user = $auth_handler->check();
-				if ($user) $this->_output(200, $this->generate_jwt($user));
+
+				if (!$user) $this->_error(400, 'No previous session');
+
+				$userc = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($user));
+				if (sizeof($userc)) $this->_output(200, $this->generate_jwt($user));
 				else $this->_error(400, 'No previous session');
 			}
 		}
@@ -53,7 +57,7 @@
 		// Check if this request needs authentication
 		// We allow some pages unauthorised access based on IP, or calendar hash
 		function check_auth_required() {
-			global $blsr, $bcr;
+			global $blsr, $bcr, $img;
 
 			$parts = explode('/', $this->app->request->getResourceUri()); 
 		    if (sizeof($parts)) array_shift($parts);
@@ -70,7 +74,10 @@
 		            ($parts[0] == 'cal' && $parts[1] == 'ics' && $parts[2] == 'h') || 
 
 		            # Allow barcode reader unauthorised access, same as above, certain IPs only
-		            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && in_array($_SERVER["REMOTE_ADDR"], $bcr))
+		            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
+
+		            # Allow formulatrix machines unauthorised access to inspections, certain IPs only
+		            ($parts[0] == 'imaging' && $parts[1] == 'inspection' && in_array($_SERVER["REMOTE_ADDR"], $img))
 		        ) {
 		            $need_auth = false;
 		        }
@@ -204,6 +211,11 @@
 
 			if (!$login) $this->_error(400, 'No login specified');
 			if (!$password) $this->_error(400, 'No password specified');
+
+			$user = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($login));
+			if (!sizeof($user)) {
+				$this->_error(400, 'Invalid Credentials');
+			}
 
 			$file = "includes/class.auth-${authentication_type}.php";
 			if (file_exists($file)) {

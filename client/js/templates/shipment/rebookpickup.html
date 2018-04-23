@@ -1,0 +1,58 @@
+<h1>Rebook Pickup: <% if (RETURN) { %>From Facility<% } else { %>To Facility<% } %></h1>
+
+<h2>Shipment Details</h2>
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Shipment</span>
+            <span class="SHIPPINGNAME"><%-SHIPPINGNAME%></span>
+        </li>
+
+        <li class="clearfix">
+            <span class="label">Dewars</span>
+            <span class="DEWARS"></span>
+        </li> 
+    </ul>
+</div>
+        
+<h2>Pickup Details</h2>
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Package Location <br /> 
+                <span class="small">Location where shipment can be picked up from</span>
+            </span>
+            <span class="PHYSICALLOCATION"><%-PHYSICALLOCATION%></span>
+        </li>
+
+        <li>
+            <span class="label">Shipping Date</span>
+            <span class="DELIVERYAGENT_SHIPPINGDATE"><%-DELIVERYAGENT_SHIPPINGDATE%></span>
+        </li>
+
+        <li>
+            <span class="label">Ready By <br /> 
+                <span class="small">Time shipment will be ready for pickup</span>
+            </span>
+            <span class="READYBYTIME"><%-READYBYTIME%></span>
+        </li>
+
+        <li>
+            <span class="label">Close Time <br /> 
+                <span class="small">Time after which shipment cannot be picked up</span>
+            </span>
+            <span class="CLOSETIME"><%-CLOSETIME%></span>
+        </li>
+    </ul>
+</div>
+
+
+<div>
+    <h2>Terms &amp; Conditions</h2>
+    <p class="terms justify">
+    I understand that use of DHL’s services is entirely at my own risk and that Diamond makes no representations or warranties of any kind (express or implied) about the reliability or availability of the DHL service. Any reliance that I place on the DHL service is strictly at my own risk. It is my responsibility to ensure that samples arrive at Diamond in advance of any beamtime that Diamond may have awarded me and I hereby indemnify and hold Diamond harmless for any loss or damage arising out of my use of DHL’s services.</p>
+</div>
+
+<div class="form">
+    <button name="submit" value="1" type="submit" class="button submit">Rebook Pickup</button>
+</div>

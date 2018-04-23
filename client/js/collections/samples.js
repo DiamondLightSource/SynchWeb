@@ -1,12 +1,9 @@
 define(['underscore', 'backbone.paginator', 'models/sample'], function(_, PageableCollection, Sample) {
     
     return PageableCollection.extend({
-        containerID: null,
         model: Sample,
         mode: 'server',
-        url: function() {
-            return '/sample'+(this.containerID ? ('/cid/' + this.containerID) : '')
-        },
+        url: '/sample',
 
         comparator: function(s) {
             return parseInt(s.get('LOCATION'))
@@ -19,10 +16,8 @@ define(['underscore', 'backbone.paginator', 'models/sample'], function(_, Pageab
         initialize: function(collection, options) {
             this.running = options && options.poll
             this.refresh_thread = null
-            
-            if (options) this.containerID = options.containerID || this.containerID
-                
-            this.on('change:isSelected', this.onSelectedChanged, this);
+
+            this.on('change:isSelected', this.onSelectedChanged, this)
 
             this.fetched = false
             this.on('sync', this.setFetched, this)

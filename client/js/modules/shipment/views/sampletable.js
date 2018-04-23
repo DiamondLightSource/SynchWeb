@@ -25,7 +25,9 @@ define(['marionette',
         
     // A Sample Row
     var GridRow = ValidatedRow.extend(_.extend({}, forms, {
-        template: sampletablerow,
+        rowTemplate: sampletablerow,
+        editTemplate: sampletablerowedit,
+
         tagName: 'tr',
         events: {
             'click a.edit': 'editSample',
@@ -60,7 +62,7 @@ define(['marionette',
         editSample: function(e) {
             this.editing = true
             e.preventDefault()
-            this.template = sampletablerowedit
+            this.template = this.getOption('editTemplate')
             this.render()
             this.updateProteins()
         },
@@ -68,20 +70,22 @@ define(['marionette',
         cancelEditSample: function(e) {
             this.editing = false
             e.preventDefault()
-            this.template = sampletablerow
+            this.template = this.getOption('rowTemplate')
             this.render()
         },
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'PROTEINID','NAME','COMMENTS','SPACEGROUP', 'VOLUME', 'ABUNDANCE'], function(f) {
-                data[f] = this.$el.find('[name='+f+']').val()
+            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE'], function(f) {
+                var el = this.$el.find('[name='+f+']')
+                if (el.length) data[f] = el.attr('type') == 'checkbox'? (el.is(':checked')?1:null) : el.val()
             }, this)
 
             data['COMPONENTIDS'] = this.model.get('components').pluck('PROTEINID')
             data['COMPONENTAMOUNTS'] = this.model.get('components').pluck('ABUNDANCE')
-            // data['COMPONENTACRONYMS'] = this.model.get('components').pluck('ACRONYM')
             this.model.set(data)
+
+            console.log('set data', data)
         },
             
         success: function(m,r,o) {
@@ -93,7 +97,7 @@ define(['marionette',
 
             this.model.set('new', false)
             this.editing = false
-            this.template = sampletablerow
+            this.template = this.getOption('rowTemplate')
             this.render()
         },
         
@@ -134,7 +138,9 @@ define(['marionette',
             e.preventDefault()
             this.model.set({ 
                 PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '', SYMBOL: '',
-                CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: ''
+                CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: '',
+                CRYSTALID: -1, PACKINGFRACTION: '', LOOPTYPE: '',
+                DIMENSION1: '', DIMENSION2: '', DIMENSION3: '', SHAPE: ''
             })
             this.model.get('components').reset()
             this.render()
@@ -142,6 +148,7 @@ define(['marionette',
         
         initialize: function(options) {
             GridRow.__super__.initialize.apply(this, options)
+            this.template = this.getOption('rowTemplate')
             
             if (options && options.proteins) this.proteins = options.proteins
             else {
@@ -183,7 +190,7 @@ define(['marionette',
             //if (this.model.get('CODE')) this.$el.find('input[name=CODE]').val(this.model.get('CODE'))
             //if (this.model.get('COMMENTS')) this.$el.find('input[name=COMMENTS]').val(this.model.get('COMMENTS'))
                 
-            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME'], function(f, i) {
+            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME', 'PACKINGFRACTION'], function(f, i) {
                 if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             }, this)
 
@@ -287,8 +294,8 @@ define(['marionette',
      The grid view for samples in a container
      Works for both viewing and editing containers   
     */
-    return GridView = Marionette.CompositeView.extend({
-        tagName: "table",
+    var GridView = Marionette.CompositeView.extend({
+        tagName: 'table',
         className: 'samples reflow',
         template: sampletable,
         childView: GridRow,
@@ -324,7 +331,8 @@ define(['marionette',
                 proteins: this.proteins,
                 gproteins: this.gproteins,
             }
-            if (options.childTemplate) this.options.childViewOptions.template = options.childTemplate
+            if (options.childTemplate) this.options.childViewOptions.rowTemplate = options.childTemplate
+            if (options.childEditTemplate) this.options.childViewOptions.editTemplate = options.childEditTemplate
 
             this.extra = { show: false }
             this.options.childViewOptions.extra = this.extra
@@ -383,5 +391,7 @@ define(['marionette',
         
     })
 
+    GridView.GridRow = GridRow
+    return GridView
 
 })

@@ -8,6 +8,16 @@ define(['backbone'], function(Backbone) {
             return []
         },
 
+        initialize: function(attrs, options) {
+            if (options && options.beamlinesetup) {
+                this.validation = JSON.parse(JSON.stringify(this.__proto__.validation))
+                _.each(this.validation, function(v,k) {
+                    var range = options.beamlinesetup.getRange({ field: k })
+                    if (range) v.range = range
+                }, this)
+            }
+        },
+
         validation: {
             EXPERIMENTKIND: {
                 required: true,
@@ -17,19 +27,16 @@ define(['backbone'], function(Backbone) {
             PREFERREDBEAMSIZEX: {
                 required: true,
                 pattern: 'digits',
-                range: [2,30],
             },
 
             PREFERREDBEAMSIZEY: {
                 required: true,
                 pattern: 'digits',
-                range: [2,30],
             },
 
             AXISRANGE: {
                 required: false,
                 pattern: 'number',
-                range: [0,10],
             },
 
             EXPOSURETIME: {
@@ -40,13 +47,11 @@ define(['backbone'], function(Backbone) {
             TRANSMISSION: {
                 required: true,
                 pattern: 'number',
-                range: [0,100],
             },
 
             ENERGY: {
                 required: true,
                 pattern: 'digits',
-                range: [12658,12658]
             },
 
         },

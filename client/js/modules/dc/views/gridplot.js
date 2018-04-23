@@ -2,6 +2,7 @@ define(['jquery', 'marionette',
         'modules/dc/models/distl',
         'modules/dc/models/grid',
         'modules/dc/models/xfm',
+        'collections/attachments',
         'utils/canvas',
         'tpl!templates/dc/gridplot.html',
         'caman',
@@ -9,7 +10,7 @@ define(['jquery', 'marionette',
         'utils',
         'utils/xhrimage',
         'jquery-ui',
-    ], function($, Marionette, DISTL, GridInfo, XFMap, canvas, template, Caman, HeatMap, utils, XHRImage) {
+    ], function($, Marionette, DISTL, GridInfo, XFMap, Attachments, canvas, template, Caman, HeatMap, utils, XHRImage) {
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
         template: template,
@@ -19,6 +20,7 @@ define(['jquery', 'marionette',
             canvas: 'canvas',
             hmt: 'input[name=heatmap]',
             ty: 'select[name=type]',
+            ty2: 'select[name=type2]',
             xfm: '.xfm',
             flu: 'input[name=fluo]',
             el: 'select[name=element]',
@@ -29,6 +31,7 @@ define(['jquery', 'marionette',
             'mousedown @ui.canvas': 'mouseDown',
 
             'change @ui.ty': 'setType',
+            'change @ui.ty2': 'loadAttachment',
             'change @ui.hmt': 'setHM',
 
             'change @ui.flu': 'toggleFluo',
@@ -43,10 +46,6 @@ define(['jquery', 'marionette',
         },
 
         setType: function() {
-            var types  = { 1: 0, 2: 1, 3: 3 }
-
-            this.type = types[parseInt(this.ui.ty.val())] 
-            console.log('ty', this.type)
             this.draw()
         },
 
@@ -61,14 +60,15 @@ define(['jquery', 'marionette',
 
         initialize: function(options) {
             this.draw = _.debounce(this.draw, 10)
-            this.listenTo(options.imagestatuses, 'sync', this.getModel, this)
+            this.statusesLoaded = false
+            this.listenTo(options.imagestatuses, 'sync', this.setStatues, this)
+
+            this._ready = []
 
             this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.distl, 'change', this.draw, this)
             this.grid = new GridInfo({ id: this.getOption('ID') })
 
-
-            this.distl.fetch()
             var self = this
             this.gridFetched = false
             this._gridPromise = this.grid.fetch().done(function() {
@@ -81,6 +81,10 @@ define(['jquery', 'marionette',
             this.xfm = new XFMap({ id: this.getOption('ID') })
             this.xfm.fetch().done(this.populateXFM.bind(this))
 
+            this.attachments = new Attachments()
+            this.attachments.queryParams.id = this.getOption('ID')
+            this.attachments.queryParams.filetype = 'pia'
+
             this.hasSnapshot = false
             this.snapshot = new XHRImage()
             this.snapshot.onload = this.snapshotLoaded.bind(this)
@@ -91,15 +95,41 @@ define(['jquery', 'marionette',
             this.current = -1
 
             this.heatmapToggle = false
-            this.type = 1
+
+            this.snapshotLoading = false
+            this.listenTo(app, 'window:scroll', this.lazyLoad, this)
         },
+
+        loadAttachment: function() {
+            var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+            if (a) {
+                if (!a.get('DATA')) {
+                    var self = this
+                    Backbone.ajax({
+                        url: app.apiurl+'/download/attachment/id/'+this.getOption('ID')+'/aid/'+a.get('DATACOLLECTIONFILEATTACHMENTID'),
+                        dataType: 'json',
+                        success: function(resp) {
+                            var d = _.map(resp, function(v,i) { return [i+1, v] })
+                            a.set('DATA', d)
+                            self.draw()
+                        }
+                    })
+                } else this.draw()
+            }
+        },
+
 
         toggleFluo: function() {
             if (this.ui.flu.is(':checked')) {
                 this.ui.ty.prop('disabled', true)
+
+                var tmp = _.where(this.xfm.get('data'), { ELEMENT: this.ui.el.val() })
+                this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: 'rgb('+tmp[0]['R']+','+tmp[0]['G']+','+tmp[0]['B']+')' } })
                 this.draw()
             } else {
                 this.ui.ty.prop('disabled', false)
+
+                this.heatmap.configure({ maxOpacity: .4, gradient: { 0.25: 'rgb(0,0,255)', 0.55: 'rgb(0,255,0)', 0.85: 'yellow', 1.0: 'rgb(255,0,0)'} })
                 this.draw()
             }
         },
@@ -118,23 +148,54 @@ define(['jquery', 'marionette',
             this.ui.el.html(opts.join())
         },
 
+        setStatues: function() {
+            this.statusesLoaded = true
+            this.lazyLoad()
+        },
+
+        lazyLoad: function() {
+            // console.log('lazy loadjg')
+            if (!this.snapshotLoading && this.statusesLoaded && utils.inView(this.$el)) {
+                this._ready.push(this.distl.fetch())
+                this._ready.push(this.attachments.fetch())
+                console.log('in view')
+                this.getModel()
+
+                $.when.apply($, this._ready).done(this.populatePIA.bind(this))
+            }
+        },
+
+        populatePIA: function(e) {
+            var d = this.distl.get('data')
+            if (!d[0].length) {
+                this.ui.ty.hide()
+                this.ui.ty2.html(this.attachments.opts()).show()
+                this.loadAttachment()
+            }
+        },
+
+
         getModel: function() {
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
-            if (m.get('SNS').length)
+            if (m.get('SNS').length) {
                 if (m.get('SNS')[2] && this.hasSnapshot == false) {
-                this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')
-                //this.draw()
+                    this.snapshotLoading = true
+                    this.$el.addClass('loading')
+                    this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')   
+                }
             }
         },
 
         snapshotLoaded: function() {
             console.log('snapshot loaded')
             this.hasSnapshot = true
+            this.$el.removeClass('loading')
             this.draw()
         },
 
         onRender: function() {
             this.ui.xfm.hide()
+            this.ui.ty2.hide()
         },
 
 
@@ -142,13 +203,29 @@ define(['jquery', 'marionette',
             this.canvas = this.ui.canvas[0]
             this.ctx = this.canvas.getContext('2d')
 
-            this.canvas.width = this.$el.parent().width()
-            this.canvas.height = this.$el.parent().height()
+            var pixelRatio = window.devicePixelRatio || 1
 
+            var w = this.$el.parent().width()
+            var h = this.$el.parent().height()
+
+            this.canvas.style.width = w+'px'
+            this.canvas.style.height = h+'px'
+
+            this.canvas.width = w*pixelRatio
+            this.canvas.height = h*pixelRatio
+
+            this.ctx.scale(pixelRatio, pixelRatio)
+
+            this.$el.find('canvas.heatmap-canvas').remove()
             this.heatmap = new HeatMap.create({ 
                 container: this.$el[0],
                 maxOpacity: .4,
             })
+
+            this.ui.ty.val(1)
+            
+            this.lazyLoad()
+            if (this.hasSnapshot && utils.inView(this.$el)) this.draw()
         },
 
 
@@ -159,23 +236,33 @@ define(['jquery', 'marionette',
             var bw = 1000*this.grid.get('DX_MM')/this.grid.get('PIXELSPERMICRONX')
             var bh = 1000*this.grid.get('DY_MM')/this.grid.get('PIXELSPERMICRONY')
 
-            var radius = bw * 1.1
+            var radius = bh < bw ? (bh * 1.1) : (bw * 1.1)
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
             // plot cropped snapshot
             if (this.hasSnapshot) {
-                var scalef = this.snapshot.width/1024
+                var stx = this.grid.get('SNAPSHOT_OFFSETXPIXEL')
+                var sty = this.grid.get('SNAPSHOT_OFFSETYPIXEL')
 
-                var stx = this.grid.get('SNAPSHOT_OFFSETXPIXEL')*scalef
-                var sty = this.grid.get('SNAPSHOT_OFFSETYPIXEL')*scalef
+                var w = bw*this.grid.get('STEPS_X')
+                var h = bh*this.grid.get('STEPS_Y')
 
-                var w = bw*this.grid.get('STEPS_X')*scalef
-                var h = bh*this.grid.get('STEPS_Y')*scalef
+                if (app.options.get('scale_grid').indexOf(this.getOption('BL')) > -1) {
+                    var scalef = this.snapshot.width/1024
+
+                    stx *= scalef
+                    sty *= scalef
+
+                    w *= scalef
+                    h *= scalef
+                }
 
                 var cvratio = this.canvas.width / this.canvas.height
                 var snratio = w/h
                 
+                this.offset_w = 0
+                this.offset_h = 0
                 if (cvratio < snratio) {
                     this.offset_h = (w/cvratio)-h
                 } else {
@@ -194,11 +281,14 @@ define(['jquery', 'marionette',
                 _.each(tmp, function(r) {
                     d.push([r.IMAGENUMBER, r.COUNTS])
                 })
-                this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: 'rgb('+tmp[0]['R']+','+tmp[0]['G']+','+tmp[0]['B']+')' } })
+            } else if (this.distl.get('data') && this.distl.get('data')[0].length) {
+                if (this.distl.get('data')) d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
             } else {
-                if (this.distl.get('data')) d = this.distl.get('data')[this.type] 
-                this.heatmap.configure({ maxOpacity: .4, gradient: { 0.25: 'rgb(0,0,255)', 0.55: 'rgb(0,255,0)', 0.85: 'yellow', 1.0: 'rgb(255,0,0)'} })
+                var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+                if (a && a.get('DATA')) d = a.get('DATA')
             }
+
+            if (!d) return
 
             // plot distl data
             if (d.length) {
@@ -243,7 +333,6 @@ define(['jquery', 'marionette',
                         radius: radius
                     })
 
-                    //if (!this.heatmapToggle) {
                     if (this.current == k) {
                         this.ctx.globalAlpha = 0.8
                         this.ctx.beginPath()
@@ -251,15 +340,10 @@ define(['jquery', 'marionette',
                         this.ctx.strokeStyle = 'green'
                         this.ctx.rect(x-sw/2-2, y-sh/2-1, sw, sh)
                         this.ctx.stroke()
-                        //this.ctx.arc(x, y, r, 0, 2*Math.PI, false)
-                        //this.ctx.fillStyle = 'green'
-                        //this.ctx.fill()
                     }
                 }, this)
 
-                //if (this.heatmapToggle) 
                 if (max) this.heatmap.setData({ max: max, data: data })
-                //else this.heatmap.setData({ data: [] })
             }
         },
 
@@ -304,7 +388,7 @@ define(['jquery', 'marionette',
 
         _getVal: function(pos) {
             var val = null
-            var d = this.distl.get('data')[this.type] 
+            var d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
             _.each(d, function(v, i) {
                 // 1 indexed array
                 if (v[0] == pos+1) {

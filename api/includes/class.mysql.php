@@ -270,15 +270,18 @@
                             'MotionCorrection',
                             'MotionCorrectionDrift',
                             'CTF',
+                            'Movie',
 
                             // Sample groups
                             'BLSampleGroup',
                             'BLSampleGroup_has_BLSample',
 
-                            // Reprocessing
-                            'Reprocessing',
-                            'ReprocessingParameter',
-                            'ReprocessingImageSweep',
+                            // Processing
+                            'ProcessingJob',
+                            'ProcessingJobParameter',
+                            'ProcessingJobImageSweep',
+
+                            'BeamLineSetup',
 
                 );
 

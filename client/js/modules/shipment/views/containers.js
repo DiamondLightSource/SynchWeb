@@ -37,92 +37,104 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
     })
 
 
-  var ClickableRow = table.ClickableRow.extend({
-    event: 'container:show',
-    argument: 'CONTAINERID',
-    cookie: true,
-  })
+    var ClickableRow = table.ClickableRow.extend({
+        event: 'container:show',
+        argument: 'CONTAINERID',
+        cookie: true,
+    })
     
-  return Marionette.LayoutView.extend({
-    className: 'content',
-    template: '<div><h1>Containers</h1><div class="filter type"></div><div class="wrapper"></div></div>',
-    regions: { wrap: '.wrapper', type: '.type' },
-    
-    initialize: function(options) {
-      var columns = [{ name: 'NAME', label: 'Name', cell: 'string', editable: false },
-                     { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
-                     { name: 'BARCODE', label: 'Barcode', cell: 'string', editable: false },
-                     { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
-                     { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
-                     { name: 'DCCOUNT', label: '# DCs', cell: 'string', editable: false },
-                     { name: 'SUBSAMPLES', label: '# Subsamples', cell: 'string', editable: false },
-                     { name: 'CONTAINERTYPE', label: 'Type', cell: 'string', editable: false },
-                     { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
-                     { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
-                     { name: 'LASTINSPECTION', label: 'Last', cell: 'string', editable: false },
-                     { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
-                     ]
+    return Marionette.LayoutView.extend({
+        className: 'content',
+        template: '<div><h1>Containers</h1><div class="filter type"></div><div class="wrapper"></div></div>',
+        regions: { wrap: '.wrapper', type: '.type' },
         
+        hiddenColumns: [1,2,5,6,9,10,11],
 
-      var filters =[
-          { id: 'plate', name: 'Plates'},
-          { id: 'puck', name: 'Pucks'},
-          { id: 'imager', name: 'In Imager'},
-          { id: 'queued', name: 'Queued'},
-          { id: 'data', name: 'Has Data'},
-          { id: 'processing', name: 'Processing'},
-          { id: 'subsamples', name: 'Has Subsamples'},
-      ]  
+        columns: [
+            { name: 'NAME', label: 'Name', cell: 'string', editable: false },
+            { name: 'DEWAR', label: 'Dewar', cell: 'string', editable: false },
+            { name: 'BARCODE', label: 'Barcode', cell: 'string', editable: false },
+            { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
+            { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
+            { name: 'SUBSAMPLES', label: '# Subsamples', cell: 'string', editable: false },
+            { name: 'DCCOUNT', label: '# DCs', cell: 'string', editable: false },
+            { name: 'DCDATE', label: 'Last', cell: 'string', editable: false },
+            { name: 'CONTAINERTYPE', label: 'Type', cell: 'string', editable: false },
+            { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
+            { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
+            { name: 'LASTINSPECTION', label: 'Last', cell: 'string', editable: false },
+            { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
+        ],
 
-      if (app.user_can('disp_cont') && !app.mobile()) {
-          columns.push({ name: 'VISIT', label: 'Visit', cell: 'string', editable: false })
-          columns.push({ name: 'REQUESTEDIMAGER', label: 'Req. Imager', cell: 'string', editable: false })
-          columns.push({ name: 'IMAGER', label: 'Imager', cell: 'string', editable: false })
-          columns.push({ label: '', cell: table.TemplateCell, editable: false, test: 'REQUESTEDRETURN', template: '<i class="fa fa-paper-plane-o" title="User requested return"></i>' })
-          columns.push({ label: '', cell: DisposeCell, editable: false })
-          filters.push({ id: 'todispose', name: 'To Dispose'})
-      }
+        showFilter: true,
+        filters: [
+            { id: 'plate', name: 'Plates'},
+            { id: 'puck', name: 'Pucks'},
+            { id: 'imager', name: 'In Imager'},
+            { id: 'queued', name: 'Queued'},
+            { id: 'data', name: 'Has Data'},
+            { id: 'processing', name: 'Processing'},
+            { id: 'subsamples', name: 'Has Subsamples'},
+        ],
 
-      columns[2].renderable = false
-      if (options.barcode) {
-          columns[1].renderable = false
-          columns[2].renderable = true
-      }
+        showImaging: true,
 
-      if (app.mobile()) {
-        _.each([1,2,5,6,9,10,11], function(v) {
-            columns[v].renderable = false
-        })
-      }
-        
-      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'containers', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: 'No containers found' } })
+        initialize: function(options) {
+            var filters = this.getOption('filters').slice(0)
+            var columns = this.getOption('columns').slice(0)
+            if (app.user_can('disp_cont') && !app.mobile() && this.getOption('showImaging')) {
+                columns.push({ name: 'VISIT', label: 'Visit', cell: 'string', editable: false })
+                columns.push({ name: 'REQUESTEDIMAGER', label: 'Req. Imager', cell: 'string', editable: false })
+                columns.push({ name: 'IMAGER', label: 'Imager', cell: 'string', editable: false })
+                columns.push({ label: '', cell: table.TemplateCell, editable: false, test: 'REQUESTEDRETURN', template: '<i class="fa fa-paper-plane-o" title="User requested return"></i>' })
+                columns.push({ label: '', cell: DisposeCell, editable: false })
+                filters.push({ id: 'todispose', name: 'To Dispose'})
+            }
 
-      this.ty = new FilterView({
-        url: !options.noFilterUrl,
-        collection: options.collection,
-        value: options.params && options.params.ty,
-        name: 'ty',
-        filters: filters
-      })
+            columns[2].renderable = false
+            if (options.barcode) {
+                columns[1].renderable = false
+                columns[2].renderable = true
+            }
 
-      this.listenTo(this.ty, 'selected:change', this.updateCols)
-    },
+            if (app.mobile()) {
+                _.each(this.getOption('hiddenColumns'), function(v) {
+                    columns[v].renderable = false
+                })
+            }
+            
+            this.table = new TableView({ 
+                collection: options.collection, 
+                columns: columns, 
+                tableClass: 'containers', filter: 's', search: options.params.s, loading: true, 
+                backgrid: { row: ClickableRow, emptyText: 'No containers found' } })
 
-    updateCols: function(selected) {
-        var isPuck = (selected == null || selected == 'puck')
+            this.ty = new FilterView({
+                url: !options.noFilterUrl,
+                collection: options.collection,
+                value: options.params && options.params.ty,
+                name: 'ty',
+                filters: filters
+            })
 
-        var dew = this.table.grid.columns.findWhere({ name: 'DEWAR' })
-        var bc = this.table.grid.columns.findWhere({ name: 'BARCODE' })
-        dew.set('renderable', isPuck)
-        bc.set('renderable', !isPuck)
-    },
-                                      
-    onRender: function() {
-      this.wrap.show(this.table)
-      this.type.show(this.ty)
+            this.listenTo(this.ty, 'selected:change', this.updateCols)
+        },
 
-      this.updateCols(this.ty.selected())
-    }
-  })
+        updateCols: function(selected) {
+            var isPuck = (selected == null || selected == 'puck')
+
+            var dew = this.table.grid.columns.findWhere({ name: 'DEWAR' })
+            var bc = this.table.grid.columns.findWhere({ name: 'BARCODE' })
+            dew.set('renderable', isPuck)
+            bc.set('renderable', !isPuck)
+        },
+                                          
+        onRender: function() {
+            this.wrap.show(this.table)
+            if (this.getOption('showFilter')) this.type.show(this.ty)
+
+            this.updateCols(this.ty.selected())
+        }
+    })
 
 })

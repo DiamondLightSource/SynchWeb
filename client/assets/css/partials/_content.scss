@@ -791,6 +791,28 @@ ol.rounded {
             float: none;
             height: 150px;
         }
+
+        &.mg, &.ov {
+            width: auto;
+            min-width: 22%;
+
+            figcaption {
+                position: absolute;
+                margin: 3px 0 0 4px;
+            }
+
+            img {
+                transition: opacity 0.2s ease-in-out;
+                opacity: 0;
+
+                width: auto;
+                height: 100%;
+
+                &.show {
+                    opacity: 1;
+                }
+            }
+        }
     }
 
 
@@ -1102,6 +1124,13 @@ ul.status {
             background-color: #ff6961;
         }
         
+        &.GR {
+            &:before {
+                content: 'Grid Scanned'
+            }
+            background-color: #fdfd96;
+        }
+
         &.SC {
             &:before {
                 content: 'Screened'

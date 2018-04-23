@@ -77,6 +77,7 @@ define(['marionette',
             Overview.__super__.draw.call(this)
 
             this.heatmap._renderer.shadowCtx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
+            this.heatmap._renderer.shadowCtx.clearRect(0,0,this.width/this.scalef, this.height/this.scalef)
             this.drawObjects()
         },
 

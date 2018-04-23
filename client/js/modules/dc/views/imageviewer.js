@@ -91,7 +91,7 @@ define(['jquery', 'marionette',
             this.draw = _.debounce(this.draw, 10)
             this.readjust = _.debounce(this.readjust, 200)
             
-            console.log(this.model)
+            // console.log(this.model)
 
             this.n = options.n || 1
             this.img = new XHRImage()
@@ -129,7 +129,7 @@ define(['jquery', 'marionette',
         
         onDomRefresh: function() {
             this.canvas = this.ui.canvas[0]
-            console.log(this.canvas, this.ui.canvas)
+            // console.log(this.canvas, this.ui.canvas)
             this.ctx = this.canvas.getContext('2d')
         
             // Setup Controls
@@ -401,28 +401,29 @@ define(['jquery', 'marionette',
                 
         // iOS Bug with large images, detect squished image and rescale it
         detectVerticalSquash: function(img) {
-            var iw = this.img.naturalWidth, ih = this.img.naturalHeight;
-            var canvas = document.createElement('canvas');
-            canvas.width = 1;
-            canvas.height = ih;
-            var ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            var data = ctx.getImageData(0, 0, 1, ih).data;
+            var ih = this.img.naturalHeight
+            if (ih == 0) return 1
+            var canvas = document.createElement('canvas')
+            canvas.width = 1
+            canvas.height = ih
+            var ctx = canvas.getContext('2d')
+            ctx.drawImage(img, 0, 0)
+            var data = ctx.getImageData(0, 0, 1, ih).data
             // search image edge pixel position in case it is squashed vertically.
-            var sy = 0;
-            var ey = ih;
-            var py = ih;
+            var sy = 0
+            var ey = ih
+            var py = ih
             while (py > sy) {
-                var alpha = data[(py - 1) * 4 + 3];
+                var alpha = data[(py - 1) * 4 + 3]
                 if (alpha === 0) {
-                    ey = py;
+                    ey = py
                 } else {
-                    sy = py;
+                    sy = py
                 }
-                py = (ey + sy) >> 1;
+                py = (ey + sy) >> 1
             }
-            var ratio = (py / ih);
-            return (ratio===0)?1:ratio;
+            var ratio = (py / ih)
+            return (ratio===0)?1:ratio
         },
         
         

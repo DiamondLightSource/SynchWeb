@@ -33,7 +33,7 @@ define(['marionette',
         },
         
         loadMovie: function(e) {
-            this.fetch(this.ui.mov.val())
+            this.fetch(parseInt(this.ui.mov.val()))
         },
 
         nextMovie: function(e) {
@@ -76,6 +76,7 @@ define(['marionette',
             if (n) this.imagenumber = n
             this.mc.fetch({ data: { IMAGENUMBER: this.imagenumber } })
             this.ctf.fetch({ data: { IMAGENUMBER: this.imagenumber } })
+            this.trigger('load:movie', n)
         },
         
         onRender: function() {

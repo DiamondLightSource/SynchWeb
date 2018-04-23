@@ -1,4 +1,4 @@
-define(['marionette', 'backgrid', 'views/search', 'views/pages'], function(Marionette, Backgrid, Search, Pages) {
+define(['marionette', 'backgrid', 'views/search', 'views/pages', 'backgrid-select-all'], function(Marionette, Backgrid, Search, Pages) {
     
   /*
     Generic Table UI with Paginator

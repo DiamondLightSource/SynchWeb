@@ -1,10 +1,11 @@
 define([
+    'modules/types/em/dc/views/imagestatusitem',
     'modules/types/gen/dc/dc',
     'modules/types/em/dc/views/apstatusitem',
-    'modules/types/em/dc/views/overview',
+    'modules/types/em/dc/views/overview2',
     'modules/types/em/dc/views/micrograph',
     'modules/types/em/dc/views/autoprocessing',
-    'tpl!templates/types/em/dc/dc.html'], function(DCItemView, 
+    'tpl!templates/types/em/dc/dc.html'], function(ImageStatusItem, DCItemView, 
         APStatusItem, Overview, Micrograph, 
         EMAutoProcessingView, 
         template) {
@@ -48,24 +49,23 @@ define([
 
             this.model.set('KV', this.l2kV(this.model.get('WAVELENGTH')))
             this.overview = new Overview({ pm: this.model, imagestatuses: this.getOption('imagestatuses'), apstatus: this.getOption('apstatuses') })
-            this.micrograph = new Micrograph({ pm: this.model, apstatuses: this.getOption('apstatuses') })
             this.listenTo(this.overview, 'current', this.loadPoint, this)
         },
 
+
         onShow: function() {
             EMDCView.__super__.onShow.apply(this)
-            this.mg.show(this.micrograph)
+            this.imagestatus = new ImageStatusItem({ pm: this.model, statuses: this.getOption('apstatuses'), el: this.$el })
             this.ov.show(this.overview)
         },
 
 
         onDomRefresh: function() {
-            this.micrograph.triggerMethod('dom:refresh')
             this.overview.triggerMethod('dom:refresh')
         },  
 
         loadPoint: function(point) {
-            this.micrograph.setMicrograph(point)
+            if (point) this.imagestatus.show(point)
             if (this.ap) {
                 this.ap.fetch(point)
             }
@@ -75,6 +75,7 @@ define([
         loadAP: function(e) {
             if (!this.ap) {
                 this.ap = new EMAutoProcessingView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc') })
+                this.listenTo(this.ap, 'load:movie', this.imagestatus.show.bind(this.imagestatus))
             } else this.ap.$el.slideToggle()
         },
 

@@ -38,7 +38,7 @@
                 if (is_array($this->arg('ids'))) {
                     foreach ($this->arg('ids') as $i) {
                         array_push($ids,$i);
-                        array_push($where,'mc.datacollectionid=:'.sizeof($ids));
+                        array_push($where,'m.datacollectionid=:'.sizeof($ids));
                     }
                 }
             }
@@ -63,30 +63,32 @@
                 $statuses[$d] = array('ID' => $d, 'MC' => array(), 'CTF' => array());
             }
 
-            $mc = $this->db->pq("SELECT app.processingstatus, mc.imagenumber, dc.datacollectionid
+            $mc = $this->db->pq("SELECT app.processingstatus, m.movienumber, dc.datacollectionid
                 FROM motioncorrection mc
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
 
             foreach ($mc as $m) {
-                $statuses[$m['DATACOLLECTIONID']]['MC'][$m['IMAGENUMBER']] = $m['PROCESSINGSTATUS'];
+                $statuses[$m['DATACOLLECTIONID']]['MC'][$m['MOVIENUMBER']] = $m['PROCESSINGSTATUS'];
             }
 
 
-            $ctf = $this->db->pq("SELECT app.processingstatus, mc.imagenumber, dc.datacollectionid
+            $ctf = $this->db->pq("SELECT app.processingstatus, m.movienumber, dc.datacollectionid
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = c.autoprocprogramid
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
 
             foreach ($ctf as $c) {
-                $statuses[$c['DATACOLLECTIONID']]['CTF'][$c['IMAGENUMBER']] = $c['PROCESSINGSTATUS'];
+                $statuses[$c['DATACOLLECTIONID']]['CTF'][$c['MOVIENUMBER']] = $c['PROCESSINGSTATUS'];
             }
 
             $this->_output(array_values($statuses));
@@ -97,11 +99,12 @@
         function _mc_result() {
             $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
 
-            $rows = $this->db->pq("SELECT mc.motioncorrectionid, mc.firstframe, mc.lastframe, mc.doseperframe, mc.doseweight, mc.totalmotion, mc.averagemotionperframe, mc.micrographsnapshotfullpath, mc.patchesusedx, mc.patchesusedy, mc.fftfullpath, mc.fftcorrectedfullpath, mc.comments, mc.autoprocprogramid, mc.imagenumber, dc.datacollectionid
+            $rows = $this->db->pq("SELECT mc.motioncorrectionid, mc.firstframe, mc.lastframe, mc.doseperframe, mc.doseweight, mc.totalmotion, mc.averagemotionperframe, mc.micrographsnapshotfullpath, mc.patchesusedx, mc.patchesusedy, mc.fftfullpath, mc.fftcorrectedfullpath, mc.comments, mc.autoprocprogramid, m.movienumber as imagenumber, dc.datacollectionid
                 FROM motioncorrection mc
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
-                WHERE dc.datacollectionid = :1 AND mc.imagenumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
 
             if (!sizeof($rows)) $this->_error('No such motion correction');
             $row = $rows[0];
@@ -109,6 +112,10 @@
             $row['FFTFULLPATH'] = file_exists($row['FFTFULLPATH']) ? 1 : 0;
             $row['FFTCORRECTEDFULLPATH'] = file_exists($row['FFTCORRECTEDFULLPATH']) ? 1 : 0;
             $row['MICROGRAPHSNAPSHOTFULLPATH'] = file_exists($row['MICROGRAPHSNAPSHOTFULLPATH']) ? 1 : 0;
+
+            foreach (array('TOTALMOTION' => 1, 'AVERAGEMOTIONPERFRAME' => 2) as $k => $r) {
+                $row[$k] = number_format($row[$k], $r);
+            }
 
             $this->_output($row);
         }
@@ -120,8 +127,9 @@
 
             $imgs = $this->db->pq("SELECT mc.micrographsnapshotfullpath 
                 FROM motioncorrection mc
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
-                WHERE dc.datacollectionid = :1 AND mc.imagenumber = :2", array($this->arg('id'), $n));
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $n));
             
             if (!sizeof($imgs)) $this->_error('No such micrograph');
             $img = $imgs[0];
@@ -142,8 +150,9 @@
 
             $imgs = $this->db->pq("SELECT mc.fftcorrectedfullpath, mc.fftfullpath 
                 FROM motioncorrection mc
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
-                WHERE dc.datacollectionid = :1 AND mc.imagenumber = :2", array($this->arg('id'), $im));
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $im));
             
             if (!sizeof($imgs)) $this->_error('No such fft');
             $img = $imgs[0];
@@ -166,8 +175,9 @@
             $rows = $this->db->pq("SELECT mcd.deltax, mcd.deltay, mcd.framenumber 
                 FROM motioncorrectiondrift mcd
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
-                WHERE dc.datacollectionid = :1 AND mc.imagenumber = :2
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2
                 ORDER BY mcd.framenumber", array($this->arg('id'), $im));
 
             $data = array();
@@ -209,7 +219,8 @@
                     JOIN (SELECT @diffx := 0) r
                     JOIN (SELECT @diffy := 0) r2
                     INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
-                    INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                    INNER JOIN movie m ON m.movieid = mc.movieid
+                    INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                     INNER JOIN blsession s ON s.sessionid = dc.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
@@ -218,6 +229,7 @@
                     ORDER BY mcd.motioncorrectionid,mcd.framenumber
                     ) inr
                     GROUP BY framediff, beamlinename
+                    ORDER BY framediff+0, beamlinename
                 ", $args);
 
             // print_r($hist);
@@ -261,32 +273,38 @@
         function _ctf_result() {
             $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
 
-            $rows = $this->db->pq("SELECT c.ctfid, c.boxsizex, c.boxsizey, c.minresolution, c.maxresolution, c.mindefocus, c.maxdefocus, c.defocusstepsize, c.astigmatism, c.astigmatismangle, c.estimatedresolution, c.estimateddefocus, c.amplitudecontrast, c.ccvalue, c.ffttheoreticalfullpath, c.comments, c.autoprocprogramid, mc.imagenumber, dc.datacollectionid
+            $rows = $this->db->pq("SELECT c.ctfid, c.boxsizex, c.boxsizey, c.minresolution, c.maxresolution, c.mindefocus, c.maxdefocus, c.defocusstepsize, c.astigmatism, c.astigmatismangle, c.estimatedresolution, c.estimateddefocus, c.amplitudecontrast, c.ccvalue, c.ffttheoreticalfullpath, c.comments, c.autoprocprogramid, m.movienumber as imagenumber, dc.datacollectionid
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
-                WHERE dc.datacollectionid = :1 AND mc.imagenumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
 
             if (!sizeof($rows)) $this->_error('No such ctf correction');
             $row = $rows[0];
 
             $row['FFTTHEORETICALFULLPATH'] = file_exists($row['FFTTHEORETICALFULLPATH']) ? 1 : 0;
 
+            foreach (array('ASTIGMATISM' => 2, 'ASTIGMATISMANGLE' => 1, 'ESTIMATEDRESOLUTION' => 2, 'ESTIMATEDDEFOCUS' => 0) as $k => $r) {
+                $row[$k] = number_format($row[$k], $r, '.', '');
+            }
+
             $this->_output($row);
         }
 
 
         function _ctf_image() {
-            $n = $this->has_arg('n') ? $this->arg('n') : 1;
+            $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
             if ($n < 1) $n = 1;
 
             $imgs = $this->db->pq("SELECT c.ffttheoreticalfullpath 
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
-                WHERE dc.datacollectionid = :1 AND mc.imagenumber = :2", array($this->arg('id'), $n));
-            
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $n));
+
             if (!sizeof($imgs)) $this->_error('No such ctf correction');
             $img = $imgs[0];
 
@@ -307,7 +325,7 @@
         function _ctf_histogram() {
             $types = array(
                 'defocus' => array('unit' => 'A', 'st' => 0, 'en' => 60000, 'bin_size' => 1000, 'col' => 'c.estimateddefocus', 'count' => 'c.estimateddefocus'),
-                'astigmatism' => array('unit' => 'A', 'st' => 0, 'en' => 400, 'bin_size' => 20, 'col' => 'c.astigmatism', 'count' => 'c.astigmatism'),
+                'astigmatism' => array('unit' => 'Number', 'st' => 0.5, 'en' => 1.5, 'bin_size' => 0.005, 'col' => 'c.astigmatism', 'count' => 'c.astigmatism'),
                 'resolution' => array('unit' => 'A', 'st' => 0, 'en' => 30, 'bin_size' => 1, 'col' => 'c.estimatedresolution', 'count' => 'c.estimatedresolution'),
             );
 
@@ -342,14 +360,55 @@
             $ct = $t['count'];
             $bs = $t['bin_size'];
 
-            $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
+            $limits = $this->db->pq("SELECT max($col) as max, min($col) as min, s.beamlinename
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-                INNER JOIN datacollection dc ON dc.datacollectionid = mc.datacollectionid
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                WHERE 1=1 $where
+                WHERE $col < 1e38 $where
+                GROUP BY s.beamlinename", $args);
+
+            // print_r($limits);
+
+            if (sizeof($limits)) {
+                $limits = $limits[0];
+                $max = floatval(($limits['MAX']));
+                $min = floatval(($limits['MIN']));
+
+                $range = $max - $min;
+
+                if ($range > 0) {
+                    $bs = $range / 50;
+
+                    if ($bs < 0) {
+                        $zeros = strspn($bs, '0', strpos($bs, '.')+1);
+                        $bs = round($bs, $zeros);
+                    } else if ($bs < 1) {
+                        $bs = round($bs, 3);
+                    } else {
+                        $zeros = strlen(number_format($bs,0, '.', ''));
+                        $mp = pow(1,$zeros);
+                        $bs = ceil($bs/$mp) * $mp;
+                    }
+
+                    $t['bin_size'] = $bs;
+                    $t['st'] = $min - fmod($min, $bs);
+                    $t['en'] = $max - fmod($max, $bs) + $bs;
+                }
+            }
+
+            $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
+                FROM ctf c
+                INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE $col < 1e38 $where
                 GROUP BY s.beamlinename,x
                 ORDER BY s.beamlinename", $args);
 
@@ -376,7 +435,8 @@
 
                 $gram = array();
                 for($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
-                    $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
+                    $bin_s = number_format($bin, strlen(substr(strrchr($t['bin_size'], '.'), 1)), '.', '');
+                    $gram[$bin_s] = array_key_exists($bin_s, $ha) ? $ha[$bin_s] : 0;
                 }
 
                 $lab = ucfirst($k).' ('.$t['unit'].')';

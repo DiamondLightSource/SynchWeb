@@ -7,16 +7,16 @@
     class Process extends Page {
         
         public static $arg_list = array(
-            'REPROCESSINGID' => '\d+',
+            'PROCESSINGJOBID' => '\d+',
             'DATACOLLECTIONID' => '\d+',
             'DISPLAYNAME' => '([\w\s-])+',
             'COMMENTS' => '.*',
 
-            'REPROCESSINGIMAGESWEEPID' => '\d+',
+            'PROCESSINGJOBIMAGESWEEPID' => '\d+',
             'STARTIMAGE' => '\d+',
             'ENDIMAGE' => '\d+',
             
-            'REPROCESSINGPARAMETERID' => '\d+',
+            'PROCESSINGJOBPARAMETERID' => '\d+',
             'PARAMETERKEY' => '\w+',
             'PARAMETERVALUE' => '([\w-\.,])+',
 
@@ -25,13 +25,13 @@
         
 
         public static $dispatch = array(
-            array('(/:REPROCESSINGID)', 'get', '_get_reprocessing'),
+            array('(/:PROCESSINGJOBID)', 'get', '_get_reprocessing'),
             array('', 'post', '_add_reprocessing'),
 
-            array('/params(/:REPROCESSINGPARAMETERID)', 'get', '_get_reprocessing_params'),
+            array('/params(/:PROCESSINGJOBPARAMETERID)', 'get', '_get_reprocessing_params'),
             array('/params', 'post', '_add_reprocessing_params'),
 
-            array('/sweeps(/:REPROCESSINGIMAGESWEEPID)', 'get', '_get_reprocessing_sweeps'),
+            array('/sweeps(/:PROCESSINGJOBIMAGESWEEPID)', 'get', '_get_reprocessing_sweeps'),
             array('/sweeps', 'post', '_add_reprocessing_sweeps'),
 
             array('/enqueue', 'post', '_enqueue'),
@@ -45,9 +45,9 @@
             $where = 'p.proposalid=:1';
             $args = array($this->proposalid);
 
-            if ($this->has_arg('REPROCESSINGID')) {
-                $where .= ' AND rp.reprocessingid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('REPROCESSINGID'));
+            if ($this->has_arg('PROCESSINGJOBID')) {
+                $where .= ' AND rp.processingjobid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('PROCESSINGJOBID'));
             }
 
             if ($this->has_arg('VISIT')) {
@@ -56,14 +56,14 @@
             }
 
             $rows = $this->db->pq("SELECT
-                rp.reprocessingid, rp.displayname, rp.comments, TO_CHAR(rp.recordtimestamp, 'DD-MM-YYYY HH24:MI') as recordtimestamp, rp.automatic, 
+                rp.processingjobid, rp.displayname, rp.comments, TO_CHAR(rp.recordtimestamp, 'DD-MM-YYYY HH24:MI') as recordtimestamp, rp.automatic, 
                 dc.filetemplate, dc.imagedirectory, dc.datacollectionid, dc.imageprefix, dc.datacollectionnumber,
                 smp.name as sample, smp.blsampleid as blsampleid, pr.acronym as protein, pr.proteinid,
                 CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) as visit,
 
                 apss.cchalf, apss.ccanomalous, apss.anomalous, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi,
                 IF(app.autoprocprogramid, IF(api.autoprocintegrationid, 1, app.processingstatus), 2) as status, app.processingmessage, TO_CHAR(app.processingendtime, 'DD-MM-YYYY HH24:MI') as lastupdatetimestamp
-                FROM reprocessing rp
+                FROM processingjob rp
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 LEFT OUTER JOIN blsample smp ON smp.blsampleid = dc.blsampleid
                 LEFT OUTER JOIN crystal cr ON cr.crystalid = smp.crystalid
@@ -71,15 +71,15 @@
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
 
-                LEFT OUTER JOIN autoprocprogram app ON app.reprocessingid = rp.reprocessingid
+                LEFT OUTER JOIN autoprocprogram app ON app.processingjobid = rp.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
                 LEFT OUTER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
                 LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
                 LEFT OUTER JOIN autoprocscalingstatistics apss ON (apss.autoprocscalingid = aph.autoprocscalingid AND scalingstatisticstype = 'overall')
 
                 WHERE $where
-                GROUP BY rp.reprocessingid
-                ORDER BY rp.reprocessingid DESC", $args);    
+                GROUP BY rp.processingjobid
+                ORDER BY rp.processingjobid DESC", $args);    
 
             foreach ($rows as &$r) {
                 $r['IMAGEDIRECTORYFULL'] = $r['IMAGEDIRECTORY'];
@@ -107,10 +107,10 @@
             $comments = $this->has_arg('COMMENTS') ? $this->arg('COMMENTS') : null;
             $display = $this->has_arg('DISPLAYNAME') ? $this->arg('DISPLAYNAME') : null;
 
-            $this->db->pq("INSERT INTO reprocessing (datacollectionid, displayname, comments, automatic, recipe) 
+            $this->db->pq("INSERT INTO processingjob (datacollectionid, displayname, comments, automatic, recipe) 
                 VALUES (:1, :2, :3, :4, :5)", array($this->arg('DATACOLLECTIONID'), $display, $comments, 0, $this->arg('RECIPE')));
 
-            $this->_output(array('REPROCESSINGID' => $this->db->id()));
+            $this->_output(array('PROCESSINGJOBID' => $this->db->id()));
         }
 
 
@@ -122,9 +122,9 @@
             $where = 'p.proposalid=:1';
             $args = array($this->proposalid);
 
-            if ($this->has_arg('REPROCESSINGID')) {
-                $where .= ' AND rp.reprocessingid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('REPROCESSINGID'));
+            if ($this->has_arg('PROCESSINGJOBID')) {
+                $where .= ' AND rp.processingjobid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('PROCESSINGJOBID'));
             }
 
             if ($this->has_arg('VISIT')) {
@@ -133,9 +133,9 @@
             }
 
 
-            $rows = $this->db->pq("SELECT rpp.reprocessingparameterid, rpp.parameterkey, rpp.parametervalue, rp.reprocessingid
-                FROM reprocessingparameter rpp
-                INNER JOIN reprocessing rp ON rp.reprocessingid = rpp.reprocessingid
+            $rows = $this->db->pq("SELECT rpp.processingjobparameterid, rpp.parameterkey, rpp.parametervalue, rp.processingjobid
+                FROM processingjobparameter rpp
+                INNER JOIN processingjob rp ON rp.processingjobid = rpp.processingjobid
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -152,7 +152,7 @@
                     $id = $this->_add_reprocessing_param($p);
 
                     if ($id) {
-                        $p['REPROCESSINGPARAMETERID'] = $id;
+                        $p['PROCESSINGJOBPARAMETERID'] = $id;
                         array_push($col, $p);
                     }
                 }
@@ -161,27 +161,27 @@
 
             } else {
                 $id = $this->_add_reprocessing_param($this->args);
-                $this->_output(array('REPROCESSINGPARAMETERID' => $id));
+                $this->_output(array('PROCESSINGJOBPARAMETERID' => $id));
             }
         }
 
 
         function _add_reprocessing_param($param) {
-            if (!array_key_exists('REPROCESSINGID', $param)) $this->_error('No reprocessing specified');
+            if (!array_key_exists('PROCESSINGJOBID', $param)) $this->_error('No processing job specified');
             if (!array_key_exists('PARAMETERKEY', $param)) $this->_error('No key specified');
             if (!array_key_exists('PARAMETERVALUE', $param)) $this->_error('No value specified');
 
-            $chk = $this->db->pq("SELECT rp.reprocessingid
-                FROM reprocessing rp
+            $chk = $this->db->pq("SELECT rp.processingjobid
+                FROM processingjob rp
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE p.proposalid = :1 AND rp.reprocessingid = :2", array($this->proposalid, $param['REPROCESSINGID']));
+                WHERE p.proposalid = :1 AND rp.processingjobid = :2", array($this->proposalid, $param['PROCESSINGJOBID']));
 
-            if (!sizeof($chk)) $this->_error('No such reprocessing');
+            if (!sizeof($chk)) $this->_error('No such processing job');
 
-            $this->db->pq("INSERT INTO reprocessingparameter (reprocessingid, parameterkey, parametervalue) 
-                VALUES (:1, :2, :3)", array($param['REPROCESSINGID'], $param['PARAMETERKEY'], $param['PARAMETERVALUE']));
+            $this->db->pq("INSERT INTO processingjobparameter (processingjobid, parameterkey, parametervalue) 
+                VALUES (:1, :2, :3)", array($param['PROCESSINGJOBID'], $param['PARAMETERKEY'], $param['PARAMETERVALUE']));
 
             return $this->db->id();
         }
@@ -195,9 +195,9 @@
             $where = 'p.proposalid=:1';
             $args = array($this->proposalid);
 
-            if ($this->has_arg('REPROCESSINGID')) {
-                $where .= ' AND rp.reprocessingid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('REPROCESSINGID'));
+            if ($this->has_arg('PROCESSINGJOBID')) {
+                $where .= ' AND rp.processingjobid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('PROCESSINGJOBID'));
             }
 
             if ($this->has_arg('VISIT')) {
@@ -207,12 +207,12 @@
 
 
             $rows = $this->db->pq("SELECT
-                ris.reprocessingimagesweepid, ris.reprocessingid, ris.startimage, ris.endimage, ris.datacollectionid,
+                ris.processingjobimagesweepid, ris.processingjobid, ris.startimage, ris.endimage, ris.datacollectionid,
                 dc.filetemplate, dc.imagedirectory, dc.imageprefix, dc.datacollectionid, dc.datacollectionnumber,
                 smp.name as sample, smp.blsampleid as blsampleid, pr.acronym as protein, pr.proteinid,
                 CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) as visit
-                FROM reprocessingimagesweep ris
-                INNER JOIN reprocessing rp ON rp.reprocessingid = ris.reprocessingid
+                FROM processingjobimagesweep ris
+                INNER JOIN processingjob rp ON rp.processingjobid = ris.processingjobid
                 INNER JOIN datacollection dc ON dc.datacollectionid = ris.datacollectionid
                 LEFT OUTER JOIN blsample smp ON smp.blsampleid = dc.blsampleid
                 LEFT OUTER JOIN crystal cr ON cr.crystalid = smp.crystalid
@@ -237,7 +237,7 @@
                     $id = $this->_add_reprocessing_sweep($p);
 
                     if ($id) {
-                        $p['REPROCESSINGIMAGESWEEPID'] = $id;
+                        $p['PROCESSINGJOBIMAGESWEEPID'] = $id;
                         array_push($col, $p);
                     }
                 }
@@ -246,25 +246,25 @@
 
             } else {
                 $id = $this->_add_reprocessing_sweep($this->args);
-                $this->_output(array('REPROCESSINGIMAGESWEEPID' => $id));
+                $this->_output(array('PROCESSINGJOBIMAGESWEEPID' => $id));
             }
         }
 
 
         function _add_reprocessing_sweep($args) {
-            if (!array_key_exists('REPROCESSINGID', $args)) $this->_error('No reprocessing specified');
+            if (!array_key_exists('PROCESSINGJOBID', $args)) $this->_error('No processing job specified');
             if (!array_key_exists('DATACOLLECTIONID', $args)) $this->_error('No datacollection specified');
             if (!array_key_exists('STARTIMAGE', $args)) $this->_error('No start image specified');
             if (!array_key_exists('ENDIMAGE', $args)) $this->_error('No end image specified');
 
-            $chk = $this->db->pq("SELECT rp.reprocessingid
-                FROM reprocessing rp
+            $chk = $this->db->pq("SELECT rp.processingjobid
+                FROM processingjob rp
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE p.proposalid = :1 AND rp.reprocessingid = :2", array($this->proposalid, $args['REPROCESSINGID']));
+                WHERE p.proposalid = :1 AND rp.processingjobid = :2", array($this->proposalid, $args['PROCESSINGJOBID']));
 
-            if (!sizeof($chk)) $this->_error('No such reprocessing');
+            if (!sizeof($chk)) $this->_error('No such processing job');
 
             $chk = $this->db->pq("SELECT dc.datacollectionid
                 FROM datacollection dc
@@ -274,9 +274,9 @@
 
             if (!sizeof($chk)) $this->_error('No such datacollection');
 
-            $this->db->pq("INSERT INTO reprocessingimagesweep (reprocessingid, datacollectionid, startimage, endimage) VALUES (:1, :2, :3, :4)", array($args['REPROCESSINGID'], $args['DATACOLLECTIONID'], $args['STARTIMAGE'], $args['ENDIMAGE']));
+            $this->db->pq("INSERT INTO processingjobimagesweep (processingjobid, datacollectionid, startimage, endimage) VALUES (:1, :2, :3, :4)", array($args['PROCESSINGJOBID'], $args['DATACOLLECTIONID'], $args['STARTIMAGE'], $args['ENDIMAGE']));
 
-            $this->_output(array('REPROCESSINGIMAGESWEEPID' => $this->db->id()));
+            $this->_output(array('PROCESSINGJOBIMAGESWEEPID' => $this->db->id()));
         }
 
 
@@ -287,20 +287,20 @@
             global $activemq_server, $activemq_rp_queue;
             if (!$activemq_server || !$activemq_rp_queue) return;
 
-            if (!$this->has_arg('REPROCESSINGID')) $this->_error('No reprocessingid specified');
+            if (!$this->has_arg('PROCESSINGJOBID')) $this->_error('No processing job specified');
 
-            $chk = $this->db->pq("SELECT rp.reprocessingid
-                FROM reprocessing rp
+            $chk = $this->db->pq("SELECT rp.processingjobid
+                FROM processingjob rp
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE p.proposalid = :1 AND rp.reprocessingid = :2", array($this->proposalid, $this->arg('REPROCESSINGID')));
+                WHERE p.proposalid = :1 AND rp.processingjobid = :2", array($this->proposalid, $this->arg('PROCESSINGJOBID')));
 
-            if (!sizeof($chk)) $this->_error('No such reprocessing');
+            if (!sizeof($chk)) $this->_error('No such processing job');
 
             $body = array(
                 'parameters' => array(
-                    'ispyb_process' => intval($this->arg('REPROCESSINGID')),
+                    'ispyb_process' => intval($this->arg('PROCESSINGJOBID')),
                 )
             );
 

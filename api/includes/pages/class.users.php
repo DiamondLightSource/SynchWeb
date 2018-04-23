@@ -30,11 +30,14 @@ class Users extends Page {
                                     'COUNTRY' => '([\w\s-])+',
                                     'CITY' => '([\w\s-])+',
                                     'POSTCODE' => '([\w\s-])+',
+                                    'LOGIN' => '\w+',
+                                    'PASSWORD' => '.*',
                               );
         
 
     public static $dispatch = array(array('(/:PERSONID)', 'get', '_get_users'),
                                     array('/:PERSONID', 'patch', '_update_user'),
+                                    array('/', 'post', '_add_user'),
 
                                     array('/current', 'get', '_get_current_user'),
 
@@ -299,6 +302,33 @@ class Users extends Page {
     }
 
 
+    function _check_login() {
+        if (!$this->user->can('manage_users')) $this->_error('No access');
+        if (!$this->has_arg('LOGIN')) $this->_error('No login specified');
+
+        $person = $this->db->pq("SELECT login FROM person WHERE login=:1", array($this->arg('LOGIN')));
+
+        if (!sizeof($person)) $this->_error('Login not used');
+        else $this->_output(new StdClass);
+    }
+
+
+    function _add_user() {
+        if (!$this->user->can('manage_users')) $this->_error('No access');
+
+        if (!$this->has_arg('LOGIN')) $this->_error('No login specified');
+        if (!$this->has_arg('GIVENNAME')) $this->_error('No given name specified');
+        if (!$this->has_arg('FAMILYNAME')) $this->_error('No family name specified');
+
+        $pw = $this->has_arg('PASSWORD') ? password_hash($this->arg('PASSWORD')) : null;
+
+        $this->db->pq("INSERT INTO person (login, givenname, familyname, password) VALUES (:1, :2, :3, :4)", 
+            array($this->arg('LOGIN'), $this->arg('GIVENNAME'), $this->arg('FAMILYNAME'), $pw));
+
+        $this->_output(array('PERSONID' => $this->db->id()));
+    }
+
+
 
     function _update_user() {
         if (!$this->has_arg('PERSONID')) $this->_error('No person specified');
@@ -314,11 +344,14 @@ class Users extends Page {
         $person = $person[0];
 
         # Update person
-        $pfields = array('FAMILYNAME', 'GIVENNAME', 'PHONENUMBER', 'EMAILADDRESS');
+        $pfields = array('FAMILYNAME', 'GIVENNAME', 'PHONENUMBER', 'EMAILADDRESS', 'PASSWORD');
         foreach ($pfields as $i => $f) {
             if ($this->has_arg($f)) {
-                $this->db->pq('UPDATE person SET '.$f.'=:1 WHERE personid=:2', array($this->arg($f), $person['PERSONID']));
-                $this->_output(array($f => $this->arg($f)));
+                $v = $this->arg($f);
+                if ($f == 'PASSWORD') $v = password_hash($v);
+
+                $this->db->pq('UPDATE person SET '.$f.'=:1 WHERE personid=:2', array($v, $person['PERSONID']));
+                $this->_output($f == 'PASSWORD' ? new StdClass : array($f => $this->arg($f)));
             }
         }
 

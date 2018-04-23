@@ -205,7 +205,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
 
                         // Show if drop is valid
                         if (sample && this.getOption('showValid')) {
-                            if (sample.get('PROTEINID') > -1) {
+                            if (sample.get('PROTEINID') > -1 || sample.get('CRYSTALID') > -1) {
                                 this.ctx.fillStyle = sample.isValid(true) ? '#82d180' : '#f26c4f'
                                 this.ctx.fill()
                             }
@@ -214,6 +214,7 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                         // Show status
                         if (sample && this.showSampleStatus) {
                             var colors = {
+                                GR: '#fdfd96',
                                 SC: '#fdfd96',
                                 AI: '#ffb347',
                                 DC: '#87ceeb',

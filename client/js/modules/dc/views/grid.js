@@ -27,13 +27,35 @@ define(['marionette', 'views/tabs',
       val: '.val',
       img: '.img',
       bx: '.boxx',
-      by: '.boxy'
+      by: '.boxy',
+      zoom: 'a.zoom',
     },
+
+    toggleZoom: function(e) {
+      e.preventDefault()
+
+      var i = this.ui.zoom.find('i')
+      var s = this.ui.zoom.find('span')
+      if (i.hasClass('fa-search-plus')) {
+        this.ui.di.height(this.ui.di.height()*2)
+        this.ui.im.height(this.ui.im.height()*2)
+        i.removeClass('fa-search-plus').addClass('fa-search-minus')
+        s.text('Shrink')
+
+      } else {
+        this.ui.di.height(this.ui.di.height()/2)
+        this.ui.im.height(this.ui.im.height()/2)
+        i.removeClass('fa-search-minus').addClass('fa-search-plus')
+        s.text('Expand')
+      }
+      this.onDomRefresh()
+    },
+
 
     initialize: function(options) {
       this.fullPath = false
 
-      this.gridplot = new GridPlot({ ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
+      this.gridplot = new GridPlot({ BL: this.model.get('BL'), ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
       this.listenTo(this.gridplot, 'current', this.loadImage, this)
     },
 
@@ -51,6 +73,8 @@ define(['marionette', 'views/tabs',
       
 
     onShow: function() {
+      this.ui.zoom.hide()
+
       this.diviewer = new ImageViewer({ model: this.model, embed: true, readyText: 'Click on the grid to load a diffraction image' })      
       this.ui.di.append(this.diviewer.render().$el)
       this.ui.im.append(this.gridplot.render().$el)
@@ -68,6 +92,8 @@ define(['marionette', 'views/tabs',
         var gi = this.gridplot.gridInfo()
         this.ui.bx.text((gi.get('DX_MM')*1000).toFixed(0))
         this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
+
+        if (gi.get('STEPS_Y') > 10) this.ui.zoom.show()
     },
                                       
     onDestroy: function() {
@@ -96,6 +122,7 @@ define(['marionette', 'views/tabs',
       'click @ui.exp': 'expandPath',
       'click .comments': 'showComments',
       'click a.attach': 'attachments',
+      'click @ui.zoom': 'toggleZoom'
     },
       
     attachments: function(e) {
