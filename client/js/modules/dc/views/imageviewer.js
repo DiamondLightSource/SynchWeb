@@ -322,18 +322,22 @@ define(['jquery', 'marionette',
         },
                   
         _onerror: function(n,e) {
-            this.$el.find('.message_box').html('<p class="message alert">These images dont look to be on disk any more. Using low resolution jpegs instead</p>')
-              if (!this.low) {
-                  this.low = 1;
-                  this.img.src = ''
-  
-                  var self = this
-                  setTimeout(function() {
-                    self.load(n)
-                  }, 500)
-  
-              }
-          },
+            if (!this.getOption('embed')) {
+                this.$el.find('.message_box').html('<p class="message alert">These images dont look to be on disk any more. Using low resolution jpegs instead</p>')
+                if (!this.low) {
+                    this.low = 1;
+                    this.img.src = ''
+      
+                    var self = this
+                    setTimeout(function() {
+                        self.load(n)
+                    }, 500)
+      
+                }
+            } else {
+                this.ui.loadprog.text('These images dont look to be on disk any more.')
+            }
+        },
         
         
         // Change image
