@@ -134,7 +134,7 @@
             
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             
-            $file = fopen('/dls_sw/'.$this->arg('bl').'/logs/gda_server.log', 'r');
+            $file = fopen('/dls_sw/'.$this->arg('bl').'/logs/gda-server.log', 'r');
             fseek($file, -1, SEEK_END);
 
             for ($line = 0, $lines = array(); $line < $num_lines && false !== ($char = fgetc($file));) {
