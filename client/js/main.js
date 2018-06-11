@@ -49,6 +49,9 @@ require.config({
     uglymol: 'vendor/uglymol',
 
     moment: 'vendor/moment',
+
+    highmaps: 'vendor/highmaps/highmaps',
+    'highmaps-world': 'vendor/highmaps/world',
   },
     
   shim: {
@@ -190,6 +193,17 @@ require.config({
     markdown: {
         exports: 'markdown',
     },
+
+
+    highmaps: {
+        deps: ['jquery'],
+        exports: 'Highcharts'
+    },
+
+    'highmaps-world': {
+        deps: ['highmaps'],
+    },
+    
   },
 });
 
