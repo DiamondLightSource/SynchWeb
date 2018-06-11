@@ -425,6 +425,13 @@ class DHL {
     }
 
 
+    function get_code($country) {
+        if (array_key_exists($country, $this->_country_codes)) {
+            return $this->_country_codes[$country];
+        }
+    }
+
+
     function tracking_status($key) {
         return array_key_exists($key, $this->_tracking_statuses) ? $this->_tracking_statuses[$key] : null;
     }
