@@ -33,6 +33,7 @@ define(['marionette',
         'collections/dewars',
         'modules/shipment/views/dewaroverview',
         'modules/shipment/views/manifest',
+        'modules/shipment/views/dewarstats',
 
         'modules/shipment/views/createawb',
         'modules/shipment/views/rebookpickup',
@@ -47,7 +48,7 @@ define(['marionette',
     Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
-    DispatchView, TransferView, Dewars, DewarOverview, ManifestView, CreateAWBView, RebookPickupView,
+    DispatchView, TransferView, Dewars, DewarOverview, ManifestView, DewarStats, CreateAWBView, RebookPickupView,
     PlanView,
     ProposalLookup) {
     
@@ -409,7 +410,13 @@ define(['marionette',
     manifest: function() {
         app.bc.reset([bc, { title: 'Manifest' }])
         app.content.show(new ManifestView())
-    }
+    },
+
+
+    dewarstats: function() {
+        app.bc.reset([bc, { title: 'Dewar Stats' }])
+        app.content.show(new DewarStats())
+    },
 
   }
        

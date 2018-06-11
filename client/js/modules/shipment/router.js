@@ -25,6 +25,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
 
       'dewars/overview(/s/:s)(/page/:page)': 'dewar_overview',
       'shipments/manifest': 'manifest',
+      'shipments/stats': 'dewarstats',
 
       'containers/plan/:cid': 'plan_container',
     },
