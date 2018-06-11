@@ -14,6 +14,7 @@
             'bl' => '[\w-]+',
             'download' => '\d',
             'data' => '\d',
+            'history' => '\d',
         );
 
 
@@ -856,7 +857,8 @@
             global $bl_types;
             $bls = implode("', '", $bl_types[$this->ty]);
 
-            $where = " AND p.proposalcode NOT IN ('cm') AND ses.beamlinename in ('$bls')";
+            // $where = " AND p.proposalcode NOT IN ('cm') AND ses.beamlinename in ('$bls')";
+            $where = " AND p.proposalcode NOT IN ('cm')";
             $having = '';
             $args = array();
 
@@ -870,15 +872,8 @@
                 $having = 'HAVING count(dc.datacollectionid) > 0';
             }
 
-            if ($this->has_arg('ty')) {
-                if ($this->arg('ty') == 'yearly') $where .= " AND TIMESTAMPDIFF('MONTH', s.startdate, CURRENT_TIMESTAMP) <= 12";
-                if ($this->arg('ty') == 'monthly') $where .= " AND TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) <= 28";
-                if ($this->arg('ty') == 'weekly') $where .= " AND TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) <= 7";
-            }
-
-            if ($this->has_arg('runid')) {
-                $where .= " AND vr.runid=:".(sizeof($args)+1);
-                array_push($args, $this->arg('runid'));
+            if ($this->has_arg('history')) {
+                $having = 'HAVING count(th.dewartransporthistoryid) > 1';
             }
 
             if ($this->has_arg('scheduled')) {
@@ -905,11 +900,6 @@
             $group = 'GROUP BY prop';
             if ($this->has_arg('group_by')) {
 
-                if ($this->arg('group_by') == 'run') {
-                    $group = 'GROUP BY run';
-                    $match = 'RUN';
-                }
-
                 if ($this->arg('group_by') == 'year') {
                     $group = 'GROUP BY year';
                     $match = 'YEAR';
@@ -929,14 +919,16 @@
                     $group = '';
                     $match = 'TOTAL';
                 }
-
             }
 
 
             $dewars = $this->db->pq("
-                SELECT prop, beamlinename, 1 as total, run, runid, year,
+                SELECT prop, 
+                    beamlinename, 
+                    1 as total, year,
                     sum(shipments) as shipments, 
                     sum(dewars) as dewars, 
+                    sum(history) as history,
                     sum(dcs) as dcs, 
                     sum(containers) as containers, 
                     sum(cta) as cta, 
@@ -945,14 +937,19 @@
                     SELECT 
                         count(distinct s.shippingid) as shipments, 
                         count(distinct d.dewarid) as dewars, 
+                        count(distinct th.dewartransporthistoryid) as history,
                         count(distinct c.containerid) as containers, 
                         count(distinct dc.datacollectionid) as dcs, 
                         count(distinct cta.couriertermsacceptedid) as cta, 
-                        YEAR(ses.startdate) as year, l.country, ses.beamlinename, vr.run, vr.runid, CONCAT(p.proposalcode, p.proposalnumber) as prop
+                        YEAR(s.bltimestamp) as year, 
+                        l.country, 
+                        ses.beamlinename, 
+                        CONCAT(p.proposalcode, p.proposalnumber) as prop
                     FROM dewar d
                     INNER JOIN shipping s ON s.shippingid = d.shippingid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
 
+                    LEFT OUTER JOIN dewartransporthistory th ON th.dewarid = d.dewarid
                     LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
 
                     INNER JOIN labcontact ct ON s.sendinglabcontactid = ct.labcontactid
@@ -963,17 +960,21 @@
                     LEFT OUTER JOIN blsample smp ON smp.containerid = c.containerid
                     LEFT OUTER JOIN datacollection dc ON dc.blsampleid = smp.blsampleid
 
-                    INNER JOIN blsession ses ON ses.sessionid = d.firstexperimentid
-                    INNER JOIN v_run vr ON ses.startdate BETWEEN vr.startdate AND vr.enddate
+                    LEFT OUTER JOIN blsession ses ON ses.sessionid = d.firstexperimentid
                     WHERE 1=1 $where 
-                    GROUP BY ses.startdate
+                    -- GROUP BY ses.startdate
+                    GROUP BY s.bltimestamp
                     $having
                     ) inq
                 $group
-                ORDER BY runid DESC, country", $args);
+                ORDER BY year DESC, country", $args);
 
             foreach ($dewars as &$d) {
+
                 $d['CODE'] = $this->dhl->get_code($d['COUNTRY']);
+                if ($d['COUNTRY'] && !$d['CODE']) print_r(array($d['COUNTRY']));
+
+                foreach(array('SHIPMENTS', 'DEWARS', 'HISTORY', 'DCS', 'CONTAINERS', 'CTA') as $k) $d[$k] = intval($d[$k]);
             }
 
 
