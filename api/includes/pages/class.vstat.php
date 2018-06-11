@@ -13,6 +13,7 @@
             'scheduled' => '\d',
             'bl' => '[\w-]+',
             'download' => '\d',
+            'data' => '\d',
         );
 
 
@@ -24,7 +25,20 @@
                               array('/overview', 'get', '_overview'),
                               array('/runs', 'get', '_runs'),
                               array('/histogram', 'get', '_parameter_histogram'),
+
+                              array('/dewars', 'get', '_dewars_breakdown'),
+
         );
+
+
+        function __construct() {
+            call_user_func_array(array('parent', '__construct'), func_get_args());
+
+            global $dhl_user, $dhl_pass, $dhl_env;
+            require_once('includes/class.dhl.php');
+            $this->dhl = new DHL($dhl_user, $dhl_pass, $dhl_env);
+        }
+
 
         
         function _visit_breakdown() {
@@ -834,6 +848,137 @@
             foreach($data as $d) {
                 print implode(',', $d)."\n";
             }
+        }
+
+
+
+        function _dewars_breakdown() {
+            global $bl_types;
+            $bls = implode("', '", $bl_types[$this->ty]);
+
+            $where = " AND p.proposalcode NOT IN ('cm') AND ses.beamlinename in ('$bls')";
+            $having = '';
+            $args = array();
+
+            if (!$this->user->has('all_prop_stats')) {
+                if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+                $where .= ' AND p.proposalid = :'.(sizeof($args)+1);
+                array_push($args, $this->proposalid);
+            }
+
+            if ($this->has_arg('data')) {
+                $having = 'HAVING count(dc.datacollectionid) > 0';
+            }
+
+            if ($this->has_arg('ty')) {
+                if ($this->arg('ty') == 'yearly') $where .= " AND TIMESTAMPDIFF('MONTH', s.startdate, CURRENT_TIMESTAMP) <= 12";
+                if ($this->arg('ty') == 'monthly') $where .= " AND TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) <= 28";
+                if ($this->arg('ty') == 'weekly') $where .= " AND TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) <= 7";
+            }
+
+            if ($this->has_arg('runid')) {
+                $where .= " AND vr.runid=:".(sizeof($args)+1);
+                array_push($args, $this->arg('runid'));
+            }
+
+            if ($this->has_arg('scheduled')) {
+                $where .= " AND ses.scheduled=1";
+            }
+
+            if ($this->has_arg('proposalcode')) {
+                $where .= " AND p.proposalcode=:".(sizeof($args)+1);
+                array_push($args, $this->arg('proposalcode'));
+            }
+
+            if ($this->has_arg('proposal')) {
+                $where .= " AND CONCAT(p.proposalcode,p.proposalnumber) LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('proposal'));
+            }
+
+            if ($this->has_arg('bl')) {
+                $where .= " AND ses.beamlinename=:".(sizeof($args)+1);
+                array_push($args, $this->arg('bl'));
+            }
+
+
+            $match = 'PROP';
+            $group = 'GROUP BY prop';
+            if ($this->has_arg('group_by')) {
+
+                if ($this->arg('group_by') == 'run') {
+                    $group = 'GROUP BY run';
+                    $match = 'RUN';
+                }
+
+                if ($this->arg('group_by') == 'year') {
+                    $group = 'GROUP BY year';
+                    $match = 'YEAR';
+                }
+
+                if ($this->arg('group_by') == 'beamline') {
+                    $group = 'GROUP BY beamlinename';
+                    $match = 'BEAMLINENAME';
+                }
+
+                if ($this->arg('group_by') == 'country') {
+                    $group = 'GROUP BY country';
+                    $match = 'COUNTRY';
+                }
+
+                if ($this->arg('group_by') == 'total') {
+                    $group = '';
+                    $match = 'TOTAL';
+                }
+
+            }
+
+
+            $dewars = $this->db->pq("
+                SELECT prop, beamlinename, 1 as total, run, runid, year,
+                    sum(shipments) as shipments, 
+                    sum(dewars) as dewars, 
+                    sum(dcs) as dcs, 
+                    sum(containers) as containers, 
+                    sum(cta) as cta, 
+                    country
+                FROM (
+                    SELECT 
+                        count(distinct s.shippingid) as shipments, 
+                        count(distinct d.dewarid) as dewars, 
+                        count(distinct c.containerid) as containers, 
+                        count(distinct dc.datacollectionid) as dcs, 
+                        count(distinct cta.couriertermsacceptedid) as cta, 
+                        YEAR(ses.startdate) as year, l.country, ses.beamlinename, vr.run, vr.runid, CONCAT(p.proposalcode, p.proposalnumber) as prop
+                    FROM dewar d
+                    INNER JOIN shipping s ON s.shippingid = d.shippingid
+                    INNER JOIN proposal p ON p.proposalid = s.proposalid
+
+                    LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
+
+                    INNER JOIN labcontact ct ON s.sendinglabcontactid = ct.labcontactid
+                    INNER JOIN person pe ON ct.personid = pe.personid 
+                    INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
+
+                    LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
+                    LEFT OUTER JOIN blsample smp ON smp.containerid = c.containerid
+                    LEFT OUTER JOIN datacollection dc ON dc.blsampleid = smp.blsampleid
+
+                    INNER JOIN blsession ses ON ses.sessionid = d.firstexperimentid
+                    INNER JOIN v_run vr ON ses.startdate BETWEEN vr.startdate AND vr.enddate
+                    WHERE 1=1 $where 
+                    GROUP BY ses.startdate
+                    $having
+                    ) inq
+                $group
+                ORDER BY runid DESC, country", $args);
+
+            foreach ($dewars as &$d) {
+                $d['CODE'] = $this->dhl->get_code($d['COUNTRY']);
+            }
+
+
+            $this->_output($dewars);
+
         }
 
     }
