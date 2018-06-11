@@ -25,12 +25,14 @@
         position: absolute;
         top: 5px;
         left: 5px;
+        z-index: 2;
     }
     
     .COMMENTS {
         bottom: 10px;
         left: 5px;
         position: absolute;
+        z-index: 2;
     }
     
     .controls {
@@ -38,6 +40,7 @@
         bottom: 15px;
         position: absolute;
         width: 150px;
+        z-index: 2;
     }
     
     .objects {
@@ -52,9 +55,11 @@
     
     .scorebybutton {
         display: none;
+        z-index: 2;
     }
 
     .help_pane {
+        z-index: 2;
 	    border-radius: 5px;
 	    display: none; 
 	    position: absolute;
@@ -106,6 +111,7 @@
 
 
 div.img_history {
+    z-index: 2;
     position: absolute;
     bottom: 40px;
     width: 98%; //calc(100%-10px);
