@@ -169,7 +169,10 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
     }
     var msg = json && (json.error || json.msg) ? (json.error ? json.error : json.msg) : error
 
-    if (xhr.readyState == 0) app.message({ title: 'Network Connection Unavailable', message: 'There seems to be a problem with your network connection' })
+    if (xhr.readyState == 0) {
+        app.alert({ message: 'A network request failed' })
+        
+    }
 
     if (xhr.status == 401) app.login(xhr)
     if (xhr.status == 500) app.alert({ message: 'An application error has occured <pre>'+msg+'</pre>', persist: 'e500' })
