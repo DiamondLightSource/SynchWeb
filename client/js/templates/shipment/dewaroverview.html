@@ -2,6 +2,7 @@
     <ul class="clearfix">
         <li title="View Dewar Overview" class="current"><a href="/dewars/overview">Dewar Overview</a></li>
         <% if (can('view_manifest')) { %><li title="View Shipment Manifest"><a href="/shipments/manifest">Shipping Manifest</a></li><% } %>
+        <% if (can('view_manifest')) { %><li title="Dewar Stats" class="current"><a href="/shipments/stats">Dewar Stats</a></li><% } %>
     </ul>
 </div>
 
