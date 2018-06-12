@@ -288,7 +288,7 @@
               !$this->has_arg('iid') &&
              (!$this->staff || !$this->has_arg('all'))) $this->_error('No container / inspection specified');
 
-            if ($this->has_arg('all') && $this->staff || in_array($_SERVER["REMOTE_ADDR"], $img)) {
+            if (($this->has_arg('all') && $this->staff) || in_array($_SERVER["REMOTE_ADDR"], $img)) {
                 $where = '1=1';
                 $args = array();
             } else {
