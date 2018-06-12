@@ -304,12 +304,9 @@
                 )
             );
 
-            $header['transformation'] = 'jms-map-json';
-            $mapMessage = new Map($body, $header);
-
             $client = new Stomp($activemq_server);
             $client->connect();
-            $client->send($activemq_rp_queue, $mapMessage, array('persistent' => 'true'));
+            $client->send($activemq_rp_queue, json_encode($body), array('persistent' => 'true'));
             $client->disconnect();
 
             $this->_output(new stdClass);
