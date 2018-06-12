@@ -41,6 +41,7 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages', 'backgrid-selec
       this.table.show(this.grid)
       if (!this.getOption('noTableHolder')) this.table.$el.addClass('table')
       if (this.getOption('pages')) this.pages.show(this.paginator)
+      else this.$el.find('.page_wrap').hide()
       if (this.filter) this.search.show(this.filter)
     },
     
