@@ -14,6 +14,7 @@
                               array('/logon(/:t)', 'get', '_logons'),
                               array('/bl(/:t)', 'get', '_beamline'),
                               array('/pl(/:t)', 'get', '_pipelines'),
+                              array('/pc', 'get', '_processing'),
         );
 
         var $def = 'online';
@@ -280,7 +281,7 @@
                                  
             $this->has_arg('download') ? $this->_write_csv($json, 'autoindexing_times') : $this->_output($json);
         }
-               
+    
                                  
         function _auto_integration() {
             global $ap_types, $bl_types;
@@ -315,9 +316,30 @@
              
             $this->has_arg('download') ? $this->_write_csv($json, 'autointegration_times') : $this->_output($json);
         }
+
+    
+        function _processing() {
+            global $bl_types;
+            $bls = implode('\', \'', $bl_types[$this->ty]);
+
+            $dcs = $this->db->pq("SELECT vr.run, COUNT(rp.processingjobid) as jobs, AVG(app.processingendtime - app.processingstarttime)/60 as time, 1 as ty
+                FROM ProcessingJob rp
+                INNER JOIN DataCollection dc ON dc.datacollectionid = rp.datacollectionid
+                INNER JOIN BLSession s ON s.sessionid = dc.sessionid
+                INNER JOIN v_run vr ON (s.startdate BETWEEN vr.startdate AND vr.enddate)
+                LEFT OUTER JOIN AutoProcProgram app ON app.processingjobid = rp.processingjobid
+                GROUP BY run
+            ");
+
+            $json = $this->_format_data($dcs, 'RUN', 'TY', array('JOBS', 'TIME'));
+            $json['xaxis'] = 'Run Number';
+            $json['yaxis'] = 'Average Process Time (seconds)';
+            $json['title'] = 'Reprocessing vs. Run Number';
                                  
-                                 
-                                 
+            $this->has_arg('download') ? $this->_write_csv($json, 'reprocessing_times') : $this->_output($json);
+        }
+            
+
         function _format_data($dcs, $tick_col, $type_col, $data_cols, $plot_types=array(), $averages = array()) {
             $ticks = array();
             foreach ($dcs as $d) {
