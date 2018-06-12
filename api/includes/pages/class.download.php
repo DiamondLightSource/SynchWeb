@@ -22,7 +22,8 @@
                               'ppl' => '\w+',
 
                               'filetype' => '\w+',
-                              'blsampleid' => '\d+'
+                              'blsampleid' => '\d+',
+                              'dcg' => '\d+'
                               );
 
     
@@ -497,7 +498,7 @@
         # Get dc attachmmnts
         function _get_attachments() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-            if (!$this->has_arg('id') && !$this->has_arg('blsampleid')) $this->_error('No data collection or sample specified');
+            if (!$this->has_arg('id') && !$this->has_arg('blsampleid') && !$this->has_arg('dcg')) $this->_error('No data collection or sample specified');
 
             $args = array($this->proposalid);
             $where = 'p.proposalid=:1';
@@ -505,6 +506,11 @@
             if ($this->has_arg('id')) {
                 $where .= ' AND dca.datacollectionid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('id'));
+            }
+
+            if ($this->has_arg('dcg')) {
+                $where .= ' AND dc.datacollectiongroupid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('dcg'));
             }
 
             if ($this->has_arg('aid')) {
