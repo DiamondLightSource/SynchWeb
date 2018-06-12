@@ -301,11 +301,11 @@
                 array_push($args, $this->arg('cid'));
             }
 
-            if (!$this->has_arg('allStates')) $where .= " AND i.state='Completed'";
-
             if ($this->has_arg('iid')) { 
                 $where .= ' AND i.containerinspectionid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('iid'));
+            } else {
+                if (!$this->has_arg('allStates')) $where .= " AND i.state='Completed'";
             }
 
             $tot = $this->db->pq("SELECT count(i.containerinspectionid) as tot FROM containerinspection i
