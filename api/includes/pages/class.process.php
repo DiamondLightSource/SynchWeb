@@ -309,7 +309,7 @@
 
             $client = new Stomp($activemq_server);
             $client->connect();
-            $client->send($activemq_rp_queue, $mapMessage);
+            $client->send($activemq_rp_queue, $mapMessage, array('persistent' => 'true'));
             $client->disconnect();
 
             $this->_output(new stdClass);
