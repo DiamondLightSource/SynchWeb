@@ -4,10 +4,11 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages', 'backgrid-selec
     Generic Table UI with Paginator
   */
   return Marionette.LayoutView.extend({
-    template: _.template('<div class="perp"></div><div class="srch clearfix"></div><div class="table bg"></div><div class="page_wrap"></div>'),
-    regions: { 'table': '.table', 'pages': '.page_wrap:last', search: '.srch', pp: '.perp' },
+    template: _.template('<div class="perp"></div><div class="srch clearfix"></div><div class="tbl bg"></div><div class="page_wrap"></div>'),
+    regions: { 'table': '.tbl', 'pages': '.page_wrap:last', search: '.srch', pp: '.perp' },
       
     pages: true,
+    noTableHolder: false,
       
     initialize: function(options) {
                     
@@ -38,6 +39,7 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages', 'backgrid-selec
     onRender: function() {
       console.log('render')
       this.table.show(this.grid)
+      if (!this.getOption('noTableHolder')) this.table.$el.addClass('table')
       if (this.getOption('pages')) this.pages.show(this.paginator)
       if (this.filter) this.search.show(this.filter)
     },
