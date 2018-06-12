@@ -3,9 +3,11 @@ define(['marionette',
     'modules/dc/views/rdplot',
     'modules/dc/views/aiplots',
     'views/log',
+    'views/table',
+    'utils/table',
     'utils',
     'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, AutoIntegrations, 
-        RDPlotView, AIPlotsView, LogView, 
+        RDPlotView, AIPlotsView, LogView, TableView, table,
         utils, template) {
        
     var EmptyAP = Marionette.ItemView.extend({ template: '<p>No auto processing available for this data collection</p>', tagName: 'p' })
@@ -59,12 +61,26 @@ define(['marionette',
             }
         },
     })
-        
+
+    var SelectTabRow = Backgrid.Row.extend({
+        events: {
+            'click': 'selectTab',
+        },
+
+        selectTab: function(e) {
+            e.preventDefault()
+
+            console.log('click row' ,this.model.get('AID'), this.$el.closest('.sw'))
+            this.$el.closest('.summary').siblings('.sw').find('a[href="#tabs-'+this.model.get('AID')+'"]').trigger('click');
+        }
+    })
+
         
     return Marionette.LayoutView.extend({
-        template: _.template('<div class="sw"></div><div class="res"></div>'),
+        template: _.template('<div class="ui-tabs summary"></div><div class="sw"></div><div class="res"></div>'),
         regions: {
             wrap: '.sw',
+            summary: '.summary',
         },
         
         initialize: function(options) {
@@ -79,6 +95,27 @@ define(['marionette',
         onRender: function() {
             this.update()
             this.listenTo(this.collection, 'sync', this.update, this)
+
+            this.summary.show(new TableView({
+                className: 'ui-tabs-panel ui-widget-content',
+                tableClass: 'reflow procsummary',
+                noTableHolder: true,
+                collection: this.collection,
+                columns: [
+                    { name: 'TYPE', label: 'Type', cell: 'string', editable: false },
+                    { label: 'Resolution', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.overall.RLOW%> - <%-SHELLS.overall.RHIGH%>' },
+                    { name: 'SG', label: 'Spacegroup', cell: 'string', editable: false },
+                    { label: 'Mn<I/sig(i)>', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.overall.ISIGI%>' },
+                    { label: 'Rmerge Inner', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.innerShell.RMERGE%>' },
+                    { label: 'Rmerge Outer', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.outerShell.RMERGE%>' },
+                    { label: 'Completeness', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.overall.COMPLETENESS%>' },
+                    { label: 'Cell', cell: table.TemplateCell, editable: false, template: '<%-CELL.CELL_A%> <%-CELL.CELL_B%> <%-CELL.CELL_C%> <%-CELL.CELL_AL%> <%-CELL.CELL_BE%> <%-CELL.CELL_GA%>' },
+                ],
+                pages: false,
+                backgrid: {
+                    row: SelectTabRow
+                },
+            }))
         },
 
         update: function() {
