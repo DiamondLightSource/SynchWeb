@@ -523,7 +523,7 @@ define(['marionette',
 
             this.containerregistry = new ContainerRegistry(null, { state: { pageSize: 9999 }})
             this.containerregistry.fetch().done(function() {
-                self.ui.registry.html('<option value=""> - </option>'+self.containerregistry.opts())
+                self.ui.registry.html('<option value="!">Please select one</option>'+self.containerregistry.opts({ empty: true }))
             })
         },
 
