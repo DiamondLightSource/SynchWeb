@@ -10,6 +10,13 @@ define(['marionette',
     function(Marionette, DewarOverview, Runs, TableView, table, utils, Highcharts, world, template) {
     
 
+    var SortedDewars = DewarOverview.extend({
+        comparator: function(m) {
+            return -m.get('DEWARS')
+        }
+    })
+
+
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
@@ -66,7 +73,7 @@ define(['marionette',
 
         initialize: function() {
             this.run = new DewarOverview(null, { queryParams: { group_by: 'year' } })
-            this.countries = new DewarOverview(null, { queryParams: { group_by: 'country' } })
+            this.countries = new SortedDewars(null, { queryParams: { group_by: 'country' } })
             this.countries.state.pageSize = 25
 
             this.listenTo(this.run, 'request', this.addSpinnerRun)
