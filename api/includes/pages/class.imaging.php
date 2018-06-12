@@ -282,11 +282,13 @@
 
         # Get list of inspections for a container
         function _get_inspections() {
+            global $img;
+
             if (!$this->has_arg('cid') &&
               !$this->has_arg('iid') &&
              (!$this->staff || !$this->has_arg('all'))) $this->_error('No container / inspection specified');
 
-            if ($this->has_arg('all') && $this->staff) {
+            if ($this->has_arg('all') && $this->staff || in_array($_SERVER["REMOTE_ADDR"], $img)) {
                 $where = '1=1';
                 $args = array();
             } else {
