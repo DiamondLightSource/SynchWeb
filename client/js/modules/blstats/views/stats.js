@@ -4,6 +4,7 @@ define(['marionette',
     'modules/blstats/views/logon',
     'modules/blstats/views/beamline',
     'modules/blstats/views/autoproc',
+    'modules/blstats/views/processing',
     'modules/blstats/views/robot',
     'modules/blstats/views/pdbs',
 
@@ -13,6 +14,7 @@ define(['marionette',
         LogonView,
         BeamlineView,
         AutoProcView,
+        ProcessingView,
         RobotView,
         PDBView){
     
@@ -32,6 +34,7 @@ define(['marionette',
                     { id: 'bl', name: 'Beamline Stats' },
                     { id: 'pl', name: 'Pipeline Stats' },
                     { id: 'pdb', name: 'PDB Stats' },
+                    { id: 'pc', name: 'Reprocessing Stats' },
                 ],
                 value: this.getOption('type') || 'lgon',
                 urlFragment: 'statistics',
@@ -42,6 +45,7 @@ define(['marionette',
         },
         
         switchType: function(type) {
+            console.log('swtuch', type)
             var types = {
                 lgon: LogonView,
                 online: OnlineView,
@@ -49,6 +53,7 @@ define(['marionette',
                 pl: AutoProcView,
                 robot: RobotView,
                 pdb: PDBView,
+                pc: ProcessingView,
             }
             
             if (!types[type]) return
