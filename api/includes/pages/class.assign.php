@@ -59,7 +59,7 @@
             if (sizeof($cs) > 0) {
                 $c = $cs[0];
                                
-                $this->db->pq("UPDATE container SET samplechangerlocation='',containerstatus='at DLS' WHERE containerid=:1",array($c['CONTAINERID']));
+                $this->db->pq("UPDATE container SET samplechangerlocation='',beamlinelocation='',containerstatus='at DLS' WHERE containerid=:1",array($c['CONTAINERID']));
                 $this->db->pq("INSERT INTO containerhistory (containerid,status,beamlinename) VALUES (:1,:2,:3)", array($c['CONTAINERID'], 'at DLS', $c['BEAMLINENAME']));                
                 //$this->_update_history($c['DEWARID'], 'unprocessing');
                                 
@@ -94,7 +94,7 @@
                                 
                 $conts = $this->db->pq("SELECT containerid as id FROM container WHERE dewarid=:1", array($this->arg('did')));
                 foreach ($conts as $c) {
-                    $this->db->pq("UPDATE container SET containerstatus='at DLS' WHERE containerid=:1", array($c['ID']));
+                    $this->db->pq("UPDATE container SET containerstatus='at DLS', samplechangerlocation='', beamlinelocation='' WHERE containerid=:1", array($c['ID']));
                     $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['ID'], 'at DLS'));
                 }
                 $this->_output(1);
