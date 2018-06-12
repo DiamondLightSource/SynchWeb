@@ -108,9 +108,14 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
 
     attachments: function(e) {
         e.preventDefault()
+
+        var d = []
+        if (this.model.get('DCC') > 1) d.dcg = this.model.get('DCG')
+        else d.id = this.model.get('ID')
+
         app.dialog.show(new DialogView({ 
             title: 'Attachments', 
-            view: new AttachmentsView({ id: this.model.get('ID') })
+            view: new AttachmentsView(d)
         }))
     },
 

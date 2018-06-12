@@ -34,6 +34,7 @@ define(['marionette', 'views/table', 'collections/attachments', 'utils'], functi
             this.listenTo(this.attachments, 'change:clicked', this.closeDialog)
 
             this.attachments.queryParams.id = this.getOption('id')
+            this.attachments.queryParams.dcg = this.getOption('dcg')
             this.attachments.fetch()
 
             var columns = [
