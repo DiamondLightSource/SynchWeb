@@ -104,6 +104,8 @@
     $jpeg_location = '<%=VISITDIR%>/jpegs/<%=DIR%>/<%=FILE%>.jpeg';
     $jpeg_thumb_location = '<%=VISITDIR%>/jpegs/<%=DIR%>/<%=FILE%>.thumb.jpeg';
 
+    # Server log location
+    $server_log = '/dls_sw/<%=BEAMLINENAME%>/logs/gda-server.log';
 
     # Email addresses, comma separate for multiple recepients
     # - Email templates in assets/emails in plain and html/ format

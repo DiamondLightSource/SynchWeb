@@ -1,5 +1,7 @@
 <?php
     
+    require_once(dirname(__FILE__).'/../class.templateparser.php');
+    
     class Status extends Page {
         
         public static $arg_list = array('bl' => '[\w-]+',
@@ -126,6 +128,7 @@
         # Return last n lines of gda log file
         function _get_server_log() {
             session_write_close();
+            global $server_log;
             
             $pp = 100;
             
@@ -134,7 +137,10 @@
             
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             
-            $file = fopen('/dls_sw/'.$this->arg('bl').'/logs/gda-server.log', 'r');
+            $tmp = new TemplateParser($this->db);
+            $filename = $tmp->interpolate($server_log, array('BEAMLINENAME' => $this->arg('bl')));
+
+            $file = fopen($filename, 'r');
             fseek($file, -1, SEEK_END);
 
             for ($line = 0, $lines = array(); $line < $num_lines && false !== ($char = fgetc($file));) {
