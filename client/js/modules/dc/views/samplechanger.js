@@ -12,14 +12,14 @@ define(['marionette', 'utils/canvas', 'utils',
         events: {
             'click .handle': 'toggle',
             'click @ui.clear': 'clearFilter',
-            'mousemove canvas': 'mouseMoveCanvas',
-            'click canvas': 'clickCanvas',
+            'mousemove canvas.sample_changer': 'mouseMoveCanvas',
+            'click canvas.sample_changer': 'clickCanvas',
             'click @ui.gbc': 'drawStatus',
         },
         
         ui: {
             clear: '.clearf',
-            canvas: 'canvas',
+            canvas: 'canvas.sample_changer',
             param: 'select[name=param]',
             rank: 'input[name=rank]',
             wrap: '.wrap',
