@@ -666,7 +666,7 @@
               array($dew['DEWARID'], $this->arg('LOCATION')));
 
             require_once('includes/class.email.php');
-            $email = new Email('dewar-dispatch', '*** Dewar ready for Shipping from Diamond ***');
+            $email = new Email('dewar-dispatch', '*** Dewar ready for Shipping from Diamond - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***');
 
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
 
