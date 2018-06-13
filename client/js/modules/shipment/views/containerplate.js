@@ -189,11 +189,14 @@ define(['marionette',
             gap: 'input[name=gap]',
 
             ity: 'select[name=INSPECTIONTYPEID]',
-            status: 'span.sta',
+            status: 'div.sta',
             ret: 'div.return',
             adh: 'div.adhoc',
             que: 'div.queue',
             ss: 'input[name=sample_status]',
+
+            param: 'select[name=param]',
+            rank: 'input[name=rank]',
         },
 
         events: {
@@ -212,6 +215,9 @@ define(['marionette',
             'click a.adhoc': 'requestAdhoc',
             'click a.return': 'requestReturn',
             'change @ui.ss': 'toggleSampleStatus',
+
+            'click @ui.rank': 'setRankStatus',
+            'change @ui.param': 'setRankStatus',
         },
 
         modelEvents: {
@@ -221,6 +227,16 @@ define(['marionette',
 
         toggleSampleStatus: function(e) {
             this.plateView.setShowSampleStatus(this.ui.ss.is(':checked'))
+        },
+
+        setRankStatus: function(e) {
+            var opt = this.ui.param.find('option:selected')
+            this.plateView.setRankStatus(this.ui.rank.is(':checked') ? {
+                    value: opt.attr('value'),
+                    min: opt.data('min'),
+                    check: opt.data('check'),
+                    inverted: opt.data('inverted'),
+                } : null)
         },
 
         updateAdhoc: function() {
@@ -417,7 +433,7 @@ define(['marionette',
                     self.plateView.drawPlate()
 
                     if (n+1 == self.inspectionimages.length) self.ui.status.html('')
-                    else self.ui.status.html('| Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
+                    else self.ui.status.html('Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
 
                     self.cachethread = setTimeout(function() {
                         self.preCache(++n)
@@ -625,6 +641,7 @@ define(['marionette',
                         { name: 'Y', label: 'Y', cell: 'string', editable: false },
                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
                         { label: '', cell: table.StatusCell, editable: false },
+                        { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: false },
                         { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
                 ]
 

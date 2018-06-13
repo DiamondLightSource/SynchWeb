@@ -12,7 +12,17 @@
     <div class="left">
         <div class="plate"></div>
         <div class="ra">
-            <span class="label">Show Data Status</span> <input type="checkbox" name="sample_status" /> <span class="sta small"></span> 
+            <span class="label">Show Data Status</span> <input type="checkbox" name="sample_status" />
+            <label>
+                Rank By
+                <input type="checkbox" name="rank" />
+            </label>:
+            <select name="param">
+                <option value="DCRESOLUTION" data-inverted="1" data-check="DC">AP Resolution</option>
+                <option value="DCCOMPLETENESS" data-check="DC" data-min="0.85">AP Completeness</option>
+            </select>
+
+            <div class="sta small"></div> 
         </div>
         <div class="form">
             <ul>
