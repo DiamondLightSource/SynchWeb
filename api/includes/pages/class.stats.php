@@ -302,7 +302,7 @@
                     INNER JOIN datacollection dc ON dc.datacollectionid = ap.datacollectionid
                     INNER JOIN blsession ses ON dc.sessionid = ses.sessionid
                     INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
-                    WHERE TIMESTAMPDIFF('SECOND', dc.endtime, ap.recordtimestamp) < 3500
+                    WHERE TIMESTAMPDIFF('SECOND', dc.endtime, ap.recordtimestamp) < 3500 AND TIMESTAMPDIFF('SECOND', dc.endtime, ap.recordtimestamp) > 0
                     AND ses.beamlinename in ('$bls')
                 ) inq
                 GROUP BY type, run
