@@ -343,6 +343,11 @@ define(['marionette', 'views/dialog',
                     RECIPE: self.ui.met.val(),
                 })
 
+                if (s.length > 1 && self.ui.met.val() == 'fast_dp') {
+                    app.alert({ message: 'Fast DP can only integrate a single sweep' })
+                    return
+                }
+
                 var reqs = []
                 reqs.push(reprocessing.save({}, {
                     success: function() {
