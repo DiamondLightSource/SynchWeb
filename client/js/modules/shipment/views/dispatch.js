@@ -130,7 +130,7 @@ define(['marionette', 'views/form',
         },
         
         updateContacts: function() {
-            this.ui.lc.html(this.contacts.opts()).val(this.model.get('LABCONTACTID'))
+            this.ui.lc.html(this.contacts.opts()).val(this.getOption('dewar').get('RETURNLABCONTACTID'))
             this.getlcdetails()
         },
         
