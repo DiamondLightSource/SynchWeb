@@ -395,6 +395,13 @@
                 $email->send($dew['LCRETEMAIL']);
             }
 
+            if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
+                require_once('includes/class.email.php');
+                $email = new Email('storage-rack', '*** Visit finished, dewar awaiting instructions ***');
+                $email->data = $dew;
+                $email->send($dew['LCRETEMAIL']);
+            }
+
             $this->_output(array('DEWARHISTORYID' => $dhid));
         }
 

@@ -1,0 +1,25 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">Dewar awaiting instructions</h1>
+
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+			<h2>Dear <?php echo $data['LCRET'] ?></h2>
+			<p>Your dewar, <?php echo $data['FACILITYCODE'] ?>, has arrived back at the storage area, awaiting your instructions.</p>
+			<p>Please either fill out the dewar dispatch form if you would like your dewar to be returned to you:<br /><a href="https://ispyb.diamond.ac.uk/dewars/dispatch/<?php echo $data['DEWARID'] ?>">https://ispyb.diamond.ac.uk/dewars/dispatch/<?php echo $data['DEWARID'] ?></a></p>
+			<p>Or fill out the dewar transfer form if you would like it to be transferred to another beamline for another visit:<br /><a href="https://ispyb.diamond.ac.uk/dewars/transfer/<?php echo $data['DEWARID'] ?>">https://ispyb.diamond.ac.uk/dewars/transfer/<?php echo $data['DEWARID'] ?></a></p>
+			<p>Your dewar will be topped up with liquid nitrogen in the meantime.</p>
+		</div>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Shipping Name</td>
+					<td><?php echo $data['SHIPPINGNAME'] ?></td>
+				</tr>
+				<?php if ($data['FACILITYCODE']): ?>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Dewar Code</td>
+					<td><?php echo $data['FACILITYCODE'] ?></td>
+				</tr>
+				<?php endif; ?>
+			</tbody>
+		</table>
