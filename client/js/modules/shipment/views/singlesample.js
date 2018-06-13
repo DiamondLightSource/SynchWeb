@@ -87,10 +87,14 @@ define(['marionette',
             e.preventDefault()
         },
         
-        clear: function(test) {
+        clearAll: function(e) {
+            this.clear([], true)
+        },
+
+        clear: function(test, all) {
             var pt = this.getOption('platetypes').findWhere({ isSelected: true })
             
-            var start = this.getOption('samples').findWhere({ isSelected: true })
+            var start = all ? this.getOption('samples').at(0) : this.getOption('samples').findWhere({ isSelected: true })
             var sp = pt.getRowColDrop(start.get('LOCATION'))
             if (start.get('PROTEINID') == -1) return
                 
@@ -112,16 +116,21 @@ define(['marionette',
 
             this.getOption('samples').each(function(s,i) {
                 if (i > start.get('LOCATION')-1) {
-                    var p = pt.getRowColDrop(s.get('LOCATION'))
-                    
-                    var match = true
-                    _.each(test, function(t) {
-                        if (p[t] != sp[t]) match = false
-                    })
-                    
-                    if (match) {
+                    if (all) {
                         s.set(_.extend({}, fields, {PROTEINID: -2}), { silent: true })
                         s.get('components').reset()
+
+                    } else {
+                        var p = pt.getRowColDrop(s.get('LOCATION'))
+                        var match = true
+                        _.each(test, function(t) {
+                            if (p[t] != sp[t]) match = false
+                        })
+                        
+                        if (match) {
+                            s.set(_.extend({}, fields, {PROTEINID: -2}), { silent: true })
+                            s.get('components').reset()
+                        }
                     }
                 }
             }, this)
