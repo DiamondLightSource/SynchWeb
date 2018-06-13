@@ -205,7 +205,7 @@
                             
                             $vis = array();
                             foreach ($viss as $v) array_push($vis, $v['VIS']);
-                            $this->proposalid = $viss[0]['PROPOSALID'];
+                            if (sizeof($viss)) $this->proposalid = $viss[0]['PROPOSALID'];
                         }
                         
                         if ($this->has_arg('id') || $this->has_arg('visit')) {
