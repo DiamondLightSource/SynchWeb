@@ -10,8 +10,7 @@ define(['marionette',
         RDPlotView, AIPlotsView, LogView, TableView, table,
         utils, template) {
        
-    var EmptyAP = Marionette.ItemView.extend({ template: '<p>No auto processing available for this data collection</p>', tagName: 'p' })
-    
+
     var AutoIntegrationItem = Marionette.ItemView.extend({
         template: template,
         modelEvents: { 'change': 'render' },
@@ -113,7 +112,8 @@ define(['marionette',
                 ],
                 pages: false,
                 backgrid: {
-                    row: SelectTabRow
+                    row: SelectTabRow,
+                    emptyText: 'No auto processing available for this data collection',
                 },
             }))
         },
@@ -126,9 +126,6 @@ define(['marionette',
                     id: this.getOption('id'),
                     el: this.$el.find('.res'),
                 }))
-            } else {
-                this.$el.addClass('ui-tabs')
-                this.wrap.show(new EmptyAP())
             }
 
             this.$el.slideDown()
