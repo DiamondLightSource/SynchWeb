@@ -167,7 +167,7 @@
         function _diffraction_viewer() {
             $n = $this->has_arg('n') ? $this->arg('n') : 1;
             
-            list($info) = $this->db->pq('SELECT imagedirectory as loc, filetemplate as ft, numberofimages as num 
+            list($info) = $this->db->pq('SELECT imagedirectory as loc, filetemplate as ft, numberofimages as num, imagesuffix as type 
                 FROM datacollection 
                 WHERE datacollectionid=:1', array($this->arg('id')));
             
@@ -179,11 +179,11 @@
             $out = '/tmp/'.$this->arg('id').'_'.$n.'.jpg';
             
             if (!file_exists($out)) {
-                
+
                 exec('./scripts/cbf2jpg.sh '.$info['LOC'].' '.$info['FT'].' '.$n.' '.$out);
-                #error_log('./cbf2jpg.sh '.$info['LOC'].' '.$info['FT'].' '.$n.' '.$out);
-                #$img = imagecreatefromjpeg($out);
-                #imagejpeg($img,$out,80);
+
+                // if ($info['TYPE'] == 'nxs') exec('./scripts/nxs2jpg.sh '.$info['LOC'].' '.$info['FT'].' '.$n.' '.$out);
+                // else if ($info['TYPE'] == 'cbf') exec('./scripts/cbf2jpg.sh '.$info['LOC'].' '.$info['FT'].' '.$n.' '.$out);
             }
             
             if (file_exists($out)) {
