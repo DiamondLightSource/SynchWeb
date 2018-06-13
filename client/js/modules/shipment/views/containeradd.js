@@ -282,7 +282,8 @@ define(['marionette',
                 this.ui.pc.show()
                 this.$el.find('li.pck').hide()
                 this.$el.find('li.plate').hide()                
-                this.$el.find('li.pcr').show()                
+                this.$el.find('li.pcr').show()
+                this.ui.registry.val('')               
 
             } else {
                 if (!app.mobile()) this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
@@ -298,6 +299,7 @@ define(['marionette',
                 this.$el.find('li.pck').hide()
                 this.$el.find('li.pcr').hide()
                 this.$el.find('li.plate').show()
+                this.ui.registry.val('')
             }
             console.log('samples', this.samples)
         },
@@ -327,11 +329,14 @@ define(['marionette',
         },
         
         clearPlate: function(e) {
+            if (e) e.preventDefault()
             this.ui.barcode.val('')
             this.ui.imager.val('')
             this.ui.schedule.val('')
             this.ui.screen.val('')
-            if (this.singlesample) this.singlesample.clearPlate()
+            if (this.singlesample) this.singlesample.clearAll()
+            var s = this.samples.at(0)
+            if (s) s.set({ isSelected: true })
         },
         
         clearPuck: function(e) {
