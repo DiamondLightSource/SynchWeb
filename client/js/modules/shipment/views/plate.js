@@ -4,6 +4,8 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
         template: false,
         tagName: 'canvas',
         className: 'plate',
+
+        rankOption: null,
         
         collectionEvents: {
             'change reset': 'drawPlate',
@@ -58,6 +60,11 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
         setShowSampleStatus: function(status) {
             this.showSampleStatus = status
             this.showImageStatus = !status
+            this.drawPlate()
+        },
+
+        setRankStatus: function(rank) {
+            this.rankOption = rank
             this.drawPlate()
         },
         
@@ -129,6 +136,13 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
             console.log('draw plate')
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
           
+            if (this.rankOption) {
+                var vals = this.collection.map(function(m) { 
+                    if (m.get(this.rankOption.value)) return m.get(this.rankOption.value) 
+                }, this)
+                var paramdist = [_.min(vals), _.max(vals)]
+            }
+
             // Plate labels
             for (var x = 0; x < this.pt.get('well_per_row'); x++) {
                 this.ctx.fillStyle = '#000000'
@@ -213,22 +227,40 @@ define(['marionette', 'utils', 'backbone-validation'], function(Marionette, util
                         
                         // Show status
                         if (sample && this.showSampleStatus) {
-                            var colors = {
-                                GR: '#fdfd96',
-                                SC: '#fdfd96',
-                                AI: '#ffb347',
-                                DC: '#87ceeb',
-                                AP: '#77dd77',
-                            }
-                            
-                            var hasStatus = false
-                            _.each(colors, function(v,t) {
-                                if (sample.get(t) > 0) {
-                                    this.ctx.fillStyle = v
-                                    hasStatus = true
+                            if (this.rankOption) {
+                                var val = (sample.get(this.rankOption.value)-paramdist[0])/(paramdist[1]-paramdist[0])
+                      
+                                if (this.rankOption.min) {
+                                    if (paramdist[0] > this.rankOption.min) paramdist[0] = this.rankOption.min
                                 }
-                            }, this)
-                            if (hasStatus) this.ctx.fill()
+                      
+                                if (!this.rankOption.inverted) {
+                                    val = 1 - val
+                                }
+                            
+                                this.ctx.fillStyle = sample.get(this.rankOption.value)
+                                    ? utils.rainbow(val/4) 
+                                    : (sample.get(this.rankOption.check) > 0 ? 'yellow' : '#dfdfdf')
+                                this.ctx.fill()
+
+                            } else {
+                                var colors = {
+                                    GR: '#fdfd96',
+                                    SC: '#fdfd96',
+                                    AI: '#ffb347',
+                                    DC: '#87ceeb',
+                                    AP: '#77dd77',
+                                }
+                                
+                                var hasStatus = false
+                                _.each(colors, function(v,t) {
+                                    if (sample.get(t) > 0) {
+                                        this.ctx.fillStyle = v
+                                        hasStatus = true
+                                    }
+                                }, this)
+                                if (hasStatus) this.ctx.fill()
+                            }
                         }
 
                         // Show image score
