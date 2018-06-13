@@ -170,7 +170,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
     var msg = json && (json.error || json.msg) ? (json.error ? json.error : json.msg) : error
 
     if (xhr.readyState == 0) {
-        app.alert({ message: 'A network request failed' })
+        app.alert({ message: 'A network request failed', persist: 'network' })
         
     }
 
