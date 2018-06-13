@@ -589,9 +589,12 @@ ol.rounded {
                 
             }
 
+            .ui-widget-content {
+                border-top: none;
+            }
+
             .ui-tabs.summary {
                 border: 1px solid #aaaaaa;
-                border-bottom: none;
             }
         }
         
