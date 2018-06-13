@@ -892,6 +892,23 @@ define(['marionette',
             var y = parseInt(options.o.get('Y'))
             this.ctx.strokeStyle = options.o.get('isSelected') ? 'turquoise' : 'red'
 
+            var colors = {
+                GR: '#fdfd96',
+                SC: '#fdfd96',
+                AI: '#ffb347',
+                DC: '#87ceeb',
+                AP: '#77dd77',
+            }
+            
+            var hasStatus = false
+            _.each(colors, function(v,t) {
+                if (options.o.get(t) > 0) {
+                    c = v
+                    hasStatus = true
+                }
+            }, this)
+            if (hasStatus) this.ctx.strokeStyle = c
+
             if (options.o.get('X2') && options.o.get('Y2')) {
                 var x2 = parseInt(options.o.get('X2'))
                 var y2 = parseInt(options.o.get('Y2'))
