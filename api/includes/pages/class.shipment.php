@@ -106,6 +106,7 @@
                               'PRODUCTCODE' => '\w',
 
                               'manifest' => '\d',
+                              'currentuser' => '\d',
 
                               );
         
@@ -1176,6 +1177,11 @@
             if ($this->has_arg('CONTAINERREGISTRYID')) {
                 $where .= ' AND c.containerregistryid = :'.(sizeof($args)+1);
                 array_push($args, $this->arg('CONTAINERREGISTRYID'));
+            }
+
+            if ($this->has_arg('currentuser')) {
+                $where .= ' AND c.ownerid = :'.(sizeof($args)+1);
+                array_push($args, $this->user->personid);
             }
                 
             $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
