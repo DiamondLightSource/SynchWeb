@@ -29,6 +29,7 @@
                               // Dewar Fields
                               'CODE' => '([\w-])+',
                               'FACILITYCODE' => '([\w-])+',
+                              'NEWFACILITYCODE' => '([\w-])+',
                               'TRACKINGNUMBERTOSYNCHROTRON' => '\w+',
                               'TRACKINGNUMBERFROMSYNCHROTRON' => '\w+',
                               'FIRSTEXPERIMENTID' => '\d+',
@@ -492,6 +493,7 @@
             else $dew = $dew[0];
 
             $fields = array('LABCONTACTID', 'PURCHASEDATE');
+            if ($this->staff) array_push($fields, 'NEWFACILITYCODE');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
                     $fl = ':1';
@@ -499,9 +501,14 @@
                         $fl = "TO_DATE(:1, 'DD-MM-YYYY')"; 
                     }
 
-                    $this->db->pq("UPDATE dewarregistry SET $f=$fl WHERE facilitycode=:2", array($this->arg($f), $this->arg('FACILITYCODE')));
-                    $this->_output(array($f => $this->arg($f)));
-                    //$this->_dewar_registry();
+                    if ($f == 'NEWFACILITYCODE') {
+                        $this->db->pq("UPDATE dewarregistry SET FACILITYCODE=$fl WHERE facilitycode=:2", array($this->arg($f), $this->arg('FACILITYCODE')));
+                        $this->_output(array('FACILITYCODE' => $this->arg($f)));
+
+                    } else {
+                        $this->db->pq("UPDATE dewarregistry SET $f=$fl WHERE facilitycode=:2", array($this->arg($f), $this->arg('FACILITYCODE')));
+                        $this->_output(array($f => $this->arg($f)));
+                    }
                 }
             }
         }
