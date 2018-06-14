@@ -45,9 +45,17 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Containers</h1><div class="filter type"></div><div class="wrapper"></div></div>',
+        template: '<div><h1>Containers</h1><div class="filter type"></div><div class="filter"><ul><li><label><input type="checkbox" name="currentuser" /> My Containers</label></li></ul></div><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper', type: '.type' },
         
+        ui: {
+            cur: 'input[name=currentuser]',
+        },
+
+        events: {
+            'change @ui.cur': 'refresh'
+        },
+
         hiddenColumns: [1,2,5,6,9,10,11],
 
         columns: [
@@ -78,6 +86,15 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
         ],
 
         showImaging: true,
+
+        refresh: function() {
+            this.collection.fetch()
+        },
+
+        getCurrent: function() {
+            console.log('current' ,this.ui.cur.is(':checked'))
+            return this.ui.cur && this.ui.cur.is(':checked') ? 1 : null
+        },
 
         initialize: function(options) {
             var filters = this.getOption('filters').slice(0)
@@ -133,6 +150,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
             this.wrap.show(this.table)
             if (this.getOption('showFilter')) this.type.show(this.ty)
 
+            this.collection.queryParams.currentuser = this.getCurrent.bind(this)
             this.updateCols(this.ty.selected())
         }
     })
