@@ -380,6 +380,42 @@ define(['marionette',
             }
         }
     })
+
+
+    var SnapshotCell = Backgrid.Cell.extend({
+        image: null,
+        className: 'cleafix',
+
+        selectImage: function() {
+            this.image = this.column.get('inspectionimages').findWhere({ BLSAMPLEID: this.model.get('BLSAMPLEID') })
+            console.log('selectimage', this.image)
+            if (this.image) this.viewer.setModel(this.image)
+        },
+
+        render: function() {
+            var clone = this.model.clone()
+            clone.set({ isSelected: true })
+
+            this.viewer = new ImageViewer({ 
+                subsamples: new SubSamples([clone]), 
+                scores: false, showBeam: false, move: false, showHeatmap: false 
+            })
+            this.$el.html(this.viewer.render().$el)
+
+            this.afterRender()
+
+            return this
+        },
+
+        afterRender: function() {
+            this.viewer.$el.width(300)
+            this.viewer.onDomRefresh()
+            this.listenTo(this.column.get('inspectionimages'), 'sync', this.selectImage)
+            this.selectImage()
+        }
+    })
+
+
         
     return Marionette.LayoutView.extend({
         className: 'content',
@@ -656,6 +692,7 @@ define(['marionette',
                            { label: 'Parameters', cell: ExperimentCell, editable: false, beamlinesetups: this.beamlinesetups },
                            { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
                            { name: '', cell: table.StatusCell, editable: false },
+                           { label: '', cell: SnapshotCell, editable: false, inspectionimages: this.inspectionimages },
                            { label: '', cell: ActionsCell, editable: false, plans: this.plans },
             ]
 
@@ -682,7 +719,10 @@ define(['marionette',
                 columns: columns, 
                 tableClass: 'subsamples', 
                 loading: false,
-                backgrid: { row: ClickableRow, emptyText: 'No sub samples found' },
+                backgrid: { 
+                    // row: ClickableRow, 
+                    emptyText: 'No sub samples found' 
+                },
             })
 
             this.qsmps.show(this.table2)
