@@ -555,7 +555,7 @@ define(['marionette',
             this.plans.fetch()
             this.listenTo(this.plans, 'add remove sync', this.populatePresets, this)
 
-            this.listenTo(app, 'window:scroll', this.onScroll, this)
+            // this.listenTo(app, 'window:scroll', this.onScroll, this)
 
             this.beamlinesetups = new BeamlineSetups()
             this.beamlinesetups.queryParams.ACTIVE = 1
