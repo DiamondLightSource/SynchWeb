@@ -411,20 +411,19 @@ define(['marionette',
         queueAllSamples: function() {
             var reqs = []
             this.subsamples.each(function(s,i) {
-                setTimeout(function() {
-                    reqs.push(Backbone.ajax({
-                        url: app.apiurl+'/sample/sub/queue/'+s.get('BLSUBSAMPLEID'),
-                        success: function(resp) {
-                            s.set('READYFORQUEUE', '1')
-                        },
-                    }))
-                }, 200)
+                reqs.push(Backbone.ajax({
+                    url: app.apiurl+'/sample/sub/queue/'+s.get('BLSUBSAMPLEID'),
+                    success: function(resp) {
+                        s.set({ READYFORQUEUE: 1 }, { silent: true })
+                    },
+                }))
             }, this)
 
             var self = this
             $.when.apply($, reqs).done(function() {
                 setTimeout(function() {
                     self.subsamples.fetch()
+                    self.refreshQSubSamples()
                 }, 200)
             })
         },
