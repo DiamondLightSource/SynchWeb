@@ -56,6 +56,7 @@ define(['marionette',
         template: template,
         className: 'image_large',
         showBeam: false,
+        showHeatmap: true,
         
         regions: {
             hist: '.hist',
@@ -313,10 +314,12 @@ define(['marionette',
 
             this.rendered = true
 
-            this.heatmap = new HeatMap.create({ 
-                container: this.$el[0],
-                maxOpacity: .4,
-            })
+            if (this.getOption('showHeatmap')) {
+                this.heatmap = new HeatMap.create({ 
+                    container: this.$el[0],
+                    maxOpacity: .4,
+                })
+            }
         },
         
         onRender: function() {
@@ -526,10 +529,12 @@ define(['marionette',
             else if (this.drawingRegion) this.drawNewRegion()
             else this.drawLines()
             
-            this.heatmap._renderer.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
-            this.heatmap._renderer.shadowCtx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
-            this.heatmap._renderer.ctx.clearRect(0,0,this.width/this.scalef, this.height/this.scalef)
-            this.heatmap._renderer.shadowCtx.clearRect(0,0,this.width/this.scalef, this.height/this.scalef)  
+            if (this.getOption('showHeatmap')) {
+                this.heatmap._renderer.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
+                this.heatmap._renderer.shadowCtx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
+                this.heatmap._renderer.ctx.clearRect(0,0,this.width/this.scalef, this.height/this.scalef)
+                this.heatmap._renderer.shadowCtx.clearRect(0,0,this.width/this.scalef, this.height/this.scalef)  
+            }
         },
         
         resetZoom: function() {
@@ -1011,11 +1016,15 @@ define(['marionette',
                 this._drawObject({ o: o })
             }, this)
 
-            this.heatmap.repaint()
+            if (this.getOption('showHeatmap')) {
+                this.heatmap.repaint()
+            }
         },
 
 
         generateHeatmap: function() {
+            if (!this.getOption('showHeatmap')) return
+                
             console.log('gen heat')
             this.heatmap.setData({ data: [] })
             var ready = []
