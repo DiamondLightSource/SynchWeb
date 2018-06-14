@@ -143,6 +143,10 @@ define(['marionette',
             this.hist.show(this.histtable)
             this.dew.show(this.dewtable)
             this.rep.show(this.reptable)
+
+            if (app.staff) {
+                edit.create('NEWFACILITYCODE')
+            }
         },
         
     })
