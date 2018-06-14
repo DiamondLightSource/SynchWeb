@@ -45,5 +45,7 @@ define(['backbone'], function(Backbone) {
         }
     })
 
+    Model.prototype.validation.NEWFACILITYCODE = Model.prototype.validation.FACILITYCODE
+
     return Model
 })
