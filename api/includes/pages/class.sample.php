@@ -101,6 +101,7 @@
 
                               'queued' => '\d',
                               'UNQUEUE' => '\d',
+                              'nodata' => '\d',
 
                               'externalid' => '\d',
 
@@ -220,6 +221,7 @@
 
         function _sub_samples() {
             $where = '';
+            $having = '';
             $args = array($this->proposalid);
 
             if ($this->has_arg('sid')) {
@@ -239,6 +241,10 @@
 
             if ($this->has_arg('queued')) {
                 $where .= ' AND cqs.containerqueuesampleid IS NOT NULL';
+            }
+
+            if ($this->has_arg('nodata')) {
+                $having .= ' HAVING count(dc.datacollectionid) = 0';
             }
 
             $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,6) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness
@@ -271,6 +277,7 @@
 
               WHERE p.proposalid=:1 $where
               GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx, po.posy, po.posz
+              $having
               ORDER BY ss.blsubsampleid", $args);
 
             foreach ($subs as $i => &$r) $r['RID'] = $i;
