@@ -397,12 +397,14 @@ define(['marionette',
             'click a.apply': 'applyPreset',
             'click a.unqueue': 'unqueueContainer',
             'click a.addall': 'queueAllSamples',
+            'change @ui.nodata': 'refreshSubSamples',
         },
 
         ui: {
             preset: 'select[name=preset]',
             rpreset: '.rpreset',
             xtal: '.xtalpreview',
+            nodata: 'input[name=nodata]',
         },
 
 
@@ -512,6 +514,14 @@ define(['marionette',
             console.log('model seleted in grid')
             m.set({ isGridSelected: checked })
         },
+
+        getNoData: function() {
+            return this.ui.nodata.is(':checked') ? 1 : null
+        },
+
+        refreshSubSamples: function() {
+            this.subsamples.fetch()
+        },
         
         initialize: function(options) {
             this._lastSample = null
@@ -608,6 +618,7 @@ define(['marionette',
         
         
         onRender: function() {
+            this.subsamples.queryParams.nodata = this.getNoData.bind(this)
             this._ready.done(this.doOnRender.bind(this))
         },
 
