@@ -119,7 +119,7 @@ define(['marionette',
             this.$el.empty()
 
             if (!this.model.get('CONTAINERQUEUEID'))
-                this.$el.html('<a href="#" class="button clone" title="Clone these parameters to the selected samples"><i class="fa fa-clone"></i></a>\
+                this.$el.html('<a href="#" class="button clone" title="Clone these parameters to the selected samples"><i class="fa fa-files-o"></i></a>\
                 <a href="#" class="button save" title="Save these parameters as a preset"><i class="fa fa-save"></i></a>\
                 <a href="#" class="button rem" title="Remove from Queue"><i class="fa fa-minus"></i></a>')
 
