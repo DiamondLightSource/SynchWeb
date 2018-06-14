@@ -92,7 +92,6 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
         },
 
         getCurrent: function() {
-            console.log('current' ,this.ui.cur.is(':checked'))
             return this.ui.cur && this.ui.cur.is(':checked') ? 1 : null
         },
 
