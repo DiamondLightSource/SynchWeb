@@ -232,11 +232,18 @@ define(['marionette',
         setRankStatus: function(e) {
             var opt = this.ui.param.find('option:selected')
             this.plateView.setRankStatus(this.ui.rank.is(':checked') ? {
-                    value: opt.attr('value'),
-                    min: opt.data('min'),
-                    check: opt.data('check'),
-                    inverted: opt.data('inverted'),
-                } : null)
+                value: opt.attr('value'),
+                min: opt.data('min'),
+                check: opt.data('check'),
+                inverted: opt.data('inverted'),
+            } : null)
+
+            if (this.ui.rank.is(':checked')) {
+                if (!this.ui.ss.is(':checked')) {
+                    this.ui.ss.prop('checked', true)
+                    this.toggleSampleStatus()
+                }
+            }
         },
 
         updateAdhoc: function() {
