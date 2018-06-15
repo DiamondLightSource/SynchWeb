@@ -283,6 +283,12 @@
 
                             'BeamLineSetup',
 
+                            // Phasing
+                            'Phasing',
+                            'Phasing_has_Scaling',
+                            'PhasingProgramRun',
+                            'PhasingProgramAttachment',
+
                 );
 
             foreach ($tables as $table) {
