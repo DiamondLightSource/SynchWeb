@@ -1,13 +1,19 @@
 define(['marionette',
-    'views/tabs', 'modules/dc/collections/autointegrations',
+    'views/tabs', 
+    'collections/autoprocattachments',
+    'modules/dc/collections/autointegrations',
     'modules/dc/views/rdplot',
     'modules/dc/views/aiplots',
+    'modules/dc/views/autoprocattachments',
+
     'views/log',
     'views/table',
     'utils/table',
     'utils',
-    'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, AutoIntegrations, 
-        RDPlotView, AIPlotsView, LogView, TableView, table,
+    'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, 
+        AutoProcAttachments, AutoIntegrations, 
+        RDPlotView, AIPlotsView, AutoProcAttachmentsView,
+        LogView, TableView, table,
         utils, template) {
        
 
@@ -19,9 +25,24 @@ define(['marionette',
             'click .logf': 'showLog',
             'click .rd': 'showRD',
             'click .plot': 'showPlots',
+            'click a.apattach': 'showAttachments',
             'click .dll': utils.signHandler,
         },
         
+        showAttachments: function(e) {
+            e.preventDefault()
+
+            this.attachments = new AutoProcAttachments()
+            this.attachments.queryParams.AUTOPROCPROGRAMID = this.model.get('AID')
+            this.attachments.fetch()
+
+            app.dialog.show(new DialogView({ 
+                title: 'Auto Processing Attachments: '+this.model.escape('TYPE'),
+                view: new AutoProcAttachmentsView({ collection: this.attachments }), 
+                autosize: true 
+            }))
+        },
+
         showLog: function(e) {
             e.preventDefault()
             var url = $(e.target).attr('href')
