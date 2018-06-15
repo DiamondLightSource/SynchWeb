@@ -23,7 +23,13 @@
 
                               'filetype' => '\w+',
                               'blsampleid' => '\d+',
-                              'dcg' => '\d+'
+                              'dcg' => '\d+',
+
+                              'download' => '\d',
+                              'AUTOPROCPROGRAMID' => '\d+',
+                              'AUTOPROCPROGRAMATTACHMENTID' => '\d+',
+
+                              'PHASINGPROGRAMATTACHMENTID' => '\d+',
                               );
 
     
@@ -41,6 +47,9 @@
                               array('/attachments', 'get', '_get_attachments'),
                               array('/attachment/id/:id/aid/:aid', 'get', '_get_attachment'),
                               array('/dc/id/:id', 'get', '_download'),
+
+                              array('/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_autoproc_attachments'),
+                              array('/ph/attachments(/:PHASINGPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_phasing_attachments'),
             );
 
         
@@ -70,6 +79,7 @@
 
         # ------------------------------------------------------------------------
         # Download mtz/log file for Fast DP / XIA2
+        #   TODO: Delete me
         function _auto_processing_plots() {
             global $ap_types;
             if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
@@ -108,6 +118,7 @@
 
         # ------------------------------------------------------------------------
         # Download mtz/log file for Fast DP / XIA2
+        #   TODO: Delete me
         function _auto_processing() {
             ini_set('memory_limit', '512M');
 
@@ -185,6 +196,106 @@
         }
         
         
+        # ------------------------------------------------------------------------
+        # Return list of attachments for an autoproc run
+        function _get_autoproc_attachments() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specific', 'No proposal specified');
+            
+            $args = array($this->proposalid);
+            $where = '';
+
+            if ($this->has_arg('AUTOPROCPROGRAMID')) {
+                $where .= ' AND api.autoprocprogramid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('AUTOPROCPROGRAMID'));
+            }
+
+            if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
+                $where .= ' AND appa.autoprocprogramattachmentid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('AUTOPROCPROGRAMATTACHMENTID'));
+            }
+
+            $rows = $this->db->pq("SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid
+                FROM autoprocintegration api 
+                INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
+                INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+                INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                WHERE s.proposalid=:1 $where", $args);
+
+            // exit();
+            if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
+                if (!sizeof($rows)) $this->_error('No such attachment');
+                else  {
+                    if ($this->has_arg('download')) {
+                        $this->_get_file($rows[0]['AUTOPROCPROGRAMID'], $rows[0]);
+                    } else $this->_output($rows[0]);
+                }
+            } else $this->_output($rows);
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Return list of attachments for a phasing run
+        #   TODO: duplicate of above, consolidate tables
+        function _get_phasing_attachments() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specific', 'No proposal specified');
+            
+            $where = '';
+            $args = array($this->proposalid);
+
+            if ($this->has_arg('id')) {
+                $where .= ' AND dc.datacollectionid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('id'));
+            }
+
+            if ($this->has_arg('PHASINGPROGRAMATTACHMENTID')) {
+                $where .= ' AND ppa.phasingprogramattachmentid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('PHASINGPROGRAMATTACHMENTID'));
+            }
+
+            $rows = $this->db->pq("SELECT ph.phasingprogramrunid, ppa.phasingprogramattachmentid, ppa.filepath, ppa.filename, ppa.filetype
+                        FROM phasingprogramattachment ppa
+                        INNER JOIN phasing ph ON ph.phasingprogramrunid = ppa.phasingprogramrunid
+                        INNER JOIN phasing_has_scaling phs ON phs.phasinganalysisid = ph.phasinganalysisid
+                        INNER JOIN autoprocscaling_has_int aps ON aps.autoprocscalingid = phs.autoprocscalingid
+                        INNER JOIN autoprocintegration api ON api.autoprocintegrationid = aps.autoprocintegrationid
+                        INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
+                        INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                        WHERE s.proposalid=:1 $where", $args);
+
+            if ($this->has_arg('PHASINGPROGRAMATTACHMENTID')) {
+                if (!sizeof($rows)) $this->_error('No such attachment');
+                else {
+                    if ($this->has_arg('download')) {
+                        $this->_get_file($rows[0]['PHASINGPROGRAMRUNID'], $rows[0]);
+                    } else  $this->_output($rows[0]);
+                }
+            } else $this->_output($rows);
+        }
+
+
+
+        function _get_file($id, $file) {
+            $path_ext = pathinfo($file['FILENAME'], PATHINFO_EXTENSION);
+            if ($path_ext == 'html') $this->app->contentType("text/html");
+            elseif ($path_ext == 'log') $this->app->contentType("text/plain");
+            elseif ($path_ext == 'json') $this->app->contentType("application/json");
+            else $this->_header($id.'_'.$file['FILENAME']);
+            
+            $f = $file['FILEPATH'].'/'.$file['FILENAME'];
+            if (file_exists($f)) {
+                readfile($f);
+                exit();
+
+            } else {
+                $this->_error('No such file', 'The specified file doesnt exist');
+            }
+        }
+
+
         # ------------------------------------------------------------------------
         # Return a blended mtz file
         function _blend_mtz() {
