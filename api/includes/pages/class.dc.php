@@ -326,7 +326,8 @@
                     dc.imagesizey,
                     dc.pixelsizeonimage,
                     dc.phaseplate,
-                    ses.beamlinename as bl
+                    ses.beamlinename as bl,
+                    dc.blsubsampleid
                     ";
                 $groupby = 'GROUP BY smp.name,smp.blsampleid,ses.visit_number,dc.kappastart,dc.phistart, dc.startimagenumber, dc.experimenttype, dc.datacollectiongroupid, dc.runstatus, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.overlap, dc.flux, dc.imageprefix, dc.datacollectionnumber, dc.filetemplate, dc.datacollectionid, dc.numberofimages, dc.imagedirectory, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages, TO_CHAR(dc.starttime, \'DD-MM-YYYY HH24:MI:SS\'), dc.transmission, dc.axisrange, dc.wavelength, dc.comments, dc.xtalsnapshotfullpath1, dc.xtalsnapshotfullpath2, dc.xtalsnapshotfullpath3, dc.xtalsnapshotfullpath4, dc.starttime, dc.detectordistance, dc.xbeam, dc.ybeam, dc.chistart';
                 // $this->db->set_debug(True);
@@ -370,7 +371,8 @@
                     max(dc.imagesizey) as imagesizey,
                     max(dc.pixelsizeonimage) as pixelsizeonimage,
                     max(dc.phaseplate) as phaseplate,
-                    max(ses.beamlinename) as bl";
+                    max(ses.beamlinename) as bl,
+                    max(dc.blsubsampleid) as blsubsampleid";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
             }
 
@@ -424,7 +426,7 @@
              UNION
              SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',es.beamsizehorizontal,es.beamsizevertical,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.peakfdoubleprime, 1, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1, 0, 
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', es.starttime, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, es.blsubsampleid
             FROM energyscan es
             INNER JOIN blsession ses ON ses.sessionid = es.sessionid
             LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid
@@ -434,7 +436,7 @@
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',xrf.beamsizehorizontal,xrf.beamsizevertical,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, 1, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', xrf.starttime, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, xrf.blsubsampleid
             FROM xfefluorescencespectrum xrf
             INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
             LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid     
@@ -444,7 +446,7 @@
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)), 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, smp.code, r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, r.xtalsnapshotbefore, r.xtalsnapshotafter, 'A', 'A', r.starttimestamp as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', r.starttimestamp, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, 1 as blsubsampleid
             FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
             LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
