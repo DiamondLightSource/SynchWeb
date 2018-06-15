@@ -1,4 +1,10 @@
-define(['marionette', 'views/log', 'tpl!templates/dc/dc_fastep.html', 'utils'], function(Marionette, LogView, template, utils) {
+define(['marionette', 
+    'collections/phasingattachments',
+    'modules/dc/views/autoprocattachments',
+    'views/log', 
+    'tpl!templates/dc/dc_fastep.html', 'utils'], function(Marionette, 
+        PhasingAttachments, AutoProcAttachmentsView, 
+        LogView, template, utils) {
     
     return Marionette.ItemView.extend({
         template: template,
@@ -11,7 +17,23 @@ define(['marionette', 'views/log', 'tpl!templates/dc/dc_fastep.html', 'utils'], 
         
         events: {
             'click .logf': 'showLog',
+            'click a.pattach': 'showAttachments',
             'click .dll': utils.signHandler,
+        },
+
+        showAttachments: function(e) {
+            e.preventDefault()
+
+            console.log('phasing', this.model)
+            this.attachments = new PhasingAttachments()
+            this.attachments.queryParams.id = this.getOption('DCID')
+            this.attachments.fetch()
+
+            app.dialog.show(new DialogView({ 
+                title: 'Fast EP Attachments: '+this.model.escape('TYPE'),
+                view: new AutoProcAttachmentsView({ collection: this.attachments, urlRoot: 'ph', idParam: 'PHASINGPROGRAMATTACHMENTID' }), 
+                autosize: true 
+            }))
         },
             
         showLog: function(e) {
