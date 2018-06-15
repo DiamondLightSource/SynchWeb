@@ -57,7 +57,8 @@ define(['marionette',
         className: 'image_large',
         showBeam: false,
         showHeatmap: true,
-        
+        rankOption: null,
+
         regions: {
             hist: '.hist',
             scb: '.scorebybutton',
@@ -278,6 +279,12 @@ define(['marionette',
             this.drawLarge()
                 
             this.scores.setSelected(m.get('BLSAMPLEIMAGESCOREID'))
+        },
+
+        setRankStatus: function(rank) {
+            this.rankOption = rank
+            this.draw()
+            this.plotObjects()
         },
         
         updateScores: function() {
@@ -928,6 +935,22 @@ define(['marionette',
             } else {
                 if (this.getOption('showBeam')) this.drawBeam(options.o)
 
+                if (this.rankOption) {
+                    var val = (options.o.get(this.rankOption.value)-this.rankOption.paramdist[0])/(this.rankOption.paramdist[1]-this.rankOption.paramdist[0])
+          
+                    if (this.rankOption.min) {
+                        if (this.rankOption.paramdist[0] > this.rankOption.min) this.rankOption.paramdist[0] = this.rankOption.min
+                    }
+          
+                    if (!this.rankOption.inverted) {
+                        val = 1 - val
+                    }
+                
+                    this.ctx.strokeStyle = options.o.get(this.rankOption.value)
+                        ? utils.rainbow(val/4) 
+                        : (options.o.get(this.rankOption.check) > 0 ? 'yellow' : '#dfdfdf')
+                }
+
                 this.ctx.beginPath()
                 this.ctx.moveTo(x-w,y)
                 this.ctx.lineTo(x+w,y)
@@ -1012,6 +1035,14 @@ define(['marionette',
 
         plotObjects: function() {
             console.log('plot obj', this.subsamples.length, this.subsamples, arguments)
+
+            if (this.rankOption) {
+                var vals = this.subsamples.map(function(m) { 
+                    if (m.get(this.rankOption.value)) return m.get(this.rankOption.value) 
+                }, this)
+                this.rankOption.paramdist = [_.min(vals), _.max(vals)]
+            }
+
             this.subsamples.each(function(o) {
                 this._drawObject({ o: o })
             }, this)
@@ -1024,7 +1055,7 @@ define(['marionette',
 
         generateHeatmap: function() {
             if (!this.getOption('showHeatmap')) return
-                
+
             console.log('gen heat')
             this.heatmap.setData({ data: [] })
             var ready = []
