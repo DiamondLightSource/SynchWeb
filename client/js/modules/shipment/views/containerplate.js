@@ -27,6 +27,11 @@ define(['marionette',
 
     'modules/imaging/collections/inspectiontypes',
 
+    'collections/datacollections',
+    'modules/dc/views/getdcview',
+    'modules/dc/views/reprocess2',
+    'views/dialog',
+
     'utils/editable',
     'views/table',
     'utils/table',
@@ -57,6 +62,8 @@ define(['marionette',
 
     InspectionTypes,
         
+    DCCol, GetDCView, ReprocessView, DialogView,
+
     Editable, TableView, table, XHRImage, utils,
     template, templateimage){
 
@@ -125,6 +132,51 @@ define(['marionette',
              '+del)
             
             this.delegateEvents()
+            return this
+        }
+    })
+
+
+    var DataCell = Backgrid.Cell.extend({
+        events: {
+            'click a.data': 'showData',
+            'click a.reproc': 'reprocess',
+        },
+
+        initialize: function(options) {
+            DataCell.__super__.initialize.call(this, options)
+            this.dcs = new DCCol(null, { running: false })
+            this.listenTo(this.column.get('dcs'), 'sync', this.syncDcs)
+            this.syncDcs()
+        },
+
+        syncDcs: function() {
+            var dcs = this.column.get('dcs').where({ BLSUBSAMPLEID: this.model.get('BLSUBSAMPLEID') })
+            this.dcs.reset(dcs)
+        },
+
+        showData: function(e) {
+            e.preventDefault()
+
+            var view = GetDCView.DCView.get(app.type, { collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true })
+            app.dialog.show(new DialogView({ title: 'Data Collections', view: view, autoSize: 1 }))
+        },
+
+        reprocess: function(e) {
+            e.preventDefault()
+
+            console.log('dcs', this.dcs)
+            if (app.dialog.currentView instanceof ReprocessView) app.dialog.currentView.collection.add(this.dcs.at(0))
+            else {
+                app.dialog.show(new ReprocessView({ model: this.dcs.at(0), visit: this.column.get('visit') }))
+                if (this.dcs.length > 1) {
+                    app.dialog.currentView.collection.add(this.dcs.at(1))
+                }
+            }
+        },
+
+        render: function() {
+            this.$el.html('<a href="#" class="button button-notext data" title="View Data"><i class="fa fa-database"></i> <span>Show Data</span></a> <a href="#" class="button button-notext reproc" title="Reprocess"><i class="fa fa-cog""></i> <span>Reprocess</span></a>')
             return this
         }
     })
@@ -504,6 +556,9 @@ define(['marionette',
             this.samples.queryParams.cid = options.model.get('CONTAINERID')
             this.listenTo(this.samples, 'selected:change', this.selectSample)
 
+            this.sampledcs = new DCCol(null, { running: false })
+            this.sampledcs.queryParams.sid = this.getSample.bind(this)
+
             this.subsamples = new Subsamples()
             this.subsamples.queryParams.sid = this.getSample.bind(this)
             this.listenTo(this.subsamples, 'change:COMMENTS', this.saveComment, this)
@@ -605,6 +660,7 @@ define(['marionette',
                     return
                 } 
 
+                this.sampledcs.fetch()
                 this.subsamples.fetch()
                 this.historyimages.fetch()
 
@@ -652,6 +708,7 @@ define(['marionette',
                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
                         { label: '', cell: table.StatusCell, editable: false },
                         { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: false },
+                        { label: '', cell: DataCell, editable: false, dcs: this.sampledcs, visit: this.model.get('VISIT') },
                         { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
                 ]
 
