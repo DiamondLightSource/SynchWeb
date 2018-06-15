@@ -253,7 +253,33 @@
 
 
         function _ep_mtz() {
-            $this->_mtzmap('FastEP');
+            if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
+            
+            if ($this->has_arg('log')) {
+                $rows = $this->db->pq('SELECT ppa.filepath, ppa.filename, ppa.filetype
+                        FROM PhasingProgramAttachment ppa
+                        INNER JOIN Phasing ph ON ph.phasingprogramrunid = ppa.phasingprogramrunid
+                        INNER JOIN Phasing_has_Scaling phs ON phs.phasinganalysisid = ph.phasinganalysisid
+                        INNER JOIN AutoProcScaling_has_Int aps ON aps.autoprocscalingid = phs.autoprocscalingid
+                        INNER JOIN AutoProcIntegration api ON api.autoprocintegrationid = aps.autoprocintegrationid
+                        INNER JOIN DataCollection dc ON dc.datacollectionid = api.datacollectionid
+                        WHERE dc.datacollectionid = :1', array($this->arg('id')));
+                
+                $this->db->close();
+                if (!sizeof($rows)) $this->_error('No such auto processing');
+            
+                foreach ($rows as $r) {
+                    $path_ext = pathinfo($r['FILENAME'], PATHINFO_EXTENSION);
+                    if ( $path_ext == 'html') $this->app->contentType("text/html");
+                    elseif ( $path_ext == 'log') $this->app->contentType("text/plain");
+                    else continue;
+                    
+                    $f = $r['FILEPATH'].'/'.$r['FILENAME'];
+                    if (file_exists($f)) readfile($f);
+                }
+            } else {
+                $this->_mtzmap('FastEP');
+            }
         }
         
         function _dimple_mtz() {
