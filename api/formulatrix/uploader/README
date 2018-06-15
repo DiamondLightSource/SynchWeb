@@ -1,0 +1,6 @@
+Run as i02-2detector
+module load python/ana
+python formulatrix_uploader.py -c config_ef.json
+OR
+python formulatrix_uploader.py -c config_z.json
+ 

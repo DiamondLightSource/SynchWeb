@@ -107,7 +107,7 @@ class FormulatrixUploader:
 
         # Remove the src_dir if empty
         self._rmdir(src_dir)
-        
+
     def _rmdir(self, dir):
         """rmdir the dir (only works if it's empty)"""
         try:
@@ -149,7 +149,7 @@ class FormulatrixUploader:
                 os.makedirs(path)
                 if config['web_user']:
                     subprocess.call(['/usr/bin/setfacl', '-R', '-m', 'u:'+config['web_user']+':rwx', path]);
-    
+
             except OSError as exc:
                 if exc.errno == errno.EEXIST and os.path.isdir(new_path):
                     pass
@@ -161,7 +161,7 @@ class FormulatrixUploader:
         return True
 
     def handle_zslice_images(self):
-        """Move the z-slice images from the configured 'archive_dir' to their target_dir which is a folder 
+        """Move the z-slice images from the configured 'archive_dir' to their target_dir which is a folder
         named by the container barcode in the tmp folder in the container's visit dir."""
 
         date_dirs = glob.glob(self.config['archive_dir']+"/*/")
@@ -173,7 +173,7 @@ class FormulatrixUploader:
             if container['visit'] is None:
                 logging.getLogger().error('Container barcode %s has no session' % (str(barcode)) )
                 continue
-            
+
             # Determine the container's target directory
             visit_dir = self._get_visit_dir(container)
             if visit_dir is None:
@@ -184,17 +184,17 @@ class FormulatrixUploader:
                 continue
 
             # Move all the files (overwrite any existing files) in the barcode dir to the target_dir
-            src_dir = os.path.join(container_dict[barcode], barcode) 
+            src_dir = os.path.join(container_dict[barcode], barcode)
             self._move_dir(src_dir, target_dir)
 
         # Delete all non-recent container imaging dirs within the archive_dir
-        recent_container_dirs = [] 
+        recent_container_dirs = []
         for barcode in container_dict:
-            recent_container_dirs.append(os.path.join(container_dict[barcode], barcode)) 
-        
+            recent_container_dirs.append(os.path.join(container_dict[barcode], barcode))
+
         all_container_dirs = glob.glob(self.config['archive_dir']+"/*/*/")
         for dir in all_container_dirs:
-            # Remove the last character ("/") from the dir when comparing 
+            # Remove the last character ("/") from the dir when comparing
             if dir[:-1] not in recent_container_dirs:
                 try:
                     logging.getLogger().debug("trying to rmtree(%s)" % (dir))
@@ -202,14 +202,14 @@ class FormulatrixUploader:
                 except OSError as oe:
                     logging.getLogger().error("OSError in shutil.rmtree('%s')" % dir)
 
-        # Remove date folders if empty 
+        # Remove date folders if empty
         for dir in date_dirs:
             self._rmdir(dir)
-                
+
 
     def handle_ef_images(self):
-        """Move extended focus (EF) images from the configuration holding_dir to 
-        imaging/{containerid}/{inspectionid} within the container's visit dir. 
+        """Move extended focus (EF) images from the configuration holding_dir to
+        imaging/{containerid}/{inspectionid} within the container's visit dir.
         Also create thumbnail images."""
         files = glob.glob(self.config['holding_dir']+"/*EF*.xml")
         for xml in files:
@@ -220,7 +220,7 @@ class FormulatrixUploader:
             if not os.path.exists(image):
                 logging.getLogger().error('Corresponding image not found for %s expected %s' % (str(xml), str(image)) )
                 continue
-            
+
             if time.time() - st.st_mtime > 10 and st.st_size > 0:
                 tree = ET.parse(xml)
                 root = tree.getroot()
@@ -326,7 +326,7 @@ class FormulatrixUploader:
         logging.getLogger().debug(str(container[0]['visit']))
 
         return container[0]
-        
+
 
     def _get_container(self, inspectionid):
         container = self.db.pq("""SELECT c.containertype, c.containerid, c.sessionid, CONCAT(p.proposalcode, p.proposalnumber, '-', bs.visit_number) as visit, DATE_FORMAT(c.bltimestamp, '%%Y') as year
@@ -424,9 +424,9 @@ def clean_up():
     logging.shutdown()
 
 def print_usage():
-    usage = """Script for uploading image files from Rock Imager into the correct session directories. 
+    usage = """Script for uploading image files from Rock Imager into the correct session directories.
 Syntax: %s -c <configuration file> [-rp]
-Arguments: 
+Arguments:
      -h|--help : display this help
      -c|--conf <conf file> : use the given configuration file, default is config_ef.json""" % sys.argv[0]
 
@@ -488,4 +488,3 @@ if config['task'] == 'EF':
     uploader.handle_ef_images()
 elif config['task'] == 'Z':
     uploader.handle_zslice_images()
-

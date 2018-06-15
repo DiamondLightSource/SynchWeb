@@ -101,8 +101,8 @@
     $visit_directory = '/dls/<%=BEAMLINENAME%>/data/<%=YEAR%>/<%=VISIT%>';
 
     # Diffraction image snapshots
-    $jpeg_location = '<%=VISITDIR%>/jpegs/<%=DIR%>/<%=FILE%>.jpeg';
-    $jpeg_thumb_location = '<%=VISITDIR%>/jpegs/<%=DIR%>/<%=FILE%>.thumb.jpeg';
+    $jpeg_location = '<%=VISITDIR%>/jpegs/<%=IMDIRECTORY%>/<%=IMFILE%>.jpeg';
+    $jpeg_thumb_location = '<%=VISITDIR%>/jpegs/<%=IMDIRECTORY%>/<%=IMFILE%>.thumb.jpeg';
 
     # Server log location
     $server_log = '/dls_sw/<%=BEAMLINENAME%>/logs/gda-server.log';
@@ -124,11 +124,11 @@
     # and for RED experiments
     $cl3_email = 'cl3team@server.ac.uk, goods@server.ac.uk';
 
-    # and for shipment booked, 
+    # and for shipment booked,
     $shipbooked_email = 'goods@server.ac.uk';
 
     # Industrial Contacts
-    # - Industrial users get a personalised email with in contact details, 
+    # - Industrial users get a personalised email with in contact details,
     #   template in assets/emails/dewar-stores-in-in.html
     $in_contacts = array('Ind Contact' => 'in@server.ac.uk'
                         );
@@ -145,13 +145,13 @@
     #   x.x.103.x => i03
     $ip2bl = array(103 => 'i03',
                    );
-    
+
     # Barcode readers
     # - These clients use the android app (unauthenticated)
     $bcr = array('1.2.3.4', # my android device
                  );
-  
-    
+
+
     # Imaging API Machines
     #  - The have free access to imaging/inspections
     $img = array('1.2.3.4'
@@ -192,7 +192,7 @@
     $dhl_user = 'user';
     $dhl_pass = 'password';
     $dhl_env = 'staging';
-    
+
     // Domestic acc number
     $dhl_acc = '12345678';
     // Import acc number
@@ -205,8 +205,8 @@
     // Non dom service (eu)
     $dhl_service_eu = 'U';
 
-  
-    # VMXi 
+
+    # VMXi
     $vmxi_user = 'vmxi';
     $vmxi_pass = 'pass';
     $uas_url = 'http://path.to.uas';
@@ -214,7 +214,7 @@
     # Risk statements
     $sample_hazard = 'Samples will be handled following the beamline risk assessment';
     $exp_hazard = 'VMXi will be operated following the beamline risk assessment';
-    
+
 
     # Proposal to store beamline presets in
     $preset_proposal = 'cm12345';
@@ -230,15 +230,15 @@
     # These map proposal types to their proposalcode
     # - If these are not defined for a proposal type, the api then uses bl_types below
     $prop_types = array('mx', 'em');
-    
+
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
     #     mx, gen, em
     $bl_types = array('mx' => array('i02', 'i03', 'i04'),
                       'gen' => array('i11'),
                       );
-    
-    
+
+
     # Webcam IPs
     # - These are show on the beamline status and active datacollection lists
     $webcams = array('i03' => array('1.2.3.4'),
