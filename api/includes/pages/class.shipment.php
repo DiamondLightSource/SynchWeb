@@ -1220,12 +1220,15 @@
             array_push($args, $end);
             
             $order = 'c.bltimestamp DESC';
-            
 
             if ($this->has_arg('ty')) {
                 if ($this->arg('ty') == 'todispose') {
                     $order = 'c.requestedreturn DESC, age DESC';
                 } 
+
+                if ($this->arg('ty') == 'queued') {
+                    $order = 'cq.containerqueueid ASC';
+                }
             }
             
             if ($this->has_arg('sort_by')) {
