@@ -1,4 +1,4 @@
-define(['backbone.paginator', 'models/scanmodel', 'utils/kvcollection'], function(PageableCollection, Attachment, KVCollection) {
+define(['backbone.paginator', 'models/attachment', 'utils/kvcollection'], function(PageableCollection, Attachment, KVCollection) {
        
     return PageableCollection.extend(_.extend({
         model: Attachment,
