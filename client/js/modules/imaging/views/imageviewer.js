@@ -194,6 +194,13 @@ define(['marionette',
             return this.model.get('BLSAMPLEID')
         },
 
+        subsamplesSynced: function() {
+            var self = this
+            this.attachments.fetch({
+                success: this.populateHeatmap.bind(this)
+            })
+        },
+
         initialize: function(options) {
             this.add_object = false
             this.add_region = false
@@ -206,7 +213,7 @@ define(['marionette',
             this.ready = this.scores.fetch()
 
             this.subsamples = options.subsamples
-            this.listenTo(this.subsamples, 'sync', this.replotObjects, this)
+            this.listenTo(this.subsamples, 'sync', this.subsamplesSynced, this)
             this.listenTo(this.subsamples, 'change:BOXSIZEX', this.replotObjects, this)
             this.listenTo(this.subsamples, 'change:BOXSIZEY', this.replotObjects, this)
             this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEX', this.replotObjects, this)
@@ -228,7 +235,6 @@ define(['marionette',
             this.attachments = new Attachments()
             this.attachments.queryParams.filetype = 'pia'
             this.attachments.queryParams.blsampleid = this.getSample.bind(this)
-            // this.listenTo(this.attachments, 'sync', this.generateHeatmap)
 
             this.rendered = false
             this.scalef = 1
@@ -288,7 +294,6 @@ define(['marionette',
             this.drawLarge()
                 
             this.scores.setSelected(m.get('BLSAMPLEIMAGESCOREID'))
-            if (this.model.get('BLSAMPLEID')) this.attachReady = this.attachments.fetch().done(this.populateHeatmap.bind(this))
         },
 
         setRankStatus: function(rank) {
@@ -1073,8 +1078,7 @@ define(['marionette',
                 sel.push('<option value="'+ty+'">'+ty.replace('.json', '')+'</option>')
             })
             this.ui.pia.html(sel.join(''))
-            // $.when(this.attachReady).done(this.generateHeatmap.bind(this)
-            this.generateHeatmap()
+            this.changeHeatmap()
         },
 
 
