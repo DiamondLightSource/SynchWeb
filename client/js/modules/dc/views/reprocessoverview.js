@@ -101,6 +101,7 @@ define(['marionette',
                         'Multiplicity': 'MULTIPLICITY',
                         'Rmerge': 'RMERGE',
                         'I/sig(I)': 'ISIGI',
+                        'Completeness': 'COMPLETENESS',
                     }, function(v, k) {
                         results.push({
                             KEY: k,
