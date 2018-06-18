@@ -79,6 +79,8 @@ define(['marionette',
             hb: 'a.help',
             meas: 'a.measure',
             move: 'a.move',
+
+            pia: 'select[name=pia]',
         },
         
         events: {
@@ -97,6 +99,7 @@ define(['marionette',
             'click @ui.move': 'toggleMove',
 
             'click @ui.hb': 'toggleHelp',
+            'change @ui.pia': 'changeHeatmap',
         },
 
         toggleMeasure: function(e) {
@@ -187,6 +190,10 @@ define(['marionette',
             this.plotObjects()
         },
 
+        getSample: function() {
+            return this.model.get('BLSAMPLEID')
+        },
+
         initialize: function(options) {
             this.add_object = false
             this.add_region = false
@@ -220,6 +227,8 @@ define(['marionette',
             
             this.attachments = new Attachments()
             this.attachments.queryParams.filetype = 'pia'
+            this.attachments.queryParams.blsampleid = this.getSample.bind(this)
+            // this.listenTo(this.attachments, 'sync', this.generateHeatmap)
 
             this.rendered = false
             this.scalef = 1
@@ -279,6 +288,7 @@ define(['marionette',
             this.drawLarge()
                 
             this.scores.setSelected(m.get('BLSAMPLEIMAGESCOREID'))
+            if (this.model.get('BLSAMPLEID')) this.attachReady = this.attachments.fetch().done(this.populateHeatmap.bind(this))
         },
 
         setRankStatus: function(rank) {
@@ -1024,13 +1034,6 @@ define(['marionette',
         replotObjects: function() {
             this.draw()
             this.plotObjects()
-
-            if (this.model.get('BLSAMPLEID')) {
-                this.attachments.queryParams.blsampleid = this.model.get('BLSAMPLEID')
-                this.attachments.fetch({
-                    success: this.generateHeatmap.bind(this)
-                })
-            }
         },
 
         plotObjects: function() {
@@ -1053,15 +1056,37 @@ define(['marionette',
         },
 
 
-        generateHeatmap: function() {
+        changeHeatmap: function() {
+            this.generateHeatmap({
+                callback: this.replotObjects.bind(this)
+            })
+        },
+
+
+        populateHeatmap: function() {
+            if (this.attachments.length) this.ui.pia.show()
+            else this.ui.pia.hide()
+
+            var types = _.unique(this.attachments.pluck('FILENAME'))
+            var sel = []
+            _.each(types, function(ty) {
+                sel.push('<option value="'+ty+'">'+ty.replace('.json', '')+'</option>')
+            })
+            this.ui.pia.html(sel.join(''))
+            // $.when(this.attachReady).done(this.generateHeatmap.bind(this)
+            this.generateHeatmap()
+        },
+
+
+        generateHeatmap: function(options) {
             if (!this.getOption('showHeatmap')) return
 
-            console.log('gen heat')
             this.heatmap.setData({ data: [] })
             var ready = []
             var self = this
-            this.subsamples.each(function(ss) {
-                var att = this.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') })
+            var rois = this.subsamples.filter(function(m) { return m.get('X2') })
+            _.each(rois, function(ss) {
+                var att = this.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID'), FILENAME: this.ui.pia.val() })
                 if (att) {
                     ready.push(Backbone.ajax({
                         url: app.apiurl+'/download/attachment/id/'+att.get('DATACOLLECTIONID')+'/aid/'+att.get('DATACOLLECTIONFILEATTACHMENTID'),
@@ -1073,7 +1098,8 @@ define(['marionette',
             $.when.apply($, ready).done(function() {
                 var args = arguments
                 var data = [{ x: 10, y: 10, value: 1, radius: 1 }]
-                self.subsamples.each(function(ss, sid) {
+                _.each(rois, function(ss, sid) {
+                    console.log('matching', ss.get('BLSUBSAMPLEID'), self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') }), sid, args[sid])
                     var att = self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') })
                     if (att) {
                         data = data.concat(self.parseAttachment(ss, att, args[sid]))
@@ -1085,12 +1111,15 @@ define(['marionette',
                     max = Math.max(d.value, max)
                 }, this)
                 self.heatmap.setData({ data: data, max: max })
+                if (options && options.callback) {
+                    options.callback()
+                }
             })
         },
         
 
         parseAttachment: function(ss, att, resp) {
-            console.log('parse', att, resp)
+            // console.log('parse', att, resp)
             var sw = att.get('DX_MM')*1000/parseFloat(this.model.get('MICRONSPERPIXELX'))
             var sh = att.get('DY_MM')*1000/parseFloat(this.model.get('MICRONSPERPIXELY'))
 
