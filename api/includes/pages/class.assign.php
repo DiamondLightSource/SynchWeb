@@ -59,8 +59,8 @@
             if (sizeof($cs) > 0) {
                 $c = $cs[0];
                                
-                $this->db->pq("UPDATE container SET samplechangerlocation='',beamlinelocation='',containerstatus='at DLS' WHERE containerid=:1",array($c['CONTAINERID']));
-                $this->db->pq("INSERT INTO containerhistory (containerid,status,beamlinename) VALUES (:1,:2,:3)", array($c['CONTAINERID'], 'at DLS', $c['BEAMLINENAME']));                
+                $this->db->pq("UPDATE container SET samplechangerlocation='',beamlinelocation='',containerstatus='at facility' WHERE containerid=:1",array($c['CONTAINERID']));
+                $this->db->pq("INSERT INTO containerhistory (containerid,status,beamlinename) VALUES (:1,:2,:3)", array($c['CONTAINERID'], 'at facility', $c['BEAMLINENAME']));                
                 //$this->_update_history($c['DEWARID'], 'unprocessing');
                                 
                 $this->_output(1);
@@ -94,8 +94,8 @@
                                 
                 $conts = $this->db->pq("SELECT containerid as id FROM container WHERE dewarid=:1", array($this->arg('did')));
                 foreach ($conts as $c) {
-                    $this->db->pq("UPDATE container SET containerstatus='at DLS', samplechangerlocation='', beamlinelocation='' WHERE containerid=:1", array($c['ID']));
-                    $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['ID'], 'at DLS'));
+                    $this->db->pq("UPDATE container SET containerstatus='at facility', samplechangerlocation='', beamlinelocation='' WHERE containerid=:1", array($c['ID']));
+                    $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['ID'], 'at facility'));
                 }
                 $this->_output(1);
                                 
@@ -112,7 +112,7 @@
                 VALUES (s_dewartransporthistory.nextval,:1,:2,:3,CURRENT_TIMESTAMP)", array($did, $st,$bl));
                                 
             # Update dewar status
-            if ($status == 'unprocessing') $status = 'at DLS';
+            if ($status == 'unprocessing') $status = 'at facility';
             $this->db->pq("UPDATE dewar set dewarstatus=:2 WHERE dewarid=:1", array($did, $status));
         }
 

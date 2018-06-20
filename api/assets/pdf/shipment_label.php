@@ -6,8 +6,8 @@
             <h2>LABEL INSTRUCTIONS</h2>
             <p>Please print the following three labels and use as follows:</p>
             <ol>
-                <li><span class="bold">Dewar Label:</span> affix this label to your dewar which ensures it can be identified at all times at DLS</li>
-                <li><span class="bold">Outbound Address label:</span> To be attached to the outside of your transport container for shipment to DLS</li>
+                <li><span class="bold">Dewar Label:</span> affix this label to your dewar which ensures it can be identified at all times at the facility</li>
+                <li><span class="bold">Outbound Address label:</span> To be attached to the outside of your transport container for shipment to facility</li>
                 <li><span class="bold">Return Address Label:</span> The return address for your shipment (Please include this in your shipment, e.g. put it behind the outward bound address or in the transport container)</li>
             </ol>
         </div>
@@ -76,7 +76,7 @@
                 <br />
                 <br />
 
-                <p class="bold">Frozen samples in Dry-Shipper for experiments at DLS</p>
+                <p class="bold">Frozen samples in Dry-Shipper for experiments at facility</p>
                 <br />
                 <p class="bold">Not restricted,<br />As per IATA special provision A152</p>
 
