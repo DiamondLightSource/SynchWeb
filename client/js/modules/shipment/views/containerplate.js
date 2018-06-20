@@ -243,7 +243,7 @@ define(['marionette',
             ity: 'select[name=INSPECTIONTYPEID]',
             status: 'div.sta',
             ret: 'div.return',
-            adh: 'div.adhoc',
+            adh: 'span.adhoc',
             que: 'div.queue',
             ss: 'input[name=sample_status]',
 
@@ -302,8 +302,13 @@ define(['marionette',
         },
 
         updateAdhoc: function() {
-            if (this.model.get('ALLOW_ADHOC') == '1') this.ui.adh.html('<a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>')
-            else this.ui.adh.html('<p>An adhoc inspection of this container has been requested</p>')
+            if (this.model.get('ALLOW_ADHOC') == '1') {
+                this.ui.ity.show()
+                this.ui.adh.html('<a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>')
+            } else {
+                this.ui.adh.html('<p>An adhoc inspection of this container has been requested</p>')
+                this.ui.ity.hide()
+            }
             this.updateTypes()
         },
 
@@ -416,7 +421,7 @@ define(['marionette',
                 url: app.apiurl+'/imaging/inspection/adhoc',
                 data: {
                     cid: this.model.get('CONTAINERID'),
-                    INSPECTIONTYPEID: 1// this.ui.ity.val(),
+                    INSPECTIONTYPEID: this.ui.ity.val(),
                 },
                 success: function(resp) {
                     app.alert({ message: 'Adhoc inspection successfully requested for this container' })
@@ -731,6 +736,8 @@ define(['marionette',
 
             this.updateReturn()
             this.updatedQueued()
+
+            this.listenTo(this.inspectiontypes, 'sync', this.updateAdhoc)
             this.updateAdhoc()
         },
         
