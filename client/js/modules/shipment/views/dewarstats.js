@@ -119,7 +119,7 @@ define(['marionette',
                 filter: 's', 
                 tableClass: 'runs', 
                 loading: true,
-                backgrid: { emptyText: 'No run stats found' } 
+                backgrid: { emptyText: 'No dewar stats found' } 
             }))
 
             var columns2 = [{ name: 'COUNTRY', label: 'Country', cell: 'string', editable: false }].concat(columns.slice(1))
@@ -129,7 +129,7 @@ define(['marionette',
                 filter: 's', 
                 tableClass: 'countries',
                 loading: true, 
-                backgrid: { emptyText: 'No run stats found' } 
+                backgrid: { emptyText: 'No dewar stats found' } 
             }))
 
             this.listenTo(this.countries, 'sync', this.plotMap)
