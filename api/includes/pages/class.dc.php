@@ -20,6 +20,8 @@
                               'DATACOLLECTIONID' => '\d+',
                               'PERSONID' => '\d+',
 
+                              'debug' => '\d',
+
                               );
         
 
@@ -570,14 +572,16 @@
             $out = array();
             
             foreach ($dcs as $dc) {
-                //$dc['VIS'] = $this->arg('prop').'-'.$dc['VISIT_NUMBER'];
-                
+                $debug = array();
+
                 $sn = 0;
                 $images = array();
                 foreach (array('X1', 'X2', 'X3', 'X4') as $j => $im) {
                     array_push($images, file_exists($dc[$im]) ? 1 : 0);
                     if ($im == 'X1') {
-                        if (file_exists(str_replace('.png', 't.png', $dc[$im]))) $sn = 1;
+                        $thumb = str_replace('.png', 't.png', $dc[$im]);
+                        if ($this->staff && $this->has_arg('debug')) $debug['snapshot_thumb'] = array('file' => $thumb, 'exists' => file_exists($thumb) ? 1 : 0);
+                        if (file_exists($thumb)) $sn = 1;
                     }
                     unset($dc[$im]);
                 }
@@ -590,8 +594,9 @@
                 $this->profile('diffraction image');
                 $die = 0;
                 if (file_exists($di)) $die = 1;
+                if ($this->staff && $this->has_arg('debug')) $debug['diffraction_thumb'] = array('file' => $di, 'exists' => file_exists($di) ? 1 : 0);
             
-                array_push($out, array($dc['ID'], array($die,$images,$sn)));
+                array_push($out, array($dc['ID'], array($die,$images,$sn,$debug)));
             }
             $this->_output($out);
         }
