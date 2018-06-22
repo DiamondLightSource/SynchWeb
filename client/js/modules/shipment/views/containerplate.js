@@ -562,6 +562,7 @@ define(['marionette',
             this.listenTo(this.samples, 'selected:change', this.selectSample)
 
             this.sampledcs = new DCCol(null, { running: false })
+            this.sampledcs.state.pageSize = 9999
             this.sampledcs.queryParams.sid = this.getSample.bind(this)
 
             this.subsamples = new Subsamples()
