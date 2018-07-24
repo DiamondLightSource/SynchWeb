@@ -361,7 +361,25 @@ define(['marionette',
             if ($(e.target).is('input') || $(e.target).is('select') || $(e.target).is('textarea')) return
 
             if (e.which > 47 && e.which < 58) {
-                this.ui.score.val(e.which - 48).trigger('change')
+                // The ui.score.val stores the BLSAMPLESCOREID
+                // We need to determine the score from the ascii code entered, then save the BLSAMPLESCOREID in the ui
+                // The updateScores method (triggered by the change event) will then get the correct score value
+                var key = e.which - 48
+
+                // The model stores string values so need to search by string
+                var sc = this.scores.findWhere({ SCORE: key.toString() })
+
+                // BLSAMPLEIMAGESCOREID is mapped to 'Clear'
+                var id = 1
+
+                if (sc) {
+                    id = sc.get('BLSAMPLEIMAGESCOREID')
+                } else {
+                    console.log('ImageViewer Error - could not find score model with (String) key of ' + key)
+                }
+
+                this.ui.score.val(id).trigger('change')
+
                 return
             }
             console.log(e.which)
