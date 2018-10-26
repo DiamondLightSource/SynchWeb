@@ -80,6 +80,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
             { id: 'puck', name: 'Pucks'},
             { id: 'imager', name: 'In Imager'},
             { id: 'queued', name: 'Queued'},
+            { id: 'completed', name: 'Completed'},
             { id: 'data', name: 'Has Data'},
             { id: 'processing', name: 'Processing'},
             { id: 'subsamples', name: 'Has Subsamples'},
