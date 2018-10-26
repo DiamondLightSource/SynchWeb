@@ -18,3 +18,7 @@ api/lib
 * mpdf
 * xmlrpc
 * SqlFormatter
+* getallheaders
+* php-jwt
+* dhl_api
+* stomp-php
