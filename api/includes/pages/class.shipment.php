@@ -721,7 +721,10 @@
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            if ($dew['DELIVERYAGENT_AGENTNAME'] == 'dhl') {
+            if ($dew['DELIVERYAGENT_AGENTNAME'] == 'dhl' 
+                  && ($dewar['TRACKINGNUMBERTOSYNCHROTRON'] && strlen($dewar['TRACKINGNUMBERTOSYNCHROTRON']) <= 10) || 
+                  && ($dewar['TRACKINGNUMBERFROMSYNCHROTRON'] && strlen($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) <= 10)
+            ) {
                 $tr = $this->_dewar_tracking($dew);
 
                 $this->_output(array(
