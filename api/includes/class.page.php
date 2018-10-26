@@ -636,6 +636,34 @@
             return array_keys($keys) !== $keys;
         }
 
+
+
+        # ------------------------------------------------------------------------
+        # Make a cURL request
+        function _curl($options) {
+            $ch = curl_init();
+
+            if (array_key_exists('Authorization', $headers) && $options['jwt']) {
+                $headers = getallheaders();
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: '.$headers['Authorization']));
+            }
+
+            $data = '';
+            if ($options['data']) {
+                $data = '?'.http_build_query($options['data']);
+            }
+
+            curl_setopt($ch, CURLOPT_URL, $options['url'].$data);
+
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            $content = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            return array('code' => $code, 'content' => $content);
+        }
+
     }
 
 
