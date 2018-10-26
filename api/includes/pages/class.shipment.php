@@ -1124,6 +1124,10 @@
                     $having .= " HAVING COUNT(distinct dc.datacollectionid) > 0";
                 } else if ($this->arg('ty') == 'queued') {
                     $where .= " AND cq.containerqueueid IS NOT NULL";
+                } else if ($this->arg('ty') == 'completed') {
+                    $where .= " AND cq2.completedtimestamp IS NOT NULL";
+                    $this->args['sort_by'] = 'COMPLETEDTIMESTAMP';
+                    $this->args['order'] = 'desc';
                 } else if ($this->arg('ty') == 'processing') {
                     $where .= " AND c.containerstatus = 'processing'";
                 } else if ($this->arg('ty') == 'subsamples') {
@@ -1196,6 +1200,7 @@
                 LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
                 LEFT OUTER JOIN datacollection dc ON dc.blsampleid = s.blsampleid
                 LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
+                LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
                 $join 
                 WHERE $where
                 $having", $args);
@@ -1233,13 +1238,19 @@
             
             if ($this->has_arg('sort_by')) {
                 $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
-                  'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)', 'DCDATE' => 'max(dc.starttime)'
+                  'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)', 'DCDATE' => 'max(dc.starttime)',
+                  'COMPLETEDTIMESTAMP' => 'max(cq2.completedtimestamp)',
                   );
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             // $this->db->set_debug(True);
-            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, cq.createdtimestamp as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, COUNT(distinct dc.datacollectionid) as dccount, GROUP_CONCAT(DISTINCT CONCAT(CONCAT(bpr.proposalcode, bpr.proposalnumber,'-',bls.visit_number)),':',bls.beamlinename) as dcvisits, GROUP_CONCAT(DISTINCT TO_CHAR(bls.startdate, 'HH24:MI DD-MM-YYYY')) as dcdates, count(distinct ss.blsubsampleid) as subsamples, TO_CHAR(max(dc.starttime), 'HH24:MI DD-MM-YYYY') as DCDATE, ses3.beamlinename as firstexperimentbeamline
+            $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, cq.createdtimestamp as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, 
+                COUNT(distinct dc.datacollectionid) as dccount, 
+                GROUP_CONCAT(DISTINCT CONCAT(CONCAT(bpr.proposalcode, bpr.proposalnumber,'-',bls.visit_number)),':',bls.beamlinename) as dcvisits, GROUP_CONCAT(DISTINCT TO_CHAR(bls.startdate, 'HH24:MI DD-MM-YYYY')) as dcdates, count(distinct ss.blsubsampleid) as subsamples, 
+                TO_CHAR(max(dc.starttime), 'HH24:MI DD-MM-YYYY') as DCDATE, 
+                ses3.beamlinename as firstexperimentbeamline,
+                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell
                                   FROM container c 
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   LEFT OUTER JOIN blsession ses3 ON d.firstexperimentid = ses3.sessionid
@@ -1256,6 +1267,7 @@
                                   LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
                                   LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != 'Completed' AND ci2.manual!=1 AND ci2.schedulecomponentid IS NULL
                                   LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
+                                  LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
                                   LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
 
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
