@@ -232,7 +232,7 @@ define(['marionette',
             this.img.onerror = this.onImageError.bind(this)
             this.img.onprogress = this.onImageProgress.bind(this)
             
-            this.attachments = new Attachments()
+            this.attachments = new Attachments(null, { state: { pageSize: 100 }})
             this.attachments.queryParams.filetype = 'pia'
             this.attachments.queryParams.blsampleid = this.getSample.bind(this)
 
@@ -1089,6 +1089,7 @@ define(['marionette',
             var ready = []
             var self = this
             var rois = this.subsamples.filter(function(m) { return m.get('X2') })
+            var actual = []
             _.each(rois, function(ss) {
                 var att = this.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID'), FILENAME: this.ui.pia.val() })
                 if (att) {
@@ -1096,17 +1097,20 @@ define(['marionette',
                         url: app.apiurl+'/download/attachment/id/'+att.get('DATACOLLECTIONID')+'/aid/'+att.get('DATACOLLECTIONFILEATTACHMENTID'),
                         dataType: 'json',
                     }))
+                    actual.push(ss)
                 }
             }, this)
 
             $.when.apply($, ready).done(function() {
-                var args = arguments
+                // this is fucking stupid, different response based on length of args
+                var args = actual.length == 1 ? [arguments] : arguments
+
                 var data = [{ x: 10, y: 10, value: 1, radius: 1 }]
-                _.each(rois, function(ss, sid) {
-                    console.log('matching', ss.get('BLSUBSAMPLEID'), self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') }), sid, args[sid])
+                _.each(actual, function(ss, sid) {
+                    // console.log('matching', ss.get('BLSUBSAMPLEID'), self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') }), sid, args[sid])
                     var att = self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') })
                     if (att) {
-                        data = data.concat(self.parseAttachment(ss, att, args[sid]))
+                        data = data.concat(self.parseAttachment(ss, att, args[sid][0]))
                     }
                 }, self)
 
