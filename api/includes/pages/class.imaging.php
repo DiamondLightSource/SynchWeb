@@ -18,6 +18,7 @@
                                         'did' => '\d+',
                                         'all' => '\d',
                                         'allStates' => '\d',
+                                        'delta' => '\d',
 
                                         'SCHEDULEID' => '\d+',
                                         'SCHEULECOMPONENTID' => '\d+',
@@ -284,6 +285,9 @@
         function _get_inspections() {
             global $img;
 
+            $join = '';
+            $extc = '';
+
             if (!$this->has_arg('cid') &&
               !$this->has_arg('iid') &&
              (!$this->staff || !$this->has_arg('all'))) $this->_error('No container / inspection specified');
@@ -360,10 +364,14 @@
                 if ($this->arg('ty') == 'MANUAL') $where .= " AND i.manual=1";
             }
 
+            if ($this->has_arg('delta')) {
+                $join = 'LEFT OUTER JOIN containerinspection i2 ON i.containerid = i2.containerid AND i2.schedulecomponentid IS NOT NULL';
+                $extc = ", ROUND(TIMESTAMPDIFF('MINUTE', min(i2.bltimestamp), i.bltimestamp)/(60*24),1) as delta, CONCAT(CONCAT(CONCAT(CONCAT(TO_CHAR(i.bltimestamp, 'HH24:MI DD-MM-YYYY'), ' (+'), ROUND(TIMESTAMPDIFF('HOUR', case when min(i2.bltimestamp) is not null then min(i2.bltimestamp) else i.bltimestamp end, i.bltimestamp)/24,1)), 'd) '), (case when i.manual=1 then '[Manual]' else (case when i.schedulecomponentid is null then '[Adhoc]' else '' end) end)) as title";
+            }
+
             $inspections = $this->db->paginate("SELECT ROUND(TIMESTAMPDIFF('HOUR', i.bltimestamp, CURRENT_TIMESTAMP)/24,1) as age, ROUND(TIMESTAMPDIFF('MINUTE', i.scheduledtimestamp, i.bltimestamp)/(24*60),2) as dwell, c.code as container, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(min(im.modifiedtimestamp), 'DD-MM-YYYY HH24:MI') as imagesscoredtimestamp, case when count(im.blsampleimageid) > 0 then 1 else 0 end as imagesscored,
-                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, ROUND(TIMESTAMPDIFF('MINUTE', min(i2.bltimestamp), i.bltimestamp)/(60*24),1) as delta, CONCAT(CONCAT(CONCAT(CONCAT(TO_CHAR(i.bltimestamp, 'HH24:MI DD-MM-YYYY'), ' (+'), ROUND(TIMESTAMPDIFF('HOUR', case when min(i2.bltimestamp) is not null then min(i2.bltimestamp) else i.bltimestamp end, i.bltimestamp)/24,1)), 'd) '), (case when i.manual=1 then '[Manual]' else (case when i.schedulecomponentid is null then '[Adhoc]' else '' end) end)) as title, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.visit_number, TIMESTAMPDIFF('MINUTE', i.bltimestamp, i.completedtimestamp) as duration
+                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.visit_number, TIMESTAMPDIFF('MINUTE', i.bltimestamp, i.completedtimestamp) as duration $extc
                 FROM containerinspection i
-                LEFT OUTER JOIN containerinspection i2 ON i.containerid = i2.containerid AND i2.schedulecomponentid IS NOT NULL
                 LEFT OUTER JOIN schedulecomponent sc ON sc.schedulecomponentid = i.schedulecomponentid
                 LEFT OUTER JOIN blsampleimage im ON im.containerinspectionid = i.containerinspectionid AND im.blsampleimagescoreid IS NOT NULL
                 INNER JOIN inspectiontype it ON it.inspectiontypeid = i.inspectiontypeid
@@ -373,8 +381,9 @@
                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 LEFT OUTER JOIN blsession ses ON ses.sessionid = c.sessionid
+                $join
                 WHERE $where
-                GROUP BY c.code, i.bltimestamp, i.scheduledtimestamp, CONCAT(p.proposalcode, p.proposalnumber), TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI'), sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, img.name, it.name, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI'), i.imagerid, i.bltimestamp
+                GROUP BY i.containerinspectionid
                 ORDER BY $order", $args);
 
 
