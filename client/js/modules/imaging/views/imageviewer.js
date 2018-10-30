@@ -210,7 +210,9 @@ define(['marionette',
             
             this.scores = new ImageScores()
             this.listenTo(this.scores, 'selected:change', this.setScoreButton, this)
-            this.ready = this.scores.fetch()
+            if (!(this.getOption('scores') !== null && this.getOption('scores') === false)) {
+                this.ready = this.scores.fetch()
+            }
 
             this.subsamples = options.subsamples
             this.listenTo(this.subsamples, 'sync', this.subsamplesSynced, this)
@@ -303,6 +305,8 @@ define(['marionette',
         },
         
         updateScores: function() {
+            if (this.getOption('scores') !== null && this.getOption('scores') === false) return
+
             this.ui.score.html(this.scores.opts())
             if (this.model) this.ui.score.val(this.model.get('BLSAMPLEIMAGESCOREID'))
             this.scb.show(new ScoreButtons({ collection: this.scores }))
@@ -345,7 +349,7 @@ define(['marionette',
         },
         
         onRender: function() {
-            this.ready.done(this.updateScores.bind(this))
+            if (this.ready) this.ready.done(this.updateScores.bind(this))
             if (this.historyimages) {
                 this.hist.show(this.history)
                 this.hist.$el.hide()
