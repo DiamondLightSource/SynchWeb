@@ -722,8 +722,8 @@
             else $dew = $dew[0];
 
             if ($dew['DELIVERYAGENT_AGENTNAME'] == 'dhl' 
-                  && ($dewar['TRACKINGNUMBERTOSYNCHROTRON'] && strlen($dewar['TRACKINGNUMBERTOSYNCHROTRON']) <= 10) || 
-                  && ($dewar['TRACKINGNUMBERFROMSYNCHROTRON'] && strlen($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) <= 10)
+                  && (($dewar['TRACKINGNUMBERTOSYNCHROTRON'] && strlen($dewar['TRACKINGNUMBERTOSYNCHROTRON']) <= 10) || 
+                     ($dewar['TRACKINGNUMBERFROMSYNCHROTRON'] && strlen($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) <= 10))
             ) {
                 $tr = $this->_dewar_tracking($dew);
 
