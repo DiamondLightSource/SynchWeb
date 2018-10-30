@@ -580,6 +580,7 @@ define(['marionette',
             
             this.inspections = new ContainerInspections()
             this.inspections.queryParams.cid = this.model.get('CONTAINERID')
+            this.inspections.queryParams.delta = 1
             this.inspections.setSorting('BLTIMESTAMP', 1)
             this._ready.push(this.inspections.fetch())
 
