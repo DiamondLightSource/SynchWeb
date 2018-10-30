@@ -28,7 +28,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
 
         render: function() {
             this.$el.empty() 
-            if (this.model.get('IMAGERID')) {
+            if (this.model.get('IMAGERID') && !this.model.get('CONTAINERQUEUEID')) {
                 this.$el.html('<a href="#" class="button dispose" title="Dispose Container"><i class="fa fa-trash-o"></i></a>')    
             }
 
@@ -65,8 +65,6 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
             { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
             { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
             { name: 'SUBSAMPLES', label: '# Subsamples', cell: 'string', editable: false },
-            { name: 'DCCOUNT', label: '# DCs', cell: 'string', editable: false },
-            { name: 'DCDATE', label: 'Last', cell: 'string', editable: false },
             { name: 'CONTAINERTYPE', label: 'Type', cell: 'string', editable: false },
             { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
             { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
