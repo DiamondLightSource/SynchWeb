@@ -36,6 +36,11 @@ define(['marionette',
             'click a.add': 'addToQueue',
         },
 
+        initialize: function(options) {
+            AddCell.__super__.initialize.call(this,options)
+            this.listenTo(this.model, 'change:READYFORQUEUE', this.render)
+        },
+
         addToQueue: function(e) {
             e.preventDefault()
 
@@ -44,7 +49,6 @@ define(['marionette',
                 url: app.apiurl+'/sample/sub/queue/'+this.model.get('BLSUBSAMPLEID'),
                 success: function(resp) {
                     self.model.set('READYFORQUEUE', '1')
-                    self.render()
                 },
                 error: function(resp) {
                     app.alert({ message: 'Something went wrong queuing this sub sample' })
@@ -196,7 +200,7 @@ define(['marionette',
                 var ch = this.model.changedAttributes()
                 console.log('model valid', this.model, ch)
                 if (this.model.get('_valid') == false) this.model.save()
-                else if (ch && !(Object.keys(ch).length == 1 && ('isSelected' in ch || '_valid' in ch))) {
+                else if (ch && !(Object.keys(ch).length == 1 && ('isSelected' in ch || '_valid' in ch || this.plan.computed().indexOf(Object.keys(ch)[0]) > -1))) {
                     console.log('attrs changed', this.model.changedAttributes())
                     this.model.save()   
                 }
@@ -234,7 +238,7 @@ define(['marionette',
             this.preSave = _.debounce(this.preSave, 1000)
         },
 
-        bindModel: function() {
+        setPlan: function() {
             if (this.model.get('EXPERIMENTKIND') in this.plans) {
                 var options = {}
                 console.log('binding model', this.column.get('beamlinesetups'))
@@ -243,6 +247,22 @@ define(['marionette',
                 }
                 this.plan = new this.plans[this.model.get('EXPERIMENTKIND')](null, options)
             } else this.plan = new DiffractionPlan()
+        },
+
+        checkIsValid: function() {
+            this.setPlan()
+            Backbone.Validation.bind(this, { model: this.plan })
+
+            this.plan.set(this.model.toJSON())
+            this.updateComputed()
+
+            var valid = this.plan.isValid(true)
+            this.model.set('_valid', valid)
+            return valid
+        },
+
+        bindModel: function() {
+            this.setPlan()
 
             Backbone.Validation.unbind(this)
             Backbone.Validation.bind(this, {
@@ -444,24 +464,27 @@ define(['marionette',
         },
 
 
-        queueAllSamples: function() {
-            var reqs = []
-            this.subsamples.each(function(s,i) {
-                reqs.push(Backbone.ajax({
-                    url: app.apiurl+'/sample/sub/queue/'+s.get('BLSUBSAMPLEID'),
-                    success: function(resp) {
-                        s.set({ READYFORQUEUE: 1 }, { silent: true })
-                    },
-                }))
-            }, this)
+        queueAllSamples: function(e) {
+            e.preventDefault()
 
             var self = this
-            $.when.apply($, reqs).done(function() {
-                setTimeout(function() {
-                    self.subsamples.fetch()
-                    self.refreshQSubSamples()
-                }, 200)
+            var sids = this.subsamples.map(function(ss) { return ss.get('BLSUBSAMPLEID') })
+            Backbone.ajax({
+                url: app.apiurl+'/sample/sub/queue',
+                data: {
+                    BLSUBSAMPLEID: sids,
+                },
+                success: function(resp) {
+                    _.each(resp, function (r) {
+                        var ss = self.subsamples.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        ss.set({ READYFORQUEUE: '1' })
+                    })
+                },
             })
+
+            setTimeout(function() {
+                self.refreshQSubSamples.bind(self)
+            }, 200)
         },
 
 
@@ -518,6 +541,19 @@ define(['marionette',
 
         queueContainer: function(e) {
             e.preventDefault()
+
+            if (!this.qsubsamples.fullCollection.length) {
+                app.alert({ message: 'Please add some samples before queuing this container' })
+                return
+            }
+
+            // need to validate all models here again incase they havnt been rendered
+            this.qsubsamples.fullCollection.each(function(qs) {
+                if (qs.get('_valid') !== undefined) return
+
+                var expcell = new ExperimentCell({ model: qs, column: { beamlinesetups: this.beamlinesetups } })
+                var val = expcell.checkIsValid()
+            }, this)
 
             var invalid = this.qsubsamples.fullCollection.where({ '_valid': false })
             console.log('queue', invalid, invalid.length > 0)
@@ -723,6 +759,7 @@ define(['marionette',
                     // row: ClickableRow, 
                     emptyText: 'No sub samples found' 
                 },
+                noPageUrl: true,
             })
 
             this.qsmps.show(this.table2)
