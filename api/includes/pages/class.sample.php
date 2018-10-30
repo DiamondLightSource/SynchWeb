@@ -128,7 +128,7 @@
                               array('/sub/:ssid', 'put', '_update_sub_sample_full'),
                               array('/sub', 'post', '_add_sub_sample'),
                               array('/sub/:ssid', 'delete', '_delete_sub_sample'),
-                              array('/sub/queue/:BLSUBSAMPLEID', 'get', '_pre_q_sub_sample'),
+                              array('/sub/queue(/:BLSUBSAMPLEID)', 'get', '_pre_q_sub_sample'),
 
                               array('/plan', 'get', '_get_diffraction_plans'),
                               array('/plan', 'post', '_add_diffraction_plan'),
@@ -167,22 +167,35 @@
         function _pre_q_sub_sample() {
             if (!$this->has_arg('BLSUBSAMPLEID')) $this->_error('No subsample specified');
 
+            if (is_array($this->arg('BLSUBSAMPLEID'))) {
+                $ret = array();
+                foreach ($this->arg('BLSUBSAMPLEID') as $sid) {
+                    array_push($ret, array('BLSUBSAMPLEID' => $sid, 'CONTAINERQUEUESAMPLEID' => $this->_do_pre_q_sample(array('BLSUBSAMPLEID' => $sid))));
+                    $this->_output($ret);
+                }
+
+            } else {
+                $this->_output(array('CONTAINERQUEUESAMPLEID' => $this->_do_pre_q_sample(array('BLSUBSAMPLEID' => $this->arg('BLSUBSAMPLEID')))));
+            }
+        }
+
+        function _do_pre_q_sample($options) {
             $samp = $this->db->pq("SELECT ss.diffractionplanid,s.blsampleid,ss.positionid FROM blsubsample ss
               INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
               INNER JOIN container c ON c.containerid = s.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = sh.proposalid
-              WHERE p.proposalid=:1 AND ss.blsubsampleid=:2", array($this->proposalid, $this->arg('BLSUBSAMPLEID')));
+              WHERE p.proposalid=:1 AND ss.blsubsampleid=:2", array($this->proposalid, $options['BLSUBSAMPLEID']));
 
             if (!sizeof($samp)) $this->_error('No such sub sample');
 
             if ($this->has_arg('UNQUEUE')) {
-                $this->db->pq("DELETE FROM containerqueuesample WHERE blsubsampleid=:1 AND containerqueueid IS NULL", array($this->arg('BLSUBSAMPLEID')));
+                $this->db->pq("DELETE FROM containerqueuesample WHERE blsubsampleid=:1 AND containerqueueid IS NULL", array($options['BLSUBSAMPLEID']));
 
             } else {
-                $this->db->pq("INSERT INTO containerqueuesample (blsubsampleid) VALUES (:1)", array($this->arg("BLSUBSAMPLEID")));
-                $this->_output(array('CONTAINERQUEUESAMPLEID' => $this->db->id()));
+                $this->db->pq("INSERT INTO containerqueuesample (blsubsampleid) VALUES (:1)", array($options['BLSUBSAMPLEID']));
+                return $this->db->id();
             }
         }
 
@@ -247,6 +260,8 @@
                 $having .= ' HAVING count(dc.datacollectionid) = 0';
             }
 
+            // LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+            // LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
             $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,6) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
@@ -259,8 +274,10 @@
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = sh.proposalid
-              LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
-              LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
+              
+              LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
+              LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid AND cqs.containerqueueid IS NULL
+              
 
               LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
 
