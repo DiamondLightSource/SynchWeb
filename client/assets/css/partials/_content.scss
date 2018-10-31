@@ -1167,6 +1167,15 @@ ul.status {
             
             background-color: #77dd77;
         }
+
+
+        &.COMP {
+            &:before {
+                content: 'Completed'
+            }
+            
+            background-color: #87ceeb;
+        }
     }
 }
 
