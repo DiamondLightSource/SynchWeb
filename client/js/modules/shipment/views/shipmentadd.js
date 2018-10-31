@@ -85,9 +85,9 @@ define(['marionette', 'views/form',
             this.listenTo(this.contacts, 'sync', this.updateContacts)
             this.refreshContacts()
             
-            this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 5 } })
+            this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 15 } })
             this.visits.fetch().done(function() {
-                self.ui.first.html(self.visits.opts())
+                self.ui.first.html(self.visits.opts({ empty: true }))
             })
             
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE], input[name=DELIVERYAGENT_DELIVERYDATE]')
