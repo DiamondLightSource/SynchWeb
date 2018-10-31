@@ -1123,8 +1123,6 @@
                 } else if ($this->arg('ty') == 'todispose') {
                     $where .= " AND c.imagerid IS NOT NULL";
                     $having .= " HAVING (TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24) > 42";
-                } else if ($this->arg('ty') == 'data') {
-                    $having .= " HAVING COUNT(distinct dc.datacollectionid) > 0";
                 } else if ($this->arg('ty') == 'queued') {
                     $where .= " AND cq.containerqueueid IS NOT NULL";
                 } else if ($this->arg('ty') == 'completed') {
@@ -1241,7 +1239,7 @@
             
             if ($this->has_arg('sort_by')) {
                 $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
-                  'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)', 'DCDATE' => 'max(dc.starttime)',
+                  'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)',
                   'COMPLETEDTIMESTAMP' => 'max(cq2.completedtimestamp)',
                   );
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
@@ -1249,9 +1247,7 @@
             }
             // $this->db->set_debug(True);
             $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, cq.createdtimestamp as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, 
-                COUNT(distinct dc.datacollectionid) as dccount, 
-                GROUP_CONCAT(DISTINCT CONCAT(CONCAT(bpr.proposalcode, bpr.proposalnumber,'-',bls.visit_number)),':',bls.beamlinename) as dcvisits, GROUP_CONCAT(DISTINCT TO_CHAR(bls.startdate, 'HH24:MI DD-MM-YYYY')) as dcdates, count(distinct ss.blsubsampleid) as subsamples, 
-                TO_CHAR(max(dc.starttime), 'HH24:MI DD-MM-YYYY') as DCDATE, 
+                count(distinct ss.blsubsampleid) as subsamples, 
                 ses3.beamlinename as firstexperimentbeamline,
                 TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell
                                   FROM container c 
@@ -1275,13 +1271,9 @@
 
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
 
-                                  LEFT OUTER JOIN datacollection dc ON dc.blsampleid = s.blsampleid
-                                  LEFT OUTER JOIN blsession bls ON bls.sessionid = dc.sessionid
-                                  LEFT OUTER JOIN proposal bpr ON bpr.proposalid = bls.proposalid
-
                                   $join
                                   WHERE $where
-                                  GROUP BY sch.name, c.scheduleid, c.screenid, sc.name, c.imagerid, i.temperature, i.name, CONCAT(p.proposalcode, p.proposalnumber), c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code, d.code, sh.shippingname, d.dewarid, sh.shippingid
+                                  GROUP BY c.containerid
                                   $having
                                   ORDER BY $order", $args);
 
