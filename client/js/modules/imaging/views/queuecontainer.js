@@ -61,8 +61,12 @@ define(['marionette',
 
             console.log('add cell', this.model.get('CONTAINERQUEUEID'))
             if (!this.column.get('disable')) {
-                if (this.model.get('READYFORQUEUE') == '0')
+                if (this.model.get('READYFORQUEUE') == '0' && !this.model.get('QUEUECOMPLETED'))
                     this.$el.html('<a href="#" class="button add"><i class="fa fa-plus"></i></a>')
+            }
+
+            if (this.model.get('QUEUECOMPLETED')) {
+                this.$el.html('<ul class="status"><li class="COMP"></li></ul>')
             }
 
             return this
@@ -454,6 +458,7 @@ define(['marionette',
             'click a.unqueue': 'unqueueContainer',
             'click a.addall': 'queueAllSamples',
             'change @ui.nodata': 'refreshSubSamples',
+            'change @ui.notcompleted': 'refreshSubSamples',
         },
 
         ui: {
@@ -461,6 +466,7 @@ define(['marionette',
             rpreset: '.rpreset',
             xtal: '.xtalpreview',
             nodata: 'input[name=nodata]',
+            notcompleted: 'input[name=notcompleted]',
         },
 
 
@@ -468,7 +474,8 @@ define(['marionette',
             e.preventDefault()
 
             var self = this
-            var sids = this.subsamples.map(function(ss) { return ss.get('BLSUBSAMPLEID') })
+            var sids = _.map(this.subsamples.filter(function(ss) { return (!ss.get('QUEUECOMPLETED'))  }), function(ss) {return ss.get('BLSUBSAMPLEID')})
+
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue',
                 data: {
@@ -590,6 +597,10 @@ define(['marionette',
             return this.ui.nodata.is(':checked') ? 1 : null
         },
 
+        getNotCompleted: function() {
+            return this.ui.notcompleted.is(':checked') ? 1 : null
+        },
+
         refreshSubSamples: function() {
             this.subsamples.fetch()
         },
@@ -690,6 +701,7 @@ define(['marionette',
         
         onRender: function() {
             this.subsamples.queryParams.nodata = this.getNoData.bind(this)
+            this.subsamples.queryParams.notcompleted = this.getNotCompleted.bind(this)
             this._ready.done(this.doOnRender.bind(this))
         },
 
