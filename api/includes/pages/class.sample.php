@@ -265,8 +265,6 @@
                 $having .= ' HAVING count(dc.datacollectionid) = 0';
             }
 
-            // LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
-            // LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
             $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,6) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct ap.autoprocintegrationid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, cq2.completedtimestamp as queuecompleted
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
@@ -280,8 +278,9 @@
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = sh.proposalid
               
-              LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
-              LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid AND cqs.containerqueueid IS NULL
+              
+              LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+              LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
 
               LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
               LEFT OUTER JOIN containerqueue cq2 ON cq2.containerqueueid = cqs2.containerqueueid AND cq2.completedtimestamp IS NOT NULL
