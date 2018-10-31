@@ -69,7 +69,7 @@ define(['marionette', 'views/table', 'collections/containers', 'views/filter', '
             { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
             { name: 'LASTQUEUECOMPLETED', label: 'Completed', cell: 'string', editable: false },
             { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
-            { name: 'LASTINSPECTION', label: 'Last', cell: 'string', editable: false },
+            { name: 'LASTINSPECTIONDAYS', label: 'Last (d)', cell: 'string', editable: false },
             { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
         ],
 
