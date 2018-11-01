@@ -609,7 +609,7 @@
             //       VALUES (s_blsampleimagescore.nextval, :1, :2, :3)", array($b[1], $b[2], $b[3]));
             // }
 
-            $scores = $this->db->pq("SELECT blsampleimagescoreid, name, score, colour FROM blsampleimagescore ORDER BY score");
+            $scores = $this->db->pq("SELECT blsampleimagescoreid, name, score, colour, CONCAT(score, ' - ', name) as title FROM blsampleimagescore ORDER BY score");
             $this->_output($scores);
         }
 
