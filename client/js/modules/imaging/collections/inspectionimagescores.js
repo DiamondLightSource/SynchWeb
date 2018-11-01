@@ -6,7 +6,7 @@ define(['backbone.paginator', 'modules/imaging/models/inspectionimagescore', 'ut
 		mode: 'client',
 		url: '/imaging/inspection/images/scores',
 		               
-		keyAttribute: 'NAME',
+		keyAttribute: 'TITLE',
         valueAttribute: 'BLSAMPLEIMAGESCOREID',
 
 		state: {
