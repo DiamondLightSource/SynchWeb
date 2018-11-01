@@ -47,6 +47,7 @@ define(['marionette', 'views/form',
             'change input[name^=FCODES]': 'checkFCodes',
             'change @ui.name': 'checkFCodes',
             'click a.add_lc': 'addLC',
+            'click @ui.noexp': 'updateFirstExp',
         },
         
         ui: {
@@ -54,6 +55,7 @@ define(['marionette', 'views/form',
             lcout: 'select[name=SENDINGLABCONTACTID]',
             first: 'select[name=FIRSTEXPERIMENTID]',
             name: 'input[name=SHIPPINGNAME]',
+            noexp: 'input[name=noexp]',
         },
         
         addLC: function(e) {
@@ -78,6 +80,14 @@ define(['marionette', 'views/form',
             app.alert({ message: 'Something went wrong registering this shipment, please try again'})
         },
         
+        updateFirstExp: function() {
+            if (this.ui.noexp.is(':checked')) {
+                this.ui.first.html('<option value=""> - </option>')
+            } else {
+                this.ui.first.html(this.visits.opts())    
+            }
+        },  
+
         onRender: function() {
             var self = this
             
@@ -86,9 +96,7 @@ define(['marionette', 'views/form',
             this.refreshContacts()
             
             this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 15 } })
-            this.visits.fetch().done(function() {
-                self.ui.first.html(self.visits.opts({ empty: true }))
-            })
+            this.visits.fetch().done(this.updateFirstExp.bind(this))
             
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE], input[name=DELIVERYAGENT_DELIVERYDATE]')
             this.time('input[name=READYBYTIME], input[name=CLOSETIME]')
