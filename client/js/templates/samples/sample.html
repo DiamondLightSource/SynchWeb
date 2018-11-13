@@ -126,6 +126,21 @@
             <span class="label">Inspections</span>
         </li>
         <% } %>
+
+        <% if (CONTAINERQUEUEID) { %>
+        <li>
+            <span class="label">Auto Collect Queued</span>
+            <span><%-QUEUEDTIMESTAMP%></span>
+        </li>
+        <li>
+            <span class="label">Centring Method</span>
+            <span class="CENTRINGMETHOD"><%-CENTRINGMETHOD%></span>
+        </li>
+        <li>
+            <span class="label">Experiment Kind</span>
+            <span class="EXPERIMENTKIND"><%-EXPERIMENTKINDNAME%></span>
+        </li>
+        <% } %>
         
     </ul>
 </div>
