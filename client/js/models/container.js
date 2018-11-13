@@ -63,6 +63,11 @@ define(['backbone'], function(Backbone) {
             CONTAINERREGISTRYID: {
                 required: false,
                 pattern: 'number',
+            },
+
+            AUTOMATED: {
+                required: false,
+                pattern: 'number',
             }
         },
         
