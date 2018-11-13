@@ -168,6 +168,7 @@
                         }
                         
                         if (file_exists($f)) readfile($f);
+                        exit;
                     }
                 
                 } else {
