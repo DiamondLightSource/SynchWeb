@@ -17,7 +17,7 @@
             padding: 5px;
         }
 
-        td.extra, th.extra, th.xtal, td.xtal, th.non-xtal, td.non-xtal {
+        td.extra, th.extra, th.xtal, td.xtal, th.non-xtal, td.non-xtal, th.auto, td.auto {
             display: none;
 
             &.show {
@@ -26,7 +26,7 @@
         }
 
         @media (max-width: $breakpoint-vsmall) {
-            td.extra, th.extra,, th.xtal, td.xtal, th.non-xtal, td.non-xtal {
+            td.extra, th.extra,, th.xtal, td.xtal, th.non-xtal, td.non-xtal, th.auto, td.auto {
                 &.show {
                     display: block;
                 }
