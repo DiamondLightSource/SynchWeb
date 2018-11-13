@@ -1,4 +1,4 @@
-define(['backbone', 'collections/components'], function(Backbone, Components) {
+define(['backbone', 'collections/components', 'utils/experimentkinds'], function(Backbone, Components, EXP) {
     
     return Backbone.Model.extend({
         idAttribute: 'BLSAMPLEID',
@@ -8,6 +8,13 @@ define(['backbone', 'collections/components'], function(Backbone, Components) {
         initialize: function(attrs, options) {
             var addPrimary = (options && options.addPrimary) || (this.collection && this.collection.state.addPrimary)
             this.set('components', new Components(null, { pmodel: this, addPrimary: addPrimary }))
+            this.listenTo(this, 'change:EXPERIMENTKIND', this.updateExpKind)
+            this.updateExpKind()
+        },
+
+        updateExpKind: function() {
+            var val = EXP.key(this.get('EXPERIMENTKIND'))
+            this.set('EXPERIMENTKINDNAME', val)
         },
 
         defaults: {
