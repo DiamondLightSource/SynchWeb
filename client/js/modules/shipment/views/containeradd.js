@@ -63,6 +63,11 @@ define(['marionette',
         
     template, table, row){
     
+
+    Backbone.Syphon.InputReaders.register('checkbox', function($el){
+        return $el.prop('checked') ? $el.val() : null
+    })
+
     // Use Location as idAttribute for this table
     var LocationSample = Sample.extend({
         idAttribute: 'LOCATION',
@@ -101,6 +106,7 @@ define(['marionette',
             imager: 'select[name=REQUESTEDIMAGERID]',
             barcode: 'input[name=BARCODE]',
             registry: 'select[name=CONTAINERREGISTRYID]',
+            auto: 'input[name=AUTOMATED]',
         },
         
         
@@ -138,7 +144,13 @@ define(['marionette',
             'keyup @ui.barcode': 'checkBarcode',
 
             'change @ui.registry': 'updateName',
+            'click @ui.auto': 'updateAutomated',
         },
+
+        updateAutomated: function(e) {
+            if (this.table.currentView) this.table.currentView.toggleAuto(this.ui.auto.is(':checked'))
+        },
+
 
         updateName: function(e) {
             var rc = this.containerregistry.findWhere({ CONTAINERREGISTRYID: this.ui.registry.val() })
@@ -251,6 +263,8 @@ define(['marionette',
         },
 
         setType: function(e) {
+            this.$el.find('li.auto').hide()
+
             this.type = this.ctypes.findWhere({ name: this.ui.type.val() })
             this.type.set({ isSelected: true })
             this.model.set({
