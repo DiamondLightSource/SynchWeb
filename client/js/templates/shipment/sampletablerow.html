@@ -5,6 +5,8 @@
     <td class="xtal" colspan="2">&nbsp;</td>
     <td class="non-xtal" colspan="1">&nbsp;</td>
     <td class="extra" colspan="3">&nbsp;</td>
+    <td class="auto"></td>
+    <td class="auto"></td>
 
     <% } else { %>
 
@@ -48,6 +50,9 @@
         </table>
     <!--A: <%-CELL_A%> B:<%-CELL_B%> C:<%-CELL_C%> &alpha;:<%-CELL_ALPHA%> &beta;:<%-CELL_BETA%> &gamma;:<%-CELL_GAMMA%>-->
     </td>
+
+    <td class="auto"><%-CENTRINGMETHOD%></td>
+    <td class="auto"><%-EXPERIMENTKINDNAME%></td>
 
     <td>
         <% if (BLSAMPLEID && STATUS) { %>

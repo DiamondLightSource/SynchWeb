@@ -13,6 +13,8 @@ define(['marionette',
         'utils/forms',
         'utils/sgs',
         'utils/anoms',
+        'utils/centringmethods',
+        'utils/experimentkinds',
         'utils',
     
         'jquery',
@@ -20,7 +22,7 @@ define(['marionette',
         'jquery-ui.combobox',
     ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
         sampletable, sampletablerow, sampletablerowedit, 
-        forms, SG, Anom, utils, $) {
+        forms, SG, Anom, CM, EXP, utils, $) {
 
         
     // A Sample Row
@@ -76,7 +78,7 @@ define(['marionette',
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE'], function(f) {
+            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE', 'CENTRINGMETHOD', 'EXPERIMENTKIND'], function(f) {
                 var el = this.$el.find('[name='+f+']')
                 if (el.length) data[f] = el.attr('type') == 'checkbox'? (el.is(':checked')?1:null) : el.val()
             }, this)
@@ -140,7 +142,7 @@ define(['marionette',
                 PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '', SYMBOL: '',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: '',
                 CRYSTALID: -1, PACKINGFRACTION: '', LOOPTYPE: '',
-                DIMENSION1: '', DIMENSION2: '', DIMENSION3: '', SHAPE: ''
+                DIMENSION1: '', DIMENSION2: '', DIMENSION3: '', SHAPE: '', CENTRINGMETHOD: '', EXPERIMENTKIND: ''
             })
             this.model.get('components').reset()
             this.render()
@@ -207,6 +209,10 @@ define(['marionette',
                 source: this.getGlobalProteins.bind(this),
                 select: this.selectGlobalProtein.bind(this)
             })
+
+            if (this.getOption('auto').show) this.$el.find('.auto').addClass('show')
+            this.$el.find('[name=CENTRINGMETHOD]').html(CM.opts()).val(this.model.get('CENTRINGMETHOD'))
+            this.$el.find('[name=EXPERIMENTKIND]').html(EXP.opts()).val(this.model.get('EXPERIMENTKIND'))
 
             this.compview = new ComponentsView({ collection: this.model.get('components'), editable: this.editing || this.model.get('new') })
             this.ui.comps.append(this.compview.render().$el)
@@ -335,7 +341,9 @@ define(['marionette',
             if (options.childEditTemplate) this.options.childViewOptions.editTemplate = options.childEditTemplate
 
             this.extra = { show: false }
+            this.auto = { show: options.auto ? true : false }
             this.options.childViewOptions.extra = this.extra
+            this.options.childViewOptions.auto = this.auto
             this.options.childViewOptions.type = this.getOption('type')
             
         },
@@ -347,6 +355,10 @@ define(['marionette',
             } else {
                 this.$el.find('.xtal').addClass('show')
             }
+
+            if (this.getOption('auto')) {
+                this.toggleAuto(true)
+            }
         },
         
         toggleExtra: function() {
@@ -354,6 +366,13 @@ define(['marionette',
 
             if (this.extra.show) this.$el.find('.extra').addClass('show')
             else this.$el.find('.extra').removeClass('show')
+        },
+
+
+        toggleAuto: function(val) {
+            this.auto.show = val
+            if (val) this.$el.find('.auto').addClass('show')
+            else this.$el.find('.auto').removeClass('show')
         },
 
 
