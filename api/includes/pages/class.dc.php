@@ -993,7 +993,8 @@
                 LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
-                WHERE api.datacollectionid = :1 ORDER BY apss.scalingstatisticstype DESC', array($id));
+                WHERE api.datacollectionid = :1 AND app.processingstatus IS NOT NULL
+                ORDER BY apss.scalingstatisticstype DESC', array($id));
             
             $dts = array('cell_a', 'cell_b', 'cell_c', 'cell_al', 'cell_be', 'cell_ga');
             $dts2 = array('rlow', 'rhigh');
