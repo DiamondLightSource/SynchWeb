@@ -14,6 +14,8 @@ define(['marionette',
 
     'views/table',
 
+    'utils',
+    'moment',
     'utils/editable',
     'tpl!templates/shipment/container.html'], function(Marionette,
         
@@ -31,6 +33,7 @@ define(['marionette',
     
     TableView,    
 
+    utils, moment,
     Editable, template){
             
     return Marionette.LayoutView.extend({
@@ -46,10 +49,13 @@ define(['marionette',
         
         ui: {
             ext: '.extrainfo',
+            auto: '.auto',
         },
 
         events: {
             'click @ui.ext': 'toggleExtra',
+            'click a.queue': 'confirmQueueContainer',
+            'click a.unqueue': 'confirmUnqueueContainer',
         },
 
 
@@ -112,7 +118,81 @@ define(['marionette',
                         
             this.histtable = new TableView({ collection: this.history, columns: columns, tableClass: 'history', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
             this.hist.show(this.histtable)
+
+            this.updateAutoCollection()
         },
+
+
+        updateAutoCollection: function() {
+            if (this.model.get('CONTAINERQUEUEID')) {
+                this.ui.auto.html('This container was queued for auto collection on '+this.model.escape('QUEUEDTIMESTAMP'))
+                this.ui.auto.append(' <a href="#" class="button unqueue"><i class="fa fa-times"></i> Unqueue</a>')
+            } else {
+                this.ui.auto.html('<a href="#" class="button queue"><i class="fa fa-plus"></i> Queue</a> this container for Auto Collect')
+            }
+        },
+
+        confirmQueueContainer: function(e) {
+            e.preventDefault()
+            utils.confirm({
+                title: 'Queue Container?',
+                content: 'Are you sure you want to queue this container for auto collection?',
+                callback: this.doQueueContainer.bind(this)
+            })
+        },
+
+
+        doQueueContainer: function(e) {
+            var self = this
+            Backbone.ajax({
+                url: app.apiurl+'/shipment/containers/queue',
+                data: {
+                    CONTAINERID: this.model.get('CONTAINERID')
+                },
+                success: function(resp) {
+                    app.alert({ message: 'Container Successfully Queued' })
+                    self.model.set({
+                        CONTAINERQUEUEID: resp.CONTAINERQUEUEID,
+                        QUEUEDTIMESTAMP: moment().format('DD-MM-YYYY HH:mm')
+                    })
+                    self.updateAutoCollection()
+                    self.sampletable.toggleAuto(true)
+                },
+                error: function(resp) {
+                    app.alert({ message: 'Something went wrong queuing this container' })
+                }
+            })
+        },
+
+        confirmUnqueueContainer: function(e) {
+            e.preventDefault()
+            utils.confirm({
+                title: 'Unqueue Container?',
+                content: 'Are you sure you want to remove this container from the queue? You will loose your current place',
+                callback: this.doUnqueueContainer.bind(this)
+            })
+        },
+
+        doUnqueueContainer: function(e) {
+            var self = this
+            Backbone.ajax({
+                url: app.apiurl+'/shipment/containers/queue',
+                data: {
+                    CONTAINERID: this.model.get('CONTAINERID'),
+                    UNQUEUE: 1,
+                },
+                success: function(resp) {
+                    app.alert({ message: 'Container Successfully Unqueued' })
+                    self.model.set('CONTAINERQUEUEID', null)
+                    self.updateAutoCollection()
+                    self.sampletable.toggleAuto(false)
+                },
+                error: function(resp) {
+                    app.alert({ message: 'Something went wrong unqueuing this container' })
+                }
+            })
+        },
+
         
         onShow: function() {
             this._ready.done(this.doOnShow.bind(this))
@@ -130,7 +210,9 @@ define(['marionette',
                 this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
             } else this.puck.show(new PuckView({ collection: this.samples }))
-            this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type }))
+
+            this.sampletable = new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type, auto: this.model.get('CONTAINERQUEUEID') })
+            this.table.show(this.sampletable)
         }
     })
 
