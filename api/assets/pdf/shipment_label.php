@@ -15,7 +15,6 @@
 
         <br />
         <br />
-        <br />
 
         <p class="ca bold red">1. Dewar Tracking Label</p>
         <div class="border center eighty">
@@ -24,12 +23,19 @@
                 <br />
                 <br />
 
-                <barcode code="<?php echo $d['BARCODE'] ?>" type="C39" size="0.75" height="1.5" />
+                <barcode code="<?php echo $d['BARCODE'] ?>" type="QR" size="0.75" height="1.5" />
                 <div class="mono">*<?php echo $d['BARCODE'] ?>*</div>
             </div>
-
-            <br />
-            <br />
+    
+            <?php if ($d['AUTO'] > 0): ?>
+                <div class="notification notification-inline">
+                    <h1>Auto Collect</h1>
+                    <p>This dewar contains <?php echo $d['AUTO'] ?> container(s) for automated data collection</p>
+                </div>
+            <?php else: ?>
+                <br />
+                <br />
+            <?php endif; ?>
 
             <table class="center px500">
                 <tr>
@@ -84,10 +90,17 @@
 
                 <p class="bold">HANDLE WITH CARE</p>
                 <p class="bold">DO NOT DROP</p>
+
+                <?php if ($d['AUTO'] > 0): ?>
+                    <div class="notification">
+                        <h1>Auto Collect</h1>
+                        <p>This dewar contains <?php echo $d['AUTO'] ?> container(s) for automated data collection</p>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="ca pad">
-                <barcode code="<?php echo $d['BARCODE'] ?>" type="C39" size="0.75" height="1.5" />
+                <barcode code="<?php echo $d['BARCODE'] ?>" type="QR" size="0.75" height="1.5" />
                 <div class="mono">*<?php echo $d['BARCODE'] ?>*</div>
             </div>
 
@@ -103,6 +116,10 @@
                     <tr>
                         <td class="grey px150">Parcel Label</td>
                         <td><?php echo $d['CODE'] ?></td>
+                    </tr>
+                    <tr>
+                        <td class="grey px150">No. Conainers</td>
+                        <td><?php echo $d['CONTAINERS'] ?></td>
                     </tr>
                     <tr><td colspan="2"></td></tr>
                     <tr>
@@ -171,7 +188,7 @@
             </div>
 
             <div class="ca pad">
-                <barcode code="<?php echo $d['BARCODE'] ?>" type="C39" size="0.75" height="1.5" />
+                <barcode code="<?php echo $d['BARCODE'] ?>" type="QR" size="0.75" height="1.5" />
                 <div class="mono">*<?php echo $d['BARCODE'] ?>*</div>
             </div>
 

@@ -117,9 +117,11 @@
 
             $this->ship = $ship;
             
-            $this->dewars = $this->db->pq("SELECT bl.beamlinename, bl.beamlineoperator, TO_CHAR(bl.startdate, 'DD-MM-YYYY') as st, d.transportvalue, d.customsvalue, d.code, d.barcode 
+            $this->dewars = $this->db->pq("SELECT bl.beamlinename, bl.beamlineoperator, TO_CHAR(bl.startdate, 'DD-MM-YYYY') as st, d.transportvalue, d.customsvalue, d.code, d.barcode, count(cq.containerqueueid) as auto, count(c.containerid) as containers
                 FROM dewar d 
                 LEFT OUTER JOIN blsession bl ON d.firstexperimentid = bl.sessionid 
+                LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
+                LEFT OUTER JOIN containerqueue cq ON c.containerid = cq.containerid
                 WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
             
             $this->_render('shipment_label');

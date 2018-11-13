@@ -129,3 +129,32 @@ ol {
 .bold {
     font-weight: bold;
 }
+
+.notification {
+    margin: 10px;
+    border: 3px solid green;
+    border-radius: 5px;
+}
+
+.notification p {
+    margin-bottom: 0;
+}
+
+.notification h1 {
+    font-size: 22px;
+    margin: 3px;
+    border-bottom: 1px solid black;
+}
+
+.notification-inline {
+    margin: 0 5px 5px 5px;
+    padding: 5px 5px 0 5px;
+    font-size: 12px;
+    border: 1px solid green;
+}
+
+.notification-inline h1 {
+    margin: 0;
+    font-size: 14px;
+    border-bottom: none;
+}
