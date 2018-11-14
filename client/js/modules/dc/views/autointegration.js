@@ -5,6 +5,7 @@ define(['marionette',
     'modules/dc/views/rdplot',
     'modules/dc/views/aiplots',
     'modules/dc/views/autoprocattachments',
+    'modules/dc/views/apmessages',
 
     'views/log',
     'views/table',
@@ -12,12 +13,12 @@ define(['marionette',
     'utils',
     'tpl!templates/dc/dc_autoproc.html'], function(Marionette, TabView, 
         AutoProcAttachments, AutoIntegrations, 
-        RDPlotView, AIPlotsView, AutoProcAttachmentsView,
+        RDPlotView, AIPlotsView, AutoProcAttachmentsView, APMessagesView, 
         LogView, TableView, table,
         utils, template) {
        
 
-    var AutoIntegrationItem = Marionette.ItemView.extend({
+    var AutoIntegrationItem = Marionette.LayoutView.extend({
         template: template,
         modelEvents: { 'change': 'render' },
         
@@ -27,6 +28,14 @@ define(['marionette',
             'click .plot': 'showPlots',
             'click a.apattach': 'showAttachments',
             'click .dll': utils.signHandler,
+        },
+
+        regions: {
+            messages: '.messages'
+        },
+
+        onRender: function() {
+            this.messages.show(new APMessagesView({ messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true }))
         },
         
         showAttachments: function(e) {
@@ -72,7 +81,7 @@ define(['marionette',
     
     var DCAPTabView = TabView.extend({
         tabContentItem: function() { return AutoIntegrationItem },
-        tabTitle: 'TYPE',
+        tabTitle: 'TYPEICON',
         tabID: 'AID',
         
         childViewOptions: function() {
