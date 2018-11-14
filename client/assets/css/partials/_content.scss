@@ -1937,3 +1937,40 @@ textarea[name=pasted] {
 }
 
 
+
+ul.messages {
+    li {
+        margin: 5px;
+        border-radius: 5px;
+        padding: 10px;
+
+        h1 {
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 14px;
+        }
+
+        p {
+            font-size: 11px;
+            margin-bottom: 0;
+        }
+
+        &.ERROR {
+            border: 1px solid #ff0000;
+            background: lighten(#ff0000, 40%);
+        }
+
+        &.WARNING {
+            border: 1px solid #ffa500;
+            background: lighten(#ffa500, 40%);
+        }
+
+        &.INFO {
+            border: 1px solid #00ff00;
+            background: lighten(#00ff00, 40%);
+        }
+    }
+
+}
