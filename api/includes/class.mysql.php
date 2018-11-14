@@ -148,6 +148,7 @@
                             'AutoProcScalingStatistics',
                             'AutoProcProgram',
                             'AutoProcProgramAttachment',
+                            'AutoProcProgramMessage',
                             
                             'Screening',
                             'ScreeningOutput',
