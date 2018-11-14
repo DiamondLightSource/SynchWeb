@@ -1,6 +1,22 @@
 // Font awesome middle align
 .fa {
     vertical-align: middle;
+
+    &.green {
+        color: #03c03c;
+    }
+    &.blue {
+        color: blue;
+    }
+    &.red {
+        color: red;
+    }
+    &.grey {
+        color: grey;
+    }
+    &.orange {
+        color: orange;
+    }
 }
 
 
@@ -20,17 +36,4 @@ a.icon:hover {
 .fa.icon {
     font-size: 18px;
     text-shadow: 0px 2px 3px rgba(150,150,150,0.5);
-    
-    &.green {
-        color: #03c03c;
-    }
-    &.blue {
-        color: blue;
-    }
-    &.red {
-        color: red;
-    }
-    &.grey {
-        color: grey;
-    }
 }
