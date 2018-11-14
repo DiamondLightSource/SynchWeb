@@ -9,7 +9,7 @@ define(['marionette', 'jquery', 'jquery-ui'], function(Marionette, $) {
     modelEvents: { 'change': 'render' },
     initialize: function(options) {
       var id = this.model.get(this.getOption('tabID')).replace(/\s+/g, '')
-      this.template = _.template('<a href="#tabs-'+id+'"><%-'+this.getOption('tabTitle')+'%></a>')
+      this.template = _.template('<a href="#tabs-'+id+'"><%='+this.getOption('tabTitle')+'%></a>')
     }
   })
     
