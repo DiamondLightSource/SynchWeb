@@ -4,14 +4,16 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
     'backbone',
     'modules/dc/views/imagestatusitem',
     'modules/dc/views/apstatusitem',
+    'modules/dc/views/apmessagestatusitem',
     'modules/dc/views/reprocess2',
     'modules/dc/views/attachments',
+    'modules/dc/views/apmessages',
     'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, 
       TabView, DCCommentsView, DCDISTLView, 
       DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, 
-      AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, 
+      AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, APMessageStatusItem,
       ReprocessView,
-      AttachmentsView,
+      AttachmentsView, APMessagesView,
       template) {
 
   return Marionette.LayoutView.extend({
@@ -19,6 +21,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
     plotView: DCDISTLView,
     imageStatusItem: DCImageStatusItem,
     apStatusItem: APStatusItem,
+    apMessageStatusItem: APMessageStatusItem,
 
     initialize: function(options) {
       this.strat = null
@@ -48,6 +51,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       this.imagestatus = new (this.getOption('imageStatusItem'))({ ID: this.model.get('ID'), TYPE: this.model.get('DCT'), statuses: this.getOption('imagestatuses'), el: this.$el })
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), SCREEN: (this.model.get('OVERLAP') != 0 && this.model.get('AXISRANGE')), statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
+      this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
     },
 
 
@@ -96,6 +100,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       'click @ui.exp': 'expandPath',
       'click @ui.rp': 'reprocess',
       'click a.attach': 'attachments',
+      'click a.messages': 'showMessages',
     },
       
     ui: {
@@ -103,6 +108,19 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       exp: 'i.expand',
       cc: '.dcc',
       rp: 'a.reprocess',
+    },
+
+    showMessages: function(e) {
+        e.preventDefault()
+
+        var d = []
+        if (this.model.get('DCC') > 1) d.dcg = this.model.get('DCG')
+        else d.id = this.model.get('ID')
+
+        app.dialog.show(new DialogView({ 
+            title: 'Processing Messages', 
+            view: new APMessagesView(d)
+        }))
     },
 
 

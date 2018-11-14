@@ -3,6 +3,7 @@ define(['marionette',
         //'modules/dc/views/apstatuscollection',
         'modules/dc/collections/imagestatuses',
         'modules/dc/collections/apstatuses',
+        'modules/dc/collections/apmessagestatuses',
 
         'modules/dc/views/dc',
         'modules/dc/views/grid',
@@ -12,7 +13,7 @@ define(['marionette',
         'modules/dc/views/action',
         ],
 function(Marionette, 
-         DCImageStatusCollection, DCAPStatusCollection,
+         DCImageStatusCollection, DCAPStatusCollection, DCAPMessageStatusCollection,
          DCItemView, GridItemView, RobotItemView, EdgeItemView, MCAItemView, ActionItemView) {
              
   var EmptyCollectionView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1>No data collections yet</h1></div>' })
@@ -23,9 +24,11 @@ function(Marionette,
   // The main history view
   return Marionette.CollectionView.extend({
     apStatus: true,
+    apMessageStatus: true,
     rpStatus: true,
     imageStatusCollection: DCImageStatusCollection,
     apStatusCollection: DCAPStatusCollection,
+    apMessageStatusCollection: DCAPMessageStatusCollection,
       
     dcViews: {
         data: DCItemView,
@@ -42,6 +45,7 @@ function(Marionette,
         return {
             imagestatuses: this.imagestatuses,
             apstatuses: this.apstatuses,
+            apmessagestatuses: this.apmessagestatuses,
             templateHelpers: { IS_VISIT: is_vis, VIS_LINK: vl, APIURL: app.apiurl },
             visit: vl,
         }
@@ -50,6 +54,7 @@ function(Marionette,
     initialize: function(options) {
       this.imagestatuses = new (this.getOption('imageStatusCollection'))()
       this.apstatuses = new (this.getOption('apStatusCollection'))()
+      this.apmessagestatuses = new (this.getOption('apMessageStatusCollection'))()
     
       this.listenTo(this.collection, 'sync', this._onSync, this)
       this._onSync()
@@ -59,6 +64,7 @@ function(Marionette,
         var ids = this.collection.pluck('ID')
         this.imagestatuses.fetch({ data: { ids:  ids }, type: 'POST' })
         if (this.getOption('apStatus')) this.apstatuses.fetch({ data: { ids: ids }, type: 'POST' })
+        if (this.getOption('apMessageStatus')) this.apmessagestatuses.fetch({ data: { ids: ids }, type: 'POST' })
     },
                                                           
     getChildView: function(item) {
