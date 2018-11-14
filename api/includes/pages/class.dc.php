@@ -19,6 +19,7 @@
                               'dcid' => '\d+',
                               'DATACOLLECTIONID' => '\d+',
                               'PERSONID' => '\d+',
+                              'AUTOPROCPROGRAMMESSAGEID' => '\d+',
 
                               'debug' => '\d',
 
@@ -45,6 +46,9 @@
                               array('/comments', 'post', '_add_comment'),
 
                               array('/dat/:id', 'get', '_plot'),
+
+                              array('/apms', 'post', '_ap_message_status'),
+                              array('/apm', 'get', '_ap_message'),
                             );
 
 
@@ -122,6 +126,12 @@
                 } else if ($this->arg('t') == 'ap') {
                     $where = '';
                     $extj[0] .= 'INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid';
+
+                } else if ($this->arg('t') == 'err') {
+                    $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
+                    $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
+                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = app.datacollectionid)
+                        INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
                 }
             }
             
@@ -421,6 +431,7 @@
              LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
              LEFT OUTER JOIN datacollectionfileattachment dca ON dc.datacollectionid = dca.datacollectionid
              LEFT OUTER JOIN detector d ON d.detectorid = dc.detectorid
+
              $extj[0]
              WHERE $sess[0] $where
              $groupby
@@ -746,7 +757,78 @@
             $this->profile('end');
             $this->_output($out);
         }
+
+
+        # ------------------------------------------------------------------------
+        # AutoProcProgram Messages
+        function _ap_message_status() {
+            if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
+            $where = 'WHERE p.proposalid=:1';
+            $args = array($this->proposalid);
+
+            $wids = array();
+            if ($this->has_arg('ids')) {
+                if (is_array($this->arg('ids'))) {
+                    foreach ($this->arg('ids') as $i) {
+                        array_push($wids,'dc.datacollectionid=:'.(sizeof($args)+1));
+                        array_push($args,$i);
+                    }
+                }
+            }
+
+            if (!sizeof($wids)) {
+                $this->_output(array());
+                return;
+            }
+                                
+            $where .= ' AND ('.implode(' OR ', $wids).')';
+
+            $rows = $this->db->pq("SELECT app.autoprocprogramid, dc.datacollectionid as id, SUM(IF(appm.severity = 'ERROR', 1, 0)) as errors, SUM(IF(appm.severity = 'WARNING', 1, 0)) as warnings, SUM(IF(appm.severity = 'INFO', 1, 0)) as infos
+                FROM autoprocprogrammessage appm
+                INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
+                LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid OR app.datacollectionid = dc.datacollectionid)
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                GROUP BY dc.datacollectionid
+                ");
+
+            $this->_output($rows);
+        }
         
+
+        function _ap_message() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('id') && !$this->has_arg('AUTOPROCPROGRAMMESSAGEID')) $this->_error('No datacollection or message specified');
+
+            $where = 'WHERE p.proposalid=:1';
+            $args = array($this->proposalid);
+
+            if ($this->has_arg('AUTOPROCPROGRAMMESSAGEID')) {
+                $where .= ' AND appm.autoprocprogrammessageid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('AUTOPROCPROGRAMMESSAGEID'));
+            }
+
+            if ($this->has_arg('id')) {
+                $where .= ' AND dc.datacollectionid=:2';
+                array_push($args, $this->arg('id'));
+            }
+
+            $rows = $this->db->pq("SELECT app.processingprograms, appm.autoprocprogrammessageid, appm.recordtimestamp, appm.severity, appm.message, appm.description, api.autoprocintegrationid
+                FROM autoprocprogrammessage appm
+                INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
+                LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid OR app.datacollectionid = dc.datacollectionid)
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                $where", $args);
+
+            if ($this->has_arg('AUTOPROCPROGRAMMESSAGEID')) {
+                if (sizeof($rows)) {
+                    $this->_output($rows[0]);
+                } else $this->_error('No such auto processing message');
+            } else $this->_output($rows);
+        }
         
         
         # ------------------------------------------------------------------------
@@ -984,6 +1066,7 @@
         # ------------------------------------------------------------------------
         # Auto processing for a data collection
         function _dc_auto_processing($id) {
+            // AND app.processingstatus IS NOT NULL
             $rows = $this->db->pq('SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingprograms as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga, 
                     (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as nswps
                 FROM autoprocintegration api 
@@ -993,9 +1076,21 @@
                 LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
-                WHERE api.datacollectionid = :1 AND app.processingstatus IS NOT NULL
+                WHERE api.datacollectionid = :1
                 ORDER BY apss.scalingstatisticstype DESC', array($id));
             
+
+            $msg_tmp = $this->db->pq("SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
+                FROM autoprocprogrammessage appm
+                INNER JOIN autoprocintegration api ON api.autoprocprogramid = appm.autoprocprogramid
+                WHERE api.datacollectionid=:1", array($id));
+
+            $messages = array();
+            foreach ($msg_tmp as $m) {
+                if (!array_key_exists($m['AUTOPROCPROGRAMID'], $messages)) $messages[$m['AUTOPROCPROGRAMID']] = array();
+                array_push($messages[$m['AUTOPROCPROGRAMID']], $m);
+            }
+
             $dts = array('cell_a', 'cell_b', 'cell_c', 'cell_al', 'cell_be', 'cell_ga');
             $dts2 = array('rlow', 'rhigh');
             
@@ -1050,6 +1145,7 @@
                 
                 $output[$r['AUTOPROCPROGRAMID']]['AID'] = $r['AUTOPROCPROGRAMID'];
                 $output[$r['AUTOPROCPROGRAMID']]['SHELLS'][$r['SHELL']] = $shell;
+                $output[$r['AUTOPROCPROGRAMID']]['MESSAGES'] = array_key_exists($r['AUTOPROCPROGRAMID'], $messages) ? $messages[$r['AUTOPROCPROGRAMID']] : array();
             }
                   
             #$this->_output($rows);
