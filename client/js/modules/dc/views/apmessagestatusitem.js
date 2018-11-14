@@ -24,9 +24,9 @@ define(['marionette', 'jquery'], function(Marionette, $) {
         
         onRender: function() {
             console.log('render apmessage', this.model)
-            var err = parseInt(this.model.get('ERRORS')) > 0 ? ('<i class="fa fa-exclamation-circle icon red"></i> '+this.model.get('ERRORS')) : ''
-            var war = parseInt(this.model.get('WARNINGS')) > 0 ? ('<i class="fa fa-exclamation-triangle icon orange"></i> '+this.model.get('WARNINGS')): ''
-            var inf = parseInt(this.model.get('INFOS')) > 0 ? ('<i class="fa fa-info-circle icon green"></i> '+this.model.get('INFOS')): ''
+            var err = parseInt(this.model.get('ERRORS')) > 0 ? ('<i class="fa fa-exclamation-circle red"></i> '+this.model.get('ERRORS')) : ''
+            var war = parseInt(this.model.get('WARNINGS')) > 0 ? ('<i class="fa fa-exclamation-triangle orange"></i> '+this.model.get('WARNINGS')): ''
+            var inf = parseInt(this.model.get('INFOS')) > 0 ? ('<i class="fa fa-info-circle green"></i> '+this.model.get('INFOS')): ''
             this.ui.holder.html('<a href="#" class="button messages">'+err+' '+war+' '+inf+'</a>')
         }
     })
