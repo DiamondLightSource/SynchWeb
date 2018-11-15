@@ -671,7 +671,7 @@
                     
                     "autoPROC" => array('autoPROC/ap-run/', 'autoPROC.log', 'Normal termination'),
                     
-                    "Fast EP" => array('fast_ep/', 'fast_ep.log', 'Best spacegroup'),
+                    "Fast EP" => array('fast_ep/', 'fast_ep.log', 'Best hand:'),
                     "Dimple" => array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
                     "MrBUMP" => array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
                     "Big EP/XDS" => array('big_ep/', '/xia2/3dii-run/big_ep*.log', 'Results for'),
