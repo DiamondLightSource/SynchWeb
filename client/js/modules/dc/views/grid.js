@@ -7,13 +7,17 @@ define(['marionette', 'views/tabs',
     'views/dialog',
     'modules/dc/views/dccomments', 
     'modules/dc/views/attachments',
+    'modules/dc/views/apstatusitem',
+    'modules/dc/models/gridxrc',
     'tpl!templates/dc/grid.html', 'backbone-validation'], 
     function(Marionette, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, 
-      DialogView, DCCommentsView, AttachmentsView,
+      DialogView, DCCommentsView, AttachmentsView, APStatusItem, GridXRC,
       template) {
 
   return Marionette.ItemView.extend({
     template: template,
+
+    apStatusItem: APStatusItem,
 
     ui: {
       temp: 'span.temp',
@@ -29,6 +33,8 @@ define(['marionette', 'views/tabs',
       bx: '.boxx',
       by: '.boxy',
       zoom: 'a.zoom',
+
+      holder: '.holder h1',
     },
 
     toggleZoom: function(e) {
@@ -53,6 +59,8 @@ define(['marionette', 'views/tabs',
 
 
     initialize: function(options) {
+      this.xrc = null
+      this.hasXRC = false
       this.fullPath = false
 
       this.gridplot = new GridPlot({ BL: this.model.get('BL'), ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
@@ -73,6 +81,7 @@ define(['marionette', 'views/tabs',
       
 
     onShow: function() {
+      this.ui.holder.hide()
       this.ui.zoom.hide()
 
       this.diviewer = new ImageViewer({ model: this.model, embed: true, readyText: 'Click on the grid to load a diffraction image' })      
@@ -85,6 +94,8 @@ define(['marionette', 'views/tabs',
       // edit.create('COMMENTS', 'text')
         
       this.gridplot.gridPromise().done(this.showBox.bind(this))
+      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), XRC: true, statuses: this.getOption('apstatuses'), el: this.$el })
+      this.listenTo(this.apstatus, 'model:change', this.checkXRC)
     },
 
 
@@ -94,6 +105,29 @@ define(['marionette', 'views/tabs',
         this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
 
         if (gi.get('STEPS_Y') > 10) this.ui.zoom.show()
+    },
+
+    checkXRC: function() {
+        console.log('check xrc')
+        if (!this.xrc) {
+            var state = this.apstatus.getStatus({ type: 'XrayCentring' })
+            console.log('xrc state', state)
+            if (state >= 1 && !this.hasXRC) {
+                this.ui.holder.show()
+                this.hasXRC = true
+            }
+
+            if (state == 2) {
+                this.xrc = new GridXRC({ id: this.model.get('ID') })
+                this.xrc.fetch({
+                    success: this.showXRC.bind(this)
+                })
+            }
+        }
+    },
+
+    showXRC: function() {
+        this.ui.holder.prepend('Method: '+this.xrc.get('METHOD')+' - X Pos: '+this.xrc.get('X')+' Y Pos: '+this.xrc.get('Y'))
     },
                                       
     onDestroy: function() {
