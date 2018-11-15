@@ -689,16 +689,6 @@
                 INNER JOIN blsession s ON s.sessionid=dc.sessionid 
                 INNER JOIN proposal p ON p.proposalid=s.proposalid
                 WHERE $where", $ids);
-
-            $ids = array();
-            $wcs = array();
-            foreach ($dct as $d) {
-                array_push($ids, $d['ID']);
-                array_push($wcs, 'd.datacollectionid=:'.sizeof($ids));
-            }
-
-            $this->profile('dc query');
-            $this->db->close();
             
             $dcs = array();
             foreach ($dct as $d) $dcs[$d['ID']] = $d;
