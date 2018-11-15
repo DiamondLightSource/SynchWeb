@@ -31,6 +31,7 @@
                               array('/chi', 'post', '_chk_image'),
                               array('/imq/:id', 'get', '_image_qi'),
                               array('/grid/:id', 'get', '_grid_info'),
+                              array('/grid/xrc/:id', 'get', '_grid_xrc'),
                               array('/grid/map', 'get', '_grid_map'),
                               array('/ed/:id', 'get', '_edge', array('id' => '\d+'), 'edge'),
                               array('/mca/:id', 'get', '_mca', array('id' => '\d+'), 'mca'),
@@ -681,8 +682,10 @@
             $out = array();
             
             # DC Details
-            $dct = $this->db->pq("SELECT dc.overlap, dc.blsampleid, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number 
+            $dct = $this->db->pq("SELECT dc.overlap, dc.blsampleid, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number, xrc.status as xrcstatus
                 FROM datacollection dc 
+                LEFT OUTER JOIN gridinfo gr ON gr.datacollectiongroupid = dc.datacollectiongroupid
+                LEFT OUTER JOIN xraycentringresult xrc ON xrc.gridinfoid = gr.gridinfoid
                 INNER JOIN blsession s ON s.sessionid=dc.sessionid 
                 INNER JOIN proposal p ON p.proposalid=s.proposalid
                 WHERE $where", $ids);
@@ -701,10 +704,7 @@
             foreach ($dct as $d) $dcs[$d['ID']] = $d;
             
             foreach ($dcs as $dc) {
-                $this->profile('qend');
-
                 $dc['VIS'] = $this->arg('prop').'-'.$dc['VISIT_NUMBER'];
-                
                 $dc['DIR'] = $this->ads($dc['DIR']);
 
                 $this->profile('filestart');
@@ -748,6 +748,10 @@
                     $apr[$name] = $val;
                     
                 }
+
+                $apr['XrayCentring'] = $dc['XRCSTATUS'] === null ? 0 
+                    : ($dc['XRCSTATUS'] === 'pending' ? 1 
+                        : ($dc['XRCSTATUS'] === 'success' ? 2 : 3));
             
                 $this->profile('fileend');
                 
@@ -1532,6 +1536,25 @@
                 WHERE datacollectionid=:1", array($this->arg('id')));
 
             $this->_output($map);
+        }
+
+
+        # XRC
+        function _grid_xrc() {
+            $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, xrc.method, xrc.x, xrc.y
+                FROM gridinfo g
+                INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
+                INNER JOIN xraycentringresult xrc ON xrc.gridinfoid = g.gridinfoid
+                WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
+
+            if (!sizeof($info)) $this->_output(array());
+            else {
+                foreach ($info[0] as $k => &$v) {
+                    if ($k == 'METHOD') continue;
+                    $v = floatval($v);
+                }    
+                $this->_output($info[0]);
+            }
         }
 
         # ------------------------------------------------------------------------
