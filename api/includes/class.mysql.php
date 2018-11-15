@@ -290,6 +290,8 @@
                             'PhasingProgramRun',
                             'PhasingProgramAttachment',
 
+                            // Xray Centring
+                            'XrayCentringResult',
                 );
 
             foreach ($tables as $table) {
