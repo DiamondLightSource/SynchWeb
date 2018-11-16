@@ -217,9 +217,6 @@
 
             $rows = $this->db->pq("SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid
                 FROM autoprocintegration api 
-                INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
-                INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
-                INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
