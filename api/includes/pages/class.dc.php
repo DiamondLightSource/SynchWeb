@@ -1092,55 +1092,55 @@
             foreach ($rows as &$r) {
                 if (!array_key_exists($r['AUTOPROCPROGRAMID'], $output)) $output[$r['AUTOPROCPROGRAMID']] = array('BEAM' => array(), 'SHELLS' => array(), 'CELL' => array());
                 
-                $shell = array();
-                foreach ($r as $k => &$v) {
-                    if ($k == 'TYPE') {
-                        if ($r['NSWPS'] > 1) {
-                            $v = $r['NSWPS'].'xMulti'.$v;
+                if ($r['PROCESSINGSTATUS'] == '1') {
+                    $shell = array();
+                    foreach ($r as $k => &$v) {
+                        if ($k == 'TYPE') {
+                            if ($r['NSWPS'] > 1) {
+                                $v = $r['NSWPS'].'xMulti'.$v;
+                            }
+                        }
+
+                        if ($k == 'ISIGI') $v = number_format($v, 1);
+                        if ($k == 'RMERGE') $v = number_format($v, 3);
+                        if ($k == 'RMEAS') $v = number_format($v, 3);
+                        if ($k == 'COMPLETENESS') $v = number_format($v, 1);
+                        if ($k == 'MULTIPLICITY') $v = number_format($v, 1);
+                        if ($k == 'ANOMCOMPLETENESS') $v = number_format($v, 1);
+                        if ($k == 'ANOMMULTIPLICITY') $v = number_format($v, 1);
+                        if ($k == 'CCHALF') $v = number_format($v, 1);
+                        if ($k == 'CCANOMALOUS') $v = number_format($v, 1);
+
+                        $beam = array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM');
+                        if (in_array($k, $beam)) $v = number_format($v, 2);
+                        
+                        if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL') {
+                            continue;
+                            
+                        } else if ($k == 'SG') {
+                            $output[$r['AUTOPROCPROGRAMID']]['SG'] = $v;
+                        
+                        } else if (in_array(strtolower($k), $dts2)) {
+                            $shell[$k] = number_format($v, 2);
+                        
+                        } else if (in_array(strtolower($k), $dts)) {
+                            $v = number_format($v, 2);
+                            $output[$r['AUTOPROCPROGRAMID']]['CELL'][$k] = $v;
+                            
+                        } else if (in_array($k, $beam)) {
+                            $output[$r['AUTOPROCPROGRAMID']]['BEAM'][$k] = $v;
+
+                        } else {
+                            $shell[$k] = $v;
                         }
                     }
-
-                    if ($k == 'ISIGI') $v = number_format($v, 1);
-                    if ($k == 'RMERGE') $v = number_format($v, 3);
-                    if ($k == 'RMEAS') $v = number_format($v, 3);
-                    if ($k == 'COMPLETENESS') $v = number_format($v, 1);
-                    if ($k == 'MULTIPLICITY') $v = number_format($v, 1);
-                    if ($k == 'ANOMCOMPLETENESS') $v = number_format($v, 1);
-                    if ($k == 'ANOMMULTIPLICITY') $v = number_format($v, 1);
-                    if ($k == 'CCHALF') $v = number_format($v, 1);
-                    if ($k == 'CCANOMALOUS') $v = number_format($v, 1);
-
-                    $beam = array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM');
-                    if (in_array($k, $beam)) $v = number_format($v, 2);
-                    
-                    if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL') {
-                        continue;
-                    
-                    } else if ($k == 'TYPE') {
-                        $output[$r['AUTOPROCPROGRAMID']]['TYPE'] = $v;
-                        
-                    } else if ($k == 'SG') {
-                        $output[$r['AUTOPROCPROGRAMID']]['SG'] = $v;
-                    
-                    } else if (in_array(strtolower($k), $dts2)) {
-                        $shell[$k] = number_format($v, 2);
-                    
-                    } else if (in_array(strtolower($k), $dts)) {
-                        $v = number_format($v, 2);
-                        $output[$r['AUTOPROCPROGRAMID']]['CELL'][$k] = $v;
-                        
-                    } else if (in_array($k, $beam)) {
-                        $output[$r['AUTOPROCPROGRAMID']]['BEAM'][$k] = $v;
-
-                    } else {
-                        $shell[$k] = $v;
-                    }
+                    $output[$r['AUTOPROCPROGRAMID']]['SHELLS'][$r['SHELL']] = $shell;
                 }
-                
+
+                $output[$r['AUTOPROCPROGRAMID']]['TYPE'] = $r['TYPE'];
                 $output[$r['AUTOPROCPROGRAMID']]['AID'] = $r['AUTOPROCPROGRAMID'];
                 $output[$r['AUTOPROCPROGRAMID']]['PROCESSINGSTATUS'] = $r['PROCESSINGSTATUS'];
                 $output[$r['AUTOPROCPROGRAMID']]['PROCESSINGMESSAGE'] = $r['PROCESSINGMESSAGE'];
-                $output[$r['AUTOPROCPROGRAMID']]['SHELLS'][$r['SHELL']] = $shell;
                 $output[$r['AUTOPROCPROGRAMID']]['MESSAGES'] = array_key_exists($r['AUTOPROCPROGRAMID'], $messages) ? $messages[$r['AUTOPROCPROGRAMID']] : array();
             }
                   
