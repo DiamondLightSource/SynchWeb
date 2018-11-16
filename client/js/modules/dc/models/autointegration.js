@@ -9,6 +9,8 @@ define(['backbone'], function(Backbone){
         },
         
         addClasses: function() {
+            if (this.get('PROCESSINGSTATUS') == '0') return
+
             this.attributes.CLASS = { RMERGE: {}, RMEAS: {}, COMPLETENESS: {} }
             _.each(['overall', 'innerShell', 'outerShell'], function(k) {
                 var c = this.get('SHELLS')[k].COMPLETENESS
