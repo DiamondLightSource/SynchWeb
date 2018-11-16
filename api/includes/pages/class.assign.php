@@ -152,7 +152,7 @@
                 array_push($pvs, $pv_prefix.'-MO-ROBOT-01:PUCK_'.$id.'_NAME');
             }
             
-            $vals = $this->pv(array_values($pvs), true);
+            $vals = $this->pv(array_values($pvs), true, true);
 
             $rows = $this->db->pq("SELECT cr.barcode 
                 FROM containerregistry cr
@@ -167,8 +167,8 @@
             $return = array();
             foreach ($vals as $k => $v) {
                 if (preg_match('/PUCK_(\d+)_NAME/', $k, $mat)) {
-                    if (sizeof($v) > 1) {
-                        $val = (!in_array($v[1], $codes) && !$this->staff) ? '[Loaded]' : $v[1];
+                    if (is_array($v) && sizeof($v)) {
+                        $val = (!in_array($v[0], $codes) && !$this->staff) ? '[Loaded]' : $v[0];
                     } else $val = '';
                     array_push($return, array('id' => intval($mat[1]), 'name' => $val));
                 }
