@@ -1,7 +1,7 @@
 define(['backbone'], function(Backbone) {
 
     return Backbone.Model.extend({
-        idAttribute: 'PROCESSJOBINGID',
+        idAttribute: 'PROCESSINGJOBID',
         urlRoot: '/process',
             
         validation: {
