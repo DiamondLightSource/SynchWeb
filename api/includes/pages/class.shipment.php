@@ -1171,7 +1171,8 @@
             }
 
             if ($this->has_arg('imager')) {
-                $where .= ' AND c.imagerid IS NOT NULL';
+                if ($this->arg('imager') == '1') $where .= ' AND c.imagerid IS NOT NULL';
+                else $where .= ' AND c.imagerid IS NULL AND c.requestedimagerid IS NULL';
             }
 
 
@@ -1241,7 +1242,7 @@
             if ($this->has_arg('sort_by')) {
                 $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
                   'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)',
-                  'COMPLETEDTIMESTAMP' => 'max(cq2.completedtimestamp)',
+                  'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)'
                   );
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
