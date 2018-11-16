@@ -3,7 +3,7 @@ define(['backbone.paginator', 'models/reprocessing'],
     
     return PageableCollection.extend({
         model: Reprocessing,
-        mode: 'client',
+        mode: 'server',
         url: '/process',
             
         state: {
@@ -26,6 +26,14 @@ define(['backbone.paginator', 'models/reprocessing'],
             if (this.running) {
                 this.refresh_thread = setTimeout(this.fetch.bind(this), 5000)
             }
+        },
+
+        parseState: function(r, q, state, options) {
+            return { totalRecords: r.total }
+        },
+      
+        parseRecords: function(r, options) {
+            return r.data
         },
         
     })
