@@ -125,8 +125,9 @@
                     $where4 = " AND xrf.comments LIKE '%_FLAG_%'";
                     
                 } else if ($this->arg('t') == 'ap') {
-                    $where = '';
-                    $extj[0] .= 'INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid';
+                    $where = ' AND app.processingstatus = 1';
+                    $extj[0] .= "INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid
+                        INNER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid";
 
                 } else if ($this->arg('t') == 'err') {
                     $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
