@@ -125,7 +125,11 @@
             if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
             if (!$this->has_arg('aid')) $this->_error('No auto processing id', 'No auto processing id specified');
             
-            $rows = $this->db->pq('SELECT appa.filename,appa.filepath,appa.filetype FROM autoprocintegration api INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid WHERE api.datacollectionid = :1 AND api.autoprocprogramid=:2', array($this->arg('id'), $this->arg('aid')));
+            $rows = $this->db->pq('SELECT appa.filename,appa.filepath,appa.filetype 
+                FROM autoprocintegration api 
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
+                WHERE api.datacollectionid = :1 AND api.autoprocprogramid=:2', array($this->arg('id'), $this->arg('aid')));
             
             $this->db->close();
 
