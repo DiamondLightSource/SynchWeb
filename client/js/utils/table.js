@@ -131,7 +131,9 @@ define(['marionette', 'backgrid',
             render: function() {
                 this.$el.empty();
 
-                if (!this.column.get('test') || (this.column.get('test') && this.model.get(this.column.get('test')) && this.model.get(this.column.get('test')) != '0')) {
+                if (!this.column.get('test') || 
+                    (this.column.get('test') && Object.prototype.toString.call(this.model.get(this.column.get('test'))) !== '[object Array]' && this.model.get(this.column.get('test')) != '0') ||
+                    (this.column.get('test') && Object.prototype.toString.call(this.model.get(this.column.get('test'))) === '[object Array]' && this.model.get(this.column.get('test')).length)) {
                     
                     var temp = _.isFunction(this.getTemplate) ? _.result(this, 'getTemplate') : this.column.get('template')
                     var t = _.isFunction(temp) ? temp : _.template(temp)
