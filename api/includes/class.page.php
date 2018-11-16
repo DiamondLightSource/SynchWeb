@@ -429,12 +429,11 @@
         
         
         # Get a PV
-        function pv($pvs,$full=false) {
+        function pv($pvs, $full=false, $string=false) {
             global $bl_pv_prog, $bl_pv_env;
             putenv($bl_pv_env);
-            exec($bl_pv_prog . ' ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
+            exec($bl_pv_prog . ($string ? ' -S' : '') .' ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
             $output = array();
-            
             foreach ($ret as $i => $v) {
                 $lis = preg_split('/\s+/', $v);
                 $output[$lis[0]] = sizeof($lis) > 1 ? ($full ? array_slice($lis,1) : $lis[1]) : '';
