@@ -55,7 +55,31 @@
                 array_push($args, $this->arg('VISIT'));
             }
 
-            $rows = $this->db->pq("SELECT
+
+            $tot = $this->db->pq("SELECT count(distinct rp.processingjobid) as tot 
+                FROM processingjob rp
+                INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
+                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+            
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+            
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+            
+            $st = sizeof($args)+1;
+            array_push($args, $start);
+            array_push($args, $end);
+            
+
+            $rows = $this->db->paginate("SELECT
                 rp.processingjobid, rp.displayname, rp.comments, TO_CHAR(rp.recordtimestamp, 'DD-MM-YYYY HH24:MI') as recordtimestamp, rp.automatic, 
                 dc.filetemplate, dc.imagedirectory, dc.datacollectionid, dc.imageprefix, dc.datacollectionnumber,
                 smp.name as sample, smp.blsampleid as blsampleid, pr.acronym as protein, pr.proteinid,
@@ -86,7 +110,10 @@
                 $r['IMAGEDIRECTORY'] = preg_replace('/(.*?\/'.$r['VISIT'].')/', '', $r['IMAGEDIRECTORY'], 1);
             }
 
-            $this->_output($rows);
+            if ($this->has_arg('PROCESSINGJOBID')) {
+                if (sizeof($rows)) $this->_output($rows[0]);
+                else $this->_error('No such reprocessing job');
+            } $this->_output(array('total' => $tot, 'data' => $rows));
         }
 
 
