@@ -431,9 +431,10 @@
             // The old version assumed rack-<word>-from-bl
             //if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
             if ($from_beamline && $dew['LCRETEMAIL']) {
-                require_once('includes/class.email.php');
-                // DEBUGGING WHILE TESTING
+                // Log the event if debugging
                 if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
+
+                require_once('includes/class.email.php');
                 $email = new Email('storage-rack', '*** Visit finished, dewar awaiting instructions ***');
                 $email->data = $dew;
                 $email->send($dew['LCRETEMAIL']);
