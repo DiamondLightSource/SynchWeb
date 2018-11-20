@@ -326,6 +326,10 @@
 
         function _add_history() {
             global $in_contacts, $transfer_email;
+            global $bl_types; # Added for beamline names
+            # Flag to indicate we should e-mail users their dewar has returned from BL
+            $from_beamline = False;
+
             if (!$this->bcr()) $this->_error('You need to be on the internal network to add history');
 
             if (!$this->has_arg('BARCODE')) $this->_error('No barcode specified');
@@ -346,6 +350,32 @@
             else $dew = $dew[0];
 
             $track = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : $dew['TRACKINGNUMBERFROMSYNCHROTRON'];
+
+            // What was the last history entry for this dewar?
+            // If it's come from a beamline, register flag so we can e-mail further down...
+            $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
+
+            if (sizeof($last_history_results)) {
+                $last_history = $last_history_results[0];
+                // We only add data to dewar history in lower case from this method.
+                // If that ever changes, update this to become case insensitive search
+                $last_location = $last_history['STORAGELOCATION'];
+
+                // Why don't we have beamline names in the database...?
+                // Currently grabbing them from the config object
+                // Not particularly efficient, but this is not a time critical operation so
+                // this approach covers all beamlines for future proofing.
+                // Stop/break if we find a match
+                foreach($bl_types as $beamlines) {
+                    if (in_array($last_location, $beamlines)) {
+                        $from_beamline = True;
+                        break;
+                    }
+                }
+            } else {
+                // No history - could be a new dewar, so not necessarily an error...
+                if ($this->debug) error_log("No previous dewar transport history for DewarId ". $dew['DEWARID']);
+            }
 
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,'at facility',lower(:2),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $this->arg('LOCATION')));
             $dhid = $this->db->id();
@@ -398,7 +428,13 @@
                 $email->send($dew['LCRETEMAIL']);
             }
 
-            if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
+            // Change this so it checks if the boolean flag "from_beamline" is set
+            // The old version assumed rack-<word>-from-bl
+            //if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
+            if ($from_beamline && $dew['LCRETEMAIL']) {
+                // Log the event if debugging
+                if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
+
                 require_once('includes/class.email.php');
                 $email = new Email('storage-rack', '*** Visit finished, dewar awaiting instructions ***');
                 $email->data = $dew;

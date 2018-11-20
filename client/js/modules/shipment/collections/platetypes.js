@@ -32,6 +32,13 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
              well_drop: -1,
              capacity: 96
         },
+	{ name: 'MitegenInSitu_3_Drop', well_per_row: 12,
+             drop_per_well_x: 3, drop_per_well_y: 1,
+             drop_height: 0.5, drop_width: 1,
+             drop_offset_x: 0, drop_offset_y: 0,
+             well_drop: -1,
+             capacity: 96*3
+        },
          { name: 'Greiner 3 Drop', well_per_row: 12,
              drop_per_well_x: 3, drop_per_well_y: 1,
              drop_height: 0.5, drop_width: 1,
