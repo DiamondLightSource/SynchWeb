@@ -240,7 +240,7 @@
             array_push($args, $start);
             array_push($args, $end);
             
-            $order = 's.creationdate';
+            $order = 's.creationdate DESC';
             if ($this->has_arg('sort_by')) {
                 $cols = array('SHIPPINGNAME' => 's.shippingname');
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
@@ -259,7 +259,7 @@
               LEFT OUTER JOIN person pe2 ON pe2.personid = s.deliveryagent_flightcodepersonid
               WHERE $where 
               GROUP BY s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode, s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'), s.isstorageshipping, s.shippingtype, s.comments, s.creationdate 
-              ORDER BY $order DESC", $args);
+              ORDER BY $order", $args);
 
             foreach ($rows as &$s) {
                 $s['DELIVERYAGENT_BARCODE'] = str_replace(',', ', ', $s['DELIVERYAGENT_BARCODE']);
