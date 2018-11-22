@@ -118,7 +118,7 @@
                         <td><?php echo $d['CODE'] ?></td>
                     </tr>
                     <tr>
-                        <td class="grey px150">No. Conainers</td>
+                        <td class="grey px150">No. Containers</td>
                         <td><?php echo $d['CONTAINERS'] ?></td>
                     </tr>
                     <tr><td colspan="2"></td></tr>
