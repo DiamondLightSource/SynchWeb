@@ -122,7 +122,8 @@
                 LEFT OUTER JOIN blsession bl ON d.firstexperimentid = bl.sessionid 
                 LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
                 LEFT OUTER JOIN containerqueue cq ON c.containerid = cq.containerid
-                WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
+                WHERE d.shippingid=:1
+                GROUP BY d.dewarid", array($ship['SHIPPINGID']));
             
             $this->_render('shipment_label');
         }
