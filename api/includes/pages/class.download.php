@@ -283,7 +283,7 @@
         function _get_file($id, $file) {
             $path_ext = pathinfo($file['FILENAME'], PATHINFO_EXTENSION);
             if ($path_ext == 'html') header("Content-Type: text/html");
-            elseif ($path_ext == 'log' || $path_ext == 'txt') header("Content-Type: text/plain");
+            elseif ($path_ext == 'log' || $path_ext == 'txt' || $path_ext == 'error') header("Content-Type: text/plain");
             elseif ($path_ext == 'json') header("Content-Type: text/plain");
             else $this->_header($id.'_'.$file['FILENAME']);
 
