@@ -294,7 +294,7 @@
                 header("Content-Type: image/png");
                 header("Content-disposition: attachment; filename=\"$f\"");
             }
-            else if ($path_ext == 'log' || $path_ext == 'txt' || $path_ext == 'error') header("Content-Type: text/plain");
+            else if ($path_ext == 'log' || $path_ext == 'txt' || $path_ext == 'error' || $path_ext == 'LP') header("Content-Type: text/plain");
             else if ($path_ext == 'json') header("Content-Type: text/plain");
             else $this->_header($id.'_'.$file['FILENAME']);
 
