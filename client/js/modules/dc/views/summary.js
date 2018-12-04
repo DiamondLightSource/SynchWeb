@@ -157,11 +157,13 @@ define(['marionette', 'views/table',
                 if (dc.get('APLOADED')) {
                     var aps = dc.get('AUTOINTEGRATIONS')
                     aps.each(function(d) {
+                        if (d.get('PROCESSINGSTATUS') != 1) return
+
                         _.each(sweights, function(w, sh) {
                             var s = d.get('SHELLS')[sh]
-                            if (parseFloat(s.RHIGH) > max.res[sh]) max.res[sh] = parseFloat(s.RHIGH);
-                            if (parseFloat(s.RHIGH) < max.resm[sh]) max.resm[sh] = parseFloat(s.RHIGH);
-                            if (parseFloat(s.ISIGI) > max.isig[sh]) max.isig[sh] = parseFloat(s.ISIGI);
+                            if (parseFloat(s.RHIGH) > max.res[sh]) max.res[sh] = parseFloat(s.RHIGH)
+                            if (parseFloat(s.RHIGH) < max.resm[sh]) max.resm[sh] = parseFloat(s.RHIGH)
+                            if (parseFloat(s.ISIGI) > max.isig[sh]) max.isig[sh] = parseFloat(s.ISIGI)
                         })
                     })
                     
@@ -172,6 +174,8 @@ define(['marionette', 'views/table',
                     var best = null
                     var best_score = 0
                     aps.each(function(d) {
+                        if (d.get('PROCESSINGSTATUS') != 1) return
+
                         var score = 0
                         _.each(sweights, function(w, sh) {
                             var s = d.get('SHELLS')[sh]
