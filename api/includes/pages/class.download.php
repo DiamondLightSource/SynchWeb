@@ -282,9 +282,20 @@
 
         function _get_file($id, $file) {
             $path_ext = pathinfo($file['FILENAME'], PATHINFO_EXTENSION);
+
             if ($path_ext == 'html') header("Content-Type: text/html");
-            elseif ($path_ext == 'log' || $path_ext == 'txt' || $path_ext == 'error') header("Content-Type: text/plain");
-            elseif ($path_ext == 'json') header("Content-Type: text/plain");
+            else if ($path_ext == 'pdf') {
+                $f = $file['FILENAME'];
+                header("Content-Type: application/pdf");
+                header("Content-disposition: attachment; filename=\"$f\"");
+            }
+            else if ($path_ext == 'png') {
+                $f = $file['FILENAME'];
+                header("Content-Type: image/png");
+                header("Content-disposition: attachment; filename=\"$f\"");
+            }
+            else if ($path_ext == 'log' || $path_ext == 'txt' || $path_ext == 'error') header("Content-Type: text/plain");
+            else if ($path_ext == 'json') header("Content-Type: text/plain");
             else $this->_header($id.'_'.$file['FILENAME']);
 
             $f = $file['FILEPATH'].'/'.$file['FILENAME'];
