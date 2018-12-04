@@ -64,6 +64,7 @@ define(['marionette',
                 columns: columns, 
                 tableClass: 'attachments', 
                 loading: true, 
+                noPageUrl: true,
                 backgrid: { emptyText: 'No attachments found', } 
             })
         },

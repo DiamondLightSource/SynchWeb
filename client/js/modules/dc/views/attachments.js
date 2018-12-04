@@ -43,7 +43,10 @@ define(['marionette', 'views/table', 'collections/attachments', 'utils'], functi
                 { label: '', cell: OptionsCell, editable: false, id: this.getOption('id') },
             ]
                         
-            this.table = new TableView({ collection: this.attachments, columns: columns, tableClass: 'attachments', loading: true, backgrid: { emptyText: 'No attachments found', } })
+            this.table = new TableView({ 
+                collection: this.attachments, columns: columns, tableClass: 'attachments', loading: true, 
+                noPageUrl: true,
+                backgrid: { emptyText: 'No attachments found', } })
         },
 
         closeDialog: function() {
