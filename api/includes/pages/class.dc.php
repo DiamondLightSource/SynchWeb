@@ -785,8 +785,8 @@
                 INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid OR app.datacollectionid = dc.datacollectionid)
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                GROUP BY dc.datacollectionid
-                ");
+                $where
+                GROUP BY dc.datacollectionid", $args);
 
             $this->_output($rows);
         }
