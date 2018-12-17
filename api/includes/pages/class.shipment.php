@@ -743,7 +743,7 @@
 
             # Prepare e-mail response for dispatch request
             require_once('includes/class.email.php');
-            $subject_line = '*** Dewar '.$dew['BARCODE'].' ready for Shipping from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
+            $subject_line = '*** Dispatch requested for Dewar '.$dew['BARCODE'].' from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
             $email = new Email('dewar-dispatch', $subject_line);
 
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
