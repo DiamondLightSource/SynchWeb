@@ -707,7 +707,7 @@
 
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
-            $dew = $this->db->pq("SELECT d.dewarid,s.shippingid 
+            $dew = $this->db->pq("SELECT d.dewarid, d.barcode, s.shippingid
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid 
               INNER JOIN proposal p ON p.proposalid = s.proposalid
