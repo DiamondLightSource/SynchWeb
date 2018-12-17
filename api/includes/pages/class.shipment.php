@@ -707,7 +707,7 @@
 
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
-            $dew = $this->db->pq("SELECT d.dewarid, d.barcode, s.shippingid
+            $dew = $this->db->pq("SELECT d.dewarid, d.barcode, d.storageLocation, s.shippingid
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid 
               INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -722,20 +722,24 @@
 
             if (sizeof($last_history_results)) {
                 $last_history = $last_history_results[0];
-                // Check if the last history storage location is an EBIC prefix or not
+                
                 $last_location = $last_history['STORAGELOCATION'];
-
-                if (strpos(strtolower($last_location), 'ebic') == 0) {
-                    $dispatch_from_location = 'eBIC';
-                }
             } else {
-                // No history - could be a new dewar, so not necessarily an error...
-                if ($this->debug) error_log("No previous dewar transport history for DewarId ". $dew['DEWARID']);
+                // Use the current location of the dewar instead if no history
+                $last_location = $dew['STORAGELOCATION'];
+            }
+            // Check if the last history storage location is an EBIC prefix or not
+            // Case insensitive search
+            if (stripos($last_location, 'ebic') !== false) {
+                $dispatch_from_location = 'eBIC';
             }
 
+            // Update dewar transport history with provided location.
+            // Should this also update dewar.storageLocation as well?
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
               VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
               array($dew['DEWARID'], $this->arg('LOCATION')));
+
 
             # Prepare e-mail response for dispatch request
             require_once('includes/class.email.php');
