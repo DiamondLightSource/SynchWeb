@@ -701,6 +701,10 @@
 
         function _dispatch_dewar() {
             global $dispatch_email;
+            // Variable to store where the dewar is (Synchrotron or eBIC building)
+            // Could map this to dewar storage locations in ISPyB to make more generic...?
+            $dispatch_from_location = 'Synchrotron';
+
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
             $dew = $this->db->pq("SELECT d.dewarid,s.shippingid 
@@ -712,13 +716,31 @@
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            
+            // What was the last history entry for this dewar?
+            // If it's come from eBIC, we want to update the e-mail subect line...
+            $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
+
+            if (sizeof($last_history_results)) {
+                $last_history = $last_history_results[0];
+                // Check if the last history storage location is an EBIC prefix or not
+                $last_location = $last_history['STORAGELOCATION'];
+
+                if (strpos(strtolower($last_location), 'ebic') == 0) {
+                    $dispatch_from_location = 'eBIC';
+                }
+            } else {
+                // No history - could be a new dewar, so not necessarily an error...
+                if ($this->debug) error_log("No previous dewar transport history for DewarId ". $dew['DEWARID']);
+            }
+
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
               VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
               array($dew['DEWARID'], $this->arg('LOCATION')));
 
+            # Prepare e-mail response for dispatch request
             require_once('includes/class.email.php');
-            $email = new Email('dewar-dispatch', '*** Dewar ready for Shipping from Diamond - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***');
+            $subject_line = '*** Dewar '.$dew['BARCODE'].' ready for Shipping from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
+            $email = new Email('dewar-dispatch', $subject_line);
 
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
 
