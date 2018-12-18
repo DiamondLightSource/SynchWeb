@@ -707,7 +707,7 @@
 
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
-            $dew = $this->db->pq("SELECT d.dewarid, d.barcode, d.storageLocation, s.shippingid
+            $dew = $this->db->pq("SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid 
               INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -716,21 +716,30 @@
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            // What was the last history entry for this dewar?
-            // If it's come from eBIC, we want to update the e-mail subect line...
-            $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
+            // If dewar is from  eBIC, we want to update the e-mail subect line...
+            // Location is provided on form.
+            // If no location specified (i.e. deleted), then read from dewar transport history.
+            // If no dewar transport history fall back to dewar location
+            // We still update history based on provided location to record action from user
+            $dewar_location = $this->arg('LOCATION');
 
-            if (sizeof($last_history_results)) {
-                $last_history = $last_history_results[0];
-                
-                $last_location = $last_history['STORAGELOCATION'];
-            } else {
-                // Use the current location of the dewar instead if no history
-                $last_location = $dew['STORAGELOCATION'];
+            if (empty($dewar_location)) {
+              // What was the last history entry for this dewar?
+              // User may have accidentally removed location from form
+              $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
+
+              if (sizeof($last_history_results)) {
+                  $last_history = $last_history_results[0];
+                  
+                  $dewar_location = $last_history['STORAGELOCATION'];
+              } else {
+                  // Use the current location of the dewar instead if no history
+                  $dewar_location = $dew['STORAGELOCATION'];
+              }              
             }
             // Check if the last history storage location is an EBIC prefix or not
             // Case insensitive search
-            if (stripos($last_location, 'ebic') !== false) {
+            if (stripos($dewar_location, 'ebic') !== false) {
                 $dispatch_from_location = 'eBIC';
             }
 
