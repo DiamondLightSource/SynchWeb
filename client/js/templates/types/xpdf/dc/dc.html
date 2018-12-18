@@ -24,10 +24,10 @@
     </div>
     
     <ul class="clearfix">
-        <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
+        <li class="sample"><span class="wrap">Sample: <% if (BLSAMPLEID) { %><a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a><% } else { %> none <%}%></span></li>
 	<li>Group: <a href="/dc/visit/<%-VIS_LINK%>/dcg/<%-DCG%>"><%-DCC%> Data Collections</a></li>
 	<li>Beam Centre: <%-XBEAM%> x <%-YBEAM%></li>
-        <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
+        <li>Wavelength123: <%-WAVELENGTH%>&#197;</li>
         <li>Detector Distance: <%-parseFloat(DET).toFixed(1)%>mm</li>
         <li>Exposure: <%-EXPOSURETIME%>s</li>
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
