@@ -744,11 +744,12 @@
             }
 
             // Update dewar transport history with provided location.
-            // Should this also update dewar.storageLocation as well?
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
               VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
               array($dew['DEWARID'], $this->arg('LOCATION')));
 
+            // Also update the dewar status and storage location to keep it in sync with history...
+            $this->db->pq("UPDATE dewar set dewarstatus='dispatch-requested', storagelocation=lower(:2) WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION')));
 
             # Prepare e-mail response for dispatch request
             require_once('includes/class.email.php');
