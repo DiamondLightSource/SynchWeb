@@ -296,7 +296,7 @@
             header('content-type: multipart/x-mixed-replace; boundary=myboundary');
             
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'http://'.$img.'/axis-cgi/mjpg/video.cgi?fps=15&resolution=CIF&resolution=480x270');
+            curl_setopt($ch, CURLOPT_URL, 'http://'.$img.'/axis-cgi/mjpg/video.cgi?fps=5&resolution=CIF');
             curl_setopt($ch, CURLOPT_HEADER, 0);
             $im = curl_exec($ch);
             curl_close($ch);
