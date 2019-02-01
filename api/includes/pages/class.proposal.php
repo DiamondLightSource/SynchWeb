@@ -228,7 +228,9 @@
             if ($this->has_arg('all')) {
                 $args = array();
                 $where = 'WHERE 1=1';
-                
+                // 'All' is used for the main summary view (Next, Last, Commissioning)
+                // Ignore session zero for this summary view - they should be included if a proposal is selected
+                $where .= " AND s.visit_number > 0";                
             } else {
                 $props = $this->db->pq('SELECT proposalid as id FROM proposal WHERE CONCAT(proposalcode, proposalnumber) LIKE :1', array($this->arg('prop')));
                 if (!sizeof($props)) $this->_error('No such proposal');
