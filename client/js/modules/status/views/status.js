@@ -69,13 +69,16 @@ define(['marionette',
             })
 
             this.cal.show(new CalendarView({ all: 1, bl: this.getOption('bl') }))
-
-            /*var self = this
-            this.$el.find('.webcam img').each(function(i,w) {
-                $(w).attr('src', '/image/cam/bl/'+self.getOption('bl')+'/n/'+i)
-            })*/
         },
-        
+        // Marionette View lifecycle hook
+        onBeforeDestroy: function() {
+            // Disable webcam feeds
+            this.$el.find('.webcam img').each(function(i,w) {
+                $(w).attr('src', '')
+            })
+            // Disable OAV feeds
+            this.$el.find('.oav img').attr('src', '')
+        }
     })
         
 })
