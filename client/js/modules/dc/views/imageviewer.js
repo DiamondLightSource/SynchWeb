@@ -118,11 +118,14 @@ define(['jquery', 'marionette',
             this.lasty = 0
             this.lastv = 0
             
-            this.imscale = 1;
+            this.imscale = 1
             
             this.moved = false
             this.blocks = 0
             this.invert_change = false
+
+            this.ps = this.model.get('DETECTORPIXELSIZEHORIZONTAL') || 0.172
+            this.diwidth = this.model.get('DETECTORNUMBEROFPIXELSX') || 2527
         },
             
         
@@ -301,7 +304,7 @@ define(['jquery', 'marionette',
         
             this.width = this.img.width
             this.height = this.img.height
-            this.imscale = this.width/2527
+            this.imscale = this.width/this.diwidth
             // (this.model.get('BL') == 'i04-1' ? 1679 : 2527);
             this._calc_zoom()
 
@@ -472,8 +475,8 @@ define(['jquery', 'marionette',
             this.ctx.strokeStyle='blue';
             for (var i = 0; i < rings.length; i++) {
               this.ctx.beginPath();
-              rad = this._res_to_dist(rings[i])/0.172*this.imscale
-              this.ctx.arc(this.model.get('YBEAM')/0.172*this.imscale,this.model.get('XBEAM')/0.172*this.imscale,rad,0,2*Math.PI);
+              rad = this._res_to_dist(rings[i])/this.ps*this.imscale
+              this.ctx.arc(this.model.get('YBEAM')/this.ps*this.imscale,this.model.get('XBEAM')/this.ps*this.imscale,rad,0,2*Math.PI);
               this.ctx.stroke();
             }
         },
@@ -486,9 +489,9 @@ define(['jquery', 'marionette',
             for (var i = 0; i < 5; i++) {
               rad = (((this.height-10)/2)/5)*(i+1)
               this.ctx.beginPath();
-              this.ctx.arc(this.model.get('YBEAM')/0.172*this.imscale,this.model.get('XBEAM')/0.172*this.imscale,rad,0,2*Math.PI);
+              this.ctx.arc(this.model.get('YBEAM')/this.ps*this.imscale,this.model.get('XBEAM')/this.ps*this.imscale,rad,0,2*Math.PI);
               this.ctx.stroke();
-              this.ctx.fillText(this._dist_to_res(rad*0.172/this.imscale).toFixed(2) + 'A',this.model.get('YBEAM')/0.172*this.imscale-(this.low ? 10 : 40 ),this.model.get('XBEAM')/0.172*this.imscale-rad+(this.low ? 10 : 40));
+              this.ctx.fillText(this._dist_to_res(rad*this.ps/this.imscale).toFixed(2) + 'A',this.model.get('YBEAM')/this.ps*this.imscale-(this.low ? 10 : 40 ),this.model.get('XBEAM')/this.ps*this.imscale-rad+(this.low ? 10 : 40));
             }
         },
         
@@ -705,10 +708,7 @@ define(['jquery', 'marionette',
                 
         // Convert xy coord on image to distance from centre
         _xy_to_dist: function(x, y) {
-            // assume everyone is using a pilatus
-            var ps = 0.172
-          
-            return Math.sqrt(Math.pow(Math.abs(x*ps/this.imscale-this.model.get('YBEAM')),2)+Math.pow(Math.abs(y*ps/this.imscale-this.model.get('XBEAM')),2))
+            return Math.sqrt(Math.pow(Math.abs(x*this.ps/this.imscale-this.model.get('YBEAM')),2)+Math.pow(Math.abs(y*this.ps/this.imscale-this.model.get('XBEAM')),2))
         },
           
           
