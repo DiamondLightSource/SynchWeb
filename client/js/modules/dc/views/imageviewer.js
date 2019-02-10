@@ -280,10 +280,10 @@ define(['jquery', 'marionette',
         
         // Load image from remote source
         load: function(n) {
-          this.n = n
-          this.showProgressBar()
-          this.img.onerror = this._onerror.bind(this,n)
-          this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+n)
+            this.n = n
+            this.showProgressBar()
+            this.img.onerror = this._onerror.bind(this,n)
+            this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+n)
         },
 
         onImageProgress: function(pc) {
@@ -336,6 +336,10 @@ define(['jquery', 'marionette',
                         self.load(n)
                     }, 500)
       
+                } else {
+                    this.ui.loadprog.text('This image is not available.')
+                    var r = this.detectVerticalSquash(this.img)
+                    this.ctx.clearRect(0, 0, this.width, this.height/r)
                 }
             } else {
                 this.ui.loadprog.text('These images dont look to be on disk any more.')
