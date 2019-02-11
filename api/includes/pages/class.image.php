@@ -214,8 +214,7 @@
                 readfile($jpeg);
 
             } else {
-                $this->app->contentType('image/png');
-                readfile('assets/images/no_image.png');
+                $this->_error('Not found', 'That image is not available');
             }
             
         }
