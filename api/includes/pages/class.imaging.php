@@ -48,6 +48,7 @@
         
 
         public static $dispatch = array(array('/inspection(/:iid)', 'get', '_get_inspections'),
+					array('/inspection/locations/:barcode', 'get', '_get_locations'),
                                         array('/inspection', 'post', '_add_inspection'),
 
                                         array('/inspection/images(/:imid)(/iid/:iid)', 'get', '_get_inspection_images'),
@@ -94,7 +95,6 @@
                                         array('/screen/components/:sccid', 'delete', '_delete_screen_component'),
                              );
 
-
         # Initialise shared functions
         function __construct() {
             call_user_func_array(array('parent', '__construct'), func_get_args());
@@ -102,6 +102,21 @@
             include_once('class.imaging.shared.php');
             $this->shared = new ImagingShared($this->db);
         }
+
+	
+	# Returns a list of drop numbers for a plate identified by its unique barcode
+	# For use on Formulatrix via ImagerLink
+	function _get_locations(){
+	    $args = array();
+	    array_push($args, $this->arg('barcode'));
+	
+	    $locations = $this->db->pq("SELECT location FROM BLSample s INNER JOIN Container c ON s.containerId = c.containerId WHERE barcode=:1", $args);
+
+	    if(sizeof($locations))
+	    	$this->_output($locations);
+	    else
+		$this->_error('Barcode not found');
+	}
 
 
         function _get_imagers() {
