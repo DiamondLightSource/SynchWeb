@@ -642,8 +642,8 @@
         function _curl($options) {
             $ch = curl_init();
 
-            if (array_key_exists('Authorization', $headers) && $options['jwt']) {
-                $headers = getallheaders();
+            $headers = getallheaders();
+            if (array_key_exists('Authorization', $headers) && array_key_exists('jwt', $options)) {
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: '.$headers['Authorization']));
             }
 

@@ -103,7 +103,7 @@
                 INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
                 INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
                 INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
-                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid AND app.processingstatus = 1
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid 
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid 
                 INNER JOIN proposal p ON s.proposalid = p.proposalid $nostafft 
@@ -136,7 +136,7 @@
                     INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
                     INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
                     INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
-                    INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                    INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid AND app.processingstatus = 1
                     INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid 
                     INNER JOIN blsession s ON s.sessionid = dc.sessionid 
                     INNER JOIN proposal p ON s.proposalid = p.proposalid $nostaff 

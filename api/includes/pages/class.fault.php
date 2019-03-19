@@ -81,7 +81,14 @@
         function _get_faults() {
             $args = array();
             $where = array();
+            $join = '';
             
+            if (!$this->user->has('fault_view')) {
+                array_push($where, 'shp.personid=:'.(sizeof($args)+1));
+                array_push($args, $this->user->personid);
+                $join = 'INNER JOIN session_has_person shp ON shp.sessionid = bl.sessionid';
+            }
+
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
                 array_push($where, "(lower(f.title) LIKE lower(CONCAT(CONCAT('%',:".$st."),'%')) OR lower(f.description) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."),'%')) OR lower(s.name) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."),'%')) OR lower(c.name) LIKE lower(CONCAT(CONCAT('%',:".($st+3)."),'%')) OR lower(sc.name) LIKE lower(CONCAT(CONCAT('%',:".($st+4)."),'%')))");
@@ -148,7 +155,7 @@
                 $end = $pg*$pp+$pp;
             }
             
-            $tot = $this->db->pq('SELECT count(faultid) as tot
+            $tot = $this->db->pq("SELECT count(faultid) as tot
                 FROM bf_fault f
                 INNER JOIN bf_subcomponent sc ON f.subcomponentid = sc.subcomponentid
                 INNER JOIN bf_component c ON sc.componentid = c.componentid
@@ -156,7 +163,8 @@
                 INNER JOIN blsession bl ON f.sessionid = bl.sessionid
                 INNER JOIN v_run vr ON bl.startdate BETWEEN vr.startdate AND vr.enddate
                 INNER JOIN proposal p on p.proposalid = bl.proposalid
-                '.$where, $args);
+                $join
+                $where", $args);
             $tot = $tot[0]['TOT'];
             
             $pgs = intval($tot/$pp);
@@ -176,7 +184,9 @@
                 INNER JOIN blsession bl ON f.sessionid = bl.sessionid
                 INNER JOIN v_run vr ON bl.startdate BETWEEN vr.startdate AND vr.enddate
                 INNER JOIN proposal p on p.proposalid = bl.proposalid
+                $join
                 $where
+                GROUP BY f.faultid
                 ORDER BY f.starttime DESC", $args);
                
             foreach ($rows as &$r) {
@@ -340,6 +350,7 @@
         # ------------------------------------------------------------------------
         # Add a new system
         function _add_system() {
+            if (!$this->user->has('fault_admin')) $this->_error('No Access');
 
             if (!$this->has_arg('NAME')) $this->_error('Please specify a system name');
                                   
@@ -362,6 +373,8 @@
         # ------------------------------------------------------------------------
         # Add a new component
         function _add_component() {
+            if (!$this->user->has('fault_admin')) $this->_error('No Access');
+
             if (!$this->has_arg('NAME')) $this->_error('Please specify a component name');
             if (!$this->has_arg('SYSTEMID')) $this->_error('Please specify a system id');
                                   
@@ -385,6 +398,8 @@
         # ------------------------------------------------------------------------
         # Add a new subcomponent
         function _add_subcomponent() {
+            if (!$this->user->has('fault_admin')) $this->_error('No Access');
+
             if (!$this->has_arg('NAME')) $this->_error('Please specify a subcomponent name');
             if (!$this->has_arg('COMPONENTID')) $this->_error('Please specify a component id');
                                   
@@ -417,16 +432,22 @@
         # ------------------------------------------------------------------------
         # Edit a row
         function _update_system() {
+            if (!$this->user->has('fault_admin')) $this->_error('No Access');
+
             if (!$this->has_arg('SYSTEMID')) $this->_error('No system specified');
             $this->_edit($this->arg('SYSTEMID'), 'systems');
         }
 
         function _update_component() {
+            if (!$this->user->has('fault_admin')) $this->_error('No Access');
+
             if (!$this->has_arg('COMPONENTID')) $this->_error('No component specified');
             $this->_edit($this->arg('COMPONENTID'), 'components');
         }
 
         function _update_subcomponent() {
+            if (!$this->user->has('fault_admin')) $this->_error('No Access');
+
             if (!$this->has_arg('SUBCOMPONENTID')) $this->_error('No subcomponent specified');
             $this->_edit($this->arg('SUBCOMPONENTID'), 'subcomponents');
         }
@@ -472,6 +493,8 @@
         # ------------------------------------------------------------------------
         # Add fault via ajax
         function _add_fault() {
+            if (!$this->user->has('fault_add')) $this->_error('No Access');
+
             $valid = True;
             foreach (array('TITLE', 'DESCRIPTION', 'SESSIONID', 'STARTTIME', 'SUBCOMPONENTID', 'BEAMTIMELOST', 'RESOLVED') as $f) {
                 if (!$this->has_arg($f)) $valid = False;
