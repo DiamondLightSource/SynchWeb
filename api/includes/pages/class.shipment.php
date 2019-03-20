@@ -91,6 +91,7 @@
                               'EXPERIMENTTYPE' => '\w+',
                               'STORAGETEMPERATURE' => '[\w-]+',
                               'AUTOMATED' => '\d+',
+                              'PUCK' => '\d',
 
                               'CONTAINERREGISTRYID' => '\d+',
                               'PROPOSALID' => '\d+',
@@ -1207,6 +1208,11 @@
                 } else if ($this->arg('ty') == 'subsamples') {
                     $having .= " HAVING COUNT(distinct ss.blsubsampleid) > 0";
                 } 
+            }
+
+
+            if ($this->has_arg('PUCK')) {
+                $where .= " AND c.containertype LIKE 'Puck'";
             }
 
             

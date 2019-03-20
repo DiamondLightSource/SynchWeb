@@ -62,7 +62,14 @@ define(['marionette',
                     })
                 }
             })
-        }
+        },
+        // Marionette View lifecycle hook
+        onBeforeDestroy: function() {
+            // If someone navigates away from the page reset the src attribute to disable the feeds.
+            this.$el.find('.webcam img').each(function(i,w) {
+                $(w).attr('src', '')
+            })
+        },
         
     })
     

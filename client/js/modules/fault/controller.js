@@ -47,12 +47,22 @@ define(['marionette',
             
         // Add Fault
         add: function() {
+            if (!app.user_can('fault_add')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+
             app.bc.reset([bc, { title: 'Add New Fault Report' }])
             app.content.show(new AddFaultView())
         },
 
         // Edit Fault Types
         edit: function() {
+            if (!app.user_can('fault_admin')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+
             app.bc.reset([bc, { title: 'Edit Fault Types' }])
             app.content.show(new FaultTypeEditor())
         }
