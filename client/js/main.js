@@ -52,6 +52,8 @@ require.config({
 
     highmaps: 'vendor/highmaps/highmaps',
     'highmaps-world': 'vendor/highmaps/world',
+
+    vue: 'vendor/vue/vue.min'
   },
     
   shim: {
