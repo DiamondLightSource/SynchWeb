@@ -1,3 +1,4 @@
+// This file is deprecated to show how a vue version can be used instead
 define(['marionette',
     ], function(Marionette) {
     
