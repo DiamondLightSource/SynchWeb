@@ -1,5 +1,6 @@
 define(['marionette',
     'modules/feedback/views/feedback',
+    // 'modules/feedback/views/vue-feedback',
     ], function(Marionette, FeedbackView) {
     
     var bc = { title: 'Feedback' }
