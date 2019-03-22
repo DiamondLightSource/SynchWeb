@@ -41,7 +41,7 @@ define(['vue',
                     }
                 },
                 methods: {
-                    onShowPage(tutorial) {
+                    onShowPage: function(tutorial) {
                         this.currentPage = tutorial
                     }
                 }
