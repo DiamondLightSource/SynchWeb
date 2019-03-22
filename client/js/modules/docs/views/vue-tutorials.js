@@ -13,28 +13,29 @@ define(['vue',
         proposalTemplate, contactTemplate, mobileTemplate, dataTemplate,
         samplesTemplate, shipmentTemplate, experimentTemplate) {
 
-        // Register the component wrappers for each tutorial
-        // Crude but simple method
-        Vue.component('tutorial-proposal', { template: proposalTemplate })
-        Vue.component('tutorial-contact', { template: contactTemplate })
-        Vue.component('tutorial-mobile', { template: mobileTemplate })
-        Vue.component('tutorial-data', { template: dataTemplate })
-        Vue.component('tutorial-sample', { template: samplesTemplate })
-        Vue.component('tutorial-shipment', { template: shipmentTemplate })
-        Vue.component('tutorial-experiment', { template: experimentTemplate })
-
+        // Can register the components globally like this:
+        // Vue.component('tutorial-proposal', { template: proposalTemplate })
+        // But as we only use them here we can use a local object
+        let proposalComponent = {template: proposalTemplate}
+        let contactComponent = {template: contactTemplate}
+        let mobileComponent = {template: mobileTemplate}
+        let dataComponent = {template: dataTemplate}
+        let samplesComponent = {template: samplesTemplate}
+        let shipmentComponent = {template: shipmentTemplate}
+        let experimentComponent = {template: experimentTemplate}
+        
         return VueWrapper.extend({
             vueView: Vue.extend({
                 template: tmpl,
-                components: [
-                    'tutorial-proposal',
-                    'tutorial-contact',
-                    'tutorial-mobile',
-                    'tutorial-data',
-                    'tutorial-samples',
-                    'tutorial-shipment',
-                    'tutorial-prepare',
-                ],
+                components: {
+                    'tutorial-proposal': proposalComponent,
+                    'tutorial-contact': contactComponent,
+                    'tutorial-mobile': mobileComponent,
+                    'tutorial-data': dataComponent,
+                    'tutorial-samples': samplesComponent,
+                    'tutorial-shipment': shipmentComponent,
+                    'tutorial-experiment': experimentComponent,
+                },
                 data: function() {
                     return {
                         currentPage: 'proposals',
