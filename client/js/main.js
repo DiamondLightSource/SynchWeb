@@ -55,6 +55,8 @@ require.config({
 
     vue: 'vendor/vue/vue.min',
     veevalidate: 'vendor/vue/vee-validate',
+    // IE needs a promise polyfill for vue validation library
+    promise: 'vendor/vue/polyfill.min',
   },
     
   shim: {
