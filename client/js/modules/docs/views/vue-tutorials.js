@@ -1,17 +1,14 @@
-// Because the docs are located outside the /client/js dir,
-// a relative import is needed for the docs templates.
-// We could move these into templates/ 
-// Left like this at the moment so we can switch back easier if needed
+// Moved docs into templates/ and images under /assets/images/doc/ 
 define(['vue', 
         'utils/vuewrapper',
         'text!templates/docs/tutorials.html',
-        'text!../../../../../doc/proposal/index.html',
-        'text!../../../../../doc/contact/index.html',
-        'text!../../../../../doc/mobile/index.html',
-        'text!../../../../../doc/data/index.html',
-        'text!../../../../../doc/samples/index.html',
-        'text!../../../../../doc/shipment/index.html',
-        'text!../../../../../doc/prepare/index.html',
+        'text!templates/docs/proposal/index.html',
+        'text!templates/docs/contact/index.html',
+        'text!templates/docs/mobile/index.html',
+        'text!templates/docs/data/index.html',
+        'text!templates/docs/samples/index.html',
+        'text!templates/docs/shipment/index.html',
+        'text!templates/docs/prepare/index.html',
     ], function(Vue, VueWrapper, tmpl, 
         proposalTemplate, contactTemplate, mobileTemplate, dataTemplate,
         samplesTemplate, shipmentTemplate, experimentTemplate) {
