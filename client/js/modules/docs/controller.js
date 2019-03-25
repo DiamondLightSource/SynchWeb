@@ -1,5 +1,6 @@
 define(['marionette',
-    'modules/docs/views/tutorials',
+        // 'modules/docs/views/tutorials',
+        'modules/docs/views/vue-tutorials',
     ], function(Marionette, TutorialView) {
     
     var bc = { title: 'Tutorials' }
