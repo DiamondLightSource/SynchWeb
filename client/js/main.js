@@ -53,7 +53,12 @@ require.config({
     highmaps: 'vendor/highmaps/highmaps',
     'highmaps-world': 'vendor/highmaps/world',
 
-    vue: 'vendor/vue/vue.min'
+    // Vue library (v2.6.9)
+    vue: 'vendor/vue/vue.min',
+    // Vee-validate library (v2.2.0)
+    veevalidate: 'vendor/vue/vee-validate.min',
+    // IE needs a promise polyfill for vue validation library
+    promise: 'vendor/vue/polyfill.min',
   },
     
   shim: {
