@@ -216,6 +216,9 @@ define(['jquery', 'marionette',
 
             this.ctx.scale(pixelRatio, pixelRatio)
 
+            this.perceivedw = w
+            this.perceivedh = h
+
             this.$el.find('canvas.heatmap-canvas').remove()
             this.heatmap = new HeatMap.create({ 
                 container: this.$el[0],
@@ -258,7 +261,7 @@ define(['jquery', 'marionette',
                     h *= scalef
                 }
 
-                var cvratio = this.canvas.width / this.canvas.height
+                var cvratio = this.perceivedw / this.perceivedh
                 var snratio = w/h
                 
                 this.offset_w = 0
@@ -269,10 +272,10 @@ define(['jquery', 'marionette',
                     this.offset_w = (cvratio*h)-w
                 }
 
-                this.scale = this.canvas.width/(w+this.offset_w)
+                this.scale = this.perceivedw/(w+this.offset_w)
 
                 this.ctx.globalAlpha = 1
-                this.ctx.drawImage(this.snapshot, stx-this.offset_w/2, sty-this.offset_h/2, w+this.offset_w, h+this.offset_h, 0, 0, this.canvas.width, this.canvas.height)
+                this.ctx.drawImage(this.snapshot, stx-this.offset_w/2, sty-this.offset_h/2, w+this.offset_w, h+this.offset_h, 0, 0, this.perceivedw, this.perceivedh)
             }
 
             var d = []
@@ -297,8 +300,8 @@ define(['jquery', 'marionette',
                     if (v[1] > max) max = v[1]
                 })
 
-                var sw = (this.canvas.width-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
-                var sh = (this.canvas.height-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
+                var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
+                var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
 
                 var data = []
                 _.each(d, function(v,i) {
@@ -402,8 +405,8 @@ define(['jquery', 'marionette',
 
 
         _xyToPos: function(x, y) {
-            var sw = (this.canvas.width-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
-            var sh = (this.canvas.height-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
+            var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
+            var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
         
             // if (xstep % 2 == 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
 
