@@ -341,7 +341,7 @@ define(['marionette',
             if (options.childEditTemplate) this.options.childViewOptions.editTemplate = options.childEditTemplate
 
             this.extra = { show: false }
-            this.auto = { show: options.auto ? true : false }
+            this.auto = { show: options.auto == true ? true : false }
             this.options.childViewOptions.extra = this.extra
             this.options.childViewOptions.auto = this.auto
             this.options.childViewOptions.type = this.getOption('type')
@@ -356,7 +356,7 @@ define(['marionette',
                 this.$el.find('.xtal').addClass('show')
             }
 
-            if (this.getOption('auto')) {
+            if (this.getOption('auto') == true) {
                 this.toggleAuto(true)
             }
         },

@@ -276,7 +276,7 @@ define(['marionette',
                 this.buildCollection()
                 this.puck.$el.css('width', app.mobile() ? '100%' : '25%')
                 this.puck.show(new PuckView({ collection: this.samples }))
-                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table })
+                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, auto: this.ui.auto.is(':checked') })
                 this.table.show(this.stable)
                 this.single.empty()
                 this.grp.empty()
