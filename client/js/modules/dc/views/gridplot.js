@@ -300,6 +300,8 @@ define(['jquery', 'marionette',
                     if (v[1] > max) max = v[1]
                 })
 
+                if (max < 10) max = max * 50
+
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
 
