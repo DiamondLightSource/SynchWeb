@@ -111,13 +111,15 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           else var tmp = {}
 
           if (Array.isArray(tmp)) tmp[0].prop = prop
-          else tmp.prop = prop
+          else {
+            if (!tmp.prop) tmp.prop = prop
+          }
           options.data = JSON.stringify(tmp)
 
       // Append to object for anything else
       } else {
           if (!options.data) options.data = {}
-          options.data.prop = prop
+          if (!options.data.prop) options.data.prop = prop
       }
 
       // Send token with requst
