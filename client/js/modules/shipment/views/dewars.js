@@ -1,5 +1,6 @@
 define(['marionette', 'backbone',
         'collections/visits',
+        'modules/shipment/collections/dewarregistry',
         'views/validatedrow',
         'utils/editable',
         'utils/forms',
@@ -10,7 +11,7 @@ define(['marionette', 'backbone',
         'tpl!templates/shipment/dewarlistrownew.html',
     
         'backbone-validation',
-    ], function(Marionette, Backbone, Visits, ValidatedRow, Editable, forms, utils, template, rowtemplate, rowtemplatenew) {
+    ], function(Marionette, Backbone, Visits, DewarRegistry, ValidatedRow, Editable, forms, utils, template, rowtemplate, rowtemplatenew) {
     
         
     var GridRow = ValidatedRow.extend(_.extend({}, forms, {
@@ -26,7 +27,6 @@ define(['marionette', 'backbone',
 
         events: {
             'click a.cancel': 'cancelDewar',
-            //'mouseover td': 'showDewar',
             'click td': 'showDewar',
             'click a.deact': 'deactivateDewar',
             'click a.print': utils.signHandler,
@@ -34,6 +34,7 @@ define(['marionette', 'backbone',
         
         ui: {
             first: 'select[name=FIRSTEXPERIMENTID]',
+            fc: 'select[name=FACILITYCODE]',
         },
 
         className: function() {
@@ -100,7 +101,7 @@ define(['marionette', 'backbone',
             
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('CODE', 'text')
-            edit.create('FACILITYCODE', 'text')
+            edit.create('FACILITYCODE', 'select', { data: this.getOption('regdewars').kv({ empty: true })})
             edit.create('TRACKINGNUMBERTOSYNCHROTRON', 'text')
             edit.create('TRACKINGNUMBERFROMSYNCHROTRON', 'text')
             edit.create('WEIGHT', 'text')
@@ -111,6 +112,8 @@ define(['marionette', 'backbone',
                 self.ui.first.html(self.visits.opts())
                 edit.create('FIRSTEXPERIMENTID', 'select', { data: self.visits.kv() }, true)
             })
+
+            this.ui.fc.html(this.getOption('regdewars').opts({ empty: true }))
         },
         
     }))
@@ -129,8 +132,17 @@ define(['marionette', 'backbone',
         childView: GridRow,
         proteins: '',
         
+        childViewOptions: function() {
+            return {
+                regdewars: this.regdewars
+            }
+        },
+
         initialize: function(options) {
             if (options.childTemplate) this.options.childViewOptions.template = options.childTemplate
+
+            this.regdewars = new DewarRegistry()
+            this.regdewars.fetch()
         },
         
         // This magically works, which is worrying...

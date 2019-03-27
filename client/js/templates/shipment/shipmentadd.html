@@ -23,7 +23,7 @@
             
             <li class="d clearfix">
                 <label>Facility Dewar Codes
-                    <span class="small">Unique code for each dewar of the shipment</span>
+                    <span class="small">Unique code for each dewar of the shipment.<br />No facility codes listed? Make sure they are <a href="/dewars">Registered</a> or <a href="/migrate">Migrated</a> from an old proposal</span>
                 </label>
                 <div class="floated">
                     <!--<span class="fcodes"></span>-->
@@ -110,7 +110,7 @@
                     <span class="small">Courier name for the return shipment</span>
                 </label>
                 <input type="text" name="DELIVERYAGENT_AGENTNAME" /> 
-                <% if (!DHL_ENABLE) { %><a href="<%-DHL_LINK%>" class="dhl button"><i class="fa fa-envelope"></i> Use Diamond Account (UK ONLY)</a><% } %>
+                <% if (!DHL_ENABLE) { %><a href="<%-DHL_LINK%>" class="dhl button"><i class="fa fa-envelope"></i> Use Facility Account (UK ONLY)</a><% } %>
             </li>
             
             <li>
