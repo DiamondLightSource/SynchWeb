@@ -4,6 +4,7 @@ define(['marionette',
     'utils/anoms',
     'utils/centringmethods',
     'utils/experimentkinds',
+    'utils/radiationsensitivity',
     'utils/editable',
     'views/table',
     'utils/table',
@@ -19,7 +20,7 @@ define(['marionette',
 
     'tpl!templates/samples/sample.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, DistinctProteins, SG, Anom, CM, EXP, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
+    ], function(Marionette, DistinctProteins, SG, Anom, CM, EXP, RS, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
         ComponentsView,
         InspectionImages, ImageHistoryView,
         template, Backbone) {
@@ -95,6 +96,8 @@ define(['marionette',
             edit.create('ABUNDANCE', 'text')
             edit.create('CENTRINGMETHOD', 'select', { data: CM.obj() })
             edit.create('EXPERIMENTKIND', 'select', { data: EXP.obj() })
+            edit.create('RADIATIONSENSITIVITY', 'select', { data: RS.obj() })
+            edit.create('ENERGY', 'text')
 
             _.each(['CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION'], function(f, i) {
                 edit.create(f, 'text')
