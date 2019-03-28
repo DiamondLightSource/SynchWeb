@@ -381,6 +381,13 @@ define(['marionette', 'views/dialog',
                             PARAMETERVALUE: sg
                         }))
 
+                        var sm = self.$el.find('input[name=sm]').is(':checked')
+                        if (sm) reprocessingparams.add(new ReprocessingParameter({ 
+                            PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
+                            PARAMETERKEY: 'small_molecule', 
+                            PARAMETERVALUE: 'true'
+                        }))
+
                         if (reprocessingparams.length) reqs.push(reprocessingparams.save())
 
 
@@ -447,6 +454,8 @@ define(['marionette', 'views/dialog',
             this.dcr.show(this.distlview)
             // this.listenTo(this.distlview, 'childview:set:cell', this.setCell, this)
             this.listenTo(this.distlview, 'childview:clone:dc', this.cloneDC, this)
+
+            if (app.type == 'sm') this.$el.find('input[name=sm]').prop('checked', true)
         },
 
         cloneDC: function(e, model) {
