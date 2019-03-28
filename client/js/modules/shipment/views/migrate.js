@@ -113,8 +113,9 @@ define(['marionette',
                 ready.push(nc.save())
             }, this)
 
+            var self = this
             $.when.apply($, ready).done(function() {
-                app.alert({ message: 'Lab Contact(s) copied to: '+this.ui.prop.val() })
+                app.alert({ message: 'Lab Contact(s) copied to: '+self.ui.prop.val() })
             })
         },
 
@@ -143,8 +144,9 @@ define(['marionette',
 
             }, this)
 
+            var self = this
             $.when.apply($, ready).done(function() {
-                app.alert({ message: 'Protein(s) copied to: '+this.ui.prop.val() })
+                app.alert({ message: 'Protein(s) copied to: '+self.ui.prop.val() })
             })
         },
 
