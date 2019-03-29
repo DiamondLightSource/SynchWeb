@@ -64,8 +64,7 @@
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE $where
-                GROUP BY rp.processingjobid", $args);
+                WHERE $where", $args);
             $tot = $tot[0];
             
             $start = 0;
@@ -158,7 +157,7 @@
                     $idwhere = array();
                     foreach ($this->arg('ids') as $i) {
                         array_push($args,$i);
-                        array_push($idwhere,'dc.datacollectionid=:'.sizeof($args));
+                        array_push($idwhere,'rp.processingjobid=:'.sizeof($args));
                     }
 
                     $where .= ' AND ('.implode(' OR ', $idwhere).')';
@@ -243,7 +242,7 @@
                     $idwhere = array();
                     foreach ($this->arg('ids') as $i) {
                         array_push($args,$i);
-                        array_push($idwhere,'dc.datacollectionid=:'.sizeof($args));
+                        array_push($idwhere,'rp.processingjobid=:'.sizeof($args));
                     }
 
                     $where .= ' AND ('.implode(' OR ', $idwhere).')';
