@@ -13,14 +13,14 @@ define(['marionette',
     var controller = {
         
         // Fault list
-        list:  function(page) {
+        list:  function(bl, sys, com, sub, page) {
             app.loading()
             page = page ? parseInt(page) : 1
             var faults = new Faults(null, { state: { currentPage: page } })
             faults.fetch({
                 success: function() {
                     app.bc.reset([bc]),
-                    app.content.show(new FaultListView({ collection: faults }))
+                    app.content.show(new FaultListView({ collection: faults, params: { beamline: bl, system: sys, component: com, subcomponent: sub } }))
                 },
                 error: function() {
                     app.bc.reset([bc, { title: 'Error' }])
