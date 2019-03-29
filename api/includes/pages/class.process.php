@@ -21,6 +21,8 @@
             'PARAMETERVALUE' => '([\w-\.,])+',
 
             'RECIPE' => '([\w-])+',
+
+            'ids' => '\d+', 
         );
         
 
@@ -62,7 +64,8 @@
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE $where", $args);
+                WHERE $where
+                GROUP BY rp.processingjobid", $args);
             $tot = $tot[0];
             
             $start = 0;
@@ -150,6 +153,18 @@
             $where = 'p.proposalid=:1';
             $args = array($this->proposalid);
 
+            if ($this->has_arg('ids')) {
+                if (is_array($this->arg('ids'))) {
+                    $idwhere = array();
+                    foreach ($this->arg('ids') as $i) {
+                        array_push($args,$i);
+                        array_push($idwhere,'dc.datacollectionid=:'.sizeof($args));
+                    }
+
+                    $where .= ' AND ('.implode(' OR ', $idwhere).')';
+                }
+            }
+
             if ($this->has_arg('PROCESSINGJOBID')) {
                 $where .= ' AND rp.processingjobid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('PROCESSINGJOBID'));
@@ -222,6 +237,18 @@
 
             $where = 'p.proposalid=:1';
             $args = array($this->proposalid);
+
+            if ($this->has_arg('ids')) {
+                if (is_array($this->arg('ids'))) {
+                    $idwhere = array();
+                    foreach ($this->arg('ids') as $i) {
+                        array_push($args,$i);
+                        array_push($idwhere,'dc.datacollectionid=:'.sizeof($args));
+                    }
+
+                    $where .= ' AND ('.implode(' OR ', $idwhere).')';
+                }
+            }
 
             if ($this->has_arg('PROCESSINGJOBID')) {
                 $where .= ' AND rp.processingjobid=:'.(sizeof($args)+1);
