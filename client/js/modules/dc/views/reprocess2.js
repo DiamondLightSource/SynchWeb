@@ -104,10 +104,10 @@ define(['marionette', 'views/dialog',
             var si = parseInt(this.model.get('SI'))
             var ni = parseInt(this.model.get('NUMIMG'))
 
-            if (this.ui.st.val() > (si+ni)) this.ui.st.val(si+ni)
+            if (this.ui.st.val() > (si+ni-1)) this.ui.st.val(si+ni-1)
             if (this.ui.st.val() < si) this.ui.st.val(si)
 
-            if (this.ui.en.val() > (si+ni)) this.ui.en.val(si+ni)
+            if (this.ui.en.val() > (si+ni-1)) this.ui.en.val(si+ni-1)
             if (this.ui.en.val() < si) this.ui.en.val(si)
 
             this.plotview.setSelection(parseInt(this.ui.st.val()), parseInt(this.ui.en.val()))
