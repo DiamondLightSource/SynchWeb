@@ -71,6 +71,10 @@ define(['marionette',
             }
 
             this.firstLoad = true
+            var vals = _.unique(_.values(this.getOption('params')))
+            if (vals.length) {
+                if (vals[0] == null) this.firstLoad = false
+            }
         },
         
         refetch: function() {
