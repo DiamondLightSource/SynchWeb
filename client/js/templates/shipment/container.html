@@ -49,6 +49,14 @@
             <span class="STORAGETEMPERATURE"><%-STORAGETEMPERATURE%></span>
         </li>
         <% } %>
+
+        <% if (VISIT) { %>
+        <li>
+            <span class="label">Data Collections</span>
+            <span><a href="/dc/visit/<%-VISIT%>" class="button"><i class="fa fa-search"></i> <span>View</span></a></span>
+        </li>
+        <% } %>
+        
         <li>
             <span class="label">Comments</span>
             <span class="COMMENTS"><%-COMMENTS%></span>

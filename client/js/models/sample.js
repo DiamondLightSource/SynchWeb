@@ -1,4 +1,6 @@
-define(['backbone', 'collections/components', 'utils/experimentkinds'], function(Backbone, Components, EXP) {
+define(['backbone', 'collections/components', 
+    'utils/experimentkinds',
+    'utils/radiationsensitivity'], function(Backbone, Components, EXP, RS) {
     
     return Backbone.Model.extend({
         idAttribute: 'BLSAMPLEID',
@@ -8,13 +10,22 @@ define(['backbone', 'collections/components', 'utils/experimentkinds'], function
         initialize: function(attrs, options) {
             var addPrimary = (options && options.addPrimary) || (this.collection && this.collection.state.addPrimary)
             this.set('components', new Components(null, { pmodel: this, addPrimary: addPrimary }))
+
             this.listenTo(this, 'change:EXPERIMENTKIND', this.updateExpKind)
             this.updateExpKind()
+
+            this.listenTo(this, 'change:RADIATIONSENSITIVITY', this.updateRadSen)
+            this.updateRadSen()
         },
 
         updateExpKind: function() {
             var val = EXP.key(this.get('EXPERIMENTKIND'))
             this.set('EXPERIMENTKINDNAME', val)
+        },
+
+        updateRadSen: function() {
+            var val = RS.key(this.get('RADIATIONSENSITIVITY'))
+            this.set('RADIATIONSENSITIVITYNAME', val)
         },
 
         defaults: {

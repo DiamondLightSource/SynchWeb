@@ -1,13 +1,17 @@
-define(['backbone.paginator', 'modules/shipment/models/dewarregistry'], function(PageableCollection, DewarRegistry) {
+define(['backbone.paginator', 'modules/shipment/models/dewarregistry', 'utils/kvcollection'], 
+    function(PageableCollection, DewarRegistry, KVCollection) {
     
-    return PageableCollection.extend({
-    	model: DewarRegistry,
-    	mode: 'server',
+    return PageableCollection.extend(_.extend({
+        model: DewarRegistry,
+        mode: 'server',
         url: '/shipment/dewars/registry',
             
-    	state: {
+        state: {
             pageSize: 15,
         },
+
+        keyAttribute: 'FACILITYCODE',
+        valueAttribute: 'FACILITYCODE',
             
         parseState: function(r, q, state, options) {
             return { totalRecords: r.total }
@@ -17,5 +21,5 @@ define(['backbone.paginator', 'modules/shipment/models/dewarregistry'], function
             return r.data
         },
 
-    })
+    }, KVCollection))
 })

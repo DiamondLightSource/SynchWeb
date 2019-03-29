@@ -39,6 +39,8 @@ define(['marionette',
         'modules/shipment/views/rebookpickup',
         'modules/types/xpdf/views/plan',
 
+        'modules/shipment/views/migrate',
+
         'models/proplookup',
     
 ], function(Marionette,
@@ -49,7 +51,7 @@ define(['marionette',
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
     DispatchView, TransferView, Dewars, DewarOverview, ManifestView, DewarStats, CreateAWBView, RebookPickupView,
-    PlanView,
+    PlanView, MigrateView,
     ProposalLookup) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
@@ -416,6 +418,11 @@ define(['marionette',
     dewarstats: function() {
         app.bc.reset([bc, { title: 'Dewar Stats' }])
         app.content.show(new DewarStats())
+    },
+
+    migrate: function() {
+        app.bc.reset([bc, { title: 'Migrate' }])
+        app.content.show(new MigrateView())  
     },
 
   }

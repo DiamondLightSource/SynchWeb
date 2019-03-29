@@ -216,6 +216,23 @@
     $exp_hazard = 'VMXi will be operated following the beamline risk assessment';
 
 
+    # Autocollect
+    $auto_user = 'auto_user';
+    $auto_pass = 'auto_pass';
+
+    # Risk statements
+    $auto_sample_hazard = 'Samples will be handled following the beamline risk assessment';
+    $auto_exp_hazard = 'The beamline will be operated following the beamline risk assessment';
+
+    # Session Type
+    $auto_session_type = 'Auto Collect';
+
+    # Whitelist + beamlines
+    $auto = array('123.456.789.1');
+    $auto_bls = array('i03', 'i04');
+
+
+
     # Proposal to store beamline presets in
     $preset_proposal = 'cm12345';
 

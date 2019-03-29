@@ -1,0 +1,32 @@
+<div id="vue-template" class="content">
+    <h1>Tutorials</h1>
+
+    <!-- Defines the links to switch between tutorials -->
+    <!-- Using full v-bind, v-on syntax to be explicit. Shorthand example: ':class' or '@click' -->
+    <div class="filter clearfix">
+        <ul>
+            <li v-bind:class="{current: currentPage === 'proposals'}" v-on:click="onShowPage('proposals')">Select Proposal</li>
+            <li v-bind:class="{current: currentPage === 'contacts'}" v-on:click="onShowPage('contacts')">Register Contact</li>
+            <li v-bind:class="{current: currentPage === 'shipments'}" v-on:click="onShowPage('shipments')">Create Shipment</li>
+            <li v-bind:class="{current: currentPage === 'samples'}" v-on:click="onShowPage('samples')">Register Samples</li>
+            <li v-bind:class="{current: currentPage === 'experiments'}" v-on:click="onShowPage('experiments')">Prepare Experiment</li>
+            <li v-bind:class="{current: currentPage === 'data'}" v-on:click="onShowPage('data')">View Your Data</li>
+            <li v-bind:class="{current: currentPage === 'mobile'}" v-on:click="onShowPage('mobile')">Mobile Access</li>
+        </ul>
+    </div>
+    
+    <!-- 
+        This is a crude method but effective. If we made the help pages more structured
+        headings, section1, section2 etc. we could use a single tutorial component and pass
+        data in as properties.
+    -->
+    <tutorial-proposal v-if="currentPage === 'proposals'"></tutorial-proposal>
+    <tutorial-contact v-else-if="currentPage === 'contacts'"></tutorial-contact>
+    <tutorial-mobile v-else-if="currentPage === 'mobile'"></tutorial-mobile>
+    <tutorial-data v-else-if="currentPage === 'data'"></tutorial-data>
+    <tutorial-sample v-else-if="currentPage === 'samples'"></tutorial-sample>
+    <tutorial-shipment v-else-if="currentPage === 'shipments'"></tutorial-shipment>
+    <tutorial-experiment v-else-if="currentPage === 'experiments'"></tutorial-experiment>
+    <p v-else>No Tutorial specified</p>
+
+</div>

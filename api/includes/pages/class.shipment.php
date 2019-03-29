@@ -531,7 +531,7 @@
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            $fields = array('LABCONTACTID', 'PURCHASEDATE');
+            $fields = array('LABCONTACTID', 'PURCHASEDATE', 'PROPOSALID');
             if ($this->staff) array_push($fields, 'NEWFACILITYCODE');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {

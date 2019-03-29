@@ -5,7 +5,7 @@ define([], function() {
             return _.map(this.list, function(v,s) { return '<option value="'+v+'">'+s+'</option>' }).join()
         },
         obj: function() {
-            return this.list
+            return _.invert(this.list)
         },
 
         key: function(value) {
@@ -15,7 +15,8 @@ define([], function() {
         list: {
             '': '',
             'native': 'OSC',
-            'anomalous': 'SAD',
+            'phasing': 'SAD',
+            'ligand': 'Ligand binding',
         }
         
     }

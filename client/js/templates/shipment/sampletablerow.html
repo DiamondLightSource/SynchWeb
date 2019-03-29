@@ -1,30 +1,29 @@
 
     <td><%-LOCATION%></td>
     <% if (PROTEINID == -1) { %>
-    <td colspan="6">&nbsp;</td>
+    <td colspan="5">&nbsp;</td>
     <td class="xtal" colspan="2">&nbsp;</td>
     <td class="non-xtal" colspan="1">&nbsp;</td>
-    <td class="extra" colspan="3">&nbsp;</td>
-    <td class="auto"></td>
-    <td class="auto"></td>
+    <td class="extra" colspan="4">&nbsp;</td>
+    <td class="auto" colspan="4">&nbsp;</td>
 
     <% } else { %>
 
     <td><%-ACRONYM%></td>
-    <td>
-        <% if (ABUNDANCE) { %>
-            <%-ABUNDANCE%><%-SYMBOL%>
-        <% } %>    
-    </td>
-    <td class="components"></td>
     <td><%-NAME%></td>
     <td class="xtal"><%-SPACEGROUP %></td>
     <td class="xtal"><%-CODE%></td>
     <td class="non-xtal"><%-VOLUME%></td>
     <td><%-COMMENTS%></td>
+    <td><%-ANOMALOUSSCATTERER%></td>
 
+    <td class="extra">
+        <% if (ABUNDANCE) { %>
+            <%-ABUNDANCE%><%-SYMBOL%>
+        <% } %>    
+    </td>
+    <td class="extra components"></td>
     <td class="extra"><%-REQUIREDRESOLUTION%></td>
-    <td class="extra"><%-ANOMALOUSSCATTERER%></td>
     <td class="extra">
         <table class="reflow cell">      
             <thead>            
@@ -53,6 +52,8 @@
 
     <td class="auto"><%-CENTRINGMETHOD%></td>
     <td class="auto"><%-EXPERIMENTKINDNAME%></td>
+    <td class="auto"><%-ENERGY%></td>
+    <td class="auto"><%-RADIATIONSENSITIVITYNAME%></td>
 
     <td>
         <% if (BLSAMPLEID && STATUS) { %>

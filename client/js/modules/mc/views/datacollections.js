@@ -114,6 +114,13 @@ define(['marionette',
                         PARAMETERVALUE: sg
                     }))
 
+                    var sm = self.$el.find('input[name=sm]').is(':checked')
+                    if (sm) reprocessingparams.add(new ReprocessingParameter({ 
+                        PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
+                        PARAMETERKEY: 'small_molecule', 
+                        PARAMETERVALUE: 'true'
+                    }))
+
                     if (reprocessingparams.length) reprocessingparams.save()
 
 
@@ -164,8 +171,8 @@ define(['marionette',
         },
 
         setJobs: function() {
-            var n = this.reprocessings.fullCollection.where({ STATUS: null }).length
-            var w = this.reprocessings.fullCollection.where({ STATUS: '2' }).length
+            var n = this.reprocessings.running
+            var w = this.reprocessings.waiting
             this.ui.jobs.text(n)
             this.ui.wait.text(w)
             n > 0 ? this.ui.jobs.parent('li').addClass('running') : this.ui.jobs.parent('li').removeClass('running')

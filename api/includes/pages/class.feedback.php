@@ -13,7 +13,7 @@
         # Feedback form
         function _feedback() {
             global $email_admin;
-            if (!($this->has_arg('name') && $this->has_arg('email') && $this->has_arg('feedback'))) $this->_error('Missing Fields', 'One of more fields was missing');
+            if (!($this->has_arg('name') && $this->has_arg('email') && $this->has_arg('feedback'))) $this->_error('Missing Fields: One of more fields was missing', 400);
             
             require_once('includes/class.email.php');
             $email = new Email('site-feedback', 'ISPyB Site Feedback');
