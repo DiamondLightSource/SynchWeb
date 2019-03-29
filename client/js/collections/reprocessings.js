@@ -29,6 +29,8 @@ define(['backbone.paginator', 'models/reprocessing'],
         },
 
         parseState: function(r, q, state, options) {
+            this.running = r.running
+            this.waiting = r.waiting
             return { totalRecords: r.total }
         },
       
