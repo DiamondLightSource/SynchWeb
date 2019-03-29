@@ -306,25 +306,34 @@ define(['marionette',
         
         initialize: function(options) {
             this.assigned = new Containers(null, { queryParams: { assigned: 1, bl: this.model.get('BL'), visit: this.model.get('VISIT') }, state: { pageSize: 9999 } })
-            this.assigned.fetch()
-            
             this.containers = new Containers(null, { queryParams: { unassigned: this.model.get('BL'), visit: this.model.get('VISIT') }, state: { pageSize: 40 } })
-            this.containers.fetch()
             
             this.listenTo(this.containers, 'sync', this.generateShipments, this)
+            this.listenTo(this.containers, 'sync', this.queueRefresh, this)
             this.collection = new Shipments()
             
             this.listenTo(app, 'assign', this.onAssign, this)
             this.listenTo(app, 'unassign', this.onUnassign, this)
             this.listenTo(app, 'refreshGUI', this.refreshGUI, this)
 
+            this.refreshThread = null
+            this.refreshGUI()
+
             setTimeout(function() {
                 console.log('go to visits')
                 app.trigger('visits')
             }, 60*30*1000)
-            //}, 5*1000)
         },
         
+        queueRefresh: function() {
+            console.log('queueRefresh')
+            clearTimeout(this.refreshThread)
+            var self = this
+            this.refreshThread = setTimeout(function() {
+                self.refreshGUI()
+            }, 30*1000)
+        },
+
         onAssign: function(m) {
             console.log('assign', m)
             this.assignmodel = m
