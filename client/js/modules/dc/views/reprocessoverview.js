@@ -161,7 +161,7 @@ define(['marionette',
             },
 
             refreshArgs: function() {
-                var ids = this.collection.pluck('DATACOLLECTIONID')
+                var ids = this.collection.pluck('PROCESSINGJOBID')
                 this.sweeps.fetch({ data: { ids: ids } })
                 this.parameters.fetch({ data: { ids: ids } })
             },
