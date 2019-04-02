@@ -37,6 +37,7 @@ define(['jquery', 'marionette',
             cval: '.cval',
             progress: '.im_progress',
             invert: 'input[name=invert]',
+            threshold: 'input[name=threshold]',
             num: 'input[name=num]',
         
             res: 'input[name=res]',
@@ -79,6 +80,7 @@ define(['jquery', 'marionette',
             'click @ui.res': '_dra',
             'click @ui.ice': '_dra',
             'click @ui.invert': 'doInvert',
+            'click @ui.threshold': 'doThreshold',
         
             'click button[name=next]': 'next',
             'click button[name=prev]': 'prev',
@@ -283,7 +285,7 @@ define(['jquery', 'marionette',
             this.n = n
             this.showProgressBar()
             this.img.onerror = this._onerror.bind(this,n)
-            this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+n)
+            this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+(this.ui.threshold.is(':checked') ? '/thresh/1' : '')+('/n/'+n))
         },
 
         onImageProgress: function(pc) {
@@ -448,7 +450,7 @@ define(['jquery', 'marionette',
               //_plot_profiles(lastx, lasty)
             }
             this.invert_change = false
-          
+
             var self = this
             this.c.brightness(this.brightness).contrast(this.contrast).render(function() {
                 self.ui.progress.fadeOut(100)
@@ -776,6 +778,13 @@ define(['jquery', 'marionette',
             invert_change = true
             this._dra()
         },
+
+
+        doThreshold: function() {
+            this.load(this.n)
+        }
+
+
             
     }))
 
