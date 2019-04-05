@@ -11,6 +11,10 @@ define(['marionette'], function(Marionette) {
         // Backbone Render method - where we attach the Vue app to the page
         onRender: function() {
             this.vue = new this.vueView({el: this.ui.container[0]})
+            // Set any passed model, collection to the vue instance
+            // Declare this within the vue component's data object as m_model, m_collection
+            this.vue.m_model = this.model
+            this.vue.m_collection = this.collection
         },
 
         // Backbone View Lifecycle hook
