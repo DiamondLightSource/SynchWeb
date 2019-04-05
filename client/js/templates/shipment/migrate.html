@@ -1,0 +1,75 @@
+<h1>Proposal Migration</h1>
+<p class="help">Here you can migrate various information from one proposal to a new one</p>
+
+<div class="form">
+    <ul>
+
+        <li>
+            <label>New Proposal</label>
+            <input type="text" name="PROPOSAL" />
+        </li>
+
+        <li class="clearfix">
+            <label>Proposal Details</label>
+            <div class="floated">
+            	<p>Title: <span class="TITLE"></span></p>
+            	<p>Start: <span class="START"></span></p>
+            </div>
+        </li>
+
+    </ul>
+</div>
+
+
+<h2>Registered Dewars</h2>
+<div class="form">
+    <ul>
+        
+        <li>
+            <label>Dewar</label>
+            <select name="DEWAR"></select>
+        </li>
+
+        <li class="clearfix">
+            <label>Dewar Details</label>
+            <div class="floated">
+            	<p>Card Name: <span class="CARDNAME"></span></p>
+            	<p>Lab Name: <span class="LABNAME"></span></p>
+            	<p>Address: <span class="ADDRESS"></span></p>
+            </div>
+        </li>
+
+        <li>
+            <label>New Lab Contact</label>
+            <select name="LABCONTACT"></select>
+        </li>
+
+        <li class="clearfix">
+            <label>New Lab Contact Details</label>
+            <div class="floated">
+            	<p>Card Name: <span class="NCARDNAME"></span></p>
+            	<p>Lab Name: <span class="NLABNAME"></span></p>
+            	<p>Address: <span class="NADDRESS"></span></p>
+            </div>
+        </li>
+
+        <button name="dewar" value="1" class="button submit">Migrate Dewar</button>
+
+   </ul>
+	
+</div>
+
+
+<h2>Lab Contacts</h2>
+<div class="rcontacts"></div>
+<div class="form">
+	<button name="lc" value="1" class="button submit">Copy Lab Contact(s)</button>
+</div>
+
+
+<h2>Proteins</h2>
+<div class="rproteins"></div>
+<div class="form">
+	<button name="protein" value="1" class="button submit">Copy Protein(s)</button>
+</div>
+

@@ -57,7 +57,10 @@
                                         array('/bls/:ty', 'get', '_get_beamlines'),
                                         array('/type', 'get', '_get_types'),
                                         array('/lookup', 'post', '_lookup'),
-                             );
+
+                                        array('/auto', 'get', '_auto_visit'),
+                                        array('/auto', 'delete', '_close_auto_visit'),
+                            );
         
         
         
@@ -543,6 +546,126 @@
                 $this->_output($rows[0]);
             } else {
                 $this->_error('No such proposal');
+            }
+
+        }
+
+
+
+        # ------------------------------------------------------------------------
+        # Create visit for autocollect
+        function _auto_visit() {
+            global $auto, $auto_bls, $auto_exp_hazard, $auto_sample_hazard, $auto_user, $auto_pass, $auto_session_type;
+
+            if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
+
+            if (!$this->has_arg('CONTAINERID')) $this->_error('No container specified');
+            if (!$this->has_arg('bl')) $this->_error('No beamline specified');
+            if (!in_array($this->arg('bl'), $auto_bls)) $this->_error('That beamline cannot create autocollect visits');
+
+            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, c.containerid, HEX(p.externalid) as externalid, HEX(pe.externalid) as pexternalid
+                FROM proposal p
+                INNER JOIN shipping s ON s.proposalid = p.proposalid
+                INNER JOIN dewar d ON d.shippingid = s.shippingid
+                INNER JOIN container c ON c.dewarid = d.dewarid
+                LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
+                LEFT OUTER JOIN person pe ON pe.personid = c.ownerid
+                WHERE c.containerid=:1", array($this->arg('CONTAINERID')));
+
+            if (!sizeof($cont)) $this->error('No such container');
+            $cont = $cont[0];
+
+            if (!$cont['SESSIONID'] && $cont['PEXTERNALID']) {
+                $samples = $this->db->pq("SELECT HEX(p.externalid) as externalid 
+                    FROM protein p
+                    INNER JOIN crystal cr ON cr.proteinid = p.proteinid
+                    INNER JOIN blsample s ON s.crystalid = cr.crystalid
+                    INNER JOIN container c ON c.containerid = s.containerid
+                    WHERE p.externalid IS NOT NULL AND c.containerid=:1", array($cont['CONTAINERID']));
+
+                $samples = array_map(function($s) {
+                    return strtoupper($s['EXTERNALID']);
+                }, $samples);
+
+                $data = array(
+                    'proposalId' => strtoupper($cont['EXTERNALID']),
+                    'sampleIds' => array_values(array_unique($samples)),
+                    'startAt' => date('Y-m-d\TH:i:s.000\Z'),
+                    'facility' => strtoupper($this->arg('bl')),
+                    'investigators' => array(array('personId' => strtoupper($cont['PEXTERNALID']), 'role' => 'TEAM_LEADER' )),
+                    'experimentalMethods' => array(array(
+                        'state' => 'Submitted', 
+                        'experimentHazard' => array('description' => $auto_exp_hazard),
+                        'preparationHazard' => array('description' => $auto_sample_hazard)
+                    )),
+                    'eraState' => 'Submitted'
+                );
+
+                require_once(dirname(__FILE__).'/../class.uas.php');
+                $uas = new UAS($auto_user, $auto_pass);
+                $sess = $uas->create_session($data);
+
+                if ($sess['code'] == 200 && $sess['resp']) {
+                    $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinesetupid) 
+                        VALUES (:1,:2,:3,1)", 
+                        array($cont['PROPOSALID'], $sess['resp']->sessionNumber, $sess['resp']->id));
+
+                    $cont['SESSIONID'] = $this->db->id();
+                    $this->db->pq("INSERT INTO sessiontype (sessionid, typename) VALUES (:1, :2)", array($cont['SESSIONID'], $auto_session_type));
+                    $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($cont['SESSIONID'], $cont['CONTAINERID']));
+
+                    $this->_output(array('VISIT' => $cont['PROPOSAL'].'-'.$sess['resp']->sessionNumber));
+
+                } else {
+                    $this->_error('Something went wrong creating a session for that container, response code was: '.$sess['code'].' response: '.json_encode($sess['resp']));
+                    error_log(print_r(array('error' => 'Session could not be created via UAS', 'data' => $data, 'resp' => $sess), True));
+                }
+
+            } else if (!$cont['PEXTERNALID']) {
+                $this->_error('That container does not have an owner');
+
+            } else {
+                $this->_output(array('VISIT' => $cont['PROPOSAL'].'-'.$cont['VISIT_NUMBER']));
+            }
+         }
+
+
+        # ------------------------------------------------------------------------
+        # Close visit for autocollect
+        function _close_auto_visit() {
+            global $auto, $auto_bls, $auto_user, $auto_pass;
+
+            if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
+            if (!$this->has_arg('CONTAINERID')) $this->_error('No containerid specified');
+
+            $cont = $this->db->pq("SELECT c.sessionid, c.containerid, HEX(ses.externalid) as externalid, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit
+                FROM proposal p
+                INNER JOIN shipping s ON s.proposalid = p.proposalid
+                INNER JOIN dewar d ON d.shippingid = s.shippingid
+                INNER JOIN container c ON c.dewarid = d.dewarid
+                LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
+                WHERE c.containerid=:1", array($this->arg('CONTAINERID')));
+
+            if (!sizeof($cont)) $this->error('No such container');
+            $cont = $cont[0];
+
+            if ($cont['SESSIONID']) {
+                require_once(dirname(__FILE__).'/../class.uas.php');
+                $uas = new UAS($auto_user, $auto_pass);
+                $code = $uas->close_session($cont['EXTERNALID']);
+
+                if ($code == 200) {
+                    $this->_output(array('MESSAGE' => 'Session closed', 'VISIT' => $cont['VISIT']));
+
+                } else if ($code == 403) {
+                    $this->_output(array('MESSAGE' => 'Session already closed', 'VISIT' => $cont['VISIT']));
+
+                } else {
+                    $this->_error('Something went wrong closing that session, response code was: '.$code);
+                }
+
+            } else {
+                $this->_error('That container does not have a session');
             }
 
         }

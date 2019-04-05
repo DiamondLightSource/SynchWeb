@@ -1552,11 +1552,20 @@ div.status.oavs {
 
 .image_container {
     margin-bottom: 10px;
+
+    .embed & {
+        position: relative;
+    }
     
     @media (max-width: $breakpoint-vsmall) {
         height: 75%;
     }
     
+    .embed_control {
+        position: absolute;
+        right: 0;
+    }
+
     .image {
         width: 100%;
         overflow: auto;

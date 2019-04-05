@@ -28,6 +28,8 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'shipments/stats': 'dewarstats',
 
       'containers/plan/:cid': 'plan_container',
+
+      'migrate': 'migrate',
     },
     
     loadEvents: ['shipments:show', 'shipment:show', 'container:show', 'dewar:show']

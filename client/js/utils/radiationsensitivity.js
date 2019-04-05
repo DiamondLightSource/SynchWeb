@@ -14,9 +14,9 @@ define([], function() {
 
         list: {
             '': '',
-            'native': 'OSC',
-            'phasing': 'SAD',
-            'ligand': 'Ligand binding',
+            'low': 0,
+            'medium': 50,
+            'high': 100,
         }
         
     }

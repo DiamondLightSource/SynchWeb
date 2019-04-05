@@ -2,7 +2,7 @@
 
 class UAS {
 
-	function __construct() {
+	function __construct($user=null, $pass=null) {
 		global $uas_url, $vmxi_user, $vmxi_pass;
 
         include(dirname(__FILE__).'/../config.php');
@@ -10,7 +10,9 @@ class UAS {
 
         require_once(dirname(__FILE__).'/class.auth-cas.php');
         $cas = new CASAuthentication();
-        $cas->authenticate($vmxi_user, $vmxi_pass);
+
+        if ($user && $pass) $cas->authenticate($user, $pass);
+        else $cas->authenticate($vmxi_user, $vmxi_pass);
 
         $st = $cas->service($this->url.'/uas/login/cas');
 
@@ -101,11 +103,11 @@ class UAS {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 
-        if (array_key_exists('FIELDS', $options)) print_r(array('body', json_encode($options['FIELDS'])));
+        // if (array_key_exists('FIELDS', $options)) print_r(array('body', json_encode($options['FIELDS'])));
 
         $resp = curl_exec($ch);
         $this->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        print_r(curl_getinfo($ch));
+        // print_r(curl_getinfo($ch));
         curl_close($ch);
 
         return $resp;

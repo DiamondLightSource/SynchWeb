@@ -211,7 +211,7 @@ define(['marionette',
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
             } else this.puck.show(new PuckView({ collection: this.samples }))
 
-            this.sampletable = new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type, auto: this.model.get('CONTAINERQUEUEID') })
+            this.sampletable = new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type, auto: this.model.get('CONTAINERQUEUEID') ? true : false })
             this.table.show(this.sampletable)
         }
     })

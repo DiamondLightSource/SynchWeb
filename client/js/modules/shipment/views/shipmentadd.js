@@ -2,6 +2,7 @@ define(['marionette', 'views/form',
     'models/shipment',
     'collections/visits',
     'collections/labcontacts',
+    'modules/shipment/collections/dewarregistry',
     
     'views/dialog',
     'modules/contact/views/addcontact',
@@ -14,7 +15,7 @@ define(['marionette', 'views/form',
     'backbone-validation',
     
     ], function(Marionette, FormView,
-        Shipment, Visits, LabContacts,
+        Shipment, Visits, LabContacts, DewarRegistry,
         DialogView, AddContactView,
         template, $_, Backbone) {  
 
@@ -23,13 +24,25 @@ define(['marionette', 'views/form',
     */
     var FCode = Marionette.ItemView.extend({
         tagName: 'span',
-        template: _.template('<input type="text" name=FCODES[] value="" placeholder="DLS-XX-000<%-id%>" />')
+        template: _.template('<select name=FCODES[]></select>'),
+        ui: {
+            select: 'select[name^=FCODES]',
+        },
+
+        onRender: function() {
+            this.ui.select.html(this.getOption('dewars').opts({ empty: true }))
+        },
     })
             
     var FCodes = Marionette.CollectionView.extend({
         tagName: 'span',
         className: 'fcodes',
         childView: FCode,
+        childViewOptions: function() {
+            return {
+                dewars: this.getOption('dewars')
+            }
+        }
     })
             
             
@@ -44,7 +57,7 @@ define(['marionette', 'views/form',
         events: {
             'change input[name=DEWARS]': 'updateFCodes',
             'change @ui.lcret': 'getlcdetails',
-            'change input[name^=FCODES]': 'checkFCodes',
+            'change select[name^=FCODES]': 'checkFCodes',
             'change @ui.name': 'checkFCodes',
             'click a.add_lc': 'addLC',
             'click @ui.noexp': 'updateFirstExp',
@@ -90,6 +103,10 @@ define(['marionette', 'views/form',
 
         onRender: function() {
             var self = this
+
+            this.dewars = new DewarRegistry()
+            this.listenTo(this.dewars, 'sync', this.updateFCodes)
+            this.refreshDewars()
             
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
             this.listenTo(this.contacts, 'sync', this.updateContacts)
@@ -102,11 +119,15 @@ define(['marionette', 'views/form',
             this.time('input[name=READYBYTIME], input[name=CLOSETIME]')
 
             this.fcodes = new Backbone.Collection()
-            this.$el.find('li.d .floated').append(new FCodes({ collection: this.fcodes }).render().el)
+            this.$el.find('li.d .floated').append(new FCodes({ collection: this.fcodes, dewars: this.dewars }).render().el)
             
-            this.updateFCodes()
             this.checkFCodes()
         },
+
+        refreshDewars: function() {
+            this.dewars.fetch()
+        },
+
         
         refreshContacts: function() {
             this.contacts.fetch()
@@ -147,14 +168,14 @@ define(['marionette', 'views/form',
          button
         */
         checkFCodes: function() {
-            var fc = this.$el.find('input[name^=FCODES]').eq(0)
+            var fc = this.$el.find('select[name^=FCODES]').eq(0)
 
             if (!this.model.preValidate('FCODES[]', fc.val()) && fc.val() && fc.val().search('MX') > -1 && !this.model.preValidate('SHIPPINGNAME', this.ui.name.val())) this.$el.find('button[name="dls"]').fadeIn()
             else this.$el.find('button[name="dls"]').hide()
         },
         
         prepareModel: function() {
-            this.model.set({ FCODES: this.$el.find('input[name^=FCODES]').map(function(i,f) { if ($(f).val()) return $(f).val() }).get() })
+            this.model.set({ FCODES: this.$el.find('select[name^=FCODES]').map(function(i,f) { if ($(f).val()) return $(f).val() }).get() })
         },
         
     })

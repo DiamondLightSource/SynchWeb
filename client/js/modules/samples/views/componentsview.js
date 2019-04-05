@@ -108,7 +108,7 @@ define(['marionette', 'utils/editable'], function(Marionette) {
         },
 
         initialize: function(options) {
-            console.log('cv opts', options)
+            // console.log('cv opts', options)
         },
 
         getEmptyView: function() {

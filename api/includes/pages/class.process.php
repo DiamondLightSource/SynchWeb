@@ -21,6 +21,8 @@
             'PARAMETERVALUE' => '([\w-\.,])+',
 
             'RECIPE' => '([\w-])+',
+
+            'ids' => '\d+', 
         );
         
 
@@ -56,13 +58,14 @@
             }
 
 
-            $tot = $this->db->pq("SELECT count(distinct rp.processingjobid) as tot 
+            $tot = $this->db->pq("SELECT count(distinct rp.processingjobid) as tot, sum(IF(app.processingstatus IS NULL, 1, 0)) as running, sum(IF(app.autoprocprogramid IS NULL, 1, 0)) as waiting
                 FROM processingjob rp
+                LEFT OUTER JOIN autoprocprogram app ON app.processingjobid = rp.processingjobid
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $args);
-            $tot = intval($tot[0]['TOT']);
+            $tot = $tot[0];
             
             $start = 0;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -113,7 +116,7 @@
             if ($this->has_arg('PROCESSINGJOBID')) {
                 if (sizeof($rows)) $this->_output($rows[0]);
                 else $this->_error('No such reprocessing job');
-            } $this->_output(array('total' => $tot, 'data' => $rows));
+            } $this->_output(array('total' => intval($tot['TOT']), 'data' => $rows, 'running' => intval($tot['RUNNING']), 'waiting' => intval($tot['WAITING'])));
         }
 
 
@@ -148,6 +151,18 @@
 
             $where = 'p.proposalid=:1';
             $args = array($this->proposalid);
+
+            if ($this->has_arg('ids')) {
+                if (is_array($this->arg('ids'))) {
+                    $idwhere = array();
+                    foreach ($this->arg('ids') as $i) {
+                        array_push($args,$i);
+                        array_push($idwhere,'rp.processingjobid=:'.sizeof($args));
+                    }
+
+                    $where .= ' AND ('.implode(' OR ', $idwhere).')';
+                }
+            }
 
             if ($this->has_arg('PROCESSINGJOBID')) {
                 $where .= ' AND rp.processingjobid=:'.(sizeof($args)+1);
@@ -221,6 +236,18 @@
 
             $where = 'p.proposalid=:1';
             $args = array($this->proposalid);
+
+            if ($this->has_arg('ids')) {
+                if (is_array($this->arg('ids'))) {
+                    $idwhere = array();
+                    foreach ($this->arg('ids') as $i) {
+                        array_push($args,$i);
+                        array_push($idwhere,'rp.processingjobid=:'.sizeof($args));
+                    }
+
+                    $where .= ' AND ('.implode(' OR ', $idwhere).')';
+                }
+            }
 
             if ($this->has_arg('PROCESSINGJOBID')) {
                 $where .= ' AND rp.processingjobid=:'.(sizeof($args)+1);

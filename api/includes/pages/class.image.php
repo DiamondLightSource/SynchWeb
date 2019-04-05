@@ -4,12 +4,24 @@
 
     class Image extends Page {
         
-        public static $arg_list = array('crid' => '\d+', 'drid' => '\d+', 'id' => '\d+', 'n' => '\d+', 'f' => '\d', 'bl' => '[\w-]+', 'w' => '\d+', 'fid' => '\d+', 'aid' => '\d+', 'visit' => '\w+\d+-\d+');
+        public static $arg_list = array(
+            'crid' => '\d+', 
+            'drid' => '\d+', 
+            'id' => '\d+', 
+            'n' => '\d+', 
+            'f' => '\d', 
+            'bl' => '[\w-]+', 
+            'w' => '\d+', 
+            'fid' => '\d+', 
+            'aid' => '\d+', 
+            'visit' => '\w+\d+-\d+',
+            'thresh' => '\d',
+        );
 
         public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
                               array('/dimp/id/:id(/n/:n)', 'get', '_dimple_images'),
-                              array('/di/id/:id(/n/:n)', 'get', '_diffraction_viewer'),
+                              array('/di/id/:id(/thresh/:thresh)(/n/:n)', 'get', '_diffraction_viewer'),
                               array('/cam/bl/:bl(/n/:n)', 'get', '_forward_webcam'),
                               array('/oav/bl/:bl(/n/:n)', 'get', '_forward_oav'),
                               array('/fa/fid/:id', 'get', '_fault_attachment'),
@@ -173,17 +185,28 @@
             
             $this->db->close();
             
-            if ($n > $info['NUM']) return;
+            if ($n > $info['NUM']) {
+                $this->_error('Not found', 'That image does not exist');
+            }
             
             $im = $info['LOC'] . '/' . $info['FT'];
-            $out = '/tmp/'.$this->arg('id').'_'.$n.'.jpg';
+            $out = '/tmp/'.$this->arg('id').'_'.$n.($this->has_arg('thresh')?'_th':'').'.jpg';
             
             if (!file_exists($out)) {
+                $resp = $this->_curl(array(
+                    'url' => 'http://localhost:5000/dc/image',
+                    'jwt' => true,
+                    'data' => array(
+                        'dcid' => $this->arg('id'),
+                        'image' => $n,
+                        'binning' => 4,
+                        'threshold' => $this->has_arg('thresh') ? 1 : 0,
+                    )
+                ));
 
-                exec('./scripts/cbf2jpg.sh '.$info['LOC'].' '.$info['FT'].' '.$n.' '.$out);
-
-                // if ($info['TYPE'] == 'nxs') exec('./scripts/nxs2jpg.sh '.$info['LOC'].' '.$info['FT'].' '.$n.' '.$out);
-                // else if ($info['TYPE'] == 'cbf') exec('./scripts/cbf2jpg.sh '.$info['LOC'].' '.$info['FT'].' '.$n.' '.$out);
+                if ($resp['code'] == 200) {
+                    file_put_contents($out, $resp['content']);
+                }
             }
             
             if (file_exists($out)) {

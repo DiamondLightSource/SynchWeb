@@ -1,5 +1,5 @@
 // This module wraps a Vue application into a Marionette view
-define(['marionette'], function(Marionette) {
+define(['marionette', 'vue'], function(Marionette, Vue) {
     return Marionette.ItemView.extend({
         vueView: null,
         // class or id?
@@ -10,6 +10,14 @@ define(['marionette'], function(Marionette) {
         },
         // Backbone Render method - where we attach the Vue app to the page
         onRender: function() {
+            // This allows the vue component to access any constructor arguments
+            // They can then be accessible in the created lifecycle hook
+            // Works with the assumption we only have a single vue instance per page
+            let self = this
+            Vue.prototype.$getOption = function(option) {
+                return self.getOption(option)
+            }
+
             this.vue = new this.vueView({el: this.ui.container[0]})
         },
 
