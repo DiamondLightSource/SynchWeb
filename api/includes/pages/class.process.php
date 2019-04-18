@@ -1,10 +1,8 @@
 <?php
 
-    use Stomp\Stomp;
-    use Stomp\Message\Map;
-
-
-    class Process extends Page {
+class Process extends Page
+{
+    private $queue;
         
         public static $arg_list = array(
             'PROCESSINGJOBID' => '\d+',
@@ -333,37 +331,41 @@
             $this->_output(array('PROCESSINGJOBIMAGESWEEPID' => $this->db->id()));
         }
 
+    function _enqueue()
+    {
+        global $activemq_server,
+               $activemq_rp_queue;
 
-        function _enqueue() {
-            global $loader;
-            $loader->addNamespace('Stomp',  dirname(__FILE__).'/../../lib/stomp-php/src/Stomp');
+        if (!$activemq_server || !$activemq_rp_queue) return;
 
-            global $activemq_server, $activemq_rp_queue;
-            if (!$activemq_server || !$activemq_rp_queue) return;
+        if (!$this->has_arg('PROCESSINGJOBID')) $this->_error('No processing job specified');
 
-            if (!$this->has_arg('PROCESSINGJOBID')) $this->_error('No processing job specified');
-
-            $chk = $this->db->pq("SELECT rp.processingjobid
+        $chk = $this->db->pq("SELECT rp.processingjobid
                 FROM processingjob rp
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE p.proposalid = :1 AND rp.processingjobid = :2", array($this->proposalid, $this->arg('PROCESSINGJOBID')));
 
-            if (!sizeof($chk)) $this->_error('No such processing job');
+        if (!sizeof($chk)) $this->_error('No such processing job');
 
-            $body = array(
-                'parameters' => array(
-                    'ispyb_process' => intval($this->arg('PROCESSINGJOBID')),
-                )
-            );
+        // Send job to processing queue
 
-            $client = new Stomp($activemq_server);
-            $client->connect();
-            $client->send($activemq_rp_queue, json_encode($body), array('persistent' => 'true'));
-            $client->disconnect();
+        $message = array(
+            'parameters' => array(
+                'ispyb_process' => intval($this->arg('PROCESSINGJOBID')),
+            )
+        );
 
-            $this->_output(new stdClass);
+        include_once(__DIR__ . '/../shared/class.queue.php');
+        $this->queue = new Queue();
+
+        try {
+            $this->queue->send($activemq_server, null, null, $activemq_rp_queue, $message, true);
+        } catch (Exception $e) {
+            $this->_error($e->getMessage());
         }
 
+        $this->_output(new stdClass);
     }
+}
