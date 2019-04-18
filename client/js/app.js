@@ -215,7 +215,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
         'modules/mc/router',
         'modules/admin/router',
         'modules/imaging/router',
-        ], function() {
+        'modules/types/em/scipion/router',
+    ], function() {
             
         this.sidebarview = new SideBarView()
         app.sidebar.show(this.sidebarview)
