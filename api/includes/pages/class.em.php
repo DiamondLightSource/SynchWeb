@@ -10,6 +10,18 @@
             'n' => '\d+',
             't' => '\d+',
             'IMAGENUMBER' => '\d+',
+
+            // Scipion processing
+
+            'dosePerFrame' => '\d+.\d+', // Decimal
+            'numberOfIndividualFrames' => '\d+', // Integer
+            'patchX' => '\d+', // Integer
+            'patchY' => '\d+', // Integer
+            'samplingRate' => '\d+.\d+', // Decimal
+            'particleSize' => '\d+', // Integer
+            'minDist' => '\d+', // Integer
+            'windowSize' => '\d+', // Integer
+            'findPhaseShift' => '(true|false)', // Boolean
         );
         
 
@@ -25,9 +37,203 @@
             array('/ctf/:id', 'get', '_ctf_result'),
             array('/ctf/image/:id(/n/:IMAGENUMBER)', 'get', '_ctf_image'),
             array('/ctf/histogram', 'get', '_ctf_histogram'),
+
+            array('/process/visit/:visit', 'post', '_process_visit')
         );
 
+        function _process_visit()
+        {
+            global $bl_types,
+                   $em_template_path,
+                   $em_template_file,
+                   $em_workflow_path,
+                   $em_activemq_server,
+                   $em_activemq_username,
+                   $em_activemq_password,
+                   $em_activemq_queue;
 
+            // Check electron microscopes are listed in global variables - see $bl_types in config.php.
+            if (!array_key_exists('em', $bl_types)) $this->_error('Electron microscopes are not specified');
+
+            if (!$this->has_arg('visit')) $this->_error('Visit not specified');
+
+            // Decompose visit
+            preg_match('/^(?<proposalCode>[a-z]{2})(?<proposalNumber>\d{1,6})-(?<visitNumber>\d{1,3})$/', $this->arg('visit'), $visit_request);
+
+            // Lookup visit in ISPyB
+            $visit = $this->db->pq("
+              SELECT b.beamLineName AS beamLineName,
+                YEAR(b.startDate) AS year,
+                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
+                b.startDate AS startDate,
+                b.endDate AS endDate
+              FROM Proposal AS p
+                JOIN BLSession AS b ON p.proposalId = b.proposalId
+              WHERE p.proposalCode = :1
+                AND p.proposalNumber = :2
+                AND b.visit_number = :3", array($visit_request['proposalCode'], $visit_request['proposalNumber'], $visit_request['visitNumber']));
+
+            if (!sizeof($visit)) $this->_error('Visit not found');
+            $visit = $visit[0];
+
+            // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
+            foreach ($visit as $key => $value) {
+                $em_template_path = str_replace("<%={$key}%>", $value, $em_template_path);
+                $em_workflow_path = str_replace("<%={$key}%>", $value, $em_workflow_path);
+            }
+
+            // Validate form parameters
+
+            // Setup rules to validate each parameter by isRequired, inArray, minValue, maxValue.
+            // isBoolean converts 'true' or 'false' string values to boolean type.
+            // TODO Consider adding check for notNull and isType (e.g. integer, decimal, etc.) (JPH)
+            // TODO Consider adding default values (JPH)
+            $validation_rules = array(
+                'dosePerFrame' => array('isRequired' => true, 'minValue' => 0, 'maxValue' => 10),
+                'numberOfIndividualFrames' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 500),
+                'patchX' => array('isRequired' => true, 'minValue' => 1),
+                'patchY' => array('isRequired' => true, 'minValue' => 1),
+                'samplingRate' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 10),
+                'particleSize' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000),
+                'minDist' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000),
+                'windowSize' => array('isRequired' => true, 'minValue' => 128, 'maxValue' => 2048),
+                'findPhaseShift' => array('isRequired' => true, 'isBoolean' => true),
+            );
+
+            $valid_parameters = array();
+            $valid_parameters['filesPath'] = $em_workflow_path . '/raw/GridSquare*/Data';
+
+            $invalid_parameters = array();
+
+            foreach ($validation_rules as $parameter => $validations) {
+
+                // Determine whether request includes parameter
+                if (array_key_exists($parameter, $this->request)) {
+
+                    if ($this->request[$parameter] === '') {
+                        array_push($invalid_parameters, "{$parameter} is not specified");
+                        continue;
+                    }
+
+                    // Check parameter is more than minimum value
+                    if (array_key_exists('minValue', $validations)) {
+                        if ($this->request[$parameter] < $validations['minValue']) {
+                            array_push($invalid_parameters, "{$parameter} is too small");
+                            continue;
+                        }
+                    }
+
+                    // Check parameter is less than maximum value
+                    if (array_key_exists('maxValue', $validations)) {
+                        if ($this->request[$parameter] > $validations['maxValue']) {
+                            array_push($invalid_parameters, "{$parameter} is too large");
+                            continue;
+                        }
+                    }
+
+                    // Check parameter is in array.
+                    if (array_key_exists('inArray', $validations)) {
+                        if (is_array($validations['inArray'])) {
+                            if (!in_array($this->request[$parameter], $validations['inArray'])) {
+                                array_push($invalid_parameters, "{$parameter} is not known");
+                                continue;
+                            }
+                        }
+                    }
+
+                    // Convert 'true' or 'false' string values to boolean type
+                    if (array_key_exists('isBoolean', $validations)) {
+                        if ($this->request[$parameter] == 'true') {
+                            $this->request[$parameter] = true;
+                        } else {
+                            $this->request[$parameter] = false;
+                        }
+                    }
+
+                    // Add to list of valid parameters
+                    $valid_parameters[$parameter] = $this->request[$parameter];
+                } else {
+                    // Check whether a missing parameter is required.
+                    if (array_key_exists('isRequired', $validations)) {
+                        if ($validations['isRequired']) {
+                            array_push($invalid_parameters, "{$parameter} is required");
+                        }
+                    }
+                }
+            }
+
+            // TODO Better to return an array of invalid parameters for front end to display. (JPH)
+            if (sizeof($invalid_parameters) > 0) {
+                $this->_error("Invalid parameters: " . implode('; ', $invalid_parameters) . '.');
+            }
+
+            // Load protocol template file
+            $template_json_string = @file_get_contents($em_template_path . '/' . $em_template_file);
+
+            if ($template_json_string === false) {
+                $this->_error("Failed to read template file!");
+            }
+
+            $template_array = json_decode($template_json_string, true);
+
+            // Iterate over each step in protocol template
+            foreach (array_keys($template_array) as $step_no) {
+
+                // Iterate over each parameter in step
+                foreach (array_keys($template_array[$step_no]) as $parameter) {
+
+                    // Determine whether user has specified value for parameter
+                    if (array_key_exists($parameter, $valid_parameters)) {
+
+                        // Modify parameter if user has specified a different value
+                        if ($template_array[$step_no][$parameter] != $valid_parameters[$parameter]) {
+                            $template_array[$step_no][$parameter] = $valid_parameters[$parameter];
+                        }
+                    }
+                }
+            }
+
+            // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
+            // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
+            $workflow_json_string = json_encode($template_array, JSON_NUMERIC_CHECK | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+            // Save workflow file
+
+            $timestamp_epoch = time();
+
+            $em_workflow_file = 'scipion_workflow_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
+
+            $file_put_contents_result = @file_put_contents($em_workflow_path . '/' . $em_workflow_file, $workflow_json_string);
+
+            if ($file_put_contents_result === false) {
+                $this->_error("Failed to write workflow file!");
+            }
+
+            // Send job to processing queue
+
+            if (!empty($em_activemq_server) && !empty($em_activemq_queue)) {
+                $message = array(
+                    'parameters' => array(
+                        'scipion_workflow' => $em_workflow_path . '/' . $em_workflow_file
+                    )
+                );
+
+                include_once(__DIR__ . '/../shared/class.queue.php');
+                $this->queue = new Queue();
+
+                try {
+                    $this->queue->send($em_activemq_server, $em_activemq_username, $em_activemq_password, $em_activemq_queue, $message, true);
+                } catch (Exception $e) {
+                    $this->_error($e->getMessage());
+                }
+            }
+
+            $output = array(
+                'timestamp_iso8601' => gmdate('c', $timestamp_epoch)
+            );
+
+            $this->_output($output);
+        }
 
         function _ap_status() {
             if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
