@@ -213,9 +213,7 @@
 
             if (!empty($em_activemq_server) && !empty($em_activemq_queue)) {
                 $message = array(
-                    'parameters' => array(
-                        'scipion_workflow' => $em_workflow_path . '/' . $em_workflow_file
-                    )
+                    'scipion_workflow' => $em_workflow_path . '/' . $em_workflow_file
                 );
 
                 include_once(__DIR__ . '/../shared/class.queue.php');
