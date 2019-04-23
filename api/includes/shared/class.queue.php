@@ -8,7 +8,11 @@ class Queue
     function __construct()
     {
         global $loader;
-        $loader->addNamespace('Stomp', __DIR__ . '/../../lib/Stomp');
+        // Correct path to Stomp library i.e. as installed by Composer.
+        // $loader->addNamespace('Stomp', __DIR__ . '/../../lib/Stomp');
+
+        // Revert to legacy path i.e. as manually downloaded from GitHub.
+        $loader->addNamespace('Stomp',  dirname(__FILE__).'/../../lib/stomp-php/src/Stomp');
     }
 
     function send($server, $username, $password, $queue, array $message, $persistent = false)
