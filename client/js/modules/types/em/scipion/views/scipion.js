@@ -103,10 +103,8 @@ define([
                         success: function (model, response, options) {
                             let alertMessage = 'Job successfully submitted.';
 
-                            let responseObj = JSON.parse(response.responseText);
-
-                            if ('timestamp_iso8601' in responseObj) {
-                                alertMessage = alertMessage + ' Queued at ' + moment(responseObj.timestamp_iso8601).format('HH:mm:ss') + '.';
+                            if ('timestamp_iso8601' in response) {
+                                alertMessage = alertMessage + ' Queued at ' + moment(response.timestamp_iso8601).format('HH:mm:ss') + '.';
                             }
 
                             app.alert({className: 'message notify', message: alertMessage});
