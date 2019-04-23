@@ -171,7 +171,7 @@
             $template_json_string = @file_get_contents($em_template_path . '/' . $em_template_file);
 
             if ($template_json_string === false) {
-                $this->_error("Failed to read template file!");
+                $this->_error("Failed to read template file:<br>" . $em_template_path . '/' . $em_template_file);
             }
 
             $template_array = json_decode($template_json_string, true);
@@ -206,7 +206,7 @@
             $file_put_contents_result = @file_put_contents($em_workflow_path . '/' . $em_workflow_file, $workflow_json_string);
 
             if ($file_put_contents_result === false) {
-                $this->_error("Failed to write workflow file!");
+                $this->_error("Failed to write workflow file:<br>" . $em_workflow_path . '/' . $em_workflow_file);
             }
 
             // Send job to processing queue
@@ -229,7 +229,11 @@
             }
 
             $output = array(
-                'timestamp_iso8601' => gmdate('c', $timestamp_epoch)
+                'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
+                'em_template_path' => $em_template_path,
+                'em_template_file' => $em_template_file,
+                'em_workflow_path' => $em_workflow_path,
+                'em_workflow_file' => $em_workflow_file
             );
 
             $this->_output($output);
