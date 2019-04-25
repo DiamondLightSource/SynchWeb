@@ -44,6 +44,7 @@
         function _process_visit()
         {
             global $bl_types,
+                   $visit_directory,
                    $em_template_path,
                    $em_template_file,
                    $em_workflow_path,
@@ -78,6 +79,7 @@
 
             // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
             foreach ($visit as $key => $value) {
+                $visit_directory = str_replace("<%={$key}%>", $value, $visit_directory);
                 $em_template_path = str_replace("<%={$key}%>", $value, $em_template_path);
                 $em_workflow_path = str_replace("<%={$key}%>", $value, $em_workflow_path);
             }
@@ -101,7 +103,7 @@
             );
 
             $valid_parameters = array();
-            $valid_parameters['filesPath'] = $em_workflow_path . '/raw/GridSquare*/Data';
+            $valid_parameters['filesPath'] = $visit_directory . '/raw/GridSquare_*/Data';
 
             $invalid_parameters = array();
 
