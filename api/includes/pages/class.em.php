@@ -41,16 +41,17 @@
             array('/process/visit/:visit', 'post', '_process_visit')
         );
 
-        function _process_visit()
-        {
-            global $bl_types,
-                   $em_template_path,
-                   $em_template_file,
-                   $em_workflow_path,
-                   $em_activemq_server,
-                   $em_activemq_username,
-                   $em_activemq_password,
-                   $em_activemq_queue;
+    function _process_visit()
+    {
+        global $bl_types,
+               $visit_directory,
+               $em_template_path,
+               $em_template_file,
+               $em_workflow_path,
+               $em_activemq_server,
+               $em_activemq_username,
+               $em_activemq_password,
+               $em_activemq_queue;
 
             // Check electron microscopes are listed in global variables - see $bl_types in config.php.
             if (!array_key_exists('em', $bl_types)) $this->_error('Electron microscopes are not specified');
@@ -76,11 +77,12 @@
             if (!sizeof($visit)) $this->_error('Visit not found');
             $visit = $visit[0];
 
-            // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
-            foreach ($visit as $key => $value) {
-                $em_template_path = str_replace("<%={$key}%>", $value, $em_template_path);
-                $em_workflow_path = str_replace("<%={$key}%>", $value, $em_workflow_path);
-            }
+        // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
+        foreach ($visit as $key => $value) {
+            $visit_directory = str_replace("<%={$key}%>", $value, $visit_directory);
+            $em_template_path = str_replace("<%={$key}%>", $value, $em_template_path);
+            $em_workflow_path = str_replace("<%={$key}%>", $value, $em_workflow_path);
+        }
 
             // Validate form parameters
 
@@ -100,8 +102,8 @@
                 'findPhaseShift' => array('isRequired' => true, 'isBoolean' => true),
             );
 
-            $valid_parameters = array();
-            $valid_parameters['filesPath'] = $em_workflow_path . '/raw/GridSquare*/Data';
+        $valid_parameters = array();
+        $valid_parameters['filesPath'] = $visit_directory . '/raw/GridSquare_*/Data';
 
             $invalid_parameters = array();
 
