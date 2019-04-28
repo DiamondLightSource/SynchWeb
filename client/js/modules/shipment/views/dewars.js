@@ -101,7 +101,12 @@ define(['marionette', 'backbone',
             
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('CODE', 'text')
-            edit.create('FACILITYCODE', 'select', { data: this.getOption('regdewars').kv({ empty: true })})
+
+            var self = this
+            edit.create('FACILITYCODE', 'select', { data: function() {
+                return self.getOption('regdewars').kv({ empty: true })}
+            })
+            
             edit.create('TRACKINGNUMBERTOSYNCHROTRON', 'text')
             edit.create('TRACKINGNUMBERFROMSYNCHROTRON', 'text')
             edit.create('WEIGHT', 'text')
