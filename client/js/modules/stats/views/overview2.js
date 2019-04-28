@@ -55,7 +55,7 @@ define(['marionette',
             var ps = []
             _.each(_.omit(col.queryParams, _.keys(col.__proto__.queryParams)), function(val,k) { 
                 var ev = _.isFunction(val) ? val() : val
-                if (ev) ps.push(k+'='+val) 
+                if (ev) ps.push(k+'='+ev) 
             })
 
             var url = app.apiurl+col.url+'?'+ps.join('&')+'&download=1'
