@@ -31,8 +31,8 @@
                 </li>
 
                 <li>
-                    <label>Sampling Rate (Å/pixel)</label>
-                    <input type="text" name="samplingRate" v-bind:class="{ferror: errors.has('samplingRate')}" v-validate="'required|min_value:1|max_value:10'" v-model="samplingRate" :readonly="isQueued">
+                    <label>Pixel Size (Å/pixel)</label>
+                    <input type="text" name="samplingRate" v-bind:class="{ferror: errors.has('samplingRate')}" v-validate="'required|min_value:0.1|max_value:10'" v-model="samplingRate" :readonly="isQueued">
                     <span v-if="errors.has('samplingRate')" class="errormessage ferror">{{ errors.first('samplingRate') }}</span>
                 </li>
 
