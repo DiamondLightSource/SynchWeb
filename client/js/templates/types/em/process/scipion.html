@@ -9,49 +9,49 @@
                 <li>
                     <label>Dose per frame (e<span class="super">-</span>/Å<span class="super">2</span>)</label>
                     <input type="text" name="dosePerFrame" v-bind:class="{ferror: errors.has('dosePerFrame')}" v-validate="'required|min_value:0.001|max_value:10'" v-model="dosePerFrame" :readonly="isQueued"/>
-                    <span v-if="errors.has('dosePerFrame')" class="errormesage ferror">{{ errors.first('dosePerFrame') }}</span>
+                    <span v-if="errors.has('dosePerFrame')" class="errormessage ferror">{{ errors.first('dosePerFrame') }}</span>
                 </li>
 
                 <li>
                     <label>Number of frames</label>
                     <input type="text" name="numberOfIndividualFrames" v-bind:class="{ferror: errors.has('numberOfIndividualFrames')}" v-validate="'required|min_value:1|max_value:500'" v-model="numberOfIndividualFrames" :readonly="isQueued">
-                    <span v-if="errors.has('numberOfIndividualFrames')" class="errormesage ferror">{{ errors.first('numberOfIndividualFrames') }}</span>
+                    <span v-if="errors.has('numberOfIndividualFrames')" class="errormessage ferror">{{ errors.first('numberOfIndividualFrames') }}</span>
                 </li>
 
                 <li>
                     <label>Patch X</label>
                     <input type="text" name="patchX" v-bind:class="{ferror: errors.has('patchX')}" v-validate="'required|min_value:1'" v-model="patchX" :readonly="isQueued">
-                    <span v-if="errors.has('patchX')" class="errormesage ferror">{{ errors.first('patchX') }}</span>
+                    <span v-if="errors.has('patchX')" class="errormessage ferror">{{ errors.first('patchX') }}</span>
                 </li>
 
                 <li>
                     <label>Patch Y</label>
                     <input type="text" name="patchY" v-bind:class="{ferror: errors.has('patchY')}" v-validate="'required|min_value:1'" v-model="patchY" :readonly="isQueued">
-                    <span v-if="errors.has('patchY')" class="errormesage ferror">{{ errors.first('patchY') }}</span>
+                    <span v-if="errors.has('patchY')" class="errormessage ferror">{{ errors.first('patchY') }}</span>
                 </li>
 
                 <li>
                     <label>Sampling Rate (Å/pixel)</label>
                     <input type="text" name="samplingRate" v-bind:class="{ferror: errors.has('samplingRate')}" v-validate="'required|min_value:1|max_value:10'" v-model="samplingRate" :readonly="isQueued">
-                    <span v-if="errors.has('samplingRate')" class="errormesage ferror">{{ errors.first('samplingRate') }}</span>
+                    <span v-if="errors.has('samplingRate')" class="errormessage ferror">{{ errors.first('samplingRate') }}</span>
                 </li>
 
                 <li>
                     <label>Particle Radius (Å)</label>
                     <input type="text" name="particleSize" v-bind:class="{ferror: errors.has('particleSize')}" v-validate="'required|min_value:1|max_value:1000'" v-model="particleSize" :readonly="isQueued">
-                    <span v-if="errors.has('particleSize')" class="errormesage ferror">{{ errors.first('particleSize') }}</span>
+                    <span v-if="errors.has('particleSize')" class="errormessage ferror">{{ errors.first('particleSize') }}</span>
                 </li>
 
                 <li>
                     <label>Gautomatch Min Distance (Å)</label>
                     <input type="text" name="minDist" v-bind:class="{ferror: errors.has('minDist')}" v-validate="'required|min_value:1|max_value:1000'" v-model="minDist" :readonly="isQueued">
-                    <span v-if="errors.has('minDist')" class="errormesage ferror">{{ errors.first('minDist') }}</span>
+                    <span v-if="errors.has('minDist')" class="errormessage ferror">{{ errors.first('minDist') }}</span>
                 </li>
 
                 <li>
                     <label>CTF Window Size (pixel)</label>
                     <input type="text" name="windowSize" v-bind:class="{ferror: errors.has('windowSize')}" v-validate="'required|min_value:128|max_value:2048'" v-model="windowSize" :readonly="isQueued">
-                    <span v-if="errors.has('windowSize')" class="errormesage ferror">{{ errors.first('windowSize') }}</span>
+                    <span v-if="errors.has('windowSize')" class="errormessage ferror">{{ errors.first('windowSize') }}</span>
                 </li>
 
                 <li>
