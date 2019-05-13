@@ -95,7 +95,7 @@
                 'numberOfIndividualFrames' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 500),
                 'patchX' => array('isRequired' => true, 'minValue' => 1),
                 'patchY' => array('isRequired' => true, 'minValue' => 1),
-                'samplingRate' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 10),
+                'samplingRate' => array('isRequired' => true, 'minValue' => 0.1, 'maxValue' => 10),
                 'particleSize' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000),
                 'minDist' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000),
                 'windowSize' => array('isRequired' => true, 'minValue' => 128, 'maxValue' => 2048),
