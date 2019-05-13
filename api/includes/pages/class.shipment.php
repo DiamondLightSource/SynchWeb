@@ -336,7 +336,7 @@
             if (!$this->has_arg('BARCODE')) $this->_error('No barcode specified');
             if (!$this->has_arg('LOCATION')) $this->_error('No location specified');
 
-            $dew = $this->db->pq("SELECT CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode, d.firstexperimentid
+            $dew = $this->db->pq("SELECT CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode, d.firstexperimentid, d.dewarstatus
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
@@ -377,12 +377,16 @@
                 // No history - could be a new dewar, so not necessarily an error...
                 if ($this->debug) error_log("No previous dewar transport history for DewarId ". $dew['DEWARID']);
             }
+            // If dewar status is dispatch-requested - don't change it.
+            // This way the dewar can be moved between storage locations and keep the record that a user requested the dispatch
+            // Default status is 'at-facility'
+            $dewarstatus = strtolower($dew['DEWARSTATUS']) == 'dispatch-requested' ? 'dispatch-requested' : 'at-facility';
 
-            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,'at facility',lower(:2),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,lower(:2),lower(:3),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $dewarstatus, $this->arg('LOCATION')));
             $dhid = $this->db->id();
 
-            $this->db->pq("UPDATE dewar set dewarstatus='at facility', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track));
-            $this->db->pq("UPDATE shipping set shippingstatus='at facility' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+            $this->db->pq("UPDATE dewar set dewarstatus=lower(:4), storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track, $dewarstatus));
+            $this->db->pq("UPDATE shipping set shippingstatus=lower(:2) WHERE shippingid=:1", array($dew['SHIPPINGID'], $dewarstatus));
 
             $containers = $this->db->pq("SELECT containerid 
                 FROM container 
@@ -666,6 +670,8 @@
               VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
               array($dew['DEWARID'], $this->arg('LOCATION')));
 
+            // Update dewar status to transfer-requested to keep consistent with history
+            $this->db->pq("UPDATE dewar set dewarstatus='transfer-requested' WHERE dewarid=:1", array($dew['DEWARID']));
 
             if ($this->has_arg('NEXTVISIT')) {
                 $sessions = $this->db->pq("SELECT s.sessionid
