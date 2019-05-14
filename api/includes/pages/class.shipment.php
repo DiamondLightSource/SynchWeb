@@ -380,7 +380,7 @@
             // If dewar status is dispatch-requested - don't change it.
             // This way the dewar can be moved between storage locations and keep the record that a user requested the dispatch
             // Default status is 'at-facility'
-            $dewarstatus = strtolower($dew['DEWARSTATUS']) == 'dispatch-requested' ? 'dispatch-requested' : 'at-facility';
+            $dewarstatus = strtolower($dew['DEWARSTATUS']) == 'dispatch-requested' ? 'dispatch-requested' : 'at facility';
 
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,lower(:2),lower(:3),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $dewarstatus, $this->arg('LOCATION')));
             $dhid = $this->db->id();
