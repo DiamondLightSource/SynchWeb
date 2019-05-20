@@ -19,6 +19,7 @@ class UAS {
         $uas = $this->_curl(array(
             'URL' => $this->url.'/uas/login/cas?ticket='.$st,
             'HEADER' => 1,
+            'GET' => 1,
         ));
 
         $this->session = null;
