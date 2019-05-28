@@ -1,7 +1,7 @@
 <?php
 
     class Em extends Page {
-        
+
 
         public static $arg_list = array(
             'id' => '\d+',
@@ -12,18 +12,18 @@
             'IMAGENUMBER' => '\d+',
 
             // Scipion processing
+            // Accept decimal request parameters for integers as values later cast to integer type.
 
-            'dosePerFrame' => '\d+.\d+', // Decimal
-            'numberOfIndividualFrames' => '\d+', // Integer
-            'patchX' => '\d+', // Integer
-            'patchY' => '\d+', // Integer
-            'samplingRate' => '\d+.\d+', // Decimal
-            'particleSize' => '\d+', // Integer
-            'minDist' => '\d+', // Integer
-            'windowSize' => '\d+', // Integer
-            'findPhaseShift' => '(true|false)', // Boolean
+            'dosePerFrame' => '\d*(\.\d+)?', // Decimal
+            'numberOfIndividualFrames' => '\d*(\.\d+)?', // Integer
+            'patchX' => '\d*(\.\d+)?', // Integer
+            'patchY' => '\d*(\.\d+)?', // Integer
+            'samplingRate' => '\d*(\.\d+)?', // Decimal
+            'particleSize' => '\d*(\.\d+)?', // Integer
+            'minDist' => '\d*(\.\d+)?', // Integer
+            'windowSize' => '\d*(\.\d+)?', // Integer
+            'findPhaseShift' => '1?', // Boolean : Note PHP casts boolean true to 1 and false to nothing.
         );
-        
 
         public static $dispatch = array(
             array('/aps', 'post', '_ap_status'),
@@ -58,21 +58,16 @@
 
             if (!$this->has_arg('visit')) $this->_error('Visit not specified');
 
-            // Decompose visit
-            preg_match('/^(?<proposalCode>[a-z]{2})(?<proposalNumber>\d{1,6})-(?<visitNumber>\d{1,3})$/', $this->arg('visit'), $visit_request);
-
             // Lookup visit in ISPyB
             $visit = $this->db->pq("
-              SELECT b.beamLineName AS beamLineName,
+            SELECT b.beamLineName AS beamLineName,
                 YEAR(b.startDate) AS year,
                 CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
                 b.startDate AS startDate,
                 b.endDate AS endDate
-              FROM Proposal AS p
+            FROM Proposal AS p
                 JOIN BLSession AS b ON p.proposalId = b.proposalId
-              WHERE p.proposalCode = :1
-                AND p.proposalNumber = :2
-                AND b.visit_number = :3", array($visit_request['proposalCode'], $visit_request['proposalNumber'], $visit_request['visitNumber']));
+            WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1", array($this->arg('visit')));
 
             if (!sizeof($visit)) $this->_error('Visit not found');
             $visit = $visit[0];
@@ -87,42 +82,39 @@
             // Validate form parameters
 
             // Setup rules to validate each parameter by isRequired, inArray, minValue, maxValue.
-            // isBoolean converts 'true' or 'false' string values to boolean type.
-            // TODO Consider adding check for notNull and isType (e.g. integer, decimal, etc.) (JPH)
+            // Specify outputType so json_encode casts value correctly. This determines whether value is quoted.
+
             // TODO Consider adding default values (JPH)
             $validation_rules = array(
-                'dosePerFrame' => array('isRequired' => true, 'minValue' => 0, 'maxValue' => 10),
-                'numberOfIndividualFrames' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 500),
-                'patchX' => array('isRequired' => true, 'minValue' => 1),
-                'patchY' => array('isRequired' => true, 'minValue' => 1),
-                'samplingRate' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 10),
-                'particleSize' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000),
-                'minDist' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000),
-                'windowSize' => array('isRequired' => true, 'minValue' => 128, 'maxValue' => 2048),
-                'findPhaseShift' => array('isRequired' => true, 'isBoolean' => true),
+                'dosePerFrame' => array('isRequired' => true, 'minValue' => 0, 'maxValue' => 10, 'outputType' => 'float'),
+                'numberOfIndividualFrames' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 500, 'outputType' => 'integer'),
+                'patchX' => array('isRequired' => true, 'minValue' => 1, 'outputType' => 'integer'),
+                'patchY' => array('isRequired' => true, 'minValue' => 1, 'outputType' => 'integer'),
+                'samplingRate' => array('isRequired' => true, 'minValue' => 0.1, 'maxValue' => 10, 'outputType' => 'float'),
+                'particleSize' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
+                'minDist' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
+                'windowSize' => array('isRequired' => true, 'minValue' => 128, 'maxValue' => 2048, 'outputType' => 'integer'),
+                'findPhaseShift' => array('isRequired' => true, 'outputType' => 'boolean'),
             );
 
             $valid_parameters = array();
-            
-            // Determine other values to substitute in JSON i.e. parameters not specified in form submission.
             $valid_parameters['filesPath'] = $visit_directory . '/raw/GridSquare_*/Data';
-            $valid_parameters['visit'] = $visit['VISIT'];
 
             $invalid_parameters = array();
 
             foreach ($validation_rules as $parameter => $validations) {
 
                 // Determine whether request includes parameter
-                if (array_key_exists($parameter, $this->request)) {
+                if ($this->has_arg($parameter)) {
 
-                    if ($this->request[$parameter] === '') {
+                    if ($this->arg($parameter) === '') {
                         array_push($invalid_parameters, "{$parameter} is not specified");
                         continue;
                     }
 
                     // Check parameter is more than minimum value
                     if (array_key_exists('minValue', $validations)) {
-                        if ($this->request[$parameter] < $validations['minValue']) {
+                        if ($this->arg($parameter) < $validations['minValue']) {
                             array_push($invalid_parameters, "{$parameter} is too small");
                             continue;
                         }
@@ -130,33 +122,30 @@
 
                     // Check parameter is less than maximum value
                     if (array_key_exists('maxValue', $validations)) {
-                        if ($this->request[$parameter] > $validations['maxValue']) {
+                        if ($this->arg($parameter) > $validations['maxValue']) {
                             array_push($invalid_parameters, "{$parameter} is too large");
                             continue;
                         }
                     }
 
-                    // Check parameter is in array.
+                    // Check parameter is in array of expected inputs
                     if (array_key_exists('inArray', $validations)) {
                         if (is_array($validations['inArray'])) {
-                            if (!in_array($this->request[$parameter], $validations['inArray'])) {
+                            if (!in_array($this->arg($parameter), $validations['inArray'])) {
                                 array_push($invalid_parameters, "{$parameter} is not known");
                                 continue;
                             }
                         }
                     }
 
-                    // Convert 'true' or 'false' string values to boolean type
-                    if (array_key_exists('isBoolean', $validations)) {
-                        if ($this->request[$parameter] == 'true') {
-                            $this->request[$parameter] = true;
-                        } else {
-                            $this->request[$parameter] = false;
-                        }
-                    }
+                    // Parameter has passed validation checks so add to list of valid parameters.
+                    $valid_parameters[$parameter] = $this->arg($parameter);
 
-                    // Add to list of valid parameters
-                    $valid_parameters[$parameter] = $this->request[$parameter];
+                    // Set type if outputType is specified, otherwise default to string. Note json_encode quotes value of type string.
+
+                    $outputType = array_key_exists('outputType', $validations) ? $validations['outputType'] : 'string';
+
+                    settype($valid_parameters[$parameter], $outputType);
                 } else {
                     // Check whether a missing parameter is required.
                     if (array_key_exists('isRequired', $validations)) {
@@ -200,7 +189,7 @@
 
             // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
             // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
-            $workflow_json_string = json_encode($template_array, JSON_NUMERIC_CHECK | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $workflow_json_string = json_encode($template_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
             // Save workflow file
 
@@ -244,7 +233,7 @@
 
         function _ap_status() {
             if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
-            
+
             $where = array();
             $ids = array();
             if ($this->has_arg('ids')) {
@@ -255,14 +244,14 @@
                     }
                 }
             }
-                   
+
             if (!sizeof($ids)) {
                 $this->_output(array());
                 return;
             }
-             
+
             $where = '('.implode(' OR ', $where).')';
-            
+
             if ($this->has_arg('visit')) {
                 $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :".(sizeof($ids)+1);
                 array_push($ids, $this->arg('visit'));
@@ -343,7 +332,7 @@
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $n));
-            
+
             if (!sizeof($imgs)) $this->_error('No such micrograph');
             $img = $imgs[0];
 
@@ -366,7 +355,7 @@
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $im));
-            
+
             if (!sizeof($imgs)) $this->_error('No such fft');
             $img = $imgs[0];
 
@@ -396,7 +385,7 @@
             $data = array();
             foreach ($rows as $r) {
                 array_push($data, array($r['DELTAX'], $r['DELTAY']));
-            }   
+            }
 
             $this->_output($data);
         }
@@ -466,7 +455,7 @@
                 $ha = array();
                 $max = array();
                 $min = array();
-                
+
                 foreach ($hist as $i => &$h) {
                     if ($h['FRAMEDIFF'] == '0-1') continue;
                     if ($h['BEAMLINENAME'] != $bl) continue;
