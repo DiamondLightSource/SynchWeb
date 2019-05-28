@@ -572,7 +572,7 @@
                 LEFT OUTER JOIN person pe ON pe.personid = c.ownerid
                 WHERE c.containerid=:1", array($this->arg('CONTAINERID')));
 
-            if (!sizeof($cont)) $this->error('No such container');
+            if (!sizeof($cont)) $this->_error('No such container');
             $cont = $cont[0];
 
             if (!$cont['SESSIONID'] && $cont['PEXTERNALID']) {
@@ -646,7 +646,7 @@
                 LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
                 WHERE c.containerid=:1", array($this->arg('CONTAINERID')));
 
-            if (!sizeof($cont)) $this->error('No such container');
+            if (!sizeof($cont)) $this->_error('No such container');
             $cont = $cont[0];
 
             if ($cont['SESSIONID']) {

@@ -57,7 +57,7 @@
 		// Check if this request needs authentication
 		// We allow some pages unauthorised access based on IP, or calendar hash
 		function check_auth_required() {
-			global $blsr, $bcr, $img;
+			global $blsr, $bcr, $img, $auto;
 
 			$parts = explode('/', $this->app->request->getResourceUri()); 
 		    if (sizeof($parts)) array_shift($parts);
@@ -76,8 +76,12 @@
 		            # Allow barcode reader unauthorised access, same as above, certain IPs only
 		            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
 
-		            # Allow formulatrix machines unauthorised access to inspections, certain IPs only
-		            ($parts[0] == 'imaging' && $parts[1] == 'inspection' && in_array($_SERVER["REMOTE_ADDR"], $img))
+                    # Allow formulatrix machines unauthorised access to inspections, certain IPs only
+                    ($parts[0] == 'imaging' && $parts[1] == 'inspection' && in_array($_SERVER["REMOTE_ADDR"], $img)) ||
+
+                    # Allow EPICS machines to create and close auto collect visits, certain IPs only.
+                    # Permitted IPs listed in global variable $auto in config.php.
+                    ($parts[0] == 'proposal' && $parts[1] == 'auto' && in_array($_SERVER["REMOTE_ADDR"], $auto))
 		        ) {
 		            $need_auth = false;
 		        }
