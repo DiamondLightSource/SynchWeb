@@ -98,7 +98,10 @@
             );
 
             $valid_parameters = array();
+            
+            // Determine other values to substitute in JSON i.e. parameters not specified in form submission.
             $valid_parameters['filesPath'] = $visit_directory . '/raw/GridSquare_*/Data';
+            $valid_parameters['visit'] = $visit['VISIT'];
 
             $invalid_parameters = array();
 
