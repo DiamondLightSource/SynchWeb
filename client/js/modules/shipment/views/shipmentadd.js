@@ -104,7 +104,7 @@ define(['marionette', 'views/form',
         onRender: function() {
             var self = this
 
-            this.dewars = new DewarRegistry()
+            this.dewars = new DewarRegistry(null, { state: { pageSize: 9999 } })
             this.listenTo(this.dewars, 'sync', this.updateFCodes)
             this.refreshDewars()
             
