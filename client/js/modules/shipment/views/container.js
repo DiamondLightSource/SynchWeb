@@ -84,7 +84,7 @@ define(['marionette',
             this.proteins = new DistinctProteins()
             this.proteins.fetch()
 
-            this.containerregistry = new ContainerRegistry()
+            this.containerregistry = new ContainerRegistry(null, { state: { pageSize: 9999 }})
             
             this.history = new ContainerHistory()
             this.history.queryParams.cid = this.model.get('CONTAINERID')
