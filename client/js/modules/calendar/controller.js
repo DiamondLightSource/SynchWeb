@@ -19,7 +19,11 @@ define(['underscore', 'marionette',
     },
       
     goHome: function() {
-        console.log('home', app.ty)
+        // console.log('home', app.ty)
+        // New code to reset proposal on home (avoid users getting stuck)...
+        // Current:show is probably redundant now
+        app.clearProposal()
+
         // if (!app.prop) app.trigger('proposals:show')
         if (!app.type) app.trigger('proposals:show')
         else app.trigger('current:show')
