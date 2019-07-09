@@ -168,7 +168,8 @@ define(['marionette',
             this.dewars = new DewarRegistry([], {state: {pageSize: 9999}})
             this.dewars.fetch()
 
-            this.labcontacts = new LabContacts()
+            // The list of lab contacts used in the drop down
+            this.labcontacts = new LabContacts([], {state: {pageSize: 9999}})
 
 
             this.contacts = new LabContacts()
