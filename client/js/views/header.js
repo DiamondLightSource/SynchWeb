@@ -44,8 +44,10 @@ define(['marionette', 'backbone', 'tpl!templates/header.html'], function(Marione
             sessionStorage.removeItem('token')
             delete app.token
 
-            sessionStorage.removeItem('prop')
-            delete app.prop
+            // Changed to use clearProposal method
+            app.clearProposal()
+            // sessionStorage.removeItem('prop')
+            // delete app.prop
 
             app.trigger('sidebar:render')
 
@@ -73,9 +75,14 @@ define(['marionette', 'backbone', 'tpl!templates/header.html'], function(Marione
             this.listenTo(app, 'proposal:change', this.setProposal, this)
         },
         
+        // React to proposal change event, handling the case where its cleared (set to null)
         setProposal: function(proposal) {
-            this.model = proposal
-            console.log('header prop', proposal, proposal.get('MENUS'))
+            if (proposal) {
+                this.model = proposal
+                console.log('header prop', proposal, proposal.get('MENUS'))
+            } else {
+                this.model = null
+            }
             this.render()
         },
         

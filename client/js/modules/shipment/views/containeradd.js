@@ -349,6 +349,8 @@ define(['marionette',
             this.ui.schedule.val('')
             this.ui.screen.val('')
             if (this.singlesample) this.singlesample.clearAll()
+            this.screencomponents.reset()
+            this.screencomponentgroups.reset()
             var s = this.samples.at(0)
             if (s) s.set({ isSelected: true })
         },

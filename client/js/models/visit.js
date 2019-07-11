@@ -19,7 +19,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
     addDate: function() {
         this.attributes.STISO = new Date(this.get('STISO'))
         this.attributes.ENISO = new Date(this.get('ENISO'))
-        this.attributes.LEN = (this.attributes.ENISO - this.attributes.STISO)/(3600*1000)
+        this.attributes.LEN = +((this.attributes.ENISO - this.attributes.STISO)/(3600*1000)).toFixed(2);
         this.attributes.VISITDETAIL = this.get('VISIT')+' ('+this.get('BL')+': '+this.get('ST')+')'
     }
       

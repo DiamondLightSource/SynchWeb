@@ -23,7 +23,6 @@ define([
         },
 
         regions: {
-            ov: '.ov',
             mg: '.mg',
         },
 
@@ -56,7 +55,6 @@ define([
         onShow: function() {
             EMDCView.__super__.onShow.apply(this)
             this.imagestatus = new ImageStatusItem({ pm: this.model, statuses: this.getOption('apstatuses'), el: this.$el })
-            this.ov.show(this.overview)
         },
 
 

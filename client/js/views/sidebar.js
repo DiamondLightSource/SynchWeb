@@ -33,9 +33,14 @@ define(['marionette', 'tpl!templates/sidebar.html', 'jquery.cookie'], function(M
             this.doToggleHelp()
         },
         
+        // React to proposal change event, handling the case where its cleared (set to null)
         setProposal: function(proposal) {
-            console.log('set proposal', proposal.get('MENUS'))
-            this.model = proposal
+            if (proposal) {
+                // console.log('set proposal', proposal.get('MENUS'))
+                this.model = proposal
+            } else {
+                this.model = null
+            }
             this.render()
         },
         

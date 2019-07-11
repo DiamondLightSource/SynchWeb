@@ -3,7 +3,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
     
     var Router = LazyRouter.extend({
         appRoutes: {
-            'faults(/page/:page)': 'list',
+            'faults(/bl/:bl)(/sys/:sys)(/com/:com)(/sub/:sub)(/page/:page)': 'list',
             'faults/fid/:fid': 'view',
             'faults/add': 'add',
             'faults/edit': 'edit',

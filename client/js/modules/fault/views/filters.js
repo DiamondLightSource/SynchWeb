@@ -23,6 +23,24 @@ define(['marionette',
             'change @ui.component': 'updateSubComponents',
             'change @ui.subcomponent': 'refetch',
             'click a.clear': 'clearFilters',
+            'change select': 'updateUrlFragment',
+        },
+
+        updateUrlFragment: function() {
+            var frags = {
+                bl: 'bl',
+                sys: 'system',
+                com: 'component',
+                sub: 'subcomponent',
+            }
+
+            var url = window.location.pathname
+            _.each(frags, function(v, f) {
+                url = url.replace(new RegExp('\\/'+f+'\\/\\w+'), '')
+                if (this.ui[v].val() != 0) url += '/'+f+'/'+this.ui[v].val()
+            }, this)
+            
+            window.history.pushState({}, '', url)
         },
 
         clearFilters: function(e) {
@@ -51,6 +69,12 @@ define(['marionette',
             this.collection.queryParams.scid = function() {
                 if (self.ui.subcomponent.val() > 0) return self.ui.subcomponent.val()
             }
+
+            this.firstLoad = true
+            var vals = _.unique(_.values(this.getOption('params')))
+            if (vals.length) {
+                if (vals[0] == null) this.firstLoad = false
+            }
         },
         
         refetch: function() {
@@ -63,6 +87,7 @@ define(['marionette',
             this.beamlines = new Beamlines()
             this.beamlines.fetch().done(function() {
                 self.ui.bl.html('<option value="">-</option><option value="P01">Phase I</option>'+self.beamlines.opts())
+                if (self.getOption('params')) self.ui.bl.val(self.getOption('params').beamline)
                 self.updateSystems()
             })
             
@@ -105,6 +130,7 @@ define(['marionette',
         doUpdateSystems: function(e) {
             var val = this.ui.system.val()
             this.ui.system.html('<option value="0">-</option>'+this.systems.opts()).val(val)
+            if (this.getOption('params') && this.firstLoad) this.ui.system.val(this.getOption('params').system)
             if (e) this.collection.fetch()            
             this.updateComponents()
         },
@@ -116,6 +142,7 @@ define(['marionette',
         doUpdateComponents: function(e) {
             var val = this.ui.component.val()
             this.ui.component.html('<option value="0">-</option>'+this.components.opts()).val(val)
+            if (this.getOption('params') && this.firstLoad) this.ui.component.val(this.getOption('params').component)
             this.updateSubComponents()
             if (e) this.collection.fetch()
         },
@@ -125,7 +152,9 @@ define(['marionette',
         doUpdateSubComponents: function(e) {
             var val = this.ui.subcomponent.val()
             this.ui.subcomponent.html('<option value="0">-</option>'+this.subcomponents.opts()).val(val)
-            if (e) this.collection.fetch()
+            if (this.getOption('params') && this.firstLoad) this.ui.subcomponent.val(this.getOption('params').subcomponent)
+            if (e || this.firstLoad) this.collection.fetch()
+            if (this.firstLoad) this.firstLoad = false
         },
       
     })

@@ -12,12 +12,13 @@
         <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
         <li>Scan File: <%-FILETEMPLATE%></li>
         <li>E(Peak): <%-EPK.toFixed(1) %>eV (<% print ((12398.4193/EPK).toFixed(4)) %>&#197;)</li>
-        <li>f&rsquo;&rsquo;: <%-AXISSTART%> / f&rsquo;: <%-RESOLUTION%>e</li>
+        <li>f&rsquo;&rsquo;: <%-NUMIMG%> / f&rsquo;: <%-RESOLUTION%>e</li>
         <li>E(Inf): <%-EIN.toFixed(1) %>eV (<% print((12398.4193/EIN).toFixed(4)) %>&#197;)</li>
         <li>f&rsquo;&rsquo;: <%-WAVELENGTH%> / f&rsquo;: <%-AXISRANGE%>e</li>
         <li>Exposure: <%-EXPOSURETIME%>s</li>
         <li>Transmission: <%-TRANSMISSION%>%</li>
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
+        <li>Axis Position: <%-AXISSTART%>&deg;</li>
         <li class="comment" title="Click to edit the comment for this edge scan">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         </ul>
     </div>

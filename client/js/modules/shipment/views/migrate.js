@@ -163,10 +163,13 @@ define(['marionette',
             this.proposals = new Proposals()
             this.ready = this.proposals.fetch()
 
-            this.dewars = new DewarRegistry()
+            // Increasing list of dewars available to drop down
+            // As of 2019-06 most recent proposals have less than 28 registered dewars
+            this.dewars = new DewarRegistry([], {state: {pageSize: 9999}})
             this.dewars.fetch()
 
-            this.labcontacts = new LabContacts()
+            // The list of lab contacts used in the drop down
+            this.labcontacts = new LabContacts([], {state: {pageSize: 9999}})
 
 
             this.contacts = new LabContacts()

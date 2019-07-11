@@ -215,7 +215,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
         'modules/mc/router',
         'modules/admin/router',
         'modules/imaging/router',
-        ], function() {
+        'modules/types/em/scipion/router',
+    ], function() {
             
         this.sidebarview = new SideBarView()
         app.sidebar.show(this.sidebarview)
@@ -253,6 +254,9 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           app.personid = resp.personid
           app.givenname = resp.givenname
           app.staff = resp.is_staff
+          // Saving the default type for this user.
+          // Needed for resetting the home view
+          app.defaultType = resp.ty
           if (!app.type) app.type = resp.ty
 
           // Should put this somewhere else...
@@ -317,6 +321,26 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
     } else if (callback) callback()
   },
     
+  /*
+   Deselect the selected proposal.
+   Used when navigating back to home page.
+  */
+  app.clearProposal = function() {
+      // Clear the proposal cookie/object
+    sessionStorage.removeItem('prop')
+
+    delete app.prop
+    // Reset type to the default for this user
+    app.type = app.defaultType
+    if (!app.type) {
+      console.log('Error clearing proposal, no default type for this user')
+    }
+
+    // Recall the user info so we can set the default type for this person
+    // app.getuser()
+    // Now we need to tell any listening views that the proposal has changed...
+    app.triggerMethod('proposal:change', null)
+  },
 
   /*
    Load client side options and show MOTD

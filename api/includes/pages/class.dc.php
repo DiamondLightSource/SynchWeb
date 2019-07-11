@@ -443,7 +443,7 @@
              $groupby
                    
              UNION
-             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',es.beamsizehorizontal,es.beamsizevertical,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.peakfdoubleprime, 1, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1, 0, 
+             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',es.beamsizehorizontal,es.beamsizevertical,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.axisposition, es.peakfdoubleprime, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1, 0, 
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', es.starttime, CURRENT_TIMESTAMP) as age,
                 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, es.blsubsampleid, '', ''
             FROM energyscan es
@@ -453,7 +453,7 @@
             WHERE $sess[1] $where2
                    
             UNION
-            SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',xrf.beamsizehorizontal,xrf.beamsizevertical,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, 1, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1, 0,
+            SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',xrf.beamsizehorizontal,xrf.beamsizevertical,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, xrf.axisposition, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', xrf.starttime, CURRENT_TIMESTAMP) as age,
                 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, xrf.blsubsampleid, '', ''
             FROM xfefluorescencespectrum xrf
@@ -947,14 +947,15 @@
         function _dc_strategies($id) {
             global $strat_align;
 
-            $rows = $this->db->pq("SELECT s.programversion, st.rankingresolution as rankres, ssw.wedgenumber, sssw.subwedgenumber, ssw.chi, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(s.shortcomments, ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg 
+            $rows = $this->db->pq("SELECT s.programversion, st.rankingresolution as rankres, ssw.wedgenumber, sssw.subwedgenumber, ssw.chi, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(s.shortcomments, ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg, det.numberofpixelsx, det.detectorpixelsizehorizontal
                 FROM screeningstrategy st 
                 INNER JOIN screeningoutput so on st.screeningoutputid = so.screeningoutputid 
                 INNER JOIN screening s on so.screeningid = s.screeningid 
                 INNER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid 
                 LEFT JOIN screeningstrategysubwedge sssw ON sssw.screeningstrategywedgeid = ssw.screeningstrategywedgeid 
                 LEFT JOIN screeningoutputlattice sl ON sl.screeningoutputid = st.screeningoutputid 
-                INNER JOIN datacollection dc on s.datacollectionid = dc.datacollectionid 
+                INNER JOIN datacollection dc on s.datacollectionid = dc.datacollectionid
+                LEFT OUTER JOIN detector det ON dc.detectorid = det.detectorid
                 WHERE s.datacollectionid = :1 
                 ORDER BY s.shortcomments, ssw.wedgenumber", array($id));
         
@@ -999,7 +1000,17 @@
                     
                     $r['VPATH'] = join('/', array_slice(explode('/', $r['IMD']),0,6));
                     list(,,$r['BL']) = explode('/', $r['IMD']);
-                    $r['DIST'] = $this->_r_to_dist($r['BL'], $r['LAM'], $r['RES']);
+
+                    # we dont actually use this in the display view maybe Deprecate?
+                    # detector diameter in mm
+                    if ($r['DETECTORPIXELSIZEHORIZONTAL'] && $r['NUMBEROFPIXELSX']) {
+                        $diam = $r['DETECTORPIXELSIZEHORIZONTAL']*$r['NUMBEROFPIXELSX']*1000;
+                    } else {
+                        // drop back to pilatus 6m diameter
+                        $diam = 415;
+                    }
+
+                    $r['DIST'] = $this->_r_to_dist($diam, $r['LAM'], $r['RES']);
                     $r['ATRAN'] = round($r['TRAN']/100.0*$r['DCTRN'],1);
                     list($r['NTRAN'], $r['NEXP']) = $this->_norm_et($r['ATRAN'], $r['TIME']);
                     $r['AP'] = $this->_get_ap($r['DCC']);
@@ -1032,8 +1043,9 @@
         
         # ------------------------------------------------------------------------        
         # Convert resolution to detector distance
-        function _r_to_dist($bl, $lambda, $r) {
-            $diam = $bl == 'i04-1' ? 252.5 : 415;
+        function _r_to_dist($diam, $lambda, $r) {
+            if ($r == 0) return 0;
+
             $b=$lambda/(2*$r);
             $d=2*asin($b);
             $f=2*tan($d);
