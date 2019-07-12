@@ -1,4 +1,4 @@
-define(['backbone.paginator'], function(PageableCollection) {
+define(['backbone', 'backbone.paginator'], function(Backbone, PageableCollection) {
 
     var analysed = Backbone.Model.extend({
         idAttribute: 'PDBENTRYID',

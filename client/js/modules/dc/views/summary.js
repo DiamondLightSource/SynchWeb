@@ -1,10 +1,12 @@
-define(['marionette', 'views/table', 
+define(['marionette', 
+    'backgrid', 
+    'views/table', 
     'models/datacollection', 
     'modules/dc/collections/apstatuses', 
     'modules/dc/collections/autointegrations', 
     'utils',
     'tpl!templates/dc/summary.html'], 
-    function(Marionette, TableView, DataCollection, APStatuses, AutoIntegrations, 
+    function(Marionette, Backgrid, TableView, DataCollection, APStatuses, AutoIntegrations, 
         utils,
         template) {
 

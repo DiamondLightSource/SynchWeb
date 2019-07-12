@@ -1,7 +1,9 @@
 define(['marionette', 
+    'backgrid',
     'modules/dc/views/aiplots',
     'views/log',
-    'views/table', 'utils'], function(Marionette, 
+    'views/table', 'utils'], 
+    function(Marionette, Backgrid, 
     AIPlotsView, LogView,
     TableView, utils) {
 

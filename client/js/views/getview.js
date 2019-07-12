@@ -1,4 +1,4 @@
-define([], function() {
+define(['marionette'], function(Marionette) {
     
     var GetView = Marionette.Object.extend({
         views: {},

@@ -1,4 +1,9 @@
-define(['marionette', 'views/table', 'collections/attachments', 'utils'], function(Marionette, TableView, attachments, utils) {
+define(['marionette', 
+    'backgrid',
+    'views/table', 
+    'collections/attachments', 
+    'utils'], 
+    function(Marionette, Backgrid, TableView, attachments, utils) {
 
     
     var OptionsCell = Backgrid.Cell.extend({

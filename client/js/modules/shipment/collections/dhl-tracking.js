@@ -1,4 +1,4 @@
-define(['backbone.paginator'], function(PageableCollection) {
+define(['backbone', 'backbone.paginator'], function(Backbone, PageableCollection) {
 	
 	var TrackingModel = Backbone.Model.extend({
 		idAttribute: 'EVENTID',

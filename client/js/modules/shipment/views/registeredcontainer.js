@@ -1,5 +1,5 @@
 define(['marionette',
-
+    'backgrid',
     'modules/shipment/collections/containerhistory',
     'modules/shipment/collections/containerreports',
     'modules/shipment/collections/containerproposals',
@@ -16,7 +16,7 @@ define(['marionette',
     'jquery',
     'jquery.mp',
     ], function(Marionette,
-        
+    Backgrid,
     ContainerHistory,
     ContainerReports,
     ContainerProposals,

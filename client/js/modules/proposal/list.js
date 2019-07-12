@@ -1,4 +1,7 @@
-define(['marionette', 'views/table', 'collections/proposals'], function(Marionette, TableView, Proposals) {
+define(['marionette', 
+  'backgrid', 
+  'views/table'], 
+  function(Marionette, Backgrid, TableView) {
     
     
   var ClickableRow = Backgrid.Row.extend({

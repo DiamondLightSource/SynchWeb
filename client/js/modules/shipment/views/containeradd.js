@@ -1,8 +1,7 @@
-define(['marionette',
+define(['backbone',
     'views/form',
     'models/container',
     'models/protein',
-    'collections/proteins',
     'models/sample',
     'collections/samples',
     'modules/shipment/views/puck',
@@ -28,15 +27,15 @@ define(['marionette',
 
     'collections/users',
     'modules/shipment/collections/containerregistry',
+    'views/form',
     
     'tpl!templates/shipment/containeradd.html',
     'tpl!templates/shipment/sampletablenew.html',
-    'tpl!templates/shipment/sampletablerownew.html'], function(Marionette,
+    'tpl!templates/shipment/sampletablerownew.html'], function(Backbone,
         
     FormView,
     Container,
     Protein,
-    Proteins,
     Sample,
     Samples,
     PuckView,
@@ -60,6 +59,7 @@ define(['marionette',
 
     Users,
     ContainerRegistry,
+    FormView,
         
     template, table, row){
     

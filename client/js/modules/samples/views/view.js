@@ -1,4 +1,5 @@
 define(['marionette',
+    'backgrid',
     'modules/shipment/collections/distinctproteins',
     'utils/sgs',
     'utils/anoms',
@@ -20,7 +21,7 @@ define(['marionette',
 
     'tpl!templates/samples/sample.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, DistinctProteins, SG, Anom, CM, EXP, RS, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
+    ], function(Marionette, Backgrid, DistinctProteins, SG, Anom, CM, EXP, RS, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
         ComponentsView,
         InspectionImages, ImageHistoryView,
         template, Backbone) {
