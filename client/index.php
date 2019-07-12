@@ -36,7 +36,8 @@
         <link rel="stylesheet" href="<?php echo $config->appurl ?>/assets/font-awesome/css/font-awesome.min.css">
 
         <?php if (!$config->maintenance): ?>
-        <script type="text/javascript" data-main="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/main" src="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/vendor/require/require.js"></script>
+        <!-- <script type="text/javascript" data-main="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/main" src="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/vendor/require/require.js"></script> -->
+        <!-- <script type="text/javascript" data-main="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/main" src="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/vendor/require/require.js"></script> -->
         <?php endif; ?>
 
         <title></title>
@@ -101,6 +102,6 @@
             </div>
         
         </div>
-
+        <script type="text/javascript" src="/assets/js/c6d5635b/main-bundle.js"></script>
     </body>
 </html>
