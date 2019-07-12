@@ -5,7 +5,7 @@ define(['marionette', 'views/form',
     'views/dialog',
     'modules/contact/views/addcontact',
     
-    'tpl!templates/shipment/regdewaradd.html',
+    'templates/shipment/regdewaradd.html',
     'jquery',
     'backbone',
     

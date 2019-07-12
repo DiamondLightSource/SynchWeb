@@ -4,7 +4,7 @@
 
 define(['modules/samples/views/addpdb',
         'modules/types/gen/samples/models/cif',
-        'tpl!templates/types/xpdf/samples/addcif.html'
+        'templates/types/xpdf/samples/addcif.html'
     ], function(AddPDB, CIF, template) {
 
     return AddPDB.extend({

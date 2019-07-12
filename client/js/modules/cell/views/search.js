@@ -1,4 +1,4 @@
-define(['marionette', 'modules/cell/collections/datacollections', 'views/pages', 'tpl!templates/cell/cell.html', 'tpl!templates/cell/item.html'], function(Marionette, DCs, Pages, template, itemtemplate) {
+define(['marionette', 'modules/cell/collections/datacollections', 'views/pages', 'templates/cell/cell.html', 'templates/cell/item.html'], function(Marionette, DCs, Pages, template, itemtemplate) {
 
     var DCItem = Marionette.ItemView.extend({
         template: itemtemplate,

@@ -4,7 +4,7 @@ define(['marionette',
     'views/table',
     'utils/editable',
 
-    'tpl!templates/shipment/rebookpickup.html',
+    'templates/shipment/rebookpickup.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, 
         Shipment, Dewars,

@@ -9,8 +9,8 @@ define(['marionette',
 
     'modules/samples/views/componentsview',
     
-    'tpl!templates/shipment/singlesample.html',
-    'tpl!templates/shipment/singlesamplee.html',
+    'templates/shipment/singlesample.html',
+    'templates/shipment/singlesamplee.html',
     
     'jquery-ui'], function(Marionette, utils,
         FormView, SG, Editable, Protein, Anom,

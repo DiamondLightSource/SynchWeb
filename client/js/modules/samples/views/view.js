@@ -19,7 +19,7 @@ define(['marionette',
     'modules/imaging/collections/inspectionimages',
     'modules/imaging/views/imagehistory',
 
-    'tpl!templates/samples/sample.html',
+    'templates/samples/sample.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, Backgrid, DistinctProteins, SG, Anom, CM, EXP, RS, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
         ComponentsView,

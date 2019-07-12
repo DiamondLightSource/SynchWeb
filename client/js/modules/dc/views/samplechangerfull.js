@@ -2,7 +2,7 @@ define(['marionette',
     'modules/dc/views/samplechanger',
     'collections/datacollections',
     'modules/dc/datacollections',
-    'tpl!templates/dc/samplechangerfull.html'
+    'templates/dc/samplechangerfull.html'
     ], function(Marionette, SampleChanger, DCs, DCList, template) {
 
     return SampleChanger.extend({

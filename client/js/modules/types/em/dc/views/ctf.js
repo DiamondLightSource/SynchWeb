@@ -1,6 +1,6 @@
 define(['marionette', 
     'views/log', 
-    'tpl!templates/types/em/dc/dc_ctf.html', 
+    'templates/types/em/dc/dc_ctf.html', 
     'utils', 
     'utils/xhrimage'], function(Marionette, LogView, template, utils, XHRImage) {
     

@@ -1,7 +1,7 @@
 define(['views/dialog',
         'collections/samples',
     
-        'tpl!templates/types/gen/dc/assoc.html',
+        'templates/types/gen/dc/assoc.html',
         'jquery', 'jquery-ui', 'jquery-ui.combobox'
     ], function(DialogView, Samples, template, $) {
 

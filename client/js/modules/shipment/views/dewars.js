@@ -6,9 +6,9 @@ define(['marionette', 'backbone',
         'utils/forms',
         'utils',
     
-        'tpl!templates/shipment/dewarlist.html',
-        'tpl!templates/shipment/dewarlistrow.html',
-        'tpl!templates/shipment/dewarlistrownew.html',
+        'templates/shipment/dewarlist.html',
+        'templates/shipment/dewarlistrow.html',
+        'templates/shipment/dewarlistrownew.html',
     
         'backbone-validation',
     ], function(Marionette, Backbone, Visits, DewarRegistry, ValidatedRow, Editable, forms, utils, template, rowtemplate, rowtemplatenew) {

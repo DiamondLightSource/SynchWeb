@@ -7,7 +7,7 @@ define([
     'modules/stats/models/breakdown',
     'modules/stats/views/breakdown',
 
-    'tpl!templates/types/em/dc/dclist.html',
+    'templates/types/em/dc/dclist.html',
     ],
 function(DataCollections, DCList, DCItemView, EMAPStatuses, 
     BreakDown, BreakdownView,

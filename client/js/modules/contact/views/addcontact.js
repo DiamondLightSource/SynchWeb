@@ -1,7 +1,7 @@
 define(['views/form',
     'models/labcontact',
     'collections/countries',
-    'tpl!templates/contact/contactadd.html',
+    'templates/contact/contactadd.html',
     'jquery',
     'backbone',
     

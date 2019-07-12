@@ -3,7 +3,7 @@ define(['marionette',
     'modules/dc/collections/downstreams', 
     'modules/dc/collections/dimplepeaks', 
     'modules/dc/views/dimplepeaktable', 
-    'tpl!templates/dc/mapmodelview.html'], function(Marionette, Uglymol, Zlib, 
+    'templates/dc/mapmodelview.html'], function(Marionette, Uglymol, Zlib, 
         DownStreams, DIMPLEPeaks, DIMPLEPeakTable,  template) {
 
     return Marionette.LayoutView.extend({

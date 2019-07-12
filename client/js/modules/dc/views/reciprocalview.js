@@ -1,7 +1,7 @@
 define(['marionette', 
     'collections/attachments',
     'uglymol', 'gzip',  
-    'tpl!templates/dc/mapmodelview.html'], function(Marionette, Attachments, Uglymol, Zlib, 
+    'templates/dc/mapmodelview.html'], function(Marionette, Attachments, Uglymol, Zlib, 
         template) {
 
     return Marionette.LayoutView.extend({

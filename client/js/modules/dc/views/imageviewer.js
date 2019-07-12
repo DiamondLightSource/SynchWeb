@@ -1,8 +1,8 @@
 define(['jquery', 'marionette',
     
         'utils/canvas',
-        'tpl!templates/dc/imageviewer.html',
-        'tpl!templates/dc/imageviewer_embedded.html',
+        'templates/dc/imageviewer.html',
+        'templates/dc/imageviewer_embedded.html',
         'caman',
         'utils',
         'utils/xhrimage',

@@ -8,7 +8,7 @@ define(['marionette',
 
     'views/filter',
     'views/table', 'utils/table',
-    'tpl!templates/imaging/dashboard.html',
+    'templates/imaging/dashboard.html',
     ], function(Marionette, 
         Imagers, ContainerInspections,
 

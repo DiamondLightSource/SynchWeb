@@ -14,8 +14,8 @@ define(['marionette',
 
     'collections/beamlinesetups',
     
-    'tpl!templates/imaging/queuecontainer.html', 'tpl!templates/imaging/queuepoint.html', 
-    'tpl!templates/imaging/queuegrid.html', 'tpl!templates/imaging/queuexfe.html',
+    'templates/imaging/queuecontainer.html', 'templates/imaging/queuepoint.html', 
+    'templates/imaging/queuegrid.html', 'templates/imaging/queuexfe.html',
     'modules/imaging/models/plan_point_vmxi',
     'modules/imaging/models/plan_grid_vmxi',
     'modules/imaging/models/plan_xfe_vmxi',

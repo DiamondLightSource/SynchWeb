@@ -1,4 +1,4 @@
-define(['marionette', 'tpl!templates/stats/breakdown.html',
+define(['marionette', 'templates/stats/breakdown.html',
     'utils',
     'moment',
     'jquery',

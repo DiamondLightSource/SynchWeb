@@ -5,7 +5,7 @@ define([
     'modules/types/em/dc/views/overview2',
     'modules/types/em/dc/views/micrograph',
     'modules/types/em/dc/views/autoprocessing',
-    'tpl!templates/types/em/dc/dc.html'], function(ImageStatusItem, DCItemView, 
+    'templates/types/em/dc/dc.html'], function(ImageStatusItem, DCItemView, 
         APStatusItem, Overview, Micrograph, 
         EMAutoProcessingView, 
         template) {

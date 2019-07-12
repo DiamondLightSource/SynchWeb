@@ -2,9 +2,9 @@ define(['marionette', 'backbone',
         'views/validatedrow',
     
         'models/project',
-        'tpl!templates/projects/projects.html',
-        'tpl!templates/projects/projectsrow.html',
-        'tpl!templates/projects/projectsrownew.html',
+        'templates/projects/projects.html',
+        'templates/projects/projectsrow.html',
+        'templates/projects/projectsrownew.html',
     
         'backbone-validation',
     ], function(Marionette, Backbone, ValidatedRow, Project, template, rowtemplate, rowtemplatenew) {

@@ -1,7 +1,7 @@
 define(['marionette',
         'views/pvs',
         'utils',
-        'tpl!templates/status.html',
+        'templates/status.html',
     ], function(Marionette, PVView, utils, template) {
 
 

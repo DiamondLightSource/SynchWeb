@@ -18,7 +18,7 @@ define(['marionette',
 
         'modules/dc/views/reprocessoverview',
 
-        'tpl!templates/dc/dclist.html',
+        'templates/dc/dclist.html',
         ],
 function(Marionette, Pages, DCListView,
          SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, UserView, DewarsView, 

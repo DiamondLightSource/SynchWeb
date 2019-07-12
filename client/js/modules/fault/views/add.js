@@ -9,7 +9,7 @@ define(['views/form',
     'modules/fault/collections/components',
     'modules/fault/collections/subcomponents',
     
-    'tpl!templates/fault/add.html',
+    'templates/fault/add.html',
     'jquery',
     'backbone',
     

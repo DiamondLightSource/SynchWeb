@@ -3,7 +3,7 @@ define(['marionette',
     'views/table',
     'utils/table',
     'utils',
-    'tpl!templates/shipment/manifest.html'], 
+    'templates/shipment/manifest.html'], 
     function(Marionette, Shipments, TableView, table, utils, template) {
     
     var ClickableRow = table.ClickableRow.extend({

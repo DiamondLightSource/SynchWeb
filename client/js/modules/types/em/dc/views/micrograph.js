@@ -1,6 +1,6 @@
 define(['marionette',
         'views/imageviewer',
-        'tpl!templates/types/em/dc/overview.html'
+        'templates/types/em/dc/overview.html'
     ], function(Marionette, ImageViewer, template) {
     
     var Micrograph = ImageViewer.extend({

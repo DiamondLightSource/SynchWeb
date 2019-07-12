@@ -4,7 +4,7 @@ define(['marionette',
         'modules/dc/models/grid',
         'modules/dc/collections/gridmap',
         'heatmap',
-        'tpl!templates/types/em/dc/overview.html'
+        'templates/types/em/dc/overview.html'
     ], function(Marionette, ImageViewer, DISTL, GridInfo, GridMap, 
         HeatMap,
         template) {

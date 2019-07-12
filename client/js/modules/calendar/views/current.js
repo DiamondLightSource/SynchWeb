@@ -5,7 +5,7 @@ define(['marionette',
         'modules/proposal/views/users', 
         'modules/proposal/views/dewars', 
         'modules/proposal/models/time', 
-        'tpl!templates/calendar/current.html'], 
+        'templates/calendar/current.html'], 
         function(Marionette, Visit, Visits, Beamlines, UserView, DewarsView, Time, template) {
 
 

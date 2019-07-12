@@ -16,7 +16,7 @@ define(['marionette',
     'views/table',
     'utils/table',
     'utils',
-    'tpl!templates/cell/pdbs.html',
+    'templates/cell/pdbs.html',
 
     ], function(Marionette, PDBCodes, Analysed, Autoproc, AutoprocPie, AutoprocBars, States, StatesPie, Beamlines, BeamlineBars, FilterView, TableView, table, utils, template) {
     

@@ -1,4 +1,4 @@
-define(['marionette', 'tpl!templates/assign/selectvisit.html'], function(Marionette, template) {
+define(['marionette', 'templates/assign/selectvisit.html'], function(Marionette, template) {
 
     
     var VisitView = Marionette.ItemView.extend({

@@ -11,7 +11,7 @@ define(['marionette',
         'modules/blstats/views/histogram',
         'modules/types/em/stats/views/interframe',
     
-        'tpl!templates/types/em/stats/visit.html'], function(Marionette, Faults, FaultListView,
+        'templates/types/em/stats/visit.html'], function(Marionette, Faults, FaultListView,
         BreakdownView, DetailsView, PieView, HourliesView, EHCLogView,
         Histogram, HistgramPlot, InterFramePlot,
         template) {

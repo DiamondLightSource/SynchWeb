@@ -7,7 +7,7 @@ define(['marionette', 'views/pages',
     'modules/assign/collections/pucknames',
     
     'utils',
-    'tpl!templates/assign/assign.html',
+    'templates/assign/assign.html',
     'jquery-ui',
     ], function(Marionette, Pages,
         Shipments,

@@ -1,7 +1,7 @@
 define(['marionette', 'views/table', 'collections/visits', 'utils/table',
     'utils',
-    'tpl!templates/proposal/visitlinks.html',
-    'tpl!templates/types/saxs/proposal/visitlinks.html',
+    'templates/proposal/visitlinks.html',
+    'templates/types/saxs/proposal/visitlinks.html',
     
     ], function(Marionette, TableView, Visits, table, utils, visitlinks, saxsvisitlinks) {
 

@@ -3,7 +3,7 @@ define(['marionette', 'views/form',
     'collections/componenttypes',
     'collections/concentrationtypes',
     'modules/samples/collections/pdbs', 
-    'tpl!templates/samples/proteinadd.html'], 
+    'templates/samples/proteinadd.html'], 
     function(Marionette, TableView, Protein, ComponentTypes, ConcentrationTypes, PDBs, template) {
     
     

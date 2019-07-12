@@ -1,5 +1,5 @@
 define(['views/form',
-    'tpl!templates/login.html',
+    'templates/login.html',
     'jquery',
     'backbone',
     

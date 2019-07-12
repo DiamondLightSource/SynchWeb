@@ -78,7 +78,7 @@ define(['marionette',
             var sel = this.collection.findWhere({ isSelected: true })
             if (sel) {
                 var self = this
-                require(['tpl!/doc/'+sel.get('page')+'/index.html'], function(template) {
+                require(['/doc/'+sel.get('page')+'/index.html'], function(template) {
                     self.cont.show(new Marionette.ItemView({
                         template: template,
                         className: 'content',

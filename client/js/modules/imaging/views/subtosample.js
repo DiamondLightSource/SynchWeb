@@ -11,7 +11,7 @@ define(['marionette',
 
   'modules/shipment/collections/distinctproteins',
 
-  'tpl!templates/imaging/subtosample.html',
+  'templates/imaging/subtosample.html',
   ], function(Marionette, Puck, 
     Shipments, Dewars, Containers, Sample, Samples, SingleSampleView, DistinctProteins,
     template) {

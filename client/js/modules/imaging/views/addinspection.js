@@ -1,7 +1,7 @@
 define(['views/form',
     'modules/imaging/models/inspection',
     'modules/imaging/collections/inspectiontypes',
-    'tpl!templates/imaging/inspectionadd.html',
+    'templates/imaging/inspectionadd.html',
     'jquery',
     'backbone',
     

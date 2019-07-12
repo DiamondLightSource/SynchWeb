@@ -1,7 +1,7 @@
 define(['marionette',
         'utils/xhrimage',
-        'tpl!templates/imaging/imagehistory.html',
-        'tpl!templates/imaging/imagehistorymin.html'
+        'templates/imaging/imagehistory.html',
+        'templates/imaging/imagehistorymin.html'
     ], function(Marionette, XHRImage, template, templatemin) {
     
         

@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'tpl!templates/header.html'], function(Marionette, Backbone, template) {
+define(['marionette', 'backbone', 'templates/header.html'], function(Marionette, Backbone, template) {
     
     
     var BreadItemView = Marionette.ItemView.extend({

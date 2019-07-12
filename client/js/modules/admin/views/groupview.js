@@ -6,7 +6,7 @@ define(['marionette',
     'modules/admin/collections/permissions',
     'collections/users',
 
-    'tpl!templates/admin/viewgroup.html',
+    'templates/admin/viewgroup.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, TableView, table,
         Permissions, Users,

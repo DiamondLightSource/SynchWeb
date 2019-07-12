@@ -29,9 +29,9 @@ define(['backbone',
     'modules/shipment/collections/containerregistry',
     'views/form',
     
-    'tpl!templates/shipment/containeradd.html',
-    'tpl!templates/shipment/sampletablenew.html',
-    'tpl!templates/shipment/sampletablerownew.html'], function(Backbone,
+    'templates/shipment/containeradd.html',
+    'templates/shipment/sampletablenew.html',
+    'templates/shipment/sampletablerownew.html'], function(Backbone,
         
     FormView,
     Container,

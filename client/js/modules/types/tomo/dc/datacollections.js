@@ -2,7 +2,7 @@ define([
         'modules/types/gen/dc/datacollections',
         'modules/types/gen/dc/dclist',
         'modules/types/tomo/dc/dc',
-        'tpl!templates/types/gen/dc/dclist.html',
+        'templates/types/gen/dc/dclist.html',
         ],
 function(DataCollections, DCList, DCItemView, template) {
     

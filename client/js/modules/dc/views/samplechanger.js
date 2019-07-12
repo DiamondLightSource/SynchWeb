@@ -1,7 +1,7 @@
 define(['marionette', 'utils/canvas', 'utils',
     'collections/samples',
     
-    'tpl!templates/dc/samplechanger.html'
+    'templates/dc/samplechanger.html'
     ], function(Marionette, canvas, utils, Samples, template) {
 
     return Marionette.LayoutView.extend({

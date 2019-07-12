@@ -5,7 +5,7 @@ define(['marionette',
     'modules/shipment/collections/dewarregistry',
 
     'views/table',
-    'tpl!templates/shipment/migrate.html', 'jquery-ui'], 
+    'templates/shipment/migrate.html', 'jquery-ui'], 
     function(Marionette,
         Proposals, LabContacts, Proteins, DewarRegistry,
         TableView,

@@ -18,7 +18,7 @@ define(['marionette',
 
     'modules/dc/views/getdcview',
     
-    'tpl!templates/samples/protein.html',
+    'templates/samples/protein.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, Editable, DCCol, DCView, Samples, SamplesView, Containers, ContainersView, 
         PDBs, PDBView, AddPDBView, 

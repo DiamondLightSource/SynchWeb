@@ -10,7 +10,7 @@ define(['marionette',
     'utils/editable',
     'utils',
     'utils/xhrimage',
-    'tpl!templates/fault/view.html',
+    'templates/fault/view.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, Visits, Beamlines, Systems, Components, SubComponents,
 Editable, utils, XHRImage, template, Backbone) {

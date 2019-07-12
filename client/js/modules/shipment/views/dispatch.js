@@ -7,7 +7,7 @@ define(['marionette', 'views/form',
 
     'modules/shipment/models/dispatch',
     
-    'tpl!templates/shipment/dispatch.html',
+    'templates/shipment/dispatch.html',
     'jquery',
     'backbone',
     

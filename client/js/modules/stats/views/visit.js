@@ -12,7 +12,7 @@ define(['marionette',
         'modules/blstats/views/roboterrors',
         'modules/blstats/views/robotdewar',
     
-    'tpl!templates/stats/visit.html'], function(Marionette, Faults, FaultListView,
+    'templates/stats/visit.html'], function(Marionette, Faults, FaultListView,
         BreakdownView, DetailsView, PieView, HourliesView, EHCLogView, CalloutView,
         RobotErrors, RobotErrorsView, RobotDewarPlot,
         template) {

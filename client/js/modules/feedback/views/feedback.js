@@ -1,7 +1,7 @@
 define(['marionette',
     'modules/feedback/models/feedback',
     'views/form',
-    'tpl!templates/feedback/feedback.html',
+    'templates/feedback/feedback.html',
     ], function(Marionette, Feedback, FormView, template) {
     
     return FormView.extend({

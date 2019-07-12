@@ -8,7 +8,7 @@ define([
     'views/table',
     'utils/table',
     'modules/types/xpdf/utils/phasecompositor',
-    'tpl!templates/types/xpdf/samples/samplelist.html'], function(
+    'templates/types/xpdf/samples/samplelist.html'], function(
         Marionette,
         Backgrid,
         TableView,

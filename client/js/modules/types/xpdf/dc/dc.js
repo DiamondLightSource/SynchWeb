@@ -2,7 +2,7 @@ define([
     'modules/types/gen/dc/dc',
     'modules/types/gen/dc/datplot',
     'utils',
-    'tpl!templates/types/xpdf/dc/dc.html'], function(DCItemView, DatPlot, utils, template) {
+    'templates/types/xpdf/dc/dc.html'], function(DCItemView, DatPlot, utils, template) {
 
 
     return DCItemView.extend({

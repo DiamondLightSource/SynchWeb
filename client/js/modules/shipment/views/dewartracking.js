@@ -1,5 +1,5 @@
 define(['marionette', 'views/table',
-    'tpl!templates/shipment/tracking.html'], function(Marionette, TableView, template) {
+    'templates/shipment/tracking.html'], function(Marionette, TableView, template) {
 
     return Marionette.LayoutView.extend({
         template: template,

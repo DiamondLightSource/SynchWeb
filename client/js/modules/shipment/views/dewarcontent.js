@@ -1,7 +1,7 @@
 define(['marionette', 'modules/shipment/views/movecontainer', 
     'views/pages',
     'utils',
-    'tpl!templates/shipment/containerli.html'], function(Marionette, MoveContainerView, PagesView,
+    'templates/shipment/containerli.html'], function(Marionette, MoveContainerView, PagesView,
         utils, template) {
     
     var EmptyDewar = Marionette.ItemView.extend({

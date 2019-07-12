@@ -2,7 +2,7 @@ define(['marionette',
     'collections/phasingattachments',
     'modules/dc/views/autoprocattachments',
     'views/log', 
-    'tpl!templates/dc/dc_fastep.html', 'utils'], function(Marionette, 
+    'templates/dc/dc_fastep.html', 'utils'], function(Marionette, 
         PhasingAttachments, AutoProcAttachmentsView, 
         LogView, template, utils) {
     

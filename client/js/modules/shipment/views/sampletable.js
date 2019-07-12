@@ -6,9 +6,9 @@ define(['marionette',
         'modules/shipment/collections/distinctproteins',
         'modules/samples/views/componentsview',
     
-        'tpl!templates/shipment/sampletable.html',
-        'tpl!templates/shipment/sampletablerow.html',
-        'tpl!templates/shipment/sampletablerowedit.html',
+        'templates/shipment/sampletable.html',
+        'templates/shipment/sampletablerow.html',
+        'templates/shipment/sampletablerowedit.html',
     
         'utils/forms',
         'utils/sgs',

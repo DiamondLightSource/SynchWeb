@@ -14,7 +14,7 @@ define(['marionette',
 
         'modules/types/xpdf/samples/views/samplelist',
 
-        'tpl!templates/types/xpdf/samples/phase.html',
+        'templates/types/xpdf/samples/phase.html',
         ], function(Marionette,
             Editable,
             Crystals,

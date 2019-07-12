@@ -20,13 +20,13 @@ define(['marionette',
     'views/sortabletable',
     'utils/table',
 
-    'tpl!templates/types/xpdf/plan.html',
-    'tpl!templates/types/xpdf/planparams.html',
-    'tpl!templates/types/xpdf/planparamsstatic.html',
-    'tpl!templates/types/xpdf/planaxis.html',
-    'tpl!templates/types/xpdf/planaxisstatic.html',
-    'tpl!templates/types/xpdf/plandetector.html',
-    'tpl!templates/types/xpdf/plandetectorstatic.html'
+    'templates/types/xpdf/plan.html',
+    'templates/types/xpdf/planparams.html',
+    'templates/types/xpdf/planparamsstatic.html',
+    'templates/types/xpdf/planaxis.html',
+    'templates/types/xpdf/planaxisstatic.html',
+    'templates/types/xpdf/plandetector.html',
+    'templates/types/xpdf/plandetectorstatic.html'
 
     ], function(Marionette,
         Backgrid,

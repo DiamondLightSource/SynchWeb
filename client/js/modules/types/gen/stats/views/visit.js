@@ -8,7 +8,7 @@ define(['marionette',
         'modules/stats/views/ehc',
         'modules/stats/views/callout',
     
-        'tpl!templates/types/gen/stats/visit.html'], function(Marionette, Faults, FaultListView,
+        'templates/types/gen/stats/visit.html'], function(Marionette, Faults, FaultListView,
         BreakdownView, DetailsView, PieView, HourliesView, EHCLogView, CalloutView,
         template) {
 

@@ -2,7 +2,7 @@ define(['marionette', 'views/dialog',
     'collections/datacollections',
     'models/datacollection',
     'modules/mc/views/dcdistl',
-    'tpl!templates/dc/reprocess.html', 'tpl!templates/dc/reprocess_dc.html'], function(Marionette, DialogView,
+    'templates/dc/reprocess.html', 'templates/dc/reprocess_dc.html'], function(Marionette, DialogView,
         DataCollections, DataCollection, DCDistlView,
         template, dctemplate) {
     

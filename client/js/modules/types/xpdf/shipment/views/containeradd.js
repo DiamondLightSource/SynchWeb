@@ -12,9 +12,9 @@ define([
 
     'modules/types/xpdf/shipment/collections/containertypes',
 
-    'tpl!templates/types/xpdf/shipment/containeradd.html',
-    'tpl!templates/types/xpdf/shipment/sampletablenew.html',
-    'tpl!templates/types/xpdf/shipment/sampletablerownew.html'
+    'templates/types/xpdf/shipment/containeradd.html',
+    'templates/types/xpdf/shipment/sampletablenew.html',
+    'templates/types/xpdf/shipment/sampletablerownew.html'
     ], function(
         Marionette,
         GenericContainerAdd,

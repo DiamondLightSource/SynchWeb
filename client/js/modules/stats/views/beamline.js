@@ -14,7 +14,7 @@ define(['marionette',
         'modules/blstats/models/histogram',
         'modules/blstats/views/histogram',
     
-    'tpl!templates/stats/beamline.html'], function(Marionette, 
+    'templates/stats/beamline.html'], function(Marionette, 
         Runs,
         Faults, FaultListView,
         BreakDown, BreakdownView, 

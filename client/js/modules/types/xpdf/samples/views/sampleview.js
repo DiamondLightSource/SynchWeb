@@ -9,7 +9,7 @@ define([
     'modules/types/xpdf/samples/views/phasetable',
     'modules/types/xpdf/samples/views/instancelist',
     'modules/types/xpdf/utils/phasecompositor',
-    'tpl!templates/types/xpdf/samples/sample.html'], function(
+    'templates/types/xpdf/samples/sample.html'], function(
         Marionette,
         Instances,
         Editable,

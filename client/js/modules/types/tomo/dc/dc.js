@@ -1,6 +1,6 @@
 define([
     'modules/types/gen/dc/dc',
-    'tpl!templates/types/tomo/dc/dc.html'], function(DCItemView, template) {
+    'templates/types/tomo/dc/dc.html'], function(DCItemView, template) {
 
     return DCItemView.extend({
         template: template,

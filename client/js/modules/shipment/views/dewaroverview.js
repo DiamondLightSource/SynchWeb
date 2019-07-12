@@ -2,7 +2,7 @@ define(['marionette',
   'backgrid',
   'views/table', 'views/filter', 
   'collections/bls', 'modules/shipment/collections/dhl-tracking', 
-  'tpl!templates/shipment/dewaroverview.html',
+  'templates/shipment/dewaroverview.html',
   'jquery', 'jquery-ui'], 
   function(Marionette, Backgrid, TableView, FilterView, Beamlines, DHLTracking,
     template, $) {

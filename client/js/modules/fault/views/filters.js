@@ -3,7 +3,7 @@ define(['marionette',
     'modules/fault/collections/systems',
     'modules/fault/collections/components',
     'modules/fault/collections/subcomponents',
-    'tpl!templates/fault/filters.html',
+    'templates/fault/filters.html',
     ], function(Marionette, Beamlines, Systems, Components, SubComponents, filtertemplate) {
     
     return FilterView = Marionette.ItemView.extend({

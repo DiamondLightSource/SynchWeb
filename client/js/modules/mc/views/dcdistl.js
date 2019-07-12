@@ -2,7 +2,7 @@ define(['marionette',
     'modules/dc/collections/autointegrations',
 
     'modules/dc/views/distl',
-    'tpl!templates/mc/datacollection.html',
+    'templates/mc/datacollection.html',
     ], function(Marionette, AutoIntegrations, DISTLView, dctemplate) {
 
 

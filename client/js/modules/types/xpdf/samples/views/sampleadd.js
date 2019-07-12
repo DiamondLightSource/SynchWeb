@@ -8,7 +8,7 @@ define([
     'models/crystal',
     'modules/types/xpdf/samples/views/phasetable',
     'modules/types/xpdf/utils/phasecompositor',
-    'tpl!templates/types/xpdf/samples/sampleadd.html'
+    'templates/types/xpdf/samples/sampleadd.html'
     ], function(
             FormView,
             Crystal,

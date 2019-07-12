@@ -7,7 +7,7 @@ define(['backbone',
     'views/table',
     'utils/editable',
 
-    'tpl!templates/shipment/createawb.html',
+    'templates/shipment/createawb.html',
     'backbone', 'backbone-validation'
     ], function(Backbone, Marionette, 
         LabContact, Dewars, Countries, Quotes,

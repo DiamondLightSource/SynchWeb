@@ -1,4 +1,4 @@
-define(['marionette', 'utils', 'utils/xhrimage', 'tpl!templates/dc/load.html'], 
+define(['marionette', 'utils', 'utils/xhrimage', 'templates/dc/load.html'], 
     function(Marionette, utils, XHRImage, template) {
 
     return Marionette.ItemView.extend({

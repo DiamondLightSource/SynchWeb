@@ -2,7 +2,7 @@ define(['views/dialog',
         'collections/shipments',
         'collections/dewars',
     
-        'tpl!templates/shipment/movecontainer.html',
+        'templates/shipment/movecontainer.html',
     ], function(DialogView, Shipments, Dewars, template) {
 
     return DialogView.extend({

@@ -2,9 +2,9 @@ define(['marionette', 'backbone',
         'views/validatedrow',
     
         'modules/imaging/models/schedule',
-        'tpl!templates/imaging/schedules.html',
-        'tpl!templates/imaging/schedulerow.html',
-        'tpl!templates/imaging/schedulerownew.html',
+        'templates/imaging/schedules.html',
+        'templates/imaging/schedulerow.html',
+        'templates/imaging/schedulerownew.html',
     
         'backbone-validation',
     ], function(Marionette, Backbone, ValidatedRow, Schedule, template, rowtemplate, rowtemplatenew) {

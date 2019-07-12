@@ -5,7 +5,7 @@ define([
     'modules/types/gen/dc/imagestatusitem',
     'modules/dc/views/dccomments', 
     'utils',
-    'tpl!templates/types/gen/dc/dc.html'], function(DCItemView, DatPlot, AssocSampleView, DCImageStatusItem, DCCommentsView, 
+    'templates/types/gen/dc/dc.html'], function(DCItemView, DatPlot, AssocSampleView, DCImageStatusItem, DCCommentsView, 
         utils, template) {
 
     return DCItemView.extend({

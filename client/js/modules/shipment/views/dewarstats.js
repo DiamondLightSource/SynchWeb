@@ -6,7 +6,7 @@ define(['marionette',
     'utils',
     'highmaps',
     'highmaps-world',
-    'tpl!templates/shipment/dewarstats.html', 'jquery.flot', 'jquery.flot.tooltip'], 
+    'templates/shipment/dewarstats.html', 'jquery.flot', 'jquery.flot.tooltip'], 
     function(Marionette, DewarOverview, Runs, TableView, table, utils, Highcharts, world, template) {
     
 

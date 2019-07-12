@@ -4,9 +4,9 @@ define(['marionette', 'backbone',
         'views/pages',
     
         'modules/imaging/models/screen',
-        'tpl!templates/imaging/screen.html',
-        'tpl!templates/imaging/screenrow.html',
-        'tpl!templates/imaging/screenrownew.html',
+        'templates/imaging/screen.html',
+        'templates/imaging/screenrow.html',
+        'templates/imaging/screenrownew.html',
     
         'backbone-validation',
     ], function(Marionette, Backbone, ValidatedRow, PagesView, Screen, template, rowtemplate, rowtemplatenew) {

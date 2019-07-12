@@ -1,6 +1,6 @@
 define(['marionette', 'modules/dc/collections/aiplots', 
         'utils',
-        'tpl!templates/dc/aiplots.html',
+        'templates/dc/aiplots.html',
         'jquery',
         'jquery.flot',
         'jquery.flot.resize',

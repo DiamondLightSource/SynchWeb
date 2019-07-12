@@ -11,7 +11,7 @@ define(['marionette', 'backbone', 'views/table', 'views/filter',
         'modules/shipment/collections/platetypes',
         'modules/shipment/views/plate',
 
-        'tpl!templates/imaging/screencomps.html',
+        'templates/imaging/screencomps.html',
     
         'backbone-validation',
     ], function(Marionette, Backbone, TableView, FilterView, Editable,

@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'modules/dc/views/mcaplot', 'modules/projects/views/addto', 'utils/editable', 'tpl!templates/dc/mca.html', 'backbone-validation'], function(Marionette, Backbone, MCAView, AddToProjectView, Editable, template) {
+define(['marionette', 'backbone', 'modules/dc/views/mcaplot', 'modules/projects/views/addto', 'utils/editable', 'templates/dc/mca.html', 'backbone-validation'], function(Marionette, Backbone, MCAView, AddToProjectView, Editable, template) {
 
   return Marionette.ItemView.extend({
     template: template,

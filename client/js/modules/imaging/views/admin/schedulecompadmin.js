@@ -6,9 +6,9 @@ define(['marionette', 'backbone',
         'modules/imaging/collections/schedulecomponents',
         'modules/imaging/collections/inspectiontypes',
 
-        'tpl!templates/imaging/schedulecomps.html',
-        'tpl!templates/imaging/schedulecomprow.html',
-        'tpl!templates/imaging/schedulecomprownew.html',
+        'templates/imaging/schedulecomps.html',
+        'templates/imaging/schedulecomprow.html',
+        'templates/imaging/schedulecomprownew.html',
     
         'backbone-validation',
     ], function(Marionette, Backbone, ValidatedRow, Editable,

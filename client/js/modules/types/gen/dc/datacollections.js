@@ -1,7 +1,7 @@
 define([
         'modules/dc/datacollections',
         'modules/types/gen/dc/dclist',
-        'tpl!templates/types/gen/dc/dclist.html',
+        'templates/types/gen/dc/dclist.html',
         ],
 function(DataCollections, DCList, template) {
       

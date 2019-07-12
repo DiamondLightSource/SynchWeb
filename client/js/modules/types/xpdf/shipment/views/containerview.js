@@ -10,7 +10,7 @@ define([
     'modules/shipment/views/plate',
     'modules/types/xpdf/shipment/views/sampletable',
     'modules/types/xpdf/shipment/collections/containertypes',
-    'tpl!templates/types/xpdf/shipment/containerview.html'
+    'templates/types/xpdf/shipment/containerview.html'
     ], function(
         Marionette,
         Crystals,

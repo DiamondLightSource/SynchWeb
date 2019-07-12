@@ -1,8 +1,8 @@
 define(['marionette',
     'modules/status/collections/motors',
     
-    'tpl!templates/status/pvmotor.html',
-    'tpl!templates/status/pvtoggle.html',
+    'templates/status/pvmotor.html',
+    'templates/status/pvtoggle.html',
     ], function(Marionette, Motors, mtemplate, ttemplate) {
     
 

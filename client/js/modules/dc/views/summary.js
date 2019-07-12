@@ -5,7 +5,7 @@ define(['marionette',
     'modules/dc/collections/apstatuses', 
     'modules/dc/collections/autointegrations', 
     'utils',
-    'tpl!templates/dc/summary.html'], 
+    'templates/dc/summary.html'], 
     function(Marionette, Backgrid, TableView, DataCollection, APStatuses, AutoIntegrations, 
         utils,
         template) {

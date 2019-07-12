@@ -2,7 +2,7 @@ define(['marionette',
     'views/dialog',
     'collections/projects',
     'modules/projects/models/itemstate',
-    'tpl!templates/projects/addto.html'], function(Marionette, DialogView, Projects, ProjectItemState, template) {
+    'templates/projects/addto.html'], function(Marionette, DialogView, Projects, ProjectItemState, template) {
 
 
     return DialogView.extend({

@@ -5,7 +5,7 @@ define(['marionette',
   'modules/stats/collections/overview',
   'modules/stats/collections/runs',
   'utils', 'utils/table',
-  'tpl!templates/stats/overview.html'], 
+  'templates/stats/overview.html'], 
   function(Marionette, Backgrid, TableView, FilterView, ProposalTypes, BAGOverview, Runs, utils, table, template) {
 
     

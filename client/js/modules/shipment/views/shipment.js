@@ -15,7 +15,7 @@ define(['marionette',
     
     'utils/editable',
     'utils',
-    'tpl!templates/shipment/shipment.html',
+    'templates/shipment/shipment.html',
     
     'backbone', 'backbone-validation'], function(Marionette,
         Dewar,

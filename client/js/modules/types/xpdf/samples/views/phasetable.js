@@ -11,7 +11,7 @@ define([
     'collections/proteins',
     'modules/types/xpdf/samples/views/phaselist',
     'modules/types/xpdf/samples/views/phaseadd',
-    'tpl!templates/types/xpdf/samples/phasetable.html'
+    'templates/types/xpdf/samples/phasetable.html'
     ], function(
             Marionette,
             table,

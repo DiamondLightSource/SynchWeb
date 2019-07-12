@@ -1,4 +1,4 @@
-define(['backbone', 'views/dialog', 'modules/samples/models/pdb', 'modules/samples/collections/pdbs', 'tpl!templates/samples/addpdb.html', 'backbone-validation', 'jquery-ui'], function(Backbone, DialogView, PDB, PDBs, template) {
+define(['backbone', 'views/dialog', 'modules/samples/models/pdb', 'modules/samples/collections/pdbs', 'templates/samples/addpdb.html', 'backbone-validation', 'jquery-ui'], function(Backbone, DialogView, PDB, PDBs, template) {
 
 
     return DialogView.extend({

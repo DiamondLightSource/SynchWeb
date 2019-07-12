@@ -17,7 +17,7 @@ define(['marionette',
     'utils',
     'moment',
     'utils/editable',
-    'tpl!templates/shipment/container.html'], function(Marionette,
+    'templates/shipment/container.html'], function(Marionette,
         
     DistinctProteins,
     Sample,

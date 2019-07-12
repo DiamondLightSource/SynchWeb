@@ -6,7 +6,7 @@ define(['marionette',
     'modules/imaging/views/presetadd',
 
     'utils/editable',
-    'tpl!templates/imaging/ssdiffractionplan.html',
+    'templates/imaging/ssdiffractionplan.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, 
         DiffractionPlan, DiffractionPlans, PresetAddView,

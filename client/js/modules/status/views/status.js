@@ -5,7 +5,7 @@ define(['marionette',
     'modules/status/views/epicspages',
     'utils',
     'modules/calendar/views/calendar',
-    'tpl!templates/status/status.html',
+    'templates/status/status.html',
     ], function(Marionette, PVView, GDALog, EpicsPagesView, utils, CalendarView, template) {
     
     

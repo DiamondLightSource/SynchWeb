@@ -1,4 +1,4 @@
-define(['marionette', 'tpl!templates/sidebar.html', 'jquery.cookie'], function(Marionette, template) {
+define(['marionette', 'templates/sidebar.html', 'jquery.cookie'], function(Marionette, template) {
     
     return Marionette.ItemView.extend({
         template: template,

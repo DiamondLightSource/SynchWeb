@@ -3,7 +3,7 @@ define([
     'views/form',
     'models/protein',
     'modules/types/xpdf/utils/phasecompositor',
-    'tpl!templates/types/xpdf/samples/phaseadd.html'
+    'templates/types/xpdf/samples/phaseadd.html'
     ], function(
         Marionette,
         FormView,

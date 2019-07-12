@@ -5,7 +5,7 @@ define([
     'modules/dc/datacollections',
     'modules/types/gen/dc/dclist',
     'modules/types/xpdf/dc/dc',
-    'tpl!templates/types/xpdf/dc/dclist.html',
+    'templates/types/xpdf/dc/dclist.html',
     ], function(
     DataCollections,
     DCList,

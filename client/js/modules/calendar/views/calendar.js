@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'collections/visits', 'tpl!templates/calendar/calendar.html'], function(Marionette, Backbone, Visits, template) {
+define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/calendar.html'], function(Marionette, Backbone, Visits, template) {
     
     // humm
     DISABLE_DAY_SCROLL = false

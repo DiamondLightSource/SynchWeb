@@ -9,7 +9,7 @@ define(['marionette',
         'views/table',
         'utils/table',
     
-    'tpl!templates/stats/proposal.html'
+    'templates/stats/proposal.html'
     ], function(Marionette,
         PiesView, HourliesView,
         Pie, PieView,

@@ -1,5 +1,5 @@
 define(['marionette', 'modules/dc/models/rd', 'utils',
-        'tpl!templates/dc/rdplot.html',
+        'templates/dc/rdplot.html',
         'jquery',
         'jquery.flot',
         'jquery.flot.resize',

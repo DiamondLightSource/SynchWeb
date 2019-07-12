@@ -15,7 +15,7 @@ define(['marionette',
     'utils/kvcollection',
     'utils',
 
-    'tpl!templates/mc/datacollections.html',
+    'templates/mc/datacollections.html',
     ], function(Marionette, DCDISTLView, Pages, Search, 
         ReprocessOverview, Reprocessing, Reprocessings, 
         ReprocessingParameter, ReprocessingParameters,

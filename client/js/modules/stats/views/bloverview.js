@@ -8,7 +8,7 @@ define(['marionette',
     'modules/blstats/views/histogram',
 
     'utils', 'utils/table',
-    'tpl!templates/stats/bloverview.html',
+    'templates/stats/bloverview.html',
     'backgrid', 'backgrid-select-all'], 
     function(Marionette, TableView, FilterView, ProposalTypes, BAGOverview, Runs, 
         Histogram, HistogramPlot,

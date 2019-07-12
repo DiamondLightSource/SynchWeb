@@ -1,7 +1,7 @@
 define(['marionette', 
     'views/log', 
     'modules/types/em/dc/views/drift',
-    'tpl!templates/types/em/dc/dc_mc.html', 
+    'templates/types/em/dc/dc_mc.html', 
     'utils', 
     'utils/xhrimage'], function(Marionette, LogView, 
         DriftPlot,

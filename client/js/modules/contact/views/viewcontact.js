@@ -1,7 +1,7 @@
 define(['marionette',
     'collections/countries',
     'utils/editable',
-    'tpl!templates/contact/contactview.html',
+    'templates/contact/contactview.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, Countries, Editable, template, Backbone) {
     

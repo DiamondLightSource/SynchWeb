@@ -12,10 +12,10 @@ define(['marionette', 'backbone',
         'modules/fault/collections/subcomponents',
         'modules/fault/collections/bls',
 
-        'tpl!templates/fault/edit.html',
-        'tpl!templates/fault/table.html',
-        'tpl!templates/fault/tablerow.html',
-        'tpl!templates/fault/tablerownew.html',
+        'templates/fault/edit.html',
+        'templates/fault/table.html',
+        'templates/fault/tablerow.html',
+        'templates/fault/tablerownew.html',
     
         'backbone-validation',
     ], function(Marionette, Backbone, Visits, ValidatedRow, Editable, forms, System, Component, Subcomponent, Systems, Components, Subcomponents, Beamlines, template, table, rowtemplate, rowtemplatenew) {

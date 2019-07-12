@@ -2,7 +2,7 @@ define([
     'modules/types/gen/dc/dc',
     'modules/types/saxs/dc/datplot',
     'utils',
-    'tpl!templates/types/saxs/dc/dc.html'], function(DCItemView, DatPlot, utils, template) {
+    'templates/types/saxs/dc/dc.html'], function(DCItemView, DatPlot, utils, template) {
 
 
     return DCItemView.extend({

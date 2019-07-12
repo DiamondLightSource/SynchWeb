@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'modules/dc/views/edgeplot', 'modules/projects/views/addto', 'utils/editable', 'tpl!templates/dc/edge.html', 'backbone-validation'], function(Marionette, Backbone, EdgeView, AddToProjectView, Editable, template) {
+define(['marionette', 'backbone', 'modules/dc/views/edgeplot', 'modules/projects/views/addto', 'utils/editable', 'templates/dc/edge.html', 'backbone-validation'], function(Marionette, Backbone, EdgeView, AddToProjectView, Editable, template) {
 
   return Marionette.ItemView.extend({
     template: template,

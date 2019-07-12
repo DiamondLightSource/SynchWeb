@@ -1,7 +1,7 @@
 define(['marionette', 
   'modules/dc/collections/autoindexings', 
-  'tpl!templates/dc/dc_strategy.html',
-  'tpl!templates/dc/dc_xoalign.html',
+  'templates/dc/dc_strategy.html',
+  'templates/dc/dc_xoalign.html',
   ], function(Marionette, AutoIndexings, template, xotemplate) {
        
   var AutoIndexingItem = Marionette.ItemView.extend({ 

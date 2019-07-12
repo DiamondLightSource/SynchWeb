@@ -1,4 +1,4 @@
-define(['marionette', 'tpl!templates/dc/dimplepeaktable.html', 'tpl!templates/dc/dimplepeaktablerow.html'], function(Marionette, template, rowtemplate) {
+define(['marionette', 'templates/dc/dimplepeaktable.html', 'templates/dc/dimplepeaktablerow.html'], function(Marionette, template, rowtemplate) {
 
     var PeakItemView = Marionette.ItemView.extend({
         tagName: 'tr',

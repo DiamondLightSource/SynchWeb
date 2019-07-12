@@ -15,7 +15,7 @@ define(['marionette',
     
     'modules/projects/views/users',
     
-    'tpl!templates/projects/projectview.html',
+    'templates/projects/projectview.html',
     'backbone', 'jquery', 'jquery-ui.combobox', 'backbone-validation'
     ], function(Marionette, Editable, Proteins, Samples, DCCol, Users, ProjectUser, ProjectUsers, DCView, SampleList, ProteinList, ProjectUserView, template, Backbone, $) {
     

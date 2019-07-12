@@ -1,6 +1,6 @@
 define(['marionette', 
     'views/form', 'models/protein', 
-    'tpl!templates/imaging/savepreset.html'], function(Marionette, 
+    'templates/imaging/savepreset.html'], function(Marionette, 
         TableView, Plan, 
         template) {
     

@@ -8,7 +8,7 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
     'modules/dc/views/reprocess2',
     'modules/dc/views/attachments',
     'modules/dc/views/apmessages',
-    'tpl!templates/dc/dc.html', 'backbone-validation'], function(Marionette, 
+    'templates/dc/dc.html', 'backbone-validation'], function(Marionette, 
       TabView, DCCommentsView, DCDISTLView, 
       DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, 
       AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, APMessageStatusItem,

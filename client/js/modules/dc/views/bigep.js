@@ -1,4 +1,4 @@
-define(['marionette', 'views/log', 'tpl!templates/dc/dc_bigep.html', 'utils'], function(Marionette, LogView, template, utils) {
+define(['marionette', 'views/log', 'templates/dc/dc_bigep.html', 'utils'], function(Marionette, LogView, template, utils) {
     
     return Marionette.ItemView.extend({
         template: template,

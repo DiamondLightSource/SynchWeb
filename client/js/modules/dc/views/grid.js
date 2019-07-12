@@ -9,7 +9,7 @@ define(['marionette', 'views/tabs',
     'modules/dc/views/attachments',
     'modules/dc/views/apstatusitem',
     'modules/dc/models/gridxrc',
-    'tpl!templates/dc/grid.html', 'backbone-validation'], 
+    'templates/dc/grid.html', 'backbone-validation'], 
     function(Marionette, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, 
       DialogView, DCCommentsView, AttachmentsView, APStatusItem, GridXRC,
       template) {
