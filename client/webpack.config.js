@@ -1,15 +1,16 @@
 const path = require('path');
 const webpack = require("webpack");
 const GitRevisionPlugin = require('git-revision-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   entry: {
-      main: './js/main.js',
+      main: './src/index.js',
   },
   output: {
     filename: '[name]-bundle.js',
-    path: path.resolve(__dirname, 'assets/js', '[git-revision-hash]'),
-    publicPath: '/assets/js/[git-revision-hash]/'
+    path: path.resolve(__dirname, 'dist', '[git-revision-hash]'),
+    publicPath: '/dist/[git-revision-hash]/'
   },
   resolve: {
     alias: {
@@ -94,27 +95,30 @@ module.exports = {
         ]
       },
       {
-        test: /\.json$/,
-        use: 'raw-loader',
-        exclude: /config\.json$/,
-      },
-      {
         test: /\.xml$/,
         use: [
           {
             loader: 'raw-loader',
           }
         ]
-      }    ]
+      }    
+    ]
   },
   plugins: [
     new webpack.ProvidePlugin({
        $: "jquery",
         jQuery: "jquery",
         _: "underscore",
-    }),	
+    }),
+    // This generates a short (8 char) git hash used for build paths
     new GitRevisionPlugin({
       commithashCommand: 'rev-parse --short HEAD'
+    }),
+    // This builds an index.php file from the src template
+    new HtmlWebpackPlugin({
+      title: 'SynchWeb Webpack',
+      filename: path.resolve(__dirname, 'index.php'),
+      template: 'src/index.php',
     }),
   ]
 }
