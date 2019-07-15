@@ -1,8 +1,9 @@
 define(['marionette', 'modules/dc/collections/dccomments',
         'modules/dc/models/dccomment',
         'utils/editable',
+        'views/form',
         'tpl!templates/dc/dc_comments.html',
-], function(Marionette, DCComments, DCComment, Editable, template, $) {
+], function(Marionette, DCComments, DCComment, Editable, FormView, template, $) {
        
     var CommentView = Marionette.ItemView.extend({
         tagName: 'li',

@@ -1,5 +1,5 @@
 define(['marionette',
-
+    'backgrid',
     'modules/shipment/collections/dewarhistory',
     'modules/shipment/collections/dewarreports',
     'collections/dewars',
@@ -13,7 +13,7 @@ define(['marionette',
     'jquery',
     'jquery.mp',
     ], function(Marionette,
-        
+    Backgrid,
     DewarHistory,
     DewarReports,
     Dewars,

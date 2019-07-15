@@ -1,4 +1,4 @@
-define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], function(PageableCollection,  PlateType, KVCollection) {
+define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], function(Backbone,  PlateType, KVCollection) {
     
     var plate_types = [
          { name: 'Puck', capacity: 16 },

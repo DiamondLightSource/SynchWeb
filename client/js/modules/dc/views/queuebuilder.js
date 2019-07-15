@@ -1,14 +1,15 @@
-define(['marionette',
+define(['backbone',
+    'backgrid',
+    'marionette',
     'collections/datacollections',
     'collections/samples',
-    'views/dialog',
     'views/table',
     'utils/table',
     'backbone.paginator',
     'tpl!templates/dc/queuebuilder.html',
     'tpl!templates/dc/queue.xml',
     'jquery-ui',
-    ], function(Marionette, DataCollections, Samples, DialogView, TableView, table, PagableCollection, template, queuexml) {
+    ], function(Backbone, Backgrid, Marionette, DataCollections, Samples, TableView, table, PagableCollection, template, queuexml) {
         
       
     var DC = Backbone.Model.extend({

@@ -1,4 +1,5 @@
-define(['marionette', 
+define(['backbone',
+        'marionette',
         'modules/types/gen/dc/models/dat', 
         'collections/datacollections',
         'utils',
@@ -6,7 +7,7 @@ define(['marionette',
         'jquery.flot',
         'jquery.flot.resize',
         'jquery.flot.axislabels'
-], function(Marionette, Dat, DataCollections, utils, $) {
+], function(Backbone, Marionette, Dat, DataCollections, utils, $) {
        
     var DatCollection = Backbone.Collection.extend({
 

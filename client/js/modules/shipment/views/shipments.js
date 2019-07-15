@@ -1,4 +1,7 @@
-define(['marionette', 'views/table', 'collections/shipments'], function(Marionette, TableView, Shipments) {
+define(['marionette',
+  'backgrid',
+  'views/table', ],
+  function(Marionette, Backgrid, TableView) {
     
     
   var FocusableRow = Backgrid.Row.extend({

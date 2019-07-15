@@ -1,4 +1,4 @@
-define(['backbone'], function(Backbone) {
+define(['marionette'], function(Marionette) {
     
     /**
      LazyRouter
