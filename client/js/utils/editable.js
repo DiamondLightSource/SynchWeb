@@ -1,4 +1,11 @@
-define(['jquery', 'markdown', 'jquery-ui', 'jquery.editable', 'jquery.editable.datepicker', 'jquery-ui.timepicker'], function($, markdown) {
+define(['marionette',
+    'jquery',
+    'markdown',
+    'jquery-ui',
+    'jquery.editable',
+    'jquery.editable.datepicker',
+    'jquery-ui.timepicker'],
+    function(Marionette, $, markdown) {
     
     var defaults = {
         submit: 'Ok',

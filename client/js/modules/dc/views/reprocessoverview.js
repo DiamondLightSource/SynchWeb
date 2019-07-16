@@ -1,10 +1,12 @@
-define(['marionette', 
+define(['marionette',
+    'backgrid',
     'collections/reprocessings',
     'collections/reprocessingparameters',
     'collections/reprocessingimagesweeps',
     'views/table',
     'utils/table'],
     function(Marionette,
+        Backgrid,
         Reprocessings, ReprocessingParamters, ReprocessingImageSweeps,
         TableView, table) {
 

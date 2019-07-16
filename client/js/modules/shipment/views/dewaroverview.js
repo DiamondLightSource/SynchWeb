@@ -1,9 +1,10 @@
 define(['marionette', 
+  'backgrid',
   'views/table', 'views/filter', 
   'collections/bls', 'modules/shipment/collections/dhl-tracking', 
   'tpl!templates/shipment/dewaroverview.html',
   'jquery', 'jquery-ui'], 
-  function(Marionette, TableView, FilterView, Beamlines, DHLTracking,
+  function(Marionette, Backgrid, TableView, FilterView, Beamlines, DHLTracking,
     template, $) {
     
   var TrackingCell = Backgrid.Cell.extend({

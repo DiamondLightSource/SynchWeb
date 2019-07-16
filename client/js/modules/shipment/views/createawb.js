@@ -1,5 +1,6 @@
-define(['marionette',
-    'models/shipment',
+define(['backbone',
+    'backgrid',
+    'marionette',
     'models/labcontact',
     'collections/dewars',
     'collections/countries',
@@ -9,8 +10,8 @@ define(['marionette',
 
     'tpl!templates/shipment/createawb.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, 
-        Shipment, LabContact, Dewars, Countries, Quotes,
+    ], function(Backbone, Backgrid, Marionette,
+        LabContact, Dewars, Countries, Quotes,
         TableView, Editable, template, Backbone) {
     
     

@@ -1,4 +1,4 @@
-define(['underscore', 'backbone.paginator', 'models/sample'], function(_, PageableCollection, Sample) {
+define(['backbone', 'underscore', 'backbone.paginator', 'models/sample'], function(Backbone, _, PageableCollection, Sample) {
     
     return PageableCollection.extend({
         model: Sample,

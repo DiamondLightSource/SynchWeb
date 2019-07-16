@@ -1,5 +1,5 @@
 define(['marionette',
-
+    'backgrid',
     'modules/imaging/collections/imagers',
     'modules/imaging/collections/inspections',
 
@@ -9,7 +9,7 @@ define(['marionette',
     'views/filter',
     'views/table', 'utils/table',
     'tpl!templates/imaging/dashboard.html',
-    ], function(Marionette, 
+    ], function(Marionette, Backgrid,
         Imagers, ContainerInspections,
 
         Containers, ContainersView,

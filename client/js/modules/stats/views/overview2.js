@@ -1,11 +1,12 @@
 define(['marionette', 
+  'backgrid',
   'views/table', 'views/filter',
   'collections/proposaltypes',
   'modules/stats/collections/overview',
   'modules/stats/collections/runs',
   'utils', 'utils/table',
   'tpl!templates/stats/overview2.html'], 
-  function(Marionette, TableView, FilterView, ProposalTypes, BAGOverview, Runs, utils, table, template) {
+  function(Marionette, Backgrid, TableView, FilterView, ProposalTypes, BAGOverview, Runs, utils, table, template) {
 
     
     var ClickableRow = Backgrid.Row.extend({

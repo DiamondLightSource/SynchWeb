@@ -1,4 +1,9 @@
-define(['marionette', 'views/table', 'collections/containers', 'views/filter', 'utils/table', 'utils'], function(Marionette, TableView, Shipments, FilterView, table, utils) {
+define(['marionette',
+    'backgrid',
+    'views/table',
+    'views/filter',
+    'utils/table',
+    'utils'], function(Marionette, Backgrid, TableView, FilterView, table, utils) {
     
     var DisposeCell = Backgrid.Cell.extend({
         events: {

@@ -1,6 +1,6 @@
-define(['marionette', 'views/table', 'views/filter', 'modules/projects/views/addto', 'utils/table',
+define(['marionette', 'backgrid', 'views/table', 'views/filter', 'utils/table',
   'utils/xhrimage'], 
-  function(Marionette, TableView, FilterView, AddToProjectView, table, XHRImage) {
+  function(Marionette, Backgrid, TableView, FilterView, table, XHRImage) {
 
     
   var ClickableRow = table.ClickableRow.extend({

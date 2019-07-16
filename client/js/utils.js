@@ -1,4 +1,4 @@
-define(['marionette', 'views/dialog', 'jquery', 'jquery.color'], function(Marionette, DialogView, $) {
+define(['backbone', 'marionette', 'views/dialog', 'jquery', 'jquery.color'], function(Backbone, Marionette, DialogView, $) {
 
   var utils = {
        

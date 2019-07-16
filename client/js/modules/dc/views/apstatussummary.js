@@ -1,4 +1,15 @@
-define(['marionette', 'views/table', 'modules/dc/collections/apstatuses', 'modules/dc/views/reprocess', 'tpl!templates/dc/apstatussummary.html'], function(Marionette, TableView, APStatuses, ReprocessView, template) {
+define(['marionette',
+    'backgrid',
+    'views/table',
+    'modules/dc/collections/apstatuses',
+    'modules/dc/views/reprocess',
+    'tpl!templates/dc/apstatussummary.html'],
+    function(Marionette,
+        Backgrid,
+        TableView,
+        APStatuses,
+        ReprocessView,
+        template) {
 
     var APCell = Backgrid.Cell.extend({
         initialize: function(options) {

@@ -1,4 +1,5 @@
 define(['marionette',
+    'backgrid',
     'modules/shipment/collections/distinctproteins',
     
     'models/sample',
@@ -41,7 +42,7 @@ define(['marionette',
     'tpl!templates/shipment/containerplate.html',
     'tpl!templates/shipment/containerplateimage.html',
     'jquery.touchswipe'], function(Marionette,
-        
+    Backgrid,
     DistinctProteins,
     Sample,
     Samples,
