@@ -12,17 +12,17 @@
             'IMAGENUMBER' => '\d+',
 
             // Scipion processing
-            // Accept decimal request parameters for integers as values later cast to integer type.
+            // Parameters with user specified values
 
             'dosePerFrame' => '\d*(\.\d+)?', // Decimal
-            'numberOfIndividualFrames' => '\d*(\.\d+)?', // Integer
-            'patchX' => '\d*(\.\d+)?', // Integer
-            'patchY' => '\d*(\.\d+)?', // Integer
+            'numberOfIndividualFrames' => '\d+', // Integer
+            'patchX' => '\d+', // Integer
+            'patchY' => '\d+', // Integer
             'samplingRate' => '\d*(\.\d+)?', // Decimal
-            'particleSize' => '\d*(\.\d+)?', // Integer
-            'minDist' => '\d*(\.\d+)?', // Integer
-            'windowSize' => '\d*(\.\d+)?', // Integer
-            'findPhaseShift' => '1?', // Boolean : Note PHP casts boolean true to 1 and false to nothing.
+            'particleSize' => '\d+', // Integer
+            'minDist' => '\d+', // Integer
+            'windowSize' => '\d+', // Integer
+            'findPhaseShift' => '1?', // Boolean : Note boolean value true in JSON POST request is cast to to 1, false to nothing.
         );
 
         public static $dispatch = array(
@@ -54,9 +54,19 @@
                    $em_activemq_queue;
 
             // Check electron microscopes are listed in global variables - see $bl_types in config.php.
-            if (!array_key_exists('em', $bl_types)) $this->_error('Electron microscopes are not specified');
+            if (!array_key_exists('em', $bl_types)) {
+                $message = 'Electron microscopes not specified';
 
-            if (!$this->has_arg('visit')) $this->_error('Visit not specified');
+                error_log($message);
+                $this->_error($message, 500);
+            }
+
+            if (!$this->has_arg('visit')) {
+                $message = 'Visit not specified';
+
+                error_log($message);
+                $this->_error($message, 400);
+            }
 
             // Lookup visit in ISPyB
             $visit = $this->db->pq("
@@ -64,13 +74,22 @@
                 YEAR(b.startDate) AS year,
                 CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
                 b.startDate AS startDate,
-                b.endDate AS endDate
+                b.endDate AS endDate,
+                CURRENT_TIMESTAMP BETWEEN b.startDate AND b.endDate AS active
             FROM Proposal AS p
                 JOIN BLSession AS b ON p.proposalId = b.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1", array($this->arg('visit')));
 
             if (!sizeof($visit)) $this->_error('Visit not found');
             $visit = $visit[0];
+
+            // Do not permit processing after session has ended
+            if (!$visit['ACTIVE']) {
+                $message = 'This session ended at ' . date('H:i \o\n jS F', strtotime($visit['ENDDATE'])) . '. It may no longer be submitted for processing.';
+
+                error_log($message);
+                $this->_error($message, 400);
+            }
 
             // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
             foreach ($visit as $key => $value) {
@@ -98,7 +117,7 @@
             );
 
             $valid_parameters = array();
-            
+
             // Determine other values to substitute in JSON i.e. parameters not specified in form submission.
             $valid_parameters['filesPath'] = $visit_directory . '/raw/GridSquare_*/Data';
             $valid_parameters['visit'] = $visit['VISIT'];
@@ -106,10 +125,8 @@
             $invalid_parameters = array();
 
             foreach ($validation_rules as $parameter => $validations) {
-
                 // Determine whether request includes parameter
                 if ($this->has_arg($parameter)) {
-
                     if ($this->arg($parameter) === '') {
                         array_push($invalid_parameters, "{$parameter} is not specified");
                         continue;
@@ -161,66 +178,99 @@
 
             // TODO Better to return an array of invalid parameters for front end to display. (JPH)
             if (sizeof($invalid_parameters) > 0) {
-                $this->_error("Invalid parameters: " . implode('; ', $invalid_parameters) . '.');
+                $message = 'Invalid parameters: ' . implode('; ', $invalid_parameters) . '.';
+
+                error_log($message);
+                $this->_error($message, 400);
             }
 
-            // Load protocol template file
-            $template_json_string = @file_get_contents($em_template_path . '/' . $em_template_file);
+            $template_json_string = null;
 
-            if ($template_json_string === false) {
-                $this->_error("Failed to read template file:<br>" . $em_template_path . '/' . $em_template_file);
+            // Read workflow template file
+            try {
+                $template_json_string = file_get_contents($em_template_path . '/' . $em_template_file);
+            } catch (Exception $e) {
+                error_log('Failed to read workflow template: ' . $em_template_path . '/' . $em_template_file);
+                $this->_error('Failed to read workflow template for electron microscopy “' . $visit['BEAMLINENAME'] . '”.', 500);
             }
 
+            // Decode JSON string
             $template_array = json_decode($template_json_string, true);
 
-            // Iterate over each step in protocol template
+            // JSON is invalid if it cannot be decoded
+            if ($template_array == null) {
+                error_log('Invalid workflow template: ' . $em_template_path . '/' . $em_template_file);
+                $this->_error('Invalid workflow template for electron microscopy “' . $visit['BEAMLINENAME'] . '”.', 500);
+            }
+
+            $updated_parameters = array();
+
+            // Iterate over each step in workflow template e.g. 0, 1, 2, etc.
             foreach (array_keys($template_array) as $step_no) {
 
-                // Iterate over each parameter in step
+                // Iterate over each parameter in step e.g. acquisitionWizard, amplitudeContrast, copyFiles, etc.
                 foreach (array_keys($template_array[$step_no]) as $parameter) {
 
                     // Determine whether user has specified value for parameter
                     if (array_key_exists($parameter, $valid_parameters)) {
 
-                        // Modify parameter if user has specified a different value
-                        if ($template_array[$step_no][$parameter] != $valid_parameters[$parameter]) {
-                            $template_array[$step_no][$parameter] = $valid_parameters[$parameter];
-                        }
+                        // Set parameter to user specified value
+                        $template_array[$step_no][$parameter] = $valid_parameters[$parameter];
+
+                        // Record parameters set to user specified value
+                        array_push($updated_parameters, $parameter);
                     }
                 }
+            }
+
+            // Determine which parameters with user specified values are absent from workflow template
+            $absent_parameters = array_diff(array_keys($valid_parameters), $updated_parameters);
+
+            if (sizeof($absent_parameters) > 0) {
+                error_log('Parameters absent from workflow template: ' . $em_template_path . '/' . $em_template_file);
+
+                $message = 'Parameters absent from workflow template: ' . implode('; ', $absent_parameters) . '.';
+                error_log($message);
+                $this->_error($message, 500);
             }
 
             // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
             // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
             $workflow_json_string = json_encode($template_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-            // Save workflow file
+            // Write workflow file
 
             $timestamp_epoch = time();
 
             $em_workflow_file = 'scipion_workflow_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
 
-            $file_put_contents_result = @file_put_contents($em_workflow_path . '/' . $em_workflow_file, $workflow_json_string);
-
-            if ($file_put_contents_result === false) {
-                $this->_error("Failed to write workflow file:<br>" . $em_workflow_path . '/' . $em_workflow_file);
+            try {
+                file_put_contents($em_workflow_path . '/' . $em_workflow_file, $workflow_json_string);
+            } catch (Exception $e) {
+                error_log('Failed to write workflow file: ' . $em_workflow_path . '/' . $em_workflow_file);
+                $this->_error('Failed to write workflow file.', 500);
             }
 
             // Send job to processing queue
 
-            if (!empty($em_activemq_server) && !empty($em_activemq_queue)) {
-                $message = array(
-                    'scipion_workflow' => $em_workflow_path . '/' . $em_workflow_file
-                );
+            if (empty($em_activemq_server) || empty($em_activemq_queue)) {
+                $message = 'ActiveMQ server not specified.';
 
-                include_once(__DIR__ . '/../shared/class.queue.php');
-                $this->queue = new Queue();
+                error_log($message);
+                $this->_error($message, 500);
+            }
 
-                try {
-                    $this->queue->send($em_activemq_server, $em_activemq_username, $em_activemq_password, $em_activemq_queue, $message, true);
-                } catch (Exception $e) {
-                    $this->_error($e->getMessage());
-                }
+            $message = array(
+                'scipion_workflow' => $em_workflow_path . '/' . $em_workflow_file
+            );
+
+            include_once(__DIR__ . '/../shared/class.queue.php');
+            $this->queue = new Queue();
+
+            try {
+                $this->queue->send($em_activemq_server, $em_activemq_username, $em_activemq_password, $em_activemq_queue, $message, true);
+            } catch (Exception $e) {
+                $this->_error($e->getMessage(), 500);
             }
 
             $output = array(

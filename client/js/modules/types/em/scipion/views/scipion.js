@@ -5,6 +5,7 @@ define([
     'utils/vuewrapper',
     'moment',
     'modules/types/em/scipion/models/scipion',
+    'models/visit',
     'text!templates/types/em/process/scipion.html',
 ], function (
     Vue,
@@ -13,6 +14,7 @@ define([
     VueWrapper,
     moment,
     ScipionModel,
+    VisitModel,
     template
 ) {
     // Promise is not used, but required for IE if we want to use vee-validate
@@ -24,8 +26,18 @@ define([
 
             data: function () {
                 return {
-                    visit: null,
+                    showSpinner: false,
 
+                    // GUI
+                    isVisitLoaded: false,
+                    isVisitActive: false,
+                    isFormReadOnly: true,
+                    isJobQueued: false,
+
+                    // Visit
+                    visit: {},
+
+                    // Form fields
                     dosePerFrame: null,
                     numberOfIndividualFrames: null,
                     patchX: null,
@@ -35,16 +47,45 @@ define([
                     minDist: null,
                     windowSize: null,
                     findPhaseShift: false,
-
-                    isLoading: false,
-                    isQueued: false
                 }
             },
             created: function () {
-                // Set default values
-                this.resetForm();
+                let self = this;
 
-                this.visit = this.$getOption('model');
+                self.showSpinner = true;
+
+                let visitModel = new VisitModel({
+                    VISIT: this.$getOption('visit_str')
+                });
+
+                visitModel.fetch({
+                    success: function () {
+                        self.visit = visitModel.attributes;
+
+                        self.isVisitLoaded = true;
+                        self.isVisitActive = !!+self.visit['ACTIVE']; // ACTIVE represented by string value "0" or "1" in JSON
+
+                        if (self.isVisitActive) {
+                            self.isFormReadOnly = false;
+                            self.resetForm();
+                        } else {
+                            self.visitEndDateAsString = moment(self.visit['ENISO']).format('HH:mm on Do MMMM');
+                        }
+
+                        self.showSpinner = false;
+
+                        app.bc.reset([
+                            {title: 'Data Collections', url: '/dc'},
+                            {title: self.visit['BL']},
+                            {title: self.visit['VISIT'], url: '/dc/visit/' + self.visit['VISIT']},
+                            {title: 'Processing'}
+                        ]);
+                    },
+                    error: function () {
+                        app.bc.reset([{title: 'Error'}]);
+                        app.message({title: 'No such visit', message: 'The specified visit does not exist'})
+                    }
+                });
             },
             methods: {
                 // With new build and (IE polyfill) we could use
@@ -80,10 +121,26 @@ define([
                     });
                 },
                 submitProcessingJob: function () {
-                    this.isLoading = true;
+                    this.showSpinner = true;
+
+                    // Convert form inputs from string to float, integer, or boolean data type.
+                    // Ensures values are correctly encoded in JSON, not as strings of text.
+                    // parseInt() and parseFloat() trim whitespace characters.
+                    // parseInt() removes fractional-part of numeric input.
+                    // Updates form inputs with converted values.
+
+                    this.dosePerFrame = parseFloat(this.dosePerFrame);
+                    this.numberOfIndividualFrames = parseInt(this.numberOfIndividualFrames);
+                    this.patchX = parseInt(this.patchX);
+                    this.patchY = parseInt(this.patchY);
+                    this.samplingRate = parseFloat(this.samplingRate);
+                    this.particleSize = parseInt(this.particleSize);
+                    this.minDist = parseInt(this.minDist);
+                    this.windowSize = parseInt(this.windowSize);
+                    this.findPhaseShift = this.findPhaseShift === true;
 
                     let model = new ScipionModel({
-                        id: this.visit.get('VISIT'),
+                        id: this.visit['VISIT'],
 
                         dosePerFrame: this.dosePerFrame,
                         numberOfIndividualFrames: this.numberOfIndividualFrames,
@@ -93,7 +150,7 @@ define([
                         particleSize: this.particleSize,
                         minDist: this.minDist,
                         windowSize: this.windowSize,
-                        findPhaseShift: this.findPhaseShift,
+                        findPhaseShift: this.findPhaseShift
                     });
 
                     let self = this;
@@ -101,6 +158,10 @@ define([
                     model.save({}, {
                         type: 'POST',
                         success: function (model, response, options) {
+                            self.isFormReadOnly = true;
+                            self.isJobQueued = true;
+                            self.showSpinner = false;
+
                             let alertMessage = 'Job successfully submitted.';
 
                             if ('timestamp_iso8601' in response) {
@@ -108,27 +169,24 @@ define([
                             }
 
                             app.alert({className: 'message notify', message: alertMessage});
-
-                            self.isQueued = true;
-                            self.isLoading = false;
                         },
                         error: function (model, response, options) {
-                            let alertMessage = 'Something went wrong submitting this job.';
+                            self.showSpinner = false;
+
+                            let alertMessage = 'There was a problem submitting this job.';
 
                             let responseObj = JSON.parse(response.responseText);
 
                             if ('message' in responseObj) {
-                                alertMessage = alertMessage + ' ' + responseObj.message;
+                                alertMessage = responseObj.message;
                             }
 
                             app.alert({message: alertMessage});
-
-                            self.isLoading = false;
                         }
                     })
                 },
                 onContinue: function () {
-                    app.navigate('dc/visit/' + this.visit.get('VISIT'), {trigger: true});
+                    app.navigate('dc/visit/' + this.visit['VISIT'], {trigger: true});
                 }
             }
         })

@@ -3,72 +3,96 @@
 
     <p class="help">This page is for submitting processing jobs to Scipion.</p>
 
-    <form novalidate v-bind:class="{loading: isLoading}">
+    <p v-if="isVisitLoaded && !isVisitActive" class="message alert">
+        This session ended at {{ visitEndDateAsString }}. It may no longer be submitted for processing. <a class="button refresh" v-on:click.prevent="onContinue">OK</a>
+    </p>
+
+    <form novalidate v-bind:class="{loading: showSpinner}">
         <div class="form">
             <ul>
                 <li>
                     <label>Dose per frame (e<span class="super">-</span>/Å<span class="super">2</span>)</label>
-                    <input type="text" name="dosePerFrame" v-bind:class="{ferror: errors.has('dosePerFrame')}" v-validate="'required|min_value:0.001|max_value:10'" v-model="dosePerFrame" :readonly="isQueued"/>
+                    <input type="text" name="dosePerFrame" v-bind:class="{ferror: errors.has('dosePerFrame')}"
+                           v-validate="'required|min_value:0.001|max_value:10'" v-model="dosePerFrame"
+                           :readonly="isFormReadOnly"/>
                     <span v-if="errors.has('dosePerFrame')" class="errormessage ferror">{{ errors.first('dosePerFrame') }}</span>
                 </li>
 
                 <li>
                     <label>Number of frames</label>
-                    <input type="text" name="numberOfIndividualFrames" v-bind:class="{ferror: errors.has('numberOfIndividualFrames')}" v-validate="'required|min_value:1|max_value:500'" v-model="numberOfIndividualFrames" :readonly="isQueued">
+                    <input type="text" name="numberOfIndividualFrames"
+                           v-bind:class="{ferror: errors.has('numberOfIndividualFrames')}"
+                           v-validate="'required|min_value:1|max_value:500'" v-model="numberOfIndividualFrames"
+                           :readonly="isFormReadOnly">
                     <span v-if="errors.has('numberOfIndividualFrames')" class="errormessage ferror">{{ errors.first('numberOfIndividualFrames') }}</span>
                 </li>
 
                 <li>
                     <label>Patch X</label>
-                    <input type="text" name="patchX" v-bind:class="{ferror: errors.has('patchX')}" v-validate="'required|min_value:1'" v-model="patchX" :readonly="isQueued">
-                    <span v-if="errors.has('patchX')" class="errormessage ferror">{{ errors.first('patchX') }}</span>
+                    <input type="text" name="patchX" v-bind:class="{ferror: errors.has('patchX')}"
+                           v-validate="'required|min_value:1'" v-model="patchX" :readonly="isFormReadOnly">
+                    <span v-if="errors.has('patchX')"
+                          class="errormessage ferror">{{ errors.first('patchX') }}</span>
                 </li>
 
                 <li>
                     <label>Patch Y</label>
-                    <input type="text" name="patchY" v-bind:class="{ferror: errors.has('patchY')}" v-validate="'required|min_value:1'" v-model="patchY" :readonly="isQueued">
-                    <span v-if="errors.has('patchY')" class="errormessage ferror">{{ errors.first('patchY') }}</span>
+                    <input type="text" name="patchY" v-bind:class="{ferror: errors.has('patchY')}"
+                           v-validate="'required|min_value:1'" v-model="patchY" :readonly="isFormReadOnly">
+                    <span v-if="errors.has('patchY')"
+                          class="errormessage ferror">{{ errors.first('patchY') }}</span>
                 </li>
 
                 <li>
                     <label>Pixel Size (Å/pixel)</label>
-                    <input type="text" name="samplingRate" v-bind:class="{ferror: errors.has('samplingRate')}" v-validate="'required|min_value:0.1|max_value:10'" v-model="samplingRate" :readonly="isQueued">
+                    <input type="text" name="samplingRate" v-bind:class="{ferror: errors.has('samplingRate')}"
+                           v-validate="'required|min_value:0.1|max_value:10'" v-model="samplingRate"
+                           :readonly="isFormReadOnly">
                     <span v-if="errors.has('samplingRate')" class="errormessage ferror">{{ errors.first('samplingRate') }}</span>
                 </li>
 
                 <li>
                     <label>Particle Radius (Å)</label>
-                    <input type="text" name="particleSize" v-bind:class="{ferror: errors.has('particleSize')}" v-validate="'required|min_value:1|max_value:1000'" v-model="particleSize" :readonly="isQueued">
+                    <input type="text" name="particleSize" v-bind:class="{ferror: errors.has('particleSize')}"
+                           v-validate="'required|min_value:1|max_value:1000'" v-model="particleSize"
+                           :readonly="isFormReadOnly">
                     <span v-if="errors.has('particleSize')" class="errormessage ferror">{{ errors.first('particleSize') }}</span>
                 </li>
 
                 <li>
                     <label>Gautomatch Min Distance (Å)</label>
-                    <input type="text" name="minDist" v-bind:class="{ferror: errors.has('minDist')}" v-validate="'required|min_value:1|max_value:1000'" v-model="minDist" :readonly="isQueued">
-                    <span v-if="errors.has('minDist')" class="errormessage ferror">{{ errors.first('minDist') }}</span>
+                    <input type="text" name="minDist" v-bind:class="{ferror: errors.has('minDist')}"
+                           v-validate="'required|min_value:1|max_value:1000'" v-model="minDist"
+                           :readonly="isFormReadOnly">
+                    <span v-if="errors.has('minDist')"
+                          class="errormessage ferror">{{ errors.first('minDist') }}</span>
                 </li>
 
                 <li>
                     <label>CTF Window Size (pixel)</label>
-                    <input type="text" name="windowSize" v-bind:class="{ferror: errors.has('windowSize')}" v-validate="'required|min_value:128|max_value:2048'" v-model="windowSize" :readonly="isQueued">
-                    <span v-if="errors.has('windowSize')" class="errormessage ferror">{{ errors.first('windowSize') }}</span>
+                    <input type="text" name="windowSize" v-bind:class="{ferror: errors.has('windowSize')}"
+                           v-validate="'required|min_value:128|max_value:2048'" v-model="windowSize"
+                           :readonly="isFormReadOnly">
+                    <span v-if="errors.has('windowSize')"
+                          class="errormessage ferror">{{ errors.first('windowSize') }}</span>
                 </li>
 
                 <li>
                     <label>Phase Plate Used</label>
-                    <input type="checkbox" name="findPhaseShift" value="true" v-model="findPhaseShift" :disabled="isQueued">
+                    <input type="checkbox" name="findPhaseShift" value="true" v-model="findPhaseShift"
+                           :disabled="isFormReadOnly">
                 </li>
             </ul>
 
-            <button name="start" type="submit" class="submit" v-on:click.prevent="onSubmit" v-if="!isQueued">
+            <button name="start" type="submit" class="submit" v-on:click.prevent="onSubmit" v-if="!isJobQueued" :disabled="isFormReadOnly">
                 Start Processing
             </button>
 
-            <button name="cancel" type="submit" class="submit" v-on:click.prevent="onContinue" v-if="!isQueued">
+            <button name="cancel" type="submit" class="submit" v-on:click.prevent="onContinue" v-if="!isJobQueued" :disabled="isFormReadOnly">
                 Cancel
             </button>
 
-            <button name="start" type="submit" class="submit" v-on:click.prevent="onContinue" v-if="isQueued">
+            <button name="start" type="submit" class="submit" v-on:click.prevent="onContinue" v-if="isJobQueued">
                 Monitor
             </button>
         </div>
