@@ -1,4 +1,4 @@
-define(['marionette', 
+define(['backbone', 'marionette',
     'modules/mc/views/dcdistl',
 
     'views/pages',
@@ -16,7 +16,7 @@ define(['marionette',
     'utils',
 
     'tpl!templates/mc/datacollections.html',
-    ], function(Marionette, DCDISTLView, Pages, Search, 
+    ], function(Backbone, Marionette, DCDISTLView, Pages, Search,
         ReprocessOverview, Reprocessing, Reprocessings, 
         ReprocessingParameter, ReprocessingParameters,
         ReprocessingImageSweep, ReprocessingImageSweeps,
