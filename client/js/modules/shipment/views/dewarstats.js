@@ -4,10 +4,19 @@ define(['marionette',
     'views/table',
     'utils/table',
     'utils',
-    'highmaps',
-    'highmaps-world',
+    'highcharts',
+    // 'highmaps',
+    // 'highmaps-world',
     'templates/shipment/dewarstats.html', 'jquery.flot', 'jquery.flot.tooltip'], 
-    function(Marionette, DewarOverview, Runs, TableView, table, utils, Highcharts, world, template) {
+    function(Marionette,
+        DewarOverview,
+        Runs,
+        TableView,
+        table,
+        utils,
+        Highcharts,
+        // world,
+        template) {
     
 
     var SortedDewars = DewarOverview.extend({
