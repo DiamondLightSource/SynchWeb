@@ -5,7 +5,7 @@ define([
     'utils/vuewrapper',
     'moment',
     'modules/types/em/scipion/models/scipion',
-    'text!templates/types/em/process/scipion.html',
+    'templates/vue/types/em/process/scipion.html',
 ], function (
     Vue,
     VeeValidate,

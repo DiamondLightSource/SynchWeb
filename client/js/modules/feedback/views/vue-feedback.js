@@ -3,7 +3,7 @@ define(['vue',
     'promise',
     'utils/vuewrapper',
     'modules/feedback/models/feedback',
-    'text!templates/feedback/feedback.html',
+    'templates/vue/feedback/feedback.html',
     ], function(Vue, VeeValidate, Promise, VueWrapper, FeedbackModel, template) {
 
     // Promise is not used, but required for IE if we want to use vee-validate
