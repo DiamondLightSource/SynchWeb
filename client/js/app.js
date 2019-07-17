@@ -34,12 +34,14 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
 
   console.log('CONFIG', config)
 
+  // Moved to here so its available on app start
+  app.options = new Options()
+
   // Base url for the api
   app.apiurl = config.apiurl
 
   // Base url for the app
   app.appurl = config.appurl
-
 
   // reference to config
   app.config = config
@@ -346,7 +348,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
    Load client side options and show MOTD
   */
   app.loadopts = function() {
-      app.options = new Options()
+    //   app.options = new Options()
       return app.options.fetch({
           data: { t: new Date().getTime() },
           success: function() {
