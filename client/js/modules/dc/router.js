@@ -1,7 +1,7 @@
-//define(['marionette', 'modules/dc/controller'], function(Marionette, c) {
-define(['utils/lazyrouter'], function(LazyRouter) {
-    
-    var Router = LazyRouter.extend({
+define(['marionette', 'modules/dc/controller'], function(Marionette, c) {
+// define(['utils/lazyrouter'], function(LazyRouter) {
+    var Router = Marionette.AppRouter.extend({
+    // var Router = LazyRouter.extend({
         appRoutes: {
             'dc': 'dc_list',
             'dc(/visit/:visit)(/dcg/:dcg)(/page/:page)(/s/:search)(/ty/:ty)(/id/:id)': 'dc_list',
@@ -19,7 +19,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
        
        
     return new Router({
-        //controller: c,
-        rjsController: 'modules/dc/controller',
+        controller: c,
+        // rjsController: 'modules/dc/controller',
     })
 })

@@ -1,7 +1,7 @@
-//define(['marionette', 'modules/shipment/controller'], function(Marionette, c) {
-define(['utils/lazyrouter'], function(LazyRouter) {
-
-  var Router = LazyRouter.extend({
+define(['marionette', 'modules/shipment/controller'], function(Marionette, c) {
+// define(['utils/lazyrouter'], function(LazyRouter) {
+  var Router = Marionette.AppRouter.extend({
+  // var Router = LazyRouter.extend({
     appRoutes: {
       'shipments(/page/:page)': 'list',
       'shipments/add': 'add',
@@ -36,7 +36,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
   })
        
   return new Router({
-    //controller: c
-    rjsController: 'modules/shipment/controller',
+    controller: c
+    // rjsController: 'modules/shipment/controller',
   })
 })

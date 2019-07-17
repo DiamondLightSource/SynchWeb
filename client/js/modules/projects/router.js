@@ -1,6 +1,7 @@
-//define(['marionette', 'modules/projects/controller'], function(Marionette, c) {
-define(['utils/lazyrouter'], function(LazyRouter) {
-  var Router = LazyRouter.extend({
+define(['marionette', 'modules/projects/controller'], function(Marionette, c) {
+// define(['utils/lazyrouter'], function(LazyRouter) {
+  var Router = Marionette.AppRouter.extend({
+// var Router = LazyRouter.extend({
     appRoutes: {
       'projects': 'list',
       'projects/pid/:pid': 'view',
@@ -10,7 +11,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
   })
        
   return new Router({
-    //controller: c
-    rjsController: 'modules/projects/controller',
+    controller: c
+    // rjsController: 'modules/projects/controller',
   })
 })

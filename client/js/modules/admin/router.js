@@ -1,7 +1,9 @@
-define(['utils/lazyrouter'], function(LazyRouter) {
-    
-    var Router = LazyRouter.extend({
-        appRoutes: {
+define(['marionette', 'modules/admin/controller'], function(Marionette, c) {
+// define(['utils/lazyrouter'], function(LazyRouter) {
+        
+    // var Router = LazyRouter.extend({
+    var Router = Marionette.AppRouter.extend({
+            appRoutes: {
             'admin/groups': 'manageGroups',
             'admin/groups/:gid': 'viewGroup',
         },
@@ -10,6 +12,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
     })
        
     return new Router({
-        rjsController: 'modules/admin/controller',
+        controller: c
+        // rjsController: 'modules/admin/controller',
     })
 })

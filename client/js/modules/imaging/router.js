@@ -1,6 +1,8 @@
-define(['utils/lazyrouter'], function(LazyRouter) {
-    
-    var Router = LazyRouter.extend({
+define(['marionette', 'modules/imaging/controller'], function(Marionette, c) {
+// define(['utils/lazyrouter'], function(LazyRouter) {
+            
+    // var Router = LazyRouter.extend({
+    var Router = Marionette.AppRouter.extend({
         appRoutes: {
             'admin/imaging': 'imaging_dash',
 
@@ -18,6 +20,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
     })
        
     return new Router({
-        rjsController: 'modules/imaging/controller',
+        controller: c
+        // rjsController: 'modules/imaging/controller',
     })
 })

@@ -1,7 +1,7 @@
-//define(['marionette', 'modules/fault/controller'], function(Marionette, c) {
-define(['utils/lazyrouter'], function(LazyRouter) {
-    
-    var Router = LazyRouter.extend({
+define(['marionette', 'modules/fault/controller'], function(Marionette, c) {
+// define(['utils/lazyrouter'], function(LazyRouter) {
+    var Router = Marionette.AppRouter.extend({    
+    // var Router = LazyRouter.extend({
         appRoutes: {
             'faults(/bl/:bl)(/sys/:sys)(/com/:com)(/sub/:sub)(/page/:page)': 'list',
             'faults/fid/:fid': 'view',
@@ -13,7 +13,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
     })
        
     return new Router({
-        //controller: c
-        rjsController: 'modules/fault/controller',
+        controller: c
+        // rjsController: 'modules/fault/controller',
     })
 })
