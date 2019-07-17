@@ -1,4 +1,5 @@
-define(['marionette', 
+define(['marionette',
+    'backgrid',
     'modules/imaging/collections/plans',
     'modules/imaging/models/plan',
 
@@ -13,7 +14,7 @@ define(['marionette',
 
     'templates/imaging/presetadmin.html','templates/imaging/queuepoint.html', 
     'templates/imaging/queuegrid.html', 'templates/imaging/queuexfe.html',
-    ], function(Marionette,
+    ], function(Marionette, Backgrid,
         Plans, Plan,
         TableView, table,
         Beamlines,

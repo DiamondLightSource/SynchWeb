@@ -7,10 +7,10 @@ define(['marionette',
     'collections/users',
 
     'templates/admin/viewgroup.html',
-    'backbone', 'backbone-validation'
+    'backbone', 'backgrid', 'backbone-validation'
     ], function(Marionette, TableView, table,
         Permissions, Users,
-        template, Backbone) {
+        template, Backbone, Backgrid) {
     
     var ClickableRow = Backgrid.Row.extend({
         events: {

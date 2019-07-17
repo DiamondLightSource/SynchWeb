@@ -1,4 +1,5 @@
 define(['backbone', 
+    'backgrid',
     'marionette',
     'models/labcontact',
     'collections/dewars',
@@ -6,12 +7,11 @@ define(['backbone',
     'modules/shipment/collections/quotes',
     'views/table',
     'utils/editable',
-
     'templates/shipment/createawb.html',
-    'backbone', 'backbone-validation'
-    ], function(Backbone, Marionette, 
+    'backbone-validation'
+    ], function(Backbone, Backgrid, Marionette, 
         LabContact, Dewars, Countries, Quotes,
-        TableView, Editable, template, Backbone) {
+        TableView, Editable, template) {
     
     
     /*

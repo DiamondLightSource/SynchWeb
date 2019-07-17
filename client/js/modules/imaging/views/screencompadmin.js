@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'views/table', 'views/filter',
+define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
         'utils/editable',
 
         'modules/imaging/models/screencomponentgroup',
@@ -14,7 +14,7 @@ define(['marionette', 'backbone', 'views/table', 'views/filter',
         'templates/imaging/screencomps.html',
     
         'backbone-validation',
-    ], function(Marionette, Backbone, TableView, FilterView, Editable,
+    ], function(Marionette, Backbone, Backgrid, TableView, FilterView, Editable,
         ComponentGroup, ComponentGroups, Component, Components, GroupView, PlateType, PlateView,
         template) {
       
