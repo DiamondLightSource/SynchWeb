@@ -12,6 +12,11 @@ module.exports = {
     path: path.resolve(__dirname, 'dist', '[git-revision-hash]'),
     publicPath: '/dist/[git-revision-hash]/'
   },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+    }
+  },
   resolve: {
     alias: {
       underscore: 'vendor/underscore.min',
@@ -68,8 +73,8 @@ module.exports = {
   
       // moment: 'vendor/moment',
   
-      highmaps: 'vendor/highmaps/highmaps',
-      'highmaps-world': 'vendor/highmaps/world',
+      // highmaps: 'vendor/highmaps/highmaps',
+      // 'highmaps-world': 'vendor/highmaps/world',
 
       // Move these to npm installs once working
       vue: 'vendor/vue/vue.min',
@@ -78,7 +83,8 @@ module.exports = {
     },
     modules: [
       path.resolve(__dirname, 'js'),
-      path.resolve(__dirname, 'node_modules'),      
+      path.resolve(__dirname, 'node_modules'),  
+      path.resolve(__dirname, 'src'),  
     ]
   },
   module: {
@@ -92,10 +98,21 @@ module.exports = {
               engine: 'underscore',
             }
           }
+        ],
+        exclude: [
+          path.resolve(__dirname, 'js/templates/vue')
         ]
       },
       {
         test: /\.xml$/,
+        use: [
+          {
+            loader: 'raw-loader',
+          }
+        ]
+      },
+      {
+        test: /vue\/.+\.html/,
         use: [
           {
             loader: 'raw-loader',
