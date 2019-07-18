@@ -19,17 +19,17 @@ module.exports = {
   },
   resolve: {
     alias: {
-      underscore: 'vendor/underscore.min',
-      backbone: 'vendor/backbone/backbone',
-      marionette: 'vendor/backbone/backbone.marionette',
-      'backbone.paginator': 'vendor/backbone/backbone.paginator',
-      'backbone-validation': 'vendor/backbone/backbone-validation',
-      backgrid: 'vendor/backbone/backgrid',
-      'backgrid-paginator': 'vendor/backbone/backgrid-paginator',
-      'backgrid-select-all': 'vendor/backbone/backgrid-select-all',
-      'backbone.syphon': 'vendor/backbone/backbone.syphon',
+      // underscore: 'vendor/underscore.min',
+      // backbone: 'vendor/backbone/backbone',
+      marionette: 'backbone.marionette/lib/backbone.marionette.min',
+      // 'backbone.paginator': 'vendor/backbone/backbone.paginator',
+      // 'backbone-validation': 'vendor/backbone/backbone-validation',
+      // backgrid: 'vendor/backbone/backgrid',
+      // 'backgrid-paginator': 'vendor/backbone/backgrid-paginator',
+      // 'backgrid-select-all': 'vendor/backbone/backgrid-select-all',
+      // 'backbone.syphon': 'vendor/backbone/backbone.syphon',
       
-      'jquery': 'jquery',
+      'jquery': 'vendor/jquery/jquery-1.9.1.min',
       'jquery-ui': 'vendor/jquery/jquery-ui.min',
 
       'jquery.cookie': 'vendor/jquery/jquery.cookie',
@@ -38,12 +38,12 @@ module.exports = {
       'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
       'jquery-ui.timepicker': 'vendor/jquery/jquery-ui.timepicker-addon',
       
-      'jquery.flot': 'jquery.flot',
-      'jquery.flot.resize': 'jquery.flot/jquery.flot.resize',
-      'jquery.flot.pie': 'jquery.flot/jquery.flot.pie',
-      'jquery.flot.time': 'jquery.flot/jquery.flot.time',
-      'jquery.flot.selection': 'jquery.flot/jquery.flot.selection',
-      'jquery.flot.stack': 'jquery.flot/jquery.flot.stack',
+      'jquery.flot': 'vendor/flot/jquery.flot.min',
+      'jquery.flot.resize': 'vendor/flot/jquery.flot.resize',
+      'jquery.flot.pie': 'vendor/flot/jquery.flot.pie',
+      'jquery.flot.time': 'vendor/flot/jquery.flot.time.min',
+      'jquery.flot.selection': 'vendor/flot/jquery.flot.selection',
+      'jquery.flot.stack': 'vendor/flot/jquery.flot.stack',
 
       'jquery.flot.tickrotor': 'vendor/flot/jquery.flot.tickrotor',
       'jquery.flot.tooltip': 'vendor/flot/jquery.flot.tooltip',
@@ -56,12 +56,14 @@ module.exports = {
   
       'jquery.color': 'vendor/jquery/jquery.color',
       
-      // Not convinced..
-      canvas: 'utils/canvas',
+      // Canvas Mix in class..
+      // canvas: 'utils/canvas',
 
-      caman: 'vendor/caman.min',
-      fibers: 'vendor/caman.min',
-      fs: 'vendor/caman.min',
+      // Moved Caman to npm
+      // caman: 'vendor/caman.min',
+      // fibers included as a dependency of caman through npm
+      // using newer version as old (6 years) 1.0.1 not compatible with v8
+
       heatmap: 'vendor/hmap',
       
       gzip: 'vendor/gunzip.min',
@@ -83,9 +85,12 @@ module.exports = {
     },
     modules: [
       path.resolve(__dirname, 'js'),
-      path.resolve(__dirname, 'node_modules'),  
-      path.resolve(__dirname, 'src'),  
+      path.resolve(__dirname, 'node_modules'),
     ]
+  },
+  node: {
+    fs: 'empty',
+    child_process: 'empty',
   },
   module: {
     rules: [
