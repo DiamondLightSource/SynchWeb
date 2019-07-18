@@ -1,8 +1,10 @@
-define(['marionette', 'views/dialog',
+define(['marionette', 
+    'backbone',
+    'views/dialog',
     'collections/datacollections',
     'models/datacollection',
     'modules/mc/views/dcdistl',
-    'templates/dc/reprocess.html', 'templates/dc/reprocess_dc.html'], function(Marionette, DialogView,
+    'templates/dc/reprocess.html', 'templates/dc/reprocess_dc.html'], function(Marionette, Backbone, DialogView,
         DataCollections, DataCollection, DCDistlView,
         template, dctemplate) {
     

@@ -1,4 +1,5 @@
 define(['marionette',
+    'backbone',
     'modules/imaging/collections/inspectionimagescores',
     
     'models/subsample',
@@ -17,6 +18,7 @@ define(['marionette',
     'jquery-ui',
     'backbone-validation',
     ], function(Marionette,
+        Backbone,
         ImageScores, Subsample, Subsamples, ImageHistory, InspectionImage, Attachments,
         Editable, utils, XHRImage, HeatMap,
         template) {

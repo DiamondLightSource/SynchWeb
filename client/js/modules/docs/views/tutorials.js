@@ -1,6 +1,6 @@
 // This file is deprecated to show how a vue version can be used instead
-define(['marionette',
-    ], function(Marionette) {
+define(['marionette', 'backbone',
+    ], function(Marionette, Backbone) {
     
         
     var TutorialListItem = Marionette.ItemView.extend({

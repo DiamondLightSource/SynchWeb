@@ -1,11 +1,11 @@
-define(['marionette', 
+define(['marionette',
   'backgrid',
   'views/table', 'views/filter',
   'collections/proposaltypes',
   'modules/stats/collections/overview',
   'modules/stats/collections/runs',
   'utils', 'utils/table',
-  'templates/stats/overview.html'], 
+  'templates/stats/overview.html'],
   function(Marionette, Backgrid, TableView, FilterView, ProposalTypes, BAGOverview, Runs, utils, table, template) {
 
     

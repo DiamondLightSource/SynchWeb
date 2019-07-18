@@ -1,10 +1,13 @@
-define(['backbone.paginator', 'modules/imaging/models/screencomponentgroup'], function(PageableCollection, ComponentGroup) {
+define(['backbone',
+    'backbone.paginator',
+    'modules/imaging/models/screencomponentgroup'],
+    function(Backbone, PageableCollection, ComponentGroup) {
        
   	return PageableCollection.extend({
 	    model: ComponentGroup,
 	    mode: 'client',
 	    url: '/imaging/screen/groups',
-	                                      
+
 	    state: {
 	      	pageSize: 15,
 	    },

@@ -1,10 +1,10 @@
-define(['marionette', 'views/filter', 'modules/blstats/models/blstats',
+define(['marionette', 'backbone', 'views/filter', 'modules/blstats/models/blstats',
     'utils',
     'jquery',
     'jquery.flot',
     'jquery.flot.tooltip',
     'jquery.flot.tickrotor',
-    ], function(Marionette, FilterView, BLStats, utils, $) {
+    ], function(Marionette, Backbone, FilterView, BLStats, utils, $) {
     
     
     var SeriesItem = Marionette.ItemView.extend({

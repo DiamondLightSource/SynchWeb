@@ -1,4 +1,5 @@
 define(['marionette',
+    'backbone',
     'models/dewar',
     'models/shipment',
     'collections/containers',
@@ -7,7 +8,7 @@ define(['marionette',
     'tpl!templates/assign.html',
     'tpl!templates/assigndialog.html',
     'tpl!templates/unassigndialog.html'
-    ], function(Marionette, Dewar, Shipment, Containers, Dewars, Shipments, template, assignt, unassignt) {
+    ], function(Marionette, Backbone, Dewar, Shipment, Containers, Dewars, Shipments, template, assignt, unassignt) {
 
         
     var AssignDialog = Marionette.ItemView.extend({

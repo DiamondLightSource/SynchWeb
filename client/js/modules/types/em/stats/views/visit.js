@@ -1,4 +1,5 @@
 define(['marionette',
+        'backbone',
         'modules/fault/collections/faults',
         'modules/fault/views/list',
         'modules/stats/views/breakdown',
@@ -11,7 +12,7 @@ define(['marionette',
         'modules/blstats/views/histogram',
         'modules/types/em/stats/views/interframe',
     
-        'templates/types/em/stats/visit.html'], function(Marionette, Faults, FaultListView,
+        'templates/types/em/stats/visit.html'], function(Marionette, Backbone, Faults, FaultListView,
         BreakdownView, DetailsView, PieView, HourliesView, EHCLogView,
         Histogram, HistgramPlot, InterFramePlot,
         template) {

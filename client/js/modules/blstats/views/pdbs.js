@@ -1,4 +1,5 @@
-define(['marionette', 
+define(['marionette',
+    'backbone',
     'modules/cell/collections/pdbcodes',
     'modules/cell/collections/analysed',
 
@@ -18,7 +19,7 @@ define(['marionette',
     'utils',
     'templates/cell/pdbs.html',
 
-    ], function(Marionette, PDBCodes, Analysed, Autoproc, AutoprocPie, AutoprocBars, States, StatesPie, Beamlines, BeamlineBars, FilterView, TableView, table, utils, template) {
+    ], function(Marionette, Backbone, PDBCodes, Analysed, Autoproc, AutoprocPie, AutoprocBars, States, StatesPie, Beamlines, BeamlineBars, FilterView, TableView, table, utils, template) {
     
     return Marionette.LayoutView.extend({
         template: template,

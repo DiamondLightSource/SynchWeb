@@ -19,7 +19,11 @@ define(['marionette',
               dhl.fetch({
                   success: function() {
                       var last = dhl.last()
-                      $el.text(last.get('STATE')+': '+last.get('LOCATION'))
+                      if (last !== null) {
+                        $el.text(last.get('STATE')+': '+last.get('LOCATION'))
+                      } else {
+                          console.log("DewarOverview: did not get a last entry from DHL Tracking")
+                      }
                   },
 
                   error: function() {

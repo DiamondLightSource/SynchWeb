@@ -1,5 +1,5 @@
-define(['backbone.paginator'], 
-    function(PageableCollection) {
+define(['backbone', 'backbone.paginator'],
+    function(Backbone, PageableCollection) {
        
     var GridMapModel = Backbone.Model.extend({
         idAttribute: 'IMAGENUMBER',

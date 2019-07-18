@@ -1,11 +1,11 @@
-define(['marionette', 'modules/dc/collections/aiplots', 
+define(['marionette', 'backbone', 'modules/dc/collections/aiplots',
         'utils',
         'templates/dc/aiplots.html',
         'jquery',
         'jquery.flot',
         'jquery.flot.resize',
         'jquery.flot.tooltip',
-], function(Marionette, AIPlots, utils, template, $) {
+], function(Marionette, Backbone, AIPlots, utils, template, $) {
        
 
     var SeriesSelect = Marionette.ItemView.extend({

@@ -1,4 +1,5 @@
-define(['marionette', 
+define(['marionette',
+    'backbone',
     'views/table', 'views/filter',
     'collections/proposaltypes',
     'modules/stats/collections/overview',
@@ -9,8 +10,8 @@ define(['marionette',
 
     'utils', 'utils/table',
     'templates/stats/bloverview.html',
-    'backgrid', 'backgrid-select-all'], 
-    function(Marionette, TableView, FilterView, ProposalTypes, BAGOverview, Runs, 
+    'backgrid', 'backgrid-select-all'],
+    function(Marionette, Backbone, TableView, FilterView, ProposalTypes, BAGOverview, Runs,
         Histogram, HistogramPlot,
         utils, table, template, Backgrid) {
 

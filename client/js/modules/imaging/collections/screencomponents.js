@@ -1,4 +1,7 @@
-define(['backbone.paginator', 'modules/imaging/models/screencomponent'], function(PageableCollection, Component) {
+define(['backbone',
+    'backbone.paginator',
+    'modules/imaging/models/screencomponent'],
+    function(Backbone, PageableCollection, Component) {
        
   	return PageableCollection.extend({
 	    model: Component,
