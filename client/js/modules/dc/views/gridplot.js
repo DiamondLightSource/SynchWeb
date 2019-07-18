@@ -1,16 +1,16 @@
 define(['jquery', 'marionette',
+        'backbone',
         'modules/dc/models/distl',
         'modules/dc/models/grid',
         'modules/dc/models/xfm',
         'collections/attachments',
         'utils/canvas',
         'templates/dc/gridplot.html',
-        'caman',
         'heatmap',
         'utils',
         'utils/xhrimage',
         'jquery-ui',
-    ], function($, Marionette, DISTL, GridInfo, XFMap, Attachments, canvas, template, Caman, HeatMap, utils, XHRImage) {
+    ], function($, Marionette, Backbone, DISTL, GridInfo, XFMap, Attachments, canvas, template, HeatMap, utils, XHRImage) {
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
         template: template,

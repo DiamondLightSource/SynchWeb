@@ -7,9 +7,9 @@ define(['jquery', 'marionette',
         'utils',
         'utils/xhrimage',
         'jquery-ui',
-    ], function($, Marionette, canvas, template, embed, Caman, utils, XHRImage) {
+    ], function($, Marionette, CanvasMixin, template, embed, caman, utils, XHRImage) {
     
-    return Marionette.ItemView.extend(_.extend({}, canvas, {
+    return Marionette.ItemView.extend(_.extend({}, CanvasMixin, {
         className: function() {
             return 'content' + (this.getOption('embed') ? ' embed' : '')
         },
@@ -143,17 +143,17 @@ define(['jquery', 'marionette',
             this.ui.contrast.slider({min: -100, max: 100, step: 5})
             this.ui.progress.progressbar({ value: 0 });
             
-            this.c = Caman(this.canvas)
+            this.c = caman.Caman(this.canvas)
             
             // Bind CamanJS Status
             var self = this
-            Caman.Event.listen(this.c, 'blockFinished', function (info) {
+            caman.Caman.Event.listen(this.c, 'blockFinished', function (info) {
                 self.blocks++
                 var tot = self.ui.invert.is(':checked') ? 12 : 8
                 self.ui.progress.progressbar('value', 100*(self.blocks/tot))
             })
 
-            Caman.Event.listen(this.c, 'renderStart', function (info) {
+            caman.Caman.Event.listen(this.c, 'renderStart', function (info) {
                 self.blocks = 0
                 self.ui.progress.progressbar('value', 0)
                 self.ui.progress.fadeIn(100)
