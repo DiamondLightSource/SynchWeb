@@ -29,10 +29,10 @@ module.exports = {
       // 'backgrid-select-all': 'vendor/backbone/backgrid-select-all',
       // 'backbone.syphon': 'vendor/backbone/backbone.syphon',
       
-      'jquery': 'vendor/jquery/jquery-1.9.1.min',
-      'jquery-ui': 'vendor/jquery/jquery-ui.min',
+      // 'jquery': 'vendor/jquery/jquery-1.9.1.min',
+      // 'jquery-ui': 'vendor/jquery/jquery-ui.min',
 
-      'jquery.cookie': 'vendor/jquery/jquery.cookie',
+      // 'jquery.cookie': 'vendor/jquery/jquery.cookie',
 
       'jquery.touchswipe': 'vendor/jquery/jquery.touchSwipe',      
       'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
@@ -60,7 +60,7 @@ module.exports = {
       // canvas: 'utils/canvas',
 
       // Moved Caman to npm
-      // caman: 'vendor/caman.min',
+      caman: 'vendor/caman.min',
       // fibers included as a dependency of caman through npm
       // using newer version as old (6 years) 1.0.1 not compatible with v8
 
@@ -87,10 +87,6 @@ module.exports = {
       path.resolve(__dirname, 'js'),
       path.resolve(__dirname, 'node_modules'),
     ]
-  },
-  node: {
-    fs: 'empty',
-    child_process: 'empty',
   },
   module: {
     rules: [
@@ -123,7 +119,14 @@ module.exports = {
             loader: 'raw-loader',
           }
         ]
-      }    
+      },
+      // We need to help Caman load properly
+      // Caman adds to the window object within a browser
+      // The import loader ensures it it recognised as browser env not NodeJS
+      {
+        test: /caman\.min\.js$/,
+        use: "imports-loader?exports=>undefined,require=>false,this=>window"
+      } 
     ]
   },
   plugins: [
