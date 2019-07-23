@@ -69,14 +69,16 @@ module.exports = {
       // fibers included as a dependency of caman through npm
       // using newer version as old (6 years) 1.0.1 not compatible with v8
 
+      // heatmap in npm has dependency on canvas/node-gyp... so use old one for now
       heatmap: 'vendor/hmap',
       
+      // gunzip is actually the 
       gzip: 'vendor/gunzip.min',
       
-      markdown: 'vendor/markdown',
+      // markdown: 'vendor/markdown',
   
-      three: 'vendor/three.min',
-      uglymol: 'vendor/uglymol',
+      // three: 'vendor/three.min',
+      // uglymol: 'vendor/uglymol',
   
       // moment: 'vendor/moment',
   
@@ -84,9 +86,11 @@ module.exports = {
       // 'highmaps-world': 'vendor/highmaps/world',
 
       // Move these to npm installs once working
-      vue: 'vendor/vue/vue.min',
-      veevalidate: 'vendor/vue/vee-validate.min',
-      promise: 'vendor/vue/polyfill.min',
+      vue: 'vue/dist/vue.min',
+      veevalidate: 'vee-validate',
+      // veevalidate: 'vendor/vue/vee-validate.min',
+      // promise: 'vendor/vue/polyfill.min',
+      // promise: 'polyfill',
     },
     modules: [
       path.resolve(__dirname, 'js'),

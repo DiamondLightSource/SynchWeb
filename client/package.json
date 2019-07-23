@@ -45,7 +45,13 @@
     "jquery-ui.combobox": "^1.0.7",
     "jquery.cookie": "^1.4.1",
     "jquery.flot": "^0.8.3",
+    "markdown": "^0.5.0",
     "moment": "^2.24.0",
-    "underscore": "1.6.0"
+    "promise": "^8.0.3",
+    "three": "^0.106.2",
+    "uglymol": "^0.5.7",
+    "underscore": "1.6.0",
+    "vee-validate": "^2.2.13",
+    "vue": "^2.6.10"
   }
 }
