@@ -31,10 +31,10 @@ module.exports = {
       
       // 'jquery': 'vendor/jquery/jquery-1.9.1.min',
       // 'jquery-ui': 'vendor/jquery/jquery-ui.min',
-
       // 'jquery.cookie': 'vendor/jquery/jquery.cookie',
 
-      'jquery.touchswipe': 'vendor/jquery/jquery.touchSwipe',      
+      'jquery.touchswipe': 'jquery-touchswipe/jquery.touchSwipe.min',
+      // 'jquery.touchswipe': 'vendor/jquery/jquery.touchSwipe',      
       'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
       'jquery-ui.timepicker': 'vendor/jquery/jquery-ui.timepicker-addon',
       
