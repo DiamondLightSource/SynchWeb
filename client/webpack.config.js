@@ -19,26 +19,11 @@ module.exports = {
   },
   resolve: {
     alias: {
-      // underscore: 'vendor/underscore.min',
-      // backbone: 'vendor/backbone/backbone',
       marionette: 'backbone.marionette/lib/backbone.marionette.min',
-      // 'backbone.paginator': 'vendor/backbone/backbone.paginator',
-      // 'backbone-validation': 'vendor/backbone/backbone-validation',
-      // backgrid: 'vendor/backbone/backgrid',
-      // 'backgrid-paginator': 'vendor/backbone/backgrid-paginator',
-      // 'backgrid-select-all': 'vendor/backbone/backgrid-select-all',
-      // 'backbone.syphon': 'vendor/backbone/backbone.syphon',
-      
-      // 'jquery': 'vendor/jquery/jquery-1.9.1.min',
-      // 'jquery-ui': 'vendor/jquery/jquery-ui.min',
-      // 'jquery.cookie': 'vendor/jquery/jquery.cookie',
 
       'jquery.touchswipe': 'jquery-touchswipe',
-      // 'jquery.touchswipe': 'vendor/jquery/jquery.touchSwipe',      
-      // 'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
       'jquery.ui': 'jquery-ui', // Only required for timepicker-addon 1.5.5 apparently!
       'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds
-      // 'jquery-ui.timepicker': 'vendor/jquery/jquery-ui.timepicker-addon',
       
       'jquery.flot': 'vendor/flot/jquery.flot.min',
       'jquery.flot.resize': 'vendor/flot/jquery.flot.resize',
@@ -56,41 +41,28 @@ module.exports = {
       // jeditable provided by NPM.
       'jquery.editable': 'jquery-jeditable/dist/jquery.jeditable.min',
       'jquery.editable.datepicker': 'jquery-jeditable/dist/jquery.jeditable.datepicker.min',
-      // 'jquery.editable': 'vendor/jquery/jquery.jeditable.min',
-      // 'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
   
       'jquery.color': 'vendor/jquery/jquery.color',
       
       // Canvas Mix in class..
       // canvas: 'utils/canvas',
 
-      // Moved Caman to npm
+      // Caman npm depends on fibers, canvas, fs which we don't wont...
       caman: 'vendor/caman.min',
-      // fibers included as a dependency of caman through npm
-      // using newer version as old (6 years) 1.0.1 not compatible with v8
 
       // heatmap in npm has dependency on canvas/node-gyp... so use old one for now
       heatmap: 'vendor/hmap',
       
       // gunzip is actually the 
       gzip: 'vendor/gunzip.min',
-      
-      // markdown: 'vendor/markdown',
-  
-      // three: 'vendor/three.min',
-      // uglymol: 'vendor/uglymol',
-  
-      // moment: 'vendor/moment',
-  
+        
       // highmaps: 'vendor/highmaps/highmaps',
       // 'highmaps-world': 'vendor/highmaps/world',
 
       // Move these to npm installs once working
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate',
-      // veevalidate: 'vendor/vue/vee-validate.min',
       // promise: 'vendor/vue/polyfill.min',
-      // promise: 'polyfill',
     },
     modules: [
       path.resolve(__dirname, 'js'),
