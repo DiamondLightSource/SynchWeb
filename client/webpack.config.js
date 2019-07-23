@@ -33,10 +33,12 @@ module.exports = {
       // 'jquery-ui': 'vendor/jquery/jquery-ui.min',
       // 'jquery.cookie': 'vendor/jquery/jquery.cookie',
 
-      'jquery.touchswipe': 'jquery-touchswipe/jquery.touchSwipe.min',
+      'jquery.touchswipe': 'jquery-touchswipe',
       // 'jquery.touchswipe': 'vendor/jquery/jquery.touchSwipe',      
-      'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
-      'jquery-ui.timepicker': 'vendor/jquery/jquery-ui.timepicker-addon',
+      // 'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
+      'jquery.ui': 'jquery-ui', // Only required for timepicker-addon 1.5.5 apparently!
+      'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds
+      // 'jquery-ui.timepicker': 'vendor/jquery/jquery-ui.timepicker-addon',
       
       'jquery.flot': 'vendor/flot/jquery.flot.min',
       'jquery.flot.resize': 'vendor/flot/jquery.flot.resize',
@@ -50,9 +52,12 @@ module.exports = {
       'jquery.flot.axislabels': 'vendor/flot/jquery.flot.axislabels',
       
       'jquery.mp': 'vendor/jquery/jquery.magnific-popup',
-      
-      'jquery.editable': 'vendor/jquery/jquery.jeditable.min',
-      'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
+
+      // jeditable provided by NPM.
+      'jquery.editable': 'jquery-jeditable/dist/jquery.jeditable.min',
+      'jquery.editable.datepicker': 'jquery-jeditable/dist/jquery.jeditable.datepicker.min',
+      // 'jquery.editable': 'vendor/jquery/jquery.jeditable.min',
+      // 'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
   
       'jquery.color': 'vendor/jquery/jquery.color',
       
