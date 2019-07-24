@@ -36,6 +36,10 @@ module.exports = {
       'jquery.flot.tooltip': 'vendor/flot/jquery.flot.tooltip',
       'jquery.flot.axislabels': 'vendor/flot/jquery.flot.axislabels',
       
+      // We can't currently use the magnific-popup from npm e.g.:
+      // 'jquery.mp': 'magnific-popup',
+      // The vendor library has been modified to append proposal to the request
+      // Hence the vendor magnific-popup has a dependency on our utils/xhrimage
       'jquery.mp': 'vendor/jquery/jquery.magnific-popup',
 
       // jeditable provided by NPM.
@@ -53,7 +57,7 @@ module.exports = {
       // heatmap in npm has dependency on canvas/node-gyp... so use old one for now
       heatmap: 'vendor/hmap',
       
-      // gunzip is actually the 
+      // gunzip is actually the zlib library
       gzip: 'vendor/gunzip.min',
         
       // highmaps: 'vendor/highmaps/highmaps',
