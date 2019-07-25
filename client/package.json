@@ -28,6 +28,7 @@
     "webpack-git-hash": "^1.0.2"
   },
   "dependencies": {
+    "@highcharts/map-collection": "^1.1.2",
     "backbone": "1.1.2",
     "backbone-validation": "0.9.1",
     "backbone.marionette": "2.1.0",
@@ -36,8 +37,12 @@
     "backgrid": "0.3.5",
     "backgrid-paginator": "0.3.5",
     "backgrid-select-all": "0.3.5",
+    "flot-axislabels": "^1.0.0",
+    "flot-pie": "^1.0.0",
     "highcharts": "^7.1.2",
     "jquery": "^1.12.4",
+    "jquery-color": "^3.0.0-alpha.1",
+    "jquery-flot-resize": "^1.0.0",
     "jquery-jeditable": "^2.0.10",
     "jquery-touchswipe": "^1.6.19",
     "jquery-ui": "^1.10.4",
@@ -45,13 +50,15 @@
     "jquery-ui.combobox": "^1.0.7",
     "jquery.cookie": "^1.4.1",
     "jquery.flot": "^0.8.3",
+    "jquery.flot.tooltip": "^0.9.0",
     "markdown": "^0.5.0",
     "moment": "^2.24.0",
     "promise": "^8.0.3",
-    "three": "^0.106.2",
+    "three": "^0.83.0",
     "uglymol": "^0.5.7",
     "underscore": "1.6.0",
     "vee-validate": "^2.2.13",
-    "vue": "^2.6.10"
+    "vue": "^2.6.10",
+    "zlibjs": "^0.1.7"
   }
 }

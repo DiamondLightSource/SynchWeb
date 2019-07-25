@@ -25,16 +25,19 @@ module.exports = {
       'jquery.ui': 'jquery-ui', // Only required for timepicker-addon 1.5.5 apparently!
       'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds
       
-      'jquery.flot': 'vendor/flot/jquery.flot.min',
-      'jquery.flot.resize': 'vendor/flot/jquery.flot.resize',
-      'jquery.flot.pie': 'vendor/flot/jquery.flot.pie',
+      // 'jquery.flot': 'vendor/flot/jquery.flot.min', // NPM
+      'jquery.flot.resize': 'jquery-flot-resize', // NPM Older version 1.0.0 2012 instead of 2013
+      // 'jquery.flot.resize': 'vendor/flot/jquery.flot.resize',
+      'jquery.flot.pie': 'flot-pie',
+      // 'jquery.flot.pie': 'vendor/flot/jquery.flot.pie',
       'jquery.flot.time': 'vendor/flot/jquery.flot.time.min',
       'jquery.flot.selection': 'vendor/flot/jquery.flot.selection',
       'jquery.flot.stack': 'vendor/flot/jquery.flot.stack',
 
       'jquery.flot.tickrotor': 'vendor/flot/jquery.flot.tickrotor',
-      'jquery.flot.tooltip': 'vendor/flot/jquery.flot.tooltip',
-      'jquery.flot.axislabels': 'vendor/flot/jquery.flot.axislabels',
+      // 'jquery.flot.tooltip': 'vendor/flot/jquery.flot.tooltip', // NPM
+      'jquery.flot.axislabels': 'flot-axislabels',
+      // 'jquery.flot.axislabels': 'vendor/flot/jquery.flot.axislabels',
       
       // We can't currently use the magnific-popup from npm e.g.:
       // 'jquery.mp': 'magnific-popup',
@@ -46,7 +49,7 @@ module.exports = {
       'jquery.editable': 'jquery-jeditable/dist/jquery.jeditable.min',
       'jquery.editable.datepicker': 'jquery-jeditable/dist/jquery.jeditable.datepicker.min',
   
-      'jquery.color': 'vendor/jquery/jquery.color',
+      'jquery.color': 'jquery-color',
       
       // Canvas Mix in class..
       // canvas: 'utils/canvas',
@@ -58,9 +61,11 @@ module.exports = {
       heatmap: 'vendor/hmap',
       
       // gunzip is actually the zlib library
-      gzip: 'vendor/gunzip.min',
+      // https://npm.taobao.org/package/zlibjs
+      gzip: 'zlibjs/bin/gunzip.min',
         
-      // highmaps: 'vendor/highmaps/highmaps',
+      highmaps: 'highcharts/highmaps',
+      'highmaps-world': '@highcharts/map-collection/custom/world',
       // 'highmaps-world': 'vendor/highmaps/world',
 
       // Move these to npm installs once working
@@ -111,7 +116,11 @@ module.exports = {
       {
         test: /caman\.min\.js$/,
         use: "imports-loader?exports=>undefined,require=>false,this=>window"
-      } 
+      },
+      // {
+      //   test: /gunzip\.min\.js$/,
+      //   use: "imports-loader?exports=>undefined,require=>false,this=>window"
+      // }
     ]
   },
   plugins: [
@@ -119,6 +128,8 @@ module.exports = {
        $: "jquery",
         jQuery: "jquery",
         _: "underscore",
+        "window.jQuery": "jquery",
+        Highcharts: "highmaps"
     }),
     // This generates a short (8 char) git hash used for build paths
     new GitRevisionPlugin({
