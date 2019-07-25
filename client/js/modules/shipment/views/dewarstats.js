@@ -4,9 +4,8 @@ define(['marionette',
     'views/table',
     'utils/table',
     'utils',
-    'highcharts',
-    // 'highmaps',
-    // 'highmaps-world',
+    'highmaps',
+    'highmaps-world',
     'templates/shipment/dewarstats.html', 'jquery.flot', 'jquery.flot.tooltip'], 
     function(Marionette,
         DewarOverview,
@@ -15,7 +14,7 @@ define(['marionette',
         table,
         utils,
         Highcharts,
-        // world,
+        HighchartsWorldMap, // Needs to be loaded to provide custom/world map
         template) {
     
 
@@ -81,6 +80,7 @@ define(['marionette',
 
 
         initialize: function() {
+            console.log(Highcharts)
             this.run = new DewarOverview(null, { queryParams: { group_by: 'year' } })
             this.countries = new SortedDewars(null, { queryParams: { group_by: 'country' } })
             this.countries.state.pageSize = 25
