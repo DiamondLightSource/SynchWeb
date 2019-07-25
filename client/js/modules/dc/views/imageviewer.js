@@ -7,8 +7,10 @@ define(['jquery', 'marionette',
         'utils',
         'utils/xhrimage',
         'jquery-ui',
-    ], function($, Marionette, CanvasMixin, template, embed, Caman, utils, XHRImage) {
+    ], function($, Marionette, CanvasMixin, template, embed, caman, utils, XHRImage) {
     
+    // Note we do not import the caman libray as Caman.
+    // This is because Caman is added to the window global object
     return Marionette.ItemView.extend(_.extend({}, CanvasMixin, {
         className: function() {
             return 'content' + (this.getOption('embed') ? ' embed' : '')
