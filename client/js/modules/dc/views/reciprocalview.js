@@ -1,7 +1,7 @@
 define(['marionette', 
     'collections/attachments',
     'uglymol', 'gzip',  
-    'templates/dc/mapmodelview.html'], function(Marionette, Attachments, Uglymol, Zlib, 
+    'templates/dc/mapmodelview.html'], function(Marionette, Attachments, Uglymol, zlib,
         template) {
 
     return Marionette.LayoutView.extend({
@@ -33,7 +33,7 @@ define(['marionette',
             var self = this
             
             xhr.onload = function() {
-                var gunzip = new Zlib.Gunzip(new Uint8Array(this.response))
+                var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
                 var plain = gunzip.decompress()
                 var url = URL.createObjectURL(new Blob([plain], {type: 'text'}))
                 self.viewer.load_data(url)

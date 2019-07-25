@@ -3,7 +3,7 @@ define(['marionette',
     'modules/dc/collections/downstreams', 
     'modules/dc/collections/dimplepeaks', 
     'modules/dc/views/dimplepeaktable', 
-    'templates/dc/mapmodelview.html'], function(Marionette, Uglymol, Zlib, 
+    'templates/dc/mapmodelview.html'], function(Marionette, Uglymol, zlib,
         DownStreams, DIMPLEPeaks, DIMPLEPeakTable,  template) {
 
     return Marionette.LayoutView.extend({
@@ -34,14 +34,14 @@ define(['marionette',
             var self = this
             
             xhr.onload = function() {
-                var gunzip = new Zlib.Gunzip(new Uint8Array(this.response))
+                var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
                 var plain = gunzip.decompress()
                 self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4' })
           
                 if (self.getOption('ty') == 'dimple' || self.getOption('ty') == 'mrbump') {
                     var xhr2 = self.xhrWithStatus('Downloading Map 2')
                     xhr2.onload = function() {
-                        var gunzip = new Zlib.Gunzip(new Uint8Array(this.response))
+                        var gunzip = new Zlib.Zlib.Gunzip(new Uint8Array(this.response))
                         var plain = gunzip.decompress()
                         self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4', diff_map: true, })
           
