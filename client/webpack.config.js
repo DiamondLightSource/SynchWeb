@@ -24,6 +24,7 @@ module.exports = {
       'jquery.touchswipe': 'jquery-touchswipe',
       'jquery.ui': 'jquery-ui', // Only required for timepicker-addon 1.5.5 apparently!
       'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds
+      'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox', // Not the official combobox extension from npm but a collection of extensions
 
       // 'jquery.flot': 'vendor/flot/jquery.flot.min', // NPM
       'jquery.flot.resize': 'jquery-flot-resize', // NPM Older version 1.0.0 2012 instead of 2013
