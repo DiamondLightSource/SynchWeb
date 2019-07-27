@@ -30,7 +30,7 @@ define(['marionette', 'views/form',
         },
 
         onRender: function() {
-            this.ui.select.html(this.getOption('dewars').opts({ empty: true }))
+            this.ui.select.html('<option value="!">Please select one</option>'+this.getOption('dewars').opts({ empty: true }))
         },
     })
             
