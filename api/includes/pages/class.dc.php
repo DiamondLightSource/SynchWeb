@@ -622,6 +622,7 @@
         # ------------------------------------------------------------------------
         # Autoprocessing Status
         function _ap_status() {
+            global $ap_statuses;
             session_write_close();
             
             $where = array();
@@ -660,30 +661,6 @@
 
             $this->profile('start');
             
-            $aps1 = array(
-                    "Mosflm" => array('simple_strategy/', 'strategy_native.log', 'Phi start'),
-                    "EDNA" => array('edna/', 'summary.html', 'Selected spacegroup'),
-                    "Xia2/strat" => array('xia2strategy/', 'xia2.strategy.txt', 'Status: error', 'Start / end / width'),
-            );
-            $aps2 = array(
-                    "Fast DP" => array('fast_dp/', 'fast_dp.log', 'I/sigma'),
-                    
-                    "Xia2/3d" => array('xia2/3d-run/', 'xia2.txt' , 'I/sigma'),
-                    "Xia2/3dii" => array('xia2/3dii-run/', 'xia2.txt' , 'I/sigma'),
-                    "DIALS" => array('xia2/dials-run/', 'xia2.txt' , 'I/sigma'),
-                    
-                    "MultiXia2/XDS" => array('multi-xia2/3dii/', 'xia2.txt' , 'I/sigma'),
-                    "MultiXia2/DIALS" => array('multi-xia2/dials/', 'xia2.txt' , 'I/sigma'),
-                    
-                    "autoPROC" => array('autoPROC/ap-run/', 'autoPROC.log', 'Normal termination'),
-                    
-                    "Fast EP" => array('fast_ep/', 'fast_ep.log', 'Best hand:'),
-                    "Dimple" => array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
-                    "MrBUMP" => array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
-                    "Big EP/XDS" => array('big_ep/', '/xia2/3dii-run/big_ep*.log', 'Results for'),
-                    "Big EP/DIALS" => array('big_ep/', '/xia2/dials-run/big_ep_*.log', 'Results for', 'Residues'),
-            );
-            
             $out = array();
             
             # DC Details
@@ -695,6 +672,20 @@
                 INNER JOIN proposal p ON p.proposalid=s.proposalid
                 WHERE $where", $ids);
             
+            $processings = $this->db->pq("SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status
+                FROM datacollection dc 
+                INNER JOIN blsession s ON s.sessionid=dc.sessionid 
+                INNER JOIN proposal p ON p.proposalid=s.proposalid
+                INNER JOIN autoprocintegration api ON api.datacollectionid = dc.datacollectionid
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid
+                WHERE $where", $ids);
+
+            $db_status = array();
+            foreach($processings as $p) {
+                if (!array_key_exists($p['DATACOLLECTIONID'], $db_status)) $db_status[$p['DATACOLLECTIONID']] = array();
+                $db_status[$p['DATACOLLECTIONID']][$p['PROCESSINGPROGRAMS']] = $p['STATUS'];
+            }
+
             $dcs = array();
             foreach ($dct as $d) $dcs[$d['ID']] = $d;
             
@@ -703,45 +694,53 @@
                 $dc['DIR'] = $this->ads($dc['DIR']);
 
                 $this->profile('filestart');
-                if ($dc['OVERLAP'] == 0) {
-                    $aps = $aps2;
-                } else {
-                    $aps = $aps1;
-                }
                 $apr = array();
-                foreach ($aps as $name => $ap) {
-                    # 0: didnt run, 1: running, 2: success, 3: failed
-                    $val = 0;
+                foreach ($ap_statuses['types'] as $tyn => $ty) {
+                    foreach ($ty as $name => $ap) {
+                        # 0: didnt run, 1: running, 2: success, 3: failed
+                        $val = 0;
 
-                    foreach (array('/processed', '/tmp') as $loc) {
-                        $root = preg_replace('/'.$dc['VIS'].'/', $dc['VIS'].$loc, $dc['DIR'], 1).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
-                        if (file_exists($root.$ap[0])) {
-                            $val = 1;
-                            $logs = glob($root.$ap[0].'*'.$ap[1]);
-                             
-                            if (sizeof($logs)) $log = $logs[0];
-                            else $log = '';
-                            if (is_readable($log) && filesize($log) > 0) {
-                                $val = 3;
-                                exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
-                                if ($ret == 0) $val = 2;
-                                if (sizeof($ap) > 3) {
-                                    $val = 1;
-                                    exec('grep -q -i "'.$ap[3].'" '.$log, $out,$ret);
-                                    if ($ret == 0) {
-                                        $val = 2;
-                                    } else {
-                                        exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
-                                        if ($ret == 0) $val = 3;
-                                    }
+                        if (array_key_exists($dc['ID'], $db_status)) {
+                            $db = $db_status[$dc['ID']];
+                            if (sizeof($ap) > 3) {
+                                // print_r(array($ap, sizeof($ap)));
+                                if (array_key_exists($ap[3], $db)) {
+                                    $apr[$tyn][$name] = $db[$ap[3]] ? 2 : 3;
+                                    continue;
                                 }
                             }
-                            break;
-                        } //else $val = 3;
+                        }
+
+                        foreach ($ap_statuses['locations'] as $loc) {
+                            $root = preg_replace('/'.$dc['VIS'].'/', $dc['VIS'].$loc, $dc['DIR'], 1).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
+                            if (file_exists($root.$ap[0])) {
+                                $val = 1;
+                                $logs = glob($root.$ap[0].'*'.$ap[1]);
+                                 
+                                if (sizeof($logs)) $log = $logs[0];
+                                else $log = '';
+                                if (is_readable($log) && filesize($log) > 0) {
+                                    $val = 3;
+                                    exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
+                                    if ($ret == 0) $val = 2;
+                                    if (sizeof($ap) > 3) {
+                                        $val = 1;
+                                        exec('grep -q -i "'.$ap[3].'" '.$log, $out,$ret);
+                                        if ($ret == 0) {
+                                            $val = 2;
+                                        } else {
+                                            exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
+                                            if ($ret == 0) $val = 3;
+                                        }
+                                    }
+                                }
+                                break;
+                            } //else $val = 3;
+                        }
+                        
+                        $apr[$tyn][$name] = $val;
+                        
                     }
-                    
-                    $apr[$name] = $val;
-                    
                 }
 
                 $apr['XrayCentring'] = $dc['XRCSTATUS'] === null ? 0 

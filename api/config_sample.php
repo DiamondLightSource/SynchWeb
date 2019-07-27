@@ -82,12 +82,38 @@
         'pipeline=dials ' => 'DIALS',
     );
 
-    # Script to reprocess data
-    $reprocess_script = '/path/to/reprocess.sh';
-    $submit_script = '/path/to/submit.sh';
-
     # Crystal alignment programs
     $strat_align = array('XOalign', 'dials.align_crystal');
+
+    # Places to search for autoprocessing and screening statuses. File scraping is done if no database value is available.
+    $ap_statuses = array(
+        'locations' => array('/processed', 'tmp'),
+
+        'types' => array(
+            'screening' => array(
+                # Name on datacollectionpage => (folder, log file, grep for success, database name for matching)
+                "Mosflm" => array('simple_strategy/', 'strategy_native.log', 'Phi start'),
+                "EDNA" => array('edna/', 'summary.html', 'Selected spacegroup'),
+            ),
+            'autoproc' => array(
+                "Fast DP" => array('fast_dp/', 'fast_dp.log', 'I/sigma', 'fast_dp'),
+                
+                "Xia2/3dii" => array('xia2/3dii-run/', 'xia2.txt' , 'I/sigma', 'xia2 3dii'),
+                "DIALS" => array('xia2/dials-run/', 'xia2.txt' , 'I/sigma', 'xia2 dials'),
+                
+                "Xia2/Multiplex" => array('xia2.multiplex/', 'xia2.multiplex.log' , 'clustering summary', 'xia2.multiplex'),
+                
+                "autoPROC" => array('autoPROC/ap-run/', 'autoPROC.log', 'Normal termination', 'autoPROC'),            
+            ),
+            'downstream' => array(
+                "Fast EP" => array('fast_ep/', 'fast_ep.log', 'Best hand:'),
+                "Dimple" => array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
+                "MrBUMP" => array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
+                "Big EP/XDS" => array('big_ep/', '/xia2/3dii-run/big_ep*.log', 'Results for', ''),
+                "Big EP/DIALS" => array('big_ep/', '/xia2/dials-run/big_ep_*.log', 'Results for', 'Residues'),
+            )
+        )
+    );
 
     # Active MQ - Set to empty string to disable
     $activemq_server = 'tcp://activemq.server.ac.uk';
@@ -117,11 +143,12 @@
     # - The feedback form uses this address
     $email_admin = 'webmaster@server.ac.uk';
 
-    # Recepients for dewar Dispatch / Transfers Emails
+    # Recepients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
     $dispatch_email = 'ehc@server.ac.uk, goods@server.ac.uk';
     $transfer_email = 'ehc@server.ac.uk';
 
-    # and for RED experiments
+    # and for RED experiments, 
+    # email will be sent for shipments containing red level samples when "send to facility" is clicked
     $cl3_email = 'cl3team@server.ac.uk, goods@server.ac.uk';
 
     # and for shipment booked,
@@ -133,6 +160,11 @@
     $in_contacts = array('Ind Contact' => 'in@server.ac.uk'
                         );
 
+
+    # Array of container histories to trigger a new data notification email
+    $new_data = array(
+        array('processing', 'in_transit_unloading', 'in_local_storage')
+    );
 
 
     # Beamline Sample Registration Machines
@@ -163,7 +195,7 @@
     $facility_name = 'Diamond Light Source';
     $facility_short = 'DLS';
 
-    # These idents are used when searching the RCSB for PDBs
+    # These idents are used when searching the RCSB for PDBs to generate PDB stats
     $facility_pdb_ident = array('DIAMOND BEAMLINE', 'DIAMOND LIGHT SOURCE BEAMLINE');
 
 

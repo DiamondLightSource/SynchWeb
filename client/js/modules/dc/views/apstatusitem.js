@@ -46,17 +46,18 @@ define(['marionette', 'jquery'], function(Marionette, $) {
                 this.ui.holder.html('Xray Centring: ' + val[res['XrayCentring']])
 
             } else if (this.getOption('SCREEN')) {
-                this.ui.holder.html('Mosflm: ' + val[res['Mosflm']] + ' EDNA: ' + val[res['EDNA']] + ' Xia2: ' + val[res['Xia2/strat']])
+                this.ui.holder.empty()
+                _.each(res['screening'], function(sc, n) {
+                    this.ui.holder.append(n+': '+val[sc]+' ')
+                }, this)
                
             } else {
-                this.ui.holder.eq(0).html('Fast DP: ' + val[res['Fast DP']] +
-                    ' Xia2: ' + val[res['Xia2/3d']] + ' ' +val[res['Xia2/3dii']] + ' ' +val[res['DIALS']] +
-                    ' MultiXia2: ' + val[res['MultiXia2/XDS']] + ' ' +val[res['MultiXia2/DIALS']] +
-                    ' autoPROC: ' + val[res['autoPROC']])
-                this.ui.holder.eq(1).html( 'Fast EP: ' + val[res['Fast EP']] +
-                    ' Big EP: ' + val[res['Big EP/XDS']] + ' '+ val[res['Big EP/DIALS']] +
-                    ' Dimple: ' + val[res['Dimple']] +
-                    ' MrBUMP: ' + val[res['MrBUMP']])
+                _.each(['autoproc','downstream'], function(ty, id) {
+                    this.ui.holder.eq(id).empty()
+                    _.each(res[ty], function(ap, n) {
+                        this.ui.holder.eq(id).append(n+': '+val[ap]+' ')
+                    }, this)
+                }, this)
             }
         }
     })

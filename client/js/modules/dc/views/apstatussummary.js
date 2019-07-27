@@ -67,7 +67,7 @@ define(['marionette',
             var label = this.column.get('label')
             this.$el.html(_.template(this.template))
             if (this.model.get('APLOADED') == true) {
-               this.$el.html(val[res[label]])
+               this.$el.html(val[res[this.column.get('group')][label]])
             }
             this.delegateEvents();
             return this;
@@ -90,21 +90,22 @@ define(['marionette',
                     { name: 'FILETEMPLATETRIM', label: 'Prefix', cell: 'string', editable: false },
                     { label: 'Sample', cell: APCell, template: '<% if (BLSAMPLEID) { %><a href="/samples/sid/<%-BLSAMPLEID%>" class="wrap sample"><%-SAMPLE%></a><% } %>', editable: false },
                     { name: 'ST', label: 'Date', cell: 'string', editable: false },
-                    { label: 'Fast DP', cell: APItemCell, editable: false },
-                    { label: 'Xia2/3d', cell: APItemCell, editable: false },
-                    { label: 'Xia2/3dii', cell: APItemCell, editable: false },
-                    { label: 'DIALS', cell: APItemCell, editable: false },
-                    { label: 'MultiXia2/XDS', cell: APItemCell, editable: false },
-                    { label: 'MultiXia2/DIALS', cell: APItemCell, editable: false },
-                    { label: 'autoPROC', cell: APItemCell, editable: false },
-                    { label: 'Fast EP', cell: APItemCell, editable: false },
-                    { label: 'Big EP/XDS', cell: APItemCell, editable: false },
-                    { label: 'Big EP/DIALS', cell: APItemCell, editable: false },
-                    { label: 'Dimple', cell: APItemCell, editable: false },
-                    { label: 'MrBUMP', cell: APItemCell, editable: false },
-                    { label: '', cell: RPCell, template: '<a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>', editable: false },
-                    { label: '', cell: APCell, template: '<a href="/dc/visit/'+this.model.escape('VISIT')+'/id/<%-ID%>" class="button button-notext dll" title="Open data collection"><i class="fa fa-arrow-right"></i> <span>Open data collection</span></a>', editable: false },
-                    ]
+                    
+            ]
+
+            var aps = app.options.get('ap_statuses')
+            _.each(['autoproc', 'downstream'], function(gr) {
+                _.each(aps[gr], function(tys, ty) {
+                    this.columns.push({ label: ty , cell: APItemCell, editable: false, group: gr })
+                }, this)
+            }, this)
+
+            this.columns.push.apply(this.columns, [
+                { label: '', cell: RPCell, template: '<a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>', editable: false },
+                { label: '', cell: APCell, template: '<a href="/dc/visit/'+this.model.escape('VISIT')+'/id/<%-ID%>" class="button button-notext dll" title="Open data collection"><i class="fa fa-arrow-right"></i> <span>Open data collection</span></a>', editable: false },
+            ])
+
+            console.log(this.columns)
         },
          
         updateStatus: function() {
