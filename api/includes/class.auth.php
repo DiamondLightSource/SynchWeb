@@ -70,6 +70,9 @@
 		            (($parts[0] == 'assign') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
 		            (($parts[0] == 'shipment' && $parts[1] == 'containers') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
 
+		            # Container notification
+		            ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'notify') || 
+
 		            # Calendar ICS export
 		            ($parts[0] == 'cal' && $parts[1] == 'ics' && $parts[2] == 'h') || 
 

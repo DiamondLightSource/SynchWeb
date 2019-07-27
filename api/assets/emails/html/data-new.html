@@ -1,0 +1,30 @@
+
+		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">New data available</h1>
+
+		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+			<h2>Dear <?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?>,</h2>
+			<p>Data is now available for your container <?php echo $data['CODE'] ?>.</p>
+			<p>You can view the data collections here:<br /><a href="https://ispyb.diamond.ac.uk/dc/visit/<?php echo $data['VISIT'] ?>?prop=<?php echo $data['PROP'] ?>">https://ispyb.diamond.ac.uk/dc/visit/<?php echo $data['VISIT'] ?>?prop=<?php echo $data['PROP'] ?></a></p>
+			<p>You can view the container here:<br /><a href="https://ispyb.diamond.ac.uk/containers/cid/<?php echo $data['CONTAINERID'] ?>?prop=<?php echo $data['PROP'] ?>">https://ispyb.diamond.ac.uk/containers/cid/<?php echo $data['CONTAINERID'] ?>?prop=<?php echo $data['PROP'] ?></a></p>
+		</div>
+
+		<table class="details" style="background: #f4f4f4; margin: 1%">
+			<tbody>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Visit</td>
+					<td><?php echo $data['VISIT'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Proposal</td>
+					<td><?php echo $data['PROP'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Shipping Name</td>
+					<td><?php echo $data['SHIPPINGNAME'] ?></td>
+				</tr>
+				<tr>
+					<td style="padding: 1.5%; font-weight: bold">Container</td>
+					<td><?php echo $data['CODE'] ?></td>
+				</tr>
+			</tbody>
+		</table>

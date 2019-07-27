@@ -163,6 +163,7 @@
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
                               
+                              array('/containers/notify/:containerid', 'get', '_notify_container'),
 
                               array('/cache/:name', 'put', '_session_cache'),
                               array('/cache/:name', 'get', '_get_session_cache'),
@@ -2365,6 +2366,59 @@
 
             $this->_output($data);
         }
+
+
+        function _notify_container() {
+            global $new_data;
+            if (!$this->has_arg('containerid')) $this->_error('No container specified');
+
+            $cont = $this->db->pq("SELECT c.containerid, pe.emailaddress, pe.givenname, pe.familyname, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.code, sh.shippingname
+                FROM container c
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                INNER JOIN person pe ON pe.personid = c.ownerid
+                INNER JOIN blsession s ON s.sessionid = c.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE c.containerid=:1", array($this->arg('containerid')));
+
+            if (!sizeof($cont)) return;
+            $cont = $cont[0];
+
+            $hist = $this->db->pq("SELECT h.containerhistoryid, h.status, h.bltimestamp
+                FROM containerhistory h
+                WHERE h.containerid=:1
+                ORDER BY h.bltimestamp DESC
+                LIMIT 10", array($cont['CONTAINERID']));
+            if (!sizeof($hist)) return;
+
+            $last = array();
+            foreach ($hist as $h) {
+                array_push($last, $h['STATUS']);
+            }
+            if (in_array('notify_email', $last)) return;
+
+            $send_notification = False;
+            foreach ($new_data as $n) {
+                for ($i = 0; $i < (sizeof($last)-sizeof($n)); $i++) {
+                    $match = True;
+                    foreach ($n as $j => $p) {
+                        if ($last[$i+$j] != $p) $match = False;
+                    }
+
+                    if ($match) $send_notification = True;
+                }
+            }
+
+            if ($send_notification) {
+                require_once('includes/class.email.php');
+                $email = new Email('data-new', '*** New data available for your container ***');
+                $email->data = $cont;
+                $email->send($cont['EMAILADDRESS']);
+
+                $this->db->pq("INSERT INTO containerhistory (status,containerid) VALUES (:1, :2)", array('notify_email', $cont['CONTAINERID']));
+            }
+        }
+
     
     }
 
