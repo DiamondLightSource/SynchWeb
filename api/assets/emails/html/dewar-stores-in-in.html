@@ -2,7 +2,7 @@
 		<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">Dewar received at synchrotron</h1>
 
 		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
-			<p>Dear <?php echo $data['LCOUT'] ?>, <br />Your dewar was recieved at <?php echo $data['NOW'] ?>. You can check its location in <a href="http://ispyb.diamond.ac.uk/shipments/sid/<?php echo $data['SHIPPINGID'] ?>">ISPyB</a></p>
+			<p>Dear <?php echo $data['LCOUT'] ?>, <br />Your dewar was received at <?php echo $data['NOW'] ?>. You can check its location in <a href="http://ispyb.diamond.ac.uk/shipments/sid/<?php echo $data['SHIPPINGID'] ?>">ISPyB</a></p>
 			<p>If you have any questions please don't hesitate to contact us: </p>
 			<ul>
 				<?php foreach($data['INCONTACTS'] as $n => $e): ?>
