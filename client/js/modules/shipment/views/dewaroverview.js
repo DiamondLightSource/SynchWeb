@@ -15,14 +15,15 @@ define(['marionette',
           // this.model.get('DELIVERYAGENT_AGENTNAME') &&this.model.get('DELIVERYAGENT_AGENTNAME').toLowerCase() == 'dhl'
           if (this.model.get('TRACKINGNUMBERTOSYNCHROTRON') && this.model.get('TRACKINGNUMBERTOSYNCHROTRON').length <= 10) {
               $el.html('<i class="fa fa-spin fa-cog"></i>')
-              var dhl = new DHLTracking(null, { queryParams: { DEWARID: this.model.get('DEWARID'), prop: this.model.get('PROP') } })
+              var dewarId = this.model.get('DEWARID')
+              var dhl = new DHLTracking(null, { queryParams: { DEWARID: dewarId, prop: this.model.get('PROP') } })
               dhl.fetch({
                   success: function() {
                       var last = dhl.last()
-                      if (last !== null) {
+                      if (last) {
                         $el.text(last.get('STATE')+': '+last.get('LOCATION'))
                       } else {
-                          console.log("DewarOverview: did not get a last entry from DHL Tracking")
+                          console.log("DewarOverview: no DHL Tracking info for dewarId: " + dewarId)
                       }
                   },
 
