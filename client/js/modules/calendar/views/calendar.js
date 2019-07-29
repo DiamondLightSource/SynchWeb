@@ -44,9 +44,11 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         childView: EventHourView,
         childViewContainer: 'ul',
         
-        templateHelpers: {
-            dayNames: Days,
-            monthNames: Months,
+        templateHelpers: function () {
+            return {
+                dayNames: Days,
+                monthNames: Months,
+            }
         },
         
         initialize: function(options) {
@@ -99,8 +101,10 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
     var DayListItemView = Marionette.ItemView.extend({
         tagName: 'li',
         
-        templateHelpers: {
-            dayNames: Days,
+        templateHelpers: function() {
+            return {
+                dayNames: Days,
+            }
         },
         
         attributes: function() {

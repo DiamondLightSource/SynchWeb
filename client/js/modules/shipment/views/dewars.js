@@ -20,9 +20,11 @@ define(['marionette', 'backbone',
         },
         tagName: 'tr',
         
-        templateHelpers: {
-            APIURL: app.apiurl,
-            PROP: app.prop,
+        templateHelpers: function() {
+            return {
+                APIURL: app.apiurl,
+                PROP: app.prop,
+            }
         },
 
         events: {

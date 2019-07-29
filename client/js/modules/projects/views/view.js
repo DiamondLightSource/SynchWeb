@@ -132,8 +132,10 @@ define(['marionette',
                 collection: this.users,
                 childViewOptions: function() {
                     return {
-                        templateHelpers: {
-                            IS_OWNER: self.model.get('IS_OWNER'),
+                        templateHelpers: function() {
+                            return {
+                                IS_OWNER: self.model.get('IS_OWNER'),
+                            }
                         }
                     }
                 }

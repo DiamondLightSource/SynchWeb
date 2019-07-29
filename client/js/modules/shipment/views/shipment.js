@@ -38,10 +38,12 @@ define(['marionette',
         regions: { table: '.table', history: '.history', cont: '.dcontent', rtracking: '.tracking' },
         //modelEvents: { 'change': 'render' },
         
-        templateHelpers: {
-            APIURL: app.apiurl,
-            PROP: app.prop,
-            DHL_ENABLE: app.options.get('dhl_enable'),
+        templateHelpers: function() {
+            return {
+                APIURL: app.apiurl,
+                PROP: app.prop,
+                DHL_ENABLE: app.options.get('dhl_enable'),
+            }
         },
 
         events: {

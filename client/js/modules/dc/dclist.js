@@ -46,7 +46,13 @@ function(Marionette,
             imagestatuses: this.imagestatuses,
             apstatuses: this.apstatuses,
             apmessagestatuses: this.apmessagestatuses,
-            templateHelpers: { IS_VISIT: is_vis, VIS_LINK: vl, APIURL: app.apiurl },
+            templateHelpers: function() {
+              return {
+                IS_VISIT: is_vis,
+                VIS_LINK: vl,
+                APIURL: app.apiurl
+              }
+            },
             visit: vl,
         }
     },

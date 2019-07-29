@@ -49,9 +49,11 @@ define(['marionette', 'views/form',
     return FormView.extend({
         template: template,
 
-        templateHelpers: {
-            DHL_ENABLE: app.options.get('dhl_enable'),
-            DHL_LINK: app.options.get('dhl_link'),
+        templateHelpers: function() {
+            return {
+                DHL_ENABLE: app.options.get('dhl_enable'),
+                DHL_LINK: app.options.get('dhl_link'),
+            }
         },
         
         events: {

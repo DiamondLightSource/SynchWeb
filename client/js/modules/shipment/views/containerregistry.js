@@ -58,8 +58,8 @@ define(['marionette',
             add: '.add',
         },
         
-        templateHelpers: {
-            STAFF: app.staff
+        templateHelpers: function () {
+            return { STAFF: app.staff }
         },
 
         events: {
