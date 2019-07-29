@@ -563,13 +563,14 @@
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             if (!in_array($this->arg('bl'), $auto_bls)) $this->_error('That beamline cannot create autocollect visits');
 
-            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, c.containerid, HEX(p.externalid) as externalid, HEX(pe.externalid) as pexternalid
+            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, c.containerid, HEX(p.externalid) as externalid, HEX(pe.externalid) as pexternalid, HEX(pe2.externalid) as piexternalid
                 FROM proposal p
                 INNER JOIN shipping s ON s.proposalid = p.proposalid
                 INNER JOIN dewar d ON d.shippingid = s.shippingid
                 INNER JOIN container c ON c.dewarid = d.dewarid
                 LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
                 LEFT OUTER JOIN person pe ON pe.personid = c.ownerid
+                LEFT OUTER JOIN person pe2 ON pe2.personid = p.personid
                 WHERE c.containerid=:1", array($this->arg('CONTAINERID')));
 
             if (!sizeof($cont)) $this->_error('No such container');
