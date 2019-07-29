@@ -22,23 +22,25 @@ module.exports = {
       marionette: 'backbone.marionette/lib/backbone.marionette.min',
 
       'jquery.touchswipe': 'jquery-touchswipe',
-      'jquery.ui': 'jquery-ui', // Only required for timepicker-addon 1.5.5 apparently!
-      'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds
-      'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox', // Not the official combobox extension from npm but a collection of extensions
+      'jquery.ui': 'vendor/jquery/jquery-ui.min', // Revert to old version for testing...
+      // 'jquery.ui': 'jquery-ui', // Only required for timepicker-addon 1.5.5 apparently!
+      'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds      
+      // Jquery-ui-combox is not the official combobox extension from npm
+      // Instead it is a collection of extensions: (https://github.com/bseth99/jquery-ui-extensions)
+      'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox', 
 
-      // 'jquery.flot': 'vendor/flot/jquery.flot.min', // NPM
-      'jquery.flot.resize': 'jquery-flot-resize', // NPM Older version 1.0.0 2012 instead of 2013
-      // 'jquery.flot.resize': 'vendor/flot/jquery.flot.resize',
+      // Jquery.flot provided by NPM package (exact name match)
+      // Jquery.flot.resize also from NPM but slightly older version 1.0.0 2012 instead of 2013 (vendor lib)
+      'jquery.flot.resize': 'jquery-flot-resize', 
       'jquery.flot.pie': 'flot-pie',
-      // 'jquery.flot.pie': 'vendor/flot/jquery.flot.pie',
       'jquery.flot.time': 'vendor/flot/jquery.flot.time.min',
       'jquery.flot.selection': 'vendor/flot/jquery.flot.selection',
       'jquery.flot.stack': 'vendor/flot/jquery.flot.stack',
 
+       // Jquery flot tooltip is provided ny NPM with exact name match,
+       // so not aliased here, was: 'vendor/flot/jquery.flot.tooltip',
       'jquery.flot.tickrotor': 'vendor/flot/jquery.flot.tickrotor',
-      // 'jquery.flot.tooltip': 'vendor/flot/jquery.flot.tooltip', // NPM
       'jquery.flot.axislabels': 'flot-axislabels',
-      // 'jquery.flot.axislabels': 'vendor/flot/jquery.flot.axislabels',
       
       // We can't currently use the magnific-popup from npm e.g.:
       // 'jquery.mp': 'magnific-popup',
@@ -50,12 +52,11 @@ module.exports = {
       'jquery.editable': 'jquery-jeditable/dist/jquery.jeditable.min',
       'jquery.editable.datepicker': 'jquery-jeditable/dist/jquery.jeditable.datepicker.min',
   
+      // Jquery.color plugin also NPM package
       'jquery.color': 'jquery-color',
-      
-      // Canvas Mix in class..
-      // canvas: 'utils/canvas',
 
-      // Caman npm depends on fibers, canvas, fs which we don't wont...
+      // Caman npm depends on fibers, canvas, fs which we don't want...
+      // So use direct downloaded dependency
       caman: 'vendor/caman.min',
 
       // heatmap in npm has dependency on canvas/node-gyp... so use old one for now
@@ -69,12 +70,10 @@ module.exports = {
 
       highmaps: 'highcharts/highmaps',
       'highmaps-world': '@highcharts/map-collection/custom/world',
-      // 'highmaps-world': 'vendor/highmaps/world',
 
-      // Move these to npm installs once working
+      // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate',
-      // promise: 'vendor/vue/polyfill.min',
     },
     modules: [
       path.resolve(__dirname, 'js'),
@@ -120,10 +119,6 @@ module.exports = {
         test: /caman\.min\.js$/,
         use: "imports-loader?exports=>undefined,require=>false,this=>window"
       },
-      // {
-      //   test: /gunzip\.min\.js$/,
-      //   use: "imports-loader?exports=>undefined,require=>false,this=>window"
-      // }
     ]
   },
   plugins: [
