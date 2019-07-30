@@ -1,97 +1,85 @@
 <?php
-    /*
-        Copyright 2015 Diamond Light Source <stuart.fisher@diamond.ac.uk>
-    
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-    
-        http://www.apache.org/licenses/LICENSE-2.0
-    
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-    */
+/*
+    Copyright 2015 Diamond Light Source <stuart.fisher@diamond.ac.uk>
 
-    include_once('includes/class.autoloader.php');
-    $loader = new Psr4AutoloaderClass;
-    $loader->register();
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
+    http://www.apache.org/licenses/LICENSE-2.0
 
-    require 'lib/Slim/Slim.php';
-    \Slim\Slim::registerAutoloader();
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
-    session_cache_limiter(false);
+use Slim\Slim;
+use SynchWeb\Authentication;
+use SynchWeb\Database\Type\MySQL;
+use SynchWeb\Dispatch;
+use SynchWeb\User;
 
-    include_once('includes/class.db.php');
-    $db = Database::get();
-    register_shutdown_function(array(&$db, '__destruct'));
+require 'vendor/autoload.php';
 
-    // require_once('includes/class.options.php');
-    // $options = new Options($db);
+require 'config.php';
 
-    require_once('config.php');
+date_default_timezone_set('Europe/London');
 
-    $app = new \Slim\Slim(array(
-        'mode' => $mode == 'production' ? 'production' : 'development'
+session_cache_limiter(false);
+
+$app = new Slim(array(
+    'mode' => $mode == 'production' ? 'production' : 'development'
+));
+
+$app->configureMode('production', function () use ($app) {
+    $app->config(array(
+        'log.enable' => true,
+        'debug' => false
     ));
+});
 
+$app->configureMode('development', function () use ($app) {
+    $app->config(array(
+        'log.enable' => false,
+        'debug' => true
+    ));
+});
 
-    $app->configureMode('production', function () use ($app) {
-        $app->config(array(
-            'log.enable' => true,
-            'debug' => false
-        ));
-    });
+$app->get('/options', function () use ($app) {
+    global $motd, $authentication_type, $cas_url, $cas_sso, $package_description, $facility_courier_countries, $facility_courier_countries_nde, $dhl_enable, $dhl_link, $scale_grid, $preset_proposal;
+    $app->contentType('application/json');
+    $app->response()->body(json_encode(array('motd' => $motd, 'authentication_type' => $authentication_type, 'cas_url' => $cas_url, 'cas_sso' => $cas_sso, 'package_description' => $package_description, 'facility_courier_countries' => $facility_courier_countries, 'facility_courier_countries_nde' => $facility_courier_countries_nde, 'dhl_enable' => $dhl_enable, 'dhl_link' => $dhl_link, 'scale_grid' => $scale_grid, 'preset_proposal' => $preset_proposal)));
+    // $app->response()->body(json_encode($options->ui()));
+});
 
-    $app->configureMode('development', function () use ($app) {
-        $app->config(array(
-            'log.enable' => false,
-            'debug' => true
-        ));
-    });
-    
+// the following prevents unexpected effects when using objects as save handlers
+register_shutdown_function('session_write_close');
 
-    $app->get('/options', function() use ($app) {
-        global $motd, $authentication_type, $cas_url, $cas_sso, $package_description, $facility_courier_countries, $facility_courier_countries_nde, $dhl_enable, $dhl_link, $scale_grid, $preset_proposal;
-        $app->contentType('application/json');
-        $app->response()->body(json_encode(array('motd' => $motd, 'authentication_type' => $authentication_type, 'cas_url' => $cas_url, 'cas_sso' => $cas_sso, 'package_description' => $package_description, 'facility_courier_countries' => $facility_courier_countries, 'facility_courier_countries_nde' => $facility_courier_countries_nde, 'dhl_enable' => $dhl_enable, 'dhl_link' => $dhl_link, 'scale_grid' => $scale_grid, 'preset_proposal' => $preset_proposal)));
-        // $app->response()->body(json_encode($options->ui()));
-    });
+$port = array_key_exists('port', $isb) ? $isb['port'] : null;
 
-    //if (substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')) ob_start("ob_gzhandler");
-    //else ob_start();
+// MySQL database class hard-coded
+$db = new MySQL($isb['user'], $isb['pass'], $isb['db'], $port);
 
-    
-    // the following prevents unexpected effects when using objects as save handlers
-    register_shutdown_function('session_write_close');
+// Alternatively, use dynamic class instantiation.
+// Database type ($dbtype) specified in config.php.
+// $db = Database::get();
 
-    require_once('includes/class.auth.php');
-    $auth = new Authenticate($app, $db);
-    $auth->check_auth_required();
+$db->set_app($app);
 
+$auth = new Authentication($app, $db);
+$auth->check_auth_required();
 
-    date_default_timezone_set('Europe/London');
-    
-    include_once('includes/class.page.php');
+$login = $auth->get_user();
+$user = new User($login, $db, $app);
 
-
-    require_once('includes/class.user.php');
-    $login = $auth->get_user();
-    $user = new User($login, $db, $app);
-
-
-    if ($user->login) {
-        $chk = $db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) as lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($user->login));
-        if (sizeof($chk)) {
-            if ($chk[0]['LASTUPDATE'] > 20) $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
-        }
+if ($user->login) {
+    $chk = $db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($user->login));
+    if (sizeof($chk)) {
+        if ($chk[0]['LASTUPDATE'] > 20) $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
     }
-    
-    include_once('includes/class.dispatch.php');
-    $type = new Dispatch($app, $db, $user);
-    $type->dispatch();
-    
-?>
+}
+
+$type = new Dispatch($app, $db, $user);
+$type->dispatch();
