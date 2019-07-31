@@ -6,12 +6,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 module.exports = {
   entry: {
       main: './src/index.js',
-  },
+    },
   output: {
     filename: '[name]-bundle.js',
     path: path.resolve(__dirname, 'dist', '[git-revision-hash]'),
     publicPath: '/dist/[git-revision-hash]/'
   },
+
   optimization: {
     splitChunks: {
       chunks: 'all',
@@ -121,6 +122,7 @@ module.exports = {
       },
     ]
   },
+
   plugins: [
     new webpack.ProvidePlugin({
        $: "jquery",
@@ -139,5 +141,7 @@ module.exports = {
       filename: path.resolve(__dirname, 'index.php'),
       template: 'src/index.php',
     }),
+    // Ignore all locale files of moment.js
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
   ]
 }
