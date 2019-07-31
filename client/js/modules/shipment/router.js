@@ -1,7 +1,7 @@
-define(['marionette', 'modules/shipment/controller'], function(Marionette, c) {
-// define(['utils/lazyrouter'], function(LazyRouter) {
-  var Router = Marionette.AppRouter.extend({
-  // var Router = LazyRouter.extend({
+// define(['marionette', 'modules/shipment/controller'], function(Marionette, c) {
+define(['utils/lazyrouter'], function(LazyRouter) {
+  // var Router = Marionette.AppRouter.extend({
+  var Router = LazyRouter.extend({
     appRoutes: {
       'shipments(/page/:page)': 'list',
       'shipments/add': 'add',
@@ -32,11 +32,18 @@ define(['marionette', 'modules/shipment/controller'], function(Marionette, c) {
       'migrate': 'migrate',
     },
     
-    loadEvents: ['shipments:show', 'shipment:show', 'container:show', 'dewar:show']
+    loadEvents: ['shipments:show', 'shipment:show', 'container:show', 'dewar:show'],
+
+    loadModule: function(loadedCallback) {
+      import(/* webpackChunkName: "shipping" */ 'modules/shipment/controller').then(m => {
+        // Trigger the passed callback
+        loadedCallback(m)
+      })
+    }
   })
        
   return new Router({
-    controller: c
-    // rjsController: 'modules/shipment/controller',
+    // controller: c
+    rjsController: 'modules/shipment/controller',
   })
 })

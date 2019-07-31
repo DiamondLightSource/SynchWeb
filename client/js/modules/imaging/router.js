@@ -1,8 +1,8 @@
-define(['marionette', 'modules/imaging/controller'], function(Marionette, c) {
-// define(['utils/lazyrouter'], function(LazyRouter) {
+// define(['marionette', 'modules/imaging/controller'], function(Marionette, c) {
+define(['utils/lazyrouter'], function(LazyRouter) {
             
-    // var Router = LazyRouter.extend({
-    var Router = Marionette.AppRouter.extend({
+    var Router = LazyRouter.extend({
+    // var Router = Marionette.AppRouter.extend({
         appRoutes: {
             'admin/imaging': 'imaging_dash',
 
@@ -17,10 +17,17 @@ define(['marionette', 'modules/imaging/controller'], function(Marionette, c) {
         },
         
         loadEvents: ['schedule:view', 'screen:view'],
+
+        loadModule: function(loadedCallback) {
+            import(/* webpackChunkName: "imaging" */ 'modules/imaging/controller').then(m => {
+                // Trigger the passed callback
+                loadedCallback(m)
+            })
+        }
     })
        
     return new Router({
-        controller: c
-        // rjsController: 'modules/imaging/controller',
+        // controller: c
+        rjsController: 'modules/imaging/controller',
     })
 })
