@@ -87,10 +87,11 @@ define(['marionette',
         tabID: 'AID',
         
         childViewOptions: function() {
+            var dcId = this.getOption('id')
             return {
                 templateHelpers: function() {
                     return {
-                        DCID: this.getOption('id'),
+                        DCID: dcId,
                         APIURL: app.apiurl
                     }
                 }

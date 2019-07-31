@@ -131,10 +131,11 @@ define(['marionette',
             this.usr.show(new ProjectUserView({
                 collection: this.users,
                 childViewOptions: function() {
+                    var is_owner = self.model.get('IS_OWNER')
                     return {
                         templateHelpers: function() {
                             return {
-                                IS_OWNER: self.model.get('IS_OWNER'),
+                                IS_OWNER: is_owner,
                             }
                         }
                     }
