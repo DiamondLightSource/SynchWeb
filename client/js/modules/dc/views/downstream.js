@@ -33,15 +33,16 @@ define(['marionette',
         },
         
         childViewOptions: function() {
+            var dcId = this.getOption('id')
             return {
                 holderWidth: this.getOption('holderWidth'),
                 templateHelpers: function() {
                     return {
-                        DCID: this.getOption('id'),
+                        DCID: dcId,
                         APIURL: app.apiurl
                     }
                 },
-                DCID: this.getOption('id'),
+                DCID: dcId,
             }
         },
     })
