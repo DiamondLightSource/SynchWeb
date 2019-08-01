@@ -1,4 +1,5 @@
 define(['marionette',
+    'backbone',
     'modules/shipment/collections/distinctproteins',
     
     'models/sample',
@@ -18,7 +19,7 @@ define(['marionette',
     'moment',
     'utils/editable',
     'templates/shipment/container.html'], function(Marionette,
-        
+    Backbone,
     DistinctProteins,
     Sample,
     Samples,

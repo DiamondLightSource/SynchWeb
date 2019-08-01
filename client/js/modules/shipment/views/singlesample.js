@@ -1,4 +1,4 @@
-define(['marionette',
+define(['backbone',
     'utils',
     'views/form',
     'utils/sgs',
@@ -12,7 +12,7 @@ define(['marionette',
     'templates/shipment/singlesample.html',
     'templates/shipment/singlesamplee.html',
     
-    'jquery-ui'], function(Marionette, utils,
+    'jquery-ui'], function(Backbone, utils,
         FormView, SG, Editable, Protein, Anom,
         ComponentsView,
         templatenew, template) {

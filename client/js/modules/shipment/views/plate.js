@@ -1,4 +1,4 @@
-define(['marionette', 'utils', 'backbone-validation'], function(Marionette, utils) {
+define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Marionette, Backbone, utils) {
     
     return Marionette.ItemView.extend({
         template: false,

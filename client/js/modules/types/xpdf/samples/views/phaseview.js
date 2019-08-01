@@ -2,6 +2,7 @@
  *  class defining the view for an XPDF phase (component, protein)
  */
 define(['marionette',
+        'backbone',
         'utils/editable',
 
         'collections/crystals',
@@ -16,6 +17,7 @@ define(['marionette',
 
         'templates/types/xpdf/samples/phase.html',
         ], function(Marionette,
+            Backbone,
             Editable,
             Crystals,
             CIFs, PDBView,

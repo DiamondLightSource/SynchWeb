@@ -4,6 +4,7 @@
 
 define([
     'marionette',
+    'backbone',
     'collections/samples',
     'utils/editable',
     'modules/types/xpdf/samples/views/phasetable',
@@ -11,6 +12,7 @@ define([
     'modules/types/xpdf/utils/phasecompositor',
     'templates/types/xpdf/samples/sample.html'], function(
         Marionette,
+        Backbone,
         Instances,
         Editable,
         PhaseTable,

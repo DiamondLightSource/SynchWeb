@@ -3,6 +3,7 @@
  */
 
 define(['marionette',
+    'backbone',
     'utils/editable',
     'collections/datacollections',
     'modules/dc/views/getdcview',
@@ -13,6 +14,7 @@ define(['marionette',
     'modules/types/xpdf/collections/instances',
     'templates/types/xpdf/samples/instance.html',
     ], function(Marionette,
+        Backbone,
         Editable,
         DCCol,
         GetDCView,
