@@ -6,26 +6,20 @@ define(['marionette'], function(Marionette) {
      when required. r.js optimiser will not be able to find the controller 
      so make sure it is optimised as a standalone.
     */
-    
     return LazyRouter = Marionette.AppRouter.extend({
-        /** @property {string} Controller to lazy load when required */
-        // relative/path/to/controller
-        // rjsController: null, // Not using in favour of dynamic import
-        
         /** @property {string} Events to trigger a lazy load */
         loadEvents: [],
 
-        loadModule: null, // Callback function that loads module
-        
+        // loadModule: Callback function that imports a js module.
+        // It should take a callback parameter which it triggered on successful import/load
+        // function(cb) { import(/* webpackChunkName: "chunkname" */).then(m => { cb(m) })}
+        loadModule: null,
+
         initialize: function(options) {
             LazyRouter.__super__.initialize.apply(this, options)
-            
+
             this.lazyloaded = false
-            
-            // if (!this.getOption('rjsController')) {
-            //     //throw new Error('No controller specified')
-            // }
-            
+
             _.each(this.getOption('loadEvents'), function(e) {
                 app.on(e, this.lazyLoad.bind(this,e))
             }, this)
@@ -35,7 +29,7 @@ define(['marionette'], function(Marionette) {
             var self = this
             var args = arguments
 
-            if (!this.lazyloaded && this.loadModule) {
+            if (!this.lazyloaded && typeof this.loadModule === "function") {
                 this.loadModule(function(controller) {
                     self.lazyloaded = true
                     console.log(e, args)
@@ -51,7 +45,7 @@ define(['marionette'], function(Marionette) {
                 var self = this
                 var args = arguments
 
-                if (this.loadModule) {
+                if (typeof this.loadModule === "function") {
                     this.loadModule(function(controller) {
                         controller[methodName].apply(controller, args)
                         self.lazyloaded = true
