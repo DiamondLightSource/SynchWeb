@@ -88,12 +88,12 @@ define(['marionette',
         
         childViewOptions: function() {
             var dcId = this.getOption('id')
+            // These templateHelpers are just used to extract values for AIPlots View (see ShowPlots/ShowRD above)
+            // They don't seem to be used as part of the template rendering, hence just an object rather than a function
             return {
-                templateHelpers: function() {
-                    return {
-                        DCID: dcId,
-                        APIURL: app.apiurl
-                    }
+                templateHelpers: {
+                    DCID: dcId,
+                    APIURL: app.apiurl
                 }
             }
         },
