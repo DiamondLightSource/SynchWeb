@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "./node_modules/.bin/webpack --config webpack.config.js -p --mode=production",
     "build:dev": "./node_modules/.bin/webpack --config webpack.config.js --mode development",
-    "build:stats": "./node_modules/.bin/webpack --config webpack.config.js --mode production --json > stats.json",
+    "build:stats": "./node_modules/.bin/webpack --config webpack.config.js --mode production --profile --json > stats.json",
     "dev": "./node_modules/.bin/webpack-dev-server --config webpack.config.js --hot",
     "analyze": "./node_modules/.bin/webpack-bundle-analyzer stats.json"
   },
