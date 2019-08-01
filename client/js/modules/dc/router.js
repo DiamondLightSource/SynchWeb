@@ -18,9 +18,9 @@ define(['utils/lazyrouter'], function(LazyRouter) {
 
 
         loadModule: function(loadedCallback) {
-            import(/* webpackChunkName: "dc" */ 'modules/dc/controller').then(module => {
-              // Trigger the passed callback
-              loadedCallback(module)
+            import(/* webpackChunkName: "dc" */ 'modules/dc/controller').then(controller => {
+                // Trigger the passed callback
+                loadedCallback(controller)
             })
           }
     })

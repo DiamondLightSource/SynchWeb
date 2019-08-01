@@ -14,9 +14,9 @@ define(['utils/lazyrouter'], function(LazyRouter) {
         loadEvents: ['stats:show'],
 
         loadModule: function(loadedCallback) {
-            import(/* webpackChunkName: "stats" */ 'modules/stats/controller').then(m => {
-              // Trigger the passed callback
-              loadedCallback(m)
+            import(/* webpackChunkName: "stats" */ 'modules/stats/controller').then(controller => {
+                // Trigger the passed callback
+                loadedCallback(controller)
             })
         }
     })

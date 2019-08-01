@@ -19,9 +19,9 @@ define(['utils/lazyrouter'], function(LazyRouter) {
         loadEvents: ['schedule:view', 'screen:view'],
 
         loadModule: function(loadedCallback) {
-            import(/* webpackChunkName: "imaging" */ 'modules/imaging/controller').then(m => {
+            import(/* webpackChunkName: "imaging" */ 'modules/imaging/controller').then(controller => {
                 // Trigger the passed callback
-                loadedCallback(m)
+                loadedCallback(controller)
             })
         }
     })

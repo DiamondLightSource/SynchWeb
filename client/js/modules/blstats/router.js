@@ -7,9 +7,9 @@ define(['utils/lazyrouter'], function(LazyRouter) {
         },
 
         loadModule: function(loadedCallback) {
-            import(/* webpackChunkName: "stats" */ 'modules/blstats/controller').then(m => {
-              // Trigger the passed callback
-              loadedCallback(m)
+            import(/* webpackChunkName: "stats" */ 'modules/blstats/controller').then(controller => {
+                // Trigger the passed callback
+                loadedCallback(controller)
             })
         }
     })

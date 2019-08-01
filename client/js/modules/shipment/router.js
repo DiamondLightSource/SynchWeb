@@ -35,11 +35,11 @@ define(['utils/lazyrouter'], function(LazyRouter) {
     loadEvents: ['shipments:show', 'shipment:show', 'container:show', 'dewar:show'],
 
     loadModule: function(loadedCallback) {
-      import(/* webpackChunkName: "shipping" */ 'modules/shipment/controller').then(m => {
-        // Trigger the passed callback
-        loadedCallback(m)
-      })
-    }
+        import(/* webpackChunkName: "shipping" */ 'modules/shipment/controller').then(controller => {
+            // Trigger the passed callback
+            loadedCallback(controller)
+        })
+      }
   })
        
   return new Router({
