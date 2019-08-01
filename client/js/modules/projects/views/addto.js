@@ -1,8 +1,8 @@
-define(['marionette',
+define(['backbone',
     'views/dialog',
     'collections/projects',
     'modules/projects/models/itemstate',
-    'templates/projects/addto.html'], function(Marionette, DialogView, Projects, ProjectItemState, template) {
+    'templates/projects/addto.html'], function(Backbone, DialogView, Projects, ProjectItemState, template) {
 
 
     return DialogView.extend({

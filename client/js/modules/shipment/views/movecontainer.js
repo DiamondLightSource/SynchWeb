@@ -1,9 +1,10 @@
-define(['views/dialog',
+define(['backbone',
+        'views/dialog',
         'collections/shipments',
         'collections/dewars',
     
         'templates/shipment/movecontainer.html',
-    ], function(DialogView, Shipments, Dewars, template) {
+    ], function(Backbone, DialogView, Shipments, Dewars, template) {
 
     return DialogView.extend({
         template: template,

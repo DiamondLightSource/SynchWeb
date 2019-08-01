@@ -1,4 +1,4 @@
-define(['marionette', 'utils/editable'], function(Marionette) {
+define(['marionette', 'backbone', 'utils/editable'], function(Marionette, Backbone) {
 
     var ComponentView = Marionette.ItemView.extend({
         tagName: 'li',

@@ -1,4 +1,5 @@
-define(['marionette',
+define(['backbone',
+    'marionette',
     'models/shipment',
     'collections/dewars',
     'views/table',

@@ -1,4 +1,4 @@
-define(['marionette',
+define(['backbone',
         'modules/shipment/views/getshipmentview',
 
         'models/dewar',
@@ -43,7 +43,7 @@ define(['marionette',
 
         'models/proplookup',
     
-], function(Marionette,
+], function(Backbone,
     GetView,
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView,

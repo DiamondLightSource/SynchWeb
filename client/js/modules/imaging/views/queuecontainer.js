@@ -1,4 +1,5 @@
 define(['marionette',
+    'backbone',
     'modules/shipment/collections/platetypes',
     'modules/imaging/collections/inspections',
     'modules/imaging/collections/inspectionimages',
@@ -21,6 +22,7 @@ define(['marionette',
     'modules/imaging/models/plan_xfe_vmxi',
     'backgrid', 'backgrid-select-all'
     ], function(Marionette,
+        Backbone,
         PlateTypes, ContainerInspections, InspectionImages, ImageViewer,
         SubSamples,
         TableView, table, FilterView, utils,
