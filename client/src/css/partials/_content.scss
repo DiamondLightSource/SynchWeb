@@ -865,7 +865,7 @@ ol.rounded {
         //display: none;
         opacity: 0;
         
-        @include transition(opacity 0.25s ease-in-out);
+        transition: opacity 0.25s ease-in-out;
         //-webkit-transition: opacity 0.25s ease-in-out;
         //-moz-transition: opacity 0.25s ease-in-out;
         //transition: opacity 0.25s ease-in-out;
@@ -887,7 +887,7 @@ ol.rounded {
     }
 
     .distl {
-        @include transition(opacity 0.25s ease-in-out);
+        transition: opacity 0.25s ease-in-out;
         
         .rp & {
             width: 48%;
@@ -912,7 +912,7 @@ ol.rounded {
 
     .edge,
     .mca {
-        @include transition(opacity 0.25s ease-in-out);
+        transition: opacity 0.25s ease-in-out;
         height: 160px;
         width: 50%;
         float: right;
@@ -1224,7 +1224,7 @@ li:last-child .visit_users {
     z-index: 100;
     width: 235px;
     display: none;
-    @include transition(right 0.5s ease-in-out 0.5s);
+    transition: right 0.5s ease-in-out 0.5s;
     
     &.wide {
         width: 465px;

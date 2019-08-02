@@ -12,7 +12,7 @@
         list-style: none;
         border: 1px solid $sidebar-border;
         background: $sidebar-grad-start;
-        @include background(linear-gradient(top, $sidebar-grad-start, $sidebar-grad-end));
+        background: linear-gradient(top, $sidebar-grad-start, $sidebar-grad-end);
     
 
         li {
@@ -23,9 +23,9 @@
             width: 14%;
             position: relative;
             
-            @include transition-property(background);
-            @include transition-duration(300ms);
-            @include transition-timing-function(ease-in-out);
+            transition-property: background;
+            transition-duration: 300ms;
+            transition-timing-function: ease-in-out;
         
 
             &:hover {
@@ -94,9 +94,9 @@
 // Responsive Sidebar
 @media (max-width: $breakpoint-medium) {    
     #sidebar, .cont_wrap {
-        @include transition-property(all);
-        @include transition-duration(0.2s);
-        @include transition-timing-function(ease);
+        transition-property: all;
+        transition-duration: 0.2s;
+        transition-timing-function: ease;
 
         width: 100%;        
         margin-top: 56px;
