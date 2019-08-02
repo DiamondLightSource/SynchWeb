@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require("webpack");
 const GitRevisionPlugin = require('git-revision-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
   entry: {
@@ -77,7 +78,8 @@ module.exports = {
       veevalidate: 'vee-validate/dist/vee-validate.min',
     },
     modules: [
-      path.resolve(__dirname, 'js'),
+      path.resolve(__dirname, 'src/js'),
+      path.resolve(__dirname, 'src/css'),
       path.resolve(__dirname, 'node_modules'),
     ]
   },
@@ -94,7 +96,7 @@ module.exports = {
           }
         ],
         exclude: [
-          path.resolve(__dirname, 'js/templates/vue')
+          path.resolve(__dirname, 'src/js/templates/vue')
         ]
       },
       {
@@ -105,13 +107,22 @@ module.exports = {
           }
         ]
       },
+      // Font loader - url should be relative to entry main.scss file
       {
-        test: /vue\/.+\.html/,
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        use: ['file-loader']
+      },
+      {
+        test: /\.vue$/,
         use: [
           {
-            loader: 'raw-loader',
+            loader: 'vue-loader',
           }
         ]
+      },
+      {
+        test: /vue\/.+\.html$/,
+        use: ['html-loader']
       },
       // We need to help Caman load properly
       // Caman adds to the window object within a browser
@@ -120,6 +131,14 @@ module.exports = {
         test: /caman\.min\.js$/,
         use: "imports-loader?exports=>undefined,require=>false,this=>window"
       },
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader", // creates style nodes from JS strings
+          "css-loader", // translates CSS into CommonJS
+          "sass-loader" // compiles Sass to CSS, using Node Sass by default
+        ]
+      }
     ]
   },
 
@@ -143,5 +162,6 @@ module.exports = {
     }),
     // Ignore all locale files of moment.js
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+    new VueLoaderPlugin(),
   ]
 }
