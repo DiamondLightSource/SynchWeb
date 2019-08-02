@@ -563,7 +563,7 @@
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             if (!in_array($this->arg('bl'), $auto_bls)) $this->_error('That beamline cannot create autocollect visits');
 
-            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, c.containerid, HEX(p.externalid) as externalid, IFNULL(HEX(pe.externalid), HEX(pe2.externalid)) as as pexternalid
+            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, c.containerid, HEX(p.externalid) as externalid, IFNULL(HEX(pe.externalid), HEX(pe2.externalid)) as pexternalid
                 FROM proposal p
                 INNER JOIN shipping s ON s.proposalid = p.proposalid
                 INNER JOIN dewar d ON d.shippingid = s.shippingid
