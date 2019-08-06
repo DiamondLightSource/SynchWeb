@@ -705,7 +705,7 @@
                             if (sizeof($ap) > 3) {
                                 // print_r(array($ap, sizeof($ap)));
                                 if (array_key_exists($ap[3], $db)) {
-                                    $apr[$tyn][$name] = $db[$ap[3]] ? 2 : 3;
+                                    $apr[$tyn][$name] = $db[$ap[3]] == null ? 1 : ($db[$ap[3]] == 1 ? 2 : 3);
                                     continue;
                                 }
                             }
