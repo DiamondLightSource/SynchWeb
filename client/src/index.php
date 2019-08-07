@@ -40,7 +40,7 @@
         <!-- <script type="text/javascript" data-main="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/main" src="<?php echo $config->appurl ?>/<?php echo $config->production ? ('dist/'.$config->build) : 'js' ?>/vendor/require/require.js"></script> -->
         <?php endif; ?>
 
-        <title></title>
+        <title><%= htmlWebpackPlugin.options.title %></title>
                
         <?php if ($config->ga_ident): ?>
         <script type="text/javascript">
@@ -102,6 +102,5 @@
             </div>
         
         </div>
-        <script type="text/javascript" src="/assets/js/c6d5635b/main-bundle.js"></script>
     </body>
 </html>

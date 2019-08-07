@@ -1,0 +1,27 @@
+<h1 class="status"><%-BL%> Beamline Status</h1>
+<div class="status pv">
+    <div class="pvs"></div>
+</div>
+    
+<h1 class="status webcams">Webcams</h1>
+<div class="status webcams clearfix <% if (BL =='i02') { %>three<% } %>">
+    <div class="webcam"><img alt="webcam1" src="#" /></div>
+    <div class="webcam"><img alt="webcam2" src="#" /></div>
+    <% if (BL =='i02') { %>
+	<div class="webcam"><img alt="webcam3" src="#" /></div>
+    <% } %>
+</div>
+
+<h1 class="status oavs">OAV</h1>
+<div class="status oavs clearfix">
+    <div class="oav"><img src="#" alt="oav" /></div>
+</div>
+
+<h1>EPICS Screens</h1>
+<div class="screens"></div>
+
+<h1>GDA Log</h1>
+
+<div class="log gda"></div>
+
+<div class="calendar"></div>

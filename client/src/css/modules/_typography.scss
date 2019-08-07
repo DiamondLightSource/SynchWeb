@@ -1,0 +1,52 @@
+@font-face {
+    font-family: 'Droid Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/DroidSans.woff') format('woff');
+}
+@font-face {
+    font-family: 'Droid Sans';
+    font-style: normal;
+    font-weight: 700;
+    src: url('../fonts/DroidSans-Bold.woff') format('woff');
+}
+@font-face {
+    font-family: 'Droid Serif';
+    font-style: italic;
+    font-weight: 400;
+    src: url('../fonts/DroidSerif-Italic.woff') format('woff');
+}
+@font-face {
+    font-family: 'Maven Pro';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/MavenProRegular.woff') format('woff');
+}
+
+
+// Weights
+$bold: 700;
+$light: 100;
+$normal: 400;
+
+
+// Main Font
+$main-font: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+$main-font-size: 12px;
+$main-line-height: 1.231;
+
+
+// Page Header
+$page-header-font: 'Maven Pro';
+$page-header-size: 24px;
+
+// Content Header
+$content-header-font: 'Droid Sans';
+$content-header-size: 14px;
+
+
+// Font Awesome
+$icon-font: 'FontAwesome';
+
+// Fixed Width
+$fixed-font: 'Courier';

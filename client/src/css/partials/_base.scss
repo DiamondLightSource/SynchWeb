@@ -1,0 +1,66 @@
+// @import "compass";
+@import "modules/all";
+// @import "compass/css3/transition";
+
+* {
+	padding: 0;
+	margin: 0;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    background: $body-background;
+    font-family: $main-font;
+    font-size: $main-font-size;
+    line-height: $main-line-height;
+    min-height: 100%;
+    
+    &.active {
+        background: $body-background;
+    }
+}
+
+a {
+    color: $link-color;
+    
+    &:hover {
+        color: $link-hover-color;
+    }
+}
+
+
+#wrapper {
+	background: $content-background;
+    
+    @media (max-width: $breakpoint-medium) {
+        background: $sidebar-mobile-background;
+        overflow-x: hidden;
+    }
+}
+
+.cont_wrap {
+    background: $content-background;
+}
+
+
+#container, #motd {
+    width: 80%;
+    margin: 0 auto;
+    padding-top: 20px;
+    
+    @media (max-width: $breakpoint-large) {
+        width: 96%;
+    }
+}
+
+#motd {
+    padding-top: 0;
+    padding-bottom: 0;
+
+    p {
+        margin-top: 20px;
+    }
+}
