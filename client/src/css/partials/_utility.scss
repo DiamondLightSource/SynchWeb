@@ -129,16 +129,16 @@
     padding: 3px 5px;
     text-decoration: none;
     border-radius: 3px;
-    background: linear-gradient(top, $content-page-background, $content-dark-background);
+    background: linear-gradient($content-page-background, $content-dark-background);
     
     &:hover {
-        background: linear-gradient(top, $content-dark-background, $content-page-background);
+        background: linear-gradient($content-dark-background, $content-page-background);
     }
 
     &.active {
-        background: linear-gradient(top, lighten($content-active,10%), $content-active);
+        background: linear-gradient(lighten($content-active,10%), $content-active);
         &:hover {
-            background: linear-gradient(top, $content-active, lighten($content-active,10%));
+            background: linear-gradient($content-active, lighten($content-active,10%));
         }
     }
     
@@ -157,7 +157,7 @@
     }
     
     &.button-highlight {
-        background: linear-gradient(top, $content-highlight, $content-page-background);
+        background: linear-gradient($content-highlight, $content-page-background);
     }
 }
 
