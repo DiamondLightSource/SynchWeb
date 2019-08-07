@@ -166,6 +166,9 @@ module.exports = {
     new CopyPlugin([
       { context: path.resolve(__dirname, 'src/css/stylesheets'),
         from: 'images/**',
+        to: path.resolve(__dirname, 'assets') },
+      { context: path.resolve(__dirname, 'src'),
+        from: 'images/**',
         to: path.resolve(__dirname, 'assets') }
     ]),
     // Ignore all locale files of moment.js
