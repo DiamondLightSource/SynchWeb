@@ -8,7 +8,6 @@
     "build": "./node_modules/.bin/webpack --config webpack.config.js -p --mode=production",
     "build:dev": "./node_modules/.bin/webpack --config webpack.config.js --mode development",
     "build:stats": "./node_modules/.bin/webpack --config webpack.config.js --mode production --profile --json > stats.json",
-    "dev": "./node_modules/.bin/webpack-dev-server --config webpack.config.js --hot",
     "analyze": "./node_modules/.bin/webpack-bundle-analyzer stats.json"
   },
   "keywords": [
@@ -32,7 +31,6 @@
     "webpack": "^4.29.0",
     "webpack-bundle-analyzer": "^3.4.1",
     "webpack-cli": "^3.2.1",
-    "webpack-dev-server": "^3.1.14",
     "webpack-git-hash": "^1.0.2"
   },
   "dependencies": {
