@@ -70,7 +70,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
   // Allow the app to autoupdate itself when running
   app.checkForUpdate = function() {
       Backbone.ajax({
-          url: app.appurl+'/js/config.json?t='+(new Date().getTime()),
+          url: app.appurl+'/assets/js/config.json?t='+(new Date().getTime()),
           success: function(config) {
               console.log('old', app.config.build, 'new', config.build)
               if (config.build != app.config.build) {

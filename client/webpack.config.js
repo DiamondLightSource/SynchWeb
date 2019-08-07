@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require("webpack");
 const GitRevisionPlugin = require('git-revision-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
@@ -160,6 +161,13 @@ module.exports = {
       filename: path.resolve(__dirname, 'index.php'),
       template: 'src/index.php',
     }),
+    // Copy static assets to the assets folder
+    // Anything matching in the from path is copied so images/file.png => assets/images/file.png
+    new CopyPlugin([
+      { context: path.resolve(__dirname, 'src/css/stylesheets'),
+        from: 'images/**',
+        to: path.resolve(__dirname, 'assets') }
+    ]),
     // Ignore all locale files of moment.js
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new VueLoaderPlugin(),
