@@ -5,6 +5,7 @@ define([
     'utils/vuewrapper',
     'moment',
     'modules/types/em/scipion/models/scipion',
+    'models/visit',
     'templates/vue/types/em/process/scipion.html',
 ], function (
     Vue,
