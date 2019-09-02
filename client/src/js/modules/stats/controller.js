@@ -62,7 +62,7 @@ define(['marionette',
         proposal: function(page) {
             app.loading()
             if (!page) page = 1
-            var pies = new Pies(null, { state: { pageSize: app.mobile() ? 5 : 12, currentPage: parseInt(page) } })
+            var pies = new Pies(null, { state: { pageSize: app.mobile() ? 5 : 15, currentPage: parseInt(page) } })
             pies.fetch({
                 success: function() {
                     app.bc.reset([bc, { title: 'Proposal' }, { title: app.prop }]),
