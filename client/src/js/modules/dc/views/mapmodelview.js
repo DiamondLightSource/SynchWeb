@@ -41,7 +41,7 @@ define(['marionette',
                 if (self.getOption('ty') == 'dimple' || self.getOption('ty') == 'mrbump') {
                     var xhr2 = self.xhrWithStatus('Downloading Map 2')
                     xhr2.onload = function() {
-                        var gunzip = new Zlib.Zlib.Gunzip(new Uint8Array(this.response))
+                        var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
                         var plain = gunzip.decompress()
                         self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4', diff_map: true, })
           
