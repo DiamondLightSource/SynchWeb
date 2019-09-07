@@ -18,5 +18,7 @@
 	"gsMajorAxisOrientation"  : true,
 
 	"maintenance_message": "This is the maintenance message",
-	"maintenance": false
+	"maintenance": false,
+
+	"ga_ident": ""
 }
