@@ -24,7 +24,7 @@ define(['marionette',
                 },
                 error: function() {
                     app.bc.reset([bc, { title: 'Error' }])
-                    app.message({ title: 'Couldnt load fault list', message: 'Couldnt load fault list please try again' })
+                    app.message({ title: 'Couldn\'t load fault list', message: 'Couldn\'t load fault list please try again' })
                 }
             })
         },
@@ -39,7 +39,7 @@ define(['marionette',
                 },
                 error: function() {
                     app.bc.reset([bc, { title: 'Error' }])
-                    app.message({ title: 'Couldnt load fault', message: 'Couldnt load the specified fault' })
+                    app.message({ title: 'Couldn\'t load fault', message: 'Couldn\'t load the specified fault' })
                 }
             })
         },

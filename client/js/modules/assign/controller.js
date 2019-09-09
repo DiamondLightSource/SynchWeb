@@ -21,7 +21,7 @@ define(['marionette',
                 },
                 error: function() {
                     app.bc.reset([bc, { title: 'Error' }])
-                    app.message({ title: 'Couldnt load visit list', message: 'Couldnt load visit list please try again' })
+                    app.message({ title: 'Couldn\'t load visit list', message: 'Couldn\'t load visit list please try again' })
                 }
             })
         },
