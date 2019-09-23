@@ -8,7 +8,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // These steps remove the need for a separate plugin to set the githash
-const gitHashLength = 7
+const gitHashLength = 8
 const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().substring(0,gitHashLength);
 
 module.exports = {
@@ -18,7 +18,7 @@ module.exports = {
   output: {
     filename: '[name]-bundle.js',
     path: path.resolve(__dirname, 'dist', gitHash),
-    publicPath: '/dist/' + gitHash + '/',
+    publicPath: path.join('/dist', gitHash, '/'),
   },
 
   optimization: {
