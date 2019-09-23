@@ -24,13 +24,16 @@
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
     "imports-loader": "^0.8.0",
+    "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.12.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
     "raw-loader": "^1.0.0",
     "sass-loader": "^7.1.0",
     "underscore-template-loader": "^1.0.0",
-    "webpack": "^4.29.0",
+    "url-loader": "^2.1.0",
+    "webpack": "^4.40.2",
     "webpack-bundle-analyzer": "^3.4.1",
-    "webpack-cli": "^3.2.1",
+    "webpack-cli": "^3.3.9",
     "webpack-git-hash": "^1.0.2"
   },
   "dependencies": {
