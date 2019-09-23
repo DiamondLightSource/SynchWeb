@@ -2,7 +2,7 @@
 // ---------------------------------------------------------
 
 #header {
-    background: $header-background url('/assets/images/diamond_gs_small.png') top center no-repeat;
+    background: $header-background url('./stylesheets/images/diamond_gs_small.png') top center no-repeat;
     // background: $header-background inline-image('diamond_gs_small.png') top center no-repeat;
     
     color: $header-color;
@@ -145,7 +145,7 @@
 
 #footer {
     margin-top: 70px;
-    background: $footer-background url('/assets/images/ispyb_gs_medium.png') center center no-repeat;
+    background: $footer-background url('./stylesheets/images/ispyb_gs_medium.png') center center no-repeat;
     // background: $footer-background inline-image('ispyb_gs_medium.png') center center no-repeat;
     height: 200px;
     background-position: 50% 85%;

@@ -1,9 +1,15 @@
 const path = require('path');
 const webpack = require("webpack");
-const GitRevisionPlugin = require('git-revision-webpack-plugin')
+const childProcess = require('child_process')
+// As of v3.0.3 GitRevisionPlugin does not work with MiniCssExtractPlugin
+// const GitRevisionPlugin = require('git-revision-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+// These steps remove the need for a separate plugin to set the githash
+const gitHashLength = 7
+const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().substring(0,gitHashLength);
 
 module.exports = {
   entry: {
@@ -11,14 +17,14 @@ module.exports = {
     },
   output: {
     filename: '[name]-bundle.js',
-    path: path.resolve(__dirname, 'dist', '[git-revision-hash]'),
-    publicPath: '/dist/[git-revision-hash]/'
+    path: path.resolve(__dirname, 'dist', gitHash),
+    publicPath: '/dist/' + gitHash + '/',
   },
 
   optimization: {
     splitChunks: {
       chunks: 'all',
-    }
+    },
   },
   resolve: {
     alias: {
@@ -133,11 +139,28 @@ module.exports = {
         use: "imports-loader?exports=>undefined,require=>false,this=>window"
       },
       {
-        test: /\.scss$/,
+        test: /\.(sa|sc|c)ss$/,
         use: [
-          "style-loader", // creates style nodes from JS strings
+          {
+            loader: MiniCssExtractPlugin.loader, // Extract the CSS into separate files
+          },
           "css-loader", // translates CSS into CommonJS
           "sass-loader" // compiles Sass to CSS, using Node Sass by default
+        ]
+      },
+      {
+        test: /\.(png|gif)$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 8192, // Anything less than 8K is inlined
+              name: '[path][name].[ext]',
+              outputPath: '../../assets',
+              publicPath: '/assets',
+              context: 'src',
+            }
+          }
         ]
       }
     ]
@@ -152,9 +175,9 @@ module.exports = {
         Highcharts: "highmaps"
     }),
     // This generates a short (8 char) git hash used for build paths
-    new GitRevisionPlugin({
-      commithashCommand: 'rev-parse --short HEAD'
-    }),
+    // new GitRevisionPlugin({
+    //   commithashCommand: 'rev-parse --short HEAD'
+    // }),
     // This builds an index.php file from the src template
     new HtmlWebpackPlugin({
       title: 'SynchWeb Webpack',
@@ -164,9 +187,9 @@ module.exports = {
     // Copy static assets to the assets folder
     // Anything matching in the from path is copied so images/file.png => assets/images/file.png
     new CopyPlugin([
-      { context: path.resolve(__dirname, 'src/css/stylesheets'),
-        from: 'images/**',
-        to: path.resolve(__dirname, 'assets') },
+      // { context: path.resolve(__dirname, 'src/css/stylesheets'),
+      //   from: 'images/**',
+      //   to: path.resolve(__dirname, 'assets') },
       { context: path.resolve(__dirname, 'src'),
         from: 'images/**',
         to: path.resolve(__dirname, 'assets') }
@@ -174,5 +197,9 @@ module.exports = {
     // Ignore all locale files of moment.js
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new VueLoaderPlugin(),
+    new MiniCssExtractPlugin({
+      filename: '[name].css',
+      chunkFilename: '[id].css',
+    }),
   ]
 }

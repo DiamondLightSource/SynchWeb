@@ -49,15 +49,15 @@
             }
             
             &.sorting_asc {
-                background: $table-header-background url('/assets/images/sort_asc.png') no-repeat right center;
+                background: $table-header-background url('./stylesheets/images/sort_asc.png') no-repeat right center;
             }
             
             &.sorting_desc {
-                background: $table-header-background url('/assets/images/sort_desc.png') no-repeat right center;
+                background: $table-header-background url('./stylesheets/images/sort_desc.png') no-repeat right center;
             }
             
             &.sorting {
-                background: $table-header-background url('/assets/images/sort_both.png') no-repeat right center;
+                background: $table-header-background url('./stylesheets/images/sort_both.png') no-repeat right center;
             }
         }
 
@@ -82,7 +82,7 @@
                     
                     &:hover {
                         padding-right: 2.5%;
-                        background: $content-search-background url('/assets/images/edit.png') no-repeat right !important;
+                        background: $content-search-background url('./stylesheets/images/edit.png') no-repeat right !important;
                         // background: $content-search-background inline-image('edit.png') no-repeat right !important;
                     }
                 }

@@ -231,7 +231,7 @@ div.form .fvalid {
     
     &:hover {
         cursor: pointer;
-        background: $content-search-background url('/assets/images/edit.png') no-repeat right;
+        background: $content-search-background url('./stylesheets/images/edit.png') no-repeat right;
         // background: $content-search-background inline-image('edit.png') no-repeat right;
         padding-right: 2.5%;
         
