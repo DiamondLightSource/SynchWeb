@@ -173,7 +173,7 @@ module.exports = {
           {
             loader: 'url-loader',
             options: {
-              limit: 8192, // Anything less than 8K is inlined
+              limit: 4096, // Anything less than this limit is inlined
               name: '[path][name].[ext]',
               outputPath: '../../assets',
               publicPath: '/assets',
