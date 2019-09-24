@@ -14,7 +14,7 @@ const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().s
 module.exports = {
   entry: {
       main: './src/index.js',
-    },
+  },
   output: {
     filename: '[name]-bundle.js',
     path: path.resolve(__dirname, 'dist', gitHash),
@@ -117,7 +117,26 @@ module.exports = {
       // Font loader - url should be relative to entry main.scss file
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
-        use: ['file-loader']
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: '../../assets/fonts', // output path is relative to main module outputPath
+            publicPath: '/assets/fonts'
+          }
+        }
+      },
+      // SVG could be images or fonts so use more explicit test here...
+      {
+        test: /font-awesome\/.+\.(svg)$/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: '../../assets/fonts',
+            publicPath: '/assets/fonts'
+          }
+        }
       },
       {
         test: /\.vue$/,

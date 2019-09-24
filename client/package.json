@@ -48,6 +48,7 @@
     "backgrid-select-all": "0.3.5",
     "flot-axislabels": "^1.0.0",
     "flot-pie": "^1.0.0",
+    "font-awesome": "^4.2.0",
     "highcharts": "^7.1.2",
     "jquery": "^1.12.4",
     "jquery-color": "^3.0.0-alpha.1",

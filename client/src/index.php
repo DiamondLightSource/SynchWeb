@@ -32,8 +32,6 @@
         
         <link rel="icon" type="image/ico" href="<?php echo $config->appurl ?>/favicon.ico" />
         
-        <link rel="stylesheet" href="<?php echo $config->appurl ?>/assets/font-awesome/css/font-awesome.min.css">
-
         <title><%= htmlWebpackPlugin.options.title %></title>
                
         <?php if ($config->ga_ident): ?>
