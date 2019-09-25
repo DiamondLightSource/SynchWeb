@@ -160,9 +160,8 @@ module.exports = {
       {
         test: /\.(sa|sc|c)ss$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader, // Extract the CSS into separate files
-          },
+          // Extract the CSS into separate files if in production
+          process.env.NODE_ENV !== 'production' ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
           "css-loader", // translates CSS into CommonJS
           "sass-loader" // compiles Sass to CSS, using Node Sass by default
         ]

@@ -31,10 +31,12 @@
     "sass-loader": "^7.1.0",
     "underscore-template-loader": "^1.0.0",
     "url-loader": "^2.1.0",
+    "vue-loader": "^15.7.1",
+    "vue-template-compiler": "^2.6.10",
+    "vue-template-loader": "^1.0.0",
     "webpack": "^4.40.2",
     "webpack-bundle-analyzer": "^3.4.1",
-    "webpack-cli": "^3.3.9",
-    "webpack-git-hash": "^1.0.2"
+    "webpack-cli": "^3.3.9"
   },
   "dependencies": {
     "@highcharts/map-collection": "^1.1.2",
@@ -63,15 +65,11 @@
     "markdown": "^0.5.0",
     "moment": "^2.24.0",
     "promise": "^8.0.3",
-    "style-loader": "^0.23.1",
     "three": "^0.83.0",
     "uglymol": "^0.5.7",
     "underscore": "1.6.0",
     "vee-validate": "^2.2.13",
     "vue": "^2.6.10",
-    "vue-loader": "^15.7.1",
-    "vue-template-compiler": "^2.6.10",
-    "vue-template-loader": "^1.0.0",
     "zlibjs": "^0.1.7"
   }
 }
