@@ -33,7 +33,6 @@
     "url-loader": "^2.1.0",
     "vue-loader": "^15.7.1",
     "vue-template-compiler": "^2.6.10",
-    "vue-template-loader": "^1.0.0",
     "webpack": "^4.40.2",
     "webpack-bundle-analyzer": "^3.4.1",
     "webpack-cli": "^3.3.9"
