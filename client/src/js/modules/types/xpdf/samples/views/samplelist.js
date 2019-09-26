@@ -6,12 +6,18 @@ define([
     'marionette',
     'backgrid',
     'views/table',
+    'views/dialog',
+    'modules/types/xpdf/samples/views/simplesampleaddpop',
+    'modules/types/xpdf/samples/views/advancedsampleaddpop',
     'utils/table',
     'modules/types/xpdf/utils/phasecompositor',
     'templates/types/xpdf/samples/samplelist.html'], function(
         Marionette,
         Backgrid,
         TableView,
+        DialogView,
+        AddSimpleSample,
+        AddAdvancedSample,
         table,
         phaseCompositor,
         template) {
@@ -39,10 +45,14 @@ define([
         }
     })
 
-
+    
     return Marionette.LayoutView.extend({
         template: template,
         className: 'content',
+        events: {
+            'click a.addSimpleSample': 'addSimpleSample',
+            'click a.addAdvancedSample': 'addAdvancedSample',
+        },
 
         row: ClickableRow,
 
@@ -78,6 +88,33 @@ define([
                     emptyText: 'No samples found'
                 }
             }))
+        },
+
+        addSimpleSample: function(e) {
+            e.preventDefault()
+
+            var addSimpleSampleView = new AddSimpleSample({ dialog: true })
+            this.listenTo(app, 'sample:reloadSampleTable', this.refreshSampleTable)
+            app.dialog.show(new DialogView({ title: 'Add New Simple Sample', className: 'content', view: addSimpleSampleView, autoSize: true }))
+        },
+
+        refreshSampleTable: function() {
+            this.collection.fetch()
+        },
+
+        addAdvancedSample: function(e) {
+            e.preventDefault()
+
+            var addAdvancedSampleView = new AddAdvancedSample({ dialog: true })
+            this.listenTo(addAdvancedSampleView, 'phase:added', this.doAddNewSample)
+            app.dialog.show(new DialogView({ title: 'Add New Advanced Sample', className: 'content', view: addAdvancedSampleView, autoSize: true }))
+        },
+
+        doAddNewAdvancedSample: function(phase) {
+            /*this.allphases.add(phase)
+            var np = phase.clone()
+            np.set('ABUNDANCE', Math.max(0, 1-this.collection.totalAbundance()).toFixed(3))
+            this.collection.add(np)*/
         },
         
     })

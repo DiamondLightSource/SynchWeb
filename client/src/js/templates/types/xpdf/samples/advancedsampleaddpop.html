@@ -1,0 +1,76 @@
+<div>
+    <h1>Advanced Sample Wizard</h1>
+    <form method="post" id="add_protein">
+
+        <div class="form">
+
+            <ul>
+
+                <li>
+                    <label>Name
+                    <span class="small">Name of the sample</span></label>
+                    <span class="name"><input type="text" name="NAME" /></span>
+                </li>
+
+                <div id="table">
+                    <vue-table></vue-table>
+                </div>
+
+                <li>
+                    <label>Calculated Composition
+                    <span class="small">Chemical formula of the material</span></label>
+                    <span class="composition"><input type="text" name="SEQUENCE" /></span>              
+                </li>
+
+                <div style="text-align: right; border:1px solid">
+                    <ul>
+                        <li>
+                            <span>
+                                <select style="width: 500px">
+                                    <option>Shape</option>
+                                </select>
+                            </span>
+                        </li>
+                        <li>
+                            <label style="text-align: right; margin-right:0px">Dimension 1</label>
+                            <span><input type="text" name="DENSITY" /></span>
+                        </li>
+                        <li>
+                            <label>Dimension 2</label>
+                            <span><input type="text" name="DENSITY" /></span>
+                        </li>
+                        <li>
+                            <label>Dimension 3</label>
+                            <span><input type="text" name="DENSITY" /></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <li>
+                    <span>
+                        <select>
+                            <option>Container</option>
+                        </select>
+                    </span>
+                </li>
+
+                <li>
+                    <span>
+                        <select>
+                            <option>ERA*</option>
+                        </select>
+                    </span>
+                </li>
+
+            </ul>
+
+            
+            
+            <input class="acronym" type="hidden" name="ACRONYM" />
+            <button class="button" name="cancel"><i class="fa"></i>Cancel</button>
+            <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i>Add</button>
+
+        </div>
+
+    </form>
+</div>

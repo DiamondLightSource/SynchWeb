@@ -378,13 +378,10 @@ class Page
                 }
                 
                 $parsed['collection'] = $pa;
-                
-
             } else {
                 foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v) {
                     if (!array_key_exists($k, $parsed)) {
                         if (array_key_exists($k, $request)) {
-                            
                             if (is_array($request[$k])) {
                                 $tmp = array();
                                 foreach ($request[$k] as $val) {
@@ -394,10 +391,53 @@ class Page
                                 }
                                 $parsed[$k] = $tmp;
                                 
+                            } elseif ($request[$k] instanceof stdClass) {
+                                // Handles nested backbone models
+                                foreach($request[$k] as $key => $value) {
+                                    if(is_array($value)) {
+                                        $tmp = array();
+                                        foreach ($value as $value2) {
+                                            if (preg_match('/^'.$v.'$/m', $value2)) {
+                                                array_push($tmp, $v == '.*' ? $purifier->purify($value2) : $value2);
+                                            }
+                                        }
+                                        $parsed[$k] = $tmp;
+                                    } else {
+                                        if(preg_match('/^'.$v.'$/m', $value)) {
+                                            $request[$k]->$key = $v == '.*' ? $purifier->purify($value) : $value;
+                                        }
+                                    }
+                                }
+                                $parsed[$k] = $request[$k];
+
+                            } elseif($k == 'json') {
+                                // Handles nested backbone models when submitted with files
+                                // Necessary due to multi content-type form data requiring models to be submitted together as a single JSON string
+                                $json = json_decode($request[$k]);
+                                
+                                foreach($json as $label => $object){
+                                    if($object instanceof stdClass){
+                                        foreach($object as $name => $item){
+                                            if(is_array($item)) {
+                                                $tmp = array();
+                                                foreach ($item as $element) {
+                                                    if (preg_match('/^'.$v.'$/m', $element)) {
+                                                        array_push($tmp, $v == '.*' ? $purifier->purify($element) : $element);
+                                                    }
+                                                }
+                                                $object->$name = $tmp;
+                                            } else {
+                                                if(preg_match('/^'.$v.'$/m', $item)) {
+                                                    $object->$name = $v == '.*' ? $purifier->purify($item) : $item;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    $parsed[$label] = $object;
+                                }
                             } else {
                                 if (preg_match('/^'.$v.'$/m', $request[$k])) {
                                     $parsed[$k] = $v == '.*' ? $purifier->purify($request[$k]) : $request[$k];
-                                
                                 }
                             }
                         }
@@ -409,7 +449,6 @@ class Page
             // if ($this->user) {
             //     if (array_key_exists('ispyb_prop_'.$this->user->login, $_COOKIE) && !array_key_exists('prop', $parsed)) $parsed['prop'] = $_COOKIE['ispyb_prop_'.$this->user->login];
             // }
-            
             $this->args = $parsed;
         }
         
