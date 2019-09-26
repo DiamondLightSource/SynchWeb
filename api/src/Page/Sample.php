@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
+use SynchWeb\ShippingShared;
 
 class Sample extends Page
 {
@@ -254,7 +255,8 @@ class Sample extends Page
             $visit = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS VISIT FROM BLSession b INNER JOIN Proposal p ON p.proposalId = b.proposalId WHERE b.proposalId = :1", array($this->proposalid));
             $this->args['visit']=$visit[0]['VISIT'];
 
-            $shippingInfo = Shipment::_get_default_dewar_nw($this->proposalid, $visit[0]['VISIT']);
+            $shipping = new ShippingShared();
+            $shippingInfo = $shipping->get_default_dewar($this->proposalid, $visit[0]['VISIT']);
 
             $ids['DEWARID'] = $shippingInfo['DEWARID'];
             $ids['SHIPPINGID'] = $shippingInfo['SHIPPINGID'];
