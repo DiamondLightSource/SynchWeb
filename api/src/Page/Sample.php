@@ -1886,13 +1886,5 @@ class Sample extends Page
 
             $this->_output(new \stdClass);
         }
-<<<<<<< HEAD:api/src/pages/Sample.php
 }
-=======
 
-
-        
-    }
-
-?>
->>>>>>> local/master:api/includes/pages/class.sample.php

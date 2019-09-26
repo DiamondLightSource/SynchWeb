@@ -1886,7 +1886,7 @@ class Shipment extends Page
         }
         
         // Necessary for now because SynchWeb isn't designed to allow microservices to call each other e.g. sample call shipment :(
-        function _get_default_dewar_nw($proposal, $visit) {
+        public static function _get_default_dewar_nw($proposal, $visit) {
             if($visit == null or $visit == '') $this->error('No visit specified');
             if($proposal == null or $proposal == '') $this->error('No visit specified');
             
