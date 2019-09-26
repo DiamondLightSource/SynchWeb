@@ -1,4 +1,4 @@
-define(['backbone', 'utils/kvcollection'], function(PageableCollection, KVCollection) {
+define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
 
     var capillaries = [
         {

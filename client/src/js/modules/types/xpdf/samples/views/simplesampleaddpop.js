@@ -10,7 +10,7 @@ define([
     'models/multimodelfilewrapper',
     'modules/types/xpdf/utils/phasecompositor',
     'modules/types/xpdf/collections/capillaries',
-    'templates/types/xpdf/samples/simplesampleaddpop.html'
+    'templates/vue/types/xpdf/samples/simplesampleaddpop.html'
     ], function(
         Vue,
         VueWrapper,
