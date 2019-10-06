@@ -3,15 +3,8 @@
     class Proposal extends Page {
 
 
-        public static $arg_list = array(//'s' => '[\w\s-]+',
-                              // 'per_page' => '\d+',
-                              // 'page' => '\d+',
-                              // 'sort_by' => '\w+',
-                              // 'order' => '\w+',
-
+        public static $arg_list = array(
                               'prop' => '\w+\d+',
-                              // 'array' => '\d',
-                              // 'term' => '\w+',
                               'value' => '.*',
                               'visit' => '\w+\d+-\d+',
                               'all' => '\d',
@@ -25,7 +18,6 @@
                               'prev' => '\d',
                               'started' => '\d',
         					  'scheduled' => '\d',
-                              // 'proposal' => '\w+\d+',
                               'current' => '\d',
 
                               'COMMENTS' => '(\w|\s|-)+',
@@ -39,6 +31,32 @@
                               'SHIPPINGID' => '\d+',
                               'LABCONTACTID' => '\d+',
                               'DATACOLLECTIONID' => '\d+',
+
+                              // proposal
+                              'PROPOSALCODE' => '\w+',
+                              'PROPOSALNUMBER' => '\d+',
+                              'TITLE' => '(\w|\s|\-|\(|\))+',
+                              'PERSONID' => '\d+',
+                              'STATE' => '\w+',
+                              'EXTERNALID' => '\w+',
+
+                              // visit
+                              'PROPOSALID' => '\d+',
+                              'STARTDATE' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
+                              'ENDDATE' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
+                              'BEAMLINENAME' => '[\w-]+',
+                              'BEAMLINEOPERATOR' => '(\w|\s|-)+',
+                              'SCHEDULED' => '\d',
+                              'ARCHIVED' => '\d',
+                              'SESSIONTYPE' => '\w+',
+                              'BEAMLINESETUPID' => '\d+',
+                              'BEAMCALENDARID' => '\d+',
+
+                              // visit has person
+                              'SHPKEY' => '\d+\-\d+',
+                              'SESSIONID' => '\d+',
+                              'ROLE' => '([\w\s-])+',
+                              'REMOTE' => '\d',
                                );
         
 
@@ -52,7 +70,10 @@
 
                                         array('/visits/users', 'get', '_get_visit_users'),
                                         array('/visits/users', 'post', '_add_visit_user'),
-                                        array('/visits/users', 'delete', '_remove_visit_user'),
+                                        array('/visits/users/:SHPKEY', 'patch', '_update_visit_user'),
+                                        array('/visits/users/:SHPKEY', 'delete', '_remove_visit_user'),
+
+                                        array('/calendar', 'get', '_get_beam_calendar'),
 
                                         array('/bls/:ty', 'get', '_get_beamlines'),
                                         array('/type', 'get', '_get_types'),
@@ -152,9 +173,10 @@
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid 
+            $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname, pe.personid, p.state, CONCAT(p.proposalcode,p.proposalnumber) as prop
                     FROM proposal p 
                     LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid 
+                    LEFT OUTER JOIN person pe ON pe.personid = p.personid
                     $where 
                     GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order", $args);
             
@@ -205,14 +227,38 @@
         # ------------------------------------------------------------------------
         # Add a proposal
         function _add_proposal() {
-            if (!$this->user->can('manage_proposals')) $this->_error('No access');
+            if (!$this->user->can('manage_proposal')) $this->_error('No access');
+
+            if (!$this->has_arg('PROPOSALCODE')) $this->_error('No proposal code specified');
+            if (!$this->has_arg('PROPOSALNUMBER')) $this->_error('No proposalnumber specified');
+            if (!$this->has_arg('TITLE')) $this->_error('No title specified');
+            if (!$this->has_arg('PERSONID')) $this->_error('No PI specified');
+        
+            $this->db->pq("INSERT INTO proposal (personid, proposalcode, proposalnumber, title, state) 
+                VALUES (:1, :2, :3, :4, 'Open')", 
+                array($this->arg('PERSONID'), $this->arg('PROPOSALCODE'), $this->arg('PROPOSALNUMBER'), $this->arg('TITLE')));
+
+            $this->_output(array('PROPOSALID' => $this->db->id()));
         }
 
 
         # ------------------------------------------------------------------------
         # Update a proposal
         function _update_proposal() {
-            if (!$this->user->can('manage_proposals')) $this->_error('No access');
+            if (!$this->user->can('manage_proposal')) $this->_error('No access');
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $prop = $this->db->pq("SELECT p.proposalid FROM proposal p
+                WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
+            
+            if (!sizeof($prop)) $this->_error('No such proposal');
+            
+            foreach (array('PROPOSALCODE', 'PROPOSALNUMBER', 'TITLE', 'PERSONID', 'STATE', 'EXTERNALID') as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE proposal SET $f=:1 WHERE proposalid=:2", array($this->arg($f), $prop[0]['PROPOSALID']));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
         }
     
 
@@ -331,13 +377,19 @@
             }
             
             
-            $rows = $this->db->paginate("SELECT case when SYSDATE between s.startdate and s.enddate then 1 else 0 end as active, case when SYSDATE between s.startdate-0.4 and s.enddate+0.4 then 1 else 0 end as cams, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as st, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as en, TO_CHAR(s.startdate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as stiso, TO_CHAR(s.enddate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as eniso,  s.sessionid, s.visit_number as vis, s.beamlinename as bl, s.beamlineoperator as lc, s.comments, s.scheduled, st.typename as sessiontype/*, count(dc.datacollectionid) as dcount*/ 
+            $rows = $this->db->paginate("SELECT case when SYSDATE between s.startdate and s.enddate then 1 else 0 end as active, case when SYSDATE between s.startdate-0.4 and s.enddate+0.4 then 1 else 0 end as cams, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as st, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as en, TO_CHAR(s.startdate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as stiso, TO_CHAR(s.enddate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as eniso,  s.sessionid, s.visit_number as vis, s.beamlinename as bl, s.beamlineoperator as lc, s.comments, s.scheduled, st.typename as sessiontype/*, count(dc.datacollectionid) as dcount*/
+                ,TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as startdate, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as enddate, s.beamlinename, s.beamlineoperator, s.archived, bls.setupdate as beamlinesetup, s.beamlinesetupid, bc.run as beamcalendar, s.beamcalendarid, CONCAT(p.proposalcode, p.proposalnumber) as proposal
+                    , count(shp.personid) as persons
                     FROM blsession s 
                     INNER JOIN proposal p ON p.proposalid = s.proposalid 
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid
+                    LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid
+                    LEFT OUTER JOIN beamlinesetup bls on bls.beamlinesetupid = s.beamlinesetupid
+                    LEFT OUTER JOIN beamcalendar bc ON bc.beamcalendarid = s.beamcalendarid
                     /*LEFT OUTER JOIN datacollection dc ON s.sessionid = dc.sessionid*/ 
                     $where 
                     /*GROUP BY TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY'),TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY'), s.sessionid, s.visit_number,s.beamlinename,s.beamlineoperator,s.comments,s.startdate*/ 
+                    GROUP BY s.sessionid
                     ORDER BY $order", $args);
             
             $ids = array();
@@ -426,15 +478,34 @@
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            $vis = $this->db->pq("SELECT s.sessionid from blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid 
+            $vis = $this->db->pq("SELECT s.sessionid, st.sessiontypeid from blsession s 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid 
+                LEFT OUTER JOIN sessiontype st on st.sessionid = s.sessionid
                 WHERE p.proposalid = :1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
             
             if (!sizeof($vis)) $this->_error('No such visit');
+            $vis = $vis[0];
             
-            foreach (array('COMMENTS') as $f) {
+            $fields = array('COMMENTS');
+            if ($this->user->can('manage_visits')) {
+                $fields = array_merge($fields, array('STARTDATE', 'ENDDATE', 'BEAMLINENAME', 'BEAMLINEOPERATOR', 'SCHEDULED', 'ARCHIVED', 'BEAMLINESETUPID', 'BEAMCALENDARID'));
+            }
+            foreach ($fields as $f) {
+                $fl = in_array($f, array('STARTTIME', 'ENDTIME')) ? "TO_DATE(:1, 'DD-MM-YYYY HH24:MI')" : ':1';
                 if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE blsession set $f=:1 where sessionid=:2", array($this->arg($f), $vis[0]['SESSIONID']));
+                    $this->db->pq("UPDATE blsession set $f=$fl where sessionid=:2", array($this->arg($f), $vis['SESSIONID']));
                     $this->_output(array($f => $this->arg($f)));
+                }
+            }
+
+            if ($this->user->can('manage_visits')) {
+                if ($this->has_arg('SESSIONTYPE')) {
+                    if ($vis['SESSIONTYPEID']) {
+                        $this->db->pq("UPDATE blsession set $f=:1 where sessionid=:2", array($this->arg($f), $vis['SESSIONID']));
+                    } else {
+                        $this->db->pq("INSERT INTO sessiontype (sessionid, typename) VALUES (:1, :2)", array($vis['SESSIONID'], $this->arg('SESSIONTYPE')));
+                    }
+                    $this->_output(array('SESSIONTYPE' => $this->arg('SESSIONTYPE')));
                 }
             }
         }
@@ -444,22 +515,142 @@
         # Add visit
         function _add_visit() {
             if (!$this->user->can('manage_visits')) $this->_error('No access');
+
+            if (!$this->has_arg('PROPOSALID')) $this->_error('No proposal specified');
+            if (!$this->has_arg('STARTDATE')) $this->_error('No start date specified');
+            if (!$this->has_arg('ENDDATE')) $this->_error('No end date specified');
+            if (!$this->has_arg('BEAMLINENAME')) $this->_error('No beamline specified');
+            if (!$this->has_arg('BEAMLINEOPERATOR')) $this->_error('No beamline operator specified');
+
+            $sch = $this->has_arg('SCHEDULED') ? $this->arg('SCHEDULED') : 1;
+            $arc = $this->has_arg('ARCHIVED') ? $this->arg('ARCHIVED') : 0;
+            $extid = $this->has_arg('EXTERNALID') ? $this->arg('EXTERNALID') : null;
+            $blsid = $this->has_arg('BEAMLINESETUPID') ? $this->arg('BEAMLINESETUPID') : null;
+            $calid = $this->has_arg('BEAMCALENDARID') ? $this->arg('BEAMCALENDARID') : null;
+
+            $max = $this->db->pq("SELECT MAX(visit_number) as max_visit FROM blsession WHERE proposalid=:1", array($this->arg('PROPOSALID')));
+            $vis = $max[0]['MAX_VISIT'] + 1;
+
+            $this->db->pq("INSERT INTO blsession (proposalid, startdate, enddate, beamlinename, beamlineoperator, scheduled, visit_number, externalid, archived, beamlinesetupid, beamcalendarid) 
+                VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY HH24:MI'), TO_DATE(:3, 'DD-MM-YYYY HH24:MI'), :4, :5, :6, :7, :8, :9, :10, :11)", 
+                array($this->arg('PROPOSALID'), $this->arg('STARTDATE'), $this->arg('ENDDATE'), $this->arg('BEAMLINENAME'), $this->arg('BEAMLINEOPERATOR'), $sch, $vis, $extid, $arc, $blsid, $calid));
+
+            $id = $this->db->id();
+
+            $visit = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
+                FROM blsession s
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE s.sessionid = :1", array($id));
+
+            $this->_output(array(
+                'BLSESSIONID' => $id,
+                'VISIT' => $visit[0]['VISIT'],
+            ));
         }
-
-
-
-        # ------------------------------------------------------------------------
-        # Get users on a visit
-        function _get_visit_users() {
-            if (!$this->user->can('manage_vusers')) $this->_error('No access');
-        }
-
 
 
         # ------------------------------------------------------------------------
         # Add user to a visit
         function _add_visit_user() {
             if (!$this->user->can('manage_vusers')) $this->_error('No access');
+            if (!$this->has_arg('PERSONID')) $this->_error('No person specified');
+            if (!$this->has_arg('SESSIONID')) $this->_error('No visit specified');
+
+            $user = $this->db->pq("SELECT personid FROM person where personid=:1", array($this->arg('PERSONID')));
+            if (!sizeof($user)) $this->_error('The specified person doesnt exist');
+
+            $visit = $this->db->pq("SELECT sessionid FROM blsession WHERE sessionid=:1", array($this->arg('SESSIONID')));
+            if (!sizeof($user)) $this->_error('The specified visit doesnt exist');
+
+            $chk = $this->db->pq("SELECT shp.role
+                FROM session_has_person shp 
+                WHERE sessionid=:1 and personid=:2", array($this->arg('SESSIONID'), $this->arg('PERSONID')));
+
+            if (sizeof($chk)) {
+                $this->_error('That user is already registered on the specified visit');
+            }
+
+            $role = $this->has_arg("ROLE") ? $this->arg("ROLE") : 'Team Member';
+            $remote = $this->has_arg("REMOTE") ? $this->arg("REMOTE") : 0;
+
+            $this->db->pq("INSERT INTO session_has_person (sessionid, personid, role, remote) 
+                VALUES (:1, :2, :3, :4)", array($this->arg("SESSIONID"), $this->arg("PERSONID"), $role, $remote));
+
+            $this->_output(array(
+                'SHPKEY' => $this->arg("SESSIONID")+':'+$this->arg("PERSONID"),
+            ));
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Get visit users
+        #  duplication from class.users.php :(
+        function _get_visit_users() {
+            if (!$this->user->can('manage_vusers')) $this->_error('No access');
+
+            $where = '1=1';
+            $args = array();
+
+            if ($this->has_arg('SHPKEY')) {
+                list($sessionid, $personid) = split(':', $this->arg('SHPKEY'));
+                $where .= " shp.sessionid=:1 AND shp.personid=:2";
+                array_push($args, $sessionid);
+                array_push($args, $personid);
+            }
+
+            if ($this->has_arg('visit')) {
+                $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1";
+                array_push($args, $this->arg('visit'));
+            }
+
+            $tot = $this->db->pq("SELECT count(shp.personid) as tot
+              FROM session_has_person shp
+              INNER JOIN blsession s ON s.sessionid = shp.sessionid
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $this->_get_start_end($args);
+
+            $order = $this->_get_order(
+                array('PERSONID' => 'shp.personid', 'SESSIONID' => 'shp.sessionid'),
+                'shp.personid DESC'
+            );
+
+            $rows = $this->db->paginate("SELECT shp.personid, shp.sessionid, shp.role, shp.remote, CONCAT(shp.sessionid, '-', pe.personid) as shpkey, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname
+              FROM session_has_person shp
+              INNER JOIN person pe ON pe.personid = shp.personid
+              INNER JOIN blsession s ON s.sessionid = shp.sessionid
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              WHERE $where
+            ", $args);
+
+            if ($this->has_arg('SHPKEY')) {
+                if (sizeof($rows)) $this->_output($rows[0]);
+                else $this->_error('No such person on that session');
+
+            } else $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
+        }
+
+        # ------------------------------------------------------------------------
+        # Update a user on a visit
+        function _update_visit_user() {
+            if (!$this->user->can('manage_vusers')) $this->_error('No access');
+            list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
+
+            $chk = $this->db->pq("SELECT personid, sessionid FROM session_has_person WHERE sessionid=:1 AND personid=:2", array($sessionid, $personid));
+            if (!sizeof($chk)) $this->_error('The specified user is not registered on that visit');
+
+            $fields = array('ROLE', 'REMOTE');
+            foreach ($fields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE session_has_person set $f=:1 where sessionid=:2 and personid=:3", array($this->arg($f), $sessionid, $personid));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
         }
 
 
@@ -467,9 +658,68 @@
         # Remove user from a visit
         function _remove_visit_user() {
             if (!$this->user->can('manage_vusers')) $this->_error('No access');
+            list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
+
+            $chk = $this->db->pq("SELECT personid FROM session_has_person WHERE sessionid=:1 AND personid=:2", array($sessionid, $personid));
+            if (!sizeof($chk)) $this->_error('The specified user is not registered on that visit');
+
+            $this->db->pq("DELETE FROM session_has_person 
+                WHERE sessionid=:1 and personid=:2", array($sessionid, $personid));
+
+            $this->_output(1);
         }
 
 
+        # ------------------------------------------------------------------------
+        # Get beam calendar
+        function _get_beam_calendar() {
+            $where = '1=1';
+            $args = array();
+
+            if ($this->has_arg('BEAMCALENDARID')) {
+                $where .= ' AND bc.beamcalendarid = :'.(sizeof($args)+1);
+                array_push($args, $this->arg('BEAMCALENDARID'));
+            }
+
+            if ($this->has_arg('STARTDATE')) {
+                $where .= ' AND bc.startdate >= TO_DATE(:'.(sizeof($args)+1)+')';
+                array_push($args, $this->arg('STARTDATE'));
+            }
+
+            if ($this->has_arg('ENDDATE')) {
+                $where .= ' AND bc.enddate <= TO_DATE(:'.(sizeof($args)+1)+')';
+                array_push($args, $this->arg('ENDDATE'));
+            }
+
+            $tot = $this->db->pq("SELECT count(bc.beamcalendarid) as tot
+              FROM beamcalendar bc
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $this->_get_start_end($args);
+
+            $order = $this->_get_order(
+                array('BEAMCALENDARID' => 'bc.beamcalendarid'),
+                'bls.beamlinesetupid DESC'
+            );
+
+
+            $rows = $this->db->paginate("SELECT bc.beamcalendarid, bc.run, TO_CHAR(bc.startdate, 'DD-MM-YYYY') as startdate, TO_CHAR(bc.enddate, 'DD-MM-YYYY') as enddate, count(s.sessionid) as sessions
+              FROM beamcalendar bc
+              LEFT OUTER JOIN blsession s ON s.beamcalendarid = bc.beamcalendarid
+              WHERE $where
+              GROUP BY bc.beamcalendarid
+            ", $args);
+
+            if ($this->has_arg('BEAMCALENDARID')) {
+                if (sizeof($rows)) $this->_output($rows[0]);
+                else $this->_error('No such beam calendar');
+
+            } else $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
+        }
 
         # ------------------------------------------------------------------------
         # Lookup visit from container, dewar, sample, etc, ...
