@@ -27,10 +27,18 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
     linksTemplate: visitlinks,
     linksCell: LinksCell,
     clickable: true,
+    clickableRow: ClickableRow,
+    showTitle: true,
       
     className: 'content',
-    template: '<div><h1>Visit List</h1><p class="help">This page lists the visits available to the currently selected proposal</p><div class="wrapper"></div></div>',
+    template: _.template('<% if (showTitle) { %><h1>Visit List</h1><% } %><p class="help">This page lists the visits available to the currently selected proposal</p><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper' },
+
+    templateHelpers: function() {
+      return {
+          showTitle: this.getOption('showTitle')
+      }
+    },
 
     initialize: function(options) {
       var columns = [{ name: 'ST', label: 'Start', cell: 'string', editable: false },
@@ -51,7 +59,7 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
       }
         
       var bgopts = { emptyText: 'No visits found' }
-      if (this.getOption('clickable')) bgopts.row = ClickableRow
+      if (this.getOption('clickable')) bgopts.row = this.getOption('clickableRow')
 
       this.listenTo(this.collection, 'change:COMMENTS', this.saveComment, this)
 
