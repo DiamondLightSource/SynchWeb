@@ -1,12 +1,38 @@
-define(['backbone'], function(Backbone) {
+define(['backbone', 'backbone-validation'], function(Backbone) {
 
-    return Backbone.Model.extend({
+    var Proposal = Backbone.Model.extend({
         idAttribute: 'PROPOSAL',
         urlRoot: '/proposal',
-        /*urlRoot: '/proposal/prop/',
-        url: function() {
-            return this.urlRoot + (this.get('PROPOSAL') ? ('?proposal='+this.get('PROPOSAL')) : '')
-        }*/
+
+        validation: {
+            PROPOSALCODE: {
+                pattern: 'word',
+                required: true,
+            },
+            PROPOSALNUMBER: {
+                pattern: 'number',
+                required: true,
+            },
+            TITLE: {
+                pattern: 'wwsdash',
+                required: true,
+            },
+            PERSONID: {
+                pattern: 'number',
+                required: true,
+            },
+            STATE: {
+                pattern: 'word',
+                required: false,
+            },
+            EXTERNALID: {
+                pattern: 'wwdash',
+                required: false,
+            },
+        }
     })
+
+    _.extend(Proposal.prototype, Backbone.Validation.mixin)
+    return Proposal
        
 })
