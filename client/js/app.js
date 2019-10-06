@@ -177,10 +177,10 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
     }
 
     if (xhr.status == 401) app.login(xhr)
-    if (xhr.status == 500) app.alert({ message: 'An application error has occured <pre>'+msg+'</pre>', persist: 'e500' })
+    if (xhr.status == 500) app.alert({ message: 'An application error has occurred <pre>'+msg+'</pre>', persist: 'e500' })
     if (xhr.status == 503) {
-        if (json) app.alert({ message: 'A database error has occured <pre>'+msg+'</pre>', persist: 'e503' })
-        else  app.alert({ message: 'A server error has occured <pre>'+msg+'</pre>', persist: 'e503' })
+        if (json) app.alert({ message: 'A database error has occurred <pre>'+msg+'</pre>', persist: 'e503' })
+        else  app.alert({ message: 'A server error has occurred <pre>'+msg+'</pre>', persist: 'e503' })
     }
   }, 300))
     
