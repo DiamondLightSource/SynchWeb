@@ -72,7 +72,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           success: function(config) {
               console.log('old', app.config.build, 'new', config.build)
               if (config.build != app.config.build) {
-                  app.alert({ message: 'An update to SynchWeb is available. This page will automatically refresh in 5 secods' })
+                  app.alert({ message: 'An update to SynchWeb is available. This page will automatically refresh in 5 seconds' })
                   setTimeout(function() {
                       window.location.reload()
                   }, 5000)
