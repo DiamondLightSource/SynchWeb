@@ -320,7 +320,7 @@ class FormulatrixUploader:
             LIMIT 1""", [barcode])
 
         if not len(container):
-            logging.getLogger().error('Couldnt find container in database for barcode %s' % str(barcode))
+            logging.getLogger().error('Couldn\'t find container in database for barcode %s' % str(barcode))
             return None
 
         logging.getLogger().debug(str(container[0]['visit']))
@@ -340,7 +340,7 @@ class FormulatrixUploader:
             LIMIT 1""", [inspectionid])
 
         if not len(container):
-            logging.getLogger().error('Couldnt find container for inspectionid %s' % str(inspectionid))
+            logging.getLogger().error('Couldn\'t find container for inspectionid %s' % str(inspectionid))
             return
 
         logging.getLogger().debug(str(container))
@@ -381,7 +381,7 @@ class FormulatrixUploader:
             LIMIT 1""", [position, containerid])
 
         if not len(sample):
-            logging.getLogger().error('Couldnt find a blsample for containerid: %s, position: %s', str(containerid), str(position))
+            logging.getLogger().error('Couldn\'t find a blsample for containerid: %s, position: %s', str(containerid), str(position))
             return
 
         logging.getLogger().debug(str(sample[0]))

@@ -62,7 +62,7 @@
         function _get_component() {
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             
-            if (!file_exists('tables/motors.json')) $this->_error('Couldnt find motors file');
+            if (!file_exists('tables/motors.json')) $this->_error('Couldn\'t find motors file');
             $json = preg_replace("/(\s\s+|\n)/", '', file_get_contents('tables/motors.json'));
             $pages = json_decode($json, true);
             
@@ -117,7 +117,7 @@
         
         
         function _epics_pages() {
-            if (!file_exists('tables/motors.json')) $this->_error('Couldnt find motors file');
+            if (!file_exists('tables/motors.json')) $this->_error('Couldn\'t find motors file');
             $json = preg_replace("/(\s\s+|\n)/", '', file_get_contents('tables/motors.json'));
             $this->_output(array_keys(json_decode($json, true)));
         }

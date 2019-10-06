@@ -1931,7 +1931,7 @@
                 }
             }
             
-            if ($did == -1) $this->_error('Couldnt create default dewar');
+            if ($did == -1) $this->_error('Couldn\'t create default dewar');
             $this->_output($did);
         }
 
