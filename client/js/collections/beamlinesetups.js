@@ -1,10 +1,13 @@
-define(['backbone.paginator', 'models/beamlinesetup'], function(PageableCollection, BeamlineSetup) {
+define(['backbone.paginator', 'models/beamlinesetup', 'utils/kvcollection'], function(PageableCollection, BeamlineSetup, KVCollection) {
        
-    return PageableCollection.extend({
+    return PageableCollection.extend(_.extend({}, KVCollection, {
         model: BeamlineSetup,
         mode: 'server',
         url: '/exp/setup',
-                                          
+                
+        keyAttribute: 'SETUPDATE',
+        valueAttribute: 'BEAMLINESETUPID',
+
         state: {
             pageSize: 15,
         },      
@@ -16,6 +19,6 @@ define(['backbone.paginator', 'models/beamlinesetup'], function(PageableCollecti
         parseRecords: function(r, options) {
             return r.data
         },                      
-    })
+    }))
 
 })
