@@ -292,6 +292,8 @@
 
                             // Xray Centring
                             'XrayCentringResult',
+
+                            'BeamCalendar',
                 );
 
             foreach ($tables as $table) {
