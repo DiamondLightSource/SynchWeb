@@ -1,0 +1,44 @@
+    <h1>View Proposal</h1>
+
+    <form method="post">
+
+    <div class="form">
+        <ul>
+
+            <li>
+                <span class="label">Code</span>
+                <span class="PROPOSALCODE"><%-PROPOSALCODE%></span>
+            </li>
+
+            <li>
+                <span class="label">Number</span>
+                <span class="PROPOSALNUMBER"><%-PROPOSALNUMBER%></span>
+            </li>
+
+            <li>
+                <span class="label">Title</span>
+                <span class="TITLE"><%-TITLE%></span>
+            </li>
+
+            <li>
+                <span class="label">Primary Investigator</span>
+                <span class="PERSONID"><%-FULLNAME%></span>
+            </li>
+
+            <li>
+                <span class="label">State</span>
+                <span class="STATE"><%-STATE%></span>
+            </li>
+
+        </ul>
+    </div>
+
+    <h2>Visits</h2>
+    <div class="ra">
+        <a href="admin/proposals/visit/add/<%-PROPOSAL%>" class="button" title="Add a visit to this proposal">
+            <i class="fa fa-plus"></i> Add Visit
+        </a>
+    </div>
+    <div class="rvisits"></div>
+
+    </form>
