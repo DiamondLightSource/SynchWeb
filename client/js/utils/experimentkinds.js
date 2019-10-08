@@ -17,6 +17,7 @@ define([], function() {
             'native': 'OSC',
             'phasing': 'SAD',
             'ligand': 'Ligand binding',
+            'stepped': 'Stepped transmission',
         }
         
     }
