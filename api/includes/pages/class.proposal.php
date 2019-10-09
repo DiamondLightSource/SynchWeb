@@ -346,8 +346,8 @@
             
             
             if (!$this->staff) {
-                $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid ".$where;
-                $where .= " AND shp.personid=:".(sizeof($args)+1);
+                $where = " INNER JOIN session_has_person shp_not_staff ON shp_not_staff.sessionid = s.sessionid ".$where;
+                $where .= " AND shp_not_staff.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
             }
             
@@ -375,23 +375,45 @@
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-            
-            
-            $rows = $this->db->paginate("SELECT case when SYSDATE between s.startdate and s.enddate then 1 else 0 end as active, case when SYSDATE between s.startdate-0.4 and s.enddate+0.4 then 1 else 0 end as cams, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as st, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as en, TO_CHAR(s.startdate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as stiso, TO_CHAR(s.enddate, 'YYYY-MM-DD\"T\"HH24:MI:SS') as eniso,  s.sessionid, s.visit_number as vis, s.beamlinename as bl, s.beamlineoperator as lc, s.comments, s.scheduled, st.typename as sessiontype/*, count(dc.datacollectionid) as dcount*/
-                ,TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY') as startdate, TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY') as enddate, s.beamlinename, s.beamlineoperator, s.archived, bls.setupdate as beamlinesetup, s.beamlinesetupid, bc.run as beamcalendar, s.beamcalendarid, CONCAT(p.proposalcode, p.proposalnumber) as proposal
-                    , count(shp.personid) as persons
-                    FROM blsession s 
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid 
-                    LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid
-                    LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid
-                    LEFT OUTER JOIN beamlinesetup bls on bls.beamlinesetupid = s.beamlinesetupid
-                    LEFT OUTER JOIN beamcalendar bc ON bc.beamcalendarid = s.beamcalendarid
-                    /*LEFT OUTER JOIN datacollection dc ON s.sessionid = dc.sessionid*/ 
-                    $where 
-                    /*GROUP BY TO_CHAR(s.startdate, 'HH24:MI DD-MM-YYYY'),TO_CHAR(s.enddate, 'HH24:MI DD-MM-YYYY'), s.sessionid, s.visit_number,s.beamlinename,s.beamlineoperator,s.comments,s.startdate*/ 
-                    GROUP BY s.sessionid
-                    ORDER BY $order", $args);
-            
+
+            $rows = $this->db->paginate("
+SELECT CURRENT_TIMESTAMP BETWEEN s.startDate AND s.endDate           AS active,
+       CURRENT_TIMESTAMP BETWEEN
+           DATE_SUB(s.startDate, INTERVAL 20 MINUTE) AND
+           DATE_ADD(s.endDate, INTERVAL 20 MINUTE)                   AS cams,
+       CONCAT(p.proposalCode, p.proposalNumber, '-', s.visit_number) AS visit,
+       DATE_FORMAT(s.startDate, '%H:%i %d-%m-%Y')                    AS st,
+       DATE_FORMAT(s.endDate, '%H:%i %d-%m-%Y')                      AS en,
+       DATE_FORMAT(s.startDate, '%Y-%m-%dT%H:%i:%s')                 AS stiso,
+       DATE_FORMAT(s.endDate, '%Y-%m-%dT%H:%i:%s')                   AS eniso,
+       s.sessionId,
+       s.visit_number                                                AS vis,
+       s.beamLineName                                                AS bl,
+       s.beamLineOperator                                            AS lc,
+       s.comments,
+       s.scheduled,
+       st.typeName                                                   AS sessiontype,
+       DATE_FORMAT(s.startDate, '%H:%i %d-%m-%Y')                    AS startdate,
+       DATE_FORMAT(s.endDate, '%H:%i %d-%m-%Y')                      AS enddate,
+       s.beamLineName,
+       s.beamLineOperator,
+       s.archived,
+       bls.setupDate                                                 AS beamlinesetup,
+       s.beamLineSetupId,
+       bc.run                                                        AS beamcalendar,
+       s.beamCalendarId,
+       CONCAT(p.proposalCode, p.proposalNumber)                      AS proposal,
+       COUNT(shp.personId)                                           AS persons
+FROM BLSession s
+         INNER JOIN Proposal p ON p.proposalId = s.proposalId
+         LEFT OUTER JOIN SessionType st ON st.sessionId = s.sessionId
+         LEFT OUTER JOIN Session_has_Person shp ON shp.sessionId = s.sessionId
+         LEFT OUTER JOIN BeamLineSetup bls on bls.beamLineSetupId = s.beamLineSetupId
+         LEFT OUTER JOIN BeamCalendar bc ON bc.beamCalendarId = s.beamCalendarId
+$where
+GROUP BY s.sessionId
+ORDER BY $order", $args);
+
             $ids = array();
             $wcs = array();
             foreach ($rows as $r) {
