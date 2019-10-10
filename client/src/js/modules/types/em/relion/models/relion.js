@@ -4,6 +4,6 @@ define([
     Backbone
 ) {
     return Backbone.Model.extend({
-        urlRoot: '/em/process/scipion/visit'
+        urlRoot: '/em/process/relion/visit'
     })
 });

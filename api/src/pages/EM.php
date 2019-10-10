@@ -9,27 +9,59 @@ class EM extends Page
 {
 
 
-        public static $arg_list = array(
-            'id' => '\d+',
-            'ids' => '\d+',
-            'visit' => '\w+\d+-\d+',
-            'n' => '\d+',
-            't' => '\d+',
-            'IMAGENUMBER' => '\d+',
+    public static $arg_list = array(
+        'id' => '\d+',
+        'ids' => '\d+',
+        'visit' => '\w+\d+-\d+',
+        'n' => '\d+',
+        't' => '\d+',
+        'IMAGENUMBER' => '\d+',
 
-            // Scipion processing
-            // Parameters with user specified values
+        // EM PROCESSING
+        // Parameters with user specified values
+        // Note boolean value true in JSON POST request is cast to to 1, false to nothing.
 
-            'dosePerFrame' => '\d*(\.\d+)?', // Decimal
-            'numberOfIndividualFrames' => '\d+', // Integer
-            'patchX' => '\d+', // Integer
-            'patchY' => '\d+', // Integer
-            'samplingRate' => '\d*(\.\d+)?', // Decimal
-            'particleSize' => '\d+', // Integer
-            'minDist' => '\d+', // Integer
-            'windowSize' => '\d+', // Integer
-            'findPhaseShift' => '1?', // Boolean : Note boolean value true in JSON POST request is cast to to 1, false to nothing.
-        );
+        // RELION
+
+        'projectMovieFileNameExtension' => '[\w]{3,4}', // String (File name extension)
+        'projectGainReferenceFile' => '1?', // Boolean
+        'projectGainReferenceFileName' => '[\w-]+\.[\w]{3,4}', // String (File name + extension)
+
+        'voltage' => '\d+', // Integer
+        'sphericalAberration' => '\d*(\.\d+)?', // Decimal
+        'pixelSize' => '\d*(\.\d+)?', // Decimal
+
+        'pipelineDo1stPass' => '1?', // Boolean
+        'pipelineDo1stPassClassification2D' => '1?', // Boolean
+        'pipelineDo1stPassClassification3D' => '1?', // Boolean
+
+        'particleDiameterMax' => '\d+', // Integer
+        'particleDiameterMin' => '\d+', // Integer
+        'particleReference3D' => '[\w-]+\.[\w]{3,4}', // String (File name + extension)
+        'particleMaskDiameter' => '\d+', // Integer
+        'particleBoxSize' => '\d+', // Integer
+        'particleDownsampleSize' => '\d+', // Integer
+        'pipelineCalculateForMe' => '1?', // Boolean
+
+        'pipelineDo2ndPass' => '1?', // Boolean
+        'pipelineDo2ndPassClassification2D' => '1?', // Boolean
+        'pipelineDo2ndPassClassification3D' => '1?', // Boolean
+
+        // SCIPION
+
+        'numberOfIndividualFrames' => '\d+', // Integer
+        'patchX' => '\d+', // Integer
+        'patchY' => '\d+', // Integer
+        'samplingRate' => '\d*(\.\d+)?', // Decimal
+        'particleSize' => '\d+', // Integer
+        'minDist' => '\d+', // Integer
+        'windowSize' => '\d+', // Integer
+
+        // RELION + SCIPION
+
+        'dosePerFrame' => '\d*(\.\d+)?', // Decimal
+        'findPhaseShift' => '1?', // Boolean
+    );
 
         public static $dispatch = array(
             array('/aps', 'post', '_ap_status'),
@@ -44,58 +76,185 @@ class EM extends Page
             array('/ctf/image/:id(/n/:IMAGENUMBER)', 'get', '_ctf_image'),
             array('/ctf/histogram', 'get', '_ctf_histogram'),
 
-            array('/process/visit/:visit', 'post', '_process_visit')
+        array('/process/relion/visit/:visit', 'post', '_process_visit_relion'),
+        array('/process/scipion/visit/:visit', 'post', '_process_visit_scipion')
+    );
+
+    function _process_visit_relion()
+    {
+        global $bl_types,
+               $visit_directory,
+               $em_workflow_path;
+
+        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $visit = $this->determineVisit($this->arg('visit'));
+        $this->checkVisitIsActive($visit);
+
+        // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
+        foreach ($visit as $key => $value) {
+            $visit_directory = str_replace("<%={$key}%>", $value, $visit_directory);
+            $em_workflow_path = str_replace("<%={$key}%>", $value, $em_workflow_path);
+        }
+
+        $visit_directory_relion = "{$visit_directory}/processed/relion-{$visit['VISIT']}";
+
+        // Validate form parameters
+
+        // Setup rules to validate each parameter by isRequired, inArray, minValue, maxValue.
+        // Specify outputType so json_encode casts value correctly. This determines whether value is quoted.
+
+        // TODO Consider adding default values (JPH)
+        $validation_rules = array(
+            'projectMovieFileNameExtension' => array('isRequired' => true, 'inArray' => array('tif', 'tiff', 'mrc'), 'outputType' => 'string'),
+            'projectGainReferenceFile' => array('isRequired' => true, 'outputType' => 'boolean'),
+            'projectGainReferenceFileName' => array('isRequired' => false, 'outputType' => 'string'),
+
+            'voltage' => array('isRequired' => true, 'minValue' => 100, 'maxValue' => 300, 'outputType' => 'integer'),
+            'sphericalAberration' => array('isRequired' => true, 'inArray' => array(1.4, 2.0, 2.7), 'outputType' => 'float'),
+            'findPhaseShift' => array('isRequired' => true, 'outputType' => 'boolean'),
+            'pixelSize' => array('isRequired' => true, 'minValue' => 0.02, 'maxValue' => 100, 'outputType' => 'float'),
+            'dosePerFrame' => array('isRequired' => true, 'minValue' => 0, 'maxValue' => 10, 'outputType' => 'float'),
+
+            'pipelineDo1stPass' => array('isRequired' => true, 'outputType' => 'boolean'),
+            'pipelineDo1stPassClassification2D' => array('isRequired' => false, 'outputType' => 'boolean'),
+            'pipelineDo1stPassClassification3D' => array('isRequired' => false, 'outputType' => 'boolean'),
+
+            'particleDiameterMax' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 1000, 'outputType' => 'float'),
+            'particleDiameterMin' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 1000, 'outputType' => 'float'),
+            'particleReference3D' => array('isRequired' => false, 'outputType' => 'string'),
+            'particleMaskDiameter' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
+            'particleBoxSize' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
+            'particleDownsampleSize' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
+            'particleCalculateForMe' => array('isRequired' => false, 'outputType' => 'boolean'),
+
+            'pipelineDo2ndPass' => array('isRequired' => true, 'outputType' => 'boolean'),
+            'pipelineDo2ndPassClassification2D' => array('isRequired' => false, 'outputType' => 'boolean'),
+            'pipelineDo2ndPassClassification3D' => array('isRequired' => false, 'outputType' => 'boolean'),
         );
 
-        function _process_visit()
+        list($invalid_parameters, $valid_parameters) = $this->validateParameters($validation_rules);
+
+        // Determine whether projectGainReferenceFileName is invalid or not specified
+
+        if (array_key_exists('projectGainReferenceFile', $valid_parameters)) {
+            if ($valid_parameters['projectGainReferenceFile'] == true) {
+                if ($this->has_arg('projectGainReferenceFileName') && ($this->arg('projectGainReferenceFileName') == true)) {
+                    $valid_parameters['projectGainReferenceFileName'] = $this->arg('projectGainReferenceFileName');
+                } else {
+                    array_push($invalid_parameters, "projectGainReferenceFileName is invalid or not specified");
+                }
+            }
+        }
+
+//        // TODO particleReference3D is optional...
+//
+//        if (array_key_exists('pipelineDo1stPass', $valid_parameters) && $valid_parameters['pipelineDo1stPass']) {
+//            if ($this->has_arg('particleReference3D') && ($this->arg('particleReference3D') == true)) {
+//                $valid_parameters['particleReference3D'] = $this->arg('particleReference3D');
+////            } else {
+////                array_push($invalid_parameters, "particleReference3D is invalid or not specified");
+//            }
+//        }
+
+        // TODO Better to return an array of invalid parameters for front end to display. (JPH)
+        if (sizeof($invalid_parameters) > 0) {
+            $message = 'Invalid parameters: ' . implode('; ', $invalid_parameters) . '.';
+
+            error_log($message);
+            $this->_error($message, 400);
+        }
+
+        $relion_json_array = array();
+
+        $relion_json_array['import_images'] = "{$visit_directory_relion}/Movies/*.{$valid_parameters['projectMovieFileNameExtension']}";
+
+        if ($valid_parameters['projectGainReferenceFile'] && $valid_parameters['projectGainReferenceFileName']) {
+            $relion_json_array['motioncor_gainreference'] = "{$visit_directory_relion}/Movies/{$valid_parameters['projectGainReferenceFileName']}";
+        }
+
+        $relion_json_array['voltage'] = $valid_parameters['voltage'];
+        $relion_json_array['Cs'] = $valid_parameters['sphericalAberration'];
+        $relion_json_array['ctffind_do_phaseshift'] = $valid_parameters['findPhaseShift'];
+        $relion_json_array['angpix'] = $valid_parameters['pixelSize'];
+        $relion_json_array['motioncor_doseperframe'] = $valid_parameters['dosePerFrame'];
+
+        $relion_json_array['stop_after_ctf_estimation'] = !$valid_parameters['pipelineDo1stPass'];
+
+        if ($valid_parameters['pipelineDo1stPass']) {
+            $relion_json_array['do_class2d'] = $valid_parameters['pipelineDo1stPassClassification2D'];
+            $relion_json_array['do_class3d'] = $valid_parameters['pipelineDo1stPassClassification3D'];
+
+            $relion_json_array['autopick_LoG_diam_max'] = $valid_parameters['particleDiameterMax'];
+            $relion_json_array['autopick_LoG_diam_min'] = $valid_parameters['particleDiameterMin'];
+
+//            // if (array_key_exists('particleReference3D', $valid_parameters)) {
+//            $relion_json_array['have_3d_reference'] = ($valid_parameters['particleReference3D'] == true ? true : false);
+//            $relion_json_array['class3d_reference'] = "{$visit_directory_relion}/Movies/{$valid_parameters['particleReference3D']}";
+//            // }
+
+            $relion_json_array['particleMaskDiameter'] = 'TODO'; // TODO
+            $relion_json_array['particleBoxSize'] = 'TODO'; // TODO
+            $relion_json_array['particleDownsampleSize'] = 'TODO'; // TODO
+            $relion_json_array['projectDirectory'] = $visit_directory;
+
+            $relion_json_array['do_second_pass'] = $valid_parameters['pipelineDo2ndPass'];
+
+            if ($valid_parameters['pipelineDo2ndPass']) {
+                $relion_json_array['do_class2d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification2D'];
+                $relion_json_array['do_class3d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification3D'];
+            }
+        }
+
+
+        // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
+        // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
+        $relion_json_string = json_encode($relion_json_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+
+//        // TEMP FOR DEBUG
+//        $output = $relion_json_array;
+
+        // Write workflow file
+
+        $timestamp_epoch = time();
+
+        $relion_msg_file = 'relion_msg_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
+
+        try {
+            file_put_contents($em_workflow_path . '/' . $relion_msg_file, $relion_json_string);
+        } catch (Exception $e) {
+            error_log("Failed to write workflow file: {$em_workflow_path}/{$relion_msg_file}");
+            $this->_error('Failed to write workflow file.', 500);
+        }
+
+        // Send job to processing queue
+
+        $message = array(
+            'relion_workflow' => $em_workflow_path . '/' . $relion_msg_file
+        );
+
+        $this->sendJobToProcessingQueueRelionFudge($message);
+
+        $output = array(
+            'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
+            'em_workflow_path' => $em_workflow_path,
+            'em_workflow_file' => $relion_msg_file
+        );
+
+        $this->_output($output);
+    }
+
+    function _process_visit_scipion()
         {
             global $bl_types,
                    $visit_directory,
                    $em_template_path,
                    $em_template_file,
-                   $em_workflow_path,
-                   $em_activemq_server,
-                   $em_activemq_username,
-                   $em_activemq_password,
-                   $em_activemq_queue;
+               $em_workflow_path;
 
-            // Check electron microscopes are listed in global variables - see $bl_types in config.php.
-            if (!array_key_exists('em', $bl_types)) {
-                $message = 'Electron microscopes not specified';
-
-                error_log($message);
-                $this->_error($message, 500);
-            }
-
-            if (!$this->has_arg('visit')) {
-                $message = 'Visit not specified';
-
-                error_log($message);
-                $this->_error($message, 400);
-            }
-
-            // Lookup visit in ISPyB
-            $visit = $this->db->pq("
-            SELECT b.beamLineName AS beamLineName,
-                YEAR(b.startDate) AS year,
-                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
-                b.startDate AS startDate,
-                b.endDate AS endDate,
-                CURRENT_TIMESTAMP BETWEEN b.startDate AND b.endDate AS active
-            FROM Proposal AS p
-                JOIN BLSession AS b ON p.proposalId = b.proposalId
-            WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1", array($this->arg('visit')));
-
-            if (!sizeof($visit)) $this->_error('Visit not found');
-            $visit = $visit[0];
-
-            // Do not permit processing after session has ended
-            if (!$visit['ACTIVE']) {
-                $message = 'This session ended at ' . date('H:i \o\n jS F', strtotime($visit['ENDDATE'])) . '. It may no longer be submitted for processing.';
-
-                error_log($message);
-                $this->_error($message, 400);
-            }
+        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $visit = $this->determineVisit($this->arg('visit'));
+        $this->checkVisitIsActive($visit);
 
             // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
             foreach ($visit as $key => $value) {
@@ -122,65 +281,11 @@ class EM extends Page
                 'findPhaseShift' => array('isRequired' => true, 'outputType' => 'boolean'),
             );
 
-            $valid_parameters = array();
+        list($invalid_parameters, $valid_parameters) = $this->validateParameters($validation_rules);
 
             // Determine other values to substitute in JSON i.e. parameters not specified in form submission.
             $valid_parameters['filesPath'] = $visit_directory . '/raw/GridSquare_*/Data';
             $valid_parameters['visit'] = $visit['VISIT'];
-
-            $invalid_parameters = array();
-
-            foreach ($validation_rules as $parameter => $validations) {
-                // Determine whether request includes parameter
-                if ($this->has_arg($parameter)) {
-                    if ($this->arg($parameter) === '') {
-                        array_push($invalid_parameters, "{$parameter} is not specified");
-                        continue;
-                    }
-
-                    // Check parameter is more than minimum value
-                    if (array_key_exists('minValue', $validations)) {
-                        if ($this->arg($parameter) < $validations['minValue']) {
-                            array_push($invalid_parameters, "{$parameter} is too small");
-                            continue;
-                        }
-                    }
-
-                    // Check parameter is less than maximum value
-                    if (array_key_exists('maxValue', $validations)) {
-                        if ($this->arg($parameter) > $validations['maxValue']) {
-                            array_push($invalid_parameters, "{$parameter} is too large");
-                            continue;
-                        }
-                    }
-
-                    // Check parameter is in array of expected inputs
-                    if (array_key_exists('inArray', $validations)) {
-                        if (is_array($validations['inArray'])) {
-                            if (!in_array($this->arg($parameter), $validations['inArray'])) {
-                                array_push($invalid_parameters, "{$parameter} is not known");
-                                continue;
-                            }
-                        }
-                    }
-
-                    // Parameter has passed validation checks so add to list of valid parameters.
-                    $valid_parameters[$parameter] = $this->arg($parameter);
-
-                    // Set type if outputType is specified, otherwise default to string. Note json_encode quotes value of type string.
-
-                    $outputType = array_key_exists('outputType', $validations) ? $validations['outputType'] : 'string';
-
-                    settype($valid_parameters[$parameter], $outputType);
-                } else {
-                    // Check whether a missing parameter is required.
-                    if (array_key_exists('isRequired', $validations)) {
-                        if ($validations['isRequired']) {
-                            array_push($invalid_parameters, "{$parameter} is required");
-                        }
-                    }
-                }
-            }
 
             // TODO Better to return an array of invalid parameters for front end to display. (JPH)
             if (sizeof($invalid_parameters) > 0) {
@@ -196,8 +301,8 @@ class EM extends Page
             try {
                 $template_json_string = file_get_contents($em_template_path . '/' . $em_template_file);
             } catch (Exception $e) {
-                error_log('Failed to read workflow template: ' . $em_template_path . '/' . $em_template_file);
-                $this->_error('Failed to read workflow template for electron microscopy “' . $visit['BEAMLINENAME'] . '”.', 500);
+            error_log("Failed to read workflow template: {$em_template_path}/{$em_template_file}");
+            $this->_error("Failed to read workflow template for electron microscopy “{$visit['BEAMLINENAME']}”.", 500);
             }
 
             // Decode JSON string
@@ -205,8 +310,8 @@ class EM extends Page
 
             // JSON is invalid if it cannot be decoded
             if ($template_array == null) {
-                error_log('Invalid workflow template: ' . $em_template_path . '/' . $em_template_file);
-                $this->_error('Invalid workflow template for electron microscopy “' . $visit['BEAMLINENAME'] . '”.', 500);
+            error_log("Invalid workflow template: {$em_template_path}/{$em_template_file}");
+            $this->_error("Invalid workflow template for electron microscopy “{$visit['BEAMLINENAME']}”.", 500);
             }
 
             $updated_parameters = array();
@@ -233,7 +338,7 @@ class EM extends Page
             $absent_parameters = array_diff(array_keys($valid_parameters), $updated_parameters);
 
             if (sizeof($absent_parameters) > 0) {
-                error_log('Parameters absent from workflow template: ' . $em_template_path . '/' . $em_template_file);
+            error_log("Parameters absent from workflow template: {$em_template_path}/{$em_template_file}");
 
                 $message = 'Parameters absent from workflow template: ' . implode('; ', $absent_parameters) . '.';
                 error_log($message);
@@ -242,48 +347,35 @@ class EM extends Page
 
             // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
             // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
-            $workflow_json_string = json_encode($template_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $scipion_json_string = json_encode($template_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
             // Write workflow file
 
             $timestamp_epoch = time();
 
-            $em_workflow_file = 'scipion_workflow_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
+        $scipion_workflow_file = 'scipion_workflow_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
 
             try {
-                file_put_contents($em_workflow_path . '/' . $em_workflow_file, $workflow_json_string);
+            file_put_contents($em_workflow_path . '/' . $scipion_workflow_file, $scipion_json_string);
             } catch (Exception $e) {
-                error_log('Failed to write workflow file: ' . $em_workflow_path . '/' . $em_workflow_file);
+            error_log("Failed to write workflow file: {$em_workflow_path}/{$scipion_workflow_file}");
                 $this->_error('Failed to write workflow file.', 500);
             }
 
             // Send job to processing queue
 
-            if (empty($em_activemq_server) || empty($em_activemq_queue)) {
-                $message = 'ActiveMQ server not specified.';
-
-                error_log($message);
-                $this->_error($message, 500);
-            }
-
             $message = array(
-                'scipion_workflow' => $em_workflow_path . '/' . $em_workflow_file
+            'scipion_workflow' => $em_workflow_path . '/' . $scipion_workflow_file
             );
 
-            $this->queue = new Queue();
-
-            try {
-                $this->queue->send($em_activemq_server, $em_activemq_username, $em_activemq_password, $em_activemq_queue, $message, true);
-            } catch (Exception $e) {
-                $this->_error($e->getMessage(), 500);
-            }
+        $this->sendJobToProcessingQueue($message);
 
             $output = array(
                 'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
                 'em_template_path' => $em_template_path,
                 'em_template_file' => $em_template_file,
                 'em_workflow_path' => $em_workflow_path,
-                'em_workflow_file' => $em_workflow_file
+            'em_workflow_file' => $scipion_workflow_file
             );
 
             $this->_output($output);
@@ -724,4 +816,165 @@ class EM extends Page
             $this->app->contentType('image/'.pathinfo($file, PATHINFO_EXTENSION));
             readfile($file);
         }
+
+    private function checkElectronMicroscopesAreConfigured(array $bl_types)
+    {
+        // Check electron microscopes are listed in global variables - see $bl_types in config.php.
+        if (!array_key_exists('em', $bl_types)) {
+            $message = 'Electron microscopes not specified';
+
+            error_log($message);
+            $this->_error($message, 500);
+        }
+    }
+
+    private function determineVisit($visit_reference)
+    {
+        if (!$this->has_arg('visit')) {
+            $message = 'Visit not specified';
+
+            error_log($message);
+            $this->_error($message, 400);
+        }
+
+        // Lookup visit in ISPyB
+        $visit = $this->db->pq("
+            SELECT b.beamLineName AS beamLineName,
+                YEAR(b.startDate) AS year,
+                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
+                b.startDate AS startDate,
+                b.endDate AS endDate,
+                CURRENT_TIMESTAMP BETWEEN b.startDate AND b.endDate AS active
+            FROM Proposal AS p
+                JOIN BLSession AS b ON p.proposalId = b.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1", array($visit_reference));
+
+        if (!sizeof($visit)) $this->_error('Visit not found');
+
+        return $visit[0];
+    }
+
+    private function checkVisitIsActive($visit)
+    {
+        // Do not permit processing after session has ended
+        if (!$visit['ACTIVE']) {
+            $message = 'This session ended at ' . date('H:i \o\n jS F Y', strtotime($visit['ENDDATE'])) . '. It may no longer be submitted for processing.';
+
+            error_log($message);
+            $this->_error($message, 400);
+        }
+    }
+
+    private function validateParameters(array $validation_rules)
+    {
+        $valid_parameters = array();
+        $invalid_parameters = array();
+
+        foreach ($validation_rules as $parameter => $validations) {
+            // Determine whether request includes parameter
+            if ($this->has_arg($parameter)) {
+                if ($this->arg($parameter) === '') {
+                    array_push($invalid_parameters, "{$parameter} is not specified");
+                    continue;
+                }
+
+                // Check parameter is more than minimum value
+                if (array_key_exists('minValue', $validations)) {
+                    if ($this->arg($parameter) < $validations['minValue']) {
+                        array_push($invalid_parameters, "{$parameter} is too small");
+                        continue;
+                    }
+                }
+
+                // Check parameter is less than maximum value
+                if (array_key_exists('maxValue', $validations)) {
+                    if ($this->arg($parameter) > $validations['maxValue']) {
+                        array_push($invalid_parameters, "{$parameter} is too large");
+                        continue;
+                    }
+                }
+
+                // Check parameter is in array of expected inputs
+                if (array_key_exists('inArray', $validations)) {
+                    if (is_array($validations['inArray'])) {
+                        if (!in_array($this->arg($parameter), $validations['inArray'])) {
+                            array_push($invalid_parameters, "{$parameter} is not known");
+                            continue;
+                        }
+                    }
+                }
+
+                // Parameter has passed validation checks so add to list of valid parameters.
+                $valid_parameters[$parameter] = $this->arg($parameter);
+
+                // Set type if outputType is specified, otherwise default to string. Note json_encode quotes value of type string.
+
+                $outputType = array_key_exists('outputType', $validations) ? $validations['outputType'] : 'string';
+
+                settype($valid_parameters[$parameter], $outputType);
+            } else {
+                // Check whether a missing parameter is required.
+                if (array_key_exists('isRequired', $validations)) {
+                    if ($validations['isRequired']) {
+                        array_push($invalid_parameters, "{$parameter} is required");
+                    }
+                }
+            }
+        }
+
+        return array($invalid_parameters, $valid_parameters);
+    }
+
+    private function sendJobToProcessingQueue($message = null)
+    {
+        global $em_activemq_server,
+               $em_activemq_username,
+               $em_activemq_password,
+               $em_activemq_queue;
+
+        if (empty($em_activemq_server) || empty($em_activemq_queue)) {
+            $message = 'ActiveMQ server not specified.';
+
+            error_log($message);
+            $this->_error($message, 500);
+        }
+
+        include_once(__DIR__ . '/../shared/class.queue.php');
+        $this->queue = new Queue();
+
+        try {
+            $this->queue->send($em_activemq_server, $em_activemq_username, $em_activemq_password, $em_activemq_queue, $message, true);
+        } catch (Exception $e) {
+            $this->_error($e->getMessage(), 500);
+        }
+    }
+
+    private function sendJobToProcessingQueueRelionFudge($message = null)
+    {
+        global $em_activemq_server,
+               $em_activemq_username,
+               $em_activemq_password,
+               $em_activemq_queue;
+
+        // TEMP FUDGE
+
+        $em_activemq_server = 'tcp://activemq.diamond.ac.uk:61613';
+        $em_activemq_queue = '/queue/zocalo.relion.relion_prod_ispyb';
+
+        if (empty($em_activemq_server) || empty($em_activemq_queue)) {
+            $message = 'ActiveMQ server not specified.';
+
+            error_log($message);
+            $this->_error($message, 500);
+        }
+
+        include_once(__DIR__ . '/../shared/class.queue.php');
+        $this->queue = new Queue();
+
+        try {
+            $this->queue->send($em_activemq_server, $em_activemq_username, $em_activemq_password, $em_activemq_queue, $message, true);
+        } catch (Exception $e) {
+            $this->_error($e->getMessage(), 500);
+        }
+    }
 }
