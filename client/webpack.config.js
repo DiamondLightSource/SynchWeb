@@ -8,8 +8,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // These steps remove the need for a separate plugin to set the githash
-const gitHashLength = 8
-const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().substring(0,gitHashLength);
+const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().trim();
 
 module.exports = {
   entry: {
