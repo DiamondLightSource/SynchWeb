@@ -1,28 +1,5 @@
 <!DOCTYPE html>
-<?php
 
-    /*
-        Copyright 2015 Diamond Light Source <stuart.fisher@diamond.ac.uk>
-    
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-    
-        http://www.apache.org/licenses/LICENSE-2.0
-    
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-    */
-
-    date_default_timezone_set('Europe/London');
-
-    $file = file_get_contents('js/config.json');
-    $config = json_decode($file);
-
-?>
 <html>
     
     <head>
@@ -30,21 +7,21 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0" />
         <meta name="viewport" content="initial-scale=1.0"/>
         
-        <link rel="icon" type="image/ico" href="<?php echo $config->appurl ?>/favicon.ico" />
+        <link rel="icon" type="image/ico" href="<%= htmlWebpackPlugin.options.jsonConfig.appurl %>/favicon.ico" />
         
         <title><%= htmlWebpackPlugin.options.title %></title>
                
-        <?php if ($config->ga_ident): ?>
+        <% if (htmlWebpackPlugin.options.jsonConfig.ga_ident) { %>
         <script type="text/javascript">
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
           m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
           })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
          
-          ga('create', '<?php echo $config->ga_ident ?>', 'auto');
+          ga('create', '<%= htmlWebpackPlugin.options.jsonConfig.ga_ident %>', 'auto');
           ga('send', 'pageview');
         </script>
-        <?php endif; ?>
+        <% } %>
 
     </head>
     
@@ -61,9 +38,9 @@
                 <!--[if lte IE 11]>
                  <a class="icon"><i class="fa fa-2x fa-home"></i>&nbsp;</a>
                 <![endif]-->
-                <?php if ($config->maintenance): ?>
+                <% if ( htmlWebpackPlugin.options.jsonConfig.maintenance ) { %>
                     <a class="icon"><i class="fa fa-2x fa-home"></i>&nbsp;</a>
-                <?php endif; ?>
+                <% } %>
             </div>
             <div id="sidebar"></div>
 
@@ -77,11 +54,11 @@
                             <p>Internet Explorer versions less than 11 are not supported. Please consider using <a href="http://www.mozilla.org/en-GB/firefox/new">Firefox</a> or <a href="http://www.google.co.uk/chrome">Chrome</a></p>
                         </div>
                     <![endif]-->
-                        <?php if ($config->maintenance): ?>
+                        <% if ( htmlWebpackPlugin.options.jsonConfig.maintenance ) { %>
                             <h1>Scheduled Maintenance</h1>
-                            <p><?php echo $config->maintenance_message ?></p>
+                            <p><%= htmlWebpackPlugin.options.jsonConfig.maintenance_message %></p>
                             <br />
-                        <?php endif; ?>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -90,7 +67,7 @@
                 <div class="whatnow">
                     <a href="http://diamondlightsource.github.io/SynchWeb/">SynchWeb? What is This?</a>
                 </div>
-                <p><a href="http://diamond.ac.uk">Diamond Light Source</a> &copy;2013-<?php echo date('Y') ?></p>
+                <p><a href="http://diamond.ac.uk">Diamond Light Source</a> &copy;2013-<script>document.write(new Date().getFullYear())</script></p>
             </div>
         
         </div>

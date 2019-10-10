@@ -9,6 +9,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // These steps remove the need for a separate plugin to set the githash
 const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().trim();
+const config = require('./src/js/config.json')
 
 module.exports = {
   entry: {
@@ -159,7 +160,7 @@ module.exports = {
       {
         test: /\.(sa|sc|c)ss$/,
         use: [
-          // Extract the CSS into separate files if in production
+          // Extract the CSS into separate files
           MiniCssExtractPlugin.loader,
           "css-loader", // translates CSS into CommonJS
           "sass-loader" // compiles Sass to CSS, using Node Sass by default
@@ -200,6 +201,7 @@ module.exports = {
       title: 'SynchWeb Webpack',
       filename: path.resolve(__dirname, 'index.php'),
       template: 'src/index.php',
+      jsonConfig: config,
     }),
     // Copy static assets to the assets folder
     // Anything matching in the from path is copied so images/file.png => assets/images/file.png
