@@ -20,7 +20,26 @@ module.exports = {
     path: path.resolve(__dirname, 'dist', gitHash),
     publicPath: path.join('/dist', gitHash, '/'),
   },
-
+  devServer: {
+    contentBase: [
+      path.join(__dirname, 'dist', gitHash),
+      path.join(__dirname, '.')
+    ],
+    port: 9000,
+    publicPath: path.join(__dirname),
+    proxy: {
+      '/api': {
+        // Change this target to where SynchWeb server is running
+        target: 'http://192.168.33.10',
+        // Intercept the request and add auth header
+        onProxyReq: function(proxyReq, req, res) {
+          if (req.headers.authorization) {
+            proxyReq.setHeader('Authorization', req.headers.authorization);
+          }
+        },
+      },
+    },
+  },
   optimization: {
     splitChunks: {
       chunks: 'all',
@@ -200,6 +219,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'SynchWeb Webpack',
       filename: path.resolve(__dirname, 'index.php'),
+      template: 'src/index.php',
+      jsonConfig: config,
+    }),
+    new HtmlWebpackPlugin({
+      title: 'SynchWeb Webpack',
+      filename: path.resolve(__dirname, 'dist/', gitHash, 'index.html'),
       template: 'src/index.php',
       jsonConfig: config,
     }),

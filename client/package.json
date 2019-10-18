@@ -8,7 +8,8 @@
     "build": "./node_modules/.bin/webpack --config webpack.config.js -p --mode=production",
     "build:dev": "./node_modules/.bin/webpack --config webpack.config.js --mode development",
     "build:stats": "./node_modules/.bin/webpack --config webpack.config.js --mode production --profile --json > stats.json",
-    "analyze": "./node_modules/.bin/webpack-bundle-analyzer stats.json"
+    "analyze": "./node_modules/.bin/webpack-bundle-analyzer stats.json",
+    "serve": "./node_modules/.bin/webpack-dev-server"
   },
   "keywords": [
     "SynchWeb",
@@ -35,7 +36,8 @@
     "vue-template-compiler": "^2.6.10",
     "webpack": "^4.40.2",
     "webpack-bundle-analyzer": "^3.4.1",
-    "webpack-cli": "^3.3.9"
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.8.2"
   },
   "dependencies": {
     "@highcharts/map-collection": "^1.1.2",
