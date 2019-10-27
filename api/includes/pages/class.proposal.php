@@ -238,7 +238,10 @@
                 VALUES (:1, :2, :3, :4, 'Open')", 
                 array($this->arg('PERSONID'), $this->arg('PROPOSALCODE'), $this->arg('PROPOSALNUMBER'), $this->arg('TITLE')));
 
-            $this->_output(array('PROPOSALID' => $this->db->id()));
+            $this->_output(array(
+                'PROPOSALID' => $this->db->id(), 
+                'PROPOSAL' => $this->arg('PROPOSALCODE').$this->arg('PROPOSALNUMBER')
+            ));
         }
 
 
@@ -602,7 +605,7 @@
                 VALUES (:1, :2, :3, :4)", array($this->arg("SESSIONID"), $this->arg("PERSONID"), $role, $remote));
 
             $this->_output(array(
-                'SHPKEY' => $this->arg("SESSIONID")+':'+$this->arg("PERSONID"),
+                'SHPKEY' => $this->arg("SESSIONID").'-'.$this->arg("PERSONID"),
             ));
         }
 
@@ -617,7 +620,7 @@
             $args = array();
 
             if ($this->has_arg('SHPKEY')) {
-                list($sessionid, $personid) = split(':', $this->arg('SHPKEY'));
+                list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
                 $where .= " shp.sessionid=:1 AND shp.personid=:2";
                 array_push($args, $sessionid);
                 array_push($args, $personid);
