@@ -1,0 +1,25 @@
+type: object
+properties:
+  VISITS:
+    type: string
+    description: Number of visits this user has been on 
+    example: 25
+  LAST:
+    type: string
+    description: Date of last visit (dd-mm-yyyy)
+    example: 12-06-2014
+  PERSONID:
+    type: string
+    description: Personid
+  GIVENNAME:
+    type: string
+    description: First name
+  FAMILYNAME:
+    type: string
+    description: Family name
+  FULLNAME:
+    type: string
+    description: First + Family name
+  LOGIN:
+    type: string
+    description: Username

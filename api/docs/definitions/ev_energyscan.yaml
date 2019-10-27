@@ -1,0 +1,188 @@
+type: object
+properties:
+  DCCC:
+    type: string
+    description: N/A
+    example: 1
+  DCC:
+    type: string
+    description: N/A
+    example: 1
+  SAMPLE:
+    type: string
+    description: Sample name
+    example: xtal_1
+  BLSAMPLEID:
+    type: string
+    description: Sample id
+    example: 409068
+  VN:
+    type: string
+    description: Visit number
+    example: 2
+  KAPPA:
+    type: string
+    description: N/A
+    example: 1
+  PHI:
+    type: string
+    description: N/A
+    example: 1
+  SI:
+    type: string
+    description: N/A
+    example: 1
+  DCT:
+    type: string
+    description: N/A
+    example: A
+  DCG:
+    type: string
+    description: N/A
+    example: 1
+  RUNSTATUS:
+    type: string
+    description: N/A
+    example: A
+  BSX:
+    type: string
+    description: Beam size x
+    example: 50
+  BSY:
+    type: string
+    description: Beam size y
+    example: 20
+  OVERLAP:
+    type: string
+    description: N/A
+    example: 1
+  FLUX:
+    type: string
+    description: Flux (not populated)
+    example: 1
+  SCON:
+    type: string
+    description: N/A
+    example: 1
+  SPOS:
+    type: string
+    description: N/A
+    example: A
+  SAN:
+    type: string
+    description: N/A
+    example: A
+  TYPE:
+    type: string
+    description: Implied type (for ui)
+    example: edge
+    enum:
+      - edge
+  IMP:
+    type: string
+    description: Path to chooch jpg (unused)
+    example: /path/fluorescence_scans/zn_chooch.png
+  RUN:
+    type: string
+    description: N/A
+    example: 1
+  FILETEMPLATE:
+    type: string
+    description: Fluorescence scan raw data file
+    example: zn.fluo
+  ID:
+    type: string
+    description: Energy scan id
+    example: 50284
+  NI:
+    type: string
+    description: N/A
+    example: 1
+  DIR:
+    type: string
+    description: Element
+    example: Zn
+  RESOLUTION:
+    type: string
+    description: Peak f prime
+    example: -7.09
+  EXPOSURETIME:
+    type: string
+    description: Exposure time (s)
+    example: 1
+  AXISSTART:
+    type: string
+    description: Peak f double prime
+    example: 9.24
+  NUMIMG:
+    type: string
+    description: N/A 
+    example: 1
+  ST:
+    type: string
+    description: Start date time
+    example: 06-04-2016 16:36:18
+  TRANSMISSION:
+    type: string
+    description: Transmission (%)
+    example: 1.60
+  AXISRANGE:
+    type: string
+    description: Inflection f prime
+    example: -12.079999923706
+  WAVELENGTH:
+    type: string
+    description: Inflection f double prime
+    example: 3.3599998950958
+  COMMENTS:
+    type: string
+    description: Comments
+    example: a comment
+  EPK:
+    type: string
+    description: Peak energy (eV)
+    example: 9666.8203125
+  EIN:
+    type: string
+    description: Inflection energy (ev)
+    example: 9661.8095703125
+  X1:
+    type: string
+    description: N/A
+    example: A
+  X2:
+    type: string
+    description: N/A
+    example: A
+  X3:
+    type: string
+    description: N/A
+    example: A
+  X4:
+    type: string
+    description: N/A
+    example: A
+  STA:
+    type: string
+    description: Start time (duplicate)
+    example: 2016-04-06 16:36:18
+  DET:
+    type: string
+    description: N/A
+    example: 1
+  XBEAM:
+    type: string
+    description: N/A
+    example: 1
+  YBEAM:
+    type: string
+    description: N/A
+    example: 1
+  SN:
+    type: string
+    description: N/A
+    example: 0
+  DI:
+    type: string
+    description: N/A
+    example: 0

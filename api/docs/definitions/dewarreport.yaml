@@ -1,0 +1,14 @@
+type: object
+properties:
+  DEWARREPORTID:
+    type: string
+    example: 234
+  REPORT:
+    type: string
+    example: Broken vacuum
+  BLTIMESTAMP:
+    type: string
+    example: 09:23:15 12-03-2016
+  ATTACHMENT:
+    type: string
+    example: '/path/to/image.jpg'

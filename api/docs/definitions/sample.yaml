@@ -1,0 +1,114 @@
+allOf:
+  - type: object
+    properties:
+      BLSAMPLEID:
+        type: string
+        description: id
+        pattern: '\d+'
+        example: 2
+      ACRONYM:
+        type: string
+        description: Protein acronym
+        example: prot1
+      BLSUBSAMPLEID:
+        type: string
+        description: Parent subsample id
+        example: 1234
+      CONTAINER:
+        type: string
+        description: Container name
+        example: Container1
+      CONTAINERQUEUEID:
+        type: string
+        description: Container queue id if the container is queued
+        example: 123
+      CRYSTAL:
+        type: string
+        description: Crystal name 
+        example: Crystal1
+      DEWAR:
+        type: string
+        description: Dewar name
+        example: Dewar1
+      DEWARID:
+        type: string
+        description: Dewar id
+        example: 3123
+      INSPECTIONS:
+        type: string
+        description: Number of inspections for the samples container
+        example: 12
+      PROTEIN:
+        type: string
+        description: Protein acronym 
+        example: prot1
+      QUEUEDTIMESTAMP:
+        type: string
+        description: Timestamp the container was queued
+        example: 23-10-2019 23:45
+      RECORDTIMESTAMP:
+        type: string
+        description: Timestamp the sample was created
+        example: 24-10-2019
+      SHIPMENT:
+        type: string
+        description: Shipment name
+        example: Shipment1
+      SHIPPINGID:
+        type: string
+        description: Shipment id
+        example: 32548
+      SYMBOL:
+        type: string
+        description: Protein concentration symbol
+        example: mg/ml
+      SCLOCATION:
+        type: string
+        description: Sample changer location for container
+        example: '3'
+      REQUIREDRESOLUTION:
+        type: string
+        description: Required resolution (for autocollect) 
+        example: 1.23
+      R:
+        type: string
+        description: Number of times robot has loaded sample
+        example: 1
+      SC:
+        type: string
+        description: Number of screenings
+        example: 1
+      GR:
+        type: string
+        description: Number of grid scans
+        example: 0
+      DC:
+        type: string
+        description: Number of data collections
+        example: 1
+      AI:
+        type: string
+        description: Number of auto indexings
+        example: 4
+      AP:
+        type: string
+        description: Number of auto integrations
+        example: 5
+      SCCOMPLETENESS:
+        type: string
+        description: Best indexing completeness
+        example: null
+      SCRESOLUTION:
+        type: string
+        description: Best indexing resolution
+        example: null
+      DCCOMPLETENESS:
+        type: string
+        description: Best data collection completeness
+        example: 100
+      DCRESOLUTION:
+        type: string
+        description: Best data collection resolution
+        example: 2.39
+
+  - $ref: sample-new.yaml

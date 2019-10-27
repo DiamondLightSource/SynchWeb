@@ -1,0 +1,62 @@
+strategy:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections-processing']
+    summary: Get indexing strategies for a data collection
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: Indexing strategy results
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Strategies'        
+integration:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections-processing']
+    summary: Get integration results for a data collection
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: Integraton results
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Integration'
+
+downstream:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections-processing']
+    summary: Get downstream processing for a data collection (dimple, fastep)
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: Downstream processing results
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Downstream'
+
+rad-dam:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections-processing']
+    summary: Get radiation damage analysis for a data collection
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: Radiation damage analysis
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/RadiationDamage'

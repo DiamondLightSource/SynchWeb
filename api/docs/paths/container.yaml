@@ -1,0 +1,225 @@
+containers:
+  get:
+    security:
+      - Bearer: []
+    tags: ['containers']
+    summary: Get a list of containers
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/VisitParam'
+      - $ref: '#/parameters/BLParam'
+      - $ref: '#/parameters/ProteinIDParam'
+      - $ref: '#/parameters/DewarIDParam'
+      - name: all
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all containers (need staff permission)
+        enum:
+          - 1
+      - name: ty
+        type: string
+        in: query
+        pattern: '\w+'
+        description: Show containers of a particular type
+        enum:
+          - plate
+          - puck
+      - name: assigned
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all assigned containers
+        enum:
+          - 1
+      - name: unassigned
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all unassigned containers
+        enum:
+          - 1
+      - name: imager
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all containers in an imager
+        enum:
+          - 1
+      - $ref: '#/parameters/ImagerIDParam'
+
+    responses:
+      200:
+        description: A list of containers
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Container'
+  post:
+    security:
+      - Bearer: []
+    tags: ['containers', 'create-shipment']
+    summary: Create a container
+    parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ContainerNew'
+    responses:
+      200:
+        description: Container created
+        schema:
+          properties:
+            CONTAINERID:
+              type: integer
+              example: 8965
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['containers']
+    summary: Get a single container
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ContainerIDParam'
+    responses:
+      200:
+        description: A single container
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Container'
+      400:
+        description: No such container
+  patch:
+    security:
+      - Bearer: []
+    tags: ['containers']
+    summary: Update a container
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ContainerIDParam'
+      - name: body
+        in: body
+        schema:
+          properties:
+            NAME:
+              type: string
+              example: New container name
+    responses:
+      200:
+        description: Container updated
+        schema:
+          properties:
+            NAME:
+              type: string
+      400:
+        description: No such container
+
+containers-did:
+  get:
+    security:
+      - Bearer: []
+    tags: ['containers']
+    summary: Get containers for a particular dewar
+    parameters:
+      - $ref: '#/parameters/DewarIDParam'
+      - $ref: '#/parameters/ProposalParam'
+    responses:
+      200:
+        description: List of containers
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Container'
+
+move:
+  get:
+    security:
+      - Bearer: []
+    tags: ['containers']
+    summary: Move a container to a different dewar
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: cid
+        in: query
+        type: number
+        description: Container id to move
+      - name: did
+        in: query
+        type: number
+        description: New dewar id
+    responses:
+      200:
+        description: Container moved
+
+queue:
+  get:
+    security:
+      - Bearer: []
+    tags: ['containers']
+    summary: Queue a container for data collection
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: cid
+        in: query
+        type: number
+        description: Container id to move
+    responses:
+      200:
+        description: Container queued
+      400:
+        description: No such container / Container already queued
+
+cache:
+  get:
+    security:
+      - Bearer: []
+    tags: ['containers']
+    summary: Get a named cache
+    description: Return a json object
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/CacheNameParam'
+    responses:
+      200:
+        description: Return named object
+        schema:
+          properties:
+            data:
+              type: object
+  put:
+    security:
+      - Bearer: []
+    tags: ['containers']
+    summary: Update a named cache 
+    description: Can pass a json object which will be serialised
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/CacheNameParam'
+      - name: body
+        in: body
+        schema:
+          properties:
+            data:
+              type: object
+    responses:
+      200:
+        description: Cache updated
+        schema:
+          properties:
+            data:
+              type: object

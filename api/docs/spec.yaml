@@ -1,0 +1,27 @@
+swagger: '2.0'
+# openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: SynchWeb REST API Specification
+  description: SynchWeb
+host: ispyb.diamond.ac.uk
+basePath: /api
+schemes:
+  - https
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  $ref: ./paths/index.yaml
+definitions:
+  $ref: ./definitions/index.yaml
+parameters:
+  $ref: ./parameters/index.yaml
+# responses:
+#   $ref: ./responses/index.yaml

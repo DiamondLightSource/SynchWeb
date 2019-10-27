@@ -1,0 +1,4 @@
+type: object
+properties:
+  DATACOLLECTIONCOMMENTID:
+    type: number

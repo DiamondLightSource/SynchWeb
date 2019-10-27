@@ -1,0 +1,50 @@
+allOf:
+  - type: object
+    properties:
+      FIRSTEXPERIMENT:
+        type: string
+        description: First visit this dewar is scheduled on
+        example: cm14451-2
+      LABCONTACTID:
+        type: string
+        description: Lab Contact id who owns this dewar (from FacilityCode)
+        example: 4323
+        pattern: '\d+'
+      LOCALCONTACT:
+        type: string
+        description: Local Contact of First Experiment
+        example: Beamline Scientist
+      FIRSTEXPERIMENTST:
+        type: string
+        description: First visit start date
+        example: 09:00 11-03-2016
+      SHIPPINGNAME:
+        type: string
+        description: Shipment name
+        example: ship1
+      CCOUNT:
+        type: string
+        description: Number of containers in this dewar
+        example: 4
+      EXP:
+        type: string
+        description: Duplicate?
+        example: cm14451-2
+      BARCODE:
+        type: string
+        description: Dewar shipment barcode
+        example: cm14451-2-i03-0008624
+        pattern: '([\w-])+'
+      STORAGELOCATION:
+        type: string
+        description: Current storage location (unused?)
+      DEWARSTATUS:
+        type: string
+        description: Dewar status and / or location
+        example: sent to DLS
+      DEWARID:
+        type: string
+        description: Dewar id 
+        example: 8624
+
+  - $ref: dewar-new.yaml

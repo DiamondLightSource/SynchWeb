@@ -1,0 +1,40 @@
+    type: object
+    properties:
+      PROPOSAL:
+        type: string
+        description: Proposal
+        example: mx1234
+      TITLE:
+        type: string
+        description: Proposal title
+        example: A sample proposal
+      ST: 
+        type: string
+        description: Proposal start date
+        example: 12-08-2016
+      PROPOSALCODE:
+        type: string
+        description: Proposal code
+        example: mx
+      PROPOSALNUMBER:
+        type: string
+        description: Proposal number
+        example: 1234
+      VCOUNT:
+        type: string
+        description: Visit count for proposal
+        example: 24
+      PROPOSALID:
+        type: string
+        description: Proposal id
+      TYPE:
+        type: string
+        description: Proposal type
+        example: mx
+        enum:
+         - mx
+         - pow
+         - tomo
+         - saxs
+         - sm
+         - gen

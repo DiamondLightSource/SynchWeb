@@ -1,0 +1,186 @@
+type: object
+properties:
+  DCCC:
+    type: string
+    description: 
+    example: 1
+  DCC:
+    type: string
+    description: 
+    example: 1
+  SAMPLE:
+    type: string
+    description: 
+    example: null
+  BLSAMPLEID:
+    type: string
+    description: 
+    example: null
+  VN:
+    type: string
+    description: 
+    example: 3
+  KAPPA:
+    type: string
+    description: 
+    example: 1
+  PHI:
+    type: string
+    description: 
+    example: 1
+  SI:
+    type: string
+    description: 
+    example: 1
+  DCT:
+    type: string
+    description: 
+    example: A
+  DCG:
+    type: string
+    description: 
+    example: 1
+  RUNSTATUS:
+    type: string
+    description: 
+    example: A
+  BSX:
+    type: string
+    description: 
+    example: 10
+  BSY:
+    type: string
+    description: 
+    example: 1
+  OVERLAP:
+    type: string
+    description: 
+    example: 1
+  FLUX:
+    type: string
+    description: 
+    example: 1
+  SCON:
+    type: string
+    description: 
+    example: 1
+  SPOS:
+    type: string
+    description: 
+    example: SUCCESS
+  SAN:
+    type: string
+    description: 
+    example: OK
+  TYPE:
+    type: string
+    description: 
+    example: action
+  IMP:
+    type: string
+    description: 
+    example: WASH
+  RUN:
+    type: string
+    description: 
+    example: 1
+  FILETEMPLATE:
+    type: string
+    description: 
+    example: A
+  ID:
+    type: string
+    description: 
+    example: 466497
+  NI:
+    type: string
+    description: 
+    example: 1
+  DIR:
+    type: string
+    description: 
+    example: null
+  RESOLUTION:
+    type: string
+    description: 
+    example: 0
+  EXPOSURETIME:
+    type: string
+    description: 
+    example: 0
+  AXISSTART:
+    type: string
+    description: 
+    example: 1
+  NUMIMG:
+    type: string
+    description: 
+    example: 1
+  ST:
+    type: string
+    description: 
+    example: 18-06-2016 09:32:21
+  TRANSMISSION:
+    type: string
+    description: 
+    example: 1
+  AXISRANGE:
+    type: string
+    description: 
+    example: 1
+  WAVELENGTH:
+    type: string
+    description: 
+    example: 1
+  COMMENTS:
+    type: string
+    description: 
+    example: A
+  EPK:
+    type: string
+    description: 
+    example: 1
+  EIN:
+    type: string
+    description: 
+    example: 1
+  X1:
+    type: string
+    description: 
+    example: A
+  X2:
+    type: string
+    description: 
+    example: A
+  X3:
+    type: string
+    description: 
+    example: A
+  X4:
+    type: string
+    description: 
+    example: A
+  STA:
+    type: string
+    description: 
+    example: 2016-06-18 09:32:21
+  DET:
+    type: string
+    description: 
+    example: 1
+  XBEAM:
+    type: string
+    description: 
+    example: 1
+  YBEAM:
+    type: string
+    description: 
+    example: 1
+  SN:
+    type: string
+    description: 
+    example: 0
+  DI:
+    type: string
+    description: 
+    example: 0

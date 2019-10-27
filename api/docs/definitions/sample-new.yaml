@@ -1,0 +1,140 @@
+type: object
+properties:
+  CONTAINERID:
+    type: string
+    pattern: \d+
+    description: Container id
+    example: 123
+  PROTEINID:
+    type: string
+    pattern: \d+
+    description: Protein id
+    example: 123
+  CRYSTALID:
+    type: string
+    pattern: \d+
+    description: Crystal id
+    example: 123
+  LOCATION:
+    type: string
+    pattern: \d+
+    description: Numerical poisition of sample in container (<= container capacity, 1 offset)
+    example: '1'
+  NAME:
+    type: string
+    pattern: '[\w\s-()]+'
+    description: Sample name
+    example: xtal4
+
+  COMMENTS:
+    type: string
+    description: Sample comments
+    example: in 25% PEG4000 50um
+
+  SPACEGROUP:
+    type: string
+    description: Spacegroup
+    example: P222
+
+  CODE:
+    type: string
+    description: Pin barcode
+    example: FG5644
+
+  ANOMALOUSSCATTERER:
+    type: string
+    description: Potential anomalous scatterer
+    example: Fe
+
+  CENTRINGMETHOD:
+    type: string
+    description: Centring method (for autocollect)
+    example: xray
+
+  EXPERIMENTKIND:
+    type: string
+    description: Experiment type (for autocollect)
+    example: SAD
+
+  RADIATIONSENSITIVITY:
+    type: string
+    description: Estimated radiation sensitivty (0-100, low to high)
+    example: 50
+
+  SCREENCOMPONENTGROUPID:
+    type: string
+    description: Crystallisation screen component group id
+    example: 123
+
+  CELL_A:
+    type: string
+    description: Unit cell a
+    example: 123.4
+  CELL_ALPHA:
+    type: string
+    description: Unit cell alpha
+    example: 123.4
+  CELL_B:
+    type: string
+    description: Unit cell b
+    example: 123.4
+  CELL_BETA:
+    type: string
+    description: Unit cell beta
+    example: 123.4
+  CELL_C:
+    type: string
+    description: Unit cell c
+    example: 123.4
+  CELL_GAMMA:
+    type: string
+    description: Unit cell gamma
+    example: 123.4
+
+  DIMENSION1:
+    type: string
+    description: First dimension of sample
+    example: 123
+  DIMENSION2:
+    type: string
+    description: Second dimension of sample
+    example: 123
+  DIMENSION3:
+    type: string
+    description: Third dimension of sample
+    example: 123
+
+  THEORETICALDENSITY:
+    type: string
+    description: Theoretical density
+    example: 1243.3
+  VOLUME:
+    type: string
+    description: Volume in microlitres for none crystal samples
+    example: 20
+  ABUNDANCE:
+    type: string
+    description: Abundance in sample (i.e. mg/ml for protein)
+    example: 25
+  PACKINGFRACTION:
+    type: string
+    description: Packing fraction of sample
+    example: 0.5
+  ENERGY:
+    type: string
+    description: Energy in eV (for autocollect)
+    example: 12768
+  LOOPTYPE:
+    type: string
+    description: Loop type 
+    example: polymer
+  SHAPE:
+    type: string
+    description: Sample shape
+    example: cubic
+
+required:
+  - CONTAINERID
+  - PROTEINID
+  - LOCATION
+  - NAME

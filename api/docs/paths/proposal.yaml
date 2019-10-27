@@ -1,0 +1,185 @@
+proposals:
+  get:
+    security:
+      - Bearer: []
+    tags: ['proposals']
+    summary: Get list of proposals
+    parameters:
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/SearchParam'
+      - $ref: '#/parameters/SortByParam'
+      - $ref: '#/parameters/SortOrderParam'
+      - $ref: '#/parameters/ProposalParam'
+    responses:
+      200:
+        description: Array of proposals
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Proposal'
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['proposals']
+    summary: Get a single proposal
+    parameters:
+      - name: proposal
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Single proposal
+        schema:
+          $ref: '#/definitions/Proposal'
+
+bls:
+  get:
+    security:
+      - Bearer: []
+    tags: ['proposals']
+    summary: Get a list of beamlines for a type
+    parameters:
+      - $ref: '#/parameters/TypeParam'
+    responses:
+      200:
+        description: Array of beamlines for type
+        schema:
+          type: array
+          items:
+            type: string
+        examples:
+          application/json:
+            - i02
+            - i03
+            - i04
+
+visits:
+  get:
+    security:
+      - Bearer: []
+    tags: ['visits']
+    summary: Get a list of visits
+    parameters:
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/SearchParam'
+      - $ref: '#/parameters/SortByParam'
+      - $ref: '#/parameters/SortOrderParam'
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/BLParam'
+      - name: all
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all visits (need staff permission)
+        enum:
+          - 1
+      - name: year
+        type: string
+        in: query
+        pattern: '\d\d\d\d'
+        description: Show visits from year
+      - name: month
+        type: string
+        in: query
+        pattern: '\d+'
+        description: Show visits from month
+      - name: cm
+        type: string
+        in: query
+        pattern: '\d'
+        description: Show commissioning visits
+        enum:
+          - 1
+      - name: next
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show next visit to start
+        enum:
+          - 1
+      - name: prev
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show previous visit to start
+        enum:
+          - 1
+      - name: started
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show started visits
+        enum:
+          - 1
+      - name: current
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show current visits
+        enum:
+          - 1
+    responses:
+      200:
+        description: test
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Visit'
+
+visits-single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['visits']
+    summary: Get a single visit
+    parameters:
+      - name: visit
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Single visit
+        schema:
+          $ref: '#/definitions/Visit'
+
+  patch:
+    security:
+      - Bearer: []
+    tags: ['visits']
+    summary: Update a visit, pass one Visit property
+    parameters:
+      - name: visit
+        in: path
+        type: string
+        required: true
+      - name: body
+        in: body
+        schema:
+          properties:
+            COMMENTS:
+              type: string
+              example: a new comment
+    responses:
+      200:
+        description: Visit updated
+        schema:
+          properties:
+            COMMENTS:
+              type: string
+              example: a new comment

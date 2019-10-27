@@ -1,0 +1,190 @@
+type: object
+properties:
+  DCCC:
+    type: string
+    description: 
+    example: 0
+  DCC:
+    type: string
+    description: 
+    example: 1
+  SAMPLE:
+    type: string
+    description: 
+    example: null
+  BLSAMPLEID:
+    type: string
+    description: 
+    example: null
+  VN:
+    type: string
+    description: 
+    example: 2
+  KAPPA:
+    type: string
+    description: 
+    example: null
+  PHI:
+    type: string
+    description: 
+    example: null
+  SI:
+    type: string
+    description: 
+    example: 1
+  DCT:
+    type: string
+    description: 
+    example: Data Collection
+  DCG:
+    type: string
+    description: 
+    example: 1145155
+  RUNSTATUS:
+    type: string
+    description: 
+    example: DataCollection Successful
+  BSX:
+    type: string
+    description: 
+    example: 40
+  BSY:
+    type: string
+    description: 
+    example: 30
+  OVERLAP:
+    type: string
+    description: 
+    example: 0
+  FLUX:
+    type: string
+    description: 
+    example: null
+  SCON:
+    type: string
+    description: 
+    example: 1
+  SPOS:
+    type: string
+    description: 
+    example: a
+  SAN:
+    type: string
+    description: 
+    example: a
+  TYPE:
+    type: string
+    description: 
+    example: data
+  IMP:
+    type: string
+    description: 
+    example: X1_strong_M1S1
+  RUN:
+    type: string
+    description: 
+    example: 2
+  FILETEMPLATE:
+    type: string
+    description: 
+    example: X1_strong_M1S1_2_####.cbf
+  ID:
+    type: string
+    description: 
+    example: 1158070
+  NI:
+    type: string
+    description: 
+    example: 900
+  DIR:
+    type: string
+    description: 
+    example: tmp/2016-06-10/fake081440/
+  RESOLUTION:
+    type: string
+    description: 
+    example: 1.10
+  EXPOSURETIME:
+    type: string
+    description: 
+    example: 0.050
+  AXISSTART:
+    type: string
+    description: 
+    example: 0.0
+  NUMIMG:
+    type: string
+    description: 
+    example: 900
+  ST:
+    type: string
+    description: 
+    example: 10-06-2016 08:19:34
+  TRANSMISSION:
+    type: string
+    description: 
+    example: 39.96
+  AXISRANGE:
+    type: string
+    description: 
+    example: 0.20
+  WAVELENGTH:
+    type: string
+    description: 
+    example: 0.9795
+  COMMENTS:
+    type: string
+    description: 
+    example: Simulated datacollection.
+  EPK:
+    type: string
+    description: 
+    example: 1
+  EIN:
+    type: string
+    description: 
+    example: 1
+  X1:
+    type: string
+    description: 
+    example: /path/fake081440/X1_strong_M1S1_3_0.0.png
+  X2:
+    type: string
+    description: 
+    example: /path/fake081440/X1_strong_M1S1_3_90.0.png
+  X3:
+    type: string
+    description: 
+    example: /path/fake081440/X1_strong_M1S1_3_180.0.png
+  X4:
+    type: string
+    description: 
+    example: /path/fake081440/X1_strong_M1S1_3_270.0.png
+  STA:
+    type: string
+    description: 
+    example: 2016-06-10 08:19:34
+  DET:
+    type: string
+    description: 
+    example: 160
+  XBEAM:
+    type: string
+    description: 
+    example: 212.50999450684
+  YBEAM:
+    type: string
+    description: 
+    example: 219.97999572754
+  SN:
+    type: string
+    description: 
+    example: 0
+  DI:
+    type: string
+    description: 
+    example: 0
+  DIRFULL:
+    type: string
+    description: 
+    example: /path/fake081440/

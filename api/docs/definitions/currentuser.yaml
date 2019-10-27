@@ -1,0 +1,26 @@
+type: object
+properties:
+  personid: 
+    type: string
+    description: Users personid
+    example: 1234
+  user:
+    type: string
+    description: Users login
+    example: abd1234
+  permissions:
+    type: array
+    description: Array of permissions this user has
+    items:
+      type: string
+    example:
+      - mx_staff
+      - fault_view
+  is_staff:
+    type: string
+    description: Is this user staff for this type?
+    example: true
+  ty:
+    type: string
+    description: The api type, determined from beamlines user uses
+    example: mx

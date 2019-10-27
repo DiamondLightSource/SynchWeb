@@ -1,0 +1,148 @@
+shipments:
+  get:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Get a list of shipments
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/SearchParam'
+      - $ref: '#/parameters/SortByParam'
+      - $ref: '#/parameters/SortOrderParam'
+      - name: all
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all shipments (requires staff permission)
+        enum:
+          - 1
+      - name: manifest
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all shipments for DHL manifest
+        enum:
+          - 1
+          
+    responses:
+      200:
+        description: A list of shipments
+        schema:
+          type: object
+          properties:
+            total:
+              type: number
+              example: 500
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Shipment'
+
+  post:
+    security:
+      - Bearer: []
+    tags: ['shipments', 'create-shipment']
+    summary: Create a new shipment
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/Shipment'
+    responses:
+      200:
+        description: Shipment Created
+        schema:
+          properties:
+            SHIPPINGID:
+              type: integer
+
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Get a single shipment
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+    responses:
+      200:
+        description: A single shipment
+        schema:
+            $ref: '#/definitions/Shipment'
+
+  patch:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Update a shipment
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/Shipment'
+    responses:
+      200:
+        description: Shipment updated
+        schema:
+          properties:
+            SHIPPINGNAME:
+              type: string
+
+
+send:
+  get:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Mark a shipment as sent to facility. 
+    description: Emails goods handling and local contacts
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+    responses:
+      200:
+        description: Shipment marked as sent
+
+terms:
+  get:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Returns facility courier terms and conditions
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+    responses:
+      200:
+        description: Terms and conditions
+        schema:
+          type: object
+          properties:
+            TERMS:
+              type: string
+
+  patch:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Accept facility courier t&cs
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+    responses:
+      200:
+        description: Courier terms accepted
+        schema:
+          type: object
+          properties:
+            ACCEPTED:
+              type: string
+              pattern: '\d+'
+              example: 1

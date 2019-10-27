@@ -1,0 +1,46 @@
+type: object
+properties:
+  ACRONYM:
+    type: string
+    pattern: ([\w-])+
+    description: Protein acronym
+    example: prot1
+
+  NAME:
+    type: string
+    pattern: ([\w-])+
+    description: Protein acronym
+    example: Protein one
+  SEQUENCE:
+    type: string
+    pattern: '[\s\w\(\)\.>\|;\n]+'
+    description: Protein acronym
+    example: FGCDFDGDSCSFEFSDF
+  MOLECULARMASS:
+    type: string
+    pattern: \d+(.\d+)?
+    description: Molecular mass
+    example: 34563.2
+  CONCENTRATIONTYPEID:
+    type: string
+    pattern: \d+
+    description: Concentration type id
+    example: 123
+  COMPONENTTYPEID:
+    type: string
+    pattern: \d+
+    description: Component type id
+    example: 123
+  GLOBAL:
+    type: string
+    pattern: \d
+    description: If this protein is globally available to all proposals
+    example: 1
+  DENSITY:
+    type: string
+    pattern: \d+(.\d+)?
+    description: Protein acronym
+    example: 12.43    
+
+required:
+  - ACRONYM

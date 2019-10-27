@@ -1,0 +1,197 @@
+type: object
+properties:
+  DCCC:
+    type: string
+    description: Comment count
+    example: 0
+  DCC:
+    type: string
+    description: Data collection count (>1 = Data collection group)
+    example: 1
+  SAMPLE:
+    type: string
+    description: Sample name
+    example: thau1
+  BLSAMPLEID:
+    type: string
+    description: Sample id
+    example: 1234
+  VN:
+    type: string
+    description: Visit Number
+    example: 2
+  KAPPA:
+    type: string
+    description: Kappa Angle
+    example: 12.4
+  PHI:
+    type: string
+    description: Phi Angle
+    example: 15.7
+  SI:
+    type: string
+    description: Start image number
+    example: 1
+  DCT:
+    type: string
+    description: Data collection type from ISPyB
+    example: Data Collection
+    enum:
+      - Grid Scan
+      - Data Collection
+  DCG:
+    type: string
+    description: Data collection group
+    example: 1145155
+  RUNSTATUS:
+    type: string
+    description: Run Status
+    example: DataCollection Successful
+  BSX:
+    type: string
+    description: Beam size x (um)
+    example: 40
+  BSY:
+    type: string
+    description: Beam size y (um)
+    example: 30
+  OVERLAP:
+    type: string
+    description: Axis overlap
+    example: 0
+  FLUX:
+    type: string
+    description: Flux at sample
+    example: 12000000
+  SCON:
+    type: string
+    description: N/A
+    example: 1
+  SPOS:
+    type: string
+    description: N/A
+    example: a
+  SAN:
+    type: string
+    description: N/A
+    example: a
+  TYPE:
+    type: string
+    description: Implied type (for ui)
+    example: data
+    enum:
+      - data
+      - grid
+  IMP:
+    type: string
+    description: Image Prefix
+    example: X1_strong_M1S1
+  RUN:
+    type: string
+    description: Run number
+    example: 2
+  FILETEMPLATE:
+    type: string
+    description: File template
+    example: X1_strong_M1S1_2_####.cbf
+  ID:
+    type: string
+    description: Data collection id
+    example: 1158070
+  NI:
+    type: string
+    description: Number of images
+    example: 900
+  DIR:
+    type: string
+    description: Image directory
+    example: tmp/2016-06-10/fake081440/
+  RESOLUTION:
+    type: string
+    description: Maximum resolution
+    example: 1.10
+  EXPOSURETIME:
+    type: string
+    description: Exposure time (s)
+    example: 0.050
+  AXISSTART:
+    type: string
+    description: Rotation axis start
+    example: 0.0
+  NUMIMG:
+    type: string
+    description: Number of images (duplicate)
+    example: 900
+  ST:
+    type: string
+    description: Start time
+    example: 10-06-2016 08:19:34
+  TRANSMISSION:
+    type: string
+    description: Transmission (%)
+    example: 39.96
+  AXISRANGE:
+    type: string
+    description: Rotation axis oscilliation range
+    example: 0.20
+  WAVELENGTH:
+    type: string
+    description: Wavelength
+    example: 0.9795
+  COMMENTS:
+    type: string
+    description: Comment
+    example: Simulated datacollection.
+  EPK:
+    type: string
+    description: N/A
+    example: 1
+  EIN:
+    type: string
+    description: N/A
+    example: 1
+  X1:
+    type: string
+    description: Snapshot 1
+    example: /path/fake081440/X1_strong_M1S1_3_0.0.png
+  X2:
+    type: string
+    description: Snapshot 2
+    example: /path/fake081440/X1_strong_M1S1_3_90.0.png
+  X3:
+    type: string
+    description: Snapshot 3
+    example: /path/fake081440/X1_strong_M1S1_3_180.0.png
+  X4:
+    type: string
+    description: Snapshot 4
+    example: /path/fake081440/X1_strong_M1S1_3_270.0.png
+  STA:
+    type: string
+    description: Start time (duplicate)
+    example: 2016-06-10 08:19:34
+  DET:
+    type: string
+    description: Detector distance (mm)
+    example: 160
+  XBEAM:
+    type: string
+    description: Beam centre x (mm)
+    example: 212.50999450684
+  YBEAM:
+    type: string
+    description: Beam centre y (mm)
+    example: 219.97999572754
+  SN:
+    type: string
+    description: Deprecated
+    example: 0
+    # deprecated: true
+  DI:
+    type: string
+    description: Deprecated
+    example: 0
+  DIRFULL:
+    type: string
+    description: Image directory (including visit path)
+    example: /path/fake081440/

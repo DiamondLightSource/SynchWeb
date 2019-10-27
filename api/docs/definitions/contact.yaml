@@ -1,0 +1,10 @@
+allOf:
+  - type: object
+    properties:
+      LABCONTACTID:
+        type: string
+        description: id
+        pattern: '\d+'
+        example: 2
+
+  - $ref: contact-new.yaml

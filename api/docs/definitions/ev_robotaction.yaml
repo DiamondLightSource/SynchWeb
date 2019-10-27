@@ -1,0 +1,238 @@
+type: object
+properties:
+  DCCC:
+    type: string
+    description: N/A 
+    example: 1
+  DCC:
+    type: string
+    description: N/A
+    example: 1
+  SAMPLE:
+    type: string
+    description: Sample name
+    example: therm2
+  BLSAMPLEID:
+    type: string
+    description: Sample id
+    example: 398812
+  VN:
+    type: string
+    description: Visit number
+    example: 2
+  KAPPA:
+    type: string
+    description: N/A
+    example: 1
+  PHI:
+    type: string
+    description: N/A
+    example: 1
+  SI:
+    type: string
+    description: N/A
+    example: 1
+  DCT:
+    type: string
+    description: N/A
+    example: A
+  DCG:
+    type: string
+    description: N/A
+    example: 1
+  RUNSTATUS:
+    type: string
+    description: N/A
+    example: A
+  BSX:
+    type: string
+    description: Loading time (s)
+    example: 41
+  BSY:
+    type: string
+    description: N/A
+    example: 1
+  OVERLAP:
+    type: string
+    description: N/A
+    example: 1
+  FLUX:
+    type: string
+    description: N/A
+    example: 1
+  SCON:
+    type: string
+    description: N/A
+    example: 1
+  SPOS:
+    type: string
+    description: Sample changer status
+    example: SUCCESS
+  SAN:
+    type: string
+    description: Sample changer message
+    example: OK
+  TYPE:
+    type: string
+    description: Implied type (for ui)
+    example: load
+    enum:
+      - load
+  IMP:
+    type: string
+    description: Robot action type
+    example: UNLOAD
+    enum:
+      - LOAD
+      - UNLOAD
+  RUN:
+    type: string
+    description: N/A
+    example: 1
+  FILETEMPLATE:
+    type: string
+    description: N/A
+    example: A
+  ID:
+    type: string
+    description: Robot action id
+    example: 453813
+  NI:
+    type: string
+    description: N/A
+    example: 1
+  DIR:
+    type: string
+    description: N/A
+  RESOLUTION:
+    type: string
+    description: Pin number
+    example: 10
+  EXPOSURETIME:
+    type: string
+    description: Puck number 
+    example: 29
+  AXISSTART:
+    type: string
+    description: N/A
+    example: 1
+  NUMIMG:
+    type: string
+    description: N/A
+    example: 1
+  ST:
+    type: string
+    description: Action start time
+    example: 16-05-2016 11:48:45
+  TRANSMISSION:
+    type: string
+    description: N/A
+    example: 1
+  AXISRANGE:
+    type: string
+    description: N/A
+    example: 1
+  WAVELENGTH:
+    type: string
+    description: N/A
+    example: 1
+  COMMENTS:
+    type: string
+    description: N/A
+    example: A
+  EPK:
+    type: string
+    description: N/A
+    example: 1
+  EIN:
+    type: string
+    description: N/A
+    example: 1
+  X1:
+    type: string
+    description: N/A
+    example: A
+  X2:
+    type: string
+    description: N/A
+    example: A
+  X3:
+    type: string
+    description: N/A
+    example: A
+  X4:
+    type: string
+    description: N/A
+    example: A
+  STA:
+    type: string
+    description: Start time (duplicate)
+    example: 2016-05-16 11:48:45
+  DET:
+    type: string
+    description: N/A
+    example: 1
+  XBEAM:
+    type: string
+    description: N/A
+    example: 1
+  YBEAM:
+    type: string
+    description: N/A
+    example: 1
+  SN:
+    type: string
+    description: N/A
+    example: 0
+  DI:
+    type: string
+    description: N/A
+    example: 0
+# examples:
+#   application/json:
+#     DCCC: '1'
+#     DCC: '1'
+#     SAMPLE: 'null'
+#     BLSAMPLEID: 'null'
+#     VN: '3'
+#     KAPPA: '1'
+#     PHI: '1'
+#     SI: '1'
+#     DCT: 'A'
+#     DCG: '1'
+#     RUNSTATUS: 'A'
+#     BSX: '10'
+#     BSY: '1'
+#     OVERLAP: '1'
+#     FLUX: '1'
+#     SCON: '1'
+#     SPOS: 'SUCCESS'
+#     SAN: 'OK'
+#     TYPE: 'action'
+#     IMP: 'WASH'
+#     RUN: '1'
+#     FILETEMPLATE: 'A'
+#     ID: '466497'
+#     NI: '1'
+#     DIR: 'null'
+#     RESOLUTION: '0'
+#     EXPOSURETIME: '0'
+#     AXISSTART: '1'
+#     NUMIMG: '1'
+#     ST: '18-06-2016 09:32:21'
+#     TRANSMISSION: '1'
+#     AXISRANGE: '1'
+#     WAVELENGTH: '1'
+#     COMMENTS: 'A'
+#     EPK: '1'
+#     EIN: '1'
+#     X1: 'A'
+#     X2: 'A'
+#     X3: 'A'
+#     X4: 'A'
+#     STA: '2016-06-18 09:32:21'
+#     DET: '1'
+#     XBEAM: '1'
+#     YBEAM: '1'
+#     SN: '0'
+#     DI: '0'

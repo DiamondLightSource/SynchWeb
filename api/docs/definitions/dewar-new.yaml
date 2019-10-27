@@ -1,0 +1,36 @@
+type: object
+properties:
+  SHIPPINGID:
+    type: string
+    description: Shippingid dewar belongs to
+    example: 7275
+    pattern: '\d+'
+  CODE:
+    type: string
+    description: Dewar name
+    example: DLS-MX-1234
+    pattern: '([\w-])+'
+  TRACKINGNUMBERTOSYNCHROTRON:
+    type: string
+    description: Tracking number on route to facility
+    example: AWB121342
+    pattern: '\w+'
+  TRACKINGNUMBERFROMSYNCHROTRON:
+    type: string
+    description: Tracking number from facility
+    example: AWB121343
+    pattern: '\w+'
+  FACILITYCODE:
+    type: string
+    description: Unique identifier of this dewar (barcode at DLS)
+    example: DLS-MX-1234
+    pattern: '([\w-])+'
+  FIRSTEXPERIMENTID:
+    type: string
+    description: First visit id
+    example: 55168
+    pattern: '\d+'
+
+required:
+  - SHIPPINGID
+  - CODE
