@@ -16,6 +16,10 @@ define(['marionette',
         template: template,
         className: 'content',
 
+        templateHelpers: {
+            proposal: app.prop
+        },
+
         regions: {
             rprots: '.rproteins',
             rconts: '.rcontacts',
@@ -78,7 +82,7 @@ define(['marionette',
                     patch: true,
                     success: function() {
                         app.alert({ message: 'Dewar successfully migrated to: '+p.get('PROPOSAL') })
-                        self.reset()
+                        // self.reset()
                         self.dewars.fetch()
                     }, 
 
