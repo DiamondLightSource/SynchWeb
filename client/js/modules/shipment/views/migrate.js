@@ -16,8 +16,10 @@ define(['marionette',
         template: template,
         className: 'content',
 
-        templateHelpers: {
-            proposal: app.prop
+        templateHelpers: function() {
+            return {
+                proposal: app.prop
+            }
         },
 
         regions: {
