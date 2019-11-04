@@ -147,6 +147,7 @@ define(['marionette', 'backbone',
             if (options.childTemplate) this.options.childViewOptions.template = options.childTemplate
 
             this.regdewars = new DewarRegistry()
+            this.regdewars.state.pageSize = 9999
             this.regdewars.fetch()
         },
         
