@@ -230,7 +230,7 @@ define(['marionette',
                 this.platetypes = new PlateTypes()
                 this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
-            } else this.puck.show(new PuckView({ collection: this.samples }))
+            } else this.puck.show(new PuckView({ collection: this.samples, capacity: this.model.get('CAPACITY') }))
 
             this.sampletable = new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type, auto: this.model.get('CONTAINERQUEUEID') ? true : false })
             this.table.show(this.sampletable)

@@ -1196,9 +1196,9 @@ class Shipment extends Page
 
             if ($this->has_arg('ty')) {
                 if ($this->arg('ty') == 'plate') {
-                    $where .= " AND c.containertype NOT LIKE 'Puck'";
+                    $where .= " AND c.containertype NOT LIKE '%puck'";
                 } else if ($this->arg('ty') == 'puck') {
-                    $where .= " AND c.containertype LIKE 'Puck'";
+                    $where .= " AND c.containertype LIKE '%puck'";
                 } else if ($this->arg('ty') == 'imager') {
                     $where .= " AND c.imagerid IS NOT NULL";
                 } else if ($this->arg('ty') == 'todispose') {
@@ -1219,7 +1219,7 @@ class Shipment extends Page
 
 
             if ($this->has_arg('PUCK')) {
-                $where .= " AND c.containertype LIKE 'Puck'";
+                $where .= " AND c.containertype LIKE '%puck'";
             }
 
             
@@ -2382,7 +2382,7 @@ class Shipment extends Page
 
         function _notify_container() {
             global $auto;
-            
+
             if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
             if (!$this->has_arg('containerid')) $this->_error('No container specified');
 

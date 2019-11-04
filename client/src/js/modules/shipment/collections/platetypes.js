@@ -1,7 +1,9 @@
 define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], function(Backbone,  PlateType, KVCollection) {
     
     var plate_types = [
-         { name: 'Puck', capacity: 16 },
+         { name: 'Unipuck', capacity: 16 },
+         { name: 'Actorpuck', capacity: 12 },
+         { name: 'Spinepuck', capacity: 10 },
         
          { name: 'ReferencePlate', well_per_row: 2,
              drop_per_well_x: 1, drop_per_well_y: 1,
