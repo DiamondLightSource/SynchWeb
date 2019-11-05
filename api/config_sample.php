@@ -87,7 +87,7 @@
 
     # Places to search for autoprocessing and screening statuses. File scraping is done if no database value is available.
     $ap_statuses = array(
-        'locations' => array('/processed', 'tmp'),
+        'locations' => array('/processed', '/tmp'),
 
         'types' => array(
             'screening' => array(
@@ -114,6 +114,9 @@
             )
         )
     );
+
+    # List of enabled container types, all if empty 
+    $enabled_container_types = array();
 
     # Active MQ - Set to empty string to disable
     $activemq_server = 'tcp://activemq.server.ac.uk';
