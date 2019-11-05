@@ -4,6 +4,7 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
          { name: 'Unipuck', capacity: 16 },
          { name: 'Actorpuck', capacity: 12 },
          { name: 'Spinepuck', capacity: 10 },
+         { name: 'I23puck', capacity: 4 },
         
          { name: 'ReferencePlate', well_per_row: 2,
              drop_per_well_x: 1, drop_per_well_y: 1,

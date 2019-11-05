@@ -12,12 +12,19 @@ define(['marionette', 'utils', 'utils/canvas', 'jquery', 'backbone', 'backbone-v
         collectionEvents: { 'sync reset change add delete': 'onRender' },
           
         images: {
+            4: 'puck_i23',
             10: 'puck_spine',
             12: 'puck_actor',
             16: 'puck',
         },
 
         centres: {
+            4: [
+                [117, 117],
+                [183, 117],
+                [117, 183],
+                [183, 183],
+            ],
             10: [
                 [196, 248],
                 [244, 204],
@@ -155,7 +162,7 @@ define(['marionette', 'utils', 'utils/canvas', 'jquery', 'backbone', 'backbone-v
           
             
         _draw_positions: function() {
-            _.each(_.range(16), function(i) {
+            _.each(_.range(this.getOption('capacity')), function(i) {
                 var m = this.collection.findWhere({ LOCATION: (i+1).toString() })
               
                 if (m && m.get('PROTEINID') > -1) this.circle(this.centres[this.getOption('capacity')][i][0]*this.scale, this.centres[this.getOption('capacity')][i][1]*this.scale, 28*this.scale, m.isValid(true) ? '#82d180' : '#f26c4f')
