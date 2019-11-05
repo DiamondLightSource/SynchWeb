@@ -541,7 +541,7 @@ define(['backbone',
             this.ready2 = this.cache.fetch()
 
             
-            this.ctypes = new PlateTypes()
+            this.ctypes = new PlateTypes(null, { filtered: true })
             if (!app.user_can('disp_cont')) this.ctypes.remove(this.ctypes.findWhere({ name: 'ReferencePlate' }))
             
             this.cacheContainer = _.debounce(this.cacheContainer, 3000)

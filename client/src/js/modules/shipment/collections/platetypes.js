@@ -122,8 +122,17 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
         keyAttribute: 'name',
         valueAttribute: 'name',
         
-        initialize: function(options) {
-            this.reset(this.plateTypes)
+        initialize: function(models, options) {
+            if (options && options.filtered && app.options.get("enabled_container_types").length) {
+                var filtered = _.filter(this.plateTypes, function(pl) {
+                    return app.options.get("enabled_container_types").indexOf(pl.name) > -1
+                })
+                this.reset(filtered)    
+            } else {
+                this.reset(this.plateTypes)
+            }
+
+            
             this.on('change:isSelected', this.onSelectedChanged, this);
         },
         
