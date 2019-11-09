@@ -22,6 +22,14 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
         }
     })
 
+    var ArchivedCell = Backgrid.Cell.extend({
+        render: function() {
+            this.$el.empty()
+            if (this.model.get('ARCHIVED') == '1') this.$el.html('<i class="fa fa-archive r" title="This data collection is archived"></i>')
+            return this
+        }
+    })
+
        
   return Marionette.LayoutView.extend({
     linksTemplate: visitlinks,
@@ -49,7 +57,8 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
                      { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
                      { name: 'DCCOUNT', label: 'Data Collections', cell: 'string', editable: false },
                      { name: 'SESSIONTYPE', label: 'Type', cell: 'string', editable: false },
-                     { name: 'LINKS', label: '', cell: this.getOption('linksCell'), template: this.getOption('linksTemplate'), test: 'DCCOUNT', editable: false }]
+                     { name: 'LINKS', label: '', cell: this.getOption('linksCell'), template: this.getOption('linksTemplate'), test: 'DCCOUNT', editable: false },
+                     { name: 'ARCHIVED', label: '', cell: ArchivedCell, editable: false }]
         
       if (app.mobile()) {
         console.log('mobile!')

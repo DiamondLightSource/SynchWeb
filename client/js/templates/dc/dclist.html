@@ -15,6 +15,12 @@
         </p>
     <% } %>
 
+    <% if (ARCHIVED == "1") { %>
+        <p class="message notify">
+            This visit is archived, data is no long available on disk. You cannot download processing results, view full sized diffracftion images, or reprocess data
+        </p>
+    <% } %>
+
     <div class="links">
         <a class="button" href="/assign/visit/<%-VISIT%>" title="Assign Containers" class="summary"><i class="fa fa-arrows"></i> <span>Assign Containers</span></a>
         <a class="button" href="/dc/summary/visit/<%-VISIT%>" title="Data Summary" class="summary"><i class="fa fa-file-o"></i> <span>Summary</span></a>
