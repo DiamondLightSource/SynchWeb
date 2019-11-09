@@ -353,12 +353,11 @@
                 array_push($args, $this->user->personid);
             }
             
-            $tot = $this->db->pq("SELECT count(s.sessionid) as tot 
+            $tot = $this->db->pq("SELECT count(distinct s.sessionid) as tot 
                 FROM blsession s 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
                 LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid
-                $where
-                GROUP BY s.sessionid", $args);
+                $where", $args);
             $tot = intval($tot[0]['TOT']);
 
             $start = 0;
