@@ -38,7 +38,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter', 'utils/table',
     
   var module = Marionette.LayoutView.extend({
     className: 'content',
-    template: '<div><h1>Samples</h1><p class="help">This page shows sample associated with the currently selected proposal</p><div class="filter type"></div><div class="wrapper"></div></div>',
+    template: '<div><h1>Samples</h1><p class="help">This page shows samples associated with the currently selected proposal</p><div class="filter type"></div><div class="wrapper"></div></div>',
     regions: { wrap: '.wrapper', type: '.type' },
 
     filters: [
