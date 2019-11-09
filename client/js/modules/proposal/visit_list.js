@@ -25,7 +25,7 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
     var ArchivedCell = Backgrid.Cell.extend({
         render: function() {
             this.$el.empty()
-            if (this.model.get('ARCHIVED') == '1') this.$el.html('<i class="fa fa-archive r" title="This data collection is archived"></i>')
+            if (this.model.get('ARCHIVED') == '1') this.$el.html('<i class="fa fa-archive r" title="This visit is archived, data is no longer avaialble on disk"></i>')
             return this
         }
     })
