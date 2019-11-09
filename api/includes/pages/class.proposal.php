@@ -357,7 +357,8 @@
                 FROM blsession s 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
                 LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid
-                $where", $args);
+                $where
+                GROUP BY s.sessionid", $args);
             $tot = intval($tot[0]['TOT']);
 
             $start = 0;
