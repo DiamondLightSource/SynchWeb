@@ -107,6 +107,7 @@ define(['backbone',
             barcode: 'input[name=BARCODE]',
             registry: 'select[name=CONTAINERREGISTRYID]',
             auto: 'input[name=AUTOMATED]',
+            extrastate: '.extra-state',
         },
         
         
@@ -255,7 +256,11 @@ define(['backbone',
         toggleExtra: function (e) {
             e.preventDefault()
             //this.$el.find('.extra').toggleClass('show')
-            if (this.table.currentView) this.table.currentView.toggleExtra()
+            if (this.table.currentView) {
+                this.table.currentView.toggleExtra()
+                this.table.currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
+                                                    : this.ui.extrastate.addClass('fa-plus').removeClass('fa-minus')
+            }
         },
 
         isForImager: function() {
