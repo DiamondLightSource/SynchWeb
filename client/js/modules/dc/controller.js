@@ -19,7 +19,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
   var controller = {
       
     // Data Collection List
-    dc_list: function(visit, dcg, page, search, type, id) {
+    dc_list: function(visit, dcg, page, search, type, id, pjid) {
         console.log('args to dclist', arguments)
         //console.log('dc list', visit, search, type)
         app.loading()
@@ -39,7 +39,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
                 
                 page = page ? parseInt(page) : 1
                 console.log('page', page)
-                var dcs = new DCCol(null, { queryParams: { visit: visit, s: search, t: type, id: id, dcg: dcg } })
+                var dcs = new DCCol(null, { queryParams: { visit: visit, s: search, t: type, id: id, dcg: dcg, PROCESSINGJOBID: pjid } })
                 dcs.setPageSize(app.mobile() ? 5 : 15)
                 dcs.state.currentPage = page
                 dcs.fetch().done(function() {
@@ -228,7 +228,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
             },
         })
     },
-      
+
   }
        
   app.addInitializer(function() {
