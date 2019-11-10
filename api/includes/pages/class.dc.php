@@ -20,6 +20,7 @@
                               'DATACOLLECTIONID' => '\d+',
                               'PERSONID' => '\d+',
                               'AUTOPROCPROGRAMMESSAGEID' => '\d+',
+                              'PROCESSINGJOBID' => '\d+',
 
                               'debug' => '\d',
 
@@ -229,7 +230,29 @@
                     $sess[$i] = 'pr.proteinid=:'.(sizeof($args)+1);
                     array_push($args, $this->arg('pid'));
                 }
-                
+
+            # Processing job
+            } else if ($this->has_arg('PROCESSINGJOBID')) {
+                $info = $this->db->pq('SELECT processingjobid 
+                    FROM processingjob pj
+                    INNER JOIN datacollection dc ON pj.datacollectionid = dc.datacollectionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                    WHERE pj.processingjobid=:1 AND s.proposalid=:2', array($this->arg('PROCESSINGJOBID'), $this->proposalid));
+
+                $where2 .= ' AND es.energyscanid < 0';
+                $where3 .= ' AND r.robotactionid < 0';
+                $where4 .= ' AND xrf.xfefluorescencespectrumid < 0';
+
+                for ($i = 0; $i < 4; $i++) {
+                    $sess[$i] = 'ses.proposalid=:'.($i+1);
+                    array_push($args, $this->proposalid);
+                }
+
+                $where .= ' AND pjis.processingjobid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('PROCESSINGJOBID'));
+                $extj[0] .= ' LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.datacollectionid=dc.datacollectionid';
+
             # Proposal
             } else if ($this->has_arg('prop')) {
                 $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
@@ -1075,22 +1098,26 @@
         }
         
         
+        
+        // 
         # ------------------------------------------------------------------------
         # Auto processing for a data collection
         function _dc_auto_processing($id) {
             $rows = $this->db->pq('SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingprograms as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga, 
-                    (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as nswps, app.processingstatus, app.processingmessage
+                    (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as nswps, app.processingstatus, app.processingmessage, count(pjis.datacollectionid) as imagesweepcount, max(pjis.processingjobid) as processingjobid
                 FROM autoprocintegration api 
                 LEFT OUTER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
                 LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
                 LEFT OUTER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
                 LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                LEFT OUTER JOIN processingjob pj ON app.processingjobid = pj.processingjobid
+                LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.processingjobid = pj.processingjobid
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
                 WHERE api.datacollectionid = :1 AND app.processingstatus IS NOT NULL
+                GROUP BY apss.autoprocscalingstatisticsid
                 ORDER BY apss.scalingstatisticstype DESC', array($id));
             
-
             $msg_tmp = $this->db->pq("SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
                 FROM autoprocprogrammessage appm
                 INNER JOIN autoprocintegration api ON api.autoprocprogramid = appm.autoprocprogramid
@@ -1131,7 +1158,7 @@
                         $beam = array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM');
                         if (in_array($k, $beam)) $v = number_format($v, 2);
                         
-                        if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL') {
+                        if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL' || $k == 'PROCESSINGJOBID' || $k == 'IMAGESWEEPCOUNT') {
                             continue;
                             
                         } else if ($k == 'SG') {
@@ -1153,6 +1180,9 @@
                     }
                     $output[$r['AUTOPROCPROGRAMID']]['SHELLS'][$r['SHELL']] = $shell;
                 }
+
+                $output[$r['AUTOPROCPROGRAMID']]['PROCESSINGJOBID'] = $r['PROCESSINGJOBID'];
+                $output[$r['AUTOPROCPROGRAMID']]['IMAGESWEEPCOUNT'] = $r['IMAGESWEEPCOUNT'];
 
                 $output[$r['AUTOPROCPROGRAMID']]['TYPE'] = $r['TYPE'];
                 $output[$r['AUTOPROCPROGRAMID']]['AID'] = $r['AUTOPROCPROGRAMID'];
