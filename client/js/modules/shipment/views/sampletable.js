@@ -364,6 +364,10 @@ define(['marionette',
             }
         },
         
+        extraState: function() {
+            return this.extra.show
+        },
+
         toggleExtra: function() {
             this.extra.show = !this.extra.show
 
