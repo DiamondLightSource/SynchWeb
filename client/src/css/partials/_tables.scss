@@ -1,0 +1,609 @@
+.table {
+    margin: 10px 0;
+
+    &.table-no-margin {
+        margin: 0;
+    }
+
+    &.right.tracking {
+        margin-left: 50%;
+    }
+    
+    table {
+        width: 100%;
+
+        td,
+        th {
+            padding: 5px;
+        }
+
+        td.extra, th.extra, th.xtal, td.xtal, th.non-xtal, td.non-xtal, th.auto, td.auto {
+            display: none;
+
+            &.show {
+                display: table-cell;
+            }
+        }
+
+        @media (max-width: $breakpoint-vsmall) {
+            td.extra, th.extra,, th.xtal, td.xtal, th.non-xtal, td.non-xtal, th.auto, td.auto {
+                &.show {
+                    display: block;
+                }
+            }
+        }
+
+        thead th, thead th a {
+            text-align: center;
+            background: $table-header-background;
+            color: $table-header-color;
+            
+            &.editable {
+                border-radius: 0;
+                padding-right: 0;
+                
+                &:hover {
+                    background-image: none;
+                    background: $table-header-background;
+                }
+            }
+            
+            &.sorting_asc {
+                background: $table-header-background url('./stylesheets/images/sort_asc.png') no-repeat right center;
+            }
+            
+            &.sorting_desc {
+                background: $table-header-background url('./stylesheets/images/sort_desc.png') no-repeat right center;
+            }
+            
+            &.sorting {
+                background: $table-header-background url('./stylesheets/images/sort_both.png') no-repeat right center;
+            }
+        }
+
+        
+        tbody {
+            th {
+                text-align: left;
+                background: $table-header-background;
+            }
+            
+            td {
+                
+                &.editable {
+                    border-radius: 0;
+                    @media (max-width: $breakpoint-small) {
+                        display: table-cell;
+                    }
+                    
+                    @media (max-width: $breakpoint-vsmall) {
+                        display: block;
+                    }
+                    
+                    &:hover {
+                        padding-right: 2.5%;
+                        background: $content-search-background url('./stylesheets/images/edit.png') no-repeat right !important;
+                        // background: $content-search-background inline-image('edit.png') no-repeat right !important;
+                    }
+                }
+                
+                text-align: center;
+                background: $table-body-background;
+                
+                &.la {
+                    @extend .la;
+                }
+                
+                span {
+                    &.active {
+                        background: $content-active;
+                    }
+                    
+                    &.inactive {
+                        background: $content-inactive;
+                    }
+                    
+                    &.minor {
+                        background: $content-minor;
+                    }
+                }
+                
+            }
+            
+            tr {
+                .deactivate {
+                    display: none;
+                }
+                
+                &.inactive td {
+                    background: $content-inactive !important;
+                }
+                
+                &.minor td {
+                    background: $content-minor !important;
+                }
+                
+                &.active td, &.active:nth-child(odd) td {
+                    background: $content-active;
+                    
+                    .deactivate {
+                        display: inline;
+                    }
+                }
+            }
+            
+            tr:nth-child(odd) td,
+            tr.odd td {
+                background: $table-body-background-odd;
+            }
+            
+            td span.sort {
+                display: none;
+            }
+        }
+
+        
+        tfoot {
+            
+            th {
+                text-align: left;
+            }
+            
+            td {
+                background: $table-footer-background;
+                text-align: center;
+                font-weight: bold;
+            }
+        }
+
+        
+        // Background follows cursor
+        &.hover-row {
+            tr.selected td,
+            tr:hover td {
+                cursor: pointer;
+                background: $table-row-hover-background;
+            }
+        }
+        
+        // Stop last column word wrapping (for buttons)
+        &.no-wrap-last {
+            tr td:last-child {
+                white-space: nowrap;
+            }
+        }
+        
+    }
+    
+    // Overflow for small screns
+    &.tw {
+        overflow-x: auto;
+    }
+
+    
+    table.imagers, table.inspections, table.subsamples, table.schedules, table.groups, table.proposals,table.dewars, table.ehc, table.proteins.flt, table.samples.flt,table.blended_table, table.integrated, table.projects, table.shipments, table.visits, table.contacts, table.proteins, table.samples, table.peaks, table.containers, table.systems, table.components {
+        @extend table.hover-row;
+    }
+    
+    table.samples, table.dewars, table.visits,
+    table.systems,table.components {
+        @extend table.no-wrap-last;
+    }
+    
+    table.faults {
+        @media (max-width: $breakpoint-small) {
+            th:nth-child(4),
+            th:nth-child(5),
+            th:nth-child(6),
+            th:nth-child(7),
+            th:nth-child(8),
+            td:nth-child(4),
+            td:nth-child(5),
+            td:nth-child(6),
+            td:nth-child(7),
+            td:nth-child(8) {
+                display: none;
+            }
+        }
+    }
+
+    table.samples {
+        td.protein {
+            .ui-combobox {
+                margin-right: 0;
+            }
+        }
+
+        td.protein, td.name {
+            white-space: nowrap;
+        }
+
+        td.unitcell {
+            width: 16%;
+            input {
+                width: 25%;
+            }
+        }
+
+        th.requireresolution, td.requireresolution {
+            width: 10%;
+        }
+
+        .components {
+            white-space: nowrap;
+
+            input[type="text"] {
+                width: 30%
+            }
+
+            input[name=COMPONENTID] {
+                width: 60%;
+            }
+
+            li {
+                /*text-align: left;*/
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: $breakpoint-vsmall) {
+            td.requireresolution, td.unitcell {
+                width: auto;
+            }
+        }
+    }
+
+    table.subsamples {
+        table td {
+            text-align: left;
+            input {
+                width: auto;
+            }
+        }
+    }
+
+    div.dataTables_wrapper {
+        background-color: $content-background;
+    }
+
+    a.paginate_button,
+    a.paginate_active {
+        display: inline-block;
+        background-color: $table-pages-active-color;
+        color: $table-pages-color;
+        padding: 2px 6px;
+        margin-left: 2px;
+        cursor: pointer;
+        *cursor: hand;
+    }
+
+    a.paginate_active {
+        background-color: transparent;
+        border: 1px solid black;
+        color: $table-pages-active-color;
+    }
+
+    a.paginate_button_disabled {
+        color: $table-pages-disable-color;
+    }
+    .paging_full_numbers a:active {
+        outline: none
+    }
+    .paging_full_numbers a:hover {
+        text-decoration: none;
+    }
+
+    div.dataTables_paginate span>a {
+        width: 15px;
+        text-align: center;
+    }
+
+    div.dataTables_info {
+        padding: 9px 6px 6px 6px;
+    }
+
+
+    div.dataTables_length {
+        float: left;
+    }
+
+    div.dataTables_filter {
+        float: right;
+    }
+
+    div.dataTables_info {
+        float: left;
+    }
+
+    div.dataTables_paginate {
+        float: right;
+    }
+
+    div.dataTables_length,
+    div.dataTables_filter,
+    div.dataTables_paginate,
+    div.dataTables_info {
+        padding: 6px;
+    }
+
+    div.dataTables_wrapper {
+        @include clearfix;
+    }
+
+
+    @media (max-width: $breakpoint-small) {
+        div.dataTables_filter {
+            display: none;
+        }
+    }
+    
+}
+
+
+.table.history {
+    @extend .table.tw;
+}
+
+.history .table {
+    margin-top: 0;
+}
+
+
+html[xmlns] .dataTables_wrapper { display: block; }
+* html .dataTables_wrapper { height: 1%; }
+
+
+
+.reflow {
+    .top {
+        display: none;
+    }
+    
+    @media (max-width: $breakpoint-vsmall) {
+        .top {
+            display: inline-block;
+        }
+        
+        tr.innerShell {
+            display: none;
+        }
+        
+        thead, tbody, th, td, tr {
+            display: block;
+        }
+        
+        
+        thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+        
+        tr {
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        
+        tbody td {
+            border: none;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 50%;
+            min-height: 14px;
+        }
+        
+        td:last-child {
+            border-bottom: none;
+        }
+        
+        td:before {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+            font-weight: $bold;
+        }
+        
+        &.cell {
+            td:nth-of-type(1):before { content: "Space Group"; }
+            td:nth-of-type(2):before { content: "A"; }
+            td:nth-of-type(3):before { content: "B"; }
+            td:nth-of-type(4):before { content: "C"; }
+            td:nth-of-type(5):before { content: "\3B1"; }
+            td:nth-of-type(6):before { content: "\3B2"; }
+            td:nth-of-type(7):before { content: "\3B3"; }
+        }
+        
+        &.shell {
+            td:nth-of-type(1):before { content: "Shell"; }
+            td:nth-of-type(2):before { content: "Observations"; }
+            td:nth-of-type(3):before { content: "Unique"; }
+            td:nth-of-type(4):before { content: "Resolution"; }
+            td:nth-of-type(5):before { content: "Rmeas"; }
+            td:nth-of-type(6):before { content: "I/sig(I)"; }
+            td:nth-of-type(7):before { content: "Completeness"; }
+            td:nth-of-type(8):before { content: "CC Half"; }
+            td:nth-of-type(9):before { content: "Multiplicity"; }
+            td:nth-of-type(10):before { content: "Anom Completeness"; }
+            td:nth-of-type(11):before { content: "Anom Multiplicity"; }
+            td:nth-of-type(12):before { content: "CC Anom"; }
+        }
+        
+        &.strat {
+            td:nth-of-type(1):before { content: "Strategy"; }
+            td:nth-of-type(2):before { content: "Description"; }
+            td:nth-of-type(3):before { content: "\3A9 Start"; }
+            td:nth-of-type(4):before { content: "\3A9 Oscillation"; }
+            td:nth-of-type(5):before { content: "Resolution"; }
+            td:nth-of-type(6):before { content: "Ranking Resolution"; }
+            td:nth-of-type(7):before { content: "Relative Transmission"; }
+            td:nth-of-type(8):before { content: "Absolute Transmission"; }
+            td:nth-of-type(9):before { content: "Exposure"; }
+            td:nth-of-type(10):before { content: "No. of Images"; }
+            
+            td:first-child {
+                background: $content-light-background;
+            }
+        }
+        
+        &.dewars {
+            td {
+                text-align: left;
+            }
+            
+            td:nth-of-type(1):before { content: "Name"; }
+            td:nth-of-type(2):before { content: "Barcode"; }
+            td:nth-of-type(3):before { content: "Facility Code"; }
+            td:nth-of-type(4):before { content: "First Experiment"; }
+            td:nth-of-type(5):before { content: "Tracking # to"; }
+            td:nth-of-type(6):before { content: "Tracking # from"; }
+            td:nth-of-type(7):before { content: "Status"; }
+            td:nth-of-type(8):before { content: "Location"; }
+            td:nth-of-type(9):before { content: "Containers"; }
+            td:nth-of-type(10):before { content: "Add Container"; }
+            
+            tr.new {
+                td:nth-of-type(10):before { content: "Save Dewar"; }
+            }
+        }
+        
+        &.samples {
+            td {
+                text-align: left;
+                padding-left: 35%;
+                
+                &:before {
+                    width: 30%;
+                }
+            }
+            
+            td input[type=text] {
+                width: auto;
+            }
+            
+            td .ui-combobox {
+                input.ui-combobox-input {
+                    padding: 0;
+                    width: 90%;
+                }
+                
+                button.ui-button-icon-only {
+                    top: -3px;
+                    height: 2.2em;
+                }
+            }
+
+            td:nth-of-type(1):before { content: "Location"; }
+            td.protein:before { content: "Protein Acronym"; }
+            td.abundance:before { content: "Abundance"; }
+            td.components:before { content: "Components"; }
+            td.name:before { content: "Sample Name"; }
+            td.spacegroup:before { content: "Spacegroup"; }
+            td.barcode:before { content: "Barcode"; }
+            td.volume:before { content: "Volume"; }
+            td.comments:before { content: "Comment"; }
+            td.requiredresolution:before { content: "Required Resolution"; }
+            td.anomalousscatterer:before { content: "Anomalous Scatterer"; }
+            td.unitcell:before { content: "Unit Cell"; }
+
+            td.centringmethod:before { content: "Centring Method"; }
+            td.experimentkind:before { content: "Experiment Kind"; }
+            td.energy:before { content: "Energy (eV)"; }
+            td.radiationsensitivity:before { content: "Radiation Sensitivity"; }
+        }
+        
+        &.samples.view {
+            td:nth-of-type(7):before { content: "Data Collected"; }
+            td:nth-of-type(8):before { content: "Edit / Del / View"; }
+        }
+
+        &.unitcell {
+            td:nth-of-type(1):before { content: "A"; }
+            td:nth-of-type(2):before { content: "B"; }
+            td:nth-of-type(3):before { content: "C"; }
+            td:nth-of-type(4):before { content: "\3B1"; }
+            td:nth-of-type(5):before { content: "\3B2"; }
+            td:nth-of-type(6):before { content: "\3B3"; }
+        }
+
+        &.summary {
+            td:nth-of-type(1):before { content: "Prefix"; }
+            td:nth-of-type(2):before { content: "Sample"; }
+            td:nth-of-type(3):before { content: "Date"; }
+            td:nth-of-type(4):before { content: "No. Images"; }
+            td:nth-of-type(5):before { content: "\3A9 Oscillation"; }
+            td:nth-of-type(6):before { content: "Exposure Time"; }
+            td:nth-of-type(7):before { content: "Transmission"; }
+            td:nth-of-type(8):before { content: "Spacegroup"; }
+            td:nth-of-type(9):before { content: "Unit Cell"; }
+            td:nth-of-type(10):before { content: "Resolution"; }
+            td:nth-of-type(11):before { content: "Rmeas"; }
+            td:nth-of-type(12):before { content: "Completeness"; }
+            td:nth-of-type(13):before { content: "View / Download"; }
+        }
+        
+        &.xo {
+            td:nth-of-type(1):before { content: "Aligned Axes"; }
+            td:nth-of-type(2):before { content: "Kappa"; }
+            td:nth-of-type(3):before { content: "Phi"; }
+        }
+
+
+        &.ehc {
+            td:nth-of-type(1):before { content: "Title"; }
+            td:nth-of-type(2):before { content: "Time"; }
+            td:nth-of-type(3):before { content: "By"; }   
+            td:nth-of-type(4) {
+                padding-left: 5px;
+                &:before { 
+                    width: 0;
+                }
+            }
+        }
+
+        &.bc {
+            td:nth-of-type(1):before { content: "Beam Centre"; }
+            td:nth-of-type(2):before { content: "X"; }
+            td:nth-of-type(3):before { content: "Y"; }
+
+        }
+
+        &.bepm_sets {
+            td:nth-of-type(1):before { content: "Processed"; }
+            td:nth-of-type(2):before { content: "Anom. scatterer"; }
+            td:nth-of-type(3):before { content: "Space group"; }
+            td:nth-of-type(4):before { content: "Num. scatterers"; }
+            td:nth-of-type(5):before { content: "Dataset type"; }
+            td:nth-of-type(6):before { content: "Compound"; }
+            td:nth-of-type(7):before { content: "Sequence"; }
+        }
+
+        &.bepm_stats {
+            td:nth-of-type(1):before { content: "Pipeline"; }
+            td:nth-of-type(2):before { content: "Res / Frag / Max"; }
+            td:nth-of-type(3):before { content: "Best MapCC (Res)"; }
+            td:nth-of-type(4):before { content: "Files"; }
+        }
+
+        &.procsummary {
+            td:nth-of-type(1):before { content: "Type"; }
+            td:nth-of-type(2):before { content: "Resolution"; }
+            td:nth-of-type(3):before { content: "Space Group"; }
+            td:nth-of-type(4):before { content: "Mn<I/sig(I)>"; }
+            td:nth-of-type(5):before { content: "Rmerge Inner"; }
+            td:nth-of-type(6):before { content: "Rmerge Inner"; }
+            td:nth-of-type(7):before { content: "Completeness"; }
+            td:nth-of-type(8):before { content: "Cell"; }
+        }
+    }
+}
+
+div.table.bg table {
+    
+    th:not(.renderable), tr:not(.empty) td:not(.renderable) {
+        display: none;
+    }
+}

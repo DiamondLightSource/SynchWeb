@@ -1,0 +1,207 @@
+#sidebar {
+    margin: 2% auto;
+    margin-bottom: 0;
+    width: 80%;
+
+    @media (max-width: $breakpoint-large) {
+        width: 96%;
+    }
+    
+    // Menu
+    ul {
+        list-style: none;
+        border: 1px solid $sidebar-border;
+        background: $sidebar-grad-start;
+        background: linear-gradient(top, $sidebar-grad-start, $sidebar-grad-end);
+    
+
+        li {
+            float: left;
+            border-right: 1px solid $sidebar-border;
+            font-weight: bold;
+            font-size: 11px;
+            width: 14%;
+            position: relative;
+            
+            transition-property: background;
+            transition-duration: 300ms;
+            transition-timing-function: ease-in-out;
+        
+
+            &:hover {
+                background: $sidebar-hover-background;
+                
+                ul {
+                    display: block;
+                }
+            }
+
+            &.feedback,
+            &.help {
+                float: right;
+                border-right: 0;
+                border-left: 1px solid $sidebar-border;
+            }
+
+            &.help.active {
+                background: $sidebar-hover-background;
+            }
+            
+            .current {
+                cursor: pointer;
+
+                &:hover {
+                    background: $sidebar-hover-dark-background;
+                }
+            }
+            
+            span,
+            a {
+                text-decoration: none;
+                display: inline-block;
+                width: 100%;
+                padding: 8% 0;
+                text-align: center;
+            }
+            
+            // Sub menu
+            ul {
+                position: absolute;
+                left: -1px;
+                width: 100%;
+                display: none;
+                border-bottom: 0;
+                z-index: 2;
+                
+                
+                li {
+                    float: none;
+                    width: 100%;
+                    border-bottom: 1px solid $sidebar-border;
+
+                    a {
+                        text-align: left;
+                        padding-left: 10%;
+                        width: 90%;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// Responsive Sidebar
+@media (max-width: $breakpoint-medium) {    
+    #sidebar, .cont_wrap {
+        transition-property: all;
+        transition-duration: 0.2s;
+        transition-timing-function: ease;
+
+        width: 100%;        
+        margin-top: 56px;
+    }
+	
+	.cont_wrap {
+        margin-left: 0;
+        float: left;
+    }
+    
+	#sidebar {
+        margin-left: -100%;
+        float: left;
+        width: 180px !important;
+        
+    
+    
+        input {
+            width: 70% !important;
+            height: 100% !important;
+        }
+        
+        ul, ul li, ul li ul, ul li ul li, ul li.help, ul li.feedback {
+            border: 0;
+            background: transparent;
+        }
+        
+        ul {
+            
+            li {
+                width: 100%;
+                .current:hover {
+                    background: lighten($sidebar-mobile-hover-background,10%);
+                }
+                
+                &.feedback, &.help {
+                    float: none;
+                }
+            
+            
+                span, a {
+                    padding: 12px 5%;
+                    width: 90%;
+                    text-align: left;
+                    border-bottom: 1px solid $sidebar-mobile-border-top;
+                    border-top: 1px solid $sidebar-mobile-border-bottom;
+                    color: $sidebar-mobile-color;
+                    background: $sidebar-mobile-background;
+                }
+                
+                ul li a {
+                    width: 85%;
+                }
+                
+                &.help.active a {
+                    background: $sidebar-mobile-active-background;
+                }
+                
+                a:hover {
+                    background: $sidebar-mobile-hover-background;
+                }
+                
+                ul {
+                    display: block;
+                    left: 0;
+                    position: relative;
+                }
+            }
+    
+        }
+    }
+	
+
+    body.active {
+        position: relative;
+        
+        #sidebar {
+            margin-left: 0;
+            width: 182px
+        }
+        
+        .cont_wrap {
+            margin-right: -100%;
+        }
+
+    }
+    
+}
+
+@media (max-width: $breakpoint-small) {
+    #sidebar.searchbox {
+        margin-top: 84px;
+    }
+    .cont_wrap.searchbox {
+        margin-top: 76px;
+    }
+}
+
+
+.project {
+    display: none;
+}
+
+
+.project p {
+    margin-bottom: 10px;
+}
+

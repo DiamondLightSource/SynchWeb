@@ -1,0 +1,191 @@
+// Header
+// ---------------------------------------------------------
+
+#header {
+    background: $header-background url('./stylesheets/images/diamond_gs_small.png') top center no-repeat;
+    // background: $header-background inline-image('diamond_gs_small.png') top center no-repeat;
+    
+    color: $header-color;
+
+    h1 {
+        padding: 10px;
+        font-size: 12px;
+        font-weight: $normal;
+        color: $header-color;
+
+        a {
+            color: $header-color;
+            text-decoration: none;
+        }
+    }
+
+    a {
+        color: $header-color;
+        
+        &:hover {
+            color: $header-hover-color;
+        }
+    }
+    
+    
+
+    // Responsive Sidebar Hooks
+    a.pull {
+        display: none;
+    }
+
+    span.search-mobile {
+        display: none;
+        padding: 1px;
+        background: $content-search-background;
+
+        input.search-mobile {
+            font-family: $icon-font;
+            width: 97%;
+            padding: 1%;
+        }
+    }
+
+    span.search-mobile.split {
+        
+        input.search-mobile {
+            width: 46%;
+        }
+        
+        select {
+            font-size: 16px;
+        }
+    }
+ 
+    @media (max-width: $breakpoint-medium) {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 4;
+        
+        a.pull.enable {
+            display: inline-block;
+        }
+        
+    }
+    
+    @media (max-width: $breakpoint-small) {
+        .icon-label {
+            display: none;
+        }
+        
+        span.search-mobile.enable {
+            display: block;
+        }
+        
+        font-size: 14px;
+        background-image: none;
+    }
+}
+
+
+// Navigation
+#menu {
+    font-size: 12px;
+    float: right;
+    list-style-type:none;
+    padding: 5px;
+    color: $header-menu-color;
+    white-space: nowrap;
+    
+    @media (max-width: $breakpoint-small) {
+        font-size: 14px;
+    }
+    
+    li {
+        display: inline;
+        padding: 0 5px;
+        
+        
+        a {
+            color: $header-menu-color;
+            text-decoration: none;
+            
+            &:hover {
+                color: $header-menu-hover;
+            }
+        }
+    }
+}
+
+
+// Breadcrumbs
+#navigation {
+    background: $header-bc-background;
+    color: $header-bc-color;
+    font-size: 10px;
+    list-style-type:none;
+    padding: 5px 5px;
+    clear: both;
+    
+    li {
+        display: inline;
+        padding: 2px;
+        
+        a {
+            color: $header-bc-color;
+            text-decoration: none;
+            
+            &:hover {
+                color: $header-bc-hover;
+            }
+        }
+        
+        &:before {
+            content: '\00BB  ';
+        }
+    }
+}
+
+
+#footer {
+    margin-top: 70px;
+    background: $footer-background url('./stylesheets/images/ispyb_gs_medium.png') center center no-repeat;
+    // background: $footer-background inline-image('ispyb_gs_medium.png') center center no-repeat;
+    height: 200px;
+    background-position: 50% 85%;
+    
+    @media (max-width: $breakpoint-medium) {
+        clear: both;
+    }
+
+    .whatnow {
+        border-top: 1px solid #bbb;
+        font-size: 16px;
+        font-family: $page-header-font;
+        text-align: center;
+
+        a {
+            display: block;
+            padding: 0.5%;
+            color: #222;
+            background: #eee;
+            transition: 0.3s ease-in-out;
+
+            &:hover {
+                color: #000;
+            };
+        }
+    }
+
+    a {
+        color: $footer-color;
+        text-decoration: none;
+        
+        &:hover {
+            color: $footer-hover-color;
+        }
+    }
+    
+    p {
+        padding: 1%;
+        text-align: center;
+        color: $footer-color;
+        font-size: 10px;
+    }
+}

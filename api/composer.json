@@ -1,0 +1,33 @@
+{
+  "name": "diamondlightsource/synchweb",
+  "description": "A web interface for ISPyB",
+  "keywords": [
+    "SynchWeb",
+    "ISPyB"
+  ],
+  "homepage": "https://github.com/DiamondLightSource/SynchWeb",
+  "license": "Apache-2.0",
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/MoroAlberto/DHL-API.git"
+    }
+  ],
+  "require": {
+    "apereo/phpcas": "1.3.3",
+    "moroalberto/dhl_api": "@dev",
+    "ezyang/htmlpurifier": "4.6.0",
+    "firebase/php-jwt": "1.0.0",
+    "ralouphie/getallheaders" : "2.0.5",
+    "mpdf/mpdf": "6.1.0",
+    "slim/slim": "2.4.2",
+    "jdorn/sql-formatter": "1.2.9",
+    "stomp-php/stomp-php": "3.0.6",
+    "phpxmlrpc/phpxmlrpc": "3.0.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "SynchWeb\\": "src/"
+    }
+  }
+}

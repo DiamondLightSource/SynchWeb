@@ -1,0 +1,24 @@
+{
+	"apiurl": "/api",
+
+	"appurl": "",
+
+	"production": false,
+
+	"pucks": { 
+		"i02": 10,
+		"i03": 23,
+		"i04": 37,
+		"i04-1": 9,
+		"i24": 9,
+		"i23": 4
+	},
+
+	"_gsMajorAxisOrientation" : "Determines whether the major grid scan axis determines the orientation of the view",
+	"gsMajorAxisOrientation"  : true,
+
+	"maintenance_message": "This is the maintenance message",
+	"maintenance": false,
+	
+	"ga_ident": false
+}
