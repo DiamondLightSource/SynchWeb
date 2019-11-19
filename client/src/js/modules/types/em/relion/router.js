@@ -7,7 +7,7 @@ define([
 ) {
     let Router = Marionette.AppRouter.extend({
         appRoutes: {
-            'em/process/relion/visit/:visit_str': 'relion',
+            'em/process/relion/session/:session_str': 'relion',
         }
     });
 

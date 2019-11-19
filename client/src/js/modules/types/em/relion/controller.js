@@ -8,16 +8,16 @@ define([
     RelionView
 ) {
     let controller = {
-        relion: function (visit_str) {
+        relion: function (session_str) {
             app.loading();
 
-            if (visit_str) {
-                app.cookie(visit_str.split('-')[0]);
+            if (session_str) {
+                app.cookie(session_str.split('-')[0]);
 
-                app.content.show(new RelionView({visit_str: visit_str}));
+                app.content.show(new RelionView({session_str: session_str}));
             } else {
                 app.bc.reset([{title: 'Error'}]);
-                app.message({title: 'Visit not specified', message: 'No visit specified'})
+                app.message({title: 'Session not specified', message: 'No session specified'})
             }
         }
     };

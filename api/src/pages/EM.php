@@ -7,12 +7,11 @@ use SynchWeb\Queue;
 
 class EM extends Page
 {
-
-
     public static $arg_list = array(
         'id' => '\d+',
         'ids' => '\d+',
         'visit' => '\w+\d+-\d+',
+        'session' => '\w+\d+-\d+',
         'n' => '\d+',
         't' => '\d+',
         'IMAGENUMBER' => '\d+',
@@ -23,29 +22,33 @@ class EM extends Page
 
         // RELION
 
+        'projectAcquisitionSoftware' => '\w+', // String
         'projectMovieFileNameExtension' => '[\w]{3,4}', // String (File name extension)
         'projectGainReferenceFile' => '1?', // Boolean
         'projectGainReferenceFileName' => '[\w-]+\.[\w]{3,4}', // String (File name + extension)
 
         'voltage' => '\d+', // Integer
         'sphericalAberration' => '\d*(\.\d+)?', // Decimal
+        'findPhaseShift' => '1?', // Boolean
         'pixelSize' => '\d*(\.\d+)?', // Decimal
+        'motionCorrectionBinning' => '\d+', // Integer
+        'dosePerFrame' => '\d*(\.\d+)?', // Decimal
 
         'pipelineDo1stPass' => '1?', // Boolean
-        'pipelineDo1stPassClassification2D' => '1?', // Boolean
-        'pipelineDo1stPassClassification3D' => '1?', // Boolean
+        'pipelineDo1stPassClassification2d' => '1?', // Boolean
+        'pipelineDo1stPassClassification3d' => '1?', // Boolean
 
+        'particleUseCryolo' => '1?', // Boolean
         'particleDiameterMax' => '\d+', // Integer
         'particleDiameterMin' => '\d+', // Integer
-        'particleReference3D' => '[\w-]+\.[\w]{3,4}', // String (File name + extension)
         'particleMaskDiameter' => '\d+', // Integer
         'particleBoxSize' => '\d+', // Integer
-        'particleDownsampleSize' => '\d+', // Integer
-        'pipelineCalculateForMe' => '1?', // Boolean
+        'particleBoxSizeSmall' => '\d+', // Integer
+        'particleCalculateForMe' => '1?', // Boolean
 
         'pipelineDo2ndPass' => '1?', // Boolean
-        'pipelineDo2ndPassClassification2D' => '1?', // Boolean
-        'pipelineDo2ndPassClassification3D' => '1?', // Boolean
+        'pipelineDo2ndPassClassification2d' => '1?', // Boolean
+        'pipelineDo2ndPassClassification3d' => '1?', // Boolean
 
         // SCIPION
 
@@ -56,55 +59,56 @@ class EM extends Page
         'particleSize' => '\d+', // Integer
         'minDist' => '\d+', // Integer
         'windowSize' => '\d+', // Integer
-
-        // RELION + SCIPION
-
-        'dosePerFrame' => '\d*(\.\d+)?', // Decimal
-        'findPhaseShift' => '1?', // Boolean
     );
 
-        public static $dispatch = array(
-            array('/aps', 'post', '_ap_status'),
+    public static $dispatch = array(
+        array('/aps', 'post', '_ap_status'),
 
-            array('/mc/:id', 'get', '_mc_result'),
-            array('/mc/image/:id(/n/:IMAGENUMBER)', 'get', '_mc_image'),
-            array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
-            array('/mc/drift/:id(/n/:IMAGENUMBER)', 'get', '_mc_plot'),
-            array('/mc/histogram', 'get', '_mc_drift_histogram'),
+        array('/mc/:id', 'get', '_mc_result'),
+        array('/mc/image/:id(/n/:IMAGENUMBER)', 'get', '_mc_image'),
+        array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
+        array('/mc/drift/:id(/n/:IMAGENUMBER)', 'get', '_mc_plot'),
+        array('/mc/histogram', 'get', '_mc_drift_histogram'),
 
-            array('/ctf/:id', 'get', '_ctf_result'),
-            array('/ctf/image/:id(/n/:IMAGENUMBER)', 'get', '_ctf_image'),
-            array('/ctf/histogram', 'get', '_ctf_histogram'),
+        array('/ctf/:id', 'get', '_ctf_result'),
+        array('/ctf/image/:id(/n/:IMAGENUMBER)', 'get', '_ctf_image'),
+        array('/ctf/histogram', 'get', '_ctf_histogram'),
 
-        array('/process/relion/visit/:visit', 'post', '_process_visit_relion'),
-        array('/process/scipion/visit/:visit', 'post', '_process_visit_scipion')
+        array('/process/relion/session/:session', 'post', '_relion_start'),
+        array('/process/relion/session/:session', 'patch', '_relion_stop'),
+        array('/process/relion/session/:session', 'get', '_relion_status'),
+        array('/process/relion/session/:session', 'delete', '_relion_reset'),
+
+        array('/process/scipion/session/:session', 'post', '_scipion_start')
     );
 
-    function _process_visit_relion()
+    function _relion_start()
     {
         global $bl_types,
                $visit_directory,
-               $em_workflow_path;
+               $activemq_relion_start_queue;
 
         $this->checkElectronMicroscopesAreConfigured($bl_types);
-        $visit = $this->determineVisit($this->arg('visit'));
-        $this->checkVisitIsActive($visit);
+        $session = $this->determineSession($this->arg('session'));
+        $this->checkSessionIsActive($session);
 
-        // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
-        foreach ($visit as $key => $value) {
-            $visit_directory = str_replace("<%={$key}%>", $value, $visit_directory);
-            $em_workflow_path = str_replace("<%={$key}%>", $value, $em_workflow_path);
+        if ($session['processingIsActive']) {
+            $message = 'Relion is already processing this session! Processing started at ' . date('H:i:s \o\n jS F Y', $session['processingTimestamp']) . '.';
+
+            error_log($message);
+            $this->_error($message, 400);
         }
 
-        $visit_directory_relion = "{$visit_directory}/processed/relion-{$visit['VISIT']}";
+        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
+        $workflow_path = $this->substituteSessionValuesInPath($session, $visit_directory . '/.ispyb/processed');
 
         // Validate form parameters
 
         // Setup rules to validate each parameter by isRequired, inArray, minValue, maxValue.
         // Specify outputType so json_encode casts value correctly. This determines whether value is quoted.
 
-        // TODO Consider adding default values (JPH)
         $validation_rules = array(
+            'projectAcquisitionSoftware' => array('isRequired' => true, 'inArray' => array('EPU', 'SerialEM'), 'outputType' => 'string'),
             'projectMovieFileNameExtension' => array('isRequired' => true, 'inArray' => array('tif', 'tiff', 'mrc'), 'outputType' => 'string'),
             'projectGainReferenceFile' => array('isRequired' => true, 'outputType' => 'boolean'),
             'projectGainReferenceFileName' => array('isRequired' => false, 'outputType' => 'string'),
@@ -113,48 +117,69 @@ class EM extends Page
             'sphericalAberration' => array('isRequired' => true, 'inArray' => array(1.4, 2.0, 2.7), 'outputType' => 'float'),
             'findPhaseShift' => array('isRequired' => true, 'outputType' => 'boolean'),
             'pixelSize' => array('isRequired' => true, 'minValue' => 0.02, 'maxValue' => 100, 'outputType' => 'float'),
+            'motionCorrectionBinning' => array('isRequired' => true, 'inArray' => array(1, 2), 'outputType' => 'integer'),
             'dosePerFrame' => array('isRequired' => true, 'minValue' => 0, 'maxValue' => 10, 'outputType' => 'float'),
 
             'pipelineDo1stPass' => array('isRequired' => true, 'outputType' => 'boolean'),
-            'pipelineDo1stPassClassification2D' => array('isRequired' => false, 'outputType' => 'boolean'),
-            'pipelineDo1stPassClassification3D' => array('isRequired' => false, 'outputType' => 'boolean'),
+            'pipelineDo1stPassClassification2d' => array('isRequired' => false, 'outputType' => 'boolean'),
+            'pipelineDo1stPassClassification3d' => array('isRequired' => false, 'outputType' => 'boolean'),
 
-            'particleDiameterMax' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 1000, 'outputType' => 'float'),
+            'particleUseCryolo' => array('isRequired' => false, 'outputType' => 'boolean'),
+            'particleDiameterMax' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 4000, 'outputType' => 'float'),
             'particleDiameterMin' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 1000, 'outputType' => 'float'),
-            'particleReference3D' => array('isRequired' => false, 'outputType' => 'string'),
-            'particleMaskDiameter' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
-            'particleBoxSize' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
-            'particleDownsampleSize' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
+            'particleMaskDiameter' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1024, 'outputType' => 'integer'),
+            'particleBoxSize' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1024, 'outputType' => 'integer'),
+            'particleBoxSizeSmall' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1024, 'outputType' => 'integer'),
             'particleCalculateForMe' => array('isRequired' => false, 'outputType' => 'boolean'),
 
-            'pipelineDo2ndPass' => array('isRequired' => true, 'outputType' => 'boolean'),
-            'pipelineDo2ndPassClassification2D' => array('isRequired' => false, 'outputType' => 'boolean'),
-            'pipelineDo2ndPassClassification3D' => array('isRequired' => false, 'outputType' => 'boolean'),
+            'pipelineDo2ndPass' => array('isRequired' => false, 'outputType' => 'boolean'),
+            'pipelineDo2ndPassClassification2d' => array('isRequired' => false, 'outputType' => 'boolean'),
+            'pipelineDo2ndPassClassification3d' => array('isRequired' => false, 'outputType' => 'boolean'),
         );
 
-        list($invalid_parameters, $valid_parameters) = $this->validateParameters($validation_rules);
+        // Require projectGainReferenceFileName if projectGainReferenceFile is true
 
-        // Determine whether projectGainReferenceFileName is invalid or not specified
+        if ($this->has_arg('projectGainReferenceFile') && $this->arg('projectGainReferenceFile')) {
+            $required_parameters = array(
+                'projectGainReferenceFileName'
+            );
 
-        if (array_key_exists('projectGainReferenceFile', $valid_parameters)) {
-            if ($valid_parameters['projectGainReferenceFile'] == true) {
-                if ($this->has_arg('projectGainReferenceFileName') && ($this->arg('projectGainReferenceFileName') == true)) {
-                    $valid_parameters['projectGainReferenceFileName'] = $this->arg('projectGainReferenceFileName');
-                } else {
-                    array_push($invalid_parameters, "projectGainReferenceFileName is invalid or not specified");
-                }
+            $this->updateRequiredParameters($validation_rules, $required_parameters);
+        }
+
+        // Require the following parameters if pipelineDo1stPass is true
+
+        if ($this->has_arg('pipelineDo1stPass') && $this->arg('pipelineDo1stPass')) {
+            $required_parameters = array(
+                'pipelineDo1stPassClassification2d',
+                'pipelineDo1stPassClassification3d',
+                'particleUseCryolo',
+                'particleDiameterMax',
+                'particleDiameterMin',
+                'particleMaskDiameter',
+                'particleBoxSize',
+                'particleBoxSizeSmall',
+                'particleCalculateForMe',
+                'pipelineDo2ndPass'
+            );
+
+            $this->updateRequiredParameters($validation_rules, $required_parameters);
+
+            // Require the following parameters if pipelineDo2ndPass is true
+
+            if ($this->has_arg('pipelineDo2ndPass') && $this->arg('pipelineDo2ndPass')) {
+                $required_parameters = array(
+                    'pipelineDo2ndPassClassification2d',
+                    'pipelineDo2ndPassClassification3d'
+                );
+
+                $this->updateRequiredParameters($validation_rules, $required_parameters);
             }
         }
 
-//        // TODO particleReference3D is optional...
-//
-//        if (array_key_exists('pipelineDo1stPass', $valid_parameters) && $valid_parameters['pipelineDo1stPass']) {
-//            if ($this->has_arg('particleReference3D') && ($this->arg('particleReference3D') == true)) {
-//                $valid_parameters['particleReference3D'] = $this->arg('particleReference3D');
-////            } else {
-////                array_push($invalid_parameters, "particleReference3D is invalid or not specified");
-//            }
-//        }
+        // TODO Replace bespoke conditional parameter validation with symfony/validator. (JPH)
+
+        list($invalid_parameters, $valid_parameters) = $this->validateParameters($validation_rules);
 
         // TODO Better to return an array of invalid parameters for front end to display. (JPH)
         if (sizeof($invalid_parameters) > 0) {
@@ -164,258 +189,347 @@ class EM extends Page
             $this->_error($message, 400);
         }
 
-        $relion_json_array = array();
+        $workflow_json_array = array();
 
-        $relion_json_array['import_images'] = "{$visit_directory_relion}/Movies/*.{$valid_parameters['projectMovieFileNameExtension']}";
+        // TODO Remove projectAcquisitionSoftware from form. Relion start script to determine acquisition software from directory structure. (JPH + JL)
 
-        if ($valid_parameters['projectGainReferenceFile'] && $valid_parameters['projectGainReferenceFileName']) {
-            $relion_json_array['motioncor_gainreference'] = "{$visit_directory_relion}/Movies/{$valid_parameters['projectGainReferenceFileName']}";
+        if ($valid_parameters['projectAcquisitionSoftware'] == 'EPU') {
+            $workflow_json_array['import_images'] = "{$session_path}/raw/GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
+        } else if ($valid_parameters['projectAcquisitionSoftware'] == 'SerialEM') {
+            $workflow_json_array['import_images'] = "{$session_path}/raw/Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
         }
 
-        $relion_json_array['voltage'] = $valid_parameters['voltage'];
-        $relion_json_array['Cs'] = $valid_parameters['sphericalAberration'];
-        $relion_json_array['ctffind_do_phaseshift'] = $valid_parameters['findPhaseShift'];
-        $relion_json_array['angpix'] = $valid_parameters['pixelSize'];
-        $relion_json_array['motioncor_doseperframe'] = $valid_parameters['dosePerFrame'];
+        // TODO Remove projectGainReferenceFileName from form, file name gain.mrc now specified in standard operating procedure. (JPH)
 
-        $relion_json_array['stop_after_ctf_estimation'] = !$valid_parameters['pipelineDo1stPass'];
+        if ($valid_parameters['projectGainReferenceFile'] && $valid_parameters['projectGainReferenceFileName']) {
+            $workflow_json_array['motioncor_gainreference'] = "{$session_path}/processing/{$valid_parameters['projectGainReferenceFileName']}";
+        }
+
+        $workflow_json_array['voltage'] = $valid_parameters['voltage'];
+        $workflow_json_array['Cs'] = $valid_parameters['sphericalAberration'];
+        $workflow_json_array['ctffind_do_phaseshift'] = $valid_parameters['findPhaseShift'];
+        $workflow_json_array['angpix'] = $valid_parameters['pixelSize'];
+        $workflow_json_array['motioncor_binning'] = $valid_parameters['motionCorrectionBinning'];
+        $workflow_json_array['motioncor_doseperframe'] = $valid_parameters['dosePerFrame'];
+
+        $workflow_json_array['stop_after_ctf_estimation'] = !$valid_parameters['pipelineDo1stPass'];
 
         if ($valid_parameters['pipelineDo1stPass']) {
-            $relion_json_array['do_class2d'] = $valid_parameters['pipelineDo1stPassClassification2D'];
-            $relion_json_array['do_class3d'] = $valid_parameters['pipelineDo1stPassClassification3D'];
+            $workflow_json_array['do_class2d'] = $valid_parameters['pipelineDo1stPassClassification2d'];
+            $workflow_json_array['do_class3d'] = $valid_parameters['pipelineDo1stPassClassification3d'];
 
-            $relion_json_array['autopick_LoG_diam_max'] = $valid_parameters['particleDiameterMax'];
-            $relion_json_array['autopick_LoG_diam_min'] = $valid_parameters['particleDiameterMin'];
-
-//            // if (array_key_exists('particleReference3D', $valid_parameters)) {
-//            $relion_json_array['have_3d_reference'] = ($valid_parameters['particleReference3D'] == true ? true : false);
-//            $relion_json_array['class3d_reference'] = "{$visit_directory_relion}/Movies/{$valid_parameters['particleReference3D']}";
-//            // }
-
-            $relion_json_array['particleMaskDiameter'] = 'TODO'; // TODO
-            $relion_json_array['particleBoxSize'] = 'TODO'; // TODO
-            $relion_json_array['particleDownsampleSize'] = 'TODO'; // TODO
-            $relion_json_array['projectDirectory'] = $visit_directory;
-
-            $relion_json_array['do_second_pass'] = $valid_parameters['pipelineDo2ndPass'];
+            $workflow_json_array['autopick_do_cryolo'] = $valid_parameters['particleUseCryolo'];
+            // TODO In new validator, ensure particleDiameterMin < particleDiameterMax. (JPH)
+            $workflow_json_array['autopick_LoG_diam_max'] = $valid_parameters['particleDiameterMax'];
+            $workflow_json_array['autopick_LoG_diam_min'] = $valid_parameters['particleDiameterMin'];
+            $workflow_json_array['mask_diameter'] = $valid_parameters['particleMaskDiameter'];
+            $workflow_json_array['extract_downscale'] = true;
+            $workflow_json_array['extract_boxsize'] = $valid_parameters['particleBoxSize'];
+            $workflow_json_array['extract_small_boxsize'] = $valid_parameters['particleBoxSizeSmall'];
 
             if ($valid_parameters['pipelineDo2ndPass']) {
-                $relion_json_array['do_class2d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification2D'];
-                $relion_json_array['do_class3d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification3D'];
+                $workflow_json_array['do_class2d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification2d'];
+                $workflow_json_array['do_class3d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification3d'];
             }
         }
 
-
         // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
         // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
-        $relion_json_string = json_encode($relion_json_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-
-//        // TEMP FOR DEBUG
-//        $output = $relion_json_array;
+        $workflow_json_string = json_encode($workflow_json_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         // Write workflow file
 
-        $timestamp_epoch = time();
+        $timestamp = time();
 
-        $relion_msg_file = 'relion_msg_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
+        $workflow_file = 'relion_msg_' . gmdate('ymd.His', $timestamp) . '.json';
 
         try {
-            file_put_contents($em_workflow_path . '/' . $relion_msg_file, $relion_json_string);
+            file_put_contents("{$workflow_path}/{$workflow_file}", $workflow_json_string);
         } catch (Exception $e) {
-            error_log("Failed to write workflow file: {$em_workflow_path}/{$relion_msg_file}");
+            error_log("Failed to write workflow file: {$workflow_path}/{$workflow_file}");
             $this->_error('Failed to write workflow file.', 500);
         }
 
         // Send job to processing queue
 
         $message = array(
-            'relion_workflow' => $em_workflow_path . '/' . $relion_msg_file
+            'relion_workflow' => "{$workflow_path}/{$workflow_file}"
         );
 
-        $this->sendJobToProcessingQueueRelionFudge($message);
+        $this->enqueueMessage($activemq_relion_start_queue, $message);
 
         $output = array(
-            'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
-            'em_workflow_path' => $em_workflow_path,
-            'em_workflow_file' => $relion_msg_file
+            'timestamp' => gmdate('c', $timestamp),
+            'message' => $message,
+
+            'workflow_json_array' => $workflow_json_array
         );
 
         $this->_output($output);
     }
 
-    function _process_visit_scipion()
-        {
-            global $bl_types,
-                   $visit_directory,
-                   $em_template_path,
-                   $em_template_file,
+    function _relion_stop()
+    {
+        global $bl_types,
+               $visit_directory,
+               $activemq_relion_stop_queue;
+
+        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $session = $this->determineSession($this->arg('session'));
+        $this->checkSessionIsActive($session);
+
+        // TODO When Zocalo and Relion use ISPyB, return error if Relion is not processing this session. (JPH)
+
+//        if (!$session['processingIsActive']) {
+//            $message = 'Relion is not processing this session!';
+//
+//            error_log($message);
+//            $this->_error($message, 400);
+//        }
+
+        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
+
+        $message = array(
+            'session_path' => $session_path
+        );
+
+        $this->enqueueMessage($activemq_relion_stop_queue, $message);
+
+        $output = array(
+            'timestamp' => gmdate('c', time()),
+            'message' => $message
+        );
+
+        $this->_output($output);
+    }
+
+    function _relion_reset()
+    {
+        global $bl_types,
+               $visit_directory,
+               $activemq_relion_reset_queue;
+
+        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $session = $this->determineSession($this->arg('session'));
+        $this->checkSessionIsActive($session);
+
+        // TODO When Zocalo and Relion use ISPyB, return error if Relion is still processing this session. (JPH)
+
+//        if ($session['processingIsActive']) {
+//            $message = 'Relion is still processing this session!';
+//
+//            error_log($message);
+//            $this->_error($message, 400);
+//        }
+
+        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
+
+        $message = array(
+            'session_path' => $session_path
+        );
+
+        $this->enqueueMessage($activemq_relion_reset_queue, $message);
+
+        $output = array(
+            'timestamp' => gmdate('c', time()),
+            'message' => $message
+        );
+
+        $this->_output($output);
+    }
+
+    function _relion_status()
+    {
+        global $bl_types,
+               $visit_directory;
+
+        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $session = $this->determineSession($this->arg('session'));
+        $this->checkSessionIsActive($session);
+
+        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
+
+        $output = array(
+            'timestamp' => gmdate('c', time()),
+            'session_path' => $session_path,
+            'processingIsActive' => $session['processingIsActive'],
+            'processingTimestamp' => ($session['processingTimestamp'] ? gmdate('c', $session['processingTimestamp']) : null)
+        );
+
+        $this->_output($output);
+    }
+
+    // TODO Review Scipion code following Relion implementation e.g. changes to Stomp queue, globals from config.php, etc. (JPH)
+
+    function _scipion_start()
+    {
+        global $bl_types,
+               $visit_directory,
+               $em_template_path,
+               $em_template_file,
                $em_workflow_path;
 
         $this->checkElectronMicroscopesAreConfigured($bl_types);
-        $visit = $this->determineVisit($this->arg('visit'));
-        $this->checkVisitIsActive($visit);
+        $session = $this->determineSession($this->arg('session'));
+        $this->checkSessionIsActive($session);
 
-            // Substitute values for visit in file paths i.e. BEAMLINENAME, YEAR, and VISIT.
-            foreach ($visit as $key => $value) {
-                $visit_directory = str_replace("<%={$key}%>", $value, $visit_directory);
-                $em_template_path = str_replace("<%={$key}%>", $value, $em_template_path);
-                $em_workflow_path = str_replace("<%={$key}%>", $value, $em_workflow_path);
-            }
+        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
+        $em_template_path = $this->substituteSessionValuesInPath($session, $em_template_path);
+        $em_workflow_path = $this->substituteSessionValuesInPath($session, $em_workflow_path);
 
-            // Validate form parameters
+        // Validate form parameters
 
-            // Setup rules to validate each parameter by isRequired, inArray, minValue, maxValue.
-            // Specify outputType so json_encode casts value correctly. This determines whether value is quoted.
+        // Setup rules to validate each parameter by isRequired, inArray, minValue, maxValue.
+        // Specify outputType so json_encode casts value correctly. This determines whether value is quoted.
 
-            // TODO Consider adding default values (JPH)
-            $validation_rules = array(
-                'dosePerFrame' => array('isRequired' => true, 'minValue' => 0, 'maxValue' => 10, 'outputType' => 'float'),
-                'numberOfIndividualFrames' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 500, 'outputType' => 'integer'),
-                'patchX' => array('isRequired' => true, 'minValue' => 1, 'outputType' => 'integer'),
-                'patchY' => array('isRequired' => true, 'minValue' => 1, 'outputType' => 'integer'),
-                'samplingRate' => array('isRequired' => true, 'minValue' => 0.1, 'maxValue' => 10, 'outputType' => 'float'),
-                'particleSize' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
-                'minDist' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
-                'windowSize' => array('isRequired' => true, 'minValue' => 128, 'maxValue' => 2048, 'outputType' => 'integer'),
-                'findPhaseShift' => array('isRequired' => true, 'outputType' => 'boolean'),
-            );
+        $validation_rules = array(
+            'dosePerFrame' => array('isRequired' => true, 'minValue' => 0, 'maxValue' => 10, 'outputType' => 'float'),
+            'numberOfIndividualFrames' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 500, 'outputType' => 'integer'),
+            'patchX' => array('isRequired' => true, 'minValue' => 1, 'outputType' => 'integer'),
+            'patchY' => array('isRequired' => true, 'minValue' => 1, 'outputType' => 'integer'),
+            'samplingRate' => array('isRequired' => true, 'minValue' => 0.1, 'maxValue' => 10, 'outputType' => 'float'),
+            'particleSize' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
+            'minDist' => array('isRequired' => true, 'minValue' => 1, 'maxValue' => 1000, 'outputType' => 'integer'),
+            'windowSize' => array('isRequired' => true, 'minValue' => 128, 'maxValue' => 2048, 'outputType' => 'integer'),
+            'findPhaseShift' => array('isRequired' => true, 'outputType' => 'boolean'),
+        );
 
         list($invalid_parameters, $valid_parameters) = $this->validateParameters($validation_rules);
 
-            // Determine other values to substitute in JSON i.e. parameters not specified in form submission.
-            $valid_parameters['filesPath'] = $visit_directory . '/raw/GridSquare_*/Data';
-            $valid_parameters['visit'] = $visit['VISIT'];
+        // Determine other values to substitute in JSON i.e. parameters not specified in form submission.
+        $valid_parameters['filesPath'] = $session_path . '/raw/GridSquare_*/Data';
+        $valid_parameters['session'] = $session['SESSION'];
 
-            // TODO Better to return an array of invalid parameters for front end to display. (JPH)
-            if (sizeof($invalid_parameters) > 0) {
-                $message = 'Invalid parameters: ' . implode('; ', $invalid_parameters) . '.';
+        // TODO Better to return an array of invalid parameters for front end to display. (JPH)
+        if (sizeof($invalid_parameters) > 0) {
+            $message = 'Invalid parameters: ' . implode('; ', $invalid_parameters) . '.';
 
-                error_log($message);
-                $this->_error($message, 400);
-            }
+            error_log($message);
+            $this->_error($message, 400);
+        }
 
-            $template_json_string = null;
+        $template_json_string = null;
 
-            // Read workflow template file
-            try {
-                $template_json_string = file_get_contents($em_template_path . '/' . $em_template_file);
-            } catch (Exception $e) {
+        // Read workflow template file
+        try {
+            $template_json_string = file_get_contents("{$em_template_path}/{$em_template_file}");
+        } catch (Exception $e) {
             error_log("Failed to read workflow template: {$em_template_path}/{$em_template_file}");
-            $this->_error("Failed to read workflow template for electron microscopy “{$visit['BEAMLINENAME']}”.", 500);
-            }
+            $this->_error("Failed to read workflow template for electron microscopy “{$session['BEAMLINENAME']}”.", 500);
+        }
 
-            // Decode JSON string
-            $template_array = json_decode($template_json_string, true);
+        // Decode JSON string
+        $template_array = json_decode($template_json_string, true);
 
-            // JSON is invalid if it cannot be decoded
-            if ($template_array == null) {
+        // JSON is invalid if it cannot be decoded
+        if ($template_array == null) {
             error_log("Invalid workflow template: {$em_template_path}/{$em_template_file}");
-            $this->_error("Invalid workflow template for electron microscopy “{$visit['BEAMLINENAME']}”.", 500);
-            }
+            $this->_error("Invalid workflow template for electron microscopy “{$session['BEAMLINENAME']}”.", 500);
+        }
 
-            $updated_parameters = array();
+        $updated_parameters = array();
 
-            // Iterate over each step in workflow template e.g. 0, 1, 2, etc.
-            foreach (array_keys($template_array) as $step_no) {
+        // Iterate over each step in workflow template e.g. 0, 1, 2, etc.
+        foreach (array_keys($template_array) as $step_no) {
 
-                // Iterate over each parameter in step e.g. acquisitionWizard, amplitudeContrast, copyFiles, etc.
-                foreach (array_keys($template_array[$step_no]) as $parameter) {
+            // Iterate over each parameter in step e.g. acquisitionWizard, amplitudeContrast, copyFiles, etc.
+            foreach (array_keys($template_array[$step_no]) as $parameter) {
 
-                    // Determine whether user has specified value for parameter
-                    if (array_key_exists($parameter, $valid_parameters)) {
+                // Determine whether user has specified value for parameter
+                if (array_key_exists($parameter, $valid_parameters)) {
 
-                        // Set parameter to user specified value
-                        $template_array[$step_no][$parameter] = $valid_parameters[$parameter];
+                    // Set parameter to user specified value
+                    $template_array[$step_no][$parameter] = $valid_parameters[$parameter];
 
-                        // Record parameters set to user specified value
-                        array_push($updated_parameters, $parameter);
-                    }
+                    // Record parameters set to user specified value
+                    array_push($updated_parameters, $parameter);
                 }
             }
+        }
 
-            // Determine which parameters with user specified values are absent from workflow template
-            $absent_parameters = array_diff(array_keys($valid_parameters), $updated_parameters);
+        // Determine which parameters with user specified values are absent from workflow template
+        $absent_parameters = array_diff(array_keys($valid_parameters), $updated_parameters);
 
-            if (sizeof($absent_parameters) > 0) {
+        if (sizeof($absent_parameters) > 0) {
             error_log("Parameters absent from workflow template: {$em_template_path}/{$em_template_file}");
 
-                $message = 'Parameters absent from workflow template: ' . implode('; ', $absent_parameters) . '.';
-                error_log($message);
-                $this->_error($message, 500);
-            }
+            $message = 'Parameters absent from workflow template: ' . implode('; ', $absent_parameters) . '.';
+            error_log($message);
+            $this->_error($message, 500);
+        }
 
-            // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
-            // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
+        // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
+        // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
         $scipion_json_string = json_encode($template_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-            // Write workflow file
+        // Write workflow file
 
-            $timestamp_epoch = time();
+        $timestamp_epoch = time();
 
         $scipion_workflow_file = 'scipion_workflow_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
 
-            try {
-            file_put_contents($em_workflow_path . '/' . $scipion_workflow_file, $scipion_json_string);
-            } catch (Exception $e) {
+        try {
+            file_put_contents("{$em_workflow_path}/{$scipion_workflow_file}", $scipion_json_string);
+        } catch (Exception $e) {
             error_log("Failed to write workflow file: {$em_workflow_path}/{$scipion_workflow_file}");
-                $this->_error('Failed to write workflow file.', 500);
-            }
-
-            // Send job to processing queue
-
-            $message = array(
-            'scipion_workflow' => $em_workflow_path . '/' . $scipion_workflow_file
-            );
-
-        $this->sendJobToProcessingQueue($message);
-
-            $output = array(
-                'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
-                'em_template_path' => $em_template_path,
-                'em_template_file' => $em_template_file,
-                'em_workflow_path' => $em_workflow_path,
-            'em_workflow_file' => $scipion_workflow_file
-            );
-
-            $this->_output($output);
+            $this->_error('Failed to write workflow file.', 500);
         }
 
-        function _ap_status() {
-            if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
+        // Send job to processing queue
 
-            $where = array();
-            $ids = array();
-            if ($this->has_arg('ids')) {
-                if (is_array($this->arg('ids'))) {
-                    foreach ($this->arg('ids') as $i) {
-                        array_push($ids,$i);
-                        array_push($where,'m.datacollectionid=:'.sizeof($ids));
-                    }
+        $message = array(
+            'scipion_workflow' => "{$em_workflow_path}/{$scipion_workflow_file}"
+        );
+
+        $this->enqueueMessage($message);
+
+        $output = array(
+            'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
+            'em_template_path' => $em_template_path,
+            'em_template_file' => $em_template_file,
+            'em_workflow_path' => $em_workflow_path,
+            'em_workflow_file' => $scipion_workflow_file
+        );
+
+        $this->_output($output);
+    }
+
+    function _ap_status()
+    {
+        if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
+
+        $where = array();
+        $ids = array();
+        if ($this->has_arg('ids')) {
+            if (is_array($this->arg('ids'))) {
+                foreach ($this->arg('ids') as $i) {
+                    array_push($ids, $i);
+                    array_push($where, 'm.datacollectionid=:' . sizeof($ids));
                 }
             }
+        }
 
-            if (!sizeof($ids)) {
-                $this->_output(array());
-                return;
-            }
+        if (!sizeof($ids)) {
+            $this->_output(array());
+            return;
+        }
 
-            $where = '('.implode(' OR ', $where).')';
+        $where = '(' . implode(' OR ', $where) . ')';
 
-            if ($this->has_arg('visit')) {
-                $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :".(sizeof($ids)+1);
-                array_push($ids, $this->arg('visit'));
-            } else {
-                $where .= " AND s.proposalid = :".(sizeof($ids)+1);
-                array_push($ids, $this->proposalid);
-            }
+        if ($this->has_arg('visit')) {
+            $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :" . (sizeof($ids) + 1);
+            array_push($ids, $this->arg('visit'));
+        } else {
+            $where .= " AND s.proposalid = :" . (sizeof($ids) + 1);
+            array_push($ids, $this->proposalid);
+        }
 
-            $statuses = array();
-            foreach ($this->arg('ids') as $d) {
-                $statuses[$d] = array('ID' => $d, 'MC' => array(), 'CTF' => array());
-            }
+        $statuses = array();
+        foreach ($this->arg('ids') as $d) {
+            $statuses[$d] = array('ID' => $d, 'MC' => array(), 'CTF' => array());
+        }
 
-            $mc = $this->db->pq("SELECT app.processingstatus, m.movienumber, dc.datacollectionid
+        $mc = $this->db->pq("SELECT app.processingstatus, m.movienumber, dc.datacollectionid
                 FROM motioncorrection mc
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
                 INNER JOIN movie m ON m.movieid = mc.movieid
@@ -424,12 +538,12 @@ class EM extends Page
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
 
-            foreach ($mc as $m) {
-                $statuses[$m['DATACOLLECTIONID']]['MC'][$m['MOVIENUMBER']] = $m['PROCESSINGSTATUS'];
-            }
+        foreach ($mc as $m) {
+            $statuses[$m['DATACOLLECTIONID']]['MC'][$m['MOVIENUMBER']] = $m['PROCESSINGSTATUS'];
+        }
 
 
-            $ctf = $this->db->pq("SELECT app.processingstatus, m.movienumber, dc.datacollectionid
+        $ctf = $this->db->pq("SELECT app.processingstatus, m.movienumber, dc.datacollectionid
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = c.autoprocprogramid
@@ -439,92 +553,95 @@ class EM extends Page
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
 
-            foreach ($ctf as $c) {
-                $statuses[$c['DATACOLLECTIONID']]['CTF'][$c['MOVIENUMBER']] = $c['PROCESSINGSTATUS'];
-            }
-
-            $this->_output(array_values($statuses));
+        foreach ($ctf as $c) {
+            $statuses[$c['DATACOLLECTIONID']]['CTF'][$c['MOVIENUMBER']] = $c['PROCESSINGSTATUS'];
         }
 
+        $this->_output(array_values($statuses));
+    }
 
 
-        function _mc_result() {
-            $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
+    function _mc_result()
+    {
+        $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
 
-            $rows = $this->db->pq("SELECT mc.motioncorrectionid, mc.firstframe, mc.lastframe, mc.doseperframe, mc.doseweight, mc.totalmotion, mc.averagemotionperframe, mc.micrographsnapshotfullpath, mc.patchesusedx, mc.patchesusedy, mc.fftfullpath, mc.fftcorrectedfullpath, mc.comments, mc.autoprocprogramid, m.movienumber as imagenumber, dc.datacollectionid
+        $rows = $this->db->pq("SELECT mc.motioncorrectionid, mc.firstframe, mc.lastframe, mc.doseperframe, mc.doseweight, mc.totalmotion, mc.averagemotionperframe, mc.micrographsnapshotfullpath, mc.patchesusedx, mc.patchesusedy, mc.fftfullpath, mc.fftcorrectedfullpath, mc.comments, mc.autoprocprogramid, m.movienumber AS imagenumber, dc.datacollectionid
                 FROM motioncorrection mc
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
 
-            if (!sizeof($rows)) $this->_error('No such motion correction');
-            $row = $rows[0];
+        if (!sizeof($rows)) $this->_error('No such motion correction');
+        $row = $rows[0];
 
-            $row['FFTFULLPATH'] = file_exists($row['FFTFULLPATH']) ? 1 : 0;
-            $row['FFTCORRECTEDFULLPATH'] = file_exists($row['FFTCORRECTEDFULLPATH']) ? 1 : 0;
-            $row['MICROGRAPHSNAPSHOTFULLPATH'] = file_exists($row['MICROGRAPHSNAPSHOTFULLPATH']) ? 1 : 0;
+        $row['FFTFULLPATH'] = file_exists($row['FFTFULLPATH']) ? 1 : 0;
+        $row['FFTCORRECTEDFULLPATH'] = file_exists($row['FFTCORRECTEDFULLPATH']) ? 1 : 0;
+        $row['MICROGRAPHSNAPSHOTFULLPATH'] = file_exists($row['MICROGRAPHSNAPSHOTFULLPATH']) ? 1 : 0;
 
-            foreach (array('TOTALMOTION' => 1, 'AVERAGEMOTIONPERFRAME' => 2) as $k => $r) {
-                $row[$k] = number_format($row[$k], $r);
-            }
-
-            $this->_output($row);
+        foreach (array('TOTALMOTION' => 1, 'AVERAGEMOTIONPERFRAME' => 2) as $k => $r) {
+            $row[$k] = number_format($row[$k], $r);
         }
 
+        $this->_output($row);
+    }
 
-        function _mc_image() {
-            $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
-            if ($n < 1) $n = 1;
 
-            $imgs = $this->db->pq("SELECT mc.micrographsnapshotfullpath 
+    function _mc_image()
+    {
+        $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
+        if ($n < 1) $n = 1;
+
+        $imgs = $this->db->pq("SELECT mc.micrographsnapshotfullpath 
                 FROM motioncorrection mc
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $n));
 
-            if (!sizeof($imgs)) $this->_error('No such micrograph');
-            $img = $imgs[0];
+        if (!sizeof($imgs)) $this->_error('No such micrograph');
+        $img = $imgs[0];
 
-            if (file_exists($img['MICROGRAPHSNAPSHOTFULLPATH'])) {
-                $this->_send_image($img['MICROGRAPHSNAPSHOTFULLPATH']);
+        if (file_exists($img['MICROGRAPHSNAPSHOTFULLPATH'])) {
+            $this->_send_image($img['MICROGRAPHSNAPSHOTFULLPATH']);
 
-            } else {
-                $this->app->contentType('image/png');
-                readfile('assets/images/no_image.png');
-            }
+        } else {
+            $this->app->contentType('image/png');
+            readfile('assets/images/no_image.png');
         }
+    }
 
 
-        function _mc_fft() {
-            $im = $this->has_arg('n') ? $this->arg('n') : 1;
-            $t = $this->has_arg('t') ? 2 : 1;
+    function _mc_fft()
+    {
+        $im = $this->has_arg('n') ? $this->arg('n') : 1;
+        $t = $this->has_arg('t') ? 2 : 1;
 
-            $imgs = $this->db->pq("SELECT mc.fftcorrectedfullpath, mc.fftfullpath 
+        $imgs = $this->db->pq("SELECT mc.fftcorrectedfullpath, mc.fftfullpath 
                 FROM motioncorrection mc
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $im));
 
-            if (!sizeof($imgs)) $this->_error('No such fft');
-            $img = $imgs[0];
+        if (!sizeof($imgs)) $this->_error('No such fft');
+        $img = $imgs[0];
 
-            $file = $t == 2 ? $img['FFTCORRECTEDFULLPATH'] : $img['FFTFULLPATH'];
+        $file = $t == 2 ? $img['FFTCORRECTEDFULLPATH'] : $img['FFTFULLPATH'];
 
-            if (file_exists($file)) {
-                $this->_send_image($file);
+        if (file_exists($file)) {
+            $this->_send_image($file);
 
-            } else {
-                $this->app->contentType('image/png');
-                readfile('assets/images/no_image.png');
-            }
+        } else {
+            $this->app->contentType('image/png');
+            readfile('assets/images/no_image.png');
         }
+    }
 
 
-        function _mc_plot() {
-            $im = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
+    function _mc_plot()
+    {
+        $im = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
 
-            $rows = $this->db->pq("SELECT mcd.deltax, mcd.deltay, mcd.framenumber 
+        $rows = $this->db->pq("SELECT mcd.deltax, mcd.deltay, mcd.framenumber 
                 FROM motioncorrectiondrift mcd
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
@@ -532,36 +649,37 @@ class EM extends Page
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2
                 ORDER BY mcd.framenumber", array($this->arg('id'), $im));
 
-            $data = array();
-            foreach ($rows as $r) {
-                array_push($data, array($r['DELTAX'], $r['DELTAY']));
-            }
-
-            $this->_output($data);
+        $data = array();
+        foreach ($rows as $r) {
+            array_push($data, array($r['DELTAX'], $r['DELTAY']));
         }
 
+        $this->_output($data);
+    }
 
-        function _mc_drift_histogram() {
-            $where = '';
-            $args = array();
 
-            if ($this->has_arg('bl')) {
-                $where .= ' AND s.beamlinename=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('bl'));
-            }
+    function _mc_drift_histogram()
+    {
+        $where = '';
+        $args = array();
 
-            if ($this->has_arg('visit')) {
-                $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :".(sizeof($args)+1);
-                array_push($args, $this->arg('visit'));
-            }
+        if ($this->has_arg('bl')) {
+            $where .= ' AND s.beamlinename=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('bl'));
+        }
 
-            if ($this->has_arg('runid')) {
-                $where .= ' AND vr.runid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('runid'));
-            }
+        if ($this->has_arg('visit')) {
+            $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :" . (sizeof($args) + 1);
+            array_push($args, $this->arg('visit'));
+        }
 
-            $bs = 1;
-            $hist = $this->db->pq("SELECT 
+        if ($this->has_arg('runid')) {
+            $where .= ' AND vr.runid=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('runid'));
+        }
+
+        $bs = 1;
+        $hist = $this->db->pq("SELECT 
                 AVG(diff) as avgdiff, MIN(diff) as mindiff, MAX(diff) as maxdiff, COUNT(diff) as countdiff,
                 framediff, beamlinename FROM (
                     SELECT SQRT(POW(mcd.deltax - @diffx,2) + POW(mcd.deltay - @diffy, 2)) as diff,
@@ -584,48 +702,49 @@ class EM extends Page
                     ORDER BY framediff+0, beamlinename
                 ", $args);
 
-            // print_r($hist);
+        // print_r($hist);
 
-            $bls = array();
-            foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
-            if ($this->has_arg('visit')) {
-                if (!sizeof(array_keys($bls))) {
-                    $bl_temp = $this->db->pq("SELECT s.beamlinename 
+        $bls = array();
+        foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
+        if ($this->has_arg('visit')) {
+            if (!sizeof(array_keys($bls))) {
+                $bl_temp = $this->db->pq("SELECT s.beamlinename 
                         FROM blsession s
                         INNER JOIN proposal p ON p.proposalid = s.proposalid
                         WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
 
-                    if (sizeof($bl_temp)) $bls[$bl_temp[0]['BEAMLINENAME']] = 1;
-                }
+                if (sizeof($bl_temp)) $bls[$bl_temp[0]['BEAMLINENAME']] = 1;
             }
-
-            $data = array();
-            $ticks = array();
-            foreach ($bls as $bl => $y) {
-                $ha = array();
-                $max = array();
-                $min = array();
-
-                foreach ($hist as $i => &$h) {
-                    if ($h['FRAMEDIFF'] == '0-1') continue;
-                    if ($h['BEAMLINENAME'] != $bl) continue;
-                    $ha[$i-1] = floatval($h['AVGDIFF']);
-                    $min[$i-1] = floatval($h['MINDIFF']);
-                    $max[$i-1] = floatval($h['MAXDIFF']);
-                    $ticks[$h['FRAMEDIFF']] = 1;
-                }
-
-                array_push($data, array('label' => $bl, 'min' => $min, 'max' => $max, 'avg' => $ha));
-            }
-
-            $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
         }
 
+        $data = array();
+        $ticks = array();
+        foreach ($bls as $bl => $y) {
+            $ha = array();
+            $max = array();
+            $min = array();
 
-        function _ctf_result() {
-            $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
+            foreach ($hist as $i => &$h) {
+                if ($h['FRAMEDIFF'] == '0-1') continue;
+                if ($h['BEAMLINENAME'] != $bl) continue;
+                $ha[$i - 1] = floatval($h['AVGDIFF']);
+                $min[$i - 1] = floatval($h['MINDIFF']);
+                $max[$i - 1] = floatval($h['MAXDIFF']);
+                $ticks[$h['FRAMEDIFF']] = 1;
+            }
 
-            $rows = $this->db->pq("SELECT c.ctfid, c.boxsizex, c.boxsizey, c.minresolution, c.maxresolution, c.mindefocus, c.maxdefocus, c.defocusstepsize, c.astigmatism, c.astigmatismangle, c.estimatedresolution, c.estimateddefocus, c.amplitudecontrast, c.ccvalue, c.ffttheoreticalfullpath, c.comments, c.autoprocprogramid, m.movienumber as imagenumber, dc.datacollectionid
+            array_push($data, array('label' => $bl, 'min' => $min, 'max' => $max, 'avg' => $ha));
+        }
+
+        $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
+    }
+
+
+    function _ctf_result()
+    {
+        $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
+
+        $rows = $this->db->pq("SELECT c.ctfid, c.boxsizex, c.boxsizey, c.minresolution, c.maxresolution, c.mindefocus, c.maxdefocus, c.defocusstepsize, c.astigmatism, c.astigmatismangle, c.estimatedresolution, c.estimateddefocus, c.amplitudecontrast, c.ccvalue, c.ffttheoreticalfullpath, c.comments, c.autoprocprogramid, m.movienumber AS imagenumber, dc.datacollectionid
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
@@ -633,86 +752,89 @@ class EM extends Page
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
 
-            if (!sizeof($rows)) $this->_error('No such ctf correction');
-            $row = $rows[0];
+        if (!sizeof($rows)) $this->_error('No such ctf correction');
+        $row = $rows[0];
 
-            $row['FFTTHEORETICALFULLPATH'] = file_exists($row['FFTTHEORETICALFULLPATH']) ? 1 : 0;
+        $row['FFTTHEORETICALFULLPATH'] = file_exists($row['FFTTHEORETICALFULLPATH']) ? 1 : 0;
 
-            foreach (array('ASTIGMATISM' => 2, 'ASTIGMATISMANGLE' => 1, 'ESTIMATEDRESOLUTION' => 2, 'ESTIMATEDDEFOCUS' => 0) as $k => $r) {
-                $row[$k] = number_format($row[$k], $r, '.', '');
-            }
-
-            $this->_output($row);
+        foreach (array('ASTIGMATISM' => 2, 'ASTIGMATISMANGLE' => 1, 'ESTIMATEDRESOLUTION' => 2, 'ESTIMATEDDEFOCUS' => 0) as $k => $r) {
+            $row[$k] = number_format($row[$k], $r, '.', '');
         }
 
+        $this->_output($row);
+    }
 
-        function _ctf_image() {
-            $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
-            if ($n < 1) $n = 1;
 
-            $imgs = $this->db->pq("SELECT c.ffttheoreticalfullpath 
+    function _ctf_image()
+    {
+        $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
+        if ($n < 1) $n = 1;
+
+        $imgs = $this->db->pq("SELECT c.ffttheoreticalfullpath 
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $n));
 
-            if (!sizeof($imgs)) $this->_error('No such ctf correction');
-            $img = $imgs[0];
+        if (!sizeof($imgs)) $this->_error('No such ctf correction');
+        $img = $imgs[0];
 
-            if (file_exists($img['FFTTHEORETICALFULLPATH'])) {
-                $this->_send_image($img['FFTTHEORETICALFULLPATH']);
+        if (file_exists($img['FFTTHEORETICALFULLPATH'])) {
+            $this->_send_image($img['FFTTHEORETICALFULLPATH']);
 
-            } else {
-                $this->app->contentType('image/png');
-                readfile('assets/images/no_image.png');
+        } else {
+            $this->app->contentType('image/png');
+            readfile('assets/images/no_image.png');
+        }
+    }
+
+    function _ctf_plot()
+    {
+
+    }
+
+
+    function _ctf_histogram()
+    {
+        $types = array(
+            'defocus' => array('unit' => 'A', 'st' => 0, 'en' => 60000, 'bin_size' => 1000, 'col' => 'c.estimateddefocus', 'count' => 'c.estimateddefocus'),
+            'astigmatism' => array('unit' => 'Number', 'st' => 0.5, 'en' => 1.5, 'bin_size' => 0.005, 'col' => 'c.astigmatism', 'count' => 'c.astigmatism'),
+            'resolution' => array('unit' => 'A', 'st' => 0, 'en' => 30, 'bin_size' => 1, 'col' => 'c.estimatedresolution', 'count' => 'c.estimatedresolution'),
+        );
+
+        $k = 'defocus';
+        $t = $types[$k];
+        if ($this->has_arg('ty')) {
+            if (array_key_exists($this->arg('ty'), $types)) {
+                $k = $this->arg('ty');
+                $t = $types[$k];
             }
         }
 
-        function _ctf_plot() {
+        $where = '';
+        $args = array();
 
+        if ($this->has_arg('bl')) {
+            $where .= ' AND s.beamlinename=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('bl'));
         }
 
+        if ($this->has_arg('visit')) {
+            $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :" . (sizeof($args) + 1);
+            array_push($args, $this->arg('visit'));
+        }
 
-        function _ctf_histogram() {
-            $types = array(
-                'defocus' => array('unit' => 'A', 'st' => 0, 'en' => 60000, 'bin_size' => 1000, 'col' => 'c.estimateddefocus', 'count' => 'c.estimateddefocus'),
-                'astigmatism' => array('unit' => 'Number', 'st' => 0.5, 'en' => 1.5, 'bin_size' => 0.005, 'col' => 'c.astigmatism', 'count' => 'c.astigmatism'),
-                'resolution' => array('unit' => 'A', 'st' => 0, 'en' => 30, 'bin_size' => 1, 'col' => 'c.estimatedresolution', 'count' => 'c.estimatedresolution'),
-            );
+        if ($this->has_arg('runid')) {
+            $where .= ' AND vr.runid=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('runid'));
+        }
 
-            $k = 'defocus';
-            $t = $types[$k];
-            if ($this->has_arg('ty')) {
-                if (array_key_exists($this->arg('ty'), $types)) {
-                    $k = $this->arg('ty');
-                    $t = $types[$k];
-                }
-            }
+        $col = $t['col'];
+        $ct = $t['count'];
+        $bs = $t['bin_size'];
 
-            $where = '';
-            $args = array();
-
-            if ($this->has_arg('bl')) {
-                $where .= ' AND s.beamlinename=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('bl'));
-            }
-
-            if ($this->has_arg('visit')) {
-                $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :".(sizeof($args)+1);
-                array_push($args, $this->arg('visit'));
-            }
-
-            if ($this->has_arg('runid')) {
-                $where .= ' AND vr.runid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('runid'));
-            }
-
-            $col = $t['col'];
-            $ct = $t['count'];
-            $bs = $t['bin_size'];
-
-            $limits = $this->db->pq("SELECT max($col) as max, min($col) as min, s.beamlinename
+        $limits = $this->db->pq("SELECT max($col) as max, min($col) as min, s.beamlinename
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
@@ -723,36 +845,36 @@ class EM extends Page
                 WHERE $col < 1e38 $where
                 GROUP BY s.beamlinename", $args);
 
-            // print_r($limits);
+        // print_r($limits);
 
-            if (sizeof($limits)) {
-                $limits = $limits[0];
-                $max = floatval(($limits['MAX']));
-                $min = floatval(($limits['MIN']));
+        if (sizeof($limits)) {
+            $limits = $limits[0];
+            $max = floatval(($limits['MAX']));
+            $min = floatval(($limits['MIN']));
 
-                $range = $max - $min;
+            $range = $max - $min;
 
-                if ($range > 0) {
-                    $bs = $range / 50;
+            if ($range > 0) {
+                $bs = $range / 50;
 
-                    if ($bs < 0) {
-                        $zeros = strspn($bs, '0', strpos($bs, '.')+1);
-                        $bs = round($bs, $zeros);
-                    } else if ($bs < 1) {
-                        $bs = round($bs, 3);
-                    } else {
-                        $zeros = strlen(number_format($bs,0, '.', ''));
-                        $mp = pow(1,$zeros);
-                        $bs = ceil($bs/$mp) * $mp;
-                    }
-
-                    $t['bin_size'] = $bs;
-                    $t['st'] = $min - fmod($min, $bs);
-                    $t['en'] = $max - fmod($max, $bs) + $bs;
+                if ($bs < 0) {
+                    $zeros = strspn($bs, '0', strpos($bs, '.') + 1);
+                    $bs = round($bs, $zeros);
+                } else if ($bs < 1) {
+                    $bs = round($bs, 3);
+                } else {
+                    $zeros = strlen(number_format($bs, 0, '.', ''));
+                    $mp = pow(1, $zeros);
+                    $bs = ceil($bs / $mp) * $mp;
                 }
-            }
 
-            $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
+                $t['bin_size'] = $bs;
+                $t['st'] = $min - fmod($min, $bs);
+                $t['en'] = $max - fmod($max, $bs) + $bs;
+            }
+        }
+
+        $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
@@ -764,101 +886,114 @@ class EM extends Page
                 GROUP BY s.beamlinename,x
                 ORDER BY s.beamlinename", $args);
 
-            $bls = array();
-            foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
-            if ($this->has_arg('visit')) {
-                if (!sizeof(array_keys($bls))) {
-                    $bl_temp = $this->db->pq("SELECT s.beamlinename 
+        $bls = array();
+        foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
+        if ($this->has_arg('visit')) {
+            if (!sizeof(array_keys($bls))) {
+                $bl_temp = $this->db->pq("SELECT s.beamlinename 
                         FROM blsession s
                         INNER JOIN proposal p ON p.proposalid = s.proposalid
                         WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
 
-                    if (sizeof($bl_temp)) $bls[$bl_temp[0]['BEAMLINENAME']] = 1;
-                }
+                if (sizeof($bl_temp)) $bls[$bl_temp[0]['BEAMLINENAME']] = 1;
+            }
+        }
+
+        $data = array();
+        foreach ($bls as $bl => $y) {
+            $ha = array();
+            foreach ($hist as &$h) {
+                if ($h['BEAMLINENAME'] != $bl) continue;
+                $ha[$h['X']] = floatval($h['Y']);
             }
 
-            $data = array();
-            foreach ($bls as $bl => $y) {
-                $ha = array();
-                foreach ($hist as &$h) {
-                    if ($h['BEAMLINENAME'] != $bl) continue;
-                    $ha[$h['X']] = floatval($h['Y']);
-                }
-
-                $gram = array();
-                for($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
-                    $bin_s = number_format($bin, strlen(substr(strrchr($t['bin_size'], '.'), 1)), '.', '');
-                    $gram[$bin_s] = array_key_exists($bin_s, $ha) ? $ha[$bin_s] : 0;
-                }
-
-                $lab = ucfirst($k).' ('.$t['unit'].')';
-                if (!$this->has_arg('bl')) $lab = $bl.': '.$lab;
-
-                array_push($data, array('label' => $lab, 'data' => $gram));
+            $gram = array();
+            for ($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
+                $bin_s = number_format($bin, strlen(substr(strrchr($t['bin_size'], '.'), 1)), '.', '');
+                $gram[$bin_s] = array_key_exists($bin_s, $ha) ? $ha[$bin_s] : 0;
             }
 
-            $this->_output(array('histograms' => $data));
+            $lab = ucfirst($k) . ' (' . $t['unit'] . ')';
+            if (!$this->has_arg('bl')) $lab = $bl . ': ' . $lab;
+
+            array_push($data, array('label' => $lab, 'data' => $gram));
         }
 
-
-        function _browser_cache() {
-            $expires = 60*60*24*14;
-            $this->app->response->headers->set('Pragma', 'public');
-            $this->app->response->headers->set('Cache-Control', 'maxage='.$expires);
-            $this->app->response->headers->set('Expires', gmdate('D, d M Y H:i:s', time()+$expires) . ' GMT');
-        }
+        $this->_output(array('histograms' => $data));
+    }
 
 
-        function _send_image($file) {
-            $this->_browser_cache();
-            $size = filesize($file);
-            $this->app->response->headers->set("Content-length", $size);
-            $this->app->contentType('image/'.pathinfo($file, PATHINFO_EXTENSION));
-            readfile($file);
-        }
+    function _browser_cache()
+    {
+        $expires = 60 * 60 * 24 * 14;
+        $this->app->response->headers->set('Pragma', 'public');
+        $this->app->response->headers->set('Cache-Control', 'maxage=' . $expires);
+        $this->app->response->headers->set('Expires', gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
+    }
+
+
+    function _send_image($file)
+    {
+        $this->_browser_cache();
+        $size = filesize($file);
+        $this->app->response->headers->set("Content-length", $size);
+        $this->app->contentType('image/' . pathinfo($file, PATHINFO_EXTENSION));
+        readfile($file);
+    }
 
     private function checkElectronMicroscopesAreConfigured(array $bl_types)
     {
         // Check electron microscopes are listed in global variables - see $bl_types in config.php.
         if (!array_key_exists('em', $bl_types)) {
-            $message = 'Electron microscopes not specified';
+            $message = 'Electron microscopes are not specified';
 
             error_log($message);
             $this->_error($message, 500);
         }
     }
 
-    private function determineVisit($visit_reference)
+    private function determineSession($session_reference)
     {
-        if (!$this->has_arg('visit')) {
-            $message = 'Visit not specified';
+        if (!$this->has_arg('session')) {
+            $message = 'Session not specified!';
 
             error_log($message);
             $this->_error($message, 400);
         }
 
-        // Lookup visit in ISPyB
-        $visit = $this->db->pq("
+        // Lookup session in ISPyB
+        $session = $this->db->pq("
             SELECT b.beamLineName AS beamLineName,
                 YEAR(b.startDate) AS year,
+                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS session,
                 CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
                 b.startDate AS startDate,
                 b.endDate AS endDate,
                 CURRENT_TIMESTAMP BETWEEN b.startDate AND b.endDate AS active
             FROM Proposal AS p
                 JOIN BLSession AS b ON p.proposalId = b.proposalId
-            WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1", array($visit_reference));
+            WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1", array($session_reference));
 
-        if (!sizeof($visit)) $this->_error('Visit not found');
+        if (!sizeof($session)) $this->_error('Session not found');
 
-        return $visit[0];
+        $session = $session[0];
+
+        // Temporary fudge until Zocalo and Relion use ISPyB
+
+        list($processingIsActive, $processingTimestamp) = $this->determineProcessingStatus($session);
+
+        $session['processingIsActive'] = $processingIsActive;
+        $session['processingTimestamp'] = $processingTimestamp;
+
+        return $session;
     }
 
-    private function checkVisitIsActive($visit)
+    private function checkSessionIsActive($session)
     {
         // Do not permit processing after session has ended
-        if (!$visit['ACTIVE']) {
-            $message = 'This session ended at ' . date('H:i \o\n jS F Y', strtotime($visit['ENDDATE'])) . '. It may no longer be submitted for processing.';
+        // TODO Do not permit processing before session has started. (JPH)
+        if (!$session['ACTIVE']) {
+            $message = 'This session ended at ' . date('H:i:s \o\n jS F Y', strtotime($session['ENDDATE'])) . '.';
 
             error_log($message);
             $this->_error($message, 400);
@@ -925,56 +1060,79 @@ class EM extends Page
         return array($invalid_parameters, $valid_parameters);
     }
 
-    private function sendJobToProcessingQueue($message = null)
+    private function enqueueMessage($activemq_queue, $activemq_message)
     {
         global $em_activemq_server,
                $em_activemq_username,
-               $em_activemq_password,
-               $em_activemq_queue;
+               $em_activemq_password;
 
-        if (empty($em_activemq_server) || empty($em_activemq_queue)) {
+        if (empty($em_activemq_server) || empty($activemq_queue)) {
             $message = 'ActiveMQ server not specified.';
 
             error_log($message);
             $this->_error($message, 500);
         }
 
-        include_once(__DIR__ . '/../shared/class.queue.php');
-        $this->queue = new Queue();
-
         try {
-            $this->queue->send($em_activemq_server, $em_activemq_username, $em_activemq_password, $em_activemq_queue, $message, true);
+            $queue = new Queue($em_activemq_server, $em_activemq_username, $em_activemq_password);
+            $queue->send($activemq_queue, $activemq_message, true);
         } catch (Exception $e) {
             $this->_error($e->getMessage(), 500);
         }
     }
 
-    private function sendJobToProcessingQueueRelionFudge($message = null)
+    private function substituteSessionValuesInPath($session, $path)
     {
-        global $em_activemq_server,
-               $em_activemq_username,
-               $em_activemq_password,
-               $em_activemq_queue;
+        // Substitute session values in file or directory path i.e. BEAMLINENAME, YEAR, and SESSION / VISIT.
 
-        // TEMP FUDGE
-
-        $em_activemq_server = 'tcp://activemq.diamond.ac.uk:61613';
-        $em_activemq_queue = '/queue/zocalo.relion.relion_prod_ispyb';
-
-        if (empty($em_activemq_server) || empty($em_activemq_queue)) {
-            $message = 'ActiveMQ server not specified.';
-
-            error_log($message);
-            $this->_error($message, 500);
+        foreach ($session as $key => $value) {
+            $path = str_replace("<%={$key}%>", $value, $path);
         }
 
-        include_once(__DIR__ . '/../shared/class.queue.php');
-        $this->queue = new Queue();
+        return $path;
+    }
+
+    private function updateRequiredParameters(array &$validation_rules, array $required_parameters)
+    {
+        // Iterate over validation rules
+        foreach ($validation_rules as $parameter => $validations) {
+
+            // Determine whether parameter is in array of required parameters
+            if (in_array($parameter, $required_parameters)) {
+
+                // Update validation rule
+                $validation_rules[$parameter]['isRequired'] = true;
+            }
+        }
+    }
+
+    private function determineProcessingStatus($session)
+    {
+        // Temporary fudge until Zocalo and Relion can update ISPyB
+        // RUNNING_RELION_IT file indicates Relion is processing
+
+        global $visit_directory;
+
+        $filename = $this->substituteSessionValuesInPath($session, $visit_directory . '/.ispyb/processed/RUNNING_RELION_IT');
+
+        $isActive = false;
+        $timestamp = null;
+
+        clearstatcache();
 
         try {
-            $this->queue->send($em_activemq_server, $em_activemq_username, $em_activemq_password, $em_activemq_queue, $message, true);
+            $isActive = file_exists($filename);
+
+            if ($isActive) {
+                $stat = stat($filename);
+
+                if ($stat) $timestamp = $stat['mtime'];
+            }
         } catch (Exception $e) {
-            $this->_error($e->getMessage(), 500);
+            error_log("Failed to check status file: {$filename}");
+            $this->_error('Failed to check status file.', 500);
         }
+
+        return array($isActive, $timestamp);
     }
 }
