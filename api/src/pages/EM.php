@@ -39,8 +39,8 @@ class EM extends Page
         'pipelineDo1stPassClassification3d' => '1?', // Boolean
 
         'particleUseCryolo' => '1?', // Boolean
-        'particleDiameterMax' => '\d+', // Integer
         'particleDiameterMin' => '\d+', // Integer
+        'particleDiameterMax' => '\d+', // Integer
         'particleMaskDiameter' => '\d+', // Integer
         'particleBoxSize' => '\d+', // Integer
         'particleBoxSizeSmall' => '\d+', // Integer
@@ -125,8 +125,8 @@ class EM extends Page
             'pipelineDo1stPassClassification3d' => array('isRequired' => false, 'outputType' => 'boolean'),
 
             'particleUseCryolo' => array('isRequired' => false, 'outputType' => 'boolean'),
-            'particleDiameterMax' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 4000, 'outputType' => 'float'),
             'particleDiameterMin' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 1000, 'outputType' => 'float'),
+            'particleDiameterMax' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 4000, 'outputType' => 'float'),
             'particleMaskDiameter' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1024, 'outputType' => 'integer'),
             'particleBoxSize' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1024, 'outputType' => 'integer'),
             'particleBoxSizeSmall' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1024, 'outputType' => 'integer'),
@@ -154,8 +154,8 @@ class EM extends Page
                 'pipelineDo1stPassClassification2d',
                 'pipelineDo1stPassClassification3d',
                 'particleUseCryolo',
-                'particleDiameterMax',
                 'particleDiameterMin',
+                'particleDiameterMax',
                 'particleMaskDiameter',
                 'particleBoxSize',
                 'particleBoxSizeSmall',
@@ -220,8 +220,8 @@ class EM extends Page
 
             $workflow_json_array['autopick_do_cryolo'] = $valid_parameters['particleUseCryolo'];
             // TODO In new validator, ensure particleDiameterMin < particleDiameterMax. (JPH)
-            $workflow_json_array['autopick_LoG_diam_max'] = $valid_parameters['particleDiameterMax'];
             $workflow_json_array['autopick_LoG_diam_min'] = $valid_parameters['particleDiameterMin'];
+            $workflow_json_array['autopick_LoG_diam_max'] = $valid_parameters['particleDiameterMax'];
             $workflow_json_array['mask_diameter'] = $valid_parameters['particleMaskDiameter'];
             $workflow_json_array['extract_downscale'] = true;
             $workflow_json_array['extract_boxsize'] = $valid_parameters['particleBoxSize'];

@@ -60,8 +60,8 @@ define([
                     pipelineDo1stPassClassification3d: null,
 
                     particleUseCryolo: null,
-                    particleDiameterMax: null,
                     particleDiameterMin: null,
+                    particleDiameterMax: null,
                     particleMaskDiameter: null,
                     particleBoxSize: null,
                     particleBoxSizeSmall: null,
@@ -141,8 +141,8 @@ define([
                     this.pipelineDo1stPassClassification3d = false;
 
                     this.particleUseCryolo = false;
-                    this.particleDiameterMax = null;
                     this.particleDiameterMin = null;
+                    this.particleDiameterMax = null;
                     this.particleMaskDiameter = null;
                     this.particleBoxSize = null;
                     this.particleBoxSizeSmall = null;
@@ -235,8 +235,8 @@ define([
                             if (this.pipelineDo1stPass) {
                                 this.particleUseCryolo = this.particleUseCryolo === true;
                                 // TODO Ensure particleDiameterMin < particleDiameterMax. (JPH)
-                                this.particleDiameterMax = parseFloat(this.particleDiameterMax);
                                 this.particleDiameterMin = parseFloat(this.particleDiameterMin);
+                                this.particleDiameterMax = parseFloat(this.particleDiameterMax);
                                 this.particleMaskDiameter = parseInt(this.particleMaskDiameter);
                                 this.particleBoxSize = parseInt(this.particleBoxSize);
                                 this.particleBoxSizeSmall = parseInt(this.particleBoxSizeSmall);
@@ -267,8 +267,8 @@ define([
                                 pipelineDo1stPassClassification3d: (self.pipelineDo1stPass ? self.pipelineDo1stPassClassification3d : false),
 
                                 particleUseCryolo: (self.pipelineDo1stPass ? self.particleUseCryolo : false),
-                                particleDiameterMax: (self.pipelineDo1stPass ? self.particleDiameterMax : null),
                                 particleDiameterMin: (self.pipelineDo1stPass ? self.particleDiameterMin : null),
+                                particleDiameterMax: (self.pipelineDo1stPass ? self.particleDiameterMax : null),
                                 particleMaskDiameter: self.particleMaskDiameter,
                                 particleBoxSize: self.particleBoxSize,
                                 particleBoxSizeSmall: self.particleBoxSizeSmall,

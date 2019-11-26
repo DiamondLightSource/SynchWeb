@@ -171,6 +171,15 @@
                 </li>
 
                 <li v-if="pipelineDo1stPass">
+                    <label>Minimum Diameter (Å)</label>
+                    <input type="text" name="particleDiameterMin"
+                           v-validate="'required|min_value:0.02|max_value:1024'"
+                           v-model="particleDiameterMin"
+                           v-bind:readonly="isFormReadOnly">
+                    <span v-if="errors.has('particleDiameterMin')" class="errormessage ferror">{{ errors.first('particleDiameterMin') }}</span>
+                </li>
+
+                <li v-if="pipelineDo1stPass">
                     <label>Maximum Diameter (Å)</label>
                     <input type="text" name="particleDiameterMax"
                            v-validate="'required|min_value:0.02|max_value:4000'"
@@ -178,15 +187,6 @@
                            v-on:keyup="onCalculateForMe"
                            v-bind:readonly="isFormReadOnly">
                     <span v-if="errors.has('particleDiameterMax')" class="errormessage ferror">{{ errors.first('particleDiameterMax') }}</span>
-                </li>
-
-                <li v-if="pipelineDo1stPass">
-                    <label>Minimum Diameter (Å)</label>
-                    <input type="text" name="particleDiameterMin"
-                           v-validate="'required|min_value:0.02|max_value:1024'"
-                           v-model="particleDiameterMin"
-                           v-bind:readonly="isFormReadOnly">
-                    <span v-if="errors.has('particleDiameterMin')" class="errormessage ferror">{{ errors.first('particleDiameterMin') }}</span>
                 </li>
 
                 <li v-if="pipelineDo1stPass">
