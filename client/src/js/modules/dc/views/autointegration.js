@@ -94,7 +94,6 @@ define(['marionette',
                 templateHelpers: {
                     DCID: dcId,
                     APIURL: app.apiurl,
-                    EXPTYPE: app.type,
                 }
             }
         },
