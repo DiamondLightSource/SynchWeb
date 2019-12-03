@@ -55,7 +55,7 @@ define(['backbone'], function(Backbone) {
       PHYSICALLOCATION: {
         required: false,
         pattern: 'wwsdash',
-        maxLength: 50,
+        maxLength: 35,
       },
 
 
