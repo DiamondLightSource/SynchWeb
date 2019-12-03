@@ -2,7 +2,13 @@
 
 namespace SynchWeb\Pages;
 
+// For mpdf < 7.0 we should define our own temp dirs instead of using vendor/mpdf
+// sys_get_temp_dir returns the directory used by php-fpm (handles PrivateTmp)
+define("_MPDF_TEMP_PATH", sys_get_temp_dir() . "/mpdf/temp/");
+define("_MPDF_TTFONTDATAPATH", sys_get_temp_dir() . "/mpdf/ttfontdata/");
+
 use mPDF;
+use Slim\Slim;
 use SynchWeb\Page;
 
 # ------------------------------------------------------------------------
@@ -33,7 +39,24 @@ class PDF extends Page
                               array('/awb/sid/:sid', 'get', '_get_awb'),
                               array('/manifest', 'get', '_get_manifest'),
         );
-        
+
+        function __construct(Slim $app, $db, $user) {
+            // Call parent constructor to register our routes
+            parent::__construct($app, $db, $user);
+
+            // Fix for mpdf < 7.0 to ensure temp dir exists
+            // Creating the temp folder here means we have the correct permissions
+            // Using separate folders for temp and font data so mpdf does not try to delete ttfontdata
+            $mpdf_temp = sys_get_temp_dir() . "/mpdf/temp/";
+            $mpdf_fontdata = sys_get_temp_dir() . "/mpdf/ttfontdata/";
+
+            if (!is_dir($mpdf_temp)) {
+                mkdir($mpdf_temp, 0775, true);
+            }
+            if (!is_dir($mpdf_fontdata)) {
+                mkdir($mpdf_fontdata, 0775, true);
+            }
+        }
         # ------------------------------------------------------------------------
         # Shipment Labels
         function _get_manifest() {
@@ -374,6 +397,7 @@ class PDF extends Page
                 
                 # Enable output buffering to capture html
                 ob_start();
+
                 $mpdf = new mPDF('', 'A4'.$orientation);
                 $mpdf->WriteHTML(file_get_contents('assets/pdf/styles.css'),1);
                 
