@@ -7,6 +7,7 @@ use SynchWeb\Shipment\Couriers\DHL;
 use SynchWeb\Email;
 use SynchWeb\ImagingShared;
 
+
 class Shipment extends Page
 {
         
@@ -815,7 +816,7 @@ class Shipment extends Page
                 ));
 
             } else {
-                $this->_output(new stdClass);
+                $this->_output();
             }
         }
 
@@ -1395,7 +1396,7 @@ class Shipment extends Page
 
                 $this->db->pq("UPDATE containerqueuesample SET containerqueueid = NULL WHERE containerqueueid=:1", array($cqid));
                 $this->db->pq("DELETE FROM containerqueue WHERE containerqueueid=:1", array($cqid));
-                $this->_output(new stdClass);
+                $this->_output();
 
             } else {
                 $chkq = $this->db->pq("SELECT containerid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
