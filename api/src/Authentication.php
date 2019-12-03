@@ -166,7 +166,7 @@ class Authentication
 					$this->user = $token->data->login;
 
 				// Invalid token
-				} catch (Exception $e) {
+				} catch (\Exception $e) {
 					$this->_error(401, 'Invalid authorisation token');
 				}
 
