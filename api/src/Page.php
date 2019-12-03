@@ -10,6 +10,7 @@ use xmlrpc_client;
 use xmlrpcmsg;
 use xmlrpcval;
 
+
 class Page
 {
         protected $app, $db, $user;
@@ -306,7 +307,7 @@ class Page
 
         # ------------------------------------------------------------------------
         # Output JSON encoded data
-        function _output($data) {
+        function _output($data=array()) {
             if (!$this->debug && !$this->db->debug) $this->app->contentType('application/json');
             if ($this->profile) $data['profile'] = $this->pro();
             $this->app->response()->body(json_encode($data));
@@ -333,7 +334,13 @@ class Page
         # Convert input arg url to key / value pairs once checked against templates
         //function _parse_args($args) {
         function _parse_args() {
+            // Set the cache dir to a temp folder
+            $serializer_temp = sys_get_temp_dir() . "/htmlpurifier/";
             $config = HTMLPurifier_Config::createDefault();
+            if(!is_dir($serializer_temp)) {
+                mkdir($serializer_temp);
+            }
+            $config->set('Cache.SerializerPath', $serializer_temp);
             $purifier = new HTMLPurifier($config);
             
             $bbreq = (array)json_decode($this->app->request()->getBody());
