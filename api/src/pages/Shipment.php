@@ -2072,7 +2072,7 @@ class Shipment extends Page
 
                     $ship['DELIVERYAGENT_FLIGHTCODE'] = $awb['awb'];
 
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->_error($e->getMessage());
                 }
             }
@@ -2221,7 +2221,7 @@ class Shipment extends Page
                     array($d['DEWARID']));
                 }
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->_error($e->getMessage());
             }   
 
@@ -2296,7 +2296,7 @@ class Shipment extends Page
 
                 $this->_output($products);
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->_error($e->getMessage());
             }
         }
@@ -2347,7 +2347,7 @@ class Shipment extends Page
                     array($d['DEWARID']));
                 }
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->_error($e->getMessage());
             }
 
@@ -2407,7 +2407,6 @@ class Shipment extends Page
             }
 
             if ($send_notification) {
-                require_once('includes/class.email.php');
                 $email = new Email('data-new', '*** New data available for your container ***');
                 $email->data = $cont;
                 $email->send($cont['EMAILADDRESS']);
