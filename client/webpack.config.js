@@ -239,7 +239,7 @@ module.exports = {
         from: 'images/**',
         to: path.resolve(__dirname, 'assets') },
       { context: path.resolve(__dirname, 'src'),
-        from: 'js/jquery/jquery-1.9.1.min.js',
+        from: 'js/vendor/jquery/jquery-1.9.1.min.js',
         to: path.resolve(__dirname, 'assets/js/') }
     ]),
     // Ignore all locale files of moment.js
