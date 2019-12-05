@@ -230,13 +230,17 @@ module.exports = {
     }),
     // Copy static assets to the assets folder
     // Anything matching in the from path is copied so images/file.png => assets/images/file.png
+    // Also copy jquery to assets dir, so we can use it for Dialog popup with log files (see js/views/log.js)
     new CopyPlugin([
       // { context: path.resolve(__dirname, 'src/css/stylesheets'),
       //   from: 'images/**',
       //   to: path.resolve(__dirname, 'assets') },
       { context: path.resolve(__dirname, 'src'),
         from: 'images/**',
-        to: path.resolve(__dirname, 'assets') }
+        to: path.resolve(__dirname, 'assets') },
+      { context: path.resolve(__dirname, 'src'),
+        from: 'js/jquery/jquery-1.9.1.min.js',
+        to: path.resolve(__dirname, 'assets/js/') }
     ]),
     // Ignore all locale files of moment.js
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
