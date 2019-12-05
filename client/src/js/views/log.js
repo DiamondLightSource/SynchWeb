@@ -30,7 +30,8 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
                 var blob = new Blob([this.response], { type: mimeType })
 
                 // inject sign handler
-                var sh = '<script src="/client/js/vendor/jquery/jquery-1.9.1.min.js"></script>\n\
+                // Note this uses an old jquery copied from src into assets dir
+                var sh = '<script src="/assets/js/jquery-1.9.1.min.js"></script>\n\
                 <script type="text/javascript">\n\
                     $(document).ready(function() {\n\
                         var app = { apiurl: "'+app.apiurl+'", prop: "'+app.prop+'"}\n\
