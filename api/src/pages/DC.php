@@ -1048,13 +1048,16 @@ class DC extends Page
         # ------------------------------------------------------------------------        
         # Convert resolution to detector distance
         function _r_to_dist($diam, $lambda, $r) {
-            if ($r == 0) return 0;
-
-            $b=$lambda/(2*$r);
-            $d=2*asin($b);
-            $f=2*tan($d);
-            
-            return number_format($diam/$f, 2);
+            $result = 0;
+            try {
+                $b=$lambda/(2*$r);
+                $d=2*asin($b);
+                $f=2*tan($d);
+                $result = number_format($diam/$f, 2);
+            } catch (\Exception $e) {
+                error_log('Error converting resolution to distance, lambda=' . $lambda . ' r=' . $r . ' Exception: ' . $e->getMessage());
+            }
+            return $result;
         }
         
         # ------------------------------------------------------------------------        
