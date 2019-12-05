@@ -1111,8 +1111,6 @@ class DC extends Page
                 $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['AUTOPROCPROGRAMATTACHMENT']['FILETYPE'] = $r['FILETYPE'];
                 $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['AUTOPROCPROGRAMATTACHMENT']['FILEPATH'] = $r['FILEPATH'];
                 $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['AUTOPROCPROGRAMATTACHMENT']['FILENAME'] = $r['FILENAME'];
-
-                file_put_contents('/scratch/addProteinNew.txt' ,print_r($output, true), FILE_APPEND);
             }
             $this->_output($output);
         }
