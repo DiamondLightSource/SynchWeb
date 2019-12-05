@@ -16,10 +16,16 @@ define(['marionette',
         },
 
         render: function() {
-            this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1" class="button dl"><i class="fa fa-download"></i> Download</a>')
+            if(this.model.get('ZOCALO') != null)
+                this.$el.html('<a href="'+app.apiurl+'/download/zocalo/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1" class="button dl"><i class="fa fa-download"></i> Download</a>')
+            else
+                this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1" class="button dl"><i class="fa fa-download"></i> Download</a>')
 
             if (this.model.get('FILETYPE') == 'Log' || this.model.get('FILETYPE') == 'Logfile') {
-                this.$el.append('<a class="vaplog button" href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1"><i class="fa fa-search"></i> View</a>')
+                if(this.model.get('ZOCALO') != null)
+                    this.$el.append('<a class="vaplog button" href="'+app.apiurl+'/download/zocalo/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1"><i class="fa fa-search"></i> View</a>')   
+                else
+                    this.$el.append('<a class="vaplog button" href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1"><i class="fa fa-search"></i> View</a>')
             }
 
             if (this.model.get('FILETYPE') == 'Graph') {
