@@ -32,8 +32,7 @@ define([
             if (!this.ap) {
               this.ap = new DCAutoIntegrationView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc') })
             } else this.ap.$el.slideToggle()
-          },
-        
+        },
     })
 
 })

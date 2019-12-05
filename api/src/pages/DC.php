@@ -1084,8 +1084,8 @@ class DC extends Page
         function _dc_zocalo_auto_processing($id){
             $rows = $this->db->pq('SELECT pj.processingjobid, pj.displayname, pj.recordTImestamp, pj.recipe, pj.comments, pj.datacollectionid, app.autoprocprogramid, app.processingCommandLine, app.processingPrograms, app.processingMessage, app.processingStartTime, app.processingEndTime, appa.autoprocprogramattachmentid, appa.filetype, appa.filename, appa.filepath, appa.recordtimestamp 
                 FROM processingjob pj 
-                INNER JOIN AutoProcProgram app ON pj.processingjobid = app.processingjobid 
-                INNER JOIN AutoProcProgramAttachment appa ON app.autoprocprogramid = appa.autoprocprogramid 
+                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
+                LEFT OUTER JOIN autoprocprogramattachment appa ON app.autoprocprogramid = appa.autoprocprogramid
                 WHERE pj.datacollectionid = :1', array($id));
 
             $output = array();

@@ -32,10 +32,6 @@ define(['modules/dc/views/autointegration',
                     this.collection.fetch().done(this.render.bind(this))
                 },
 
-                fetch: function() {
-                    this.collection.fetch()
-                },
-
                 onRender: function() {
                     this.update()
                     this.listenTo(this.collection, 'sync', this.update, this)
@@ -59,10 +55,16 @@ define(['modules/dc/views/autointegration',
                             emptyText: 'No auto processing available for this data collection',
                         },
                     }))
+
+                    this.$el.slideDown()
                 },
 
                 update: function(){
-                    this.$el.slideDown()
-                }
+                    if(!this.timer_active){
+                        var self = this;
+                        setInterval(function(){self.collection.fetch()}, 5000)
+                        this.timer_active = true;
+                    }
+                },
             })
 })
