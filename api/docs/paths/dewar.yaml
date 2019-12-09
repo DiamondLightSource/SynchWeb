@@ -1,0 +1,378 @@
+dewars:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Get a list of dewars
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/VisitParam'
+      - $ref: '#/parameters/BLParam'
+      # - $ref: '#/parameters/DewarIDParam'
+      - $ref: '#/parameters/FCQueryParam'
+      - $ref: '#/parameters/ShippingIDQueryParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/SearchParam'
+      - $ref: '#/parameters/SortByParam'
+      - $ref: '#/parameters/SortOrderParam'
+      - name: all_dewars
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all dewars (requires staff permission)
+        enum:
+          - 1
+      - name: current
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show dewars for sessions that are active
+        enum:
+          - 1
+      - name: requestedimager
+        type: number
+        in: query
+        pattern: '\d'
+        description: Show all dewars with a requested imager
+        enum:
+          - 1
+
+    responses:
+      200:
+        description: List of dewars
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Dewar'
+  post:
+    security:
+      - Bearer: []
+    tags: ['dewars', 'create-shipment']
+    summary: Create a dewar
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/DewarNew'
+
+    responses:
+      200:
+        description: Dewar Created
+        schema:
+          properties:
+            DEWARID:
+              type: string
+              example: 52
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Get a single dewar
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/DewarIDParam'
+    responses:
+      200:
+        description: A single dewar
+        schema:
+          $ref: '#/definitions/Dewar'
+      400:
+        description: No such dewar            
+  patch:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Update a dewar
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/DewarIDParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/Dewar'
+    responses:
+      200:
+        description: Dewar updated
+      400:
+        description: No such dewar
+
+dewars-sid:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Get dewars for a shipment
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+    responses:
+      200:
+        description: A list of dewars
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Dewar'
+
+fc:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Get a list of dewars for a facility code
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/FCParam'
+    responses:
+      200:
+        description: A list of dewars
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Dewar'
+
+history:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars-history']
+    summary: Get a list of dewar history
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+    responses:
+      200:
+        description: List of dewar history
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/DewarHistory'
+  post:
+    security:
+      - Bearer: []
+    tags: ['dewars-history']
+    summary: Add a dewar history entry.
+    description: Email people as needbe, if arrived at facility email user, local contact
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/CreateDewarHistory'
+    responses:
+      200:
+        description: Dewar history created
+        schema:
+          properties:
+            DEWARHISTORYID:
+              type: integer
+              example: 1254
+
+
+history-did:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars-history']
+    summary: Get dewar history for a specific dewar
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/DewarIDParam'
+    responses:
+      200:
+        description: A list of dewar history
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/DewarHistory'
+
+# Dewar Registry
+registry:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars-registry']
+    summary: Get a list of dewars in regsiter
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/SearchParam'
+    responses:
+      200:
+        description: List of dewars in regsitry
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/DewarRegistry'
+
+registry-single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars-registry']
+    summary: Get a single registry entry
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/FCParam'
+    responses:
+      200:
+        description: A single registry entry
+        schema:
+          $ref: '#/definitions/DewarRegistry'
+      400:
+        description:  No such dewar
+  patch:
+    security:
+      - Bearer: []
+    tags: ['dewars-registry']
+    summary: Update a dewar resgistry entry (single field)
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/FCParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/DewarRegistry'
+    responses:
+      200:
+        description: Registry entry updated (return single field)
+      400:
+        description: No such dewar
+  put:
+    security:
+      - Bearer: []
+    tags: ['dewars-registry']
+    summary: Create a dewar registry entry
+    description: This should probably be a post method
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/FCParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/DewarRegistry'
+    responses:
+      200:
+        description: Registry entry created
+        schema:
+          $ref: '#/definitions/DewarRegistry'
+      400:
+        description: Missing fields
+
+
+# Dewar Registry Reports
+reports:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Get a list of dewar reports
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+    responses:
+      200:
+        description: List of dewar reports
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/DewarReport'
+  post:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Create a dewar report
+    # consumes: application/x-www-form-urlencoded
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        # in: formData
+        in: body
+        schema:
+          $ref: '#/definitions/CreateDewarReport'
+    responses:
+      200:
+        description: Dewar report created
+        schema:
+          properties:
+            DEWARREPORTID:
+              type: string
+              example: 1244
+
+
+# Default dewar
+default:
+  get:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Get / create default dewar
+    description: Used to allow quick container registration bypassing the need to create a shipment / dewar
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+    responses:
+      200:
+        description: Return default dewar id
+        schema:
+          type: integer
+          example: 3453
+
+
+# Transfer and Dispatch forms
+transfer:
+  post:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Request a dewar transfer
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/DewarTransfer'
+    responses:
+      200:
+        description: Transfer request registered
+
+dispatch:
+  post:
+    security:
+      - Bearer: []
+    tags: ['dewars']
+    summary: Request a dewar dispatch
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/DewarDispatch'
+    responses:
+      200:
+        description: Dispatch request registered

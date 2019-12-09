@@ -2,30 +2,40 @@
     <td><%-LOCATION%></td>
     <% if (PROTEINID == -1) { %>
     <td colspan="5">&nbsp;</td>
-    <td class="xtal" colspan="2">&nbsp;</td>
     <td class="non-xtal" colspan="1">&nbsp;</td>
-    <td class="extra" colspan="4">&nbsp;</td>
+    <td class="xtal" colspan="1">&nbsp;</td>
+    <td class="extra" colspan="3">&nbsp;</td>
     <td class="auto" colspan="4">&nbsp;</td>
+    <td class="auto-extra" colspan="2">&nbsp;</td>
 
     <% } else { %>
 
-    <td><%-ACRONYM%></td>
-    <td><%-NAME%></td>
-    <td class="xtal"><%-SPACEGROUP %></td>
-    <td class="xtal"><%-CODE%></td>
-    <td class="non-xtal"><%-VOLUME%></td>
-    <td><%-COMMENTS%></td>
-    <td><%-ANOMALOUSSCATTERER%></td>
+    <td class="protein"><%-ACRONYM%></td>
+    <td class="name"><%-NAME%></td>
+    <td class="spacegroup xtal auto-extra"><%-SPACEGROUP %></td>
+    <td class="barcode xtal auto-extra"><%-CODE%></td>
+    <td class="volume non-xtal"><%-VOLUME%></td>
 
-    <td class="extra">
+    <td class="centringmethod auto"><%-CENTRINGMETHOD%></td>
+    <td class="experimentkindname auto"><%-EXPERIMENTKINDNAME%></td>
+    <td class="energy auto"><%-ENERGY%></td>
+    <td class="radiationsensitivityname auto"><%-RADIATIONSENSITIVITYNAME%></td>
+
+
+    <td class="comments"><%-COMMENTS%></td>
+    <td class="anomalousscatterer"><%-ANOMALOUSSCATTERER%></td>
+
+    <td class="requiredresolution xtal"><%-REQUIREDRESOLUTION%></td>
+
+    <td class="abundance extra">
         <% if (ABUNDANCE) { %>
             <%-ABUNDANCE%><%-SYMBOL%>
         <% } %>    
     </td>
     <td class="extra components"></td>
-    <td class="extra"><%-REQUIREDRESOLUTION%></td>
-    <td class="extra">
-        <table class="reflow cell">      
+    
+    <td class="unitcell extra">
+        <table class="reflow unitcell">      
             <thead>            
                 <tr>
                     <th>A</th>
@@ -47,13 +57,7 @@
                 </tr> 
             </tbody>    
         </table>
-    <!--A: <%-CELL_A%> B:<%-CELL_B%> C:<%-CELL_C%> &alpha;:<%-CELL_ALPHA%> &beta;:<%-CELL_BETA%> &gamma;:<%-CELL_GAMMA%>-->
     </td>
-
-    <td class="auto"><%-CENTRINGMETHOD%></td>
-    <td class="auto"><%-EXPERIMENTKINDNAME%></td>
-    <td class="auto"><%-ENERGY%></td>
-    <td class="auto"><%-RADIATIONSENSITIVITYNAME%></td>
 
     <td>
         <% if (BLSAMPLEID && STATUS) { %>

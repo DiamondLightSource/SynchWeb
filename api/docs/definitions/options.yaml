@@ -1,0 +1,17 @@
+type: object
+properties:
+  authentication_type:
+    type: string
+    description: Authentication type from api config
+    enum:
+      - cas
+      - ldap
+    example: cas
+  cas_url:
+    type: string
+    description: CAS server url (if using CAS)
+    example: my.cas-server.ac.uk
+  cas_sso:
+    type: boolean
+    description: If true will try to follow single sign on
+    example: true

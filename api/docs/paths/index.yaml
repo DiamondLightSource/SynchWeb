@@ -1,0 +1,227 @@
+# Auth
+/authenticate/login:
+  $ref: authenticate.yaml#/login
+        
+/authenticate/check:
+  $ref: authenticate.yaml#/check
+        
+/authenticate/key:
+  $ref: authenticate.yaml#/key
+
+
+# Options
+/options:
+  get:
+    tags: ['options']
+    summary: Get UI options object
+    description: Will be extended
+    responses:
+      200:
+        description: Options
+        schema:
+          $ref: '#/definitions/Options'
+
+# Users
+/users:
+  $ref: users.yaml#/users
+
+/users/{groupid}:
+  $ref: users.yaml#/single
+
+/users/current:
+    $ref: users.yaml#/current
+
+# User helpers
+/users/log:
+  $ref: users.yaml#/log
+
+/users/time:
+  $ref: users.yaml#/time
+
+# User groups
+# /users/groups:
+# /users/groups/{gid}:
+
+
+# Proposal
+/proposal:
+  $ref: proposal.yaml#/proposals
+
+/proposal/{proposal}:
+  $ref: proposal.yaml#/single
+
+/proposal/bls:
+  $ref: proposal.yaml#/bls
+
+/proposal/visits:
+  $ref: proposal.yaml#/visits
+
+/proposal/visits/{visit}:
+  $ref: proposal.yaml#/visits-single
+
+
+# Proteins
+/sample/proteins:
+  $ref: protein.yaml#/proteins
+
+/sample/proteins/{proteinid}:
+  $ref: protein.yaml#/single
+
+
+# Samples
+/sample:
+  $ref: sample.yaml#/samples
+
+/sample/{sampleid}:
+  $ref: sample.yaml#/single
+
+
+# Contact
+/contact:
+  $ref: contact.yaml#/contact
+
+/contact/{contactid}:
+  $ref: contact.yaml#/single
+
+
+# Shipping
+/shipment/shipments:
+  $ref: shipment.yaml#/shipments
+
+/shipment/shipments/{shippingid}:
+  $ref: shipment.yaml#/single
+
+/shipment/send/{shippingid}:
+  $ref: shipment.yaml#/send
+
+/shipment/terms/{shippingid}:
+  $ref: shipment.yaml#/terms
+
+
+# Dewars
+/shipment/dewars:
+  $ref: dewar.yaml#/dewars
+
+/shipment/dewars/{dewarid}:
+  $ref: dewar.yaml#/single
+
+/shipment/dewars/sid/{shippingid}:
+  $ref: dewar.yaml#/dewars-sid
+
+/shipment/dewars/fc/{facilitycode}:
+  $ref: dewar.yaml#/fc
+
+/shipment/dewars/history:
+  $ref: dewar.yaml#/history
+
+/shipment/dewars/history/did/{dewarid}:
+  $ref: dewar.yaml#/history-did
+
+
+# Dewar Registry
+/shipment/dewars/registry:
+  $ref: dewar.yaml#/registry
+
+/shipment/dewars/registry/{facilitycode}:
+  $ref: dewar.yaml#/registry-single
+
+
+# Dewar Registry Reports
+/shipment/dewars/reports:
+  $ref: dewar.yaml#/reports
+
+
+# Default dewar
+/shipment/dewars/default:
+  $ref: dewar.yaml#/default
+
+
+# Transfer and Dispatch forms
+/shipment/dewars/transfer:
+  $ref: dewar.yaml#/transfer
+
+/shipment/dewars/dispatch:
+  $ref: dewar.yaml#/dispatch
+
+
+# Containers
+/shipment/containers:
+  $ref: container.yaml#/containers
+
+/shipment/containers/{containerid}:
+  $ref: container.yaml#/single
+
+/shipment/containers/did/{dewarid}:
+  $ref: container.yaml#/containers-did
+
+/shipment/containers/move:
+  $ref: container.yaml#/move
+
+/shipment/containers/queue:
+  $ref: container.yaml#/queue
+
+/shipment/cache/{name}:
+  $ref: container.yaml#/cache
+
+
+# Data Collections
+/dc:
+  $ref: dc.yaml#/datacollections
+
+/dc/id/{id}:
+  $ref: dc.yaml#/single-array
+
+/dc/t/{type}/id/{id}:
+  $ref: dc.yaml#/single
+
+# Data Collection Comments
+/dc/comments:
+  $ref: dc.yaml#/comments
+
+/dc/comments/{dccid}:
+  $ref: dc.yaml#/comments-single
+
+
+# Statuses
+/dc/chi:
+  $ref: dc.yaml#/check-images
+
+/dc/aps:
+  $ref: dc.yaml#/ap-statuses
+
+
+# Image Quality Indicators
+/dc/imq/{id}:
+  $ref: dc.yaml#/iqi
+
+# Grid Info
+/dc/grid/{id}:
+  $ref: dc.yaml#/grid
+
+
+# Event Types
+# Energy Scan
+# /dc/ed/{id}:
+#   $ref: dc.yaml#/edge
+
+# MCA
+# /dc/mca/{id}:
+#   $ref: dc.yaml#/mca
+
+
+# Processing 
+# Strategies
+/dc/strat/{id}:
+  $ref: processing.yaml#/strategy
+
+# Integration
+# /dc/ap/{id}:
+#   $ref: processing.yaml#/integration  
+
+# Downstream
+# /dc/dp/{id}:
+#   $ref: processing.yaml#/downstream
+
+# Radiation Damage Analysis
+# /dc/rd/aid/{aid/:id}:
+#   $ref: processing.yaml#/rad-dam

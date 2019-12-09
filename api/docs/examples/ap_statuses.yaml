@@ -1,0 +1,50 @@
+[
+  [
+    "12345",
+    {
+      "screening": {
+        "Mosflm": 3,
+        "EDNA": 3
+      },
+      "autoproc": {
+        "Fast DP": 0,
+        "Xia2/3dii": 0,
+        "DIALS": 0,
+        "Xia2/Multiplex": 0,
+        "autoPROC": 0
+      },
+      "downstream": {
+        "Fast EP": 0,
+        "Dimple": 0,
+        "MrBUMP": 0,
+        "Big EP/XDS": 0,
+        "Big EP/DIALS": 0
+      },
+      "XrayCentring": 0
+    }
+  ],
+  [
+    "12346",
+    {
+      "screening": {
+        "Mosflm": 2,
+        "EDNA": 2
+      },
+      "autoproc": {
+        "Fast DP": 0,
+        "Xia2/3dii": 0,
+        "DIALS": 0,
+        "Xia2/Multiplex": 0,
+        "autoPROC": 0
+      },
+      "downstream": {
+        "Fast EP": 0,
+        "Dimple": 0,
+        "MrBUMP": 0,
+        "Big EP/XDS": 0,
+        "Big EP/DIALS": 0
+      },
+      "XrayCentring": 0
+    }
+  ]
+]

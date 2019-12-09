@@ -1,0 +1,65 @@
+type: object
+properties:
+  DATACOLLECTIONGROUPID:
+    type: string
+    description: Data collection group id
+    example: 1169392
+  DATACOLLECTIONID:
+    type: string
+    description: Data collection id
+    example: 1183300
+  AXISSTART:
+    type: string
+    description: Rotation axis start
+    example: 240.00004577637
+  X:
+    type: string
+    description: Goniometer x (um)
+    example: -221.238143
+  Y:
+    type: string
+    description: Goniometer y (um)
+    example: -469.7066
+  Z:
+    type: string
+    description: Goniometer z (um)
+    example: 43.905307
+  DX_MM:
+    type: string
+    description: Step width (dx) x (mm)
+    example: 0.043124
+  DY_MM:
+    type: string
+    description: Step height (dy) y (mm)
+    example: 0.043124
+  STEPS_X:
+    type: string
+    description: Number of steps in x
+    example: 15
+  STEPS_Y:
+    type: string
+    description: Number of steps in x
+    example: 10
+  PIXELSPERMICRONX:
+    type: string
+    description: Pixels per micron in x for snapshot
+    example: 1.2200000286102
+  PIXELSPERMICRONY:
+    type: string
+    description: Pixels per micron in y for snapshot
+    example: 1.1900000572205
+  SNAPSHOT_OFFSETXPIXEL:
+    type: string
+    description: Offset x from top corner of snapshot that grid scan started (pixels)
+    example: 241.36065673828
+  SNAPSHOT_OFFSETYPIXEL:
+    type: string
+    description: Offset y from top corner of snapshot that grid scan started (pixels)
+    example: 107.72268676758
+  ORIENTATION:
+    type: string
+    description: Orientation of grid scan, whether it is rastered vertically or horizontally
+    example: horizontal
+    enum:
+      - horizontal
+      - vertical

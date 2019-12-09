@@ -208,30 +208,30 @@
     }
 
     table.samples {
-        td:nth-child(2), td:nth-child(3), td:nth-child(11) {
+        td.protein {
+            .ui-combobox {
+                margin-right: 0;
+            }
+        }
+
+        td.protein, td.name {
             white-space: nowrap;
         }
 
-        td:nth-child(12) {
+        td.unitcell {
             width: 16%;
             input {
                 width: 25%;
             }
         }
 
-        td:nth-child(11) {
+        th.requireresolution, td.requireresolution {
             width: 10%;
-            input {
-                width: 40%;
-            }
-            
-        }
-
-        input[name=ABUNDANCE] {
-            width: auto;
         }
 
         .components {
+            white-space: nowrap;
+
             input[type="text"] {
                 width: 30%
             }
@@ -247,7 +247,7 @@
         }
 
         @media (max-width: $breakpoint-vsmall) {
-            td:nth-child(11), td:nth-child(12) {
+            td.requireresolution, td.unitcell {
                 width: auto;
             }
         }
@@ -497,23 +497,36 @@ html[xmlns] .dataTables_wrapper { display: block; }
             }
 
             td:nth-of-type(1):before { content: "Location"; }
-            td:nth-of-type(2):before { content: "Protein Acronym"; }
-            td:nth-of-type(3):before { content: "Abundance"; }
-            td:nth-of-type(4):before { content: "Components"; }
-            td:nth-of-type(5):before { content: "Sample Name"; }
-            td:nth-of-type(6):before { content: "Spacegroup"; }
-            td:nth-of-type(7):before { content: "Barcode"; }
-            td:nth-of-type(8):before { content: "Volume"; }
-            td:nth-of-type(9):before { content: "Comment"; }
-            td:nth-of-type(10):before { content: "Required Resolution"; }
-            td:nth-of-type(11):before { content: "Anom Scatterer"; }
-            td:nth-of-type(12):before { content: "Unit Cell"; }
-            /*td:nth-of-type(9):before { content: "Clone / Delete"; }*/
+            td.protein:before { content: "Protein Acronym"; }
+            td.abundance:before { content: "Abundance"; }
+            td.components:before { content: "Components"; }
+            td.name:before { content: "Sample Name"; }
+            td.spacegroup:before { content: "Spacegroup"; }
+            td.barcode:before { content: "Barcode"; }
+            td.volume:before { content: "Volume"; }
+            td.comments:before { content: "Comment"; }
+            td.requiredresolution:before { content: "Required Resolution"; }
+            td.anomalousscatterer:before { content: "Anomalous Scatterer"; }
+            td.unitcell:before { content: "Unit Cell"; }
+
+            td.centringmethod:before { content: "Centring Method"; }
+            td.experimentkind:before { content: "Experiment Kind"; }
+            td.energy:before { content: "Energy (eV)"; }
+            td.radiationsensitivity:before { content: "Radiation Sensitivity"; }
         }
         
         &.samples.view {
             td:nth-of-type(7):before { content: "Data Collected"; }
             td:nth-of-type(8):before { content: "Edit / Del / View"; }
+        }
+
+        &.unitcell {
+            td:nth-of-type(1):before { content: "A"; }
+            td:nth-of-type(2):before { content: "B"; }
+            td:nth-of-type(3):before { content: "C"; }
+            td:nth-of-type(4):before { content: "\3B1"; }
+            td:nth-of-type(5):before { content: "\3B2"; }
+            td:nth-of-type(6):before { content: "\3B3"; }
         }
 
         &.summary {

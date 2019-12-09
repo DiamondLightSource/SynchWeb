@@ -1,0 +1,73 @@
+type: object
+properties:
+  SHIPPINGNAME:
+    type: string
+    description: Shipment Name
+    example: ship1
+    pattern: '([\w\s-])+'
+  SENDINGLABCONTACTID:
+    type: string
+    description: Lab Contact id sending the shipment
+    example: 1050
+    pattern: '\d+'
+  RETURNLABCONTACTID:
+    type: string
+    description: Lab Contact id to return the shipment to
+    example: 1050
+    pattern: '\d+'
+  SAFETYLEVEL:
+    type: string
+    description: Safety Level
+    example: Green
+    pattern: '\w+'
+    enum:
+      - Green
+      - Yellow
+      - Red
+
+  DELIVERYAGENT_AGENTNAME:
+    type: string
+    description: Courier Name
+    example: dhl
+    pattern: '[\s|\w|-]+'
+  DELIVERYAGENT_AGENTCODE:
+    type: string
+    description: Courier Acount Number
+    example: 124
+    pattern: '[\w-]+'
+  DELIVERYAGENT_SHIPPINGDATE:
+    type: string
+    description: Date to ship
+    example: 25-11-2016
+    pattern: '\d+-\d+-\d+'
+  DELIVERYAGENT_DELIVERYDATE:
+    type: string
+    description: Arrival date
+    example: 27-11-2016
+    pattern: '\d+-\d+-\d+'
+
+  COMMENTS:
+    type: string
+    description: Shipment Comments
+
+  PHYSICALLOCATION:
+    type: string
+    description: Pickup location of shipment (for DHL pickup)
+    example: stores out
+    pattern: '[\s|\w|-]+'
+  READYBYTIME:
+    type: string
+    description: Shipment ready by time (for DHL pickup)
+    example: 12:34
+    pattern: '\d\d:\d\d'
+  CLOSETYPE:
+    type: string
+    description: Time when pickup location closes (for DHL pickup)
+    example: 12:34
+    pattern: '\d\d:\d\d'
+
+required:
+  - SHIPPINGNAME
+  - SAFETYLEVEL
+  - SENDINGLABCONTACTID
+  - RETURNLABCONTACTID

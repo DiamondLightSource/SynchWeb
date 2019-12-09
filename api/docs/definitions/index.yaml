@@ -1,0 +1,201 @@
+LoginReq:
+  type: object
+  properties:
+    username:
+      type: string
+      example: abd1234
+    password:
+      type: string
+      example: password
+  required:
+    - username
+    - password
+JWTResp:
+  type: object
+  properties:
+    jwt: 
+      type: string
+      example: 112kj3hk.123kjh1kj23h.3jh45kj34
+JWTKey:
+  type: object
+  properties:
+    key: 
+      type: string
+      example: 112kj3hk.123kjh1kj23h.3jh45kj34
+
+Options:
+  $ref: options.yaml
+User:
+  $ref: user.yaml
+CurrentUser:
+  $ref: currentuser.yaml
+
+Proposal:
+  $ref: proposal.yaml
+
+Visit:
+  $ref: visit.yaml
+
+ProteinNew:
+  $ref: protein-new.yaml
+Protein:
+  $ref: protein.yaml
+
+SampleNew:
+  $ref: sample-new.yaml
+Sample:
+  $ref: sample.yaml
+
+ContactNew:
+  $ref: contact-new.yaml
+Contact:
+  $ref: contact.yaml
+
+Shipment:
+  $ref: shipment.yaml
+ShipmentNew:
+  $ref: shipment-new.yaml
+
+DewarNew:
+  $ref: dewar-new.yaml
+Dewar:
+  $ref: dewar.yaml
+
+
+DewarHistory:
+  $ref: dewarhistory.yaml
+CreateDewarHistory:
+  type: object
+  properties:
+    BARCODE: 
+      type: string
+      description: Dewar barcode
+    LOCATION: 
+      type: string
+      description: New dewar location
+  required:
+    - BARCODE
+    - LOCATION
+
+DewarRegistry:
+  $ref: dewarregistry.yaml
+
+DewarReport:
+  $ref: dewarreport.yaml
+
+CreateDewarReport:
+  properties:
+    REPORT:
+      type: string
+      example: Broken vacuum
+    FACILITYCODE:
+      type: string
+      example: DLS-MX-1234
+    ATTACHMENT:
+      type: string
+      # in: formData
+  required:
+    - REPORT
+    - FACILITYCODE
+
+DewarTransfer:
+  $ref: dewartransfer.yaml
+DewarDispatch:
+  $ref: dewardispatch.yaml
+
+Container:
+  $ref: container.yaml
+ContainerNew:
+  $ref: container-new.yaml
+
+DataCollection:
+  $ref: ev_datacollection.yaml
+# MCA:
+#   $ref: ev_mca.yaml
+# EnergyScan:
+#   $ref: ev_energyscan.yaml
+RobotAction:
+  $ref: ev_robotaction.yaml
+# SampleAction:
+#   $ref: ev_sampleaction.yaml
+
+DataCollections:
+  type: object
+  properties:
+    0: 
+      type: number
+      description: Number of pages of events
+      example: 12
+    1:
+      type: array
+      description: Array of beamline events
+      items:
+        $ref: '#/definitions/DataCollection'
+        # - $ref: '#/definitions/RobotAction'
+        # - $ref: '#/definitions/EnergyScan'
+
+
+ImageStatus:
+  type: object
+  properties:
+    0:
+      type: integer
+      description: Data collection id
+    1:
+      type: object
+      properties:
+        0:
+          type: integer
+          enum:
+            - 1
+            - 0
+          description: Does diffraction image snapshot exist?
+        1:
+          type: array
+          description: IDs of snapshots that exist (0-3)
+          items:
+            type: integer
+            enum:
+              - 0
+              - 1
+              - 2
+              - 3
+        2:
+          type: number
+          description: Does the first snapshot thumbnail exist?
+          enum:
+            - 0
+            - 1
+  example: [["12345", [1, [1, 1, 0, 0], 1, []]]]
+
+APStatus:
+  type: object
+  properties:
+    0:
+      type: integer
+      description: Data collection id
+    1:
+      type: object
+      description: Processing types
+      properties:
+        screening:
+          type: object
+          properties:
+            EDNA:
+              type: integer
+              enum:
+                - 0
+                - 1
+                - 2
+                - 3
+  example: 
+    $ref: ../examples/ap_statuses.yaml
+
+GridInfo:
+  $ref: gridinfo.yaml
+
+DataCollectionComment:
+  $ref: dc_comment.yaml
+
+Strategies:
+  $ref: strategies.yaml

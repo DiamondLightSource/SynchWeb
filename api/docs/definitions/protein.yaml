@@ -1,0 +1,38 @@
+allOf:
+  - type: object
+    properties:
+      PROTEINID:
+        type: string
+        description: Protein id
+        pattern: '\d+'
+        example: 2
+      CONCENTRATIONTYPE:
+        type: string
+        description: Concentration type
+        example: mg/ml
+      COMPONENTTYPE:
+        type: string
+        description: Component type
+        example: DNA
+      HASSEQ:
+        type: string
+        description: Has a sequence
+        example: No
+      EXTERNAL:
+        type: string
+        description: External id
+        example: f57dfs56sdf
+      PDBS:
+        type: string
+        description: Number of pdbs associated with this protein
+        example: 10
+      DCOUNT:
+        type: string
+        description: Data collection count
+        example: 123
+      SCOUNT:
+        type: string
+        description: Sample count 
+        example: 34
+
+  - $ref: protein-new.yaml

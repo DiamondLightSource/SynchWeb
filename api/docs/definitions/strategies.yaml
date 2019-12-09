@@ -1,0 +1,167 @@
+type: object
+properties:
+  0:
+    type: number
+    description: Number of strategies
+  1:
+    type: object
+    title: Strategy Types
+    properties:
+      EDNA:
+        type: object
+        title: Strategy Type
+        properties:
+          CELL:
+            type: object
+            title: Unit Cell
+            properties:
+              A:
+                type: string
+                description: Unit cell A
+                example: 112.09
+              B:
+                type: string
+                description: Unit cell b
+                example: 112.09
+              C:
+                type: string
+                description: Unit cell c
+                example: 218.14
+              AL:
+                type: string
+                description: Unit cell alpha
+                example: 90.00
+              BE:
+                type: string
+                description: Unit cell beta
+                example: 90.00
+              GA:
+                type: string
+                description: Unit cell gamma
+                example: 90.00
+              SG:
+                type: string
+                description: Space group
+                example: P4
+          STRATS:
+            type: array
+            title: Strategies
+            items:
+              type: object
+              title: Strategy
+              properties:
+                WEDGENUMBER:
+                  type: string
+                  description: Strategy wedge number
+                  example: 1
+                SUBWEDGENUMBER:
+                  type: string
+                  description: Strategy sub-wedge number
+                  example: 1
+                KAPPA:
+                  type: string
+                  description: Kappa angle
+                  example: 13.2
+                PHI:
+                  type: string
+                  description: Phi angle
+                  example: 43.5
+                DCID:
+                  type: string
+                  description: Data collection id
+                  example: 1186564
+                COMMENTS:
+                  type: string
+                  description: Strategy comments
+                  example: Standard Native Dataset Multiplicity=3 I/sig=2 Maxlifespan=200 s
+                DCTRN:
+                  type: string
+                  description: Data collection transmission
+                  example: 100
+                LAM:
+                  type: string
+                  description: Wavelength (ang)
+                  example: 0.9794989824295
+                IMD:
+                  type: string
+                  description: Image Directory
+                  example: /path/screening/sbma2/14/
+                IMP:
+                  type: string
+                  description: Image Prefix
+                  example: 14
+                DCC:
+                  type: string
+                  description: Data collection comments
+                  example: |-
+                    (-206,124,765) Aperture: Large
+                SID:
+                  type: string
+                  description: Sample id
+                  example: 511396
+                COM:
+                  type: string
+                  description: Strategy short comments
+                  example: Strategy1 Wedge1
+                ST:
+                  type: string
+                  description: Rotation axis start
+                  example: 99
+                TIME:
+                  type: string
+                  description: Exposure time (s)
+                  example: 0.099
+                TRAN:
+                  type: string
+                  description: Relative transmission (%) cf. DCTRN
+                  example: 100.0
+                OSCRAN:
+                  type: string
+                  description: Rotation axis oscillation range
+                  example: 0.10
+                RES:
+                  type: string
+                  description: Strategy resolution
+                  example: 6.07
+                NIMG:
+                  type: string
+                  description: Strategy number of images
+                  example: 1270
+                VPATH:
+                  type: string
+                  description: Visit path
+                  example: /path/mx10136-30
+                BL:
+                  type: string
+                  description: Beamline name
+                  example: i04
+                DIST:
+                  type: string
+                  description: Strategy detector distance (mm)
+                  example: 1,273.30
+                ATRAN:
+                  type: string
+                  description: Strategy absolute transmission
+                  example: 100
+                NEXP:
+                  type: string
+                  description: Normalised exposure (to maximise frame rate)
+                  example: 0.099
+                NTRAN:
+                  type: string
+                  description: Normalised tramission (to maximise frame rate)
+                  example: 100
+                AP:
+                  type: string
+                  description: Aperture used
+                  example: LARGE_APERTURE
+
+  3:
+    type: array
+    title: XOAlign Strategies
+    description: XOAlign Kappa strategies
+    items:
+      type: object
+
+example: 
+  $ref: ../examples/strategies.yaml

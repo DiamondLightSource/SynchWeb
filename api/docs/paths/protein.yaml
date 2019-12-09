@@ -1,0 +1,94 @@
+proteins:
+  get:
+    security:
+      - Bearer: []
+    tags: ['proteins']
+    summary: Get a list of proteins
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/SearchParam'
+      - $ref: '#/parameters/SortByParam'
+      - $ref: '#/parameters/SortOrderParam'
+    responses:
+      200:
+        description: List of proteins
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Protein'
+
+  post:
+    security:
+      - Bearer: []
+    tags: ['proteins', 'create-shipment']
+    summary: Add a new protein
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ProteinNew'
+    responses:
+      200:
+        description: Protein created
+        schema:
+          properties:
+            PROTEINID:
+              type: integer
+      400:
+        description: Missing protein field
+
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['proteins']
+    summary: Get a single protein
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: proteinid
+        in: path
+        type: number
+        required: true
+    responses:
+      200:
+        description: A protein
+        schema:
+          $ref: '#/definitions/Protein'
+      400:
+        description: No such protein
+
+  patch:
+    security:
+      - Bearer: []
+    tags: ['proteins']
+    summary: Update a protein
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: proteinid
+        in: path
+        type: number
+        required: true
+      - name: body
+        in: body
+        schema:
+          properties:
+            NAME:
+              type: string
+              example: New Protein Name
+    responses:
+      200:
+        description: Protein Updated
+        schema:
+          properties:
+            NAME:
+              type: string
+              example: New Protein Name

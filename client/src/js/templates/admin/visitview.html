@@ -1,0 +1,69 @@
+    <h1>View Visit: <%-VISIT%></h1>
+
+    <form method="post">
+
+    <div class="form">
+        <ul>
+
+            <li>
+                <span class="label">Start Date</span>
+                <span class="STARTDATE"><%-STARTDATE%></span>
+            </li>
+
+            <li>
+                <span class="label">End Date</span>
+                <span class="ENDDATE"><%-ENDDATE%></span>
+            </li>
+
+            <li>
+                <span class="label">Beamline Name</span>
+                <span class="BEAMLINENAME"><%-BEAMLINENAME%></span>
+            </li>
+
+            <li>
+                <span class="label">Beamline Operator</span>
+                <span class="BEAMLINEOPERATOR"><%-BEAMLINEOPERATOR%></span>
+            </li>
+
+            <li>
+                <span class="label">Session Type</span>
+                <span class="SESSIONTYPE"><%-SESSIONTYPE%></span>
+            </li>
+
+            <li>
+                <span class="label">Scheduled</span>
+                <span class="SCHEDULED"><%-SCHEDULED?'Yes':'No'%></span>
+            </li>
+
+            <li>
+                <span class="label">Archived</span>
+                <span class="ARCHIVED"><%-ARCHIVED?'Yes':'No'%></span>
+            </li>
+
+            <li>
+                <span class="label">Beamline Setup</span>
+                <span class="BEAMLINESETUPID"><%-BEAMLINESETUP%></span>
+            </li>
+
+            <li>
+                <span class="label">Beam Calendar</span>
+                <span class="BEAMCALENDARID"><%-BEAMCALENDAR%></span>
+            </li>
+
+            <li class="clearfix reorder">
+                <div class="COMMENTS text"><%-COMMENTS%></div>
+                <span class="label">Comments</span>
+            </li>
+
+        </ul>
+    </div>
+
+    <h2>Users</h2>
+    <% if (editUsers) { %>
+    <div>
+        Add User: <input type="text" name="user" />
+    </div>
+    <% } %>
+    <div class="rusers"></div>
+
+    </form>

@@ -1,0 +1,107 @@
+samples:
+  get:
+    security:
+      - Bearer: []
+    tags: ['samples']
+    summary: Get a list of samples
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/SearchParam'
+      - $ref: '#/parameters/SortByParam'
+      - $ref: '#/parameters/SortOrderParam'
+      - $ref: '#/parameters/ProteinIDParam'
+      - $ref: '#/parameters/CIDParam'
+      - $ref: '#/parameters/VisitParam'
+    responses:
+      200:
+        description: List of samples
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Sample'
+
+  post:
+    security:
+      - Bearer: []
+    tags: ['samples', 'create-shipment']
+    summary: Add a new sample
+    description: 'Either a single sample can be created, or a collection of samples can be created in a single pass either an object of a single sample { sample }, or a body with { collection: [{ sample }, ...] }'
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        in: body
+        schema:
+          allOf:
+            - $ref: '#/definitions/SampleNew'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  description: Array of samples to register
+                  items:
+                    $ref: '#/definitions/SampleNew'
+          example:
+            $ref: ../examples/new-sample.yaml
+    responses:
+      200:
+        description: Sample created
+        schema:
+          properties:
+            BLSAMPLEID:
+              type: integer
+      400:
+        description: Missing sample field
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['samples']
+    summary: Get a single sample
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: sampleid
+        in: path
+        type: number
+        required: true
+    responses:
+      200:
+        description: A sample
+        schema:
+          $ref: '#/definitions/Sample'
+      400:
+        description: No such sample
+
+  patch:
+    security:
+      - Bearer: []
+    tags: ['samples']
+    summary: Update a sample
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: sampleid
+        in: path
+        type: number
+        required: true
+      - name: body
+        in: body
+        schema:
+          properties:
+            NAME:
+              type: string
+              example: New Sample Name
+    responses:
+      200:
+        description: Sample Updated
+        schema:
+          properties:
+            NAME:
+              type: string
+              example: New Sample Name

@@ -7,7 +7,10 @@ use SynchWeb\Shipment\Couriers\DHL;
 use SynchWeb\Email;
 use SynchWeb\ImagingShared;
 
+<<<<<<< HEAD:api/src/pages/Shipment.php
 
+=======
+>>>>>>> testing/integration:api/src/pages/Shipment.php
 class Shipment extends Page
 {
         
@@ -816,7 +819,11 @@ class Shipment extends Page
                 ));
 
             } else {
+<<<<<<< HEAD:api/src/pages/Shipment.php
                 $this->_output();
+=======
+                $this->_output(new stdClass);
+>>>>>>> testing/integration:api/src/pages/Shipment.php
             }
         }
 
@@ -1929,7 +1936,7 @@ class Shipment extends Page
                 }
             }
             
-            if ($did == -1) $this->_error('Couldnt create default dewar');
+            if ($did == -1) $this->_error('Couldn\'t create default dewar');
             $this->_output($did);
         }
 
@@ -2366,7 +2373,9 @@ class Shipment extends Page
         }
 
         function _notify_container() {
-            global $new_data;
+            global $auto;
+            
+            if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
             if (!$this->has_arg('containerid')) $this->_error('No container specified');
 
             $cont = $this->db->pq("SELECT c.containerid, pe.emailaddress, pe.givenname, pe.familyname, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.code, sh.shippingname
@@ -2394,26 +2403,28 @@ class Shipment extends Page
             }
             if (in_array('notify_email', $last)) return;
 
-            $send_notification = False;
-            foreach ($new_data as $n) {
-                for ($i = 0; $i < (sizeof($last)-sizeof($n)); $i++) {
-                    $match = True;
-                    foreach ($n as $j => $p) {
-                        if ($last[$i+$j] != $p) $match = False;
-                    }
+            // If we want to match to a specific container history sequence...
+            // $send_notification = False;
+            // foreach ($new_data as $n) {
+            //     for ($i = 0; $i < (sizeof($last)-sizeof($n)); $i++) {
+            //         $match = True;
+            //         foreach ($n as $j => $p) {
+            //             if ($last[$i+$j] != $p) $match = False;
+            //         }
 
-                    if ($match) $send_notification = True;
-                }
-            }
+            //         if ($match) $send_notification = True;
+            //     }
+            // }
 
-            if ($send_notification) {
-                $email = new Email('data-new', '*** New data available for your container ***');
-                $email->data = $cont;
-                $email->send($cont['EMAILADDRESS']);
+            // if ($send_notification) {
+            //     $email = new Email('data-new', '*** New data available for your container ***');
+            //     $email->data = $cont;
+            //     $email->send($cont['EMAILADDRESS']);
+            // }
+            $email = new Email('data-new', '*** New data available for your container ***');
+            $email->data = $cont;
+            $email->send($cont['EMAILADDRESS']);
 
-                $this->db->pq("INSERT INTO containerhistory (status,containerid) VALUES (:1, :2)", array('notify_email', $cont['CONTAINERID']));
-            }
+            $this->db->pq("INSERT INTO containerhistory (status,containerid) VALUES (:1, :2)", array('notify_email', $cont['CONTAINERID']));
         }
     }
-
-?>

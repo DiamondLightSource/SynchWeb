@@ -1,0 +1,38 @@
+type: object
+properties:
+  SHIPPINGID:
+    type: string
+    description: Shipping id the dewar belongs to
+    example: 7275
+  SHIPMENT:
+    type: string
+    description: Shipment name
+    example: ship1
+  VISIT:
+    type: string
+    description: Visit dewar belongs to
+    example: cm14451-2
+  BL:
+    type: string
+    description: Beamline name for first visit dewar belongs to
+    example: i03
+  LOCALCONTACT:
+    type: string
+    description: Local contact of first visit
+    example: Beamline Scientist
+  DEWARID:
+    type: string
+    description: Dewarid for history entry
+    example: 8624
+  DEWARSTATUS:
+    type: string
+    description: History dewar status
+    example: sent to DLS
+  STORAGELOCATION:
+    type: string
+    description: History dewar location
+    example: i03
+  ARRIVAL:
+    type: string
+    description: Date / time history entry took place 
+    example: 16-02-2016 11:21

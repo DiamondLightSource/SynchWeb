@@ -1,0 +1,76 @@
+users:
+  get:
+    security:
+      - Bearer: []
+    tags: ['users']
+    summary: Get list of users
+    responses:
+      200:
+        description: A list of users
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/User'
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['users']
+    summary: Get users for a user group
+    parameters:
+      - name: groupid
+        in: path
+        type: number
+        required: true
+    responses:
+      200:
+        description: Users for a UserGroup
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/User'
+
+current:
+    get:
+      security:
+        - Bearer: []
+      tags: ['users']
+      summary: Get current user info
+      responses:
+        200:
+          description: Parameters for the current user
+          schema:
+              $ref: '#/definitions/CurrentUser'
+
+
+# User helpers
+log:
+  post:
+    security:
+      - Bearer: []
+    tags: ['users']
+    summary: Log a users location
+    parameters:
+      - name: location
+        in: body
+        schema:
+          type: string
+
+    responses:
+      200:
+        description: Location logged
+
+time:
+  get:
+    security:
+      - Bearer: []
+    tags: ['users']
+    summary: Return current server date / time
+    description: For UI front page
+    responses:
+      200:
+        description: Current server date / time
+        examples:
+          application/json:
+            TIME: Wed Jun 22 2016 21:37:05 (GMT+0100)

@@ -22,15 +22,31 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
         }
     })
 
+    var ArchivedCell = Backgrid.Cell.extend({
+        render: function() {
+            this.$el.empty()
+            if (this.model.get('ARCHIVED') == '1') this.$el.html('<i class="fa fa-archive r" title="This visit is archived, data is no longer avaialble on disk"></i>')
+            return this
+        }
+    })
+
        
   return Marionette.LayoutView.extend({
     linksTemplate: visitlinks,
     linksCell: LinksCell,
     clickable: true,
+    clickableRow: ClickableRow,
+    showTitle: true,
       
     className: 'content',
-    template: '<div><h1>Visit List</h1><p class="help">This page lists the visits available to the currently selected proposal</p><div class="wrapper"></div></div>',
+    template: _.template('<% if (showTitle) { %><h1>Visit List</h1><% } %><p class="help">This page lists the visits available to the currently selected proposal</p><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper' },
+
+    templateHelpers: function() {
+      return {
+          showTitle: this.getOption('showTitle')
+      }
+    },
 
     initialize: function(options) {
       var columns = [{ name: 'ST', label: 'Start', cell: 'string', editable: false },
@@ -41,7 +57,8 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
                      { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
                      { name: 'DCCOUNT', label: 'Data Collections', cell: 'string', editable: false },
                      { name: 'SESSIONTYPE', label: 'Type', cell: 'string', editable: false },
-                     { name: 'LINKS', label: '', cell: this.getOption('linksCell'), template: this.getOption('linksTemplate'), test: 'DCCOUNT', editable: false }]
+                     { name: 'LINKS', label: '', cell: this.getOption('linksCell'), template: this.getOption('linksTemplate'), test: 'DCCOUNT', editable: false },
+                     { name: 'ARCHIVED', label: '', cell: ArchivedCell, editable: false }]
         
       if (app.mobile()) {
         console.log('mobile!')
@@ -51,7 +68,7 @@ define(['marionette', 'views/table', 'collections/visits', 'utils/table',
       }
         
       var bgopts = { emptyText: 'No visits found' }
-      if (this.getOption('clickable')) bgopts.row = ClickableRow
+      if (this.getOption('clickable')) bgopts.row = this.getOption('clickableRow')
 
       this.listenTo(this.collection, 'change:COMMENTS', this.saveComment, this)
 

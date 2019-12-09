@@ -53,7 +53,7 @@ define(['marionette',
                 },
                 error: function() {
                     app.bc.reset([bc, { title: 'Error' }])
-                    app.message({ title: 'No such visit', message: 'Couldnt find the specified viist' })
+                    app.message({ title: 'No such visit', message: 'Couldn\'t find the specified visit' })
                 }
             })
         },

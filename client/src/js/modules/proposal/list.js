@@ -18,8 +18,9 @@ define(['marionette',
   })
     
   return Marionette.LayoutView.extend({
+    clickableRow: ClickableRow,
     className: 'content',
-    template: '<div><h1>Proposals</h1><p class="help">This page lists all proposals available to you. Click on a row to select that proposal</p><div class="wrapper"></div></div>',
+    template: _.template('<h1>Proposals</h1><p class="help">This page lists all proposals available to you. Click on a row to select that proposal</p><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper' },
     
     initialize: function(options) {
@@ -30,7 +31,7 @@ define(['marionette',
                      { name: 'VCOUNT', label: 'Visits', cell: 'string', editable: false },
                      { name: 'TITLE', label: 'Title', cell: 'string', editable: false }]
                     
-      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: 'No proposals found', } })
+      this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, backgrid: { row: this.getOption('clickableRow'), emptyText: 'No proposals found', } })
     },
                                       
     onRender: function() {

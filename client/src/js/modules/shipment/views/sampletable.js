@@ -55,7 +55,7 @@ define(['marionette',
             this.$el.parent().find('tr').removeClass('selected')
             this.$el.addClass('selected')
 
-            $('html, body').animate({ scrollTop: this.$el.offset().top }, 500)
+            // $('html, body').animate({ scrollTop: this.$el.offset().top }, 500)
         },
 
         className: function() {
@@ -211,7 +211,11 @@ define(['marionette',
                 select: this.selectGlobalProtein.bind(this)
             })
 
-            if (this.getOption('auto').show) this.$el.find('.auto').addClass('show')
+            if (this.getOption('auto').show) {
+                this.$el.find('.auto').addClass('show')
+                this.$el.find('.auto-extra').addClass('extra').removeClass('show')
+                if (this.getOption('extra').show) this.$el.find('.auto-extra').addClass('show')
+            }
             this.$el.find('[name=CENTRINGMETHOD]').html(CM.opts()).val(this.model.get('CENTRINGMETHOD'))
             this.$el.find('[name=EXPERIMENTKIND]').html(EXP.opts()).val(this.model.get('EXPERIMENTKIND'))
             this.$el.find('[name=ENERGY]').val(this.model.get('ENERGY'))
@@ -364,6 +368,10 @@ define(['marionette',
             }
         },
         
+        extraState: function() {
+            return this.extra.show
+        },
+
         toggleExtra: function() {
             this.extra.show = !this.extra.show
 
@@ -374,8 +382,13 @@ define(['marionette',
 
         toggleAuto: function(val) {
             this.auto.show = val
-            if (val) this.$el.find('.auto').addClass('show')
-            else this.$el.find('.auto').removeClass('show')
+            if (val) {
+                this.$el.find('.auto').addClass('show')
+                this.$el.find('.auto-extra').addClass('extra').removeClass('show')
+            } else {
+                this.$el.find('.auto').removeClass('show')
+                this.$el.find('.auto-extra').removeClass('extra').addClass('show')
+            }
         },
 
 

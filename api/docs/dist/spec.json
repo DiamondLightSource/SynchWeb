@@ -1,0 +1,6426 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "SynchWeb REST API Specification",
+    "description": "SynchWeb"
+  },
+  "host": "ispyb.diamond.ac.uk",
+  "basePath": "/api",
+  "schemes": [
+    "https"
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/authenticate/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Authenticate with api",
+        "description": "Get a jwt for future authenticated requests",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/LoginReq"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns jwt token",
+            "schema": {
+              "$ref": "#/definitions/JWTResp"
+            }
+          },
+          "400": {
+            "description": "Invalid Credentials"
+          }
+        }
+      }
+    },
+    "/authenticate/check": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Check for sso",
+        "description": "Check for SSO login and return jwt",
+        "responses": {
+          "200": {
+            "description": "Returns jwt token",
+            "schema": {
+              "$ref": "#/definitions/JWTResp"
+            }
+          },
+          "400": {
+            "description": "No valid existing session"
+          }
+        }
+      }
+    },
+    "/authenticate/key": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get jwt private key",
+        "responses": {
+          "200": {
+            "description": "Returns a base64 encoded 64bit hash",
+            "schema": {
+              "$ref": "#/definitions/JWTKey"
+            }
+          }
+        }
+      }
+    },
+    "/options": {
+      "get": {
+        "tags": [
+          "options"
+        ],
+        "summary": "Get UI options object",
+        "description": "Will be extended",
+        "responses": {
+          "200": {
+            "description": "Options",
+            "schema": {
+              "$ref": "#/definitions/Options"
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Get list of users",
+        "responses": {
+          "200": {
+            "description": "A list of users",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{groupid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Get users for a user group",
+        "parameters": [
+          {
+            "name": "groupid",
+            "in": "path",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users for a UserGroup",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/current": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Get current user info",
+        "responses": {
+          "200": {
+            "description": "Parameters for the current user",
+            "schema": {
+              "$ref": "#/definitions/CurrentUser"
+            }
+          }
+        }
+      }
+    },
+    "/users/log": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Log a users location",
+        "parameters": [
+          {
+            "name": "location",
+            "in": "body",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location logged"
+          }
+        }
+      }
+    },
+    "/users/time": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Return current server date / time",
+        "description": "For UI front page",
+        "responses": {
+          "200": {
+            "description": "Current server date / time",
+            "examples": {
+              "application/json": {
+                "TIME": "Wed Jun 22 2016 21:37:05 (GMT+0100)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proposal": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "proposals"
+        ],
+        "summary": "Get list of proposals",
+        "parameters": [
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/parameters/SortByParam"
+          },
+          {
+            "$ref": "#/parameters/SortOrderParam"
+          },
+          {
+            "$ref": "#/parameters/ProposalParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of proposals",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Proposal"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proposal/{proposal}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "proposals"
+        ],
+        "summary": "Get a single proposal",
+        "parameters": [
+          {
+            "name": "proposal",
+            "in": "path",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Single proposal",
+            "schema": {
+              "$ref": "#/definitions/Proposal"
+            }
+          }
+        }
+      }
+    },
+    "/proposal/bls": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "proposals"
+        ],
+        "summary": "Get a list of beamlines for a type",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TypeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of beamlines for type",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "examples": {
+              "application/json": [
+                "i02",
+                "i03",
+                "i04"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "/proposal/visits": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "visits"
+        ],
+        "summary": "Get a list of visits",
+        "parameters": [
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/parameters/SortByParam"
+          },
+          {
+            "$ref": "#/parameters/SortOrderParam"
+          },
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/BLParam"
+          },
+          {
+            "name": "all",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all visits (need staff permission)",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "year",
+            "type": "string",
+            "in": "query",
+            "pattern": "\\d\\d\\d\\d",
+            "description": "Show visits from year"
+          },
+          {
+            "name": "month",
+            "type": "string",
+            "in": "query",
+            "pattern": "\\d+",
+            "description": "Show visits from month"
+          },
+          {
+            "name": "cm",
+            "type": "string",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show commissioning visits",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "next",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show next visit to start",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "prev",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show previous visit to start",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "started",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show started visits",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "current",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show current visits",
+            "enum": [
+              1
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "test",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Visit"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proposal/visits/{visit}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "visits"
+        ],
+        "summary": "Get a single visit",
+        "parameters": [
+          {
+            "name": "visit",
+            "in": "path",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Single visit",
+            "schema": {
+              "$ref": "#/definitions/Visit"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "visits"
+        ],
+        "summary": "Update a visit, pass one Visit property",
+        "parameters": [
+          {
+            "name": "visit",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "COMMENTS": {
+                  "type": "string",
+                  "example": "a new comment"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Visit updated",
+            "schema": {
+              "properties": {
+                "COMMENTS": {
+                  "type": "string",
+                  "example": "a new comment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sample/proteins": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "proteins"
+        ],
+        "summary": "Get a list of proteins",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/parameters/SortByParam"
+          },
+          {
+            "$ref": "#/parameters/SortOrderParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of proteins",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Protein"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "proteins",
+          "create-shipment"
+        ],
+        "summary": "Add a new protein",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ProteinNew"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Protein created",
+            "schema": {
+              "properties": {
+                "PROTEINID": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing protein field"
+          }
+        }
+      }
+    },
+    "/sample/proteins/{proteinid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "proteins"
+        ],
+        "summary": "Get a single protein",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "proteinid",
+            "in": "path",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A protein",
+            "schema": {
+              "$ref": "#/definitions/Protein"
+            }
+          },
+          "400": {
+            "description": "No such protein"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "proteins"
+        ],
+        "summary": "Update a protein",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "proteinid",
+            "in": "path",
+            "type": "number",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "NAME": {
+                  "type": "string",
+                  "example": "New Protein Name"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Protein Updated",
+            "schema": {
+              "properties": {
+                "NAME": {
+                  "type": "string",
+                  "example": "New Protein Name"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sample": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "samples"
+        ],
+        "summary": "Get a list of samples",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/parameters/SortByParam"
+          },
+          {
+            "$ref": "#/parameters/SortOrderParam"
+          },
+          {
+            "$ref": "#/parameters/ProteinIDParam"
+          },
+          {
+            "$ref": "#/parameters/CIDParam"
+          },
+          {
+            "$ref": "#/parameters/VisitParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of samples",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Sample"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "samples",
+          "create-shipment"
+        ],
+        "summary": "Add a new sample",
+        "description": "Either a single sample can be created, or a collection of samples can be created in a single pass either an object of a single sample { sample }, or a body with { collection: [{ sample }, ...] }",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SampleNew"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "collection": {
+                      "type": "array",
+                      "description": "Array of samples to register",
+                      "items": {
+                        "$ref": "#/definitions/SampleNew"
+                      }
+                    }
+                  }
+                }
+              ],
+              "example": {
+                "single": {
+                  "CONTAINERID": 123,
+                  "PROTEINID": 123,
+                  "CRYSTALID": 123,
+                  "LOCATION": "1",
+                  "NAME": "xtal4",
+                  "COMMENTS": "in 25% PEG4000 50um",
+                  "SPACEGROUP": "P222",
+                  "CODE": "FG5644",
+                  "ANOMALOUSSCATTERER": "Fe",
+                  "CENTRINGMETHOD": "xray",
+                  "EXPERIMENTKIND": "SAD",
+                  "RADIATIONSENSITIVITY": 50,
+                  "SCREENCOMPONENTGROUPID": 123,
+                  "CELL_A": 123.4,
+                  "CELL_ALPHA": 123.4,
+                  "CELL_B": 123.4,
+                  "CELL_BETA": 123.4,
+                  "CELL_C": 123.4,
+                  "CELL_GAMMA": 123.4,
+                  "DIMENSION1": 123,
+                  "DIMENSION2": 123,
+                  "DIMENSION3": 123,
+                  "THEORETICALDENSITY": 1243.3,
+                  "VOLUME": 20,
+                  "ABUNDANCE": 25,
+                  "PACKINGFRACTION": 0.5,
+                  "ENERGY": 12768,
+                  "LOOPTYPE": "polymer",
+                  "SHAPE": "cubic"
+                },
+                "multiple": [
+                  {
+                    "CONTAINERID": 123,
+                    "PROTEINID": 123,
+                    "CRYSTALID": 123,
+                    "LOCATION": "1",
+                    "NAME": "xtal4",
+                    "COMMENTS": "in 25% PEG4000 50um",
+                    "SPACEGROUP": "P222",
+                    "CODE": "FG5644",
+                    "ANOMALOUSSCATTERER": "Fe",
+                    "CENTRINGMETHOD": "xray",
+                    "EXPERIMENTKIND": "SAD",
+                    "RADIATIONSENSITIVITY": 50,
+                    "SCREENCOMPONENTGROUPID": 123,
+                    "CELL_A": 123.4,
+                    "CELL_ALPHA": 123.4,
+                    "CELL_B": 123.4,
+                    "CELL_BETA": 123.4,
+                    "CELL_C": 123.4,
+                    "CELL_GAMMA": 123.4,
+                    "DIMENSION1": 123,
+                    "DIMENSION2": 123,
+                    "DIMENSION3": 123,
+                    "THEORETICALDENSITY": 1243.3,
+                    "VOLUME": 20,
+                    "ABUNDANCE": 25,
+                    "PACKINGFRACTION": 0.5,
+                    "ENERGY": 12768,
+                    "LOOPTYPE": "polymer",
+                    "SHAPE": "cubic"
+                  },
+                  {
+                    "CONTAINERID": 123,
+                    "PROTEINID": 123,
+                    "CRYSTALID": 123,
+                    "LOCATION": "2",
+                    "NAME": "xtal4",
+                    "COMMENTS": "in 25% PEG4000 50um",
+                    "SPACEGROUP": "P222",
+                    "CODE": "FG5644",
+                    "ANOMALOUSSCATTERER": "Fe",
+                    "CENTRINGMETHOD": "xray",
+                    "EXPERIMENTKIND": "SAD",
+                    "RADIATIONSENSITIVITY": 50,
+                    "SCREENCOMPONENTGROUPID": 123,
+                    "CELL_A": 123.4,
+                    "CELL_ALPHA": 123.4,
+                    "CELL_B": 123.4,
+                    "CELL_BETA": 123.4,
+                    "CELL_C": 123.4,
+                    "CELL_GAMMA": 123.4,
+                    "DIMENSION1": 123,
+                    "DIMENSION2": 123,
+                    "DIMENSION3": 123,
+                    "THEORETICALDENSITY": 1243.3,
+                    "VOLUME": 20,
+                    "ABUNDANCE": 25,
+                    "PACKINGFRACTION": 0.5,
+                    "ENERGY": 12768,
+                    "LOOPTYPE": "polymer",
+                    "SHAPE": "cubic"
+                  },
+                  {
+                    "CONTAINERID": 123,
+                    "PROTEINID": 123,
+                    "CRYSTALID": 123,
+                    "LOCATION": "3",
+                    "NAME": "xtal4",
+                    "COMMENTS": "in 25% PEG4000 50um",
+                    "SPACEGROUP": "P222",
+                    "CODE": "FG5644",
+                    "ANOMALOUSSCATTERER": "Fe",
+                    "CENTRINGMETHOD": "xray",
+                    "EXPERIMENTKIND": "SAD",
+                    "RADIATIONSENSITIVITY": 50,
+                    "SCREENCOMPONENTGROUPID": 123,
+                    "CELL_A": 123.4,
+                    "CELL_ALPHA": 123.4,
+                    "CELL_B": 123.4,
+                    "CELL_BETA": 123.4,
+                    "CELL_C": 123.4,
+                    "CELL_GAMMA": 123.4,
+                    "DIMENSION1": 123,
+                    "DIMENSION2": 123,
+                    "DIMENSION3": 123,
+                    "THEORETICALDENSITY": 1243.3,
+                    "VOLUME": 20,
+                    "ABUNDANCE": 25,
+                    "PACKINGFRACTION": 0.5,
+                    "ENERGY": 12768,
+                    "LOOPTYPE": "polymer",
+                    "SHAPE": "cubic"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sample created",
+            "schema": {
+              "properties": {
+                "BLSAMPLEID": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing sample field"
+          }
+        }
+      }
+    },
+    "/sample/{sampleid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "samples"
+        ],
+        "summary": "Get a single sample",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "sampleid",
+            "in": "path",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A sample",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          },
+          "400": {
+            "description": "No such sample"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "samples"
+        ],
+        "summary": "Update a sample",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "sampleid",
+            "in": "path",
+            "type": "number",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "NAME": {
+                  "type": "string",
+                  "example": "New Sample Name"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sample Updated",
+            "schema": {
+              "properties": {
+                "NAME": {
+                  "type": "string",
+                  "example": "New Sample Name"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contact": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "contacts"
+        ],
+        "summary": "Get a list of lab contacts",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/parameters/SortByParam"
+          },
+          {
+            "$ref": "#/parameters/SortOrderParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of lab contacts",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Contact"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "contacts",
+          "create-shipment"
+        ],
+        "summary": "Create a lab contact",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ContactNew"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contact created",
+            "schema": {
+              "properties": {
+                "LABCONTACTID": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing contact field"
+          }
+        }
+      }
+    },
+    "/contact/{contactid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "contacts"
+        ],
+        "summary": "Get a single lab contact",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "contactid",
+            "in": "path",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A contact",
+            "schema": {
+              "$ref": "#/definitions/Contact"
+            }
+          },
+          "400": {
+            "description": "No such contact"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "contacts"
+        ],
+        "summary": "Update a lab contact",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "contactid",
+            "in": "path",
+            "type": "number",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "CARDNAME": {
+                  "type": "string",
+                  "example": "New Card Name"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contact Updated",
+            "schema": {
+              "properties": {
+                "CARDNAME": {
+                  "type": "string",
+                  "example": "New Card Name"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/shipments": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Get a list of shipments",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/parameters/SortByParam"
+          },
+          {
+            "$ref": "#/parameters/SortOrderParam"
+          },
+          {
+            "name": "all",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all shipments (requires staff permission)",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "manifest",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all shipments for DHL manifest",
+            "enum": [
+              1
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of shipments",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number",
+                  "example": 500
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Shipment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments",
+          "create-shipment"
+        ],
+        "summary": "Create a new shipment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Shipment"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment Created",
+            "schema": {
+              "properties": {
+                "SHIPPINGID": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/shipments/{shippingid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Get a single shipment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single shipment",
+            "schema": {
+              "$ref": "#/definitions/Shipment"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Update a shipment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Shipment"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment updated",
+            "schema": {
+              "properties": {
+                "SHIPPINGNAME": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/send/{shippingid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Mark a shipment as sent to facility.",
+        "description": "Emails goods handling and local contacts",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment marked as sent"
+          }
+        }
+      }
+    },
+    "/shipment/terms/{shippingid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Returns facility courier terms and conditions",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Terms and conditions",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "TERMS": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Accept facility courier t&cs",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Courier terms accepted",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ACCEPTED": {
+                  "type": "string",
+                  "pattern": "\\d+",
+                  "example": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Get a list of dewars",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/VisitParam"
+          },
+          {
+            "$ref": "#/parameters/BLParam"
+          },
+          {
+            "$ref": "#/parameters/FCQueryParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDQueryParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/parameters/SortByParam"
+          },
+          {
+            "$ref": "#/parameters/SortOrderParam"
+          },
+          {
+            "name": "all_dewars",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all dewars (requires staff permission)",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "current",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show dewars for sessions that are active",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "requestedimager",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all dewars with a requested imager",
+            "enum": [
+              1
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of dewars",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Dewar"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars",
+          "create-shipment"
+        ],
+        "summary": "Create a dewar",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DewarNew"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dewar Created",
+            "schema": {
+              "properties": {
+                "DEWARID": {
+                  "type": "string",
+                  "example": 52
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars/{dewarid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Get a single dewar",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/DewarIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single dewar",
+            "schema": {
+              "$ref": "#/definitions/Dewar"
+            }
+          },
+          "400": {
+            "description": "No such dewar"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Update a dewar",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/DewarIDParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Dewar"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dewar updated"
+          },
+          "400": {
+            "description": "No such dewar"
+          }
+        }
+      }
+    },
+    "/shipment/dewars/sid/{shippingid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Get dewars for a shipment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of dewars",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Dewar"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars/fc/{facilitycode}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Get a list of dewars for a facility code",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/FCParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of dewars",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Dewar"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars/history": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars-history"
+        ],
+        "summary": "Get a list of dewar history",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of dewar history",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DewarHistory"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars-history"
+        ],
+        "summary": "Add a dewar history entry.",
+        "description": "Email people as needbe, if arrived at facility email user, local contact",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateDewarHistory"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dewar history created",
+            "schema": {
+              "properties": {
+                "DEWARHISTORYID": {
+                  "type": "integer",
+                  "example": 1254
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars/history/did/{dewarid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars-history"
+        ],
+        "summary": "Get dewar history for a specific dewar",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/DewarIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of dewar history",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DewarHistory"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars/registry": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars-registry"
+        ],
+        "summary": "Get a list of dewars in regsiter",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of dewars in regsitry",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DewarRegistry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars/registry/{facilitycode}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars-registry"
+        ],
+        "summary": "Get a single registry entry",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/FCParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single registry entry",
+            "schema": {
+              "$ref": "#/definitions/DewarRegistry"
+            }
+          },
+          "400": {
+            "description": "No such dewar"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars-registry"
+        ],
+        "summary": "Update a dewar resgistry entry (single field)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/FCParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DewarRegistry"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registry entry updated (return single field)"
+          },
+          "400": {
+            "description": "No such dewar"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars-registry"
+        ],
+        "summary": "Create a dewar registry entry",
+        "description": "This should probably be a post method",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/FCParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DewarRegistry"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registry entry created",
+            "schema": {
+              "$ref": "#/definitions/DewarRegistry"
+            }
+          },
+          "400": {
+            "description": "Missing fields"
+          }
+        }
+      }
+    },
+    "/shipment/dewars/reports": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Get a list of dewar reports",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of dewar reports",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DewarReport"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Create a dewar report",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateDewarReport"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dewar report created",
+            "schema": {
+              "properties": {
+                "DEWARREPORTID": {
+                  "type": "string",
+                  "example": 1244
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars/default": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Get / create default dewar",
+        "description": "Used to allow quick container registration bypassing the need to create a shipment / dewar",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return default dewar id",
+            "schema": {
+              "type": "integer",
+              "example": 3453
+            }
+          }
+        }
+      }
+    },
+    "/shipment/dewars/transfer": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Request a dewar transfer",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DewarTransfer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transfer request registered"
+          }
+        }
+      }
+    },
+    "/shipment/dewars/dispatch": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "dewars"
+        ],
+        "summary": "Request a dewar dispatch",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DewarDispatch"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dispatch request registered"
+          }
+        }
+      }
+    },
+    "/shipment/containers": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers"
+        ],
+        "summary": "Get a list of containers",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/VisitParam"
+          },
+          {
+            "$ref": "#/parameters/BLParam"
+          },
+          {
+            "$ref": "#/parameters/ProteinIDParam"
+          },
+          {
+            "$ref": "#/parameters/DewarIDParam"
+          },
+          {
+            "name": "all",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all containers (need staff permission)",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "ty",
+            "type": "string",
+            "in": "query",
+            "pattern": "\\w+",
+            "description": "Show containers of a particular type",
+            "enum": [
+              "plate",
+              "puck"
+            ]
+          },
+          {
+            "name": "assigned",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all assigned containers",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "unassigned",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all unassigned containers",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "name": "imager",
+            "type": "number",
+            "in": "query",
+            "pattern": "\\d",
+            "description": "Show all containers in an imager",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "$ref": "#/parameters/ImagerIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of containers",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Container"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers",
+          "create-shipment"
+        ],
+        "summary": "Create a container",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ContainerNew"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Container created",
+            "schema": {
+              "properties": {
+                "CONTAINERID": {
+                  "type": "integer",
+                  "example": 8965
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/containers/{containerid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers"
+        ],
+        "summary": "Get a single container",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ContainerIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single container",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Container"
+              }
+            }
+          },
+          "400": {
+            "description": "No such container"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers"
+        ],
+        "summary": "Update a container",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ContainerIDParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "NAME": {
+                  "type": "string",
+                  "example": "New container name"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Container updated",
+            "schema": {
+              "properties": {
+                "NAME": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No such container"
+          }
+        }
+      }
+    },
+    "/shipment/containers/did/{dewarid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers"
+        ],
+        "summary": "Get containers for a particular dewar",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DewarIDParam"
+          },
+          {
+            "$ref": "#/parameters/ProposalParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of containers",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Container"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/containers/move": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers"
+        ],
+        "summary": "Move a container to a different dewar",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "cid",
+            "in": "query",
+            "type": "number",
+            "description": "Container id to move"
+          },
+          {
+            "name": "did",
+            "in": "query",
+            "type": "number",
+            "description": "New dewar id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Container moved"
+          }
+        }
+      }
+    },
+    "/shipment/containers/queue": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers"
+        ],
+        "summary": "Queue a container for data collection",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "name": "cid",
+            "in": "query",
+            "type": "number",
+            "description": "Container id to move"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Container queued"
+          },
+          "400": {
+            "description": "No such container / Container already queued"
+          }
+        }
+      }
+    },
+    "/shipment/cache/{name}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers"
+        ],
+        "summary": "Get a named cache",
+        "description": "Return a json object",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/CacheNameParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return named object",
+            "schema": {
+              "properties": {
+                "data": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "containers"
+        ],
+        "summary": "Update a named cache",
+        "description": "Can pass a json object which will be serialised",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/CacheNameParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "data": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cache updated",
+            "schema": {
+              "properties": {
+                "data": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dc": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections"
+        ],
+        "summary": "List of beamline events (data collections)",
+        "description": "Due to the way ISPyB was built this unions 4 separate tables, and therefore ID is not unique and must be used in conjunction with the t param to get a specific event\n\nPossible types 't' are\n* `dc` Data collections\n* `sc` Screenings\n* `fc` Full data collections\n* `gr` Grid scans\n* `edge` Energy scans\n* `mca` MCA Spectra\n* `rb` Sample Changer Actions\n* `ac` Other Sample Actions\n* `flag` Flagged events\n* `ap` Data collections that have been auto integrated\n",
+        "parameters": [
+          {
+            "$ref": "#/parameters/PageNumberParam"
+          },
+          {
+            "$ref": "#/parameters/PerPageParam"
+          },
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/VisitParam"
+          },
+          {
+            "$ref": "#/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/parameters/ProteinIDParam"
+          },
+          {
+            "$ref": "#/parameters/SampleIDParam"
+          },
+          {
+            "$ref": "#/parameters/ProjectIDParam"
+          },
+          {
+            "$ref": "#/parameters/ImplicitParam"
+          },
+          {
+            "name": "t",
+            "in": "query",
+            "type": "string",
+            "pattern": "\\w+",
+            "enum": [
+              "dc",
+              "sc",
+              "fc",
+              "gr",
+              "edge",
+              "mca",
+              "rb",
+              "ac",
+              "flag",
+              "ap"
+            ]
+          },
+          {
+            "name": "dcg",
+            "in": "query",
+            "type": "number",
+            "pattern": "\\d+",
+            "description": "Show events in a group"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of beamline events. Legacy format, to be converted",
+            "schema": {
+              "$ref": "#/definitions/DataCollections"
+            }
+          }
+        }
+      }
+    },
+    "/dc/id/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections"
+        ],
+        "summary": "Get a particular data collection",
+        "description": "Returns array",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array containing single data collection",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DataCollections"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dc/t/{type}/id/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections"
+        ],
+        "summary": "Get a particular beamline event",
+        "description": "Returns array",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDPathParam"
+          },
+          {
+            "$ref": "#/parameters/DCTypePathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array containing single beamline event",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DataCollections"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections"
+        ],
+        "summary": "Update a data collection",
+        "description": "Used to update a comment on data collection, easily extendable to other properties",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDPathParam"
+          },
+          {
+            "$ref": "#/parameters/DCTypePathParam"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DataCollection"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data collection updated",
+            "schema": {
+              "$ref": "#/definitions/DataCollection"
+            }
+          }
+        }
+      }
+    },
+    "/dc/comments": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections"
+        ],
+        "summary": "Get a list of data collection comments",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of data collection comments",
+            "schema": {
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "total number of entries"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DataCollectionComment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections"
+        ],
+        "summary": "Create a data collection comment",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DataCollectionComment"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data collection comment created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "DATACOLLECTIONCOMMENTID": {
+                  "type": "number",
+                  "example": 593
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dc/comments/{dccid}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections"
+        ],
+        "summary": "Get a single data collection comment",
+        "parameters": [
+          {
+            "name": "dccid",
+            "in": "path",
+            "description": "Data collection comment id",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data collection comment",
+            "schema": {
+              "$ref": "#/definitions/DataCollectionComment"
+            }
+          }
+        }
+      }
+    },
+    "/dc/chi": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections-status"
+        ],
+        "summary": "Check if snapshots and diffraction images thumbnails are on disk",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDsBodyParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of data collections and flags indicating image statuses",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ImageStatus"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dc/aps": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections-status"
+        ],
+        "summary": "Get autoprocessing statuses for a number of data collections.",
+        "description": "This will be abstracted in due course and use a plugin architecture",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDsBodyParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of the form [[dcid, { type: { program: status, ...}, ... }]\n- Processing statuses:\n  * 0 = didnt run\n  * 1 = running\n  * 2 = success\n  * 3 = failed\n- Processing Types:\n  * screening\n  * autoproc\n  * downstream\n\n- Programs as defined from config\n",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/APStatus"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dc/imq/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections-status"
+        ],
+        "summary": "Get a series of image quality indicators for a data collection.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of four arrays of \n  [[image no, ...], [spots, ...], [bragg, ...], [res, ...], [signal, ...]]\n  * Image no.\n  * Number of spots found on image\n  * Number of bragg spots found\n  * Estimated maximum resolution\n  * Total integrated signal\n",
+            "schema": {
+              "type": "array",
+              "minItems": 4,
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "example": [
+                [
+                  1,
+                  2,
+                  3
+                ],
+                [
+                  400,
+                  432,
+                  675
+                ],
+                [
+                  320,
+                  356,
+                  550
+                ],
+                [
+                  1.34,
+                  2.1,
+                  1.7
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "/dc/grid/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections"
+        ],
+        "summary": "Get grid scan info for a grid scan data collection",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Grid scan info",
+            "schema": {
+              "$ref": "#/definitions/GridInfo"
+            }
+          }
+        }
+      }
+    },
+    "/dc/strat/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections-processing"
+        ],
+        "summary": "Get indexing strategies for a data collection",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indexing strategy results",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Strategies"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "LoginReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "abd1234"
+        },
+        "password": {
+          "type": "string",
+          "example": "password"
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "JWTResp": {
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "type": "string",
+          "example": "112kj3hk.123kjh1kj23h.3jh45kj34"
+        }
+      }
+    },
+    "JWTKey": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "example": "112kj3hk.123kjh1kj23h.3jh45kj34"
+        }
+      }
+    },
+    "Options": {
+      "type": "object",
+      "properties": {
+        "authentication_type": {
+          "type": "string",
+          "description": "Authentication type from api config",
+          "enum": [
+            "cas",
+            "ldap"
+          ],
+          "example": "cas"
+        },
+        "cas_url": {
+          "type": "string",
+          "description": "CAS server url (if using CAS)",
+          "example": "my.cas-server.ac.uk"
+        },
+        "cas_sso": {
+          "type": "boolean",
+          "description": "If true will try to follow single sign on",
+          "example": true
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "VISITS": {
+          "type": "string",
+          "description": "Number of visits this user has been on",
+          "example": 25
+        },
+        "LAST": {
+          "type": "string",
+          "description": "Date of last visit (dd-mm-yyyy)",
+          "example": "12-06-2014"
+        },
+        "PERSONID": {
+          "type": "string",
+          "description": "Personid"
+        },
+        "GIVENNAME": {
+          "type": "string",
+          "description": "First name"
+        },
+        "FAMILYNAME": {
+          "type": "string",
+          "description": "Family name"
+        },
+        "FULLNAME": {
+          "type": "string",
+          "description": "First + Family name"
+        },
+        "LOGIN": {
+          "type": "string",
+          "description": "Username"
+        }
+      }
+    },
+    "CurrentUser": {
+      "type": "object",
+      "properties": {
+        "personid": {
+          "type": "string",
+          "description": "Users personid",
+          "example": 1234
+        },
+        "user": {
+          "type": "string",
+          "description": "Users login",
+          "example": "abd1234"
+        },
+        "permissions": {
+          "type": "array",
+          "description": "Array of permissions this user has",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "mx_staff",
+            "fault_view"
+          ]
+        },
+        "is_staff": {
+          "type": "string",
+          "description": "Is this user staff for this type?",
+          "example": true
+        },
+        "ty": {
+          "type": "string",
+          "description": "The api type, determined from beamlines user uses",
+          "example": "mx"
+        }
+      }
+    },
+    "Proposal": {
+      "type": "object",
+      "properties": {
+        "PROPOSAL": {
+          "type": "string",
+          "description": "Proposal",
+          "example": "mx1234"
+        },
+        "TITLE": {
+          "type": "string",
+          "description": "Proposal title",
+          "example": "A sample proposal"
+        },
+        "ST": {
+          "type": "string",
+          "description": "Proposal start date",
+          "example": "12-08-2016"
+        },
+        "PROPOSALCODE": {
+          "type": "string",
+          "description": "Proposal code",
+          "example": "mx"
+        },
+        "PROPOSALNUMBER": {
+          "type": "string",
+          "description": "Proposal number",
+          "example": 1234
+        },
+        "VCOUNT": {
+          "type": "string",
+          "description": "Visit count for proposal",
+          "example": 24
+        },
+        "PROPOSALID": {
+          "type": "string",
+          "description": "Proposal id"
+        },
+        "TYPE": {
+          "type": "string",
+          "description": "Proposal type",
+          "example": "mx",
+          "enum": [
+            "mx",
+            "pow",
+            "tomo",
+            "saxs",
+            "sm",
+            "gen"
+          ]
+        }
+      }
+    },
+    "Visit": {
+      "type": "object",
+      "properties": {
+        "ACTIVE": {
+          "type": "string",
+          "description": "Is the visit active",
+          "example": 0
+        },
+        "CAMS": {
+          "type": "string",
+          "description": "Should we show webcams (30mins grace of start time)",
+          "example": 1
+        },
+        "VISIT": {
+          "type": "string",
+          "description": "Visit string",
+          "example": "mx1234-12"
+        },
+        "ST": {
+          "type": "string",
+          "description": "Start time",
+          "example": "10:00 05-10-2016"
+        },
+        "EN": {
+          "type": "string",
+          "description": "End time",
+          "example": "17:00 05-10-2016"
+        },
+        "STISO": {
+          "type": "string",
+          "description": "Start time in ISO8601",
+          "example": "2016-10-05T10:00:00.000Z"
+        },
+        "ENISO": {
+          "type": "string",
+          "description": "End time in ISO8601",
+          "example": "2016-10-05T17:00:00.000Z"
+        },
+        "SESSIONID": {
+          "type": "string",
+          "description": "Sessionid",
+          "example": 12
+        },
+        "VIS": {
+          "type": "string",
+          "description": "Visit number",
+          "example": 12
+        },
+        "BL": {
+          "type": "string",
+          "description": "Beamline",
+          "example": "i02"
+        },
+        "LC": {
+          "type": "string",
+          "description": "Local contact",
+          "example": "Beamline Scientist 1"
+        },
+        "COMMENTS": {
+          "type": "string",
+          "description": "Comments"
+        },
+        "DCCOUNT": {
+          "type": "string",
+          "description": "Data collection count",
+          "example": 243
+        },
+        "TYPE": {
+          "type": "string",
+          "description": "Visit type, based on beamline",
+          "example": "mx"
+        }
+      }
+    },
+    "ProteinNew": {
+      "type": "object",
+      "properties": {
+        "ACRONYM": {
+          "type": "string",
+          "pattern": "([\\w-])+",
+          "description": "Protein acronym",
+          "example": "prot1"
+        },
+        "NAME": {
+          "type": "string",
+          "pattern": "([\\w-])+",
+          "description": "Protein acronym",
+          "example": "Protein one"
+        },
+        "SEQUENCE": {
+          "type": "string",
+          "pattern": "[\\s\\w\\(\\)\\.>\\|;\\n]+",
+          "description": "Protein acronym",
+          "example": "FGCDFDGDSCSFEFSDF"
+        },
+        "MOLECULARMASS": {
+          "type": "string",
+          "pattern": "\\d+(.\\d+)?",
+          "description": "Molecular mass",
+          "example": 34563.2
+        },
+        "CONCENTRATIONTYPEID": {
+          "type": "string",
+          "pattern": "\\d+",
+          "description": "Concentration type id",
+          "example": 123
+        },
+        "COMPONENTTYPEID": {
+          "type": "string",
+          "pattern": "\\d+",
+          "description": "Component type id",
+          "example": 123
+        },
+        "GLOBAL": {
+          "type": "string",
+          "pattern": "\\d",
+          "description": "If this protein is globally available to all proposals",
+          "example": 1
+        },
+        "DENSITY": {
+          "type": "string",
+          "pattern": "\\d+(.\\d+)?",
+          "description": "Protein acronym",
+          "example": 12.43
+        }
+      },
+      "required": [
+        "ACRONYM"
+      ]
+    },
+    "Protein": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "PROTEINID": {
+              "type": "string",
+              "description": "Protein id",
+              "pattern": "\\d+",
+              "example": 2
+            },
+            "CONCENTRATIONTYPE": {
+              "type": "string",
+              "description": "Concentration type",
+              "example": "mg/ml"
+            },
+            "COMPONENTTYPE": {
+              "type": "string",
+              "description": "Component type",
+              "example": "DNA"
+            },
+            "HASSEQ": {
+              "type": "string",
+              "description": "Has a sequence",
+              "example": "No"
+            },
+            "EXTERNAL": {
+              "type": "string",
+              "description": "External id",
+              "example": "f57dfs56sdf"
+            },
+            "PDBS": {
+              "type": "string",
+              "description": "Number of pdbs associated with this protein",
+              "example": 10
+            },
+            "DCOUNT": {
+              "type": "string",
+              "description": "Data collection count",
+              "example": 123
+            },
+            "SCOUNT": {
+              "type": "string",
+              "description": "Sample count",
+              "example": 34
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ACRONYM": {
+              "type": "string",
+              "pattern": "([\\w-])+",
+              "description": "Protein acronym",
+              "example": "prot1"
+            },
+            "NAME": {
+              "type": "string",
+              "pattern": "([\\w-])+",
+              "description": "Protein acronym",
+              "example": "Protein one"
+            },
+            "SEQUENCE": {
+              "type": "string",
+              "pattern": "[\\s\\w\\(\\)\\.>\\|;\\n]+",
+              "description": "Protein acronym",
+              "example": "FGCDFDGDSCSFEFSDF"
+            },
+            "MOLECULARMASS": {
+              "type": "string",
+              "pattern": "\\d+(.\\d+)?",
+              "description": "Molecular mass",
+              "example": 34563.2
+            },
+            "CONCENTRATIONTYPEID": {
+              "type": "string",
+              "pattern": "\\d+",
+              "description": "Concentration type id",
+              "example": 123
+            },
+            "COMPONENTTYPEID": {
+              "type": "string",
+              "pattern": "\\d+",
+              "description": "Component type id",
+              "example": 123
+            },
+            "GLOBAL": {
+              "type": "string",
+              "pattern": "\\d",
+              "description": "If this protein is globally available to all proposals",
+              "example": 1
+            },
+            "DENSITY": {
+              "type": "string",
+              "pattern": "\\d+(.\\d+)?",
+              "description": "Protein acronym",
+              "example": 12.43
+            }
+          },
+          "required": [
+            "ACRONYM"
+          ]
+        }
+      ]
+    },
+    "SampleNew": {
+      "type": "object",
+      "properties": {
+        "CONTAINERID": {
+          "type": "string",
+          "pattern": "\\d+",
+          "description": "Container id",
+          "example": 123
+        },
+        "PROTEINID": {
+          "type": "string",
+          "pattern": "\\d+",
+          "description": "Protein id",
+          "example": 123
+        },
+        "CRYSTALID": {
+          "type": "string",
+          "pattern": "\\d+",
+          "description": "Crystal id",
+          "example": 123
+        },
+        "LOCATION": {
+          "type": "string",
+          "pattern": "\\d+",
+          "description": "Numerical poisition of sample in container (<= container capacity, 1 offset)",
+          "example": "1"
+        },
+        "NAME": {
+          "type": "string",
+          "pattern": "[\\w\\s-()]+",
+          "description": "Sample name",
+          "example": "xtal4"
+        },
+        "COMMENTS": {
+          "type": "string",
+          "description": "Sample comments",
+          "example": "in 25% PEG4000 50um"
+        },
+        "SPACEGROUP": {
+          "type": "string",
+          "description": "Spacegroup",
+          "example": "P222"
+        },
+        "CODE": {
+          "type": "string",
+          "description": "Pin barcode",
+          "example": "FG5644"
+        },
+        "ANOMALOUSSCATTERER": {
+          "type": "string",
+          "description": "Potential anomalous scatterer",
+          "example": "Fe"
+        },
+        "CENTRINGMETHOD": {
+          "type": "string",
+          "description": "Centring method (for autocollect)",
+          "example": "xray"
+        },
+        "EXPERIMENTKIND": {
+          "type": "string",
+          "description": "Experiment type (for autocollect)",
+          "example": "SAD"
+        },
+        "RADIATIONSENSITIVITY": {
+          "type": "string",
+          "description": "Estimated radiation sensitivty (0-100, low to high)",
+          "example": 50
+        },
+        "SCREENCOMPONENTGROUPID": {
+          "type": "string",
+          "description": "Crystallisation screen component group id",
+          "example": 123
+        },
+        "CELL_A": {
+          "type": "string",
+          "description": "Unit cell a",
+          "example": 123.4
+        },
+        "CELL_ALPHA": {
+          "type": "string",
+          "description": "Unit cell alpha",
+          "example": 123.4
+        },
+        "CELL_B": {
+          "type": "string",
+          "description": "Unit cell b",
+          "example": 123.4
+        },
+        "CELL_BETA": {
+          "type": "string",
+          "description": "Unit cell beta",
+          "example": 123.4
+        },
+        "CELL_C": {
+          "type": "string",
+          "description": "Unit cell c",
+          "example": 123.4
+        },
+        "CELL_GAMMA": {
+          "type": "string",
+          "description": "Unit cell gamma",
+          "example": 123.4
+        },
+        "DIMENSION1": {
+          "type": "string",
+          "description": "First dimension of sample",
+          "example": 123
+        },
+        "DIMENSION2": {
+          "type": "string",
+          "description": "Second dimension of sample",
+          "example": 123
+        },
+        "DIMENSION3": {
+          "type": "string",
+          "description": "Third dimension of sample",
+          "example": 123
+        },
+        "THEORETICALDENSITY": {
+          "type": "string",
+          "description": "Theoretical density",
+          "example": 1243.3
+        },
+        "VOLUME": {
+          "type": "string",
+          "description": "Volume in microlitres for none crystal samples",
+          "example": 20
+        },
+        "ABUNDANCE": {
+          "type": "string",
+          "description": "Abundance in sample (i.e. mg/ml for protein)",
+          "example": 25
+        },
+        "PACKINGFRACTION": {
+          "type": "string",
+          "description": "Packing fraction of sample",
+          "example": 0.5
+        },
+        "ENERGY": {
+          "type": "string",
+          "description": "Energy in eV (for autocollect)",
+          "example": 12768
+        },
+        "LOOPTYPE": {
+          "type": "string",
+          "description": "Loop type",
+          "example": "polymer"
+        },
+        "SHAPE": {
+          "type": "string",
+          "description": "Sample shape",
+          "example": "cubic"
+        }
+      },
+      "required": [
+        "CONTAINERID",
+        "PROTEINID",
+        "LOCATION",
+        "NAME"
+      ]
+    },
+    "Sample": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "BLSAMPLEID": {
+              "type": "string",
+              "description": "id",
+              "pattern": "\\d+",
+              "example": 2
+            },
+            "ACRONYM": {
+              "type": "string",
+              "description": "Protein acronym",
+              "example": "prot1"
+            },
+            "BLSUBSAMPLEID": {
+              "type": "string",
+              "description": "Parent subsample id",
+              "example": 1234
+            },
+            "CONTAINER": {
+              "type": "string",
+              "description": "Container name",
+              "example": "Container1"
+            },
+            "CONTAINERQUEUEID": {
+              "type": "string",
+              "description": "Container queue id if the container is queued",
+              "example": 123
+            },
+            "CRYSTAL": {
+              "type": "string",
+              "description": "Crystal name",
+              "example": "Crystal1"
+            },
+            "DEWAR": {
+              "type": "string",
+              "description": "Dewar name",
+              "example": "Dewar1"
+            },
+            "DEWARID": {
+              "type": "string",
+              "description": "Dewar id",
+              "example": 3123
+            },
+            "INSPECTIONS": {
+              "type": "string",
+              "description": "Number of inspections for the samples container",
+              "example": 12
+            },
+            "PROTEIN": {
+              "type": "string",
+              "description": "Protein acronym",
+              "example": "prot1"
+            },
+            "QUEUEDTIMESTAMP": {
+              "type": "string",
+              "description": "Timestamp the container was queued",
+              "example": "23-10-2019 23:45"
+            },
+            "RECORDTIMESTAMP": {
+              "type": "string",
+              "description": "Timestamp the sample was created",
+              "example": "24-10-2019"
+            },
+            "SHIPMENT": {
+              "type": "string",
+              "description": "Shipment name",
+              "example": "Shipment1"
+            },
+            "SHIPPINGID": {
+              "type": "string",
+              "description": "Shipment id",
+              "example": 32548
+            },
+            "SYMBOL": {
+              "type": "string",
+              "description": "Protein concentration symbol",
+              "example": "mg/ml"
+            },
+            "SCLOCATION": {
+              "type": "string",
+              "description": "Sample changer location for container",
+              "example": "3"
+            },
+            "REQUIREDRESOLUTION": {
+              "type": "string",
+              "description": "Required resolution (for autocollect)",
+              "example": 1.23
+            },
+            "R": {
+              "type": "string",
+              "description": "Number of times robot has loaded sample",
+              "example": 1
+            },
+            "SC": {
+              "type": "string",
+              "description": "Number of screenings",
+              "example": 1
+            },
+            "GR": {
+              "type": "string",
+              "description": "Number of grid scans",
+              "example": 0
+            },
+            "DC": {
+              "type": "string",
+              "description": "Number of data collections",
+              "example": 1
+            },
+            "AI": {
+              "type": "string",
+              "description": "Number of auto indexings",
+              "example": 4
+            },
+            "AP": {
+              "type": "string",
+              "description": "Number of auto integrations",
+              "example": 5
+            },
+            "SCCOMPLETENESS": {
+              "type": "string",
+              "description": "Best indexing completeness",
+              "example": null
+            },
+            "SCRESOLUTION": {
+              "type": "string",
+              "description": "Best indexing resolution",
+              "example": null
+            },
+            "DCCOMPLETENESS": {
+              "type": "string",
+              "description": "Best data collection completeness",
+              "example": 100
+            },
+            "DCRESOLUTION": {
+              "type": "string",
+              "description": "Best data collection resolution",
+              "example": 2.39
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "CONTAINERID": {
+              "type": "string",
+              "pattern": "\\d+",
+              "description": "Container id",
+              "example": 123
+            },
+            "PROTEINID": {
+              "type": "string",
+              "pattern": "\\d+",
+              "description": "Protein id",
+              "example": 123
+            },
+            "CRYSTALID": {
+              "type": "string",
+              "pattern": "\\d+",
+              "description": "Crystal id",
+              "example": 123
+            },
+            "LOCATION": {
+              "type": "string",
+              "pattern": "\\d+",
+              "description": "Numerical poisition of sample in container (<= container capacity, 1 offset)",
+              "example": "1"
+            },
+            "NAME": {
+              "type": "string",
+              "pattern": "[\\w\\s-()]+",
+              "description": "Sample name",
+              "example": "xtal4"
+            },
+            "COMMENTS": {
+              "type": "string",
+              "description": "Sample comments",
+              "example": "in 25% PEG4000 50um"
+            },
+            "SPACEGROUP": {
+              "type": "string",
+              "description": "Spacegroup",
+              "example": "P222"
+            },
+            "CODE": {
+              "type": "string",
+              "description": "Pin barcode",
+              "example": "FG5644"
+            },
+            "ANOMALOUSSCATTERER": {
+              "type": "string",
+              "description": "Potential anomalous scatterer",
+              "example": "Fe"
+            },
+            "CENTRINGMETHOD": {
+              "type": "string",
+              "description": "Centring method (for autocollect)",
+              "example": "xray"
+            },
+            "EXPERIMENTKIND": {
+              "type": "string",
+              "description": "Experiment type (for autocollect)",
+              "example": "SAD"
+            },
+            "RADIATIONSENSITIVITY": {
+              "type": "string",
+              "description": "Estimated radiation sensitivty (0-100, low to high)",
+              "example": 50
+            },
+            "SCREENCOMPONENTGROUPID": {
+              "type": "string",
+              "description": "Crystallisation screen component group id",
+              "example": 123
+            },
+            "CELL_A": {
+              "type": "string",
+              "description": "Unit cell a",
+              "example": 123.4
+            },
+            "CELL_ALPHA": {
+              "type": "string",
+              "description": "Unit cell alpha",
+              "example": 123.4
+            },
+            "CELL_B": {
+              "type": "string",
+              "description": "Unit cell b",
+              "example": 123.4
+            },
+            "CELL_BETA": {
+              "type": "string",
+              "description": "Unit cell beta",
+              "example": 123.4
+            },
+            "CELL_C": {
+              "type": "string",
+              "description": "Unit cell c",
+              "example": 123.4
+            },
+            "CELL_GAMMA": {
+              "type": "string",
+              "description": "Unit cell gamma",
+              "example": 123.4
+            },
+            "DIMENSION1": {
+              "type": "string",
+              "description": "First dimension of sample",
+              "example": 123
+            },
+            "DIMENSION2": {
+              "type": "string",
+              "description": "Second dimension of sample",
+              "example": 123
+            },
+            "DIMENSION3": {
+              "type": "string",
+              "description": "Third dimension of sample",
+              "example": 123
+            },
+            "THEORETICALDENSITY": {
+              "type": "string",
+              "description": "Theoretical density",
+              "example": 1243.3
+            },
+            "VOLUME": {
+              "type": "string",
+              "description": "Volume in microlitres for none crystal samples",
+              "example": 20
+            },
+            "ABUNDANCE": {
+              "type": "string",
+              "description": "Abundance in sample (i.e. mg/ml for protein)",
+              "example": 25
+            },
+            "PACKINGFRACTION": {
+              "type": "string",
+              "description": "Packing fraction of sample",
+              "example": 0.5
+            },
+            "ENERGY": {
+              "type": "string",
+              "description": "Energy in eV (for autocollect)",
+              "example": 12768
+            },
+            "LOOPTYPE": {
+              "type": "string",
+              "description": "Loop type",
+              "example": "polymer"
+            },
+            "SHAPE": {
+              "type": "string",
+              "description": "Sample shape",
+              "example": "cubic"
+            }
+          },
+          "required": [
+            "CONTAINERID",
+            "PROTEINID",
+            "LOCATION",
+            "NAME"
+          ]
+        }
+      ]
+    },
+    "ContactNew": {
+      "type": "object",
+      "properties": {
+        "CARDNAME": {
+          "type": "string",
+          "pattern": "([\\w\\s-])+",
+          "description": "Lab Card Name",
+          "example": "Card Name"
+        },
+        "GIVENNAME": {
+          "type": "string",
+          "pattern": "([\\w-])+",
+          "description": "First Name",
+          "example": "John"
+        },
+        "FAMILYNAME": {
+          "type": "string",
+          "pattern": "([\\w-])+",
+          "description": "Family Name",
+          "example": "Smith"
+        },
+        "PHONENUMBER": {
+          "type": "string",
+          "description": "Phone Number",
+          "example": "+33 1 23 45 67 89"
+        },
+        "EMAILADDRESS": {
+          "type": "string",
+          "description": "Email Address",
+          "example": "a@b.com"
+        },
+        "LABNAME": {
+          "type": "string",
+          "pattern": "([\\w\\s-])+",
+          "description": "Lab Name",
+          "example": "Lab Name"
+        },
+        "ADDRESS": {
+          "type": "string",
+          "pattern": "([\\w\\s-\\n])+",
+          "description": "Address",
+          "example": "123 Synchrotron Road\\nSynchrotron"
+        },
+        "CITY": {
+          "type": "string",
+          "pattern": "([\\w\\s-])+",
+          "description": "City",
+          "example": "City"
+        },
+        "POSTCODE": {
+          "type": "string",
+          "pattern": "([\\w\\s-])+",
+          "description": "Post Code",
+          "example": 12345
+        },
+        "COUNTRY": {
+          "type": "string",
+          "pattern": "([\\w\\s-,\\(\\)\\'])+",
+          "description": "Country",
+          "example": "United States"
+        },
+        "COURIERACCOUNT": {
+          "type": "string",
+          "pattern": "([\\w-])+",
+          "description": "Courier Account Number"
+        },
+        "BILLINGREFERENCE": {
+          "type": "string",
+          "pattern": "([\\w\\s-])+",
+          "description": "Billing Reference"
+        },
+        "DEFAULTCOURRIERCOMPANY": {
+          "type": "string",
+          "pattern": "([\\w\\s-])+",
+          "description": "Courier Company"
+        },
+        "DEWARAVGCUSTOMSVALUE": {
+          "type": "string",
+          "pattern": "\\d+",
+          "description": "Dewar Custom Value"
+        },
+        "DEWARAVGTRANSPORTVALUE": {
+          "type": "string",
+          "pattern": "\\d+",
+          "description": "Dewar Transport Value"
+        }
+      },
+      "required": [
+        "CARDNAME",
+        "FAMILYNAME",
+        "GIVENNAME",
+        "LABNAME",
+        "ADDRESS",
+        "CITY",
+        "COUNTRY",
+        "POSTCODE"
+      ]
+    },
+    "Contact": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "LABCONTACTID": {
+              "type": "string",
+              "description": "id",
+              "pattern": "\\d+",
+              "example": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "CARDNAME": {
+              "type": "string",
+              "pattern": "([\\w\\s-])+",
+              "description": "Lab Card Name",
+              "example": "Card Name"
+            },
+            "GIVENNAME": {
+              "type": "string",
+              "pattern": "([\\w-])+",
+              "description": "First Name",
+              "example": "John"
+            },
+            "FAMILYNAME": {
+              "type": "string",
+              "pattern": "([\\w-])+",
+              "description": "Family Name",
+              "example": "Smith"
+            },
+            "PHONENUMBER": {
+              "type": "string",
+              "description": "Phone Number",
+              "example": "+33 1 23 45 67 89"
+            },
+            "EMAILADDRESS": {
+              "type": "string",
+              "description": "Email Address",
+              "example": "a@b.com"
+            },
+            "LABNAME": {
+              "type": "string",
+              "pattern": "([\\w\\s-])+",
+              "description": "Lab Name",
+              "example": "Lab Name"
+            },
+            "ADDRESS": {
+              "type": "string",
+              "pattern": "([\\w\\s-\\n])+",
+              "description": "Address",
+              "example": "123 Synchrotron Road\\nSynchrotron"
+            },
+            "CITY": {
+              "type": "string",
+              "pattern": "([\\w\\s-])+",
+              "description": "City",
+              "example": "City"
+            },
+            "POSTCODE": {
+              "type": "string",
+              "pattern": "([\\w\\s-])+",
+              "description": "Post Code",
+              "example": 12345
+            },
+            "COUNTRY": {
+              "type": "string",
+              "pattern": "([\\w\\s-,\\(\\)\\'])+",
+              "description": "Country",
+              "example": "United States"
+            },
+            "COURIERACCOUNT": {
+              "type": "string",
+              "pattern": "([\\w-])+",
+              "description": "Courier Account Number"
+            },
+            "BILLINGREFERENCE": {
+              "type": "string",
+              "pattern": "([\\w\\s-])+",
+              "description": "Billing Reference"
+            },
+            "DEFAULTCOURRIERCOMPANY": {
+              "type": "string",
+              "pattern": "([\\w\\s-])+",
+              "description": "Courier Company"
+            },
+            "DEWARAVGCUSTOMSVALUE": {
+              "type": "string",
+              "pattern": "\\d+",
+              "description": "Dewar Custom Value"
+            },
+            "DEWARAVGTRANSPORTVALUE": {
+              "type": "string",
+              "pattern": "\\d+",
+              "description": "Dewar Transport Value"
+            }
+          },
+          "required": [
+            "CARDNAME",
+            "FAMILYNAME",
+            "GIVENNAME",
+            "LABNAME",
+            "ADDRESS",
+            "CITY",
+            "COUNTRY",
+            "POSTCODE"
+          ]
+        }
+      ]
+    },
+    "Shipment": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "SHIPPINGID": {
+              "type": "string",
+              "description": "Shipment id",
+              "example": 7275
+            },
+            "DCOUNT": {
+              "type": "string",
+              "description": "Dewar Count",
+              "example": 1
+            },
+            "LCOUT": {
+              "type": "string",
+              "description": "Lab Card Name sending the shipment",
+              "example": "Lab Card"
+            },
+            "LCRET": {
+              "type": "string",
+              "description": "Lab Card Name to return the shipment to",
+              "example": "Lab Card 2"
+            },
+            "SHIPPINGSTATUS": {
+              "type": "string",
+              "description": "Shipment Status / Location",
+              "example": "sent to DLS"
+            },
+            "CREATED": {
+              "type": "string",
+              "description": "Shipment creation date",
+              "example": "16-02-2016"
+            },
+            "ISSTORAGESHIPPING": {
+              "type": "string",
+              "description": "N/A",
+              "example": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "SHIPPINGNAME": {
+              "type": "string",
+              "description": "Shipment Name",
+              "example": "ship1",
+              "pattern": "([\\w\\s-])+"
+            },
+            "SENDINGLABCONTACTID": {
+              "type": "string",
+              "description": "Lab Contact id sending the shipment",
+              "example": 1050,
+              "pattern": "\\d+"
+            },
+            "RETURNLABCONTACTID": {
+              "type": "string",
+              "description": "Lab Contact id to return the shipment to",
+              "example": 1050,
+              "pattern": "\\d+"
+            },
+            "SAFETYLEVEL": {
+              "type": "string",
+              "description": "Safety Level",
+              "example": "Green",
+              "pattern": "\\w+",
+              "enum": [
+                "Green",
+                "Yellow",
+                "Red"
+              ]
+            },
+            "DELIVERYAGENT_AGENTNAME": {
+              "type": "string",
+              "description": "Courier Name",
+              "example": "dhl",
+              "pattern": "[\\s|\\w|-]+"
+            },
+            "DELIVERYAGENT_AGENTCODE": {
+              "type": "string",
+              "description": "Courier Acount Number",
+              "example": 124,
+              "pattern": "[\\w-]+"
+            },
+            "DELIVERYAGENT_SHIPPINGDATE": {
+              "type": "string",
+              "description": "Date to ship",
+              "example": "25-11-2016",
+              "pattern": "\\d+-\\d+-\\d+"
+            },
+            "DELIVERYAGENT_DELIVERYDATE": {
+              "type": "string",
+              "description": "Arrival date",
+              "example": "27-11-2016",
+              "pattern": "\\d+-\\d+-\\d+"
+            },
+            "COMMENTS": {
+              "type": "string",
+              "description": "Shipment Comments"
+            },
+            "PHYSICALLOCATION": {
+              "type": "string",
+              "description": "Pickup location of shipment (for DHL pickup)",
+              "example": "stores out",
+              "pattern": "[\\s|\\w|-]+"
+            },
+            "READYBYTIME": {
+              "type": "string",
+              "description": "Shipment ready by time (for DHL pickup)",
+              "example": 754,
+              "pattern": "\\d\\d:\\d\\d"
+            },
+            "CLOSETYPE": {
+              "type": "string",
+              "description": "Time when pickup location closes (for DHL pickup)",
+              "example": 754,
+              "pattern": "\\d\\d:\\d\\d"
+            }
+          },
+          "required": [
+            "SHIPPINGNAME",
+            "SAFETYLEVEL",
+            "SENDINGLABCONTACTID",
+            "RETURNLABCONTACTID"
+          ]
+        }
+      ]
+    },
+    "ShipmentNew": {
+      "type": "object",
+      "properties": {
+        "SHIPPINGNAME": {
+          "type": "string",
+          "description": "Shipment Name",
+          "example": "ship1",
+          "pattern": "([\\w\\s-])+"
+        },
+        "SENDINGLABCONTACTID": {
+          "type": "string",
+          "description": "Lab Contact id sending the shipment",
+          "example": 1050,
+          "pattern": "\\d+"
+        },
+        "RETURNLABCONTACTID": {
+          "type": "string",
+          "description": "Lab Contact id to return the shipment to",
+          "example": 1050,
+          "pattern": "\\d+"
+        },
+        "SAFETYLEVEL": {
+          "type": "string",
+          "description": "Safety Level",
+          "example": "Green",
+          "pattern": "\\w+",
+          "enum": [
+            "Green",
+            "Yellow",
+            "Red"
+          ]
+        },
+        "DELIVERYAGENT_AGENTNAME": {
+          "type": "string",
+          "description": "Courier Name",
+          "example": "dhl",
+          "pattern": "[\\s|\\w|-]+"
+        },
+        "DELIVERYAGENT_AGENTCODE": {
+          "type": "string",
+          "description": "Courier Acount Number",
+          "example": 124,
+          "pattern": "[\\w-]+"
+        },
+        "DELIVERYAGENT_SHIPPINGDATE": {
+          "type": "string",
+          "description": "Date to ship",
+          "example": "25-11-2016",
+          "pattern": "\\d+-\\d+-\\d+"
+        },
+        "DELIVERYAGENT_DELIVERYDATE": {
+          "type": "string",
+          "description": "Arrival date",
+          "example": "27-11-2016",
+          "pattern": "\\d+-\\d+-\\d+"
+        },
+        "COMMENTS": {
+          "type": "string",
+          "description": "Shipment Comments"
+        },
+        "PHYSICALLOCATION": {
+          "type": "string",
+          "description": "Pickup location of shipment (for DHL pickup)",
+          "example": "stores out",
+          "pattern": "[\\s|\\w|-]+"
+        },
+        "READYBYTIME": {
+          "type": "string",
+          "description": "Shipment ready by time (for DHL pickup)",
+          "example": 754,
+          "pattern": "\\d\\d:\\d\\d"
+        },
+        "CLOSETYPE": {
+          "type": "string",
+          "description": "Time when pickup location closes (for DHL pickup)",
+          "example": 754,
+          "pattern": "\\d\\d:\\d\\d"
+        }
+      },
+      "required": [
+        "SHIPPINGNAME",
+        "SAFETYLEVEL",
+        "SENDINGLABCONTACTID",
+        "RETURNLABCONTACTID"
+      ]
+    },
+    "DewarNew": {
+      "type": "object",
+      "properties": {
+        "SHIPPINGID": {
+          "type": "string",
+          "description": "Shippingid dewar belongs to",
+          "example": 7275,
+          "pattern": "\\d+"
+        },
+        "CODE": {
+          "type": "string",
+          "description": "Dewar name",
+          "example": "DLS-MX-1234",
+          "pattern": "([\\w-])+"
+        },
+        "TRACKINGNUMBERTOSYNCHROTRON": {
+          "type": "string",
+          "description": "Tracking number on route to facility",
+          "example": "AWB121342",
+          "pattern": "\\w+"
+        },
+        "TRACKINGNUMBERFROMSYNCHROTRON": {
+          "type": "string",
+          "description": "Tracking number from facility",
+          "example": "AWB121343",
+          "pattern": "\\w+"
+        },
+        "FACILITYCODE": {
+          "type": "string",
+          "description": "Unique identifier of this dewar (barcode at DLS)",
+          "example": "DLS-MX-1234",
+          "pattern": "([\\w-])+"
+        },
+        "FIRSTEXPERIMENTID": {
+          "type": "string",
+          "description": "First visit id",
+          "example": 55168,
+          "pattern": "\\d+"
+        }
+      },
+      "required": [
+        "SHIPPINGID",
+        "CODE"
+      ]
+    },
+    "Dewar": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "FIRSTEXPERIMENT": {
+              "type": "string",
+              "description": "First visit this dewar is scheduled on",
+              "example": "cm14451-2"
+            },
+            "LABCONTACTID": {
+              "type": "string",
+              "description": "Lab Contact id who owns this dewar (from FacilityCode)",
+              "example": 4323,
+              "pattern": "\\d+"
+            },
+            "LOCALCONTACT": {
+              "type": "string",
+              "description": "Local Contact of First Experiment",
+              "example": "Beamline Scientist"
+            },
+            "FIRSTEXPERIMENTST": {
+              "type": "string",
+              "description": "First visit start date",
+              "example": "09:00 11-03-2016"
+            },
+            "SHIPPINGNAME": {
+              "type": "string",
+              "description": "Shipment name",
+              "example": "ship1"
+            },
+            "CCOUNT": {
+              "type": "string",
+              "description": "Number of containers in this dewar",
+              "example": 4
+            },
+            "EXP": {
+              "type": "string",
+              "description": "Duplicate?",
+              "example": "cm14451-2"
+            },
+            "BARCODE": {
+              "type": "string",
+              "description": "Dewar shipment barcode",
+              "example": "cm14451-2-i03-0008624",
+              "pattern": "([\\w-])+"
+            },
+            "STORAGELOCATION": {
+              "type": "string",
+              "description": "Current storage location (unused?)"
+            },
+            "DEWARSTATUS": {
+              "type": "string",
+              "description": "Dewar status and / or location",
+              "example": "sent to DLS"
+            },
+            "DEWARID": {
+              "type": "string",
+              "description": "Dewar id",
+              "example": 8624
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "SHIPPINGID": {
+              "type": "string",
+              "description": "Shippingid dewar belongs to",
+              "example": 7275,
+              "pattern": "\\d+"
+            },
+            "CODE": {
+              "type": "string",
+              "description": "Dewar name",
+              "example": "DLS-MX-1234",
+              "pattern": "([\\w-])+"
+            },
+            "TRACKINGNUMBERTOSYNCHROTRON": {
+              "type": "string",
+              "description": "Tracking number on route to facility",
+              "example": "AWB121342",
+              "pattern": "\\w+"
+            },
+            "TRACKINGNUMBERFROMSYNCHROTRON": {
+              "type": "string",
+              "description": "Tracking number from facility",
+              "example": "AWB121343",
+              "pattern": "\\w+"
+            },
+            "FACILITYCODE": {
+              "type": "string",
+              "description": "Unique identifier of this dewar (barcode at DLS)",
+              "example": "DLS-MX-1234",
+              "pattern": "([\\w-])+"
+            },
+            "FIRSTEXPERIMENTID": {
+              "type": "string",
+              "description": "First visit id",
+              "example": 55168,
+              "pattern": "\\d+"
+            }
+          },
+          "required": [
+            "SHIPPINGID",
+            "CODE"
+          ]
+        }
+      ]
+    },
+    "DewarHistory": {
+      "type": "object",
+      "properties": {
+        "SHIPPINGID": {
+          "type": "string",
+          "description": "Shipping id the dewar belongs to",
+          "example": 7275
+        },
+        "SHIPMENT": {
+          "type": "string",
+          "description": "Shipment name",
+          "example": "ship1"
+        },
+        "VISIT": {
+          "type": "string",
+          "description": "Visit dewar belongs to",
+          "example": "cm14451-2"
+        },
+        "BL": {
+          "type": "string",
+          "description": "Beamline name for first visit dewar belongs to",
+          "example": "i03"
+        },
+        "LOCALCONTACT": {
+          "type": "string",
+          "description": "Local contact of first visit",
+          "example": "Beamline Scientist"
+        },
+        "DEWARID": {
+          "type": "string",
+          "description": "Dewarid for history entry",
+          "example": 8624
+        },
+        "DEWARSTATUS": {
+          "type": "string",
+          "description": "History dewar status",
+          "example": "sent to DLS"
+        },
+        "STORAGELOCATION": {
+          "type": "string",
+          "description": "History dewar location",
+          "example": "i03"
+        },
+        "ARRIVAL": {
+          "type": "string",
+          "description": "Date / time history entry took place",
+          "example": "16-02-2016 11:21"
+        }
+      }
+    },
+    "CreateDewarHistory": {
+      "type": "object",
+      "properties": {
+        "BARCODE": {
+          "type": "string",
+          "description": "Dewar barcode"
+        },
+        "LOCATION": {
+          "type": "string",
+          "description": "New dewar location"
+        }
+      },
+      "required": [
+        "BARCODE",
+        "LOCATION"
+      ]
+    },
+    "DewarRegistry": {
+      "type": "object",
+      "properties": {
+        "PROP": {
+          "type": "string",
+          "description": "Proposal dewar belongs to",
+          "example": "mx12579"
+        },
+        "FACILITYCODE": {
+          "type": "string",
+          "description": "Facility Code of dewar (unique identifier)",
+          "example": "DLS-MX-0928"
+        },
+        "PURCHASEDATE": {
+          "type": "string",
+          "description": "Purchase Date",
+          "example": "06-04-2015"
+        },
+        "AGE": {
+          "type": "string",
+          "description": "Age of dewar in months",
+          "example": 14.7
+        },
+        "LABCONTACTID": {
+          "type": "string",
+          "description": "Labcontact id that is responsible for dewar",
+          "example": 1052
+        },
+        "FAMILYNAME": {
+          "type": "string",
+          "description": "Labcontact Field",
+          "example": "Last"
+        },
+        "GIVENNAME": {
+          "type": "string",
+          "description": "Labcontact Field",
+          "example": "First"
+        },
+        "PHONENUMBER": {
+          "type": "string",
+          "description": "Labcontact Field",
+          "example": "01235 123456"
+        },
+        "EMAILADDRESS": {
+          "type": "string",
+          "description": "Labcontact Field",
+          "example": "abc@def.com"
+        },
+        "CARDNAME": {
+          "type": "string",
+          "description": "Labcontact Field",
+          "example": "Lab Card"
+        },
+        "LABNAME": {
+          "type": "string",
+          "description": "Labcontact Field",
+          "example": "Lab Name"
+        },
+        "ADDRESS": {
+          "type": "string",
+          "description": "Labcontact Field",
+          "example": "Lab Address"
+        },
+        "DEWARS": {
+          "type": "string",
+          "description": "Number of shipments this dewar has been used in",
+          "example": 1
+        }
+      },
+      "required": [
+        "LABCONTACTID",
+        "FACILITYCODE"
+      ]
+    },
+    "DewarReport": {
+      "type": "object",
+      "properties": {
+        "DEWARREPORTID": {
+          "type": "string",
+          "example": 234
+        },
+        "REPORT": {
+          "type": "string",
+          "example": "Broken vacuum"
+        },
+        "BLTIMESTAMP": {
+          "type": "string",
+          "example": "09:23:15 12-03-2016"
+        },
+        "ATTACHMENT": {
+          "type": "string",
+          "example": "/path/to/image.jpg"
+        }
+      }
+    },
+    "CreateDewarReport": {
+      "properties": {
+        "REPORT": {
+          "type": "string",
+          "example": "Broken vacuum"
+        },
+        "FACILITYCODE": {
+          "type": "string",
+          "example": "DLS-MX-1234"
+        },
+        "ATTACHMENT": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "REPORT",
+        "FACILITYCODE"
+      ]
+    },
+    "DewarTransfer": {
+      "type": "object",
+      "properties": {
+        "DEWARID": {
+          "type": "string"
+        }
+      }
+    },
+    "DewarDispatch": {
+      "type": "object",
+      "properties": {
+        "DEWARID": {
+          "type": "string"
+        }
+      }
+    },
+    "Container": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "CONTAINERID": {
+              "type": "string",
+              "description": "id",
+              "pattern": "\\d+",
+              "example": 2
+            },
+            "AGE": {
+              "type": "string",
+              "description": "Age of container in days from first container inspection",
+              "example": 4
+            },
+            "ALLOW_ADHOC": {
+              "type": "string",
+              "description": "If an adhoc imaging of this container is allowed",
+              "example": 1
+            },
+            "SCHEDULE": {
+              "type": "string",
+              "description": "The imaging schedule name",
+              "example": "fibbonaci"
+            },
+            "SCREEN": {
+              "type": "string",
+              "description": "Crystallisation screen name",
+              "example": "hampton crystal screen"
+            },
+            "IMAGERID": {
+              "type": "string",
+              "description": "Imager id",
+              "example": 2
+            },
+            "TEMPERATURE": {
+              "type": "string",
+              "description": "Storage temperature",
+              "example": 20
+            },
+            "IMAGER": {
+              "type": "string",
+              "description": "Imager name",
+              "example": "image 24c"
+            },
+            "LASTINSPECTION": {
+              "type": "string",
+              "description": "Last inspection timestamp",
+              "example": "12:35 24/10/2019"
+            },
+            "LASTINSPECTIONDAYS": {
+              "type": "string",
+              "description": "Last inspection in days since first inspection",
+              "example": 24
+            },
+            "INSPECTIONS": {
+              "type": "string",
+              "description": "Number of inspections",
+              "example": 5
+            },
+            "BLTIMESTAMP": {
+              "type": "string",
+              "description": "Timestamp container was created",
+              "example": "2019-10-24T11:50:16.000Z"
+            },
+            "SAMPLECHANGERLOCATION": {
+              "type": "string",
+              "description": "Location of container in sample changer",
+              "example": 4
+            },
+            "BEAMLINELOCATION": {
+              "type": "string",
+              "description": "Beamline container is currently located in",
+              "example": "i02"
+            },
+            "DEWARSTATUS": {
+              "type": "string",
+              "description": "Dewar status",
+              "example": "processing"
+            },
+            "CONTAINERSTATUS": {
+              "type": "string",
+              "description": "Current container status",
+              "example": "at facility"
+            },
+            "DEWAR": {
+              "type": "string",
+              "description": "Dewar Name",
+              "example": "Dewar1"
+            },
+            "SHIPMENT": {
+              "type": "string",
+              "description": "Shipment name",
+              "example": "Shipment1"
+            },
+            "SHIPPINGID": {
+              "type": "string",
+              "description": "Shipping id",
+              "example": 4566
+            },
+            "SAMPLES": {
+              "type": "string",
+              "description": "Number of samples in container",
+              "example": 11
+            },
+            "CONTAINERQUEUEID": {
+              "type": "string",
+              "description": "Container queue id",
+              "example": 35
+            },
+            "QUEUEDTIMESTAMP": {
+              "type": "string",
+              "description": "Timestamp container was queued",
+              "example": "24-10-2019 11:43"
+            },
+            "VISIT": {
+              "type": "string",
+              "description": "Visit the container belongs to (for vmxi only)",
+              "example": "mx12345-5"
+            },
+            "BEAMLINENAME": {
+              "type": "string",
+              "description": "Beamline name of the registered session (for vmxi only)",
+              "example": null
+            },
+            "REQUESTEDRETURN": {
+              "type": "string",
+              "description": "If a return has been requested for this dewar",
+              "example": 0
+            },
+            "REQUESTEDIMAGER": {
+              "type": "string",
+              "description": "Requested imager name",
+              "example": "Imager1"
+            },
+            "REGISTRY": {
+              "type": "string",
+              "description": "Container registry barcode",
+              "example": "Container1"
+            },
+            "CONTAINERREGISTRYID": {
+              "type": "string",
+              "description": "Container registry id",
+              "example": 123
+            },
+            "SUBSAMPLES": {
+              "type": "string",
+              "description": "Number of sub samples in the container",
+              "example": 124
+            },
+            "FIRSTEXPERIMENTBEAMLINE": {
+              "type": "string",
+              "description": "Beamline for first experiment defined from dewar",
+              "example": "i03"
+            },
+            "LASTQUEUECOMPLETED": {
+              "type": "string",
+              "description": "Time the last queue was completed",
+              "example": "12:23 23-10-2019"
+            },
+            "LASTQUEUEDWELL": {
+              "type": "string",
+              "description": "Time container has been in queue in minutes",
+              "example": 54
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "NAME": {
+              "type": "string",
+              "description": "Container name",
+              "example": "Container1",
+              "pattern": "([\\w-])+"
+            },
+            "CONTAINERTYPE": {
+              "type": "string",
+              "description": "Type of container",
+              "example": "Puck",
+              "pattern": "\\w+"
+            },
+            "DEWARID": {
+              "type": "string",
+              "description": "Dewar id",
+              "pattern": "\\d+",
+              "example": 3456
+            },
+            "CAPACITY": {
+              "type": "string",
+              "description": "Container sample capacity",
+              "pattern": "\\d+",
+              "example": 16
+            },
+            "SCHEDULEID": {
+              "type": "string",
+              "description": "Imaging schedule id",
+              "pattern": "\\d+",
+              "example": 1
+            },
+            "SCREENID": {
+              "type": "string",
+              "description": "Crystallisation screen id",
+              "pattern": "\\d+",
+              "example": 1
+            },
+            "PERSONID": {
+              "type": "string",
+              "description": "Owner of the container",
+              "pattern": "\\d+",
+              "example": 1
+            },
+            "REQUESTEDIMAGERID": {
+              "type": "string",
+              "description": "Requested imager id",
+              "pattern": "\\d+",
+              "example": 124
+            },
+            "COMMENTS": {
+              "type": "string",
+              "description": "Container comments",
+              "example": "container with the best crystals"
+            },
+            "BARCODE": {
+              "type": "string",
+              "description": "Container barcode",
+              "pattern": "([\\w-])+",
+              "example": "vmxi-124242342-2342"
+            },
+            "EXPERIMENTTYPE": {
+              "type": "string",
+              "description": "Requested experiment type for SAXS containers",
+              "enum": [
+                "HPLC",
+                "robot"
+              ],
+              "pattern": "\\w+",
+              "example": "HPLC"
+            },
+            "STORAGETEMPERATURE": {
+              "type": "string",
+              "description": "Requested storage temperature",
+              "pattern": "[\\w-]+",
+              "example": 24
+            }
+          },
+          "required": [
+            "DEWARID",
+            "NAME",
+            "CONTAINERTYPE"
+          ]
+        }
+      ]
+    },
+    "ContainerNew": {
+      "type": "object",
+      "properties": {
+        "NAME": {
+          "type": "string",
+          "description": "Container name",
+          "example": "Container1",
+          "pattern": "([\\w-])+"
+        },
+        "CONTAINERTYPE": {
+          "type": "string",
+          "description": "Type of container",
+          "example": "Puck",
+          "pattern": "\\w+"
+        },
+        "DEWARID": {
+          "type": "string",
+          "description": "Dewar id",
+          "pattern": "\\d+",
+          "example": 3456
+        },
+        "CAPACITY": {
+          "type": "string",
+          "description": "Container sample capacity",
+          "pattern": "\\d+",
+          "example": 16
+        },
+        "SCHEDULEID": {
+          "type": "string",
+          "description": "Imaging schedule id",
+          "pattern": "\\d+",
+          "example": 1
+        },
+        "SCREENID": {
+          "type": "string",
+          "description": "Crystallisation screen id",
+          "pattern": "\\d+",
+          "example": 1
+        },
+        "PERSONID": {
+          "type": "string",
+          "description": "Owner of the container",
+          "pattern": "\\d+",
+          "example": 1
+        },
+        "REQUESTEDIMAGERID": {
+          "type": "string",
+          "description": "Requested imager id",
+          "pattern": "\\d+",
+          "example": 124
+        },
+        "COMMENTS": {
+          "type": "string",
+          "description": "Container comments",
+          "example": "container with the best crystals"
+        },
+        "BARCODE": {
+          "type": "string",
+          "description": "Container barcode",
+          "pattern": "([\\w-])+",
+          "example": "vmxi-124242342-2342"
+        },
+        "EXPERIMENTTYPE": {
+          "type": "string",
+          "description": "Requested experiment type for SAXS containers",
+          "enum": [
+            "HPLC",
+            "robot"
+          ],
+          "pattern": "\\w+",
+          "example": "HPLC"
+        },
+        "STORAGETEMPERATURE": {
+          "type": "string",
+          "description": "Requested storage temperature",
+          "pattern": "[\\w-]+",
+          "example": 24
+        }
+      },
+      "required": [
+        "DEWARID",
+        "NAME",
+        "CONTAINERTYPE"
+      ]
+    },
+    "DataCollection": {
+      "type": "object",
+      "properties": {
+        "DCCC": {
+          "type": "string",
+          "description": "Comment count",
+          "example": 0
+        },
+        "DCC": {
+          "type": "string",
+          "description": "Data collection count (>1 = Data collection group)",
+          "example": 1
+        },
+        "SAMPLE": {
+          "type": "string",
+          "description": "Sample name",
+          "example": "thau1"
+        },
+        "BLSAMPLEID": {
+          "type": "string",
+          "description": "Sample id",
+          "example": 1234
+        },
+        "VN": {
+          "type": "string",
+          "description": "Visit Number",
+          "example": 2
+        },
+        "KAPPA": {
+          "type": "string",
+          "description": "Kappa Angle",
+          "example": 12.4
+        },
+        "PHI": {
+          "type": "string",
+          "description": "Phi Angle",
+          "example": 15.7
+        },
+        "SI": {
+          "type": "string",
+          "description": "Start image number",
+          "example": 1
+        },
+        "DCT": {
+          "type": "string",
+          "description": "Data collection type from ISPyB",
+          "example": "Data Collection",
+          "enum": [
+            "Grid Scan",
+            "Data Collection"
+          ]
+        },
+        "DCG": {
+          "type": "string",
+          "description": "Data collection group",
+          "example": 1145155
+        },
+        "RUNSTATUS": {
+          "type": "string",
+          "description": "Run Status",
+          "example": "DataCollection Successful"
+        },
+        "BSX": {
+          "type": "string",
+          "description": "Beam size x (um)",
+          "example": 40
+        },
+        "BSY": {
+          "type": "string",
+          "description": "Beam size y (um)",
+          "example": 30
+        },
+        "OVERLAP": {
+          "type": "string",
+          "description": "Axis overlap",
+          "example": 0
+        },
+        "FLUX": {
+          "type": "string",
+          "description": "Flux at sample",
+          "example": 12000000
+        },
+        "SCON": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "SPOS": {
+          "type": "string",
+          "description": "N/A",
+          "example": "a"
+        },
+        "SAN": {
+          "type": "string",
+          "description": "N/A",
+          "example": "a"
+        },
+        "TYPE": {
+          "type": "string",
+          "description": "Implied type (for ui)",
+          "example": "data",
+          "enum": [
+            "data",
+            "grid"
+          ]
+        },
+        "IMP": {
+          "type": "string",
+          "description": "Image Prefix",
+          "example": "X1_strong_M1S1"
+        },
+        "RUN": {
+          "type": "string",
+          "description": "Run number",
+          "example": 2
+        },
+        "FILETEMPLATE": {
+          "type": "string",
+          "description": "File template",
+          "example": "X1_strong_M1S1_2_####.cbf"
+        },
+        "ID": {
+          "type": "string",
+          "description": "Data collection id",
+          "example": 1158070
+        },
+        "NI": {
+          "type": "string",
+          "description": "Number of images",
+          "example": 900
+        },
+        "DIR": {
+          "type": "string",
+          "description": "Image directory",
+          "example": "tmp/2016-06-10/fake081440/"
+        },
+        "RESOLUTION": {
+          "type": "string",
+          "description": "Maximum resolution",
+          "example": 1.1
+        },
+        "EXPOSURETIME": {
+          "type": "string",
+          "description": "Exposure time (s)",
+          "example": 0.05
+        },
+        "AXISSTART": {
+          "type": "string",
+          "description": "Rotation axis start",
+          "example": 0
+        },
+        "NUMIMG": {
+          "type": "string",
+          "description": "Number of images (duplicate)",
+          "example": 900
+        },
+        "ST": {
+          "type": "string",
+          "description": "Start time",
+          "example": "10-06-2016 08:19:34"
+        },
+        "TRANSMISSION": {
+          "type": "string",
+          "description": "Transmission (%)",
+          "example": 39.96
+        },
+        "AXISRANGE": {
+          "type": "string",
+          "description": "Rotation axis oscilliation range",
+          "example": 0.2
+        },
+        "WAVELENGTH": {
+          "type": "string",
+          "description": "Wavelength",
+          "example": 0.9795
+        },
+        "COMMENTS": {
+          "type": "string",
+          "description": "Comment",
+          "example": "Simulated datacollection."
+        },
+        "EPK": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "EIN": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "X1": {
+          "type": "string",
+          "description": "Snapshot 1",
+          "example": "/path/fake081440/X1_strong_M1S1_3_0.0.png"
+        },
+        "X2": {
+          "type": "string",
+          "description": "Snapshot 2",
+          "example": "/path/fake081440/X1_strong_M1S1_3_90.0.png"
+        },
+        "X3": {
+          "type": "string",
+          "description": "Snapshot 3",
+          "example": "/path/fake081440/X1_strong_M1S1_3_180.0.png"
+        },
+        "X4": {
+          "type": "string",
+          "description": "Snapshot 4",
+          "example": "/path/fake081440/X1_strong_M1S1_3_270.0.png"
+        },
+        "STA": {
+          "type": "string",
+          "description": "Start time (duplicate)",
+          "example": "2016-06-10T08:19:34.000Z"
+        },
+        "DET": {
+          "type": "string",
+          "description": "Detector distance (mm)",
+          "example": 160
+        },
+        "XBEAM": {
+          "type": "string",
+          "description": "Beam centre x (mm)",
+          "example": 212.50999450684
+        },
+        "YBEAM": {
+          "type": "string",
+          "description": "Beam centre y (mm)",
+          "example": 219.97999572754
+        },
+        "SN": {
+          "type": "string",
+          "description": "Deprecated",
+          "example": 0
+        },
+        "DI": {
+          "type": "string",
+          "description": "Deprecated",
+          "example": 0
+        },
+        "DIRFULL": {
+          "type": "string",
+          "description": "Image directory (including visit path)",
+          "example": "/path/fake081440/"
+        }
+      }
+    },
+    "RobotAction": {
+      "type": "object",
+      "properties": {
+        "DCCC": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "DCC": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "SAMPLE": {
+          "type": "string",
+          "description": "Sample name",
+          "example": "therm2"
+        },
+        "BLSAMPLEID": {
+          "type": "string",
+          "description": "Sample id",
+          "example": 398812
+        },
+        "VN": {
+          "type": "string",
+          "description": "Visit number",
+          "example": 2
+        },
+        "KAPPA": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "PHI": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "SI": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "DCT": {
+          "type": "string",
+          "description": "N/A",
+          "example": "A"
+        },
+        "DCG": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "RUNSTATUS": {
+          "type": "string",
+          "description": "N/A",
+          "example": "A"
+        },
+        "BSX": {
+          "type": "string",
+          "description": "Loading time (s)",
+          "example": 41
+        },
+        "BSY": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "OVERLAP": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "FLUX": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "SCON": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "SPOS": {
+          "type": "string",
+          "description": "Sample changer status",
+          "example": "SUCCESS"
+        },
+        "SAN": {
+          "type": "string",
+          "description": "Sample changer message",
+          "example": "OK"
+        },
+        "TYPE": {
+          "type": "string",
+          "description": "Implied type (for ui)",
+          "example": "load",
+          "enum": [
+            "load"
+          ]
+        },
+        "IMP": {
+          "type": "string",
+          "description": "Robot action type",
+          "example": "UNLOAD",
+          "enum": [
+            "LOAD",
+            "UNLOAD"
+          ]
+        },
+        "RUN": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "FILETEMPLATE": {
+          "type": "string",
+          "description": "N/A",
+          "example": "A"
+        },
+        "ID": {
+          "type": "string",
+          "description": "Robot action id",
+          "example": 453813
+        },
+        "NI": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "DIR": {
+          "type": "string",
+          "description": "N/A"
+        },
+        "RESOLUTION": {
+          "type": "string",
+          "description": "Pin number",
+          "example": 10
+        },
+        "EXPOSURETIME": {
+          "type": "string",
+          "description": "Puck number",
+          "example": 29
+        },
+        "AXISSTART": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "NUMIMG": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "ST": {
+          "type": "string",
+          "description": "Action start time",
+          "example": "16-05-2016 11:48:45"
+        },
+        "TRANSMISSION": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "AXISRANGE": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "WAVELENGTH": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "COMMENTS": {
+          "type": "string",
+          "description": "N/A",
+          "example": "A"
+        },
+        "EPK": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "EIN": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "X1": {
+          "type": "string",
+          "description": "N/A",
+          "example": "A"
+        },
+        "X2": {
+          "type": "string",
+          "description": "N/A",
+          "example": "A"
+        },
+        "X3": {
+          "type": "string",
+          "description": "N/A",
+          "example": "A"
+        },
+        "X4": {
+          "type": "string",
+          "description": "N/A",
+          "example": "A"
+        },
+        "STA": {
+          "type": "string",
+          "description": "Start time (duplicate)",
+          "example": "2016-05-16T11:48:45.000Z"
+        },
+        "DET": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "XBEAM": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "YBEAM": {
+          "type": "string",
+          "description": "N/A",
+          "example": 1
+        },
+        "SN": {
+          "type": "string",
+          "description": "N/A",
+          "example": 0
+        },
+        "DI": {
+          "type": "string",
+          "description": "N/A",
+          "example": 0
+        }
+      }
+    },
+    "DataCollections": {
+      "type": "object",
+      "properties": {
+        "0": {
+          "type": "number",
+          "description": "Number of pages of events",
+          "example": 12
+        },
+        "1": {
+          "type": "array",
+          "description": "Array of beamline events",
+          "items": {
+            "$ref": "#/definitions/DataCollection"
+          }
+        }
+      }
+    },
+    "ImageStatus": {
+      "type": "object",
+      "properties": {
+        "0": {
+          "type": "integer",
+          "description": "Data collection id"
+        },
+        "1": {
+          "type": "object",
+          "properties": {
+            "0": {
+              "type": "integer",
+              "enum": [
+                1,
+                0
+              ],
+              "description": "Does diffraction image snapshot exist?"
+            },
+            "1": {
+              "type": "array",
+              "description": "IDs of snapshots that exist (0-3)",
+              "items": {
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              }
+            },
+            "2": {
+              "type": "number",
+              "description": "Does the first snapshot thumbnail exist?",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        }
+      },
+      "example": [
+        [
+          "12345",
+          [
+            1,
+            [
+              1,
+              1,
+              0,
+              0
+            ],
+            1,
+            []
+          ]
+        ]
+      ]
+    },
+    "APStatus": {
+      "type": "object",
+      "properties": {
+        "0": {
+          "type": "integer",
+          "description": "Data collection id"
+        },
+        "1": {
+          "type": "object",
+          "description": "Processing types",
+          "properties": {
+            "screening": {
+              "type": "object",
+              "properties": {
+                "EDNA": {
+                  "type": "integer",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "example": [
+        [
+          "12345",
+          {
+            "screening": {
+              "Mosflm": 3,
+              "EDNA": 3
+            },
+            "autoproc": {
+              "Fast DP": 0,
+              "Xia2/3dii": 0,
+              "DIALS": 0,
+              "Xia2/Multiplex": 0,
+              "autoPROC": 0
+            },
+            "downstream": {
+              "Fast EP": 0,
+              "Dimple": 0,
+              "MrBUMP": 0,
+              "Big EP/XDS": 0,
+              "Big EP/DIALS": 0
+            },
+            "XrayCentring": 0
+          }
+        ],
+        [
+          "12346",
+          {
+            "screening": {
+              "Mosflm": 2,
+              "EDNA": 2
+            },
+            "autoproc": {
+              "Fast DP": 0,
+              "Xia2/3dii": 0,
+              "DIALS": 0,
+              "Xia2/Multiplex": 0,
+              "autoPROC": 0
+            },
+            "downstream": {
+              "Fast EP": 0,
+              "Dimple": 0,
+              "MrBUMP": 0,
+              "Big EP/XDS": 0,
+              "Big EP/DIALS": 0
+            },
+            "XrayCentring": 0
+          }
+        ]
+      ]
+    },
+    "GridInfo": {
+      "type": "object",
+      "properties": {
+        "DATACOLLECTIONGROUPID": {
+          "type": "string",
+          "description": "Data collection group id",
+          "example": 1169392
+        },
+        "DATACOLLECTIONID": {
+          "type": "string",
+          "description": "Data collection id",
+          "example": 1183300
+        },
+        "AXISSTART": {
+          "type": "string",
+          "description": "Rotation axis start",
+          "example": 240.00004577637
+        },
+        "X": {
+          "type": "string",
+          "description": "Goniometer x (um)",
+          "example": -221.238143
+        },
+        "Y": {
+          "type": "string",
+          "description": "Goniometer y (um)",
+          "example": -469.7066
+        },
+        "Z": {
+          "type": "string",
+          "description": "Goniometer z (um)",
+          "example": 43.905307
+        },
+        "DX_MM": {
+          "type": "string",
+          "description": "Step width (dx) x (mm)",
+          "example": 0.043124
+        },
+        "DY_MM": {
+          "type": "string",
+          "description": "Step height (dy) y (mm)",
+          "example": 0.043124
+        },
+        "STEPS_X": {
+          "type": "string",
+          "description": "Number of steps in x",
+          "example": 15
+        },
+        "STEPS_Y": {
+          "type": "string",
+          "description": "Number of steps in x",
+          "example": 10
+        },
+        "PIXELSPERMICRONX": {
+          "type": "string",
+          "description": "Pixels per micron in x for snapshot",
+          "example": 1.2200000286102
+        },
+        "PIXELSPERMICRONY": {
+          "type": "string",
+          "description": "Pixels per micron in y for snapshot",
+          "example": 1.1900000572205
+        },
+        "SNAPSHOT_OFFSETXPIXEL": {
+          "type": "string",
+          "description": "Offset x from top corner of snapshot that grid scan started (pixels)",
+          "example": 241.36065673828
+        },
+        "SNAPSHOT_OFFSETYPIXEL": {
+          "type": "string",
+          "description": "Offset y from top corner of snapshot that grid scan started (pixels)",
+          "example": 107.72268676758
+        },
+        "ORIENTATION": {
+          "type": "string",
+          "description": "Orientation of grid scan, whether it is rastered vertically or horizontally",
+          "example": "horizontal",
+          "enum": [
+            "horizontal",
+            "vertical"
+          ]
+        }
+      }
+    },
+    "DataCollectionComment": {
+      "type": "object",
+      "properties": {
+        "DATACOLLECTIONCOMMENTID": {
+          "type": "number"
+        }
+      }
+    },
+    "Strategies": {
+      "type": "object",
+      "properties": {
+        "0": {
+          "type": "number",
+          "description": "Number of strategies"
+        },
+        "1": {
+          "type": "object",
+          "title": "Strategy Types",
+          "properties": {
+            "EDNA": {
+              "type": "object",
+              "title": "Strategy Type",
+              "properties": {
+                "CELL": {
+                  "type": "object",
+                  "title": "Unit Cell",
+                  "properties": {
+                    "A": {
+                      "type": "string",
+                      "description": "Unit cell A",
+                      "example": 112.09
+                    },
+                    "B": {
+                      "type": "string",
+                      "description": "Unit cell b",
+                      "example": 112.09
+                    },
+                    "C": {
+                      "type": "string",
+                      "description": "Unit cell c",
+                      "example": 218.14
+                    },
+                    "AL": {
+                      "type": "string",
+                      "description": "Unit cell alpha",
+                      "example": 90
+                    },
+                    "BE": {
+                      "type": "string",
+                      "description": "Unit cell beta",
+                      "example": 90
+                    },
+                    "GA": {
+                      "type": "string",
+                      "description": "Unit cell gamma",
+                      "example": 90
+                    },
+                    "SG": {
+                      "type": "string",
+                      "description": "Space group",
+                      "example": "P4"
+                    }
+                  }
+                },
+                "STRATS": {
+                  "type": "array",
+                  "title": "Strategies",
+                  "items": {
+                    "type": "object",
+                    "title": "Strategy",
+                    "properties": {
+                      "WEDGENUMBER": {
+                        "type": "string",
+                        "description": "Strategy wedge number",
+                        "example": 1
+                      },
+                      "SUBWEDGENUMBER": {
+                        "type": "string",
+                        "description": "Strategy sub-wedge number",
+                        "example": 1
+                      },
+                      "KAPPA": {
+                        "type": "string",
+                        "description": "Kappa angle",
+                        "example": 13.2
+                      },
+                      "PHI": {
+                        "type": "string",
+                        "description": "Phi angle",
+                        "example": 43.5
+                      },
+                      "DCID": {
+                        "type": "string",
+                        "description": "Data collection id",
+                        "example": 1186564
+                      },
+                      "COMMENTS": {
+                        "type": "string",
+                        "description": "Strategy comments",
+                        "example": "Standard Native Dataset Multiplicity=3 I/sig=2 Maxlifespan=200 s"
+                      },
+                      "DCTRN": {
+                        "type": "string",
+                        "description": "Data collection transmission",
+                        "example": 100
+                      },
+                      "LAM": {
+                        "type": "string",
+                        "description": "Wavelength (ang)",
+                        "example": 0.9794989824295
+                      },
+                      "IMD": {
+                        "type": "string",
+                        "description": "Image Directory",
+                        "example": "/path/screening/sbma2/14/"
+                      },
+                      "IMP": {
+                        "type": "string",
+                        "description": "Image Prefix",
+                        "example": 14
+                      },
+                      "DCC": {
+                        "type": "string",
+                        "description": "Data collection comments",
+                        "example": "(-206,124,765) Aperture: Large"
+                      },
+                      "SID": {
+                        "type": "string",
+                        "description": "Sample id",
+                        "example": 511396
+                      },
+                      "COM": {
+                        "type": "string",
+                        "description": "Strategy short comments",
+                        "example": "Strategy1 Wedge1"
+                      },
+                      "ST": {
+                        "type": "string",
+                        "description": "Rotation axis start",
+                        "example": 99
+                      },
+                      "TIME": {
+                        "type": "string",
+                        "description": "Exposure time (s)",
+                        "example": 0.099
+                      },
+                      "TRAN": {
+                        "type": "string",
+                        "description": "Relative transmission (%) cf. DCTRN",
+                        "example": 100
+                      },
+                      "OSCRAN": {
+                        "type": "string",
+                        "description": "Rotation axis oscillation range",
+                        "example": 0.1
+                      },
+                      "RES": {
+                        "type": "string",
+                        "description": "Strategy resolution",
+                        "example": 6.07
+                      },
+                      "NIMG": {
+                        "type": "string",
+                        "description": "Strategy number of images",
+                        "example": 1270
+                      },
+                      "VPATH": {
+                        "type": "string",
+                        "description": "Visit path",
+                        "example": "/path/mx10136-30"
+                      },
+                      "BL": {
+                        "type": "string",
+                        "description": "Beamline name",
+                        "example": "i04"
+                      },
+                      "DIST": {
+                        "type": "string",
+                        "description": "Strategy detector distance (mm)",
+                        "example": "1,273.30"
+                      },
+                      "ATRAN": {
+                        "type": "string",
+                        "description": "Strategy absolute transmission",
+                        "example": 100
+                      },
+                      "NEXP": {
+                        "type": "string",
+                        "description": "Normalised exposure (to maximise frame rate)",
+                        "example": 0.099
+                      },
+                      "NTRAN": {
+                        "type": "string",
+                        "description": "Normalised tramission (to maximise frame rate)",
+                        "example": 100
+                      },
+                      "AP": {
+                        "type": "string",
+                        "description": "Aperture used",
+                        "example": "LARGE_APERTURE"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "3": {
+          "type": "array",
+          "title": "XOAlign Strategies",
+          "description": "XOAlign Kappa strategies",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "example": [
+        10,
+        {
+          "Stepped transmission 1": {
+            "CELL": {
+              "A": "92.82",
+              "B": "92.82",
+              "C": "128.24",
+              "AL": "90.00",
+              "BE": "90.00",
+              "GA": "120.00",
+              "SG": "P3"
+            },
+            "STRATS": [
+              {
+                "PROGRAMVERSION": "Stepped transmission 1",
+                "RANKRES": "0.00",
+                "WEDGENUMBER": "1",
+                "SUBWEDGENUMBER": "1",
+                "CHI": null,
+                "KAPPA": null,
+                "PHI": null,
+                "DCID": "4247674",
+                "COMMENTS": "Stepped transmission 1",
+                "DCTRN": "100",
+                "LAM": "0.97625",
+                "IMD": "path/Thermo/I23_tp2_1/",
+                "IMP": "I23_tp2_1",
+                "DCC": "(3,246,-40) Xray centring boxes: ['27.3s (0s)', 168, '22.2s (0s)', 40]. Aperture: Large",
+                "SID": "2609548",
+                "COM": "",
+                "ST": "0",
+                "TIME": "0.010",
+                "TRAN": "2.6",
+                "OSCRAN": "0.10",
+                "RES": "2.00",
+                "NIMG": "3600",
+                "NUMBEROFPIXELSX": null,
+                "DETECTORPIXELSIZEHORIZONTAL": null,
+                "VPATH": "/visit/path",
+                "BL": "i03",
+                "DIST": "386.13",
+                "ATRAN": 2.6,
+                "NEXP": "0.010",
+                "NTRAN": 2.6,
+                "AP": "LARGE_APERTURE"
+              },
+              {
+                "PROGRAMVERSION": "Stepped transmission 1",
+                "RANKRES": "0.00",
+                "WEDGENUMBER": "2",
+                "SUBWEDGENUMBER": "1",
+                "CHI": null,
+                "KAPPA": null,
+                "PHI": null,
+                "DCID": "4247674",
+                "COMMENTS": "Stepped transmission 1",
+                "DCTRN": "100",
+                "LAM": "0.97625",
+                "IMD": "path/Thermo/I23_tp2_1/",
+                "IMP": "I23_tp2_1",
+                "DCC": "(3,246,-40) Xray centring boxes: ['27.3s (0s)', 168, '22.2s (0s)', 40]. Aperture: Large",
+                "SID": "2609548",
+                "COM": "",
+                "ST": "0",
+                "TIME": "0.010",
+                "TRAN": "5.2",
+                "OSCRAN": "0.10",
+                "RES": "2.00",
+                "NIMG": "3600",
+                "NUMBEROFPIXELSX": null,
+                "DETECTORPIXELSIZEHORIZONTAL": null,
+                "VPATH": "/visit/path",
+                "BL": "i03",
+                "DIST": "386.13",
+                "ATRAN": 5.2,
+                "NEXP": "0.010",
+                "NTRAN": 5.2,
+                "AP": "LARGE_APERTURE"
+              }
+            ]
+          },
+          "dials.align_crystal": {
+            "CELL": [],
+            "STRATS": [
+              {
+                "PROGRAMVERSION": "dials.align_crystal",
+                "RANKRES": null,
+                "WEDGENUMBER": "1",
+                "SUBWEDGENUMBER": null,
+                "CHI": "26.96",
+                "KAPPA": null,
+                "PHI": "309.67001",
+                "DCID": "4247674",
+                "COMMENTS": "a*",
+                "DCTRN": "100",
+                "LAM": "0.97625",
+                "IMD": "path/Thermo/I23_tp2_1/",
+                "IMP": "I23_tp2_1",
+                "DCC": "(3,246,-40) Xray centring boxes: ['27.3s (0s)', 168, '22.2s (0s)', 40]. Aperture: Large",
+                "SID": "2609548",
+                "SG": "P 3",
+                "A": "92.89771",
+                "B": "92.89771",
+                "C": "128.63365",
+                "AL": "90",
+                "BE": "90",
+                "GA": "120",
+                "COM": "dials.align_crystal  Wedge1",
+                "ST": null,
+                "TIME": null,
+                "TRAN": null,
+                "OSCRAN": null,
+                "RES": null,
+                "NIMG": null,
+                "NUMBEROFPIXELSX": null,
+                "DETECTORPIXELSIZEHORIZONTAL": null
+              }
+            ]
+          },
+          "mosflm": {
+            "CELL": {
+              "A": "92.82",
+              "B": "92.82",
+              "C": "128.24",
+              "AL": "90.00",
+              "BE": "90.00",
+              "GA": "120.00",
+              "SG": "P3"
+            },
+            "STRATS": [
+              {
+                "PROGRAMVERSION": "mosflm",
+                "RANKRES": "0.00",
+                "WEDGENUMBER": "1",
+                "SUBWEDGENUMBER": "1",
+                "CHI": null,
+                "KAPPA": null,
+                "PHI": null,
+                "DCID": "4247674",
+                "COMMENTS": null,
+                "DCTRN": "100",
+                "LAM": "0.97625",
+                "IMD": "path/Thermo/I23_tp2_1/",
+                "IMP": "I23_tp2_1",
+                "DCC": "(3,246,-40) Xray centring boxes: ['27.3s (0s)', 168, '22.2s (0s)', 40]. Aperture: Large",
+                "SID": "2609548",
+                "COM": "MOSFLM anomalous Wedge1",
+                "ST": "148",
+                "TIME": "0.000",
+                "TRAN": "0.0",
+                "OSCRAN": "0.80",
+                "RES": "1.97",
+                "NIMG": "113",
+                "NUMBEROFPIXELSX": null,
+                "DETECTORPIXELSIZEHORIZONTAL": null,
+                "VPATH": "/visit/path",
+                "BL": "i03",
+                "DIST": "379.13",
+                "ATRAN": 0,
+                "NEXP": "0.000",
+                "NTRAN": 0,
+                "AP": "LARGE_APERTURE"
+              }
+            ]
+          },
+          "EDNA MXv1": {
+            "CELL": {
+              "A": "92.74",
+              "B": "92.74",
+              "C": "128.43",
+              "AL": "90.00",
+              "BE": "90.00",
+              "GA": "120.00",
+              "SG": "P3"
+            },
+            "STRATS": [
+              {
+                "PROGRAMVERSION": "EDNA MXv1",
+                "RANKRES": "1.50",
+                "WEDGENUMBER": "1",
+                "SUBWEDGENUMBER": "1",
+                "CHI": null,
+                "KAPPA": null,
+                "PHI": null,
+                "DCID": "4247674",
+                "COMMENTS": "Standard Native Dataset Multiplicity=3 I/sig=2 Maxlifespan=10.0 s",
+                "DCTRN": "100",
+                "LAM": "0.97625",
+                "IMD": "path/Thermo/I23_tp2_1/",
+                "IMP": "I23_tp2_1",
+                "DCC": "(3,246,-40) Xray centring boxes: ['27.3s (0s)', 168, '22.2s (0s)', 40]. Aperture: Large",
+                "SID": "2609548",
+                "COM": "Strategy1 Wedge1",
+                "ST": "21",
+                "TIME": "0.008",
+                "TRAN": "1.0",
+                "OSCRAN": "0.20",
+                "RES": "2.03",
+                "NIMG": "620",
+                "NUMBEROFPIXELSX": null,
+                "DETECTORPIXELSIZEHORIZONTAL": null,
+                "VPATH": "/visit/path",
+                "BL": "i03",
+                "DIST": "393.11",
+                "ATRAN": 1,
+                "NEXP": "0.008",
+                "NTRAN": 1,
+                "AP": "LARGE_APERTURE"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "parameters": {
+    "SearchParam": {
+      "name": "s",
+      "in": "query",
+      "type": "string",
+      "pattern": "[\\w\\s-]+",
+      "description": "Search string"
+    },
+    "PageNumberParam": {
+      "name": "page",
+      "in": "query",
+      "type": "number",
+      "description": "Results page number"
+    },
+    "PerPageParam": {
+      "name": "per_page",
+      "in": "query",
+      "type": "number",
+      "description": "Number of results to show per page"
+    },
+    "SortByParam": {
+      "name": "sort_by",
+      "in": "query",
+      "type": "string",
+      "description": "One of the object properties"
+    },
+    "SortOrderParam": {
+      "name": "order",
+      "in": "query",
+      "type": "string",
+      "enum": [
+        "ASC",
+        "DESC"
+      ],
+      "description": "Sort order"
+    },
+    "ProposalParam": {
+      "name": "prop",
+      "in": "query",
+      "type": "string",
+      "pattern": "\\w+\\d+",
+      "required": true,
+      "description": "Proposal"
+    },
+    "TypeParam": {
+      "name": "ty",
+      "in": "query",
+      "type": "string",
+      "required": true,
+      "description": "API type",
+      "enum": [
+        "mx",
+        "pow",
+        "tomo",
+        "saxs",
+        "sm",
+        "gen"
+      ]
+    },
+    "VisitParam": {
+      "name": "visit",
+      "type": "string",
+      "in": "query",
+      "pattern": "\\w+\\d+-\\d+",
+      "description": "Visit"
+    },
+    "BLParam": {
+      "name": "bl",
+      "type": "string",
+      "in": "query",
+      "pattern": "[\\w-]+",
+      "description": "Beamline"
+    },
+    "ShippingIDParam": {
+      "name": "shippingid",
+      "in": "path",
+      "type": "number",
+      "required": true,
+      "description": "Shipping id"
+    },
+    "ShippingIDQueryParam": {
+      "name": "shippingid",
+      "in": "query",
+      "type": "number",
+      "description": "Shipping id"
+    },
+    "DewarIDParam": {
+      "name": "dewarid",
+      "in": "path",
+      "type": "number",
+      "required": true,
+      "description": "Dewar id"
+    },
+    "FCParam": {
+      "name": "facilitycode",
+      "in": "path",
+      "type": "string",
+      "required": true,
+      "description": "Facility code"
+    },
+    "FCQueryParam": {
+      "name": "facilitycode",
+      "in": "query",
+      "type": "string",
+      "description": "Facility code"
+    },
+    "ImagerIDParam": {
+      "name": "iid",
+      "in": "query",
+      "type": "number",
+      "description": "Imager id"
+    },
+    "ContainerIDParam": {
+      "name": "containerid",
+      "in": "path",
+      "type": "number",
+      "required": true,
+      "description": "Container id"
+    },
+    "CIDParam": {
+      "name": "cid",
+      "in": "query",
+      "type": "number",
+      "description": "Container id"
+    },
+    "CacheNameParam": {
+      "name": "name",
+      "in": "path",
+      "type": "string",
+      "pattern": "\\w+",
+      "required": true,
+      "description": "Cache name"
+    },
+    "ProteinIDParam": {
+      "name": "pid",
+      "in": "query",
+      "type": "number",
+      "description": "Protein id"
+    },
+    "SampleIDParam": {
+      "name": "sid",
+      "in": "query",
+      "type": "number",
+      "description": "Sample id"
+    },
+    "ProjectIDParam": {
+      "name": "pjid",
+      "in": "query",
+      "type": "number",
+      "description": "Project id"
+    },
+    "ImplicitParam": {
+      "name": "imp",
+      "in": "query",
+      "description": "Show implicit project members",
+      "type": "number",
+      "enum": [
+        1
+      ]
+    },
+    "DCIDPathParam": {
+      "name": "id",
+      "in": "path",
+      "description": "Event id",
+      "type": "number",
+      "required": true
+    },
+    "DCIDQueryParam": {
+      "name": "id",
+      "in": "query",
+      "description": "Event id",
+      "type": "number"
+    },
+    "DCTypePathParam": {
+      "name": "type",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "pattern": "\\w+",
+      "enum": [
+        "dc",
+        "sc",
+        "fc",
+        "gr",
+        "edge",
+        "mca",
+        "rb",
+        "ac",
+        "flag",
+        "ap"
+      ]
+    },
+    "DCIDsBodyParam": {
+      "name": "body",
+      "in": "body",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "description": "Array of data collection ids",
+            "items": {
+              "type": "number"
+            }
+          },
+          "prop": {
+            "type": "string",
+            "description": "Proposal"
+          }
+        },
+        "required": [
+          "prop",
+          "ids"
+        ]
+      }
+    }
+  }
+}

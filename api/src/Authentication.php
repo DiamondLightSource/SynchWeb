@@ -56,17 +56,22 @@ class Authentication
 
 		    $need_auth = true;
 		    # Work around to allow beamline sample registration without CAS authentication
-		    if (sizeof($parts) >= 2) {
+		    if (sizeof($parts) >= 3) {
+		    	if (
+		            # Calendar ICS export
+		            ($parts[0] == 'cal' && $parts[1] == 'ics' && $parts[2] == 'h') || 
+
+		            # Container notification: allow beamlines running in automated mode to notify users
+		    		($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'notify' && in_array($_SERVER["REMOTE_ADDR"], $auto))
+		    	) {
+		    		$need_auth = false;
+		    	}
+
+		    } else if (sizeof($parts) >= 2) {
 		        if (
 		            # For use on the touchscreen computers in the hutch
 		            (($parts[0] == 'assign') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
 		            (($parts[0] == 'shipment' && $parts[1] == 'containers') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
-
-		            # Container notification
-		            ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'notify') || 
-
-		            # Calendar ICS export
-		            ($parts[0] == 'cal' && $parts[1] == 'ics' && $parts[2] == 'h') ||
 
 		            # Allow barcode reader unauthorised access, same as above, certain IPs only
 		            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
@@ -80,6 +85,7 @@ class Authentication
 		        ) {
 		            $need_auth = false;
 		        }
+
 		    }
 
 		    if (sizeof($parts) > 0) {

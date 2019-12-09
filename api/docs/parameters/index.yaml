@@ -1,0 +1,226 @@
+SearchParam:
+  name: s
+  in: query
+  type: string
+  pattern: '[\w\s-]+'
+  description: Search string
+
+PageNumberParam:
+  name: page
+  in: query
+  type: number
+  description: Results page number
+PerPageParam:
+  name: per_page
+  in: query
+  type: number
+  description: Number of results to show per page
+
+SortByParam:
+  name: sort_by
+  in: query
+  type: string
+  description: One of the object properties
+SortOrderParam:
+  name: order
+  in: query
+  type: string
+  enum: 
+    - ASC
+    - DESC
+  description: Sort order
+
+ProposalParam:
+  name: prop
+  in: query
+  type: string
+  pattern: '\w+\d+'
+  required: true
+  description: Proposal
+
+TypeParam:
+  name: ty
+  in: query
+  type: string
+  required: true
+  description: API type
+  enum:
+    - mx
+    - pow
+    - tomo
+    - saxs
+    - sm
+    - gen
+VisitParam:
+  name: visit
+  type: string
+  in: query
+  pattern: '\w+\d+-\d+'
+  description: Visit
+
+BLParam:
+  name: bl
+  type: string
+  in: query
+  pattern: '[\w-]+'
+  description: Beamline
+
+
+# Shipping
+
+ShippingIDParam:
+  name: shippingid
+  in: path
+  type: number
+  required: true
+  description: Shipping id
+
+ShippingIDQueryParam:
+  name: shippingid
+  in: query
+  type: number
+  description: Shipping id
+
+DewarIDParam:
+  name: dewarid
+  in: path
+  type: number
+  required: true
+  description: Dewar id
+
+FCParam:
+  name: facilitycode
+  in: path
+  type: string
+  required: true
+  description: Facility code
+
+FCQueryParam:
+  name: facilitycode
+  in: query
+  type: string
+  description: Facility code
+
+ImagerIDParam:
+  name: iid
+  in: query
+  type: number
+  description: Imager id
+
+ContainerIDParam:
+  name: containerid
+  in: path
+  type: number
+  required: true
+  description: Container id
+
+CIDParam:
+  name: cid
+  in: query
+  type: number
+  description: Container id
+
+CacheNameParam:
+  name: name
+  in: path
+  type: string
+  pattern: '\w+'
+  required: true
+  description: Cache name
+
+
+# Samples
+
+ProteinIDParam:
+  name: pid
+  in: query
+  type: number
+  description: Protein id
+
+SampleIDParam:
+  name: sid
+  in: query
+  type: number
+  description: Sample id
+
+ProjectIDParam:
+  name: pjid
+  in: query
+  type: number
+  description: Project id
+
+ImplicitParam:
+  name: imp
+  in: query
+  description: Show implicit project members
+  type: number
+  enum:
+    - 1
+
+# DCIDParam:
+#   name: id
+#   description: Event id
+#   type: number
+
+# DCIDPathParam:
+#   allOf:
+#     - $ref: '#/parameters/DCIDParam'
+#     - properties:
+#         in: path
+#         required: true
+
+# DCIDQueryParam:
+#   allOf:
+#     - $ref: '#/parameters/DCIDParam'
+#     - properties:
+#         in: query
+
+DCIDPathParam:
+  name: id
+  in: path
+  description: Event id
+  type: number
+  required: true
+DCIDQueryParam:
+  name: id
+  in: query
+  description: Event id
+  type: number
+
+
+DCTypePathParam:
+  name: type
+  in: path
+  required: true
+  type: string
+  pattern: '\w+'
+  enum:
+    - dc
+    - sc
+    - fc
+    - gr
+    - edge
+    - mca
+    - rb
+    - ac
+    - flag
+    - ap
+
+DCIDsBodyParam:
+  name: body
+  in: body
+  schema:
+    type: object
+    properties:
+      ids:
+        type: array
+        description: Array of data collection ids
+        items:
+          type: number
+      prop:
+        type: string
+        description: Proposal
+    required:
+      - prop
+      - ids
+

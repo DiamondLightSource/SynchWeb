@@ -1,0 +1,93 @@
+contact:
+  get:
+    security:
+      - Bearer: []
+    tags: ['contacts']
+    summary: Get a list of lab contacts
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/SearchParam'
+      - $ref: '#/parameters/SortByParam'
+      - $ref: '#/parameters/SortOrderParam'
+    responses:
+      200:
+        description: List of lab contacts
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Contact'
+
+  post:
+    security:
+      - Bearer: []
+    tags: ['contacts', 'create-shipment']
+    summary: Create a lab contact
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/ContactNew'
+    responses:
+      200:
+        description: Contact created
+        schema:
+          properties:
+            LABCONTACTID:
+              type: integer
+      400:
+        description: Missing contact field
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['contacts']
+    summary: Get a single lab contact
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: contactid
+        in: path
+        type: number
+        required: true
+    responses:
+      200:
+        description: A contact
+        schema:
+          $ref: '#/definitions/Contact'
+      400:
+        description: No such contact
+
+  patch:
+    security:
+      - Bearer: []
+    tags: ['contacts']
+    summary: Update a lab contact
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - name: contactid
+        in: path
+        type: number
+        required: true
+      - name: body
+        in: body
+        schema:
+          properties:
+            CARDNAME:
+              type: string
+              example: New Card Name
+    responses:
+      200:
+        description: Contact Updated
+        schema:
+          properties:
+            CARDNAME:
+              type: string
+              example: New Card Name

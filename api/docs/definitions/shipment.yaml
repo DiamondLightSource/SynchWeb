@@ -1,0 +1,33 @@
+allOf:
+  - type: object
+    properties:
+      SHIPPINGID:
+        type: string
+        description: Shipment id 
+        example: 7275
+      DCOUNT:
+        type: string
+        description: Dewar Count
+        example: 1
+      LCOUT:
+        type: string
+        description: Lab Card Name sending the shipment
+        example: Lab Card
+      LCRET:
+        type: string
+        description: Lab Card Name to return the shipment to
+        example: Lab Card 2
+      SHIPPINGSTATUS:
+        type: string
+        description: Shipment Status / Location
+        example: sent to DLS
+      CREATED:
+        type: string
+        description: Shipment creation date
+        example: 16-02-2016
+      ISSTORAGESHIPPING:
+        type: string
+        description: N/A
+        example: 0
+
+  - $ref: shipment-new.yaml

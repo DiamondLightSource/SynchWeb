@@ -1,0 +1,292 @@
+datacollections:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: List of beamline events (data collections)
+    description: |
+      Due to the way ISPyB was built this unions 4 separate tables, and therefore ID is not unique and must be used in conjunction with the t param to get a specific event
+      
+      Possible types 't' are
+      * `dc` Data collections
+      * `sc` Screenings
+      * `fc` Full data collections
+      * `gr` Grid scans
+      * `edge` Energy scans
+      * `mca` MCA Spectra
+      * `rb` Sample Changer Actions
+      * `ac` Other Sample Actions
+      * `flag` Flagged events
+      * `ap` Data collections that have been auto integrated
+    parameters:
+      - $ref: '#/parameters/PageNumberParam'
+      - $ref: '#/parameters/PerPageParam'
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/VisitParam'
+      - $ref: '#/parameters/SearchParam'
+      - $ref: '#/parameters/ProteinIDParam'
+      - $ref: '#/parameters/SampleIDParam'
+      - $ref: '#/parameters/ProjectIDParam'
+      - $ref: '#/parameters/ImplicitParam'
+      - name: t
+        in: query
+        type: string
+        pattern: '\w+'
+        enum:
+          - dc
+          - sc
+          - fc
+          - gr
+          - edge
+          - mca
+          - rb
+          - ac
+          - flag
+          - ap
+      - name: dcg
+        in: query
+        type: number
+        pattern: '\d+'
+        description: Show events in a group
+    responses:
+      200:
+        description: List of beamline events. Legacy format, to be converted
+        schema:
+          $ref: '#/definitions/DataCollections'
+
+single-array:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Get a particular data collection
+    description: Returns array
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: Array containing single data collection
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/DataCollections'
+
+single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Get a particular beamline event
+    description: Returns array
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+      - $ref: '#/parameters/DCTypePathParam'
+    responses:
+      200:
+        description: Array containing single beamline event
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/DataCollections'
+
+  patch:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Update a data collection
+    description: Used to update a comment on data collection, easily extendable to other properties
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+      - $ref: '#/parameters/DCTypePathParam'
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/DataCollection'
+
+    responses:
+      200:
+        description: Data collection updated
+        schema:
+          $ref: '#/definitions/DataCollection'
+
+
+check-images:
+  post:
+    security:
+      - Bearer: []
+    tags: ['datacollections-status']
+    summary: Check if snapshots and diffraction images thumbnails are on disk
+    parameters:
+      - $ref: '#/parameters/DCIDsBodyParam'
+    responses:
+      200:
+        description: List of data collections and flags indicating image statuses
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/ImageStatus'
+        # examples:
+        #   application/json:
+        #     [432, [1,[012], 1]]
+
+
+ap-statuses:
+  post:
+    security:
+      - Bearer: []
+    tags: ['datacollections-status']
+    summary: Get autoprocessing statuses for a number of data collections. 
+    description: This will be abstracted in due course and use a plugin architecture
+    parameters:
+      - $ref: '#/parameters/DCIDsBodyParam'
+    responses:
+      200:
+        description: |
+          Returns an array of the form [[dcid, { type: { program: status, ...}, ... }]
+          - Processing statuses:
+            * 0 = didnt run
+            * 1 = running
+            * 2 = success
+            * 3 = failed
+          - Processing Types:
+            * screening
+            * autoproc
+            * downstream
+
+          - Programs as defined from config
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/APStatus'
+
+iqi:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections-status']
+    summary: Get a series of image quality indicators for a data collection.
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: |
+          Returns an array of four arrays of 
+            [[image no, ...], [spots, ...], [bragg, ...], [res, ...], [signal, ...]]
+            * Image no.
+            * Number of spots found on image
+            * Number of bragg spots found
+            * Estimated maximum resolution
+            * Total integrated signal
+        schema:
+          type: array
+          minItems: 4
+          items:
+            type: array
+            items:
+              type: number
+          example: [[1,2,3],[400,432,675],[320,356,550],[1.34,2.1,1.7]]
+
+
+grid:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Get grid scan info for a grid scan data collection
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: Grid scan info
+        schema:
+          $ref: '#/definitions/GridInfo'
+
+edge:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Get a single energy scan
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: Energy scan info
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/EnergyScan'
+mca:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Get a single MCA
+    parameters:
+      - $ref: '#/parameters/DCIDPathParam'
+    responses:
+      200:
+        description: MCA info
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/MCA'
+
+
+comments:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Get a list of data collection comments
+    parameters:
+      - $ref: '#/parameters/DCIDQueryParam'
+    responses:
+      200:
+        description: List of data collection comments
+        schema:
+          properties:
+            total:
+              type: integer
+              description: total number of entries
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/DataCollectionComment'
+  post:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Create a data collection comment
+    parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/DataCollectionComment'
+    responses:
+      200:
+        description: Data collection comment created
+        schema:
+          type: object
+          properties:
+            DATACOLLECTIONCOMMENTID:
+              type: number
+              example: 593
+
+comments-single:
+  get:
+    security:
+      - Bearer: []
+    tags: ['datacollections']
+    summary: Get a single data collection comment
+    parameters:
+      - name: dccid
+        in: path
+        description: Data collection comment id
+        type: number
+        required: true
+    responses:
+      200:
+        description: Data collection comment
+        schema:
+          $ref: '#/definitions/DataCollectionComment'

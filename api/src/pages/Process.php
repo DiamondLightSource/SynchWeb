@@ -23,6 +23,8 @@ class Process extends Page
             'PARAMETERKEY' => '\w+',
             'PARAMETERVALUE' => '([\w-\.,])+',
 
+            'AUTOMATIC' => '\d',
+
             'RECIPE' => '([\w-])+',
 
             'ids' => '\d+', 
@@ -59,6 +61,8 @@ class Process extends Page
                 $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :".(sizeof($args)+1);
                 array_push($args, $this->arg('VISIT'));
             }
+
+            if (!$this->has_arg('AUTOMATIC')) $where .= " AND rp.automatic!=1";
 
 
             $tot = $this->db->pq("SELECT count(distinct rp.processingjobid) as tot, sum(IF(app.processingstatus IS NULL, 1, 0)) as running, sum(IF(app.autoprocprogramid IS NULL, 1, 0)) as waiting

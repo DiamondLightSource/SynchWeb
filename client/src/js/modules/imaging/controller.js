@@ -50,7 +50,7 @@ define(['marionette',
                 },
 
                 error: function() {
-                    app.message({ title: 'Couldnt load schedule list', message: 'Couldnt load schedule list please try again' })
+                    app.message({ title: 'Couldn\'t load schedule list', message: 'Couldn\'t load schedule list please try again' })
                 } 
             })
         },  
@@ -72,7 +72,7 @@ define(['marionette',
                 },
 
                 error: function() {
-                    app.message({ title: 'Couldnt load schedule', message: 'Couldnt load schedule please try again' })
+                    app.message({ title: 'Couldn\'t load schedule', message: 'Couldn\'t load schedule please try again' })
                 } 
             })
         },
@@ -91,7 +91,7 @@ define(['marionette',
                 },
 
                 error: function() {
-                    app.message({ title: 'Couldnt load screens list', message: 'Couldnt load screens list please try again' })
+                    app.message({ title: 'Couldn\'t load screens list', message: 'Couldn\'t load screens list please try again' })
                 } 
             })
         }, 
@@ -108,7 +108,7 @@ define(['marionette',
                 },
 
                 error: function() {
-                    app.message({ title: 'Couldnt load screen', message: 'Couldnt load screen please try again' })
+                    app.message({ title: 'Couldn\'t load screen', message: 'Couldn\'t load screen please try again' })
                 } 
             })
         },

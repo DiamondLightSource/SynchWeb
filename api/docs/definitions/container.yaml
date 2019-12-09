@@ -1,0 +1,135 @@
+allOf:
+  - type: object
+    properties:
+      CONTAINERID:
+        type: string
+        description: id
+        pattern: '\d+'
+        example: 2
+
+      AGE:
+        type: string
+        description: Age of container in days from first container inspection
+        example: 4
+      ALLOW_ADHOC:
+        type: string
+        description: If an adhoc imaging of this container is allowed 
+        example: 1
+      SCHEDULE:
+        type: string
+        description: The imaging schedule name
+        example: fibbonaci
+      SCREEN:
+        type: string
+        description: Crystallisation screen name
+        example: hampton crystal screen
+      IMAGERID:
+        type: string
+        description: Imager id
+        example: 2
+      TEMPERATURE:
+        type: string
+        description: Storage temperature
+        example: 20
+      IMAGER:
+        type: string
+        description: Imager name
+        example: image 24c
+      LASTINSPECTION:
+        type: string
+        description: Last inspection timestamp
+        example: 12:35 24/10/2019
+      LASTINSPECTIONDAYS:
+        type: string
+        description: Last inspection in days since first inspection
+        example: 24
+      INSPECTIONS:
+        type: string
+        description: Number of inspections
+        example: 5
+      BLTIMESTAMP:
+        type: string
+        description: Timestamp container was created
+        example: 2019-10-24 11:50:16
+      SAMPLECHANGERLOCATION:
+        type: string
+        description: Location of container in sample changer
+        example: 4
+      BEAMLINELOCATION:
+        type: string
+        description: Beamline container is currently located in
+        example: i02
+      DEWARSTATUS:
+        type: string
+        description: Dewar status
+        example: processing
+      CONTAINERSTATUS:
+        type: string
+        description: Current container status
+        example: at facility
+      DEWAR:
+        type: string
+        description: Dewar Name
+        example: Dewar1
+      SHIPMENT:
+        type: string
+        description: Shipment name
+        example: Shipment1
+      SHIPPINGID:
+        type: string
+        description: Shipping id
+        example: 4566
+      SAMPLES:
+        type: string
+        description: Number of samples in container
+        example: 11
+      CONTAINERQUEUEID:
+        type: string
+        description: Container queue id
+        example: 35
+      QUEUEDTIMESTAMP:
+        type: string
+        description: Timestamp container was queued
+        example: 24-10-2019 11:43
+      VISIT:
+        type: string
+        description: Visit the container belongs to (for vmxi only)
+        example: mx12345-5
+      BEAMLINENAME:
+        type: string
+        description: Beamline name of the registered session (for vmxi only)
+        example: null
+      REQUESTEDRETURN:
+        type: string
+        description: If a return has been requested for this dewar
+        example: 0
+      REQUESTEDIMAGER:
+        type: string
+        description: Requested imager name
+        example: Imager1
+      REGISTRY:
+        type: string
+        description: Container registry barcode
+        example: Container1
+      CONTAINERREGISTRYID:
+        type: string
+        description: Container registry id
+        example: 123
+      SUBSAMPLES:
+        type: string
+        description: Number of sub samples in the container
+        example: 124
+      FIRSTEXPERIMENTBEAMLINE:
+        type: string
+        description: Beamline for first experiment defined from dewar 
+        example: i03
+      LASTQUEUECOMPLETED:
+        type: string
+        description: Time the last queue was completed
+        example: 12:23 23-10-2019
+      LASTQUEUEDWELL:
+        type: string
+        description: Time container has been in queue in minutes
+        example: 54
+
+  - $ref: container-new.yaml

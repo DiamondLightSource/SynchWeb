@@ -1,0 +1,67 @@
+    <h1>Add New Visit</h1>
+
+    <form method="post">
+
+    <div class="form">
+        <ul>
+
+            <li class="clearfix">
+                <label>Proposal
+                    <span class="small">The proposal for this visit</span>
+                </label>
+                <div class="floated">
+                    <%-PROPOSAL%>
+                </div>
+            </li>
+
+            <li>
+                <label>Start Date
+                    <span class="small">Start date and time of the visit</span>
+                </label>
+                <input type="text" name="STARTDATE" />
+            </li>
+
+            <li>
+                <label>End Date
+                    <span class="small">End date and time of the visit</span>
+                </label>
+                <input type="text" name="ENDDATE" />
+            </li>
+
+            <li>
+                <label>Beamline
+                    <span class="small">Beamline where the visit will take place</span>
+                </label>
+                <input type="text" name="BEAMLINENAME" />
+            </li>
+
+            <li>
+                <label>Local Contact
+                    <span class="small">The local contact</span>
+                </label>
+                <input type="text" name="BEAMLINEOPERATOR" />
+            </li>
+
+            <li>
+                <label>Scheduled
+                    <span class="small">If the visit is considered a scheduled (not automated or continuously running visit). Unscheduled visits will be excluded from the calendar and overview</span>
+                </label>
+                <select name="SCHEDULED">
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </li>
+
+            <li>
+                <label>Beamline Setup
+                    <span class="small">The beamline setup to register this visit against</span>
+                </label>
+                <select name="BEAMLINESETUPID"></select>
+            </li>
+
+            <button name="submit" value="1" type="submit" class="button submit">Add Visit</button>
+
+        </ul>
+    </div>
+
+    </form>

@@ -1,0 +1,69 @@
+type: object
+properties:
+  NAME:
+    type: string
+    description: Container name
+    example: Container1
+    pattern: ([\w-])+
+  CONTAINERTYPE:
+    type: string
+    description: Type of container
+    example: Puck
+    pattern: \w+
+  DEWARID:
+    type: string
+    description: Dewar id
+    pattern: '\d+'
+    example: 3456
+  CAPACITY:
+    type: string
+    description: Container sample capacity
+    pattern: '\d+'
+    example: 16
+  SCHEDULEID:
+    type: string
+    description: Imaging schedule id
+    pattern: '\d+'
+    example: 1
+  SCREENID:
+    type: string
+    description: Crystallisation screen id
+    pattern: '\d+'
+    example: 1
+  PERSONID:
+    type: string
+    description: Owner of the container
+    pattern: '\d+'
+    example: 1
+  REQUESTEDIMAGERID:
+    type: string
+    description: Requested imager id
+    pattern: '\d+'
+    example: 124
+  COMMENTS:
+    type: string
+    description: Container comments 
+    example: container with the best crystals
+  BARCODE:
+    type: string
+    description: Container barcode
+    pattern: ([\w-])+
+    example: vmxi-124242342-2342
+  EXPERIMENTTYPE:
+    type: string
+    description: Requested experiment type for SAXS containers
+    enum:
+      - HPLC
+      - robot
+    pattern: \w+
+    example: HPLC
+  STORAGETEMPERATURE:
+    type: string
+    description: Requested storage temperature
+    pattern: '[\w-]+'
+    example: 24
+
+required:
+  - DEWARID
+  - NAME
+  - CONTAINERTYPE

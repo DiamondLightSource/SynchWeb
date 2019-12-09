@@ -1,0 +1,57 @@
+    type: object
+    properties:
+      ACTIVE:
+        type: string
+        description: Is the visit active
+        example: 0
+      CAMS:
+        type: string
+        description: Should we show webcams (30mins grace of start time)
+        example: 1
+      VISIT:
+        type: string
+        description: Visit string
+        example: mx1234-12
+      ST:
+        type: string
+        description: Start time
+        example: 10:00 05-10-2016
+      EN:
+        type: string
+        description: End time
+        example: 17:00 05-10-2016
+      STISO:
+        type: string
+        description: Start time in ISO8601
+        example: 2016-10-05T10:00:00
+      ENISO:
+        type: string
+        description: End time in ISO8601
+        example: 2016-10-05T17:00:00
+      SESSIONID:
+        type: string
+        description: Sessionid
+        example: 12
+      VIS:
+        type: string
+        description: Visit number
+        example: 12
+      BL:
+        type: string
+        description: Beamline
+        example: i02
+      LC:
+        type: string
+        description: Local contact
+        example: Beamline Scientist 1
+      COMMENTS:
+        type: string
+        description: Comments
+      DCCOUNT:
+        type: string
+        description: Data collection count
+        example: 243
+      TYPE:
+        type: string
+        description: Visit type, based on beamline
+        example: mx

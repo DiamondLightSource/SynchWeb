@@ -13,6 +13,12 @@
     <% } else { %>
 
     <p class="r downloads">
+        <% if (IMAGESWEEPCOUNT > 1) { %>
+        <a class="button" title="View Data Collections" href="/dc/pjid/<%=PROCESSINGJOBID%>">
+            <i class="fa fa-list"></i> <%=IMAGESWEEPCOUNT%> Data Sets
+        </a>
+        <% } %>
+
         <a class="plot button" href="#"><i class="fa fa-line-chart"></i> Plots</a>
         <a class="view button dll" href="<%-APIURL%>/download/id/<%-DCID%>/aid/<%-AID%>/archive/1"><i class="fa fa-archive"></i> Archive</a>
         <a class="apattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>

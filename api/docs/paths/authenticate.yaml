@@ -1,0 +1,40 @@
+login:
+  post:
+    tags: ['auth']
+    summary: Authenticate with api
+    description: Get a jwt for future authenticated requests
+    parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/LoginReq'
+    responses:
+      200:
+        description: Returns jwt token
+        schema:
+          $ref: '#/definitions/JWTResp'
+      400:
+        description: Invalid Credentials
+        
+check:
+  get:
+    tags: ['auth']
+    summary: Check for sso
+    description: Check for SSO login and return jwt
+    responses:
+      200:
+        description: Returns jwt token
+        schema:
+          $ref: '#/definitions/JWTResp'
+      400:
+        description: No valid existing session
+
+key:
+  get:
+    tags: ['auth']
+    summary: Get jwt private key
+    responses:
+      200:
+        description: Returns a base64 encoded 64bit hash
+        schema:
+          $ref: '#/definitions/JWTKey'

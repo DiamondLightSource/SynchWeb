@@ -403,7 +403,7 @@ define(['backbone',
             },
             error: function() {
                 app.bc.reset([bc, { title: 'Error' }])
-                app.message({ title: 'No dewars', message: 'Couldnt fetch dewar list'})
+                app.message({ title: 'No dewars', message: 'Couldn\'t fetch dewar list'})
             },
         })
     },

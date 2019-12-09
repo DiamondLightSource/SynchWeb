@@ -25,7 +25,7 @@ define(['backbone'], function(Backbone) {
 
         array: function(options) {
             var arr = []
-            if (options.none) arr.push(['-', ''])
+            if (options && options.none) arr.push(['-', ''])
 
             this.each(function(m) {
                 arr.push([m.get(this.keyAttribute), m.get(this.valueAttribute)])

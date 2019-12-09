@@ -1,0 +1,64 @@
+# User groups
+# /users/groups:
+#   get:
+#     security:
+#       - Bearer: []
+#     tags: ['users']
+#     description: Get a list of user groups
+#     responses:
+#       200:
+#         description: List of user groups
+#         schema:
+#           type: array
+#           items:
+#             $ref: '#/definitions/'
+
+#   post:
+#     security:
+#       - Bearer: []
+#     tags: ['users']
+#     description: Create a user group
+#     responses:
+#       200:
+#         description: User group created
+#         schema:
+#           type: array
+#           items:
+#             $ref: '#/definitions/'
+#         examples:
+#           application/json:
+#             a
+
+# /users/groups/{gid}:
+#   get:
+#     security:
+#       - Bearer: []
+#     tags: ['users']
+#     description: Get a single user group
+#     responses:
+#       200:
+#         description: A user group
+#         schema:
+#           type: array
+#           items:
+#             $ref: '#/definitions/'
+#         examples:
+#           application/json:
+#             a
+#       400:
+#         description: No such user group
+#   put:
+#     security:
+#       - Bearer: []
+#     tags: ['users']
+#     description: Update a user group (full)
+#     responses:
+#       200:
+#         description: User group updated
+#         schema:
+#           type: array
+#           items:
+#             $ref: '#/definitions/'
+#         examples:
+#           application/json:
+#             a

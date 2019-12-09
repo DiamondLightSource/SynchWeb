@@ -10,7 +10,6 @@ use xmlrpc_client;
 use xmlrpcmsg;
 use xmlrpcval;
 
-
 class Page
 {
         protected $app, $db, $user;
@@ -678,4 +677,30 @@ class Page
 
             return array('code' => $code, 'content' => $content);
         }
-}
+
+
+        # ------------------------------------------------------------------------
+        # Page start, end, order
+        function _get_start_end(&$args, $default=15) {
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : $default;
+            $start = 0;
+            $end = $pp;
+            
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+            
+            array_push($args, $start);
+            array_push($args, $end);
+        }
+
+        function _get_order($cols, $default) {
+            if ($this->has_arg('sort_by')) {
+                $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+                if (array_key_exists($this->arg('sort_by'), $cols)) return $cols[$this->arg('sort_by')].' '.$dir;
+            } else return $default;
+        }
+
+    }

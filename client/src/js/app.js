@@ -74,7 +74,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           success: function(config) {
               console.log('old', app.config.build, 'new', config.build)
               if (config.build != app.config.build) {
-                  app.alert({ message: 'An update to SynchWeb is available. This page will automatically refresh in 5 secods' })
+                  app.alert({ message: 'An update to SynchWeb is available. This page will automatically refresh in 5 seconds' })
                   setTimeout(function() {
                       window.location.reload()
                   }, 5000)
@@ -179,10 +179,10 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
     }
 
     if (xhr.status == 401) app.login(xhr)
-    if (xhr.status == 500) app.alert({ message: 'An application error has occured <pre>'+msg+'</pre>', persist: 'e500' })
+    if (xhr.status == 500) app.alert({ message: 'An application error has occurred <pre>'+msg+'</pre>', persist: 'e500' })
     if (xhr.status == 503) {
-        if (json) app.alert({ message: 'A database error has occured <pre>'+msg+'</pre>', persist: 'e503' })
-        else  app.alert({ message: 'A server error has occured <pre>'+msg+'</pre>', persist: 'e503' })
+        if (json) app.alert({ message: 'A database error has occurred <pre>'+msg+'</pre>', persist: 'e503' })
+        else  app.alert({ message: 'A server error has occurred <pre>'+msg+'</pre>', persist: 'e503' })
     }
   }, 300))
     

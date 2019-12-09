@@ -51,6 +51,7 @@ define(['marionette',
         ui: {
             ext: '.extrainfo',
             auto: '.auto',
+            extrastate: '.extra-state',
         },
 
         events: {
@@ -63,6 +64,8 @@ define(['marionette',
         toggleExtra: function (e) {
             e.preventDefault()
             this.table.currentView.toggleExtra()
+            this.table.currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
+                                                : this.ui.extrastate.addClass('fa-plus').removeClass('fa-minus')
         },
 
         createSamples: function() {

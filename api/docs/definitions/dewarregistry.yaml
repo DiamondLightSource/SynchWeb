@@ -1,0 +1,57 @@
+type: object
+properties:
+  PROP:
+    type: string
+    description: Proposal dewar belongs to
+    example: mx12579
+  FACILITYCODE:
+    type: string
+    description: Facility Code of dewar (unique identifier)
+    example: DLS-MX-0928
+  PURCHASEDATE:
+    type: string
+    description: Purchase Date
+    example: 06-04-2015
+  AGE:
+    type: string
+    description: Age of dewar in months
+    example: 14.7
+  LABCONTACTID:
+    type: string
+    description: Labcontact id that is responsible for dewar
+    example: 1052
+  FAMILYNAME:
+    type: string
+    description: Labcontact Field
+    example: Last
+  GIVENNAME:
+    type: string
+    description: Labcontact Field
+    example: First
+  PHONENUMBER:
+    type: string
+    description: Labcontact Field
+    example: 01235 123456
+  EMAILADDRESS:
+    type: string
+    description: Labcontact Field
+    example: abc@def.com
+  CARDNAME:
+    type: string
+    description: Labcontact Field
+    example: Lab Card
+  LABNAME:
+    type: string
+    description: Labcontact Field
+    example: Lab Name
+  ADDRESS:
+    type: string
+    description: Labcontact Field
+    example: Lab Address                     
+  DEWARS:
+    type: string
+    description: Number of shipments this dewar has been used in
+    example: 1
+required:
+  - LABCONTACTID
+  - FACILITYCODE
