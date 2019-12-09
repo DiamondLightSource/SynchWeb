@@ -7,10 +7,6 @@ use SynchWeb\Shipment\Couriers\DHL;
 use SynchWeb\Email;
 use SynchWeb\ImagingShared;
 
-<<<<<<< HEAD:api/src/pages/Shipment.php
-
-=======
->>>>>>> testing/integration:api/src/pages/Shipment.php
 class Shipment extends Page
 {
         
@@ -819,11 +815,7 @@ class Shipment extends Page
                 ));
 
             } else {
-<<<<<<< HEAD:api/src/pages/Shipment.php
                 $this->_output();
-=======
-                $this->_output(new stdClass);
->>>>>>> testing/integration:api/src/pages/Shipment.php
             }
         }
 
