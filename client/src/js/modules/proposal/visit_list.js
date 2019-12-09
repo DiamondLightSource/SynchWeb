@@ -1,9 +1,9 @@
-define(['marionette', 'views/table', 'collections/visits', 'utils/table',
+define(['marionette', 'backgrid', 'views/table', 'collections/visits', 'utils/table',
     'utils',
     'templates/proposal/visitlinks.html',
     'templates/types/saxs/proposal/visitlinks.html',
     
-    ], function(Marionette, TableView, Visits, table, utils, visitlinks, saxsvisitlinks) {
+    ], function(Marionette, Backgrid, TableView, Visits, table, utils, visitlinks, saxsvisitlinks) {
 
 
     var ClickableRow = table.ClickableRow.extend({

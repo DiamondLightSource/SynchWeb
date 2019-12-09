@@ -1,4 +1,5 @@
 define(['marionette', 'backbone',
+        'backgrid',
         'views/validatedrow',
         'utils/editable',
         'collections/users',
@@ -8,7 +9,7 @@ define(['marionette', 'backbone',
         'utils/table',
         'utils/kvcollection',
         'templates/admin/visitview.html'
-    ], function(Marionette, Backbone, ValidatedRow, Editable,
+    ], function(Marionette, Backbone, Backgrid, ValidatedRow, Editable,
         Users, BeamlineSetups, BeamCalendars, TableView, table, KVCollection, template) {
 
     var VisitUser = Backbone.Model.extend({
