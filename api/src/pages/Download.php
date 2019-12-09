@@ -53,6 +53,7 @@ class Download extends Page
                               array('/dc/id/:id', 'get', '_download'),
 
                               array('/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_autoproc_attachments'),
+                              array('/zocalo/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_zocalo_autoproc_attachments'),
                               array('/ph/attachments(/:PHASINGPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_phasing_attachments'),
             );
 
@@ -229,6 +230,44 @@ class Download extends Page
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                WHERE s.proposalid=:1 $where", $args);
+
+            // exit();
+            if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
+                if (!sizeof($rows)) $this->_error('No such attachment');
+                else  {
+                    if ($this->has_arg('download')) {
+                        $this->_get_file($rows[0]['AUTOPROCPROGRAMID'], $rows[0]);
+                    } else $this->_output($rows[0]);
+                }
+            } else $this->_output($rows);
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Return list of attachments for an autoproc run
+        function _get_zocalo_autoproc_attachments() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specific', 'No proposal specified');
+            
+            $args = array($this->proposalid);
+            $where = '';
+
+            if ($this->has_arg('AUTOPROCPROGRAMID')) {
+                $where .= ' AND app.autoprocprogramid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('AUTOPROCPROGRAMID'));
+            }
+
+            if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
+                $where .= ' AND appa.autoprocprogramattachmentid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('AUTOPROCPROGRAMATTACHMENTID'));
+            }
+
+            $rows = $this->db->pq("SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid, 'zocalo' as zocalo 
+                FROM processingjob pj 
+                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid 
+                INNER JOIN autoprocprogramattachment appa ON app.autoprocprogramid = appa.autoprocprogramid 
+                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid 
+                INNER JOIN blsession s on s.sessionid = dc.sessionid
                 WHERE s.proposalid=:1 $where", $args);
 
             // exit();

@@ -43,6 +43,7 @@ class DC extends Page
                               array('/dp/:id', 'get', '_dc_downstream'),
                               array('/strat/:id', 'get', '_dc_strategies'),
                               array('/ap/:id', 'get', '_dc_auto_processing'),
+                              array('/ap/zocalo/:id', 'get', '_dc_zocalo_auto_processing'),
                               array('/rd/aid/:aid/:id', 'get', '_rd'),
                               array('/single/t/:t/:id', 'patch', '_set_comment'),
                               array('/sym', 'get', '_get_symmetry'),
@@ -1078,6 +1079,43 @@ class DC extends Page
             }
             
             return $app;
+        }
+
+
+        # -----------------------------------------------------------------------
+        # Auto processing for zocalo data collection
+        function _dc_zocalo_auto_processing($id){
+            $rows = $this->db->pq('SELECT pj.processingjobid, pj.displayname, pj.recordTImestamp, pj.recipe, pj.comments, pj.datacollectionid, app.autoprocprogramid, app.processingCommandLine, app.processingPrograms, app.processingMessage, app.processingStartTime, app.processingEndTime, appa.autoprocprogramattachmentid, appa.filetype, appa.filename, appa.filepath, appa.recordtimestamp 
+                FROM processingjob pj 
+                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
+                LEFT OUTER JOIN autoprocprogramattachment appa ON app.autoprocprogramid = appa.autoprocprogramid
+                WHERE pj.datacollectionid = :1', array($id));
+
+            $output = array();
+            foreach($rows as &$r){
+                if(!array_key_exists($r['PROCESSINGJOBID'], $output))
+                    $output[$r['PROCESSINGJOBID']] = array('AUTOPROCPROGRAM' => array('AUTOPROCPROGRAMATTACHMENT' => array()));
+                
+                $output[$r['PROCESSINGJOBID']]['DISPLAYNAME'] = $r['DISPLAYNAME'];
+                $output[$r['PROCESSINGJOBID']]['RECIPE'] = $r['RECIPE'];
+                $output[$r['PROCESSINGJOBID']]['COMMENTS'] = $r['COMMENTS'];
+                $output[$r['PROCESSINGJOBID']]['DCID'] = $r['DATACOLLECTIONID'];
+                
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['AID'] = $r['AUTOPROCPROGRAMID'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['PROCESSINGPROGRAMS'] = $r['PROCESSINGPROGRAMS'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['PROCESSINGMESSAGE'] = $r['PROCESSINGMESSAGE'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['PROCESSINGSTARTTIME'] = $r['PROCESSINGSTARTTIME'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['PROCESSINGENDTIME'] = $r['PROCESSINGENDTIME'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['PROCESSINGCOMMANDLINE'] = $r['PROCESSINGCOMMANDLINE'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['PROCESSINGMESSAGE'] = $r['PROCESSINGMESSAGE'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['PROCESSINGCOMMANDLINE'] = $r['PROCESSINGCOMMANDLINE'];
+
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['AUTOPROCPROGRAMATTACHMENT']['APPAID'] = $r['AUTOPROCPROGRAMATTACHMENTID'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['AUTOPROCPROGRAMATTACHMENT']['FILETYPE'] = $r['FILETYPE'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['AUTOPROCPROGRAMATTACHMENT']['FILEPATH'] = $r['FILEPATH'];
+                $output[$r['PROCESSINGJOBID']]['AUTOPROCPROGRAM']['AUTOPROCPROGRAMATTACHMENT']['FILENAME'] = $r['FILENAME'];
+            }
+            $this->_output($output);
         }
         
         
