@@ -727,15 +727,15 @@ class DC extends Page
                                 else $log = '';
                                 if (is_readable($log) && filesize($log) > 0) {
                                     $val = 3;
-                                    exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
+                                    exec('grep --quiet --directories=skip "'.$ap[2].'" '.$log, $out,$ret);
                                     if ($ret == 0) $val = 2;
                                     if (sizeof($ap) > 3) {
                                         $val = 1;
-                                        exec('grep -q -i "'.$ap[3].'" '.$log, $out,$ret);
+                                        exec('grep --quiet --directories=skip --ignore-case "'.$ap[3].'" '.$log, $out,$ret);
                                         if ($ret == 0) {
                                             $val = 2;
                                         } else {
-                                            exec('grep -q "'.$ap[2].'" '.$log, $out,$ret);
+                                            exec('grep --quiet --directories=skip "'.$ap[2].'" '.$log, $out,$ret);
                                             if ($ret == 0) $val = 3;
                                         }
                                     }
