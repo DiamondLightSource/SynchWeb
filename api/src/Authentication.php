@@ -61,7 +61,14 @@ class Authentication
 		            # Calendar ICS export
 		            ($parts[0] == 'cal' && $parts[1] == 'ics' && $parts[2] == 'h') || 
 
-		            # Allow barcode reader ips unauthorised access to add history
+                    # Allow formulatrix machines unauthorised access to inspections, certain IPs only
+                    ($parts[0] == 'imaging' && $parts[1] == 'inspection' && in_array($_SERVER["REMOTE_ADDR"], $img)) ||
+
+					# For use on the touchscreen computers in the hutch.
+					# Handles api calls: /assign/visits/<vist> e.g./assign/visits/mx1234-1
+		            ($parts[0] == 'assign' && $parts[1] == 'visits' && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
+
+					# Allow barcode reader ips unauthorised access to add history
 		            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
 
 		            # Container notification: allow beamlines running in automated mode to notify users
@@ -72,7 +79,8 @@ class Authentication
 
 		    } else if (sizeof($parts) >= 2) {
 		        if (
-		            # For use on the touchscreen computers in the hutch
+					# For use on the touchscreen computers in the hutch
+					# Handles api calls: /assign/assign, /assign/unassign, /assign/deact, /assign/visits
 		            (($parts[0] == 'assign') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
 		            (($parts[0] == 'shipment' && $parts[1] == 'containers') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
 
