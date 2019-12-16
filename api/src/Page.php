@@ -89,9 +89,10 @@ class Page
                             }
                         }
                         
-                        // Proposal code didnt match, work out what beamline the visits are on
+                        // Proposal code didn't match, work out what beamline the visits are on
+                        // Modified to order the results by visit number (that way any special case/session-0 visit come last)
                         if (!$found) {
-                            $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode,p.proposalnumber) LIKE :1 AND s.visit_number > 0", array($m[0]));
+                            $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode,p.proposalnumber) LIKE :1 ORDER BY s.visit_number DESC", array($m[0]));
                             
                             if (sizeof($bls)) {
                                 foreach ($bls as $bl) {
