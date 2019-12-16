@@ -23,14 +23,14 @@ class Dispatch
         $user = $this->user;
 
         // Get names of all files in pages directory
-        foreach (glob(__DIR__ . '/pages/*.php') as $file_path) {
+        foreach (glob(__DIR__ . '/Page/*.php') as $file_path) {
 
             // Determine class name from file path
             $class_name = basename($file_path, '.php');
 
             // Determine routes for each class, where base URL is /
             $app->group('/' . strtolower($class_name), function () use ($app, $db, $user, $class_name) {
-                $full_class_name = 'SynchWeb\\Pages\\' . $class_name;
+                $full_class_name = 'SynchWeb\\Page\\' . $class_name;
 
                 // Instantiate each class if class has been defined
                 // This merges the routes from all classes

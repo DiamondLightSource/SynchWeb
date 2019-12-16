@@ -2,7 +2,7 @@
 
 namespace SynchWeb;
 
-use SynchWeb\Authentication\CAS;
+use SynchWeb\Authentication\Type\CAS;
 
 class UAS
 {

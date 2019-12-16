@@ -421,7 +421,7 @@ class Page
         }
         
         function arg($key) {
-            if (!$this->has_arg($key)) new Exception();
+            if (!$this->has_arg($key)) new \Exception();
             return $this->args[$key];
         }
 
