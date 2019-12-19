@@ -7,12 +7,21 @@ use Stomp\Stomp;
 
 class Queue
 {
-    function send($server, $username, $password, $queue, array $message, $persistent = false)
+    private $server, $username, $password;
+
+    function __construct($server, $username, $password)
+    {
+        $this->server = $server;
+        $this->username = $username;
+        $this->password = $password;
+    }
+
+    function send($queue, array $message, $persistent = false)
     {
         try {
-            $connection = new Stomp($server);
+            $connection = new Stomp($this->server);
 
-            $connection->connect($username, $password);
+            $connection->connect($this->username, $this->password);
 
             $connection->send(
                 $queue,

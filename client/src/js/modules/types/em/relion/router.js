@@ -1,13 +1,13 @@
 define([
     'marionette',
-    'modules/types/em/scipion/controller'
+    'modules/types/em/relion/controller'
 ], function (
     Marionette,
     c
 ) {
     let Router = Marionette.AppRouter.extend({
         appRoutes: {
-            'em/process/scipion/visit/:visit_str': 'scipion',
+            'em/process/relion/session/:session_str': 'relion',
         }
     });
 
