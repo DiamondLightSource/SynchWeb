@@ -58,6 +58,23 @@ class UAS
 	}
 
 
+	function update_session($sessionid, $data=array()) {
+		$resp = $this->_curl(array(
+            'URL' => $this->url.'/uas/rest/v1/session/'.$sessionid,
+            'FIELDS' => $data,
+            'PATCH' => 1,
+            'HEADERS' => array(
+                'Content-type: application/json',
+                'Accept: application/json',
+                'Cookie: JSESSIONID='.$this->session,
+            ),
+        ));
+
+		// print_r(array($resp));
+
+		return $this->code;
+	}
+
 	function close_session($sessionid) {
 		$resp = $this->_curl(array(
             'URL' => $this->url.'/uas/rest/v1/session/'.$sessionid,

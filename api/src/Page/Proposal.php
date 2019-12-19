@@ -838,6 +838,15 @@ class Proposal extends Page
 
         # ------------------------------------------------------------------------
         # Create visit for autocollect
+        /**
+         * Controller method for auto collect.
+         * This function will be called when pucks are scanned into a sample changer.
+         * First time a puck is scanned we create a new session.
+         * If there is already an active Auto Collect session for the beamline then add the container to the existing session.
+         * Containers are added to the autocollect session if they are on the same shipment to provide some sensible aggregation.
+         * Access is restricted to ip addresses within an "auto" list from config.php and certain beamlines 'auto_bls'.
+         *
+         */
         function _auto_visit() {
             global $auto, $auto_bls, $auto_exp_hazard, $auto_sample_hazard, $auto_user, $auto_pass, $auto_session_type;
 
@@ -847,7 +856,9 @@ class Proposal extends Page
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             if (!in_array($this->arg('bl'), $auto_bls)) $this->_error('That beamline cannot create autocollect visits');
 
-            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, c.containerid, HEX(p.externalid) as externalid, IFNULL(HEX(pe.externalid), HEX(pe2.externalid)) as pexternalid
+            // Get container information - note that if the container has no owner - we use the proposal person.
+            // A person record is required for UAS so we can set investigators. UAS needs one 'TEAM_LEADER' and others as 'DATA_ACCESS'
+            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, c.containerid, HEX(p.externalid) as externalid, IFNULL(HEX(pe.externalid), HEX(pe2.externalid)) as pexternalid, s.shippingid
                 FROM proposal p
                 INNER JOIN shipping s ON s.proposalid = p.proposalid
                 INNER JOIN dewar d ON d.shippingid = s.shippingid
@@ -857,61 +868,239 @@ class Proposal extends Page
                 LEFT OUTER JOIN person pe2 ON pe2.personid = p.personid
                 WHERE c.containerid=:1", array($this->arg('CONTAINERID')));
 
-            if (!sizeof($cont)) $this->_error('No such container');
+            if (!sizeof($cont)) $this->_error('No such container', 404);
+
+            // Store container info for convenience
             $cont = $cont[0];
 
-            if (!$cont['SESSIONID'] && $cont['PEXTERNALID']) {
-                $samples = $this->db->pq("SELECT HEX(p.externalid) as externalid 
-                    FROM protein p
-                    INNER JOIN crystal cr ON cr.proteinid = p.proteinid
-                    INNER JOIN blsample s ON s.crystalid = cr.crystalid
-                    INNER JOIN container c ON c.containerid = s.containerid
-                    WHERE p.externalid IS NOT NULL AND c.containerid=:1", array($cont['CONTAINERID']));
+            if (!$cont['PEXTERNALID']) {
+                $this->_error('That container does not have an owner');
+            }
+            if ($cont['SESSIONID']) {
+                error_log('That container already has a session ' . $cont['SESSIONID']);
 
-                $samples = array_map(function($s) {
-                    return strtoupper($s['EXTERNALID']);
-                }, $samples);
+                $this->_output(array('VISIT' => $cont['PROPOSAL'].'-'.$cont['VISIT_NUMBER']));
+            } else {
+                // Is there an existing auto collect session for this beamline with containers on the same shipment?
+                // If so we add this container to the existing Auto Collect session.
+                // Proposal reference is used to capture the visit string to return later
+                $auto_sessions = $this->db->pq("SELECT ses.sessionid, HEX(ses.externalid) as sexternalid, ses.startDate, ses.endDate, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit
+                    FROM Container c
+                    INNER JOIN Dewar d ON d.dewarId = c.dewarId
+                    INNER JOIN Shipping sh ON sh.shippingId = d.shippingId
+                    INNER JOIN BLSession ses ON ses.sessionId = c.sessionId
+                    INNER JOIN SessionType st ON st.sessionId = ses.sessionId
+                    INNER JOIN Proposal p ON p.proposalId = sh.proposalId
+                    WHERE ses.beamlinename=:1
+                    AND st.typename='Auto Collect'
+                    AND sh.shippingid = :2
+                    AND (CURRENT_TIMESTAMP BETWEEN ses.startDate AND ses.endDate)", array($this->arg('bl'), $cont['SHIPPINGID']));
 
+                if(!sizeof($auto_sessions)) {
+                    // Create new session - passing containerID, proposalID and UAS proposal ID
+                    $sessionNumber = $this->_create_new_autocollect_session($cont['CONTAINERID'], $cont['PROPOSALID'], $cont['EXTERNALID'] );
+
+                    if ($sessionNumber > 0) {
+                        $result = array('VISIT' => $cont['PROPOSAL'].'-'.$sessionNumber, 'CONTAINERS' => array($cont['CONTAINERID']));
+
+                        $this->_output($result);
+                    } else {
+                        $this->_error('Something went wrong creating a session for that container ' . $cont['CONTAINERID']);                        
+                    }
+                } else {
+                    // Update existing session - passing Session ID, UAS Session ID and Container ID
+                    $auto_session = $auto_sessions[0];
+
+                    $result = $this->_update_autocollect_session($auto_session['SESSIONID'], $auto_session['SEXTERNALID'], $cont['CONTAINERID']);
+
+                    if ($result) {
+                        // Add visit to return value...
+                        // Just returning number of samples and investigators along with container list
+                        $resp['VISIT'] = $auto_session['VISIT'];
+                        $resp['CONTAINERS'] = $result['CONTAINERS'];
+                        $this->_output($resp);
+                    } else {
+                        $this->_error('Something went wrong adding container ' . $cont['CONTAINERID'] . ' to session ' . $auto_session['SESSIONID']);                        
+                    }
+                }
+            }
+        }
+        /** 
+         * Create new auto collect session
+         * This function needs to find the samples and investigators for this container
+         * 
+         * @param array $containerId ISPyB ContainerID 
+         * @param array $proposalId ISPyB ProposalID
+         * @param array $uasProposalId UAS ProposalID (from Proposal.externalId)
+         * @return integer Returns session number generated from UAS
+         */
+        function _create_new_autocollect_session($containerId, $proposalId, $uasProposalId) {
+            global $auto_exp_hazard, $auto_sample_hazard, $auto_user, $auto_pass, $auto_session_type;
+            // Return session number generated from UAS ( will be > 0 if OK)
+            $sessionNumber = 0;
+            // So now we need to create a new session in UAS and update ISPyB
+            // Get Samples info from current (new) container
+            $sampleInfo = $this->_get_valid_samples_from_containers(array($containerId));
+
+            if ($sampleInfo['INVESTIGATORS'] && $sampleInfo['SAMPLES']) {
+                // Create new session.....
                 $data = array(
-                    'proposalId' => strtoupper($cont['EXTERNALID']),
-                    'sampleIds' => array_values(array_unique($samples)),
+                    'proposalId' => strtoupper($uasProposalId),
+                    'sampleIds' => array_values($sampleInfo['SAMPLES']),
                     'startAt' => date('Y-m-d\TH:i:s.000\Z'),
                     'facility' => strtoupper($this->arg('bl')),
-                    'investigators' => array(array('personId' => strtoupper($cont['PEXTERNALID']), 'role' => 'TEAM_LEADER' )),
+                    'investigators' => array_values($sampleInfo['INVESTIGATORS']),
                     'experimentalMethods' => array(array(
-                        'state' => 'Submitted', 
+                        'state' => 'Submitted',
                         'experimentHazard' => array('description' => $auto_exp_hazard),
                         'preparationHazard' => array('description' => $auto_sample_hazard)
                     )),
                     'eraState' => 'Submitted'
                 );
-
+                // Create the session in UAS with our special autocollect user
                 $uas = new UAS($auto_user, $auto_pass);
                 $sess = $uas->create_session($data);
 
                 if ($sess['code'] == 200 && $sess['resp']) {
-                    $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinesetupid) 
-                        VALUES (:1,:2,:3,1)", 
-                        array($cont['PROPOSALID'], $sess['resp']->sessionNumber, $sess['resp']->id));
+                    // Set the initial end Date as two days from now - this will be updated by propagation from UAS later.
+                    // Also the session endDate will be set once the samples are unloaded by calling the close_session endpoint.
+                    $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinename, beamlinesetupid, startDate, endDate) 
+                        VALUES (:1,:2,:3,:4,1, CURRENT_TIMESTAMP, TIMESTAMPADD(DAY,2,CURRENT_TIMESTAMP))",
+                        array($proposalId, $sess['resp']->sessionNumber, $sess['resp']->id, $this->arg('bl')));
 
-                    $cont['SESSIONID'] = $this->db->id();
-                    $this->db->pq("INSERT INTO sessiontype (sessionid, typename) VALUES (:1, :2)", array($cont['SESSIONID'], $auto_session_type));
-                    $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($cont['SESSIONID'], $cont['CONTAINERID']));
+                    $sessionId = $this->db->id();
 
-                    $this->_output(array('VISIT' => $cont['PROPOSAL'].'-'.$sess['resp']->sessionNumber));
+                    $this->db->pq("INSERT INTO sessiontype (sessionid, typename) VALUES (:1, :2)", array($sessionId, $auto_session_type));
+                    $this->db->pq("UPDATE container SET sessionid=:1, bltimestamp=CURRENT_TIMESTAMP WHERE containerid=:2", array($sessionId, $containerId));
+
+                    $sessionNumber = $sess['resp']->sessionNumber;
 
                 } else {
-                    $this->_error('Something went wrong creating a session for that container, response code was: '.$sess['code'].' response: '.json_encode($sess['resp']));
                     error_log(print_r(array('error' => 'Session could not be created via UAS', 'data' => $data, 'resp' => $sess), True));
+                    $this->_error('Something went wrong creating a session for that container, response code was: '.$sess['code'].' response: '.json_encode($sess['resp']));
                 }
-
-            } else if (!$cont['PEXTERNALID']) {
-                $this->_error('That container does not have an owner');
-
             } else {
-                $this->_output(array('VISIT' => $cont['PROPOSAL'].'-'.$cont['VISIT_NUMBER']));
+                $this->_error("No Samples or investigators! FAILED to create autocollect session!");
             }
-         }
+            return $sessionNumber;
+        }
+        /** 
+         * Given an acitve auto collect session - add this container to the session.
+         * This function needs to find all the existing samples and investigators so we can update UAS
+         * 
+         * @param integer $sessionId ISPyB SessionID for currently active Auto Collect session
+         * @param integer $uasSessionId UAS SessionID for currently active Auto Collect session (from BLSession.externalId)
+         * @param array $containerId ISPyB ContainerID 
+         * @return Array Result of updating session - null or array with samples/investigators added
+         */
+        function _update_autocollect_session($sessionId, $uasSessionId, $containerId) {
+            global $auto_user, $auto_pass;
+            // Return response if successful
+            $result = null;
+
+            // First find list of containers in the existing session...
+            $containers = $this->db->pq("SELECT c.containerId
+                FROM Container c
+                INNER JOIN BLSession ses ON c.sessionid = ses.sessionid
+                WHERE c.sessionId = :1
+                ORDER BY c.containerId", array($sessionId));
+
+            if (sizeof($containers)) {
+                // ...now add the requested container id (the new one) to the list
+                // Apparently this is better/faster than array_push!
+                $containers[] = array('CONTAINERID' => $containerId);
+
+                // Extract only the parts we want
+                $containerList = array_map(function($item) {
+                    return strtoupper($item['CONTAINERID']);
+                }, $containers);
+
+                $sampleInfo = $this->_get_valid_samples_from_containers($containerList);
+
+                // Patch the UAS session
+                $data = array(
+                    'sampleIds' => array_values($sampleInfo['SAMPLES']),
+                    'investigators' => array_values($sampleInfo['INVESTIGATORS']),
+                );
+                $uas = new UAS($auto_user, $auto_pass);
+                $code = $uas->update_session($uasSessionId, $data);
+
+                if ($code == 200) {
+                    // Update ISPyB records
+                    $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $containerId));
+                    // For debugging - actually just want to return Success!
+                    $result = array('SAMPLES' => array_values($sampleInfo['SAMPLES']),
+                                    'INVESTIGATORS' => array_values($sampleInfo['INVESTIGATORS']),
+                                    'CONTAINERS' => $containerList,
+                                    );
+                } else if ($code == 403) {
+                    $this->_error('UAS Error - samples and/or investigators not valid. ISPyB/UAS Session ID: '.$sessionId. ' / ' . $uasSessionId);
+                } else if ($code == 404) {
+                    $this->_error('UAS Error - session not found in UAS, Session ID: '. $sessionId);
+                } else {
+                    $this->_error('UAS Error - something wrong creating a session for that container ' . $containerId . ', response code was: '.$code);
+                }
+            } else {
+                error_log("Something wrong - an Auto Collect session exists but with no containers " . $container['SESSIONID']);
+
+                $this->_error('No valid containers on the existing Auto Collect Session id:', $container['SESSIONID']);
+            }
+            return $result;
+        }
+        /** 
+         * Find samples and owners of containers in a session
+         * This function needs to find the samples and investigators for this container
+         * 
+         * @param array $containers Array of containerIds 
+         * @return Array Returns list of valid samples 'SAMPLES' and investigators 'INVESTIGATORS' (i.e. those with valid UAS references)
+         */
+        function _get_valid_samples_from_containers($containers=array()) {
+            // If the first (oldest) container is scanned first, then it should be set as the Team Lead
+            // We have already found relevant container ids by matching session (or it's a new container)
+            // If the container has an owner then we would not need to link to Proposal via Dewar/Shipping to get an owner
+            //
+            // Prepare a string with a list of container ids - to be passed into a SQL query
+            $containerIds = implode("', '", $containers);
+            error_log("Getting valid samples/investigators for containers = " . $containerIds);
+
+            $containerResults = $this->db->pq("SELECT c.containerid, HEX(pr.externalid) as externalid, IFNULL(HEX(pe.externalid), HEX(pe2.externalid)) as investigator
+                FROM Container c
+                INNER JOIN BLSample bls ON bls.containerid = c.containerid
+                INNER JOIN Crystal cr ON cr.crystalid = bls.crystalid
+                INNER JOIN Protein pr ON pr.proteinid = cr.proteinid
+                INNER JOIN Dewar d ON d.dewarId = c.dewarId
+                INNER JOIN Shipping sh ON sh.shippingId = d.shippingId
+                INNER JOIN Proposal p ON p.proposalid = sh.proposalid
+                LEFT OUTER JOIN Person pe ON pe.personid = c.ownerid
+                LEFT OUTER JOIN Person pe2 ON pe2.personid = p.personid
+                WHERE c.containerId IN ('$containerIds') ORDER BY containerid");
+
+            $samples = array_map(function($result) {
+                return strtoupper($result['EXTERNALID']);
+            }, $containerResults);
+
+            $investigators = array_map(function($result) {
+                return strtoupper($result['INVESTIGATOR']);
+            }, $containerResults);
+
+            // Strip empty values and provide unique list
+            $samples        = array_filter(array_unique($samples));
+            $investigators  = array_filter(array_unique($investigators));
+
+            $uas_investigators = array_map(function($item) {
+                return array('role' => 'DATA_ACCESS', 'personId' => $item);
+            }, $investigators);
+
+            // Ensure there is a team leader
+            if (sizeof($uas_investigators)) {
+                $uas_investigators[0]['role'] = 'TEAM_LEADER';
+            } else {
+                error_log("No valid investigators found for " . $containerIds);
+                $uas_investigators = array();
+            }
+
+            return array('SAMPLES' => $samples, 'INVESTIGATORS' => $uas_investigators);
+        }
 
 
         # ------------------------------------------------------------------------
@@ -938,8 +1127,9 @@ class Proposal extends Page
                 $code = $uas->close_session($cont['EXTERNALID']);
 
                 if ($code == 200) {
+                    // Don't wait for UAS sync - set end Date in ISPyB now as well
+                    $this->db->pq("UPDATE blsession SET endDate=CURRENT_TIMESTAMP WHERE sessionid=:1", array($cont['SESSIONID']));
                     $this->_output(array('MESSAGE' => 'Session closed', 'VISIT' => $cont['VISIT']));
-
                 } else if ($code == 403) {
                     $this->_output(array('MESSAGE' => 'Session already closed', 'VISIT' => $cont['VISIT']));
 
