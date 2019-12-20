@@ -512,7 +512,7 @@ class Proposal extends Page
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            $vis = $this->db->pq("SELECT s.sessionid, st.sessiontypeid from blsession s 
+            $vis = $this->db->pq("SELECT s.sessionid, st.sessiontypeid, st.typename from blsession s
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
                 LEFT OUTER JOIN sessiontype st on st.sessionid = s.sessionid
                 WHERE p.proposalid = :1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
@@ -534,11 +534,16 @@ class Proposal extends Page
 
             if ($this->user->can('manage_visits')) {
                 if ($this->has_arg('SESSIONTYPE')) {
+                    // Does this session already have a session type recorded?
                     if ($vis['SESSIONTYPEID']) {
-                        $this->db->pq("UPDATE blsession set $f=:1 where sessionid=:2", array($this->arg($f), $vis['SESSIONID']));
+                        // If so update the session type only if it's different (case sensitive check currently)
+                        if (strcmp($vis['TYPENAME'], $this->arg('SESSIONTYPE')) !== 0) {
+                            $this->db->pq("UPDATE sessiontype SET typename=:1 WHERE sessiontypeid=:2", array($this->arg('SESSIONTYPE'), $vis['SESSIONTYPEID']));
+                        }
                     } else {
                         $this->db->pq("INSERT INTO sessiontype (sessionid, typename) VALUES (:1, :2)", array($vis['SESSIONID'], $this->arg('SESSIONTYPE')));
                     }
+
                     $this->_output(array('SESSIONTYPE' => $this->arg('SESSIONTYPE')));
                 }
             }
