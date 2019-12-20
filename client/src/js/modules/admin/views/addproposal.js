@@ -1,8 +1,8 @@
-define(['views/form',
+define(['backbone', 'views/form',
     'models/proposal',
 
     'templates/admin/proposaladd.html',
-    ], function(FormView, Proposal, template) {
+    ], function(Backbone, FormView, Proposal, template) {
 
     return FormView.extend({
         template: template,

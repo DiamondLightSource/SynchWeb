@@ -14,7 +14,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
             'admin/proposals/visit/:visit': 'viewVisit',
         },
 
-        loadEvents: ['group:show'],
+        loadEvents: ['group:show', 'proposal:show', 'visit:show'],
 
         loadModule: function(loadedCallback) {
             import(/* webpackChunkName: "admin" */ 'modules/admin/controller').then(controller => {
@@ -24,5 +24,8 @@ define(['utils/lazyrouter'], function(LazyRouter) {
         }
     })
        
-    return new Router()
+    return new Router({
+        // controller: c,
+        rjsController: 'modules/admin/controller',
+    })
 })
