@@ -361,9 +361,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         $data = array();
         if (strpos($query, 'SELECT') !== false) {
             if (PHP_VERSION_ID <= 50401) {
-                // require_once(dirname(__FILE__) . '/class.mysql.result53.php');
-                // $data = mysql_result53($stmt);
-                error_log('PHP Version is too old. SynchWeb requires PHP > 5.4.1');
+                $r53 = new \SynchWeb\Database\Type\Result53();
+                $data = $r53->invoke($stmt);
             } else {
                 $result = $stmt->get_result();
                 if ($result) {
