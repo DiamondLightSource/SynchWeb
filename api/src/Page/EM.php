@@ -533,7 +533,8 @@ class EM extends Page
                 FROM motioncorrection mc
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
                 INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
@@ -548,7 +549,8 @@ class EM extends Page
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = c.autoprocprogramid
                 INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
@@ -691,7 +693,8 @@ class EM extends Page
                     INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
                     INNER JOIN movie m ON m.movieid = mc.movieid
                     INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where
@@ -839,7 +842,8 @@ class EM extends Page
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE $col < 1e38 $where
@@ -879,7 +883,8 @@ class EM extends Page
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE $col < 1e38 $where
@@ -963,16 +968,16 @@ class EM extends Page
 
         // Lookup session in ISPyB
         $session = $this->db->pq("
-            SELECT b.beamLineName AS beamLineName,
+            SELECT b.beamlinename AS beamlinename,
                 YEAR(b.startDate) AS year,
-                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS session,
-                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
-                b.startDate AS startDate,
-                b.endDate AS endDate,
-                CURRENT_TIMESTAMP BETWEEN b.startDate AND b.endDate AS active
-            FROM Proposal AS p
-                JOIN BLSession AS b ON p.proposalId = b.proposalId
-            WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1", array($session_reference));
+                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS session,
+                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS visit,
+                b.startdate AS startdate,
+                b.enddate AS enddate,
+                CURRENT_TIMESTAMP BETWEEN b.startdate AND b.enddate AS active
+            FROM proposal AS p
+                JOIN blsession AS b ON p.proposalid = b.proposalid
+            WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) LIKE :1", array($session_reference));
 
         if (!sizeof($session)) $this->_error('Session not found');
 
