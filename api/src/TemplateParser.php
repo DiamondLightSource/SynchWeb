@@ -72,7 +72,9 @@ class TemplateParser
                 $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, dc.imagedirectory
                     FROM blsession s 
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
-                    INNER JOIN datacollection dc ON dc.sessionid = s.sessionid 
+                    INNER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
+                    INNER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid 
+                    
                     WHERE dc.datacollectionid=:1", $args);
 
                 if (sizeof($visit)) $visit = $visit[0];
@@ -106,8 +108,9 @@ class TemplateParser
         function filetemplate($options) {
             if (!array_key_exists('DCID', $options)) return;
 
-            $dc = $this->db->pq("SELECT dc.startimagenumber, dc.imagedirectory, dc.imagesuffix, dc.imageprefix, dc.filetemplate, dc.sessionid, dc.datacollectionnumber
+            $dc = $this->db->pq("SELECT dc.startimagenumber, dc.imagedirectory, dc.imagesuffix, dc.imageprefix, dc.filetemplate, dcg.sessionid, dc.datacollectionnumber
                 FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 WHERE dc.datacollectionid=:1", array($options['DCID']));
 
             if (sizeof($dc)) $dc = $dc[0];

@@ -816,7 +816,8 @@ class Proposal extends Page
             $rows = $this->db->pq("SELECT distinct CONCAT(p.proposalcode, p.proposalnumber) as prop
                 FROM proposal p
                 LEFT OUTER JOIN blsession ses ON ses.proposalid = p.proposalid
-                LEFT OUTER JOIN datacollection dc ON dc.sessionid = ses.sessionid
+                LEFT OUTER JOIN datacollectiongroup dcg ON dcg.sessionid = ses.sessionid
+                LEFT OUTER JOIN datacollection dc ON dc.datacollectiongroupid = dcg.datacollectiongroupid
 
                 LEFT OUTER JOIN protein pr ON pr.proposalid = p.proposalid
                 LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid

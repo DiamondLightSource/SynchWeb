@@ -166,7 +166,7 @@ class DC extends Page
                     $this->_error('No such visit');
                 } else $info = $info[0];
                 
-                $sess = array('dc.sessionid=:1', 'es.sessionid=:2', 'r.blsessionid=:3', 'xrf.sessionid=:4');
+                $sess = array('dcg.sessionid=:1', 'es.sessionid=:2', 'r.blsessionid=:3', 'xrf.sessionid=:4');
                 for ($i = 0; $i < 4; $i++) array_push($args, $info['SESSIONID']);
             
             # Subsamples
@@ -427,7 +427,8 @@ class DC extends Page
 
 
             $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count($count_field) as tot FROM datacollection dc
-                INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
                 LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
                 $extj[0]
                 WHERE $sess[0] $where
@@ -461,9 +462,10 @@ class DC extends Page
             array_push($args, $end);
 
 
-            $q = "SELECT $extcg $fields FROM datacollection dc
-             INNER JOIN blsession ses ON ses.sessionid = dc.sessionid
+            $q = "SELECT $extcg $fields 
+             FROM datacollection dc
              INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+             INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
              LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
              LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
              LEFT OUTER JOIN datacollectionfileattachment dca ON dc.datacollectionid = dca.datacollectionid
@@ -609,7 +611,11 @@ class DC extends Page
                 return;
             }
             
-            $dct = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $ids);
+            $dct = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number 
+                FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $ids);
             
             $this->db->close();
             $this->profile('dc query');
@@ -697,16 +703,18 @@ class DC extends Page
             # DC Details
             $dct = $this->db->pq("SELECT dc.overlap, dc.blsampleid, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number, xrc.status as xrcstatus
                 FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 LEFT OUTER JOIN gridinfo gr ON gr.datacollectiongroupid = dc.datacollectiongroupid
                 LEFT OUTER JOIN xraycentringresult xrc ON xrc.gridinfoid = gr.gridinfoid
-                INNER JOIN blsession s ON s.sessionid=dc.sessionid 
-                INNER JOIN proposal p ON p.proposalid=s.proposalid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
             
             $processings = $this->db->pq("SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status
                 FROM datacollection dc 
-                INNER JOIN blsession s ON s.sessionid=dc.sessionid 
-                INNER JOIN proposal p ON p.proposalid=s.proposalid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN autoprocintegration api ON api.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid
                 WHERE $where", $ids);
@@ -807,7 +815,8 @@ class DC extends Page
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
                 INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid OR app.datacollectionid = dc.datacollectionid)
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 $where
                 GROUP BY dc.datacollectionid", $args);
@@ -838,7 +847,8 @@ class DC extends Page
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
                 INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid OR app.datacollectionid = dc.datacollectionid)
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 $where", $args);
 
@@ -1243,7 +1253,8 @@ class DC extends Page
             
             list($info) = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
              FROM datacollection dc
-             INNER JOIN blsession s ON s.sessionid=dc.sessionid 
+             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+             INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
              INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
              WHERE dc.datacollectionid=:1", array($id));
             
@@ -1822,7 +1833,11 @@ class DC extends Page
                 return;
             }
             
-            $info = $this->db->pq('SELECT ses.visit_number, dc.datfullpath, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir FROM datacollection dc INNER JOIN blsession ses ON dc.sessionid = ses.sessionid WHERE datacollectionid=:1', array($this->arg('id')));
+            $info = $this->db->pq('SELECT ses.visit_number, dc.datfullpath, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir 
+                FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession ses ON dcg.sessionid = ses.sessionid 
+                WHERE datacollectionid=:1', array($this->arg('id')));
             if (sizeof($info) == 0) {
                 $this->_error('No data for that collection id');
                 return;

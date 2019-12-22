@@ -197,10 +197,11 @@ class PDF extends Page
             
             $rows = $this->db->pq("SELECT dc.datacollectionid as id, dc.overlap,dc.imageprefix,dc.imagedirectory as dir,dc.datacollectionnumber,TO_CHAR(dc.starttime, 'DD/MM/YYYY HH24:MI:SS'), sa.name, p.name as protein, dc.numberofimages, dc.wavelength, dc.detectordistance, dc.exposuretime, dc.axisstart, dc.axisrange, dc.xbeam, dc.ybeam, dc.resolution, dc.comments 
                 FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 LEFT OUTER JOIN blsample sa ON dc.blsampleid = sa.blsampleid 
                 LEFT OUTER JOIN crystal c ON sa.crystalid = c.crystalid 
                 LEFT OUTER JOIN protein p ON c.proteinid = p.proteinid 
-                WHERE dc.sessionid=:1 ORDER BY dc.starttime", array($info['SID']));
+                WHERE dcg.sessionid=:1 ORDER BY dc.starttime", array($info['SID']));
             
             if (!sizeof($rows)) $this->_error('No data', 'No data collections for this visit yet');
             

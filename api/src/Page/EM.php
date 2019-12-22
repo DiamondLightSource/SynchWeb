@@ -76,14 +76,14 @@ class EM extends Page
 
             // Lookup visit in ISPyB
             $visit = $this->db->pq("
-            SELECT b.beamLineName AS beamLineName,
-                YEAR(b.startDate) AS year,
-                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
-                b.startDate AS startDate,
-                b.endDate AS endDate,
-                CURRENT_TIMESTAMP BETWEEN b.startDate AND b.endDate AS active
-            FROM Proposal AS p
-                JOIN BLSession AS b ON p.proposalId = b.proposalId
+            SELECT b.beamlinename AS beamLineName,
+                YEAR(b.startdate) AS year,
+                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS visit,
+                b.startdate AS startDate,
+                b.enddate AS endDate,
+                CURRENT_TIMESTAMP BETWEEN b.startdate AND b.enddate AS active
+            FROM proposal p
+            INNER JOIN blsession b ON p.proposalid = b.proposalid
             WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1", array($this->arg('visit')));
 
             if (!sizeof($visit)) $this->_error('Visit not found');
@@ -328,7 +328,8 @@ class EM extends Page
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN blsession s ON dc.sessionid = s.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
 
@@ -343,7 +344,8 @@ class EM extends Page
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = c.autoprocprogramid
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN blsession s ON dc.sessionid = s.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
 
@@ -481,7 +483,8 @@ class EM extends Page
                     INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
                     INNER JOIN movie m ON m.movieid = mc.movieid
                     INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where
@@ -625,7 +628,8 @@ class EM extends Page
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE $col < 1e38 $where
@@ -665,7 +669,8 @@ class EM extends Page
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE $col < 1e38 $where

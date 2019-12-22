@@ -73,7 +73,8 @@ class Vstat extends Page
 
             $dc = $this->db->pq("SELECT IF(dc.chistart IS NULL, 0, dc.chistart) as chistart, dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, dc.runstatus, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, pr.proteinid, pr.acronym as protein, smp.name as sample
                 FROM datacollection dc 
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 LEFT OUTER JOIN blsample smp ON smp.blsampleid = dc.blsampleid
@@ -83,13 +84,15 @@ class Vstat extends Page
             
             $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count 
                 FROM datacollection dc 
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE dc.overlap = 0 AND dc.axisrange > 0 $where", $args);
             $dcs = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count 
                 FROM datacollection dc 
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE dc.overlap != 0 $where", $args);
@@ -127,7 +130,8 @@ class Vstat extends Page
             if ($this->has_arg('visit')) {
                 $ai = $this->db->pq("SELECT dc.datacollectionid as id, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(max(sc.bltimestamp), 'DD-MM-YYYY HH24:MI:SS') as en
                     FROM datacollection dc 
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN screening sc ON sc.datacollectionid = dc.datacollectionid 
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
@@ -137,7 +141,8 @@ class Vstat extends Page
                 $cent = $this->db->pq("SELECT * FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, TIMESTAMPDIFF('SECOND', CAST(r.endtimestamp as DATE), min(dc.starttime)) as dctime
                     FROM robotaction r 
                     INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime 
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where 
@@ -151,7 +156,8 @@ class Vstat extends Page
                     INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                     INNER JOIN movie m ON m.movieid = mc.movieid
                     INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where ORDER BY m.createdtimestamp", $args);
@@ -168,11 +174,7 @@ class Vstat extends Page
                     WHERE 1=1 $where
                     ORDER BY p.proposalcode, s.startdate", $args);
             }
-            
-            #$cent = $this->db->pq("SELECT distinct en,st,dctime FROM (SELECT TO_CHAR(r.endtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as en, (min(dc.starttime) - CAST(r.endtimestamp AS DATE))*86400 as dctime FROM robotaction r INNER JOIN datacollection dc ON r.endtimestamp < dc.starttime WHERE dc.sessionid=:1 GROUP BY r.endtimestamp ORDER BY r.endtimestamp) WHERE dctime < 1000", array($info['SID']));
-            
-            #print_r($cent);
-            
+
 
             # Get Faults
             $faultl = $this->db->pq("SELECT f.faultid, f.beamtimelost, f.title, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI:SS') as en
@@ -369,7 +371,10 @@ class Vstat extends Page
             
             $dc = $this->db->pq("SELECT max(p.title) as title, TO_CHAR(MAX(dc.endtime), 'DD-MM-YYYY HH24:MI') as last, SUM(TIMESTAMPDIFF('SECOND', dc.starttime, dc.endtime))/3600 as dctime, GREATEST(TIMESTAMPDIFF('SECOND', min(s.startdate), min(dc.starttime))/3600,0) as sup, GREATEST(TIMESTAMPDIFF('SECOND', max(dc.endtime), max(s.enddate))/3600,0) as rem, s.visit_number as visit, TO_CHAR(min(s.startdate), 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(max(s.enddate), 'DD-MM-YYYY HH24:MI') as en, TIMESTAMPDIFF('SECOND', min(s.startdate), max(s.enddate))/3600 as len 
                 FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
-                INNER JOIN datacollection dc ON (dc.sessionid = s.sessionid) $where GROUP BY s.visit_number ORDER BY min(s.startdate) DESC", $args);
+                INNER JOIN datacollectiongroup dcg on dcg.sessionid = s.sessionid
+                INNER JOIN datacollection dc ON dc.datacollectiongroupid = dcg.datacollectiongroupid
+                $where 
+                GROUP BY s.visit_number ORDER BY min(s.startdate) DESC", $args);
             
             $robot = $this->db->pq("SELECT SUM(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)))/3600 as dctime, s.visit_number as visit FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) $where GROUP BY s.visit_number", $args);
 
@@ -378,7 +383,8 @@ class Vstat extends Page
             $ai = $this->db->pq("SELECT SUM(ai) as aitime, visit FROM (
                     SELECT TIMESTAMPDIFF('SECOND', dc.endtime, max(sc.bltimestamp))/3600 as ai, s.visit_number as visit 
                     FROM datacollection dc INNER JOIN screening sc ON sc.datacollectionid = dc.datacollectionid 
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid 
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
                     INNER JOIN proposal p ON p.proposalid = s.proposalid $where GROUP BY dc.datacollectionid, s.visit_number, dc.endtime
                 ) inq GROUP BY visit", $args);
             
@@ -386,7 +392,8 @@ class Vstat extends Page
                     SELECT TIMESTAMPDIFF('SECOND', CAST(r.endtimestamp AS DATE), min(dc.starttime))/3600 as cent, s.visit_number as visit 
                     FROM robotaction r 
                     INNER JOIN datacollection dc ON (r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime) 
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid 
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid $where 
                     GROUP BY r.endtimestamp, s.visit_number) inq WHERE cent < 0.25 GROUP BY visit", $args);
                                     
@@ -497,7 +504,8 @@ class Vstat extends Page
             $dch_tmp = $this->db->pq("SELECT AVG(datacollections) as dcs, dh as hour FROM (
                     SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'HH24') as dh
                     FROM datacollection dc
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     WHERE dc.axisrange > 0 AND dc.overlap = 0 AND p.proposalid=:1 $where
                     GROUP BY TO_CHAR(dc.starttime, 'DDHH24'), s.visit_number
@@ -691,7 +699,8 @@ class Vstat extends Page
                     SELECT GREATEST(TIMESTAMPDIFF('SECOND', MAX(dc.endtime), MAX(s.enddate))/3600,0) as rem, TIMESTAMPDIFF('SECOND', MAX(s.startdate), MAX(s.enddate))/3600 as len, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.visit_number, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, s.startdate
                     FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid)
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
-                    LEFT OUTER JOIN datacollection dc ON dc.sessionid = s.sessionid
+                    LEFT OUTER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    LEFT OUTER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where 
                     GROUP BY p.proposalid, s.visit_number
@@ -705,7 +714,8 @@ class Vstat extends Page
                     SELECT SUM(IF(dc.axisrange > 0 AND dc.overlap = 0, 1, 0)) as datacollections, SUM(IF(dc.overlap != 0, 1, 0)) as screenings, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid,
                         SUM(IF(dc.axisrange > 0 AND dc.overlap = 0 AND ((dc.kappastart is not NULL AND dc.kappastart != 0) OR (dc.chistart is not NULL AND dc.chistart != 0) OR (dc.phistart is not NULL AND dc.phistart != 0)), 1, 0)) as multiaxis, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
                     FROM datacollection dc
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
@@ -804,7 +814,8 @@ class Vstat extends Page
 
             $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
                 FROM datacollection dc 
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE 1=1 $where AND s.beamlinename in ('$bls')
