@@ -229,7 +229,8 @@ class Download extends Page
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 WHERE s.proposalid=:1 $where", $args);
 
             // exit();
@@ -267,7 +268,8 @@ class Download extends Page
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid 
                 INNER JOIN autoprocprogramattachment appa ON app.autoprocprogramid = appa.autoprocprogramid 
                 INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid 
-                INNER JOIN blsession s on s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 WHERE s.proposalid=:1 $where", $args);
 
             // exit();
@@ -308,7 +310,8 @@ class Download extends Page
                         INNER JOIN autoprocscaling_has_int aps ON aps.autoprocscalingid = phs.autoprocscalingid
                         INNER JOIN autoprocintegration api ON api.autoprocintegrationid = aps.autoprocintegrationid
                         INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
-                        INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                        INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                        INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                         WHERE s.proposalid=:1 $where", $args);
 
             if ($this->has_arg('PHASINGPROGRAMATTACHMENTID')) {
@@ -391,7 +394,12 @@ class Download extends Page
         }
 
         function _get_downstream_dir($subdir, $root) {
-            $info = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM datacollection dc INNER JOIN blsession s ON s.sessionid=dc.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE dc.datacollectionid=:1", array($this->arg('id')));
+            $info = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
+                FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                WHERE dc.datacollectionid=:1", array($this->arg('id')));
 
             if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
             else $info = $info[0];
@@ -649,7 +657,14 @@ class Download extends Page
             if (!sizeof($vis)) $this->_error('No such visit', 'The specified visit doesnt exist');
             else $vis = $vis[0];
 
-            $rows = $this->db->pq("SELECT dc.imageprefix,s.beamlinename,dc.datacollectionnumber,TO_CHAR(dc.starttime, 'DD/MM/YYYY HH24:MI:SS'), sa.name, p.name as protein, dc.numberofimages, dc.wavelength, dc.detectordistance, dc.exposuretime, dc.axisstart, dc.axisrange, dc.xbeam, dc.ybeam, dc.resolution, dc.comments FROM datacollection dc INNER JOIN blsession s ON s.sessionid = dc.sessionid LEFT OUTER JOIN blsample sa ON dc.blsampleid = sa.blsampleid LEFT OUTER JOIN crystal c ON sa.crystalid = c.crystalid LEFT OUTER JOIN protein p ON c.proteinid = p.proteinid WHERE dc.sessionid=:1 ORDER BY dc.starttime", array($vis['SESSIONID']));
+            $rows = $this->db->pq("SELECT dc.imageprefix,s.beamlinename,dc.datacollectionnumber,TO_CHAR(dc.starttime, 'DD/MM/YYYY HH24:MI:SS'), sa.name, p.name as protein, dc.numberofimages, dc.wavelength, dc.detectordistance, dc.exposuretime, dc.axisstart, dc.axisrange, dc.xbeam, dc.ybeam, dc.resolution, dc.comments 
+                FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                LEFT OUTER JOIN blsample sa ON dc.blsampleid = sa.blsampleid 
+                LEFT OUTER JOIN crystal c ON sa.crystalid = c.crystalid 
+                LEFT OUTER JOIN protein p ON c.proteinid = p.proteinid 
+                WHERE dcg.sessionid=:1 ORDER BY dc.starttime", array($vis['SESSIONID']));
 
             $this->app->response->headers->set("Content-type", "application/vnd.ms-excel");
             $this->app->response->headers->set("Content-disposition", "attachment; filename=".$vis['ST']."_".$vis['BEAMLINENAME']."_".$this->arg('visit').".csv");
@@ -698,7 +713,8 @@ class Download extends Page
             $rows = $this->db->pq("SELECT dca.filefullpath, dca.filetype, dca.datacollectionfileattachmentid, dca.datacollectionid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, dc.blsampleid, dc.blsubsampleid, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.orientation, g.snaked
                 FROM datacollectionfileattachment dca
                 INNER JOIN datacollection dc ON dc.datacollectionid = dca.datacollectionid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 LEFT OUTER JOIN gridinfo g ON g.datacollectiongroupid = dc.datacollectiongroupid
                 WHERE $where", $args);
@@ -748,7 +764,11 @@ class Download extends Page
                 return;
             }
 
-            $info = $this->db->pq('SELECT ses.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir FROM datacollection dc INNER JOIN blsession ses ON dc.sessionid = ses.sessionid WHERE datacollectionid=:1', array($this->arg('id')));
+            $info = $this->db->pq('SELECT ses.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir 
+                FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                WHERE dc.datacollectionid=:1', array($this->arg('id')));
             if (sizeof($info) == 0) {
                 $this->_error('No data for that collection id');
                 return;
