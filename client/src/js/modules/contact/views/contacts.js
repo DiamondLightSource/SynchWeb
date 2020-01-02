@@ -7,9 +7,11 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: '<div><h1>Home Lab Contacts</h1><p class="help">This page shows registered home laboratory contacts. This information is generally used to return shipments back after an experiment</p><div class="ra"><a class="button" href="/contacts/add"><i class="fa fa-plus"></i> Add Home Lab Contact</a></div><div class="wrapper"></div></div>',
+    template: '<div><h1>Home Lab Contacts</h1><p class="help">This page shows registered home laboratory contacts. This information is generally used to return shipments back after an experiment</p><div class="ra"><a class="button add" href="/contacts/add"><i class="fa fa-plus"></i> Add Home Lab Contact</a></div><div class="wrapper"></div></div>',
     regions: { 'wrap': '.wrapper' },
-    
+    ui: {
+      add: 'a.add',
+    },
 
     initialize: function(options) {
       var columns = [
@@ -34,6 +36,7 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
     },
                                       
     onRender: function() {
+      if (app.proposal && app.proposal.get('ACTIVE') != 1) this.ui.add.hide()
       this.wrap.show(this.table)
     },
       
