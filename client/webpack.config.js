@@ -27,6 +27,7 @@ module.exports = {
     ],
     port: 9000,
     publicPath: path.join(__dirname),
+    historyApiFallback: true,
     proxy: {
       '/api': {
         // Change this target to where SynchWeb server is running
