@@ -17,6 +17,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     var $stats = False;
     var $transaction = False;
     var $errors = 0;
+    var $wsrep_sync = False;
 
     function __construct($user, $pass, $db, $port = null)
     {
@@ -27,6 +28,15 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
         if (mysqli_connect_errno()) {
             $this->error('There was an error connecting to MySQL: ', htmlentities(mysqli_connect_errno()));
+        }
+    }
+
+    // wsrep_sync_wait waits for cluster replication on a mariadb cluster
+    function wait_rep_sync($state=false)
+    {
+        $ver = $this->conn->server_info;
+        if (stripos($ver, 'maria')) {
+            $this->pq("SET SESSION wsrep_sync_wait=:1", array($state ? 1 : 0));
         }
     }
 
