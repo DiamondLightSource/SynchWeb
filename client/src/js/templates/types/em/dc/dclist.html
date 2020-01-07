@@ -1,39 +1,40 @@
+<h1 class="no_mobile">
+    <div class="usage r"></div>
+    Data Collections
+</h1>
 
-    <h1 class="no_mobile">
-        <div class="usage r"></div>
-        Data Collections
-    </h1>
+<% if (IS_VISIT && !IS_SINGLE) { %>
+<% if (VISIT.search('cm') == -1 && VISIT.search('nt') == -1 && VISIT.search('nr') == -1 && ACTIVE != '1') { %>
+<p class="message notify">
+    This visit is inactive and will not auto update
+    | Auto Refresh <input type="checkbox" name="autorefresh" value="1"/>
+    <a href="#" class="button refresh"><i class="fa fa-refresh"></i> Refresh</a>
+</p>
+<% } %>
 
+<div class="links">
+    <a class="button" href="/stats/visit/<%-VISIT%>" title="Visit Statistics"><i class="fa fa-pie-chart"></i> <span>Visit Stats</span></a>
+    <a href="#" class="button users"><i class="fa fa-users"></i> <span>Users</span></a>
+    <a href="#" class="button dewars"><i class="fa fa-truck"></i> <span>Parcels</span></a>
+    <!-- <a class="button"  href="/em/process/visit/<%-VISIT%>" title="Scipion Processing"><i class="fa fa-cog"></i> <span>Processing</span></a>-->
+    <a class="button" href="/em/process/relion/session/<%-VISIT%>" title="Relion Processing"><i class="fa fa-cog"></i>
+        <span>Relion Processing</span></a>
+</div>
 
-    <% if (IS_VISIT && !IS_SINGLE) { %>
-    <% if (VISIT.search('cm') == -1 && VISIT.search('nt') == -1 && VISIT.search('nr') == -1 && ACTIVE != '1') { %>
-        <p class="message notify">
-            This visit is inactive and will not auto update 
-            | Auto Refresh <input type="checkbox" name="autorefresh" value="1" />
-            <a href="#" class="button refresh"><i class="fa fa-refresh"></i> Refresh</a>
-        </p>
-    <% } %>
+<div class="breakdown"></div>
 
-    <div class="links">
-        <a class="button"  href="/stats/visit/<%-VISIT%>" title="Visit Statistics"><i class="fa fa-pie-chart"></i> <span>Visit Stats</span></a>
-        <a href="#" class="button users"><i class="fa fa-users"></i> <span>Users</span></a>
-        <a href="#" class="button dewars"><i class="fa fa-truck"></i> <span>Parcels</span></a>
-        <a class="button"  href="/em/process/visit/<%-VISIT%>" title="Scipion Processing"><i class="fa fa-cog"></i> <span>Processing</span></a>
-    </div>
+<% } %>
 
-    <div class="breakdown"></div>
-    
-    <% } %>
+<% if (IS_SINGLE) { %>
+<h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%-VISIT%><% } %>">View All Data
+    Collections</a></h1>
+<% } %>
 
-    <% if (IS_SINGLE) { %>
-    <h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%-VISIT%><% } %>">View All Data Collections</a></h1>
-    <% } %>
+<div class="st"></div>
+<div class="lg"></div>
 
-    <div class="st"></div>
-    <div class="lg"></div>
+<div class="srch clearfix"></div>
 
-    <div class="srch clearfix"></div>
-    
-    <div class="page_wrap one"></div>    
-    <div class="data_collections"></div>
-    <div class="page_wrap two"></div>
+<div class="page_wrap one"></div>
+<div class="data_collections"></div>
+<div class="page_wrap two"></div>

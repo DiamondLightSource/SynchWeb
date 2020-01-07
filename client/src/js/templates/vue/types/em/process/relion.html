@@ -1,0 +1,285 @@
+<section class="content">
+    <h1>Relion Processing</h1>
+
+    <p class="help">This page is for submitting processing jobs to Relion.</p>
+
+    <p v-if="isSessionLoaded && !isSessionActive" class="message alert">
+        This session ended at {{ sessionEndDateAsString }}. It may no longer be submitted for processing. <a
+            class="button refresh" v-on:click.prevent="onContinue">OK</a>
+    </p>
+
+    <form novalidate v-bind:class="{loading: showSpinner}">
+        <div class="form">
+            <ul>
+                <li class="head">Project</li>
+
+                <li>
+                    <label>Acquisition Software</label>
+                    <select name="projectAcquisitionSoftware"
+                            v-if="!isFormReadOnly"
+                            v-model="projectAcquisitionSoftware">
+                        <option value="EPU">EPU</option>
+                        <option value="SerialEM">SerialEM</option>
+                    </select>
+
+                    <input type="text" name="projectAcquisitionSoftware"
+                           v-if="isFormReadOnly"
+                           v-model="projectAcquisitionSoftware"
+                           v-bind:readonly="true"
+                           style="margin-bottom: 20px">
+                </li>
+
+                <li>
+                    <label>Movie File Name Extension</label>
+                    <select name="projectMovieFileNameExtension"
+                            v-if="!isFormReadOnly"
+                            v-model="projectMovieFileNameExtension">
+                        <option value=".tif">.tif</option>
+                        <option value=".tiff">.tiff</option>
+                        <option value=".mrc">.mrc</option>
+                    </select>
+
+                    <input type="text" name="projectMovieFileNameExtension"
+                           v-if="isFormReadOnly"
+                           v-model="projectMovieFileNameExtension"
+                           v-bind:readonly="true"
+                           style="margin-bottom: 20px">
+                </li>
+
+                <li>
+                    <label>Gain Reference File</label>
+                    <input type="checkbox" name="projectGainReferenceFile"
+                           v-model="projectGainReferenceFile"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li v-if="projectGainReferenceFile">
+                    <label>Gain Reference File Name</label>
+                    <input type="text" name="projectGainReferenceFileName"
+                           v-validate="{ required: true, regex: /^[\w-]+\.[\w]{3,4}$/ }"
+                           v-model="projectGainReferenceFileName"
+                           v-bind:readonly="isFormReadOnly">
+                    <span v-if="errors.has('projectGainReferenceFileName')" class="errormessage ferror">{{ errors.first('projectGainReferenceFileName') }}</span>
+                </li>
+
+                <li class="head">Experiment</li>
+
+                <li>
+                    <label>Voltage (kV)</label>
+                    <select name="voltage"
+                            v-if="!isFormReadOnly"
+                            v-model="voltage">
+                        <option value="200">200</option>
+                        <option value="300">300</option>
+                    </select>
+
+                    <input type="text"
+                           v-if="isFormReadOnly"
+                           v-model="voltage"
+                           v-bind:readonly="true"
+                           style="margin-bottom: 20px">
+                </li>
+
+                <li>
+                    <label>Spherical Aberration (mm)</label>
+                    <select name="sphericalAberration"
+                            v-if="!isFormReadOnly"
+                            v-model="sphericalAberration">
+                        <option value="2.7">2.7 (Talos/Krios)</option>
+                    </select>
+
+                    <input type="text" name="sphericalAberration"
+                           v-if="isFormReadOnly"
+                           v-model="sphericalAberration"
+                           v-bind:readonly="true"
+                           style="margin-bottom: 20px">
+                </li>
+
+                <li>
+                    <label>Phase Plate Used</label>
+                    <input type="checkbox" name="findPhaseShift"
+                           v-model="findPhaseShift"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li>
+                    <label>Pixel Size (Å/pixel)</label>
+                    <input type="text" name="pixelSize"
+                           v-validate="'required|min_value:0.02|max_value:100'"
+                           v-model="pixelSize"
+                           v-on:keyup="onCalculateForMe"
+                           v-bind:readonly="isFormReadOnly">
+                    <span v-if="errors.has('pixelSize')"
+                          class="errormessage ferror">{{ errors.first('pixelSize') }}</span>
+                </li>
+
+                <li>
+                    <label>Motion Correction Binning</label>
+                    <select name="voltage"
+                            v-if="!isFormReadOnly"
+                            v-model="motionCorrectionBinning">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select>
+
+                    <input type="text"
+                           v-if="isFormReadOnly"
+                           v-model="motionCorrectionBinning"
+                           v-bind:readonly="true"
+                           style="margin-bottom: 20px">
+                </li>
+
+                <li>
+                    <label>Dose per frame (e<span class="super">-</span>/Å<span class="super">2</span>)</label>
+                    <input type="text" name="dosePerFrame"
+                           v-validate="'required|min_value:0.02|max_value:10'"
+                           v-model="dosePerFrame"
+                           v-bind:readonly="isFormReadOnly">
+                    <span v-if="errors.has('dosePerFrame')" class="errormessage ferror">{{ errors.first('dosePerFrame') }}</span>
+                </li>
+
+                <li>
+                    <label>Continue after CTF estimation</label>
+                    <input type="checkbox" name="pipelineDo1stPass"
+                           v-model="pipelineDo1stPass"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li class="head" v-if="pipelineDo1stPass">2D &amp; 3D Classification</li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Do 2D Classification</label>
+                    <input type="checkbox" name="pipelineDo1stPassClassification2d"
+                           v-model="pipelineDo1stPassClassification2d"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Do 3D Classification</label>
+                    <input type="checkbox" name="pipelineDo1stPassClassification3d"
+                           v-model="pipelineDo1stPassClassification3d"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li class="head" v-if="pipelineDo1stPass">Particle Picking</li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Use crYOLO</label>
+                    <input type="checkbox" name="particleUseCryolo"
+                           v-model="particleUseCryolo"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Minimum Diameter (Å)</label>
+                    <input type="text" name="particleDiameterMin"
+                           v-validate="'required|min_value:0.02|max_value:1024'"
+                           v-model="particleDiameterMin"
+                           v-bind:readonly="isFormReadOnly">
+                    <span v-if="errors.has('particleDiameterMin')" class="errormessage ferror">{{ errors.first('particleDiameterMin') }}</span>
+                </li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Maximum Diameter (Å)</label>
+                    <input type="text" name="particleDiameterMax"
+                           v-validate="'required|min_value:0.02|max_value:4000'"
+                           v-model="particleDiameterMax"
+                           v-on:keyup="onCalculateForMe"
+                           v-bind:readonly="isFormReadOnly">
+                    <span v-if="errors.has('particleDiameterMax')" class="errormessage ferror">{{ errors.first('particleDiameterMax') }}</span>
+                </li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Mask Diameter (Å)</label>
+                    <input type="text" name="particleMaskDiameter"
+                           v-validate="'required|min_value:0.1|max_value:1024'"
+                           v-model="particleMaskDiameter"
+                           v-bind:readonly="isFormReadOnly || particleCalculateForMe">
+                    <span v-if="errors.has('particleMaskDiameter')" class="errormessage ferror">{{ errors.first('particleMaskDiameter') }}</span>
+                </li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Box Size (px)</label>
+                    <input type="text" name="particleBoxSize"
+                           v-validate="'required|min_value:0.1|max_value:1024'"
+                           v-model="particleBoxSize"
+                           v-bind:readonly="isFormReadOnly || particleCalculateForMe">
+                    <span v-if="errors.has('particleBoxSize')" class="errormessage ferror">{{ errors.first('particleBoxSize') }}</span>
+                </li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Downsample Box Size (px)</label>
+                    <input type="text" name="particleBoxSizeSmall"
+                           v-validate="'required|min_value:0.1|max_value:1024'"
+                           v-model="particleBoxSizeSmall"
+                           v-bind:readonly="isFormReadOnly || particleCalculateForMe">
+                    <span v-if="errors.has('particleBoxSizeSmall')" class="errormessage ferror">{{ errors.first('particleBoxSizeSmall') }}</span>
+                </li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Calculate For Me</label>
+                    <input type="checkbox" name="particleCalculateForMe"
+                           v-model="particleCalculateForMe"
+                           @change="onCalculateForMe"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li class="head" v-if="pipelineDo1stPass">Second Pass</li>
+
+                <li v-if="pipelineDo1stPass">
+                    <label>Do Second Pass</label>
+                    <input type="checkbox" name="pipelineDo2ndPass"
+                           v-model="pipelineDo2ndPass"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li v-if="pipelineDo1stPass && pipelineDo2ndPass">
+                    <label>Do 2D Classification</label>
+                    <input type="checkbox" name="pipelineDo2ndPassClassification2d"
+                           v-model="pipelineDo2ndPassClassification2d"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+
+                <li v-if="pipelineDo1stPass && pipelineDo2ndPass">
+                    <label>Do 3D Classification</label>
+                    <input type="checkbox" name="pipelineDo2ndPassClassification3d"
+                           v-model="pipelineDo2ndPassClassification3d"
+                           v-bind:disabled="isFormReadOnly">
+                </li>
+            </ul>
+
+            <button type="submit" class="submit"
+                    v-on:click.prevent="onStart"
+                    v-if="!isJobStarted && !isJobStopped"
+                    v-bind:disabled="errors.any()">
+                Start Processing
+            </button>
+
+            <button type="submit" class="submit"
+                    v-on:click.prevent="onStop"
+                    v-if="isJobStarted && !isJobStopped">
+                Stop Processing
+            </button>
+
+            <button type="submit" class="submit"
+                    v-on:click.prevent="onStart"
+                    v-if="isJobStarted && isJobStopped">
+                Resume
+            </button>
+
+            <button type="submit" class="submit"
+                    v-on:click.prevent="onReset"
+                    v-if="isJobStarted && isJobStopped">
+                Reset
+            </button>
+
+            <div class="log" style="margin-top: 20px" v-if="isLogVisible && sessionEvents.length">
+                <ul>
+                    <li v-for="sessionEvent in sessionEvents">
+                        {{ sessionEvent.timestamp_str }} : {{ sessionEvent.message }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </form>
+</section>
