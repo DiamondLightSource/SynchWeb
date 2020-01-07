@@ -347,7 +347,7 @@ class Process extends Page
                $zocalo_password,
                $zocalo_mx_reprocess;
 
-        if (!$activemq_server || !$activemq_rp_queue) return;
+        if (!$zocalo_server || !$zocalo_mx_reprocess) return;
 
         if (!$this->has_arg('PROCESSINGJOBID')) $this->_error('No processing job specified');
 
