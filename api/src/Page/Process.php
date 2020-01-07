@@ -342,8 +342,10 @@ class Process extends Page
 
     function _enqueue()
     {
-        global $activemq_server,
-               $activemq_rp_queue;
+        global $zocalo_server,
+               $zocalo_username,
+               $zocalo_password,
+               $zocalo_mx_reprocess;
 
         if (!$activemq_server || !$activemq_rp_queue) return;
 
@@ -366,12 +368,11 @@ class Process extends Page
             )
         );
 
-        $this->queue = new Queue();
-
         try {
-            $this->queue->send($activemq_server, null, null, $activemq_rp_queue, $message, true);
-        } catch (\Exception $e) {
-            $this->_error($e->getMessage());
+            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
+            $queue->send($zocalo_mx_reprocess, $message, true);
+        } catch (Exception $e) {
+            $this->_error($e->getMessage(), 500);
         }
 
         $this->_output(new \stdClass);
