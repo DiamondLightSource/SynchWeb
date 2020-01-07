@@ -1,5 +1,5 @@
-define(['backbone.paginator', 'models/reprocessingimagesweep'], 
-    function(PageableCollection, ReprocessingImageSweep) {
+define(['backbone', 'backbone.paginator', 'models/reprocessingimagesweep'],
+    function(Backbone, PageableCollection, ReprocessingImageSweep) {
     
     return PageableCollection.extend({
         model: ReprocessingImageSweep,
