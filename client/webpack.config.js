@@ -21,13 +21,10 @@ module.exports = {
     publicPath: path.join('/dist', gitHash, '/'),
   },
   devServer: {
-    contentBase: [
-      path.join(__dirname, 'dist', gitHash),
-      path.join(__dirname, '.')
-    ],
     port: 9000,
-    publicPath: path.join(__dirname),
-    historyApiFallback: true,
+    historyApiFallback: {
+      index: '/dist/'+gitHash+'/index.html',
+    },
     proxy: {
       '/api': {
         // Change this target to where SynchWeb server is running
