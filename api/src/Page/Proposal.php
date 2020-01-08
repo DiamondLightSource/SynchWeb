@@ -970,7 +970,7 @@ class Proposal extends Page
                     // Set the initial end Date as two days from now - this will be updated by propagation from UAS later.
                     // Also the session endDate will be set once the samples are unloaded by calling the close_session endpoint.
                     $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinename, beamlinesetupid, startDate, endDate) 
-                        VALUES (:1,:2,:3,:4,1, CURRENT_TIMESTAMP, TIMESTAMPADD(DAY,2,CURRENT_TIMESTAMP))",
+                        VALUES (:1,:2,UNHEX(:3),:4,1, CURRENT_TIMESTAMP, TIMESTAMPADD(DAY,2,CURRENT_TIMESTAMP))",
                         array($proposalId, $sess['resp']->sessionNumber, $sess['resp']->id, $this->arg('bl')));
 
                     $sessionId = $this->db->id();
@@ -1039,11 +1039,11 @@ class Proposal extends Page
                                     'CONTAINERS' => $containerList,
                                     );
                 } else if ($code == 403) {
-                    $this->_error('UAS Error - samples and/or investigators not valid. ISPyB/UAS Session ID: '.$sessionId. ' / ' . $uasSessionId);
+                    $this->_error('UAS Error - samples and/or investigators not valid. ISPyB/UAS Session ID: '. $sessionId . ' / ' . $uasSessionId);
                 } else if ($code == 404) {
-                    $this->_error('UAS Error - session not found in UAS, Session ID: '. $sessionId);
+                    $this->_error('UAS Error - session not found in UAS, Session ID: '. $sessionId . ' UAS Session ID: ' . $uasSessionId);
                 } else {
-                    $this->_error('UAS Error - something wrong creating a session for that container ' . $containerId . ', response code was: '.$code);
+                    $this->_error('UAS Error - something wrong creating a session for that container ' . $containerId . ', response code was: '. $code);
                 }
             } else {
                 error_log("Something wrong - an Auto Collect session exists but with no containers " . $container['SESSIONID']);
