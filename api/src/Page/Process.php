@@ -345,9 +345,14 @@ class Process extends Page
         global $zocalo_server,
                $zocalo_username,
                $zocalo_password,
-               $zocalo_mx_reprocess;
+               $zocalo_mx_reprocess_queue;
 
-        if (!$zocalo_server || !$zocalo_mx_reprocess) return;
+        if (empty($zocalo_server) || empty($zocalo_mx_reprocess_queue)) {
+            $message = 'Zocalo server not specified.';
+
+            error_log($message);
+            $this->_error($message, 500);
+        }
 
         if (!$this->has_arg('PROCESSINGJOBID')) $this->_error('No processing job specified');
 
@@ -370,7 +375,7 @@ class Process extends Page
 
         try {
             $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_mx_reprocess, $message, true);
+            $queue->send($zocalo_mx_reprocess_queue, $message, true);
         } catch (Exception $e) {
             $this->_error($e->getMessage(), 500);
         }
