@@ -86,7 +86,7 @@ class EM extends Page
     {
         global $bl_types,
                $visit_directory,
-               $activemq_relion_start_queue;
+               $zocalo_relion_start_queue;
 
         $this->checkElectronMicroscopesAreConfigured($bl_types);
         $session = $this->determineSession($this->arg('session'));
@@ -256,13 +256,11 @@ class EM extends Page
             'relion_workflow' => "{$workflow_path}/{$workflow_file}"
         );
 
-        $this->enqueueMessage($activemq_relion_start_queue, $message);
+        $this->enqueue($zocalo_relion_start_queue, $message);
 
         $output = array(
             'timestamp' => gmdate('c', $timestamp),
-            'message' => $message,
-
-            'workflow_json_array' => $workflow_json_array
+            'message' => $message
         );
 
         $this->_output($output);
@@ -272,7 +270,7 @@ class EM extends Page
     {
         global $bl_types,
                $visit_directory,
-               $activemq_relion_stop_queue;
+               $zocalo_relion_stop_queue;
 
         $this->checkElectronMicroscopesAreConfigured($bl_types);
         $session = $this->determineSession($this->arg('session'));
@@ -293,7 +291,7 @@ class EM extends Page
             'session_path' => $session_path
         );
 
-        $this->enqueueMessage($activemq_relion_stop_queue, $message);
+        $this->enqueue($zocalo_relion_stop_queue, $message);
 
         $output = array(
             'timestamp' => gmdate('c', time()),
@@ -307,7 +305,7 @@ class EM extends Page
     {
         global $bl_types,
                $visit_directory,
-               $activemq_relion_reset_queue;
+               $zocalo_relion_reset_queue;
 
         $this->checkElectronMicroscopesAreConfigured($bl_types);
         $session = $this->determineSession($this->arg('session'));
@@ -328,7 +326,7 @@ class EM extends Page
             'session_path' => $session_path
         );
 
-        $this->enqueueMessage($activemq_relion_reset_queue, $message);
+        $this->enqueue($zocalo_relion_reset_queue, $message);
 
         $output = array(
             'timestamp' => gmdate('c', time()),
@@ -365,17 +363,19 @@ class EM extends Page
     {
         global $bl_types,
                $visit_directory,
-               $em_template_path,
-               $em_template_file,
-               $em_workflow_path;
+               $zocalo_scipion_template_path,
+               $zocalo_scipion_template_file,
+               $zocalo_scipion_workflow_path,
+               $zocalo_scipion_start_queue;
 
         $this->checkElectronMicroscopesAreConfigured($bl_types);
         $session = $this->determineSession($this->arg('session'));
         $this->checkSessionIsActive($session);
 
         $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
-        $em_template_path = $this->substituteSessionValuesInPath($session, $em_template_path);
-        $em_workflow_path = $this->substituteSessionValuesInPath($session, $em_workflow_path);
+        $template_path = $this->substituteSessionValuesInPath($session, $zocalo_scipion_template_path);
+        $template_file = $zocalo_scipion_template_file;
+        $workflow_path = $this->substituteSessionValuesInPath($session, $zocalo_scipion_workflow_path);
 
         // Validate form parameters
 
@@ -412,9 +412,9 @@ class EM extends Page
 
         // Read workflow template file
         try {
-            $template_json_string = file_get_contents("{$em_template_path}/{$em_template_file}");
+            $template_json_string = file_get_contents("{$template_path}/{$template_file}");
         } catch (Exception $e) {
-            error_log("Failed to read workflow template: {$em_template_path}/{$em_template_file}");
+            error_log("Failed to read workflow template: {$template_path}/{$template_file}");
             $this->_error("Failed to read workflow template for electron microscopy “{$session['BEAMLINENAME']}”.", 500);
         }
 
@@ -423,7 +423,7 @@ class EM extends Page
 
         // JSON is invalid if it cannot be decoded
         if ($template_array == null) {
-            error_log("Invalid workflow template: {$em_template_path}/{$em_template_file}");
+            error_log("Invalid workflow template: {$template_path}/{$template_file}");
             $this->_error("Invalid workflow template for electron microscopy “{$session['BEAMLINENAME']}”.", 500);
         }
 
@@ -451,7 +451,7 @@ class EM extends Page
         $absent_parameters = array_diff(array_keys($valid_parameters), $updated_parameters);
 
         if (sizeof($absent_parameters) > 0) {
-            error_log("Parameters absent from workflow template: {$em_template_path}/{$em_template_file}");
+            error_log("Parameters absent from workflow template: {$template_path}/{$template_file}");
 
             $message = 'Parameters absent from workflow template: ' . implode('; ', $absent_parameters) . '.';
             error_log($message);
@@ -460,35 +460,35 @@ class EM extends Page
 
         // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
         // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
-        $scipion_json_string = json_encode($template_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $workflow_json_string = json_encode($template_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         // Write workflow file
 
         $timestamp_epoch = time();
 
-        $scipion_workflow_file = 'scipion_workflow_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
+        $workflow_file = 'scipion_workflow_' . gmdate('ymd.His', $timestamp_epoch) . '.json';
 
         try {
-            file_put_contents("{$em_workflow_path}/{$scipion_workflow_file}", $scipion_json_string);
+            file_put_contents("{$workflow_path}/{$workflow_file}", $workflow_json_string);
         } catch (Exception $e) {
-            error_log("Failed to write workflow file: {$em_workflow_path}/{$scipion_workflow_file}");
+            error_log("Failed to write workflow file: {$workflow_path}/{$workflow_file}");
             $this->_error('Failed to write workflow file.', 500);
         }
 
         // Send job to processing queue
 
         $message = array(
-            'scipion_workflow' => "{$em_workflow_path}/{$scipion_workflow_file}"
+            'scipion_workflow' => "{$workflow_path}/{$workflow_file}"
         );
 
-        $this->enqueueMessage($message);
+        $this->enqueue($zocalo_scipion_start_queue, $message);
 
         $output = array(
             'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
-            'em_template_path' => $em_template_path,
-            'em_template_file' => $em_template_file,
-            'em_workflow_path' => $em_workflow_path,
-            'em_workflow_file' => $scipion_workflow_file
+            'template_path' => $template_path,
+            'template_file' => $template_file,
+            'workflow_path' => $workflow_path,
+            'workflow_file' => $workflow_file
         );
 
         $this->_output($output);
@@ -1060,22 +1060,22 @@ class EM extends Page
         return array($invalid_parameters, $valid_parameters);
     }
 
-    private function enqueueMessage($activemq_queue, $activemq_message)
+    private function enqueue($zocalo_queue, $zocalo_message)
     {
-        global $em_activemq_server,
-               $em_activemq_username,
-               $em_activemq_password;
+        global $zocalo_server,
+               $zocalo_username,
+               $zocalo_password;
 
-        if (empty($em_activemq_server) || empty($activemq_queue)) {
-            $message = 'ActiveMQ server not specified.';
+        if (empty($zocalo_server) || empty($zocalo_queue)) {
+            $message = 'Zocalo server not specified.';
 
             error_log($message);
             $this->_error($message, 500);
         }
 
         try {
-            $queue = new Queue($em_activemq_server, $em_activemq_username, $em_activemq_password);
-            $queue->send($activemq_queue, $activemq_message, true);
+            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
+            $queue->send($zocalo_queue, $zocalo_message, true);
         } catch (Exception $e) {
             $this->_error($e->getMessage(), 500);
         }
