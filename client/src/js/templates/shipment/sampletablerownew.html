@@ -1,23 +1,29 @@
 
 <td><%-LOCATION%></td>
-<td><select name="PROTEINID"></select></td>
+<td class="protein"><select name="PROTEINID"></select></td>
 
-<td><input class="sname" type="text" name="NAME" /></td>
-<td class="xtal"><select class="sg" name="SPACEGROUP"></select></td>
-<td class="xtal"><input class="barcode" name="CODE" type="text" /></td>
-<td class="non-xtal"><input class="volume" type="text" name="VOLUME" /></td>
-<td><input class="comments" type="text" name="COMMENTS" /></td>
+<td class="name"><input class="sname" type="text" name="NAME" /></td>
+<td class="spacegroup xtal auto-extra"><select class="sg" name="SPACEGROUP"></select></td>
+<td class="barcode xtal auto-extra"><input class="barcode" name="CODE" type="text" /></td>
+<td class="volume non-xtal"><input class="volume" type="text" name="VOLUME" /></td>
 
-<td><select name="ANOMALOUSSCATTERER"></select></td>
+<td class="centringmethod auto"><select name="CENTRINGMETHOD"></select></td>
+<td class="experimentkind auto"><select name="EXPERIMENTKIND"></select></td>
+<td class="energy auto"><input type="text" name="ENERGY"></select></td>
+<td class="radiationsensitivity auto"><select name="RADIATIONSENSITIVITY"></select></td>
 
-<td class="extra"><input type="text" name="ABUNDANCE" value="<%-ABUNDANCE%>" /> <span class="SYMBOL"><%-SYMBOL%></span></td>
+<td class="comments"><input class="comments" type="text" name="COMMENTS" /></td>
+
+<td class="anomalousscatterer"><select class="xtal" name="ANOMALOUSSCATTERER"></select></td>
+
+<td class="requiredresolution xtal"><input type="text" name="REQUIREDRESOLUTION" /></td>
+
+<td class="abundance extra"><input type="text" name="ABUNDANCE" value="<%-ABUNDANCE%>" /> <span class="SYMBOL"><%-SYMBOL%></span></td>
 <td class="extra components">
     Add: <input type="text" name="COMPONENTID">
 </td>
 
-<td class="extra"><input type="text" name="REQUIREDRESOLUTION" /></td>
-
-<td class="extra">
+<td class="unitcell extra">
 	<input type="text" name="CELL_A" placeholder="A" />
 	<input type="text" name="CELL_B" placeholder="B" />
 	<input type="text" name="CELL_C" placeholder="C" />
@@ -25,11 +31,6 @@
 	<input type="text" name="CELL_BETA" placeholder="&beta;" />
 	<input type="text" name="CELL_GAMMA" placeholder="&gamma;" />
 </td>
-
-<td class="auto"><select name="CENTRINGMETHOD"></select></td>
-<td class="auto"><select name="EXPERIMENTKIND"></select></td>
-<td class="auto"><input type="text" name="ENERGY"></select></td>
-<td class="auto"><select name="RADIATIONSENSITIVITY"></select></td>
 
 <td>
     <a href="#" class="button button-notext clone"><i class="fa fa-plus"></i> <span>Clone</span></a>
