@@ -74,10 +74,12 @@ module.exports = {
       // Hence the vendor magnific-popup has a dependency on our utils/xhrimage
       'jquery.mp': 'vendor/jquery/jquery.magnific-popup',
 
-      // jeditable provided by NPM.
-      'jquery.editable': 'jquery-jeditable/dist/jquery.jeditable.min',
-      'jquery.editable.datepicker': 'jquery-jeditable/dist/jquery.jeditable.datepicker.min',
-  
+      // jeditable can be provided by NPM (but only for jQuery 3.x). Does not work with our legacy jquery.
+      // 'jquery.editable': 'jquery-jeditable/dist/jquery.jeditable.min',
+      // 'jquery.editable.datepicker': 'jquery-jeditable/dist/jquery.jeditable.datepicker.min',
+      'jquery.editable': 'vendor/jquery/jquery.jeditable.min',
+      'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
+
       // Jquery.color plugin also NPM package
       'jquery.color': 'jquery-color',
 
