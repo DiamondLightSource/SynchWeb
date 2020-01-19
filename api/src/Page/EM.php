@@ -533,9 +533,9 @@ class EM extends Page
                 FROM motioncorrection mc
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
                 INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
 
@@ -549,9 +549,9 @@ class EM extends Page
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = c.autoprocprogramid
                 INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN blsession s ON dc.sessionid = s.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
 
