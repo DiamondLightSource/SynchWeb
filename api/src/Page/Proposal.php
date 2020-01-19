@@ -430,13 +430,16 @@ class Proposal extends Page
             $wcs = array();
             foreach ($rows as $r) {
                 array_push($ids, $r['SESSIONID']);
-                array_push($wcs, 'sessionid=:'.sizeof($ids));
+                array_push($wcs, 'dcg.sessionid=:'.sizeof($ids));
             }
             
             $dcs = array();
             if (sizeof($ids)) {
                 $where = implode(' OR ', $wcs);
-                $tdcs = $this->db->pq("SELECT count(datacollectionid) as c, sessionid FROM datacollection WHERE $where GROUP BY sessionid", $ids);
+                $tdcs = $this->db->pq("SELECT count(dc.datacollectionid) as c, dcg.sessionid 
+                    FROM datacollection dc
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    WHERE $where GROUP BY dcg.sessionid", $ids);
                 foreach($tdcs as $t) $dcs[$t['SESSIONID']] = $t['C'];
             }
             
