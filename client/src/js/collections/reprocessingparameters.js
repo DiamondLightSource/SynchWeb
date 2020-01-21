@@ -1,5 +1,5 @@
-define(['backbone.paginator', 'models/reprocessingparameter'], 
-    function(PageableCollection, ReprocessingParameter) {
+define(['backbone', 'backbone.paginator', 'models/reprocessingparameter'],
+    function(Backbone, PageableCollection, ReprocessingParameter) {
     
     return PageableCollection.extend({
         model: ReprocessingParameter,
