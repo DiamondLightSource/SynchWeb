@@ -505,7 +505,7 @@ class DC extends Page
             WHERE $sess[2] $where3
                  
                    
-            ORDER BY sta DESC";
+            ORDER BY sta DESC, id DESC";
             
             $dcs = $this->db->paginate($q, $args);
             $this->profile('main query');            
