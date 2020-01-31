@@ -188,7 +188,7 @@ define([
                     }
 
                     function calculateBoxSize(particleSizePixels, motionCorrectionBinning) {
-                        let boxSizeExact = particleSizePixels * motionCorrectionBinning * 1.2;
+                        let boxSizeExact = particleSizePixels * 1.2;
                         let boxSizeInt = Math.ceil(boxSizeExact);
                         return boxSizeInt + (boxSizeInt % 2);
                     }                    
@@ -201,9 +201,7 @@ define([
 
                             if (boxSize > particleBoxSize) return particleBoxSize;
 
-                            let magnifiedPixelSize = pixelSize * motionCorrectionBinning;
-
-                            if (((magnifiedPixelSize * particleBoxSize) / boxSize) < 4.25) return boxSize;
+                            if (((pixelSize * particleBoxSize) / boxSize) < 4.25) return boxSize;
                         }
 
                         return "Box size is too large!";
