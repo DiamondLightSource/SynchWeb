@@ -183,7 +183,7 @@ define([
 
                             this.particleMaskDiameter = Math.round(this.particleDiameterMax * 1.1);
                             this.particleBoxSize = calculateBoxSize(particleSizePixels);
-                            this.particleBoxSizeSmall = calculateBoxSizeSmall(this.particleBoxSize, this.pixelSize);
+                            this.particleBoxSizeSmall = calculateBoxSizeSmall(this.particleBoxSize, this.pixelSize, this.motionCorrectionBinning);
                         }
                     }
 
@@ -193,7 +193,7 @@ define([
                         return boxSizeInt + boxSizeInt % 2;
                     }
 
-                    function calculateBoxSizeSmall(particleBoxSize, pixelSize) {
+                    function calculateBoxSizeSmall(particleBoxSize, pixelSize, motionCorrectionBinning) {
                         let boxSizes = [48, 64, 96, 128, 160, 192, 256, 288, 300, 320, 360, 384, 400, 420, 450, 480, 512, 640, 768, 896, 1024];
 
                         for (let i = 0; i < boxSizes.length; i++) {
@@ -201,7 +201,10 @@ define([
 
                             if (boxSize > particleBoxSize) return particleBoxSize;
 
-                            if ((pixelSize * particleBoxSize / boxSize) < 4.25) return boxSize;
+                            let magnifiedPixelSize = pixelSize * motionCorrectionBinning;
+
+                            if (((magnifiedPixelSize * particleBoxSize) / boxSize) < 4.25) return boxSize;
+                            
                         }
 
                         return "Box size is too large!";
@@ -225,7 +228,7 @@ define([
                             this.sphericalAberration = parseFloat(this.sphericalAberration);
                             this.findPhaseShift = this.findPhaseShift === true;
                             this.pixelSize = parseFloat(this.pixelSize);
-                            this.motionCorrectionBinning = this.motionCorrectionBinning === true;
+                            this.motionCorrectionBinning = parseInt(this.motionCorrectionBinning);
                             this.dosePerFrame = parseFloat(this.dosePerFrame);
 
                             this.pipelineDo1stPass = this.pipelineDo1stPass === true;
