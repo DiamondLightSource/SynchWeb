@@ -182,16 +182,16 @@ define([
                             let particleSizePixels = this.particleDiameterMax / this.pixelSize;
 
                             this.particleMaskDiameter = Math.round(this.particleDiameterMax * 1.1);
-                            this.particleBoxSize = calculateBoxSize(particleSizePixels);
+                            this.particleBoxSize = calculateBoxSize(particleSizePixels, this.motionCorrectionBinning);
                             this.particleBoxSizeSmall = calculateBoxSizeSmall(this.particleBoxSize, this.pixelSize, this.motionCorrectionBinning);
                         }
                     }
 
-                    function calculateBoxSize(particleSizePixels) {
-                        let boxSizeExact = 1.2 * particleSizePixels;
+                    function calculateBoxSize(particleSizePixels, motionCorrectionBinning) {
+                        let boxSizeExact = particleSizePixels * motionCorrectionBinning * 1.2;
                         let boxSizeInt = Math.ceil(boxSizeExact);
-                        return boxSizeInt + boxSizeInt % 2;
-                    }
+                        return boxSizeInt + (boxSizeInt % 2);
+                    }                    
 
                     function calculateBoxSizeSmall(particleBoxSize, pixelSize, motionCorrectionBinning) {
                         let boxSizes = [48, 64, 96, 128, 160, 192, 256, 288, 300, 320, 360, 384, 400, 420, 450, 480, 512, 640, 768, 896, 1024];
@@ -204,7 +204,6 @@ define([
                             let magnifiedPixelSize = pixelSize * motionCorrectionBinning;
 
                             if (((magnifiedPixelSize * particleBoxSize) / boxSize) < 4.25) return boxSize;
-                            
                         }
 
                         return "Box size is too large!";
