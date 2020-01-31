@@ -193,6 +193,8 @@ class EM extends Page
 
         // TODO Remove projectAcquisitionSoftware from form. Relion start script to determine acquisition software from directory structure. (JPH + JL)
 
+        $workflow_json_array['acquisition_software'] = $valid_parameters['projectAcquisitionSoftware'];
+
         if ($valid_parameters['projectAcquisitionSoftware'] == 'EPU') {
             $workflow_json_array['import_images'] = "{$session_path}/raw/GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
         } else if ($valid_parameters['projectAcquisitionSoftware'] == 'SerialEM') {
