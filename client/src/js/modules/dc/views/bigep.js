@@ -1,63 +1,52 @@
-define(['marionette', 'views/log', 'templates/dc/dc_bigep.html', 'utils'], function(Marionette, LogView, template, utils) {
+define(['marionette',
+    'collections/autoprocattachments',
+    'modules/dc/views/autoprocattachments',
+    'templates/dc/dc_bigep.html',
+    'utils/xhrimage'], function(Marionette, AutoProcAttachments, AutoProcAttachmentsView,
+        template, XHRImage) {
     
     return Marionette.ItemView.extend({
         template: template,
         modelEvents: { 'change': 'render' },
         
-        ui: {
-            XDS: '.plot_shelx-XDS',
-            DIALS: '.plot_shelx-DIALS',
-        },
-        
         events: {
-            'click .logf': 'showLog',
-            'click .dll': utils.signHandler,
+            'click a.apattach': 'showAttachments',
         },
         
-        showLog: function(e) {
+        showAttachments: function(e) {
             e.preventDefault()
-            app.dialog.show(new LogView({ title: this.model.get('TYPE') + ' Log File', url: $(e.target).attr('href') }))
+
+            var aid = e.currentTarget.id.split('-bigep-files')[0]
+            this.attachments = new AutoProcAttachments()
+            this.attachments.queryParams.AUTOPROCPROGRAMID = aid
+            this.attachments.fetch()
+
+            app.dialog.show(new DialogView({ 
+                title: 'Auto Processing Attachments: '+this.model.escape('TYPE'),
+                view: new AutoProcAttachmentsView({ collection: this.attachments}), 
+                autosize: true 
+            }))
         },
-        
-        
-        onShow: function() {
-            var plots = this.model.get('SHELXC')['PLOTS']
-            for (var ds in plots) {
-                    if (app.mobile()) this.ui[ds].width(0.97*(this.options.holderWidth-14))
-                    else {
-                        this.ui[ds].width(0.47*(this.options.holderWidth-14))
-                    }
-                    var data = [
-                        { data: plots[ds].DSIG, label: '&ltd"/sig&gt', yaxis: 1 },
-                        { data: plots[ds].CC12, label: 'CC(1/2)', yaxis: 2 },
-                    ]
-                    var options = {
-                        series: {
-                            lines: { show: true }
-                        },
-                        xaxis: {
-                            ticks: function (axis) {
-                                var res = [], nticks = 6, step = (axis.max - axis.min) / nticks
-                                for (i = 0; i <= nticks; i++) {
-                                    res.push(axis.min + i * step)
-                                }
-                                return res
-                            },
-                            tickFormatter: function (val, axis) {
-                                return (1.0/Math.sqrt(val)).toFixed(axis.tickDecimals)
-                            },
-                            tickDecimals: 2
-                        },
-                        yaxes: [{
-                            position: "left",
-                            }, {
-                            position: "right",
-                            }
-                        ]
-                    }
-                    var pl = $.extend({}, utils.default_plot, options)
-                    $.plot(this.ui[ds], data, pl)
+
+        showThumbnail: function() {
+            for (const aid in this.images) {
+                for (const ppl in this.images[aid]) {
+                    this.$el.find(`#${ aid }${ ppl }-thumb`).attr('src', this.images[aid][ppl].src)
+                }
             }
         },
+
+        onDomRefresh: function() {
+            this.images = {}
+            var autoproc_data = this.model.get('AID')
+            for (const aid in autoproc_data) {
+                this.images[aid] = {}
+                for (const ppl in autoproc_data[aid]['PROC']) {
+                    this.images[aid][ppl] = new XHRImage()
+                    this.images[aid][ppl].onload = this.showThumbnail.bind(this)
+                    this.images[aid][ppl].load(app.apiurl+'/image/bigep/aid/' + aid + '/ppl/' + ppl)
+                }
+            }
+        }
     })
 })

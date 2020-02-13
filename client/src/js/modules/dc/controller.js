@@ -87,7 +87,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
       
       
     // Map / Model Viewer
-    mapmodelviewer: function(id, ty, dt, ppl) {
+    mapmodelviewer: function(id, aid, ty, ppl) {
         if (!ty) ty = 'dimple'
         var lookup = new ProposalLookup({ field: 'DATACOLLECTIONID', value: id })
         lookup.find({
@@ -99,7 +99,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
                             {title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
                             { title: 'Map/Model Viewer' },
                             { title: dc.get('FILETEMPLATE') }])
-                        app.content.show(new MapModelViewer({ ty: ty, dt: dt, ppl: ppl, model: dc }))
+                        app.content.show(new MapModelViewer({ ty: ty, aid: aid, ppl: ppl, model: dc }))
                     },
                     error: function() {
                         app.bc.reset([bc, { title: 'Map/Model Viewer' }])
