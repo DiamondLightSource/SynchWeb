@@ -22,9 +22,9 @@ class Download extends Page
                               'map' => '\d',
                               'validity' => '.*',
 
-                              'dt' => '\w+',
                               'ppl' => '\w+',
-
+                              'aid' => '\w+',
+            
                               'filetype' => '\w+',
                               'blsampleid' => '\d+',
                               'dcg' => '\d+',
@@ -37,7 +37,7 @@ class Download extends Page
                               );
 
 
-        public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/dt/:dt)(/ppl/:ppl)(/id/:id)(/map/:map)', 'get', '_map'),
+        public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/ppl/:ppl)(/aid/:aid)(/id/:id)(/map/:map)', 'get', '_map'),
                               array('/id/:id/aid/:aid(/log/:log)(/1)(/LogFiles/:LogFiles)(/archive/:archive)', 'get', '_auto_processing'),
                               array('/plots', 'get', '_auto_processing_plots'),
                               array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
@@ -46,7 +46,6 @@ class Download extends Page
                               array('/csv/visit/:visit', 'get', '_csv_report'),
                               array('/bl/visit/:visit/run/:run', 'get', '_blend_mtz'),
                               array('/sign', 'post', '_sign_url'),
-                              array('/bigep/id/:id/dt/:dt/ppl/:ppl(/log/:log)', 'get', '_bigep_mtz'),
                               array('/data/visit/:visit', 'get', '_download_visit'),
                               array('/attachments', 'get', '_get_attachments'),
                               array('/attachment/id/:id/aid/:aid', 'get', '_get_attachment'),
@@ -215,7 +214,7 @@ class Download extends Page
             $where = '';
 
             if ($this->has_arg('AUTOPROCPROGRAMID')) {
-                $where .= ' AND api.autoprocprogramid=:'.(sizeof($args)+1);
+                $where .= ' AND app.autoprocprogramid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('AUTOPROCPROGRAMID'));
             }
 
@@ -225,10 +224,10 @@ class Download extends Page
             }
 
             $rows = $this->db->pq("SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid
-                FROM autoprocintegration api 
-                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                FROM autoprocprogram app
+                INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
-                INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
+                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
                 INNER JOIN blsession s ON s.sessionid = dc.sessionid
                 WHERE s.proposalid=:1 $where", $args);
 
@@ -448,39 +447,6 @@ class Download extends Page
             $this->_mtzmap('MrBUMP');
         }
 
-        function _bigep_mtz() {
-            $bigep_patterns = array (
-                    'AUTOSHARP' => array( 'path' => 'big_ep*/*/autoSHARP/', 'log' => 'LISTautoSHARP.html'),
-                    'AUTOBUILD' => array( 'path' => 'big_ep*/*/AutoSol/', 'log' => 'phenix_autobuild.log'),
-                    'CRANK2' => array( 'path' => 'big_ep*/*/crank2/', 'log' => 'crank2.log')
-            );
-            $dt = strtoupper($this->arg('dt'));
-            $ppl = strtoupper($this->arg('ppl'));
-
-            $t = array();
-            $root_dirs = $this->_get_downstream_dir(array ('/processed', '/tmp'), 'big_ep/');
-            foreach ( $root_dirs as $loc ) {
-                $root_pattern = $loc . $dt . '/xia2/*/' . $bigep_patterns[$ppl]['path'];
-                $bigep_mdl_glob = glob($root_pattern);
-                if (sizeof($bigep_mdl_glob)) {
-                    $root = $bigep_mdl_glob[0];
-                    $bigep_mdl_json = $root.'big_ep_model_ispyb.json';
-                    if (file_exists($bigep_mdl_json)) {
-                        $json_str = file_get_contents($bigep_mdl_json);
-                        $json_data = json_decode($json_str, true);
-                        $mtz_pth = $this->_use_rel_path($bigep_patterns[$ppl]['path'], $json_data['mtz'], $root);
-                        $pdb_pth = $this->_use_rel_path($bigep_patterns[$ppl]['path'], $json_data['pdb'], $root);
-                        $t = array('files' => array($mtz_pth, $pdb_pth), 'log' => $root.$bigep_patterns[$ppl]['log']);
-                        $type = 'BigEP_'.$dt.'_'.$ppl;
-                        $this->_mtzmap_readfile($type, $t['files'], $t['log']);
-                        return;
-                    }
-                }
-            }
-            $this->_error('Cannot find Big EP model builing results file');
-        }
-
-
         function _mtzmap($type) {
             $types = array('MrBUMP' => array('root' => 'auto_mrbump/', 'files' => array('PostMRRefine.pdb', 'PostMRRefine.mtz'), 'log' => 'MRBUMP.log'),
                            'Dimple' => array('root' => 'fast_dp/dimple/', 'files' => array('final.pdb', 'final.mtz'), 'log' => 'dimple.log'),
@@ -533,46 +499,34 @@ class Download extends Page
         # ------------------------------------------------------------------------
         # Return maps and pdbs for big_ep
         function _big_ep_map() {
-            $bigep_patterns = array (
-                    'AUTOSHARP' => 'big_ep*/*/autoSHARP/',
-                    'AUTOBUILD' => 'big_ep*/*/AutoSol/',
-                    'CRANK2' => 'big_ep*/*/crank2/'
+            $map_names = array('autoSHARP' => 'autoSHARP',
+                'AutoSol' => 'AutoSol',
+                'AutoBuild' => 'AutoSol',
+                'crank2' => 'Crank2',
+                'Crank2' => 'Crank2'
             );
-            $dt = strtoupper($this->arg('dt'));
-            $ppl = strtoupper($this->arg('ppl'));
+            $aid = $this->arg('aid');
+            $ppl = "%".$map_names[$this->arg('ppl')];
 
-            $root_dirs = $this->_get_downstream_dir(array ('/processed', '/tmp'), 'big_ep/');
-            foreach ( $root_dirs as $loc ) {
-                $root_pattern = $loc . $dt . '/xia2/*/' . $bigep_patterns[$ppl];
-                $bigep_mdl_glob = glob($root_pattern);
-                if (sizeof($bigep_mdl_glob)) {
-                    $root = $bigep_mdl_glob[0];
-                    $bigep_mdl_json = $root.'big_ep_model_ispyb.json';
-                    if (file_exists($bigep_mdl_json)) {
-                        $json_str = file_get_contents($bigep_mdl_json);
-                        $json_data = json_decode($json_str, true);
-
-                        if ($this->has_arg('pdb') && array_key_exists('pdb', $json_data)) {
-                            $out = $this->_use_rel_path($bigep_patterns[$ppl], $json_data['pdb'], $root);
-                        } elseif (array_key_exists('map', $json_data)) {
-                            $out = $this->_use_rel_path($bigep_patterns[$ppl], $json_data['map'], $root);
-                        } else {
-                            continue;
-                        }
-                        # Use relative path in case files were moved
-                        if (file_exists($out)) {
-                            break;
-                        } else {
-                            $pth_split = preg_split('`'.$bigep_patterns[$ppl].'`', $out);
-                            if (sizeof($pth_split)) {
-                                $pth_rel = array_pop($pth_split);
-                                $out = $root.$pth_rel;
-                                if (file_exists($out)) {
-                                    break;
-                                }
-                            }
-                        }
-                    }
+            $rows = $this->db->pq("SELECT appa.fileName, appa.filePath FROM AutoProcProgramAttachment appa
+                                         WHERE appa.autoProcProgramId = :1
+                                         AND appa.filePath LIKE :2
+                                         AND appa.fileName = :3", array($aid, $ppl, 'big_ep_model_ispyb.json'));
+            if (!sizeof($rows)) return;
+            else $row = $rows[0];
+            $this->db->close();
+            
+            $bigep_mdl_json = $row["FILEPATH"]."/".$row["FILENAME"];
+            if (file_exists($bigep_mdl_json)) {
+                $json_str = file_get_contents($bigep_mdl_json);
+                $json_data = json_decode($json_str, true);
+                
+                if ($this->has_arg('pdb') && array_key_exists('pdb', $json_data)) {
+                    $out = $json_data['pdb'];
+                } elseif (array_key_exists('map', $json_data)) {
+                    $out = $json_data['map'];
+                } else {
+                    continue;
                 }
             }
 

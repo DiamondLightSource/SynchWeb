@@ -25,6 +25,7 @@ class Image extends Page
         public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
                               array('/dimp/id/:id(/n/:n)', 'get', '_dimple_images'),
+                              array('/bigep/aid/:aid/ppl/:ppl', 'get', '_bigep_images'),
                               array('/di/id/:id(/thresh/:thresh)(/n/:n)', 'get', '_diffraction_viewer'),
                               array('/cam/bl/:bl(/n/:n)', 'get', '_forward_webcam'),
                               array('/oav/bl/:bl(/n/:n)', 'get', '_forward_oav'),
@@ -272,6 +273,33 @@ class Image extends Page
         }
         
 
+        # BigEP model images
+        function _bigep_images() {
+            
+            $img_names = array('autoSHARP' => 'autoSHARP_model.png',
+                'AutoSol' => 'AutoBuild_model.png',
+                'crank2' => 'crank2_model.png',
+                'AutoBuild' => 'AutoBuild_model.png',
+                'Crank2' => 'crank2_model.png'
+            );
+            $rows = $this->db->pq("SELECT appa.fileName, appa.filePath FROM AutoProcProgramAttachment appa
+                                         WHERE appa.autoProcProgramId = :1
+                                         AND appa.fileName = :2", array($this->arg('aid'), $img_names[$this->arg('ppl')]));
+            
+            if (!sizeof($rows)) return;
+            else $row = $rows[0];
+            $this->db->close();
+            
+            $im = $row['FILEPATH'] . '/' . $row['FILENAME'];
+            
+            if (file_exists($im)) {
+                $this->_browser_cache();
+                $this->app->contentType('image/png');
+                readfile($im);
+            }
+        }
+        
+        
         # ------------------------------------------------------------------------
         # Forward OAV to browser
         function _forward_oav() {

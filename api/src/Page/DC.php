@@ -708,8 +708,8 @@ class DC extends Page
                 FROM datacollection dc 
                 INNER JOIN blsession s ON s.sessionid=dc.sessionid 
                 INNER JOIN proposal p ON p.proposalid=s.proposalid
-                INNER JOIN autoprocintegration api ON api.datacollectionid = dc.datacollectionid
-                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
+                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 WHERE $where", $ids);
 
             $db_status = array();
@@ -1239,7 +1239,7 @@ class DC extends Page
             $ap = array('Fast EP' => array('fast_ep', array('sad.mtz', 'sad_fa.pdb')),
                         'MrBUMP' => array('auto_mrbump', array('PostMRRefine.pdb', 'PostMRRefine.mtz')),
                         'Dimple' => array('fast_dp', array('dimple/final.pdb', 'dimple/final.mtz')),
-                        'Big EP' => array('shelxc', array('', ''))
+                        'Big EP' => array('big_ep', array('', ''))
                         );
             
             list($info) = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
@@ -1248,7 +1248,6 @@ class DC extends Page
              INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
              WHERE dc.datacollectionid=:1", array($id));
             
-            $this->db->close();
             $info['DIR'] = $this->ads($info['DIR']);
             $data = array();
             
@@ -1370,118 +1369,104 @@ class DC extends Page
 
                     # BigEP
                     } else if ($n == 'Big EP') {
-                        $this->_bigep_downstream($root, $data, $info);
+                        $this->_bigep_downstream($id, $root, $data, $info);
                     }
                    
                 }
                 
             }
-            
+            $this->db->close();
             $this->_output($data);
         }
 
 
-        function _bigep_downstream($root, &$data, $info) {
-            $sg_patterns = array('XDS' => 'xia2/3dii-run*',
-                                 'DIALS' => 'xia2/dials-run*');
-            
-            foreach ($sg_patterns as $name => $sgpt) {
-                $proc_paths = glob($root.$sgpt);
-                if (sizeof($proc_paths)) {
-                    foreach ($proc_paths as $i => $pth) {
-                        
-                        $dat = array('TYPE' => 'Big EP/'.$name.":".$i);
-                        
-                        # Read SHELXC logs
-                        $graph_patterns = array('CHISQ' => array('Chi-sq', 2),
-                                                'ISIGI' => array('<I/sig>', 2),
-                                                'DSIG' => array('<d"/sig>', 2),
-                                                'CC12' => array('CC(1/2)', 2),
-                                                'RESO' => array('Resl.', 3));
-                        $shx_logs = glob($pth.'/*_shelxc.log');
-                        if (sizeof($shx_logs)) {
-                            $shx_log = $shx_logs[0];
-                            if (file_exists($shx_log)) {
-                                $lst = explode("\n", file_get_contents($shx_log));
-                                $graphs = array();
-                                foreach ($lst as $l) {
-                                    foreach ($graph_patterns as $k => $gr) {
-                                        if (strpos($l, $gr[0]) == 1) {
-                                            $graphs[$k] = array_map('floatval', array_slice(preg_split('/\s+/', $l), $gr[1]));
-                                        }
-                                    }
-                                }
-                            }
-                            if ($graphs) {
-                                $dat['SHELXC']['PLOTS'][$name] = array();
+        function _bigep_downstream($id, $root, &$data, $info) {
+            $rows = $this->db->pq("SELECT app.autoProcProgramId, app.processingPrograms, app.processingJobId,
+                                             COALESCE(sel1.processingPrograms,
+                                             sel2.processingPrograms) as tabName,
+                                             appa.fileName, appa.filePath
+                                         FROM AutoProcProgramAttachment appa
+                                         INNER JOIN AutoProcProgram app ON app.autoProcProgramId = appa.autoProcProgramId
+                                         INNER JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId
+                                         LEFT OUTER JOIN (
+                                             SELECT
+                                                 pjp1.processingJobId,
+                                                 app1.autoprocprogramid,
+                                                 app1.processingPrograms
+                                             FROM
+                                                 AutoProcProgram app1
+                                             INNER JOIN ProcessingJobParameter pjp1 ON
+                                                 pjp1.parameterValue = app1.autoprocprogramid
+                                             INNER JOIN ProcessingJob pj1 ON
+                                                 pj1.processingJobId = pjp1.processingJobId
+                                             WHERE
+                                                 pjp1.parameterKey = 'ispyb_autoprocprogramid') sel1 ON
+                                             sel1.processingJobId = pj.processingJobId
+                                         LEFT OUTER JOIN (
+                                             SELECT
+                                                 pjp1.processingJobId,
+                                                 app.autoprocprogramid,
+                                                 app.processingPrograms
+                                             FROM
+                                                 AutoProcScaling aps
+                                             INNER JOIN ProcessingJobParameter pjp1 ON
+                                                 pjp1.parameterValue = aps.autoProcScalingId
+                                             INNER JOIN ProcessingJob pj1 ON
+                                                 pj1.processingJobId = pjp1.processingJobId
+                                             INNER JOIN AutoProc ap ON
+                                                 ap.autoProcId = aps.autoProcId
+                                             INNER JOIN AutoProcProgram app ON
+                                                 app.autoProcProgramId = ap.autoProcProgramId
+                                             WHERE
+                                                 pjp1.parameterKey = 'scaling_id') sel2 ON
+                                             sel2.processingJobId = pj.processingJobId
+                                         WHERE app.processingPrograms = 'big_ep'
+                                               AND pj.dataCollectionId = :1
+                                         ORDER BY
+                                               app.autoProcProgramId", array($id));
+            $dat = array('AID' => array());
+            foreach ($rows as $r) {
+                if (!array_key_exists($r['AUTOPROCPROGRAMID'], $dat['AID'])) {
+                    $idx = $r['AUTOPROCPROGRAMID'];
+                    $dat['AID'][$idx] = array('PROC' => array(), 'SETTINGS' => array());
+                    $dat['AID'][$idx]['TAG'] = strval(sizeof($dat['AID'])).": ".$r['TABNAME'];
+                }
+                $data_file = $r["FILEPATH"]."/".$r["FILENAME"];
+                if ($r["FILENAME"] == "big_ep_settings.json") {
+                    if (file_exists($data_file)) {
+                        $json_str = file_get_contents($data_file);
+                        $dat['AID'][$idx]['SETTINGS'] = json_decode($json_str, true);
+                    }
+                }
+                elseif ($r["FILENAME"] == "big_ep_model_ispyb.json") {
+                    if (file_exists($data_file)) {
+                        $json_str = file_get_contents($data_file);
+                        $json_data = json_decode($json_str, true);
+                        if (array_key_exists('pipeline', $json_data)) {
+                            $ppl = $json_data['pipeline'];
+                        } else {
+                            $ppl = basename(dirname($data_file));
+                        }
+                        foreach ( array('RESID' => array('total', 0),
+                            'FRAGM' => array('fragments', 0),
+                            'MAXLEN' => array('max', 0),
+                            'MAPCC' => array('mapcc', 2),
+                            'MAPRESOL' => array('mapcc_dmin', 2)) as $k => $v) {
+                            if (array_key_exists($v[0], $json_data)) {
+                                $dat['AID'][$idx]['PROC'][$ppl][$k] = number_format($json_data[$v[0]], $v[1]);
                             } else {
-                                continue;
+                                $dat['AID'][$idx]['PROC'][$ppl][$k] = null;
                             }
-                            foreach (array_keys($graph_patterns) as $k) {
-                                if ($k != 'RESO' and array_key_exists($k, $graphs)) {
-                                    $dat['SHELXC']['PLOTS'][$name][$k] = array();
-                                }
-                            }
-                            if (array_key_exists('RESO', $graphs)) {
-                                foreach ($graphs['RESO'] as $i => $r) {
-                                    foreach (array_keys($dat['SHELXC']['PLOTS'][$name]) as $k) {
-                                        if (array_key_exists($i, $graphs[$k])) {
-                                            array_push($dat['SHELXC']['PLOTS'][$name][$k], array(1.0/pow($r, 2), $graphs[$k][$i]));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        # Read model building results
-                        $bigep_patterns = array (
-                                'AUTOSHARP' => '/big_ep*/*/autoSHARP/',
-                                'AUTOBUILD' => '/big_ep*/*/AutoSol/',
-                                'CRANK2' => '/big_ep*/*/crank2/' 
-                        );
-                        preg_match('/\/xia2\/(3dii|dials)\-run\w*/', $pth, $sgmatch);
-                        $dtpt = 'big_ep/*'.$sgmatch[0];
-                        foreach ( array ('/processed',
-                                        '/tmp') as $loc ) {
-                            $settings_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt;
-                            $bigep_settings_glob = glob($settings_root.'/big_ep*/*/big_ep_settings.json');
-                            if (sizeof($bigep_settings_glob)) {
-                                preg_match('/\/big_ep\/(?P<tag>\w+)\/xia2\/(3dii|dials)\-run\w*/', $bigep_settings_glob[0], $tagmatch);
-                                $dat['TAG'] = $tagmatch['tag'];
-                                $bigep_settings_json = $bigep_settings_glob[0];
-                                $json_str = file_get_contents($bigep_settings_json);
-                                $dat['SETTINGS'][$name] = json_decode($json_str, true);
-                                break;
-                            }
-                        }
-                        foreach ( $bigep_patterns as $ppl => $pplpt ) {
-                            foreach ( array ('/processed', '/tmp' ) as $loc ) {
-                                $bigep_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt . $pplpt;
-                                $bigep_mdl_glob = glob($bigep_root.'big_ep_model_ispyb.json');
-                                if (sizeof($bigep_mdl_glob)) {
-                                    $bigep_mdl_json = $bigep_mdl_glob[0];
-                                    $json_str = file_get_contents($bigep_mdl_json);
-                                    $json_data = json_decode($json_str, true);
-                                    foreach ( array('RESID' => array('total', 0),
-                                                    'FRAGM' => array('fragments', 0),
-                                                   'MAXLEN' => array('max', 0),
-                                                    'MAPCC' => array('mapcc', 2),
-                                                 'MAPRESOL' => array('mapcc_dmin', 2)) as $k => $v) {
-                                        if (array_key_exists($v[0], $json_data)) {
-                                            $dat['PROC'][$name][$ppl][$k] = number_format($json_data[$v[0]], $v[1]);
-                                        } else {
-                                            $dat['PROC'][$name][$ppl][$k] = null;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        
-                        if (array_key_exists('PROC',$dat) && array_intersect(array_keys($dat['PROC']), array_keys($sg_patterns))) {
-                            array_push( $data, $dat );
                         }
                     }
                 }
+            }
+            if (!empty($dat['AID'])) {
+                foreach ($dat['AID'] as $idx => $v) {
+                    ksort($dat['AID'][$idx]['PROC'], SORT_NATURAL | SORT_FLAG_CASE);
+                }
+                $dat['TYPE'] =  'Big EP';
+                array_push( $data, $dat );
             }
         }
 

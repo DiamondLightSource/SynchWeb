@@ -1,10 +1,13 @@
-<% if (typeof SETTINGS !== 'undefined') { %>
+<% _.each(AID, function(data, aid) { %>
+    <h2><%-data.TAG%></h2>
+    <% if (_.isEmpty(data.PROC)) { %>
+    <p>This processing task has failed</p>
+    <% } %>
+    <% if (!_.isEmpty(data.SETTINGS)) { %>
     <section class="bigep-settings">
-        <h2>Settings</h2>
         <table class="bepm_sets reflow">
             <thead>
                 <tr>
-                    <th>Processed</th>
                     <th>Anom. scatterer</th>
                     <th>Space group</th>
                     <th>Num. scatterers</th>
@@ -13,51 +16,51 @@
                     <th>Sequence</th>
                 </tr>
             </thead>
-            <% _.each(SETTINGS, function(ppl, key) { %>
-                <tr>
-                    <td><%-key%></td>
-                    <td><%-ppl.atom%></td>
-                    <td><%-ppl.spacegroup%></td>
-                    <td><%-ppl.nsites%></td>
-                    <td><%-ppl.dataset%></td>
-                    <td><%-ppl.compound%></td>
-                    <td><div class="bepm-seq seq"><%-ppl.sequence%></div></td>
-                </tr>
-            <% }) %>
+            <tr>
+                <td><%-data.SETTINGS.atom%></td>
+                <td><%-data.SETTINGS.spacegroup%></td>
+                <td><%-data.SETTINGS.nsites%></td>
+                <td><%-data.SETTINGS.dataset%></td>
+                <td><%-data.SETTINGS.compound%></td>
+                <td><div class="bepm-seq seq"><%-data.SETTINGS.sequence%></div></td>
+            </tr>
         </table>
     </section>
-<% } %>
-<% if (typeof SHELXC !== 'undefined') { %>
-    <% _.each(SHELXC.PLOTS, function(ppl, key) { %>
-        <section class="bigep-stats clearfix">
-            <h2><%-key%></h2>
-            <% if (typeof PROC !== 'undefined' && PROC.hasOwnProperty(key)) { %>
-            <section class="bigep-models clearfix">
-                <table class="bepm_stats bepm_stats2 reflow">
-                    <thead>
-                        <tr>
-                            <th>Pipeline</th>
-                            <th>Resid. / Frag / Max. Frag.</th>
-                            <th>Best MapCC (Resol.)</th>
-                            <th>&nbsp;</th>
-                        </tr>
-                    </thead>
-                    <% _.each(PROC[key], function(val, prop) { %>
+    <% } %>
+    <% if (!_.isEmpty(data.PROC)) { %>
+    <section class="bigep-stats clearfix">
+        <section class="bigep-models clearfix">
+                <p class="r downloads">
+                <a id="<%-aid%>-bigep-files>" class="apattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>
+                </p>
+            <table class="bepm_stats bepm_stats2 reflow">
+                <thead>
                     <tr>
-                        <td><%-prop%></td>
-                        <td><%-val.RESID%> / <%-val.FRAGM%> / <%-val.MAXLEN%></td>
-                        <td><%-val.MAPCC%> (<%-val.MAPRESOL%>)</td>
-                        <td>
-                            <a class="view button" href="/dc/map/id/<%-DCID%>/ty/bigep/dt/<%-TAG%>/ppl/<%-prop%>"><i class="fa fa-search"></i> Map / Model Viewer</a> 
-                            <a class="dll button" href="<%-APIURL%>/download/bigep/id/<%-DCID%>/dt/<%-TAG%>/ppl/<%-prop%>"><i class="fa fa-download"></i> PDB/MTZ file</a> 
-                            <a class="view button logf" href="<%-APIURL%>/download/bigep/id/<%-DCID%>/dt/<%-TAG%>/ppl/<%-prop%>/log/1"><i class="fa fa-search"></i> Log file</a>
-                        </td>
+                        <th>Pipeline</th>
+                        <th>Resid. / Frag / Max. Frag.</th>
+                        <th>Best MapCC (Resol.)</th>
+                        <th>&nbsp;</th>
                     </tr>
-                    <% }) %>
-                </table>
-            </section>
-            <% } %>
-            <div class="plot_shelx-<%-key%>"></div>
+                </thead>
+                <% _.each(data.PROC, function(val, prop) { %>
+                <tr>
+                    <td><%-prop%></td>
+                    <td><%-val.RESID%> / <%-val.FRAGM%> / <%-val.MAXLEN%></td>
+                    <td><%-val.MAPCC%> (<%-val.MAPRESOL%>)</td>
+                </tr>
+                <% }) %>
+            </table>
         </section>
-    <% }) %>
-<% } %>
+        <section class="bigep-images">
+            <% _.each(data.PROC, function(val, prop) { %>
+                <figure>
+                <a href="/dc/map/id/<%-DCID%>/aid/<%-aid%>/ty/bigep/ppl/<%-prop%>" title="<%-prop%> model">
+                <img id="<%-aid%><%-prop%>-thumb" class="bigep-thumb" alt="<%-prop%> model" />
+                </a>
+                <figcaption><%-prop%></figcaption>
+                </figure>
+            <% }) %>
+        </section>
+    </section>
+    <% } %>
+<% }) %>

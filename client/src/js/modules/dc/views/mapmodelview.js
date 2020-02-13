@@ -60,8 +60,9 @@ define(['marionette',
           
             if (this.getOption('ty') == 'bigep') {
                 var map_url = app.apiurl+'/download/map/ty/'+this.getOption('ty')+
-                                         '/dt/'+this.getOption('dt')+'/ppl/'+this.getOption('ppl')+
+                                         '/ppl/'+this.getOption('ppl')+'/aid/'+this.getOption('aid')+
                                          '/id/'+this.model.get('ID')
+                console.log(map_url)
             } else {
                 var map_url = app.apiurl+'/download/map/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID')
             }
@@ -139,7 +140,7 @@ define(['marionette',
         loadMapModel: function() {
             if (this.getOption('ty') == 'bigep') {
                 var pdb_url = app.apiurl+'/download/map/pdb/1/ty/'+this.getOption('ty')+
-                                         '/dt/'+this.getOption('dt')+'/ppl/'+this.getOption('ppl')+
+                                         '/ppl/'+this.getOption('ppl')+'/aid/'+this.getOption('aid')+
                                          '/id/'+this.model.get('ID')
             } else {
                 var pdb_url = app.apiurl+'/download/map/pdb/1/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID')

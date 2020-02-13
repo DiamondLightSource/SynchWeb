@@ -697,24 +697,25 @@ ol.rounded {
              }
          }
 
-        .plot_shelx-XDS,
-        .plot_shelx-DIALS {
-            width: 45%;
-            height: 250px;
-            float: inherit;
-             
+        .bigep-images figure {
+            width: 15%;
+            float: left;
+            text-align: center;
+            font-family: sans-serif;
+            font-size: 1.5em;
+            margin: 0.5em;
+
             @media (max-width: $breakpoint-vsmall) {
-                height: 100px;
                 float: none;
-            }
-             
-            .legend {
-                > table {
-                    width: auto;
-                }
+                width: auto;
             }
         }
         
+        .bigep-images img {
+            width: 100%;
+            height: auto;
+        }
+
         .plot_dimple {
             width: 70%;
             float: right;
