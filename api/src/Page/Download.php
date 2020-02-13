@@ -25,6 +25,7 @@ class Download extends Page
                               'dt' => '\w+',
                               'ppl' => '\w+',
 
+                              'plottypecheck' => '\w+',
                               'filetype' => '\w+',
                               'blsampleid' => '\d+',
                               'dcg' => '\d+',
@@ -89,7 +90,7 @@ class Download extends Page
             global $ap_types;
             if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
 
-            $rows = $this->db->pq("SELECT appa.filename, appa.filepath, api.autoprocprogramid, app.processingcommandline as type
+            $rows = $this->db->pq("SELECT appa.filename, appa.filepath, api.autoprocprogramid, appa.autoprocprogramattachmentid, app.processingcommandline as type
                 FROM autoprocintegration api 
                 INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
                 INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
@@ -98,7 +99,7 @@ class Download extends Page
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
                 WHERE appa.filetype='Graph' AND api.datacollectionid = :1", array($this->arg('id')));
 
-            foreach ($rows as &$r) {
+            foreach ($rows as $k => &$r) {
                 foreach ($ap_types as $id => $name) {
                     if (strpos($r['TYPE'], $id)) {
                         $r['TYPE'] = $name;
@@ -110,13 +111,27 @@ class Download extends Page
                 $r['PLOTS'] = array();
                 if (file_exists($json)) {
                     $cont = file_get_contents($json);
-                    $r['PLOTS'] = json_decode($cont);
+                    
+                    $plotData = json_decode($cont);
+                    $r['PLOTS'] = $plotData;
+
+                    if(array_key_exists('data', $plotData) && array_key_exists('layout', $plotData)){
+                        $r['PLOTLY'] = true;
+                    } else {
+                        $r['PLOTLY'] = false;
+                    }
+
+                    // Need this because AIPlots seems to want to default to the first attachment found regardless of how many there are?
+                    // If we get that far and the data is for plotly then blank dialog will show, so this removes plotly entries from results
+                    if($r['PLOTLY'] == true && !$this->has_arg('plottypecheck')){
+                        unset($rows[$k]);
+                        continue;
+                    }
                 }
 
                 unset($r['FILENAME']);
                 unset($r['FILEPATH']);
             }
-
             $this->_output($rows);
         }
 

@@ -1,10 +1,12 @@
 define(['marionette', 
+    'backbone',
     'backgrid',
     'modules/dc/views/aiplots',
+    'modules/dc/views/vue-plotly',
     'views/log',
     'views/table', 'utils'], 
-    function(Marionette, Backgrid, 
-    AIPlotsView, LogView,
+    function(Marionette, Backbone, Backgrid, 
+    AIPlotsView, PlotlyPlotView, LogView,
     TableView, utils) {
 
     
@@ -37,7 +39,40 @@ define(['marionette',
 
         showPlots: function(e) {
             e.preventDefault()
-            app.dialog.show(new DialogView({ title: 'Integration Statistic Plots', view: new AIPlotsView({ aid: this.model.get('AUTOPROCPROGRAMID'), id: this.model.get('DATACOLLECTIONID') }), autoSize: true }))
+
+            // This entire solution is ugly...
+            // We have to make a call to get the plot attachments so we can find out whether they are ploty files or not
+            // This all will be made again by aiplots.js if it's not a plotly file :(
+            this.appaid = this.model.get('AUTOPROCPROGRAMATTACHMENTID')
+
+            let self = this
+
+            Backbone.ajax({
+                url: app.apiurl + '/download/plots',
+                method: 'get',
+                data: {
+                    id: self.model.get('DATACOLLECTIONID'),
+                    plottypecheck: true
+                },
+                success: function(response){
+                    var item
+
+                    for(var i=0; i<response.length; i++){
+                        if(response[i]['AUTOPROCPROGRAMATTACHMENTID'] == self.appaid){
+                            item = response[i]
+                        }
+                    }
+
+                    if(item['PLOTLY'] == true){
+                        app.dialog.show(new DialogView({title: 'Plotly Plot View', view: new PlotlyPlotView({data: item['PLOTS']}), autoSize: true}))
+                    } else {
+                        app.dialog.show(new DialogView({ title: 'Integration Statistic Plots', view: new AIPlotsView({ aid: self.model.get('AUTOPROCPROGRAMID'), id: self.model.get('DATACOLLECTIONID') }), autoSize: true }))
+                    }
+                },
+                error: function(response){
+                    console.log(response)
+                }
+            })
         },
 
         showLog: function(e) {
