@@ -91,7 +91,7 @@ define([
                             self.defaultDewarId = did
                         },
                         error: function() {
-                            app.message({ title: 'Error', message: 'The default dewar for this visit could not be created (no session-0?)' })
+                            app.alert({ title: 'Error', message: 'The default dewar for this visit could not be created (no session-0?)' })
                         },
                     })
                 },
@@ -101,10 +101,11 @@ define([
                         e.preventDefault()
                         let self = this
                         this.$validator.validateAll().then(function(result){
-                            if(result){
+                            if(result && self.defaultDewarId){
                                 self.submitSimpleSample()
                             } else {
                                 console.log('Form submission prevented, validation failed');
+                                app.alert({ title: 'Error', message: 'Form validation failed, or default dewar for this visit could not be created' })
                             }
                         });
                     },
