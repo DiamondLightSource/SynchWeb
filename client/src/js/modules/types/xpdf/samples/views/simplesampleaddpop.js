@@ -1,4 +1,5 @@
 define([
+    'backbone',
     'vue',
     'utils/vuewrapper',
     'veevalidate',
@@ -12,6 +13,7 @@ define([
     'modules/types/xpdf/collections/capillaries',
     'templates/vue/types/xpdf/samples/simplesampleaddpop.html'
     ], function(
+        Backbone,
         Vue,
         VueWrapper,
         VeeValidate,
@@ -49,7 +51,8 @@ define([
                         cifFiles: [],
                         comments: '',
                         isLoading: false,
-                        containerless: false
+                        containerless: false,
+                        defaultDewarId: null
                     }
                 },
 
@@ -74,6 +77,23 @@ define([
                     }
 
                     this.containers = stored.concat(exists);
+
+                    let self = this
+
+                    // Try to retrieve the default dewar for this proposal/visit
+                    // Uses the special session-0 because at this point we are not necesarily on a session
+                    Backbone.ajax({
+                        url: app.apiurl+'/shipment/dewars/default',
+                        data: { visit: app.prop + '-0'},
+
+                        success: function(did) {
+                            console.log("Retrieved Default Dewar for this visit " + did)
+                            self.defaultDewarId = did
+                        },
+                        error: function() {
+                            app.message({ title: 'Error', message: 'The default dewar for this visit could not be created (no session-0?)' })
+                        },
+                    })
                 },
 
                 methods: {
@@ -146,7 +166,8 @@ define([
                             crystal: crystal,
                             capillary: capillaryCrystal,
                             container: container,
-                            PACKINGFRACTION: this.fraction
+                            PACKINGFRACTION: this.fraction,
+                            DEWARID: this.defaultDewarId
                         })
 
                         for(var i=0; i < this.cifFiles.length; i++){

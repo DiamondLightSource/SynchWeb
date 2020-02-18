@@ -3,7 +3,7 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
-use SynchWeb\ShippingShared;
+// use SynchWeb\ShippingShared;
 
 class Sample extends Page
 {
@@ -45,6 +45,7 @@ class Sample extends Page
                               'capillaryPhase' => '',
                               'json' => '',
 
+                              'DEWARID' => '\d+',
                               'PROTEINID' => '\d+',
                               'CRYSTALID' => '\d+',
                               'CONTAINERID' => '\d+',
@@ -192,6 +193,7 @@ class Sample extends Page
             if (!$this->has_arg('capillaryPhase')) $this->_error('No capillary material defined');
             if (!$this->has_arg('phase')) $this->_error('No phase defined');
             if (!$this->has_arg('container')) $this->_error('No container defined');
+            if (!$this->has_arg('DEWARID')) $this->_error('No default dewar defined');
 
             $phase = $this->arg('phase');
             $crystal = $this->arg('crystal');
@@ -250,16 +252,19 @@ class Sample extends Page
                 $isCapillary = false;
             }
 
+            // Recently changed this so assumption is that request includes the default dewar id
+            // Avoids the need for a shared function. UI calls /dewar/default end point first
+            // No other info required about dewar so reuse of current endpoint preferred in this case
+            $ids['DEWARID'] = $this->arg('DEWARID');
+
             // Shipping info find or insert
             // Firstly a hack to add the required protein and visit information for the _get_default_dewar() method
-            $visit = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS VISIT FROM BLSession b INNER JOIN Proposal p ON p.proposalId = b.proposalId WHERE b.proposalId = :1", array($this->proposalid));
-            $this->args['visit']=$visit[0]['VISIT'];
-
-            $shipping = new ShippingShared();
-            $shippingInfo = $shipping->get_default_dewar($this->proposalid, $visit[0]['VISIT']);
-
-            $ids['DEWARID'] = $shippingInfo['DEWARID'];
-            $ids['SHIPPINGID'] = $shippingInfo['SHIPPINGID'];
+            // $visit = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS VISIT FROM BLSession b INNER JOIN Proposal p ON p.proposalId = b.proposalId WHERE b.proposalId = :1", array($this->proposalid));
+            // $this->args['visit']=$visit[0]['VISIT'];
+            // $shipping = new ShippingShared();
+            // $shippingInfo = $shipping->get_default_dewar($this->proposalid, $visit[0]['VISIT']);
+            // $ids['DEWARID'] = $shippingInfo['DEWARID'];
+            // $ids['SHIPPINGID'] = $shippingInfo['SHIPPINGID'];
 
             // Do we have a container associated with this dewar?
             $chk = $this->db->pq("SELECT containerid FROM container WHERE dewarid =:1", array($ids['DEWARID']));
@@ -272,7 +277,7 @@ class Sample extends Page
 
                 $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,comments) 
                 VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5) RETURNING containerid INTO :id", 
-                array($shippingInfo['DEWARID'], $container->NAME, $cap, $container->CONTAINERTYPE, $com));
+                array($ids['DEWARID'], $container->NAME, $cap, $container->CONTAINERTYPE, $com));
                 $ids['CONTAINERID'] = $this->db->id();
             }
 
