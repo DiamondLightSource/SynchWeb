@@ -168,9 +168,14 @@ define(['marionette',
       
     proteinadd: function() {
         var title = GetView.ProteinList.title(app.type)
-        var pbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
-        app.bc.reset([pbc, { title: 'Add '+title }])
-        app.content.show(GetView.ProteinAdd.get(app.type))
+        if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+            app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new '+title+'s cannot be added'} )
+        } else {
+            
+            var pbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+            app.bc.reset([pbc, { title: 'Add '+title }])
+            app.content.show(GetView.ProteinAdd.get(app.type))
+        }
     },
 
   }

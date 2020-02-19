@@ -95,9 +95,13 @@ define(['backbone',
     },
       
     add: function() {
-      app.log('ship add view')
-      app.bc.reset([bc, { title: 'Add New Shipment' }])
-      app.content.show(new ShipmentAddView())
+      if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+          app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new shipments cannot be added'} )
+      } else {
+          app.log('ship add view')
+          app.bc.reset([bc, { title: 'Add New Shipment' }])
+          app.content.show(new ShipmentAddView())
+      }
     },
 
 
@@ -179,30 +183,34 @@ define(['backbone',
     },
 
     add_container: function(did, visit) {
-      var lookup = new ProposalLookup({ field: 'DEWARID', value: did })
-        lookup.find({
-            success: function() {
-                app.log('cont view')
-                  
-                var dewar = new Dewar({ DEWARID: did})
-                  dewar.fetch({
-                      success: function() {
-                          app.bc.reset([bc, { title: dewar.get('SHIPPINGNAME'), url: '/shipments/sid/'+dewar.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Add Container' }])
-                          app.content.show(GetView.ContainerAddView.get(app.type, { dewar: dewar, visit: visit }))
-                      },
-                      error: function() {
-                          app.bc.reset([bc, { title: 'Error' }])
-                          app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
-                      },
-                  })
-            },
+      if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+          app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new containers cannot be added'} )
+      } else {
+          var lookup = new ProposalLookup({ field: 'DEWARID', value: did })
+            lookup.find({
+                success: function() {
+                    app.log('cont view')
+                      
+                    var dewar = new Dewar({ DEWARID: did})
+                      dewar.fetch({
+                          success: function() {
+                              app.bc.reset([bc, { title: dewar.get('SHIPPINGNAME'), url: '/shipments/sid/'+dewar.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Add Container' }])
+                              app.content.show(GetView.ContainerAddView.get(app.type, { dewar: dewar, visit: visit }))
+                          },
+                          error: function() {
+                              app.bc.reset([bc, { title: 'Error' }])
+                              app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+                          },
+                      })
+                },
 
-            error: function() {
-                app.bc.reset([bc, { title: 'Error' }])
-                app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
-            },
+                error: function() {
+                    app.bc.reset([bc, { title: 'Error' }])
+                    app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+                },
 
-        })
+            })
+        }
     },
 
 
