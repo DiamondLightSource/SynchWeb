@@ -1,5 +1,6 @@
 <template>
     <div>
+        <h1>Message = {{msg}}</h1>
         <plotly></plotly>
     </div>
 </template>
@@ -9,20 +10,32 @@
 
     export default {
         name: 'PlotlyChart',
+        props: {
+            msg: String,
+            data: {
+                type: Object,
+                required: false,
+            },
+            layout: {
+                type: Object,
+                required: false,
+            },
+        },
         
         components: {
             'plotly': Plotly,
         },
 
-        created: function(){
-            this.data = this.$getOption('data')
-        },
+        // Using props to render the plotly chart
+        // created: function(){
+        //     this.data = this.$getOption('data')
+        // },
 
-        data: function(){
-            return {
-                data: [] 
-            }
-        },
+        // data: function(){
+        //     return {
+        //         data: []
+        //     }
+        // },
 
         mounted: function(){
             this.doPlot()
@@ -30,7 +43,7 @@
 
         methods: {
             doPlot: function(){
-                Plotly.newPlot(this.$el, this.data.data, this.data.layout)
+                Plotly.newPlot(this.$el, this.data, this.layout)
             }
         }
     }
