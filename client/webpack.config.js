@@ -48,12 +48,10 @@ module.exports = {
       marionette: 'backbone.marionette/lib/backbone.marionette.min',
 
       'jquery.touchswipe': 'jquery-touchswipe',
-      'jquery.ui': 'vendor/jquery/jquery-ui.min', // Revert to old version for testing...
-      // 'jquery.ui': 'jquery-ui', // Only required for timepicker-addon 1.5.5 apparently!
       'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds      
-      // Jquery-ui-combox is not the official combobox extension from npm
-      // Instead it is a collection of extensions: (https://github.com/bseth99/jquery-ui-extensions)
-      'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox', 
+      // Jquery-ui-combox is based on an extension from npm
+      // The original was based on a collection of extensions: (https://github.com/bseth99/jquery-ui-extensions)
+      'jquery-ui.combobox': 'vendor/jquery/combobox/jquery-ui.combobox',
 
       // Jquery.flot provided by NPM package (exact name match)
       // Jquery.flot.resize also from NPM but slightly older version 1.0.0 2012 instead of 2013 (vendor lib)
@@ -81,6 +79,7 @@ module.exports = {
       'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
 
       // Jquery.color plugin also NPM package
+      // Only used from within utils.js
       'jquery.color': 'jquery-color',
 
       // Caman npm depends on fibers, canvas, fs which we don't want...
