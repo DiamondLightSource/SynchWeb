@@ -1,0 +1,19 @@
+.ui-combobox {
+	position: relative;
+}
+
+.ui-combobox-input {
+	cursor: pointer;
+}
+
+.ui-combobox-input:focus {
+	cursor: inherit;
+}
+
+.ui-combobox .ui-icon-triangle-1-s {
+	right: 0.5em;
+	left: auto;
+	margin-top: -8px;
+	position: absolute;
+	top: 50%;
+}
