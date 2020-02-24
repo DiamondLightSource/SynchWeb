@@ -1,4 +1,11 @@
-define(['backbone', 'marionette', 'views/dialog', 'jquery', 'jquery.color'], function(Backbone, Marionette, DialogView, $) {
+define(['backbone',
+        'marionette',
+        'views/dialog',
+        'jquery',
+        'jquery.color',
+        'jquery-ui/ui/effect',
+        'jquery-ui/ui/effects/effect-highlight'
+    ], function(Backbone, Marionette, DialogView, $) {
 
   var utils = {
        
@@ -92,7 +99,8 @@ define(['backbone', 'marionette', 'views/dialog', 'jquery', 'jquery.color'], fun
             
             if (this.getOption('scrollTo')) {
                 $('html, body').animate({
-                    scrollTop: this.$el.offset().top }, 500, function() { self.$el.toggle('highlight')
+                    scrollTop: this.$el.offset().top }, 500, function() {
+                        self.$el.toggle('highlight')
                 })
             }
 
