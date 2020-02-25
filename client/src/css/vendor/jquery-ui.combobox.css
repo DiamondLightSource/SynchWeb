@@ -1,9 +1,13 @@
+/* This is a copy of the file from npm jquery-ui.combox - we override a couple of settings for the icon */
 .ui-combobox {
 	position: relative;
 }
 
 .ui-combobox-input {
 	cursor: pointer;
+	width: 100%;
+	line-height: 1.5rem;
+	padding-left: 0.2rem;
 }
 
 .ui-combobox-input:focus {
@@ -11,7 +15,7 @@
 }
 
 .ui-combobox .ui-icon-triangle-1-s {
-	right: 0.5em;
+	right: 0px;
 	left: auto;
 	margin-top: -8px;
 	position: absolute;
