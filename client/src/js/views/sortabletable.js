@@ -1,4 +1,4 @@
-define(['views/table', 'backgrid', 'jquery', 'jquery-ui'], function(TableView, Backgrid, $) {
+define(['views/table', 'backgrid', 'jquery', 'jquery-ui/ui/widgets/sortable'], function(TableView, Backgrid, $) {
 
     var SortableRow = Backgrid.Row.extend({
         events: {
