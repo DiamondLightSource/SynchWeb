@@ -3,7 +3,6 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
-// use SynchWeb\ShippingShared;
 
 class Sample extends Page
 {
@@ -256,15 +255,6 @@ class Sample extends Page
             // Avoids the need for a shared function. UI calls /dewar/default end point first
             // No other info required about dewar so reuse of current endpoint preferred in this case
             $ids['DEWARID'] = $this->arg('DEWARID');
-
-            // Shipping info find or insert
-            // Firstly a hack to add the required protein and visit information for the _get_default_dewar() method
-            // $visit = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS VISIT FROM BLSession b INNER JOIN Proposal p ON p.proposalId = b.proposalId WHERE b.proposalId = :1", array($this->proposalid));
-            // $this->args['visit']=$visit[0]['VISIT'];
-            // $shipping = new ShippingShared();
-            // $shippingInfo = $shipping->get_default_dewar($this->proposalid, $visit[0]['VISIT']);
-            // $ids['DEWARID'] = $shippingInfo['DEWARID'];
-            // $ids['SHIPPINGID'] = $shippingInfo['SHIPPINGID'];
 
             // Do we have a container associated with this dewar?
             $chk = $this->db->pq("SELECT containerid FROM container WHERE dewarid =:1", array($ids['DEWARID']));
