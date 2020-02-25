@@ -1,9 +1,7 @@
 define(['views/form',
     'models/visit',
     'collections/beamlinesetups',
-    'templates/admin/visitadd.html',
-    'jquery-ui',
-    'jquery-ui.timepicker',
+    'templates/admin/visitadd.html'
     ], function(FormView, Visit, BeamlineSetups, template) {
 
     return FormView.extend({

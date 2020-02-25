@@ -5,8 +5,7 @@ define(['jquery', 'marionette',
         'templates/dc/imageviewer_embedded.html',
         'caman',
         'utils',
-        'utils/xhrimage',
-        'jquery-ui',
+        'utils/xhrimage'
     ], function($, Marionette, CanvasMixin, template, embed, caman, utils, XHRImage) {
     
     // Note we do not import the caman libray as Caman.

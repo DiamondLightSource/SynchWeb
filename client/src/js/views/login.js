@@ -2,8 +2,7 @@ define(['views/form',
     'templates/login.html',
     'jquery',
     'backbone',
-    
-    'jquery-ui',
+
     'backbone-validation',
     
     ], function(FormView,

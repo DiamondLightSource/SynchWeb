@@ -10,8 +10,7 @@ define(['marionette', 'views/form',
     'templates/shipment/transfer.html',
     'jquery',
     'backbone',
-    
-    'jquery-ui',
+
     'backbone-validation',
     
     ], function(Marionette, FormView,

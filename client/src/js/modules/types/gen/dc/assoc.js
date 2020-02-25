@@ -2,7 +2,7 @@ define(['views/dialog',
         'collections/samples',
     
         'templates/types/gen/dc/assoc.html',
-        'jquery', 'jquery-ui', 'jquery-ui.combobox'
+        'jquery'
     ], function(DialogView, Samples, template, $) {
 
     return DialogView.extend({
