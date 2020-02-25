@@ -51,7 +51,8 @@ module.exports = {
       'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds      
       // Jquery-ui-combox is based on an extension from npm
       // The original was based on a collection of extensions: (https://github.com/bseth99/jquery-ui-extensions)
-      'jquery-ui.combobox': 'vendor/jquery/combobox/jquery-ui.combobox',
+      // Currently using a modified version from npm
+      'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox-1.0.7',
 
       // Jquery.flot provided by NPM package (exact name match)
       // Jquery.flot.resize also from NPM but slightly older version 1.0.0 2012 instead of 2013 (vendor lib)
