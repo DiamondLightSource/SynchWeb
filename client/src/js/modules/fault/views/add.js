@@ -1,22 +1,18 @@
 define(['views/form',
     'modules/fault/models/fault',
-    
     'collections/visits',
     'collections/users',
-    
     'modules/fault/collections/bls',
     'modules/fault/collections/systems',
     'modules/fault/collections/components',
     'modules/fault/collections/subcomponents',
-    
     'templates/fault/add.html',
     'jquery',
     'backbone',
-    
-    'jquery-ui',
+    'jquery-ui/ui/widgets/datepicker',
+    'jquery-ui/ui/widgets/autocomplete',
     'jquery-ui.timepicker',
-    'backbone-validation',
-    
+    'backbone-validation'
     ], function(FormView,
         Fault, Visits, Users, Beamlines, Systems, Components, SubComponents,
         template, $_, Backbone) {
