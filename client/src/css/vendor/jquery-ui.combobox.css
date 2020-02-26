@@ -6,7 +6,7 @@
 .ui-combobox-input {
 	cursor: pointer;
 	width: 100%;
-	line-height: 1.5rem;
+	line-height: 1.5rem; /* Made slightly larger to avoid discrepency with sample table inputs */
 	padding-left: 0.2rem;
 }
 
@@ -20,4 +20,22 @@
 	margin-top: -8px;
 	position: absolute;
 	top: 50%;
+}
+
+.ui-autocomplete li.ui-menu-item {
+	width: 100%;
+	padding: 0.2rem;
+	text-align: center;
+}
+.ui-autocomplete li.ui-menu-item:hover {
+	background: #dedede;
+	font-weight: normal;
+	border: 1px solid #cdcdcd;
+}
+/* Override default jquery-ui active state */
+.ui-autocomplete li.ui-menu-item a.ui-state-active {
+	background: none;
+	border: none;
+	font: inherit;
+	color: inherit;
 }

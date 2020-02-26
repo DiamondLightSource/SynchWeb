@@ -52,7 +52,8 @@ module.exports = {
       // Jquery-ui-combox is based on an extension from npm
       // The original was based on a collection of extensions: (https://github.com/bseth99/jquery-ui-extensions)
       // Currently using a modified version from npm
-      'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox-1.0.7',
+      'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox.custom',
+      // 'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
 
       // Jquery.flot provided by NPM package (exact name match)
       // Jquery.flot.resize also from NPM but slightly older version 1.0.0 2012 instead of 2013 (vendor lib)
