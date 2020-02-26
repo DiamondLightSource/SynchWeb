@@ -1,5 +1,6 @@
 define(['modules/dc/views/imagestatusitem',
-], function(ImageStatusitem) {
+        'jquery.mp'
+    ], function(ImageStatusitem) {
        
     
     return ImageStatusitem.extend({
