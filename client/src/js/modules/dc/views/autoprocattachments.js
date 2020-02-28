@@ -52,7 +52,7 @@ define(['marionette',
                 method: 'get',
                 data: {
                     id: self.model.get('DATACOLLECTIONID'),
-                    plottypecheck: true
+                    aid: self.model.get('AUTOPROCPROGRAMATTACHMENTID')
                 },
                 success: function(response){
                     var item
@@ -64,7 +64,7 @@ define(['marionette',
                     }
 
                     if(item['PLOTLY'] == true){
-                        app.dialog.show(new DialogView({title: 'Plotly Plot View', view: new PlotlyPlotView({data: item['PLOTS']}), autoSize: true}))
+                        app.dialog.show(new DialogView({title: 'Plotly Chart', view: new PlotlyPlotView({data: item['PLOTS']}), autoSize: true}))
                     } else {
                         app.dialog.show(new DialogView({ title: 'Integration Statistic Plots', view: new AIPlotsView({ aid: self.model.get('AUTOPROCPROGRAMID'), id: self.model.get('DATACOLLECTIONID') }), autoSize: true }))
                     }
