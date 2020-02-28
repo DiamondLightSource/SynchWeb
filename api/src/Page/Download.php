@@ -322,8 +322,18 @@ class Download extends Page
         }
 
 
-
+        /**
+         * Download a file to the browser
+         * This function is used to download autoproc and phasing run attachments.
+         * It sets a maximum amount of memory for the download.
+         * The $id is used as a prefix to the filename.
+         *
+         * @param integer $id One of AutoProcProgramId or PhasingProgramRunId
+         * @param array $file Array that must include FILENAME (including extension) and FILEPATH
+         */
         function _get_file($id, $file) {
+            // We don't want to allow unlimited file sizes
+            ini_set('memory_limit', '512M');
             $path_ext = pathinfo($file['FILENAME'], PATHINFO_EXTENSION);
 
             if ($path_ext == 'html') header("Content-Type: text/html");
@@ -342,7 +352,14 @@ class Download extends Page
             else $this->_header($id.'_'.$file['FILENAME']);
 
             $f = $file['FILEPATH'].'/'.$file['FILENAME'];
+
             if (file_exists($f)) {
+                // We were getting out of memory errors - switch off output buffer to fix
+                if (ob_get_level()) {
+                    ob_end_clean();
+                }
+                // Setting content length means browser can indicate how long is left
+                header('Content-Length: ' . filesize($f));
                 readfile($f);
                 exit();
 
