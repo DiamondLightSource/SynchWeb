@@ -93,7 +93,7 @@ define(['marionette',
             return {
                 templateHelpers: {
                     DCID: dcId,
-                    APIURL: app.apiurl
+                    APIURL: app.apiurl,
                 }
             }
         },

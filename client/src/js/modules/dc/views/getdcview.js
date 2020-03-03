@@ -1,6 +1,7 @@
 define(['views/getview',
     'modules/dc/datacollections',
     'modules/types/gen/dc/datacollections',
+    'modules/types/sm/dc/datacollections',
     'modules/types/tomo/dc/datacollections',
     'modules/types/em/dc/datacollections',
     'modules/types/pow/dc/datacollections',
@@ -9,7 +10,7 @@ define(['views/getview',
     
 ], function(GetView,
     DCList,
-    GenericDCList, TomoDCList, EMDCList, POWDCList, SAXSDCList, XPDFDCList
+    GenericDCList, SMDCList, TomoDCList, EMDCList, POWDCList, SAXSDCList, XPDFDCList
     ){
 
 
@@ -18,7 +19,7 @@ define(['views/getview',
         DCView: new GetView({
             views: {
                 mx: DCList,
-                sm: DCList,
+                sm: SMDCList,
                 gen: GenericDCList,
                 tomo: TomoDCList,
                 em: EMDCList,

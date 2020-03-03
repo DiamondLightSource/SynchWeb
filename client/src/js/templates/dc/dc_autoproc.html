@@ -30,6 +30,8 @@
         <a class="view button" title="Lookup Unit Cell" href="/cell/a/<%-CELL.CELL_A%>/b/<%-CELL.CELL_B%>/c/<%-CELL.CELL_C%>/al/<%-CELL.CELL_AL%>/be/<%-CELL.CELL_BE%>/ga/<%-CELL.CELL_GA%>"><i class="fa fa-search"></i> Lookup Cell</a>
     </p>
 
+    <!-- Beam Centre information and movement warning not useful for i19 small molecule experiment type -->
+    <% if (app.type != 'sm') { %>}
     <table class="reflow bc">
         <thead>
             <tr>
@@ -60,6 +62,7 @@
 
     <% if (BEAM.REFINEDYBEAM > 0 && (Math.abs(BEAM.XBEAM-BEAM.REFINEDYBEAM) > 0.5 || Math.abs(BEAM.YBEAM-BEAM.REFINEDXBEAM) > 0.5)) { %>
     <p class="message alert">WARNING: Beam centre has moved significantly during refinement! (>0.5mm)</p>
+    <% } %>
     <% } %>
 
     <table class="reflow cell">
