@@ -45,7 +45,7 @@
                         <label>Containerless?</label>
                         <input type="checkbox" v-model="containerless" value="true" v-on:change="toggleSelectEnabled()"/><br />
                         <select id="containerSelect" name="type" style="width: 400px" v-model="type" v-on:change="getCapillaryInfo('density')" v-validate="'required'">
-                            <option disabled value="">Container*</option>
+                            <option v-if="!hasExistingCapillaries" disabled value="">Container*</option>
                             <option v-for="container in containers">{{ container }}</option>
                         </select>
                         <span v-if="errors.has('type')" class="errormessage ferror">{{ errors.first('type') }}</span>

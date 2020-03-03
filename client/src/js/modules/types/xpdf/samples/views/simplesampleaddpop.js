@@ -52,6 +52,7 @@ define([
                         comments: '',
                         isLoading: false,
                         containerless: false,
+                        hasExistingCapillaries: false,
                         defaultDewarId: null
                     }
                 },
@@ -64,11 +65,28 @@ define([
                     
                     var exists = []
                     var count = 0
+                    var lastCapillaryId = 0
                     for(var i=0; i<caps.data.length; i++){
                         if(caps.data[i].NAME.includes('Capillary')){
                             exists[count] = caps.data[i].CRYSTALID + ':' + caps.data[i].NAME
+
+                            if(caps.data[i].CRYSTALID > lastCapillaryId)
+                                lastCapillaryId = caps.data[i].CRYSTALID;
+
                             count++
                         }
+                    }
+
+                    if(exists.length > 0){
+                        this.hasExistingCapillaries = true;
+
+                        var self = this;
+
+                        exists.forEach(function(item, index){
+                            if(item.startsWith(lastCapillaryId))
+                                self.type = item;
+                        });
+
                     }
 
                     var stored = []
