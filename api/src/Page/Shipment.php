@@ -1884,9 +1884,7 @@ class Shipment extends Page
             
             $this->_output(array('SHIPPINGID' => $sid));
         }
-        
-        
-        
+
         function _get_default_dewar() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             

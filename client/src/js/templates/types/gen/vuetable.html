@@ -1,0 +1,11 @@
+<table style="border: 1px solid">
+    <tr>
+        <td v-bind:colspan="headers.length" style="border: 1px solid" v-if="title != ''">{{ title }}</td>
+    </tr>
+    <tr>
+        <td style="border: 1px solid" v-for="header in headers">{{ header }}</td>
+    </tr>
+    <tr>
+        <td style="border: 1px solid" v-for="item in items">{{ item }}</td>
+    </tr>
+</table>
