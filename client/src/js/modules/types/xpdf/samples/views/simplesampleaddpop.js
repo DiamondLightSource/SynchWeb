@@ -60,6 +60,7 @@ define([
                 created: function(){
                     // async:false probably not the best way (locks UI thread) but it seems to work well
                     let existingCapillaries = new Crystals().fetch({async:false})
+                    let self = this
 
                     var caps = JSON.parse(existingCapillaries.responseText)
                     
@@ -80,8 +81,6 @@ define([
                     if(exists.length > 0){
                         this.hasExistingCapillaries = true;
 
-                        var self = this;
-
                         exists.forEach(function(item, index){
                             if(item.startsWith(lastCapillaryId))
                                 self.type = item;
@@ -95,8 +94,6 @@ define([
                     }
 
                     this.containers = stored.concat(exists);
-
-                    let self = this
 
                     // Try to retrieve the default dewar for this proposal/visit
                     // Uses the special session-0 because at this point we are not necesarily on a session
