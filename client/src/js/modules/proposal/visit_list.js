@@ -8,7 +8,14 @@ define(['marionette', 'backgrid', 'views/table', 'collections/visits', 'utils/ta
 
     var ClickableRow = table.ClickableRow.extend({
         event: 'dclist:show',
+        events: {
+          'click': 'onClick'
+        },
         argument: 'VISIT',
+        onClick: function() {
+          app.setVisit(this.model.get('VIS'))
+          app.trigger('dclist:show')
+        }
     })
     
 
