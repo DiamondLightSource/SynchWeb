@@ -142,7 +142,7 @@ define([
 
                         let capillaryCrystal = new Crystal({
                             CRYSTALID: this.existingCapillaryID,
-                            NAME: this.name + '_' + this.type +'_Capillary',
+                            NAME: this.name + '_' + this.type,
                             COMMENTS: this.comments,
                             THEORETICALDENSITY: this.getCapillaryInfo('density') != null ? this.getCapillaryInfo('density') : null,
                             ABUNDANCE: 1,
@@ -169,7 +169,7 @@ define([
                         })
 
                         let container = new Container({
-                            NAME: this.name,
+                            NAME: app.prop + '-' + app.visit + '_samples',
                             CAPACITY: this.capacity,
                             CONTAINERTYPE: 'Box',
                             COMMENTS: this.comments
