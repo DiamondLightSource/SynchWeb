@@ -271,6 +271,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           app.cookie(null, function() {
             if (options && options.callback) options.callback()
           })
+
+          app.setVisit()
       },
 
       error: function() {
