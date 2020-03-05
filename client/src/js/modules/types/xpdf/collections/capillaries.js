@@ -66,17 +66,17 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Fused Silica 1/8\" OD",
-            outer_diameter: 1.0,
-            inner_diameter: 0.78,
+            outer_diameter: 3.175,
+            inner_diameter: 2.95,
             wall_thickness: 0.11,
-            length: 75,
+            length: 60,
             sequence: "SiO2",
             density: 2.203
         },
         {
             name: "Fused Silica 1/16\" OD",
-            outer_diameter: 1.36,
-            inner_diameter: 0.110,
+            outer_diameter: 1.59,
+            inner_diameter: 0.39,
             wall_thickness: 0.11,
             length: 60,
             sequence: "SiO2",
