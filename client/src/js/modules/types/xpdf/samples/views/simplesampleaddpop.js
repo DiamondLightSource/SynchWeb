@@ -53,7 +53,8 @@ define([
                         isLoading: false,
                         containerless: false,
                         hasExistingCapillaries: false,
-                        defaultDewarId: null
+                        defaultDewarId: null,
+                        expTime: 600
                     }
                 },
 
@@ -68,7 +69,7 @@ define([
                     var count = 0
                     var lastCapillaryId = 0
                     for(var i=0; i<caps.data.length; i++){
-                        if(caps.data[i].NAME.includes('Capillary')){
+                        if(caps.data[i].NAME.endsWith('_CP')){
                             exists[count] = caps.data[i].CRYSTALID + ':' + caps.data[i].NAME
 
                             if(caps.data[i].CRYSTALID > lastCapillaryId)
@@ -129,11 +130,11 @@ define([
 
                         this.isLoading = true
 
-                        if(this.type.includes('Capillary'))
+                        if(this.type.endsWith('_CP'))
                             this.existingCapillaryID = this.type.substring(0, this.type.indexOf(':'))
 
                         let capillaryPhase = new Phase({
-                            NAME: this.name + '_Capillary_Material',
+                            NAME: this.name + '_CPM',
                             ACRONYM: 'xpdfCapillary'+(new Date().getTime().toString()),
                             DENSITY: this.getCapillaryInfo('density') != null ? this.getCapillaryInfo('density') : null,
                             SEQUENCE: this.getCapillaryInfo('sequence') != null ? this.getCapillaryInfo('sequence') : null,
@@ -142,7 +143,7 @@ define([
 
                         let capillaryCrystal = new Crystal({
                             CRYSTALID: this.existingCapillaryID,
-                            NAME: this.name + '_' + this.type,
+                            NAME: this.name + '_CP',
                             COMMENTS: this.comments,
                             THEORETICALDENSITY: this.getCapillaryInfo('density') != null ? this.getCapillaryInfo('density') : null,
                             ABUNDANCE: 1,
@@ -183,7 +184,8 @@ define([
                             capillary: capillaryCrystal,
                             container: container,
                             PACKINGFRACTION: this.fraction,
-                            DEWARID: this.defaultDewarId
+                            DEWARID: this.defaultDewarId,
+                            EXPOSURETIME: this.expTime
                         })
 
                         for(var i=0; i < this.cifFiles.length; i++){

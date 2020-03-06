@@ -298,14 +298,16 @@ class Sample extends Page
                 else
                     $ids['DIFFRACTIONPLANID'] = $this->db->id();
 
+                $expTime = $this->has_arg('EXPOSURETIME') ? $this->arg('EXPOSURETIME') : 600;
+
                 $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid, planorder) 
                     VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids['BLSAMPLECAPILLARYID'] : $ids['BLSAMPLEID'], $key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 0));
                 
                 $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
-                    VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 28, 600, 200));
+                    VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 28, $expTime, 200));
 
                 $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
-                    VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 25, 600, 800));
+                    VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 25, $expTime, 800));
 
                 $this->db->pq("INSERT INTO scanparametersmodel (scanparametersserviceid, datacollectionplanid, sequencenumber, start, stop, step) 
                     VALUES (:1, :2, :3, :4, :5, :6)", array(5, $key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 0, 0, 0, 1));

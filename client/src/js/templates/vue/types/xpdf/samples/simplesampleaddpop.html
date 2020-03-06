@@ -36,6 +36,14 @@
                 </li>
 
                 <li>
+                    <label>Exposure Time
+                            <span class="small">Must be a non negative integer</span>
+                    </label>
+                    <span><input type="text" name="expTime" v-model="expTime" v-bind:class="{ferror: errors.has('expTime')}" v-validate="'required|min_value:0'"/></span>
+                    <span v-if="errors.has('expTime')" class="errormessage ferror">{{ errors.first('expTime') }}</span>
+                </li>
+
+                <li>
                     <label>Comments</label>
                     <span><textarea name="comments" maxlength="255" style="width:400px;height:80px" v-model="comments"></textarea></span>
                 </li>
