@@ -5,6 +5,11 @@ namespace SynchWeb\Page;
 use SynchWeb\Page;
 use SynchWeb\TemplateParser;
 
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+
 class Download extends Page
 {
 
@@ -158,6 +163,7 @@ class Download extends Page
                                 $f = $tar.'.gz';
 
                                 if (!file_exists($f)) {
+                                    error_log("Creating Archive to download " . $f);
                                     $a = new \PharData($tar);
                                     $a->buildFromDirectory($r['FILEPATH'], '/^((?!(HKL|cbf|dimple)).)*$/');
                                     $a->compress(\Phar::GZ);
@@ -165,8 +171,16 @@ class Download extends Page
                                     unlink($tar);
                                 }
 
-                                $this->_header($this->arg('aid').'.tar.gz');
-                                readfile($f);
+                                // $this->_header($this->arg('aid').'.tar.gz');
+                                // Use Symfony to download
+                                $response = new BinaryFileResponse($f);
+                                $response->setContentDisposition(
+                                    ResponseHeaderBag::DISPOSITION_ATTACHMENT
+                                );
+                                $response->deleteFileAfterSend(true);
+                                $response->send();
+                                error_log("Symfony download response completed");
+                                // readfile($f);
                                 exit;
 
                             } else {
@@ -334,37 +348,48 @@ class Download extends Page
         function _get_file($id, $file) {
             // We don't want to allow unlimited file sizes
             ini_set('memory_limit', '512M');
-            $path_ext = pathinfo($file['FILENAME'], PATHINFO_EXTENSION);
+            $filesystem = new Filesystem();
 
-            if ($path_ext == 'html') header("Content-Type: text/html");
-            else if ($path_ext == 'pdf') {
-                $f = $file['FILENAME'];
-                header("Content-Type: application/pdf");
-                header("Content-disposition: attachment; filename=\"$f\"");
-            }
-            else if ($path_ext == 'png') {
-                $f = $file['FILENAME'];
-                header("Content-Type: image/png");
-                header("Content-disposition: attachment; filename=\"$f\"");
-            }
-            else if ($path_ext == 'log' || $path_ext == 'txt' || $path_ext == 'error' || $path_ext == 'LP') header("Content-Type: text/plain");
-            else if ($path_ext == 'json') header("Content-Type: text/plain");
-            else $this->_header($id.'_'.$file['FILENAME']);
+            $filename = $file['FILEPATH'].'/'.$file['FILENAME'];
 
-            $f = $file['FILEPATH'].'/'.$file['FILENAME'];
+            // Do the check first, if no file quit early
+            if ($filesystem->exists($filename)) {
 
-            if (file_exists($f)) {
+                $response = new BinaryFileResponse($filename);
+
+                $path_ext = pathinfo($file['FILENAME'], PATHINFO_EXTENSION);
+
+                if ($path_ext == 'html') {
+                    $response->headers->set("Content-Type", "text/html");
+                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+                } elseif ($path_ext == 'pdf') {
+                    $f = $file['FILENAME'];
+                    $response->headers->set("Content-Type", "application/pdf");
+                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $f);
+                } elseif ($path_ext == 'png') {
+                    $f = $file['FILENAME'];
+                    $response->headers->set("Content-Type", "image/png");
+                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$f);
+                } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json'))) {
+                    $response->headers->set("Content-Type", "text/plain");
+                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+                } else {
+                    $response->headers->set("Content-Type", "application/octet-stream");
+                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$id.'_'.$file['FILENAME']);
+                }
+
+                // All OK - send it
                 // We were getting out of memory errors - switch off output buffer to fix
                 if (ob_get_level()) {
                     ob_end_clean();
                 }
                 // Setting content length means browser can indicate how long is left
-                header('Content-Length: ' . filesize($f));
-                readfile($f);
-                exit();
+                $response->headers->set("Content-Length", filesize($filename));
 
+                $response->send();
+                exit();
             } else {
-                $this->_error('No such file', 'The specified file doesnt exist');
+                $this->_error("No such file", "The specified file " . $filename . " doesn't exist");
             }
         }
 
@@ -508,19 +533,22 @@ class Download extends Page
                     } else $this->_error('Not found', 'That file couldnt be found');
 
                 } else {
-                    if (!file_exists('/tmp/'.$this->arg('id').'_'.$type.'.tar.gz')) {
-                        $a = new \PharData('/tmp/'.$this->arg('id').'_'.$type.'.tar');
+                    $filename = '/tmp/'.$this->arg('id').'_'.$type;
+
+                    if (!file_exists($filename . 'tar.gz')) {
+                        error_log("Creating Archive  " . $filename . 'tar.gz');
+                        $a = new \PharData($filename.'.tar');
                         foreach ($files as $f) {
                             $a->addFile($f, basename($f));
                         }
                         $a->addFile($log_file, basename($log_file));
                         $a->compress(\Phar::GZ);
 
-                        unlink('/tmp/'.$this->arg('id').'_'.$type.'.tar');
+                        unlink($filename.'.tar');
                     }
 
                     $this->_header($this->arg('id').'_'.$type.'.tar.gz');
-                    readfile('/tmp/'.$this->arg('id').'_'.$type.'.tar.gz');
+                    readfile($filename.'.tar.gz');
                     exit;
                 }
 
