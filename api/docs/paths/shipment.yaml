@@ -146,3 +146,106 @@ terms:
               type: string
               pattern: '\d+'
               example: 1
+
+awb:
+  post:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Request pickup of dewars from facility
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+      - in: body
+        name: DECLAREDVALUE
+        type: integer
+        description: Declared value of dewar
+      - in: body
+        name: DESCRIPTION
+        type: string
+        description: Shipment description
+      - in: body
+        name: 'DEWARS'
+        type: object
+        description: List of dewar ids
+    responses:
+      200:
+        description: AWB and pickup status
+        schema:
+          type: object
+          properties:
+            AWB:
+              type: string
+            PICKUP:
+              type: string
+
+awbQuote:
+  get:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Generate quote for shipment from DHL
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+      - in: body
+        name: DECLAREDVALUE
+        type: integer
+        description: Declared value of dewar
+      - in: body
+        name: DESCRIPTION
+        type: string
+        description: Shipment description
+      - in: body
+        name: 'DEWARS'
+        type: object
+        description: List of dewar ids
+    responses:
+      200:
+        description: DHL Products and prices available 
+        schema:
+          type: object
+          properties:
+            ToDo:
+              type: string
+
+
+pickup:
+  post:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Rebook a pickup from the users facility
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+    responses:
+      200:
+        description: Status of pickup (1 or 0)
+        schema:
+          type: object
+          properties:
+            PICKUP:
+              type: string
+              pattern: '\d+'
+              example: 1
+
+pickupCancel:
+  delete:
+    security:
+      - Bearer: []
+    tags: ['shipments']
+    summary: Cancel a pickup from the users facility
+    parameters:
+      - $ref: '#/parameters/ProposalParam'
+      - $ref: '#/parameters/ShippingIDParam'
+    responses:
+      200:
+        description: Status of cancellation request (1 or 0)
+        schema:
+          type: object
+          properties:
+            CANCEL:
+              type: string
+              pattern: '\d+'
+              example: 1
