@@ -1,5 +1,8 @@
 #!/bin/bash
-
+#
+# This script is deprecated at DLS.
+# Reprocessing takes place via the Zocalo ActiveMQ architecture
+#
 #export CINCL=/dls_sw/apps/ccp4/64/7.0/update35/ccp4-7.0/include
 #export CCP4=/dls_sw/apps/ccp4/64/7.0/update35/ccp4-7.0
 #export CLIBD=/dls_sw/apps/ccp4/64/7.0/update35/ccp4-7.0/lib/data
