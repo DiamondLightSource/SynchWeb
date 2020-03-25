@@ -185,165 +185,200 @@ class Sample extends Page
         // Insert Protein, Crystal, Container and BLSample information as a single transaction
         // Adds a single capillary with a single protein material
         function _add_simple_sample() {
-            // Critical model validation (we won't insert anything if these fail)
-            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-            if (!$this->has_arg('crystal')) $this->_error('No crystal defined');
-            if (!$this->has_arg('capillary')) $this->_error('No capillary defined');
-            if (!$this->has_arg('capillaryPhase')) $this->_error('No capillary material defined');
-            if (!$this->has_arg('phase')) $this->_error('No phase defined');
-            if (!$this->has_arg('container')) $this->_error('No container defined');
-            if (!$this->has_arg('DEWARID')) $this->_error('No default dewar defined');
-
-            $phase = $this->arg('phase');
-            $crystal = $this->arg('crystal');
-            $container = $this->arg('container');
-            $capillary = $this->arg('capillary');
-            $capillaryPhase = $this->arg('capillaryPhase');
-            
-            if (!array_key_exists('ACRONYM', $phase)) $this->_error('No protein acronym');
-            if (!array_key_exists('ACRONYM', $capillaryPhase)) $this->_error('No protein acronym for capillary material');
-            if (!array_key_exists('NAME', $crystal)) $this->_error('No crystal name specified');
-            if (!array_key_exists('NAME', $capillary) || !array_key_exists('CRYSTALID', $capillary)) $this->_error('No capillary name specified');
-            if (!array_key_exists('NAME', $container)) $this->_error('No container name specified');
-            if (!array_key_exists('CONTAINERTYPE', $container)) $this->_error('No container type specified');
-
-            
-            $this->db->start_transaction();
             $ids = array();
-            
-            // Insert Proteins
-            $phases = $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS ? array($capillaryPhase, $phase) : array($phase);
-            $isCapillary = sizeof($phases) > 1 ? true : false;
+            $capillaryPhaseId = null;
+            $capillaryId = null;
+            $blSampleCapillaryId = null;
+            $this->db->start_transaction();
 
-            foreach($phases as $protein){
-                $phaseName = array_key_exists('NAME', $protein) ? $protein->NAME : '';
-                $phaseSeq = array_key_exists('SEQUENCE', $protein) ? $protein->SEQUENCE : '';
-                $phaseMass = array_key_exists('MOLECULARMASS', $protein) ? $protein->MOLECULARMASS : null;
-                $phaseDensity = array_key_exists('DENSITY', $protein) ? $protein->DENSITY : null;
+            foreach($this->args as $model => $attrs) {
+                if(substr($model, 0, strpos($model, '_', 0)) != 'sample') {
+                    continue;
+                } else {
+                    // Critical model validation (we won't insert anything if these fail)
+                    if (!$attrs->prop) $this->_error('No proposal specified');
+                    if (!$attrs->crystal) $this->_error('No crystal defined');
+                    if (!$attrs->capillary) $this->_error('No capillary defined');
+                    if (!$attrs->capillaryPhase) $this->_error('No capillary material defined');
+                    if (!$attrs->phase) $this->_error('No phase defined');
+                    if (!$attrs->container) $this->_error('No container defined');
+                    if (!$attrs->DEWARID) $this->_error('No default dewar defined');
+                    
+                    $phase = $attrs->phase;
+                    $crystal = $attrs->crystal;
+                    $container = $attrs->container;
+                    $capillary = $attrs->capillary;
+                    $capillaryPhase = $attrs->capillaryPhase;
+                    
+                    if (!array_key_exists('ACRONYM', $phase)) $this->_error('No protein acronym');
+                    if (!array_key_exists('ACRONYM', $capillaryPhase)) $this->_error('No protein acronym for capillary material');
+                    if (!array_key_exists('NAME', $crystal)) $this->_error('No crystal name specified');
+                    if (!array_key_exists('NAME', $capillary) || !array_key_exists('CRYSTALID', $capillary)) $this->_error('No capillary name specified');
+                    if (!array_key_exists('NAME', $container)) $this->_error('No container name specified');
+                    if (!array_key_exists('CONTAINERTYPE', $container)) $this->_error('No container type specified');
 
-                $chk = $this->db->pq("SELECT proteinid FROM protein
-                    WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $protein->ACRONYM));
-                    if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
+                    $ids[$model] = array();
+                    
+                    // Insert Proteins
+                    $phases = null;
+                    if($attrs->fromFile)
+                        $phases = $capillaryPhaseId == null && !$capillary->CONTAINERLESS ? array($capillaryPhase, $phase) : array($phase);
+                    else
+                        $phases = $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS ? array($capillaryPhase, $phase) : array($phase);
 
-                $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density) 
-                    VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6) RETURNING proteinid INTO :id',
-                    array($this->proposalid, $phaseName, $protein->ACRONYM, $phaseSeq, $phaseMass, $phaseDensity));
+                    $isCapillary = sizeof($phases) > 1 ? true : false;
+
+                    foreach($phases as $protein){
+                        $phaseName = array_key_exists('NAME', $protein) ? $protein->NAME : '';
+                        $phaseSeq = array_key_exists('SEQUENCE', $protein) ? $protein->SEQUENCE : '';
+                        $phaseMass = array_key_exists('MOLECULARMASS', $protein) ? $protein->MOLECULARMASS : null;
+                        $phaseDensity = array_key_exists('DENSITY', $protein) ? $protein->DENSITY : null;
+                        
+                        $chk = $this->db->pq("SELECT proteinid FROM protein
+                            WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $protein->ACRONYM));
+                            if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
+
+                        $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density) 
+                            VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6) RETURNING proteinid INTO :id',
+                            array($this->proposalid, $phaseName, $protein->ACRONYM, $phaseSeq, $phaseMass, $phaseDensity));
+                            
+                        if($isCapillary){
+                            $ids[$model]['CAPILLARYPHASEID'] = $this->db->id();
+                            $capillaryPhaseId = $this->db->id();
+                        } else {
+                            $ids[$model]['PHASEID'] = $this->db->id();
+                            $ids[$model]['CAPILLARYPHASEID'] = $capillaryPhaseId;
+                        }
+                        $isCapillary = false;
+                    }
+
+                    // Insert Crystals
+                    $crystals = null;
+                    if($attrs->fromFile)
+                        $crystals = $capillaryId == null && !$capillary->CONTAINERLESS ? array($capillary, $crystal) : array($crystal);
+                    else
+                        $crystals = $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS ? array($capillary, $crystal) : array($crystal);
+
+                    $isCapillary = sizeof($crystals) > 1 ? true : false;
+
+                    foreach($crystals as $sample){
+                        $c = array();
+                        foreach (array('SPACEGROUP', 'COMMENTS', 'NAME') as $f) $c[$f] = array_key_exists($f, $sample) ? $sample->$f : '';
+                        foreach (array('ABUNDANCE', 'THEORETICALDENSITY') as $f) $c[$f] = array_key_exists($f, $sample) ? $sample->$f : null;
+
+                        $pid = $isCapillary ? $ids[$model]['CAPILLARYPHASEID'] : $ids[$model]['PHASEID'];
+
+                        $this->db->pq("INSERT INTO crystal (crystalid,proteinid,spacegroup,abundance,comments,name,theoreticaldensity) VALUES (s_crystal.nextval,:1,:2,:3,:4,:5,:6) RETURNING crystalid INTO :id", 
+                            array($pid, $c['SPACEGROUP'], $c['ABUNDANCE'], $c['COMMENTS'], $c['NAME'], $c['THEORETICALDENSITY']));
+
+                        if($isCapillary){
+                            $ids[$model]['CAPILLARYID'] = $this->db->id();
+                            $capillaryId = $this->db->id();
+                        } else {
+                            $ids[$model]['CRYSTALID'] = $this->db->id();
+                        }
+                        $isCapillary = false;
+                    }
+
+                    // Recently changed this so assumption is that request includes the default dewar id
+                    // Avoids the need for a shared function. UI calls /dewar/default end point first
+                    // No other info required about dewar so reuse of current endpoint preferred in this case
+                    $ids[$model]['DEWARID'] = $attrs->DEWARID;
+                    
+                    // Do we have a container associated with this dewar?
+                    $chk = $this->db->pq("SELECT containerid FROM container WHERE dewarid =:1", array($ids[$model]['DEWARID']));
+                    if (sizeof($chk)) $ids[$model]['CONTAINERID'] = $chk[0]['CONTAINERID'];
+
+                    // Insert Container if we don't already have one
+                    if(!array_key_exists('CONTAINERID', $ids[$model])) {
+                        $cap = array_key_exists('CAPACITY', $container) ? $container->CAPACITY : 16;
+                        $com = array_key_exists('COMMENTS', $container) ? $container->COMMENTS : null;
+
+                        $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,comments) 
+                        VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5) RETURNING containerid INTO :id", 
+                        array($ids[$model]['DEWARID'], $container->NAME, $cap, $container->CONTAINERTYPE, $com));
+                        $ids[$model]['CONTAINERID'] = $this->db->id();
+                    }
+
+                    // ADD BLSAMPLES
+                    $blSamples = array();
+                    $maxLocation = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids[$model]['CONTAINERID']))[0]['LOCATION'];
+                    
+                    if(array_key_exists('CAPILLARYID', $ids[$model]) && $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS)
+                        $blSamples['capillary'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CAPILLARYID'], 'PROTEINID' => $ids[$model]['CAPILLARYPHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $capillary->NAME, 'PACKINGFRACTION' => $attrs->PACKINGFRACTION ? $attrs->PACKINGFRACTION : null, 'COMMENTS' => array_key_exists('COMMENTS', $capillary) ? $capillary->COMMENTS : '', 'DIMENSION1' => $capillary->OUTERDIAMETER, 'DIMENSION2' => $capillary->INNERDIAMETER, 'DIMENSION3' => $capillary->LENGTH, 'SHAPE' => $capillary->SHAPE, 'LOOPTYPE' => 1);
+                    
+                    $blSamples['sample'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CRYSTALID'], 'PROTEINID' => $ids[$model]['PHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $crystal->NAME, 'PACKINGFRACTION' => $attrs->PACKINGFRACTION ? $attrs->PACKINGFRACTION : null, 'COMMENTS' => array_key_exists('COMMENTS', $crystal) ? $crystal->COMMENTS : '');
+                    
+                    foreach($blSamples as $key => $blSample){
+                        $a = $this->_prepare_sample_args($blSample);
+                        $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,containerid,location,comments,name,code,packingfraction,dimension1,dimension2,dimension3,shape,looptype) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12) RETURNING blsampleid INTO :id", 
+                            array($key == 'capillary' ? $ids[$model]['CAPILLARYID'] : $ids[$model]['CRYSTALID'], $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE']));
+                        
+                        if($key == 'capillary'){
+                            $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->id();
+                            $blSampleCapillaryId = $this->db->id();
+                        } else {
+                            $ids[$model]['BLSAMPLEID'] = $this->db->id();
+                        }
+
+                        // Add DiffractionPlan (DataCollectionPlan) information
+                        $this->db->pq("INSERT INTO diffractionplan (preferredbeamsizex, preferredbeamsizey, energy, monobandwidth)
+                            VALUES (:1, :2, :3, :4)", array(70, 70, 76600, 0.1));
+                        if($key == 'capillary')
+                            $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] = $this->db->id();
+                        else
+                            $ids[$model]['DIFFRACTIONPLANID'] = $this->db->id();
+
+                        $expTime = $attrs->EXPOSURETIME ? $attrs->EXPOSURETIME : 600;
+
+                        $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid, planorder) 
+                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0));
+                        
+                        $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
+                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 28, $expTime, 200));
+
+                        $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
+                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 25, $expTime, 800));
+
+                        $this->db->pq("INSERT INTO scanparametersmodel (scanparametersserviceid, datacollectionplanid, sequencenumber, start, stop, step) 
+                            VALUES (:1, :2, :3, :4, :5, :6)", array(5, $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0, 0, 0, 1));
+                    }
+
+                    // Add Container Group (group capillary instance with sample instance)
+                    if(!$capillary->CONTAINERLESS){
+                        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
+                        $ids[$model]['SAMPLEGROUPID'] = $this->db->id();
+                        
+                        if(!array_key_exists('BLSAMPLECAPILLARYID', $ids[$model])){
+                            if($attrs->fromFile)
+                                $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillaryId))[0]['BLSAMPLEID'];
+                            else
+                                $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID))[0]['BLSAMPLEID'];
+                        }
+
+                        $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
+                        VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLECAPILLARYID'], $ids[$model]['SAMPLEGROUPID'], 2, 'container'));
                 
-                $isCapillary ? $ids['CAPILLARYPHASEID'] = $this->db->id() : $ids['PHASEID'] = $this->db->id();
-                $isCapillary = false;
-            }
+                        $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
+                        VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLEID'], $ids[$model]['SAMPLEGROUPID'], 1, 'sample'));
+                    }
 
-            // Insert Crystals
-            $crystals = $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS ? array($capillary, $crystal) : array($crystal);
-            $isCapillary = sizeof($crystals) > 1 ? true : false;
+                    // Insert CIF file(s) reference
+                    $fileCount = 0;
+                    foreach($_FILES as $f){
+                        $fileRef = 'pdb_file_'.$fileCount;
+                        $info = pathinfo($_FILES[$fileRef]['name']);
 
-            foreach($crystals as $sample){
-                $c = array();
-                foreach (array('SPACEGROUP', 'COMMENTS', 'NAME') as $f) $c[$f] = array_key_exists($f, $sample) ? $sample->$f : '';
-                foreach (array('ABUNDANCE', 'THEORETICALDENSITY') as $f) $c[$f] = array_key_exists($f, $sample) ? $sample->$f : null;
-
-                $pid = $isCapillary ? $ids['CAPILLARYPHASEID'] : $ids['PHASEID'];
-
-                $this->db->pq("INSERT INTO crystal (crystalid,proteinid,spacegroup,abundance,comments,name,theoreticaldensity) VALUES (s_crystal.nextval,:1,:2,:3,:4,:5,:6) RETURNING crystalid INTO :id", 
-                    array($pid, $c['SPACEGROUP'], $c['ABUNDANCE'], $c['COMMENTS'], $c['NAME'], $c['THEORETICALDENSITY']));
-
-                $isCapillary ? $ids['CAPILLARYID'] = $this->db->id() : $ids['CRYSTALID'] = $this->db->id();
-                $isCapillary = false;
-            }
-
-            // Recently changed this so assumption is that request includes the default dewar id
-            // Avoids the need for a shared function. UI calls /dewar/default end point first
-            // No other info required about dewar so reuse of current endpoint preferred in this case
-            $ids['DEWARID'] = $this->arg('DEWARID');
-
-            // Do we have a container associated with this dewar?
-            $chk = $this->db->pq("SELECT containerid FROM container WHERE dewarid =:1", array($ids['DEWARID']));
-            if (sizeof($chk)) $ids['CONTAINERID'] = $chk[0]['CONTAINERID'];
-
-            // Insert Container if we don't already have one
-            if(!array_key_exists('CONTAINERID', $ids)) {
-                $cap = array_key_exists('CAPACITY', $container) ? $container->CAPACITY : 16;
-                $com = array_key_exists('COMMENTS', $container) ? $container->COMMENTS : null;
-
-                $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,comments) 
-                VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5) RETURNING containerid INTO :id", 
-                array($ids['DEWARID'], $container->NAME, $cap, $container->CONTAINERTYPE, $com));
-                $ids['CONTAINERID'] = $this->db->id();
-            }
-
-            // ADD BLSAMPLES
-            $blSamples = array();
-            $maxLocation = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']))[0]['LOCATION'];
-            
-            if(array_key_exists('CAPILLARYID', $ids) && $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS)
-                $blSamples['capillary'] = array('CONTAINERID' => $ids['CONTAINERID'], 'CRYSTALID' => $ids['CAPILLARYID'], 'PROTEINID' => $ids['CAPILLARYPHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $capillary->NAME, 'PACKINGFRACTION' => $this->has_arg('PACKINGFRACTION') ? $this->arg('PACKINGFRACTION') : null, 'COMMENTS' => array_key_exists('COMMENTS', $capillary) ? $capillary->COMMENTS : '', 'DIMENSION1' => $capillary->OUTERDIAMETER, 'DIMENSION2' => $capillary->INNERDIAMETER, 'DIMENSION3' => $capillary->LENGTH, 'SHAPE' => $capillary->SHAPE, 'LOOPTYPE' => 1);
-            
-            $blSamples['sample'] = array('CONTAINERID' => $ids['CONTAINERID'], 'CRYSTALID' => $ids['CRYSTALID'], 'PROTEINID' => $ids['PHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $crystal->NAME, 'PACKINGFRACTION' => $this->has_arg('PACKINGFRACTION') ? $this->arg('PACKINGFRACTION') : null, 'COMMENTS' => array_key_exists('COMMENTS', $crystal) ? $crystal->COMMENTS : '');
-            
-            foreach($blSamples as $key => $blSample){
-                $a = $this->_prepare_sample_args($blSample);
-                $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,containerid,location,comments,name,code,packingfraction,dimension1,dimension2,dimension3,shape,looptype) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12) RETURNING blsampleid INTO :id", 
-                    array($key == 'capillary' ? $ids['CAPILLARYID'] : $ids['CRYSTALID'], $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE']));
-                
-                if($key == 'capillary')
-                    $ids['BLSAMPLECAPILLARYID'] = $this->db->id();
-                else
-                    $ids['BLSAMPLEID'] = $this->db->id();
-
-                // Add DiffractionPlan (DataCollectionPlan) information
-                $this->db->pq("INSERT INTO diffractionplan (preferredbeamsizex, preferredbeamsizey, energy, monobandwidth)
-                    VALUES (:1, :2, :3, :4)", array(70, 70, 76600, 0.1));
-                if($key == 'capillary')
-                    $ids['CAPILLARYDIFFRACTIONPLANID'] = $this->db->id();
-                else
-                    $ids['DIFFRACTIONPLANID'] = $this->db->id();
-
-                $expTime = $this->has_arg('EXPOSURETIME') ? $this->arg('EXPOSURETIME') : 600;
-
-                $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid, planorder) 
-                    VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids['BLSAMPLECAPILLARYID'] : $ids['BLSAMPLEID'], $key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 0));
-                
-                $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
-                    VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 28, $expTime, 200));
-
-                $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
-                    VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 25, $expTime, 800));
-
-                $this->db->pq("INSERT INTO scanparametersmodel (scanparametersserviceid, datacollectionplanid, sequencenumber, start, stop, step) 
-                    VALUES (:1, :2, :3, :4, :5, :6)", array(5, $key == 'capillary' ? $ids['CAPILLARYDIFFRACTIONPLANID'] : $ids['DIFFRACTIONPLANID'], 0, 0, 0, 1));
-            }
-
-            // Add Container Group (group capillary instance with sample instance)
-            if(!$capillary->CONTAINERLESS){
-                $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
-                $ids['SAMPLEGROUPID'] = $this->db->id();
-
-                if(!array_key_exists('BLSAMPLECAPILLARYID', $ids)){
-                    $ids['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID))[0]['BLSAMPLEID'];
+                        if ($info['extension'] == 'pdb' || $info['extension'] == 'cif') {
+                            $file = file_get_contents($_FILES[$fileRef]['tmp_name']);
+                            $this->_associate_pdb($info['basename'],$file,'',$ids[$model]['PHASEID']);
+                        }
+                        $fileCount++;
+                    }
                 }
-
-                $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
-                VALUES (:1,:2, :3, :4)", array($ids['BLSAMPLECAPILLARYID'], $ids['SAMPLEGROUPID'], 2, 'container'));
-        
-                $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
-                VALUES (:1,:2, :3, :4)", array($ids['BLSAMPLEID'], $ids['SAMPLEGROUPID'], 1, 'sample'));
+                $this->db->end_transaction();
+                $this->_output($ids);
             }
-
-            // Insert CIF file(s) reference
-            $fileCount = 0;
-            foreach($_FILES as $f){
-                $fileRef = 'pdb_file_'.$fileCount;
-                $info = pathinfo($_FILES[$fileRef]['name']);
-
-                if ($info['extension'] == 'pdb' || $info['extension'] == 'cif') {
-                    $file = file_get_contents($_FILES[$fileRef]['tmp_name']);
-                    $this->_associate_pdb($info['basename'],$file,'',$ids['PHASEID']);
-                }
-                $fileCount++;
-            }
-
-            $this->db->end_transaction();
-            $this->_output($ids);
         }
 
         function _pre_q_sub_sample() {
