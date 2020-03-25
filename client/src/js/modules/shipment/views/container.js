@@ -13,6 +13,8 @@ define(['marionette',
     'modules/shipment/collections/platetypes',
     'modules/shipment/views/plate',
 
+    'collections/processingpipelines',
+
     'views/table',
 
     'utils',
@@ -31,6 +33,8 @@ define(['marionette',
 
     PlateTypes,
     PlateView,
+
+    ProcessingPipelines,
     
     TableView,    
 
@@ -89,10 +93,12 @@ define(['marionette',
             this.proteins.fetch()
 
             this.containerregistry = new ContainerRegistry(null, { state: { pageSize: 9999 }})
-            
+
             this.history = new ContainerHistory()
             this.history.queryParams.cid = this.model.get('CONTAINERID')
             this.history.fetch()
+
+            this.processing_pipelines = new ProcessingPipelines()
 
             Backbone.Validation.bind(this)
         },
@@ -111,6 +117,14 @@ define(['marionette',
                 var opts = self.containerregistry.kv()
                 opts[''] = '-'
                 edit.create('CONTAINERREGISTRYID', 'select', { data: opts })
+            })
+
+            this.processing_pipelines.queryParams.pipelinestatus = 'optional'
+            this.processing_pipelines.queryParams.category = 'processing'
+            this.processing_pipelines.fetch().done(function() {
+                var opts = self.processing_pipelines.kv()
+                opts[''] = '-'
+                edit.create('PROCESSINGPIPELINEID', 'select', { data: opts })
             })
 
             var columns = [
