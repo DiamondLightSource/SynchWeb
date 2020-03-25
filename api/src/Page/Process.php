@@ -28,6 +28,9 @@ class Process extends Page
             'RECIPE' => '([\w-])+',
 
             'ids' => '\d+', 
+            'pipelinestatus' => '([\w\s-])+',
+            'category' => '([\w\s-])+',
+            'discipline' => '([\w\s-])+',
         );
         
 
@@ -385,13 +388,39 @@ class Process extends Page
         $this->_output(new \stdClass);
     }
 
+    /*
+    * Controller method for /process/pipelines
+    * Returns list of processing pipelines that meet query parameters
+    * Supported query parameters:
+    *     discipline (MX, CryoEM etc),
+    *     category (processing, post processing)
+    *     pipelinestatus (automatic, optional, deprecated)
+    */
     function _pipelines() {
-        // TODO - replace with database request
-        $rows = array(
-                    array('PROCESSINGPIPELINEID' => '1', 'PIPELINE' => 'xia2/DIALS'),
-                    array('PROCESSINGPIPELINEID' => '2', 'PIPELINE' => 'xia2/XDS'),
-                    array('PROCESSINGPIPELINEID' => '3', 'PIPELINE' => 'autoPROC'),
-        );
+        // By default return all processing pipelines for a given discipline.
+        // Filters can be used to return pipelines with a specific status and category
+        $discipline = $this->has_arg('discipline') ? $this->arg('discipline') : 'MX';
+
+        $where = 'pp.discipline=:1';
+        $args = array($discipline);
+
+        $status = $this->has_arg('pipelinestatus') ? $this->arg('pipelinestatus') : null;
+        $category = $this->has_arg('category') ? $this->arg('category') : null;
+
+        if ($status) {
+            $where .= ' AND pp.pipelinestatus=:'.(sizeof($args)+1);
+            array_push($args, $this->arg('pipelinestatus'));
+        }
+        if ($category) {
+            $where .= ' AND ppc.name=:'.(sizeof($args)+1);
+            array_push($args, $this->arg('category'));
+        }
+
+        // Make the actual query based on our filters
+        $rows = $this->db->pq("SELECT pp.name, pp.processingpipelineid
+            FROM processingpipeline pp
+            INNER JOIN processingpipelinecategory ppc ON ppc.processingpipelinecategoryid = pp.processingpipelinecategoryid
+            WHERE $where", $args);
 
         $total = count($rows);
         $retVal = array('total' => $total,

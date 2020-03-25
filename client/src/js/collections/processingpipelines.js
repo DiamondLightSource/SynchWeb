@@ -17,7 +17,7 @@ define(['backbone.paginator', 'models/processingpipeline', 'utils/kvcollection']
             return r.data
         },
         
-        keyAttribute: 'PIPELINE',
+        keyAttribute: 'NAME',
         valueAttribute: 'PROCESSINGPIPELINEID',
 
     }))
