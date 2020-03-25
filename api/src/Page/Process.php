@@ -42,6 +42,8 @@ class Process extends Page
             array('/sweeps', 'post', '_add_reprocessing_sweeps'),
 
             array('/enqueue', 'post', '_enqueue'),
+
+            array('/pipelines', 'get', '_pipelines'),
         );
 
 
@@ -381,5 +383,19 @@ class Process extends Page
         }
 
         $this->_output(new \stdClass);
+    }
+
+    function _pipelines() {
+        // TODO - replace with database request
+        $rows = array(
+                    array('PROCESSINGPIPELINEID' => '1', 'PIPELINE' => 'xia2/DIALS'),
+                    array('PROCESSINGPIPELINEID' => '2', 'PIPELINE' => 'xia2/XDS'),
+                    array('PROCESSINGPIPELINEID' => '3', 'PIPELINE' => 'autoPROC'),
+        );
+
+        $total = count($rows);
+        $retVal = array('total' => $total,
+                        'data' => $rows);
+        $this->_output($retVal);
     }
 }

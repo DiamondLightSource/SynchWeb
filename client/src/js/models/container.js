@@ -68,6 +68,10 @@ define(['backbone'], function(Backbone) {
             AUTOMATED: {
                 required: false,
                 pattern: 'number',
+            },
+            PROCESSINGPIPELINEID: {
+                required: false,
+                pattern: 'number',
             }
         },
         

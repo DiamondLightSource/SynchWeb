@@ -100,6 +100,7 @@ class Shipment extends Page
                               'STORAGETEMPERATURE' => '[\w-]+',
                               'AUTOMATED' => '\d+',
                               'PUCK' => '\d',
+                              'PROCESSINGPIPELINEID' => '\d+',
 
                               'CONTAINERREGISTRYID' => '\d+',
                               'PROPOSALID' => '\d+',
@@ -1489,6 +1490,12 @@ class Shipment extends Page
             $tem = $this->has_arg('STORAGETEMPERATURE') ? $this->arg('STORAGETEMPERATURE') : null;
 
             $crid = $this->has_arg('CONTAINERREGISTRYID') ? $this->arg('CONTAINERREGISTRYID') : null;
+
+            $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
+
+            if ($this->has_arg('PIPELINE')) {
+                error_log("AUTO PROCESSING CHOICE = " . $pipeline);
+            }
 
             $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid) 
               VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13) RETURNING containerid INTO :id", 
