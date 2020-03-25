@@ -27,6 +27,7 @@ define(['backbone',
 
     'collections/users',
     'modules/shipment/collections/containerregistry',
+    'collections/processingpipelines',
     'views/form',
     
     'templates/shipment/containeradd.html',
@@ -59,6 +60,7 @@ define(['backbone',
 
     Users,
     ContainerRegistry,
+    ProcessingPipelines,
     FormView,
         
     template, table, row){
@@ -85,7 +87,7 @@ define(['backbone',
             single: '.singlesamp',
             grp: '.group',
         },
-        
+
         templateHelpers: function() {
             return {
                 SHIPPINGID: this.dewar.get('SHIPPINGID'),
@@ -106,6 +108,8 @@ define(['backbone',
             imager: 'select[name=REQUESTEDIMAGERID]',
             barcode: 'input[name=BARCODE]',
             registry: 'select[name=CONTAINERREGISTRYID]',
+            autoprocessing_options: '.autoprocessing_options',
+            autoprocessing_pipeline: 'select[name=PIPELINE]',
             auto: 'input[name=AUTOMATED]',
             extrastate: '.extra-state',
         },
@@ -146,18 +150,23 @@ define(['backbone',
 
             'change @ui.registry': 'updateName',
             'click @ui.auto': 'updateAutomated',
+            'change @ui.autoprocessing_pipeline': 'updateProcessing',
         },
 
         updateAutomated: function(e) {
             if (this.table.currentView) this.table.currentView.toggleAuto(this.ui.auto.is(':checked'))
         },
 
-
         updateName: function(e) {
             var rc = this.containerregistry.findWhere({ CONTAINERREGISTRYID: this.ui.registry.val() })
             if (rc) this.ui.name.val(rc.get('BARCODE'))
         },
 
+        // Callback triggered whenever the priority processing drop down is changed
+        updateProcessing: function(e) {
+            var pipelineId = this.ui.autoprocessing_pipeline.val()
+            this.model.set("PROCESSINGPIPELINEID", pipelineId)
+        },
 
         checkBarcode: function() {
             if (!this.ui.barcode.val()) this.model.set('BARCODECHECK', null)
@@ -269,6 +278,7 @@ define(['backbone',
 
         setType: function(e) {
             this.$el.find('li.auto').hide()
+            this.ui.autoprocessing_options.hide()
 
             this.type = this.ctypes.findWhere({ name: this.ui.type.val() })
             this.type.set({ isSelected: true })
@@ -289,6 +299,7 @@ define(['backbone',
                 this.$el.find('li.pck').show()
                 this.$el.find('li.plate').hide()
                 this.$el.find('li.pcr').hide()
+                this.ui.autoprocessing_options.show()
 
             } else if (this.type.get('name') == 'PCRStrip') {
                 this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
@@ -362,7 +373,7 @@ define(['backbone',
         
         clearPuck: function(e) {
             if (e) e.preventDefault()
-            this.ui.name.val('')
+            this.ui.name.val('') // Why clear the container name?
             this.ui.registry.val('')
             this.ui.comments.val('')
             this.$el.find('.clear').each(function(i,c) { $(c).trigger('click') })
@@ -551,6 +562,11 @@ define(['backbone',
             this.containerregistry.fetch().done(function() {
                 self.ui.registry.html('<option value="!">Please select one</option>'+self.containerregistry.opts({ empty: true }))
             })
+            this.processing_pipelines = new ProcessingPipelines()
+            this.processing_pipelines.fetch().done(function() {
+                console.log("Got ProcessingPipelines ")
+                self.ui.autoprocessing_pipeline.html('<option value="!">Please select one</option>'+self.processing_pipelines.opts({ empty: true }))
+            })
         },
 
         buildCollection: function() {
@@ -583,6 +599,10 @@ define(['backbone',
 
         updateUsers: function(e) {
             this.ui.pid.html(this.users.opts()).val(app.personid)
+        },
+
+        failure: function(model, response, options) {
+            console.log('failure', model, response)
         },
     })
 
