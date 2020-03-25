@@ -563,8 +563,9 @@ define(['backbone',
                 self.ui.registry.html('<option value="!">Please select one</option>'+self.containerregistry.opts({ empty: true }))
             })
             this.processing_pipelines = new ProcessingPipelines()
+            this.processing_pipelines.queryParams.pipelinestatus = 'optional'
+            this.processing_pipelines.queryParams.category = 'processing'
             this.processing_pipelines.fetch().done(function() {
-                console.log("Got ProcessingPipelines ")
                 self.ui.autoprocessing_pipeline.html('<option value="!">Please select one</option>'+self.processing_pipelines.opts({ empty: true }))
             })
         },

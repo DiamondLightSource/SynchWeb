@@ -302,6 +302,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'ProcessingJob',
             'ProcessingJobParameter',
             'ProcessingJobImageSweep',
+            'ProcessingPipeline',
+            'ProcessingPipelineCategory',
 
             'BeamLineSetup',
 
