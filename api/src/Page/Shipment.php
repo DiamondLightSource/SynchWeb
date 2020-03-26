@@ -1357,7 +1357,7 @@ class Shipment extends Page
                                   LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
 
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
-                                  LEFT OUTER JOIN processingpipeline pp ON c.priorityprocessingpipeline = pp.processingpipelineid
+                                  LEFT OUTER JOIN processingpipeline pp ON c.prioritypipelineid = pp.processingpipelineid
 
                                   $join
                                   WHERE $where
@@ -1456,7 +1456,7 @@ class Shipment extends Page
             
             if (!sizeof($chkc)) $this->_error('No such container');
 
-            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPROCESSINGPIPELINE');
+            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID');
             foreach ($fields as $k => $f) {
                 if ($this->has_arg($k)) {
                     error_log("PROCESSING patch update " . $k);
@@ -1496,7 +1496,7 @@ class Shipment extends Page
 
             $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
 
-            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,priorityprocessingpipeline)
+            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid)
               VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING containerid INTO :id",
               array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline));
                                  
