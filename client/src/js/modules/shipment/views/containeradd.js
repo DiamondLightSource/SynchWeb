@@ -88,6 +88,10 @@ define(['backbone',
             grp: '.group',
         },
 
+        // Default processing priority for pucks
+        // Just affects what is selected for new container
+        defaultPipeline: 'xia2/DIALS',
+
         templateHelpers: function() {
             return {
                 SHIPPINGID: this.dewar.get('SHIPPINGID'),
@@ -567,6 +571,13 @@ define(['backbone',
             this.processing_pipelines.queryParams.category = 'processing'
             this.processing_pipelines.fetch().done(function() {
                 self.ui.autoprocessing_pipeline.html('<option value="!">Please select one</option>'+self.processing_pipelines.opts({ empty: true }))
+                var pipeline = self.processing_pipelines.findWhere({NAME: self.defaultPipeline})
+                if (pipeline) {
+                    self.ui.autoprocessing_pipeline.val(pipeline.get('PROCESSINGPIPELINEID'))
+                    self.updateProcessing()
+                } else {
+                    console.log("Default Pipeline " + self.defaultPipeline + " not found, not selecting a priority")
+                }
             })
         },
 
