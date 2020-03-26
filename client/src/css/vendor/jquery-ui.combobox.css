@@ -1,6 +1,8 @@
-/* This is a copy of the file from npm jquery-ui.combox - we override a couple of settings for the icon */
+/* Comobobox */
 .ui-combobox {
 	position: relative;
+	display: inline-block;
+	margin: 0;
 }
 
 .ui-combobox-input {
@@ -13,13 +15,13 @@
 .ui-combobox-input:focus {
 	cursor: inherit;
 }
-
+/* Triangle is the drop down indicator */
 .ui-combobox .ui-icon-triangle-1-s {
-	right: 0px;
+	top: 0;
+	right: 0;
 	left: auto;
-	margin-top: -8px;
+	margin-top: 6px;
 	position: absolute;
-	top: 50%;
 }
 
 .ui-autocomplete li.ui-menu-item {
@@ -32,7 +34,7 @@
 	font-weight: normal;
 	border: 1px solid #cdcdcd;
 }
-/* Override default jquery-ui active state */
+/* Override default jquery-ui active state (normally bright blue) */
 .ui-autocomplete li.ui-menu-item a.ui-state-active {
 	background: none;
 	border: none;
