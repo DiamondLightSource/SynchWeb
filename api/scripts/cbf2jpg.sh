@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# This script is deprecated at DLS
+#
 #. /etc/profile.d/modules.sh
 #module load ccp4
 #module load mosflm

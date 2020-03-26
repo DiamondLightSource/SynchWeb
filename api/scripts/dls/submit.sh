@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# This script is deprecated at DLS.
+#
 . /etc/profile.d/modules.sh
 module load global/cluster
 

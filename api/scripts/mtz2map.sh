@@ -2,9 +2,16 @@
 
 cd /tmp
 
-export CCP4_MASTER=/dls_sw/apps/ccp4/7.0.052
+# If you are running with the module system, load ccp4
+#. /etc/profile.d/modules.sh
+#module load ccp4
+
+# If not, define the environment variables required below
+#export CCP4_MASTER=/dls_sw/apps/ccp4/<ccp4 version>
+export CCP4_MASTER=/dls_sw/apps/ccp4/latest
 export CINCL=$CCP4_MASTER/ccp4-7.0/include
 export CLIBD=$CCP4_MASTER/ccp4-7.0/lib/data
+
 export CCP4_SCR=/tmp
 export root=$CCP4_MASTER/ccp4-7.0/bin
 
