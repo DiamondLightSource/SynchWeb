@@ -1,7 +1,6 @@
 define(['marionette',
     'utils',
     'utils/xhrimage',
-    'jquery-ui',
     'backbone-validation',
     ], function(Marionette, utils, XHRImage) {
             

@@ -42,6 +42,7 @@ define(['marionette',
 
     'templates/shipment/containerplate.html',
     'templates/shipment/containerplateimage.html',
+    'jquery-ui/ui/widgets/progressbar',
     'jquery.touchswipe'], function(Marionette,
     Backbone,
     Backgrid,

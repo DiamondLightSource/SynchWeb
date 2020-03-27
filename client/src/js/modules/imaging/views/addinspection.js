@@ -4,9 +4,7 @@ define(['views/form',
     'templates/imaging/inspectionadd.html',
     'jquery',
     'backbone',
-    
-    'jquery-ui',
-    'jquery-ui.timepicker',
+
     'backbone-validation',
     
     ], function(FormView,

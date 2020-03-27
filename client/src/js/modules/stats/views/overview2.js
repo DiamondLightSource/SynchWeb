@@ -6,8 +6,9 @@ define(['marionette',
   'modules/stats/collections/overview',
   'modules/stats/collections/runs',
   'utils', 'utils/table',
-  'templates/stats/overview2.html'],
-  function(Marionette, Backbone, Backgrid, TableView, FilterView, ProposalTypes, BAGOverview, Runs, utils, table, template) {
+  'templates/stats/overview2.html',
+  'jquery.flot'
+    ],  function(Marionette, Backbone, Backgrid, TableView, FilterView, ProposalTypes, BAGOverview, Runs, utils, table, template) {
 
     
     var ClickableRow = Backgrid.Row.extend({

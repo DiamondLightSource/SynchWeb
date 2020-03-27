@@ -5,7 +5,6 @@ define(['views/form',
     'jquery',
     'backbone',
     
-    'jquery-ui',
     'backbone-validation',
     
     ], function(FormView,

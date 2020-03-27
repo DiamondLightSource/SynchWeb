@@ -26,7 +26,7 @@ define(['backbone', 'marionette', 'underscore', 'jquery',
     
     'utils',
     'config.json',
-    'jquery.cookie', 'jquery-ui',
+    'jquery.cookie',
         ],
 function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, LoginView, Proposal, Options, utils, config) {
 

@@ -2,7 +2,9 @@ define(['marionette',
     'views/log', 
     'templates/types/em/dc/dc_ctf.html', 
     'utils', 
-    'utils/xhrimage'], function(Marionette, LogView, template, utils, XHRImage) {
+    'utils/xhrimage',
+    'jquery.mp'
+    ], function(Marionette, LogView, template, utils, XHRImage) {
     
     return Marionette.ItemView.extend({
         getTemplate: function() {

@@ -2,7 +2,7 @@ define(['marionette',
         'utils',
         'utils/xhrimage',
         'jquery',
-        'jquery.mp',
+        'jquery.mp'
 ], function(Marionette, utils, XHRImage, $) {
        
     return Marionette.ItemView.extend({

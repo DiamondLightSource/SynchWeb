@@ -23,7 +23,11 @@
 
 
 // Third-party
-@import "vendor/jquery_misc.scss";
-@import "vendor/jquery-ui.scss";
+// @import "vendor/jquery-ui.scss";
+// @import "vendor/jquery-ui-timepicker.scss";
+@import "../../node_modules/jquery-ui/themes/base/all.css";
+@import "../../node_modules/jquery-ui-timepicker-addon/dist/jquery-ui-timepicker-addon.css";
+@import "vendor/jquery-ui.combobox.css";
 @import "vendor/magnific_popup.scss";
-@import "vendor/tipTip.scss";
+@import "vendor/jquery_misc.scss";
+// @import "vendor/tipTip.scss";
