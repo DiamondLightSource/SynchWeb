@@ -222,7 +222,7 @@ class Sample extends Page
                     // Insert Proteins
                     $phases = null;
                     if($attrs->fromFile)
-                        $phases = $capillaryPhaseId == null && !$capillary->CONTAINERLESS ? array($capillaryPhase, $phase) : array($phase);
+                        $phases = $capillaryPhaseId == null && !$capillary->CONTAINERLESS && $capillary->CRYSTALID == null ? array($capillaryPhase, $phase) : array($phase);
                     else
                         $phases = $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS ? array($capillaryPhase, $phase) : array($phase);
 
@@ -255,7 +255,7 @@ class Sample extends Page
                     // Insert Crystals
                     $crystals = null;
                     if($attrs->fromFile)
-                        $crystals = $capillaryId == null && !$capillary->CONTAINERLESS ? array($capillary, $crystal) : array($crystal);
+                        $crystals = $capillaryId == null && !$capillary->CONTAINERLESS && $capillary->CRYSTALID == null ? array($capillary, $crystal) : array($crystal);
                     else
                         $crystals = $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS ? array($capillary, $crystal) : array($crystal);
 
@@ -350,7 +350,7 @@ class Sample extends Page
                         $ids[$model]['SAMPLEGROUPID'] = $this->db->id();
                         
                         if(!array_key_exists('BLSAMPLECAPILLARYID', $ids[$model])){
-                            if($attrs->fromFile)
+                            if($attrs->fromFile && $capillaryId != null)
                                 $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillaryId))[0]['BLSAMPLEID'];
                             else
                                 $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID))[0]['BLSAMPLEID'];
