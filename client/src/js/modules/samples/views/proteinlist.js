@@ -8,12 +8,24 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     event: 'proteins:view',
     argument: 'PROTEINID',
     cookie: true,
+
+    render: function() {
+      Backgrid.Row.prototype.render.call(this)
+
+      // Highlight approved samples
+      // Currently all samples with an external id are green
+      // In future use Protein safetyLevel to discriminate
+      if (this.model.get('EXTERNAL') == '1') this.$el.addClass('active')
+          
+      return this
+    },
+
   })
 
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal</p><div class="ra"><a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
+    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p><div class="ra"><a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper', type: '.type' },
 
     clickableRow: ClickableRow,
