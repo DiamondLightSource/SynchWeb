@@ -138,11 +138,11 @@
     import Backbone from 'backbone'
     import Phase from 'models/protein'
     import Crystal from 'models/crystal'
-    import Crystals from 'collections/crystals'
     import Container from 'models/container'
     import MultiModelFileWrapper from 'models/multimodelfilewrapper'
     import phaseCompositor from 'modules/types/xpdf/utils/phasecompositor'
     import Capillaries from 'modules/types/xpdf/collections/capillaries'
+    import SampleGroups from 'collections/samplegroups'
     import CSVFileValidator from 'csv-file-validator'
 
     const requiredError = (headerName, rowNumber, columnNumber) => {
@@ -232,33 +232,34 @@
 
         created: function(){
             // async:false probably not the best way (locks UI thread) but it seems to work well
-            let existingCapillaries = new Crystals().fetch({async:false})
+            let existingGroups = new SampleGroups().fetch({async:false})
+            
             let self = this
 
-            var caps = JSON.parse(existingCapillaries.responseText)
-            
-            var exists = []
+            var groups = JSON.parse(existingGroups.responseText)
+
+            var exists = new Set()
             var count = 0
             var lastCapillaryId = 0
-            for(var i=0; i<caps.data.length; i++){
-                if(caps.data[i].NAME.endsWith('_CP')){
-                    exists[count] = caps.data[i].CRYSTALID + ':' + caps.data[i].NAME
-
-                    if(caps.data[i].CRYSTALID > lastCapillaryId)
-                        lastCapillaryId = caps.data[i].CRYSTALID;
-
-                    count++
+            // Populate existing capillaries added from this visit
+            for(var i=0; i<groups.data.length; i++){
+                if(groups.data[i].TYPE == 'container'){
+                    // Get the latest capillary that had a sample instance added to it (latest BLSampleGroup_has_BLSample entry)
+                    if(groups.data[i].BLSAMPLEGROUPID > lastCapillaryId){
+                        lastCapillaryId = groups.data[i].CRYSTALID
+                    }
+                    exists.add(groups.data[i].CRYSTALID + ':' + groups.data[i].CRYSTAL)
                 }
             }
-
+            
+            exists = Array.from(exists)
             if(exists.length > 0){
                 this.hasExistingCapillaries = true;
 
                 exists.forEach(function(item, index){
                     if(item.startsWith(lastCapillaryId))
                         self.type = item;
-                });
-
+                })
             }
 
             var stored = []
