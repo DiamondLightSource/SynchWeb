@@ -330,7 +330,7 @@
                     
                     let capillaryPhase = new Phase({
                         NAME: item.sampleName + '_CPM',
-                        ACRONYM: 'xpdfCapillary'+(new Date().getTime().toString()),
+                        ACRONYM: 'xpdfCapillary'+(new Date().getTime().toString()+'_'+index),
                         DENSITY: self.getCapillaryInfo('density') != null ? self.getCapillaryInfo('density') : null,
                         SEQUENCE: self.getCapillaryInfo('sequence') != null ? self.getCapillaryInfo('sequence') : null,
                         MOLECULARMASS: self.getCapillaryInfo('sequence') != null ? phaseCompositor.molecularMassFromComposition(self.getCapillaryInfo('sequence')) : null
@@ -351,7 +351,7 @@
 
                     let phase = new Phase({
                         NAME: item.sampleName,
-                        ACRONYM: 'xpdfPhase'+(new Date().getTime().toString()),
+                        ACRONYM: 'xpdfPhase'+(new Date().getTime().toString())+'_'+index,
                         DENSITY: item.density,
                         MOLECULARMASS: phaseCompositor.molecularMassFromComposition(item.composition),
                         SEQUENCE: item.composition
