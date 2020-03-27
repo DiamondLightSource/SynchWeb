@@ -77,13 +77,20 @@ class Download extends Page
         # ------------------------------------------------------------------------
         # SAXS Specific Visit Download Link
         function _download_visit() {
+            $filesystem = new Filesystem();
             $tp = new TemplateParser($this->db);
             $visit = $tp->visit_dir(array('VISIT' => $this->arg('visit')));
 
             $data = $visit.'/.ispyb/download/download.zip';
-            if (file_exists($data)) {
-                $this->_header($this->arg('visit').'_download.zip');
-                readfile($data);
+
+            if ($filesystem->exists($data)) {
+                $response = new BinaryFileResponse($data);
+                $response->headers->set("Content-Type", "application/octet-stream");
+                $response->setContentDisposition(
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                    $this->arg('visit').'_download.zip'
+                );
+                $response->send();
             } else $this->_error('There doesnt seem to be a data archive available for this visit');
         }
 
@@ -179,8 +186,6 @@ class Download extends Page
                                 );
                                 $response->deleteFileAfterSend(true);
                                 $response->send();
-                                // $this->_header($this->arg('aid').'.tar.gz');
-                                // readfile($f);
                                 exit;
 
                             } else {
@@ -193,9 +198,7 @@ class Download extends Page
                         if ($filesystem->exists($f)) {
                             // readfile($f);
                             $response = new BinaryFileResponse($f);
-                            $response->setContentDisposition(
-                                ResponseHeaderBag::DISPOSITION_INLINE
-                            );
+                            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
                             $response->send();
                         } else {
                             error_log('Download requested file ' . $f . 'does not exist');
@@ -210,8 +213,13 @@ class Download extends Page
                     if ($r['FILETYPE'] == 'Result') {
                         $f = $r['FILEPATH'].'/'.$r['FILENAME'];
                         if ($filesystem->exists($f)) {
-                            $this->_header($r['FILENAME']);
-                            readfile($f);
+                            $response = new BinaryFileResponse($f);
+                            $response->headers->set("Content-Type", "application/octet-stream");
+                            $response->setContentDisposition(
+                                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                                $r['FILENAME']
+                            );
+                            $response->send();
                             exit;
 
                         } $this->_error('No such file', 'The specified auto processing file doesnt exist');
@@ -220,8 +228,13 @@ class Download extends Page
                     } else if ($r['FILETYPE'] == 'Log' && ($r['FILENAME'] == 'fast_dp.log' || $r['FILENAME'] == 'fast_dp-report.html')) {
                         $f = $r['FILEPATH'].'/fast_dp.mtz';
                         if ($filesystem->exists($f)) {
-                            $this->_header($this->arg('aid').'_fast_dp.mtz');
-                            readfile($f);
+                            $response = new BinaryFileResponse($f);
+                            $response->headers->set("Content-Type", "application/octet-stream");
+                            $response->setContentDisposition(
+                                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                                $this->arg('aid').'_fast_dp.mtz'
+                            );
+                            $response->send();
                             exit;
 
                         } $this->_error('No such file', 'The specified auto processing file doesnt exist');
@@ -400,7 +413,7 @@ class Download extends Page
                 $response->send();
                 exit();
             } else {
-                $this->_error("No such file", "The specified file " . $filename . " doesn't exist");
+                $this->_error("No such file, the specified file " . $filename . " doesn't exist");
             }
         }
 
@@ -408,6 +421,8 @@ class Download extends Page
         # ------------------------------------------------------------------------
         # Return a blended mtz file
         function _blend_mtz() {
+            $filesystem = new Filesystem();
+
             if (!$this->has_arg('visit')) $this->_error('No visit specified', 'No visit was specified');
             if (!$this->has_arg('run')) $this->_error('No run specified', 'No blend run number was specified');
 
@@ -425,8 +440,13 @@ class Download extends Page
                 $file = $this->has_arg('s') ? 'scaled_001.mtz' : 'merged_001.mtz';
                 $f = $root.'/combined_files/'.$file;
                 if (file_exists($f)) {
-                    $this->_header('run_'.$this->arg('run').'_'.$file);
-                    readfile($f);
+                    $response = new BinaryFileResponse($f);
+                    $response->headers->set("Content-Type", "application/octet-stream");
+                    $response->setContentDisposition(
+                        ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                        'run_'.$this->arg('run').'_'.$file
+                    );
+                    $response->send();
                     exit;
                 }
             }
@@ -570,14 +590,10 @@ class Download extends Page
                     $response->deleteFileAfterSend(true);
                     $response->send();
 
-                    // Old method
-                    // $this->_header($this->arg('id').'_'.$type.'.tar.gz');
-                    // readfile($filename.'.tar.gz');
                     exit;
                 }
 
-
-            } else $this->_error('File not found', $type.' files were not found');
+            } else $this->_error('File not found ' .$type.' files were not found');
 
         }
 
@@ -696,9 +712,6 @@ class Download extends Page
                         print $l."\n";
                     }
 
-
-
-
                 } else {
                     $size = filesize($out);
                     $this->app->response->headers->set("Content-length", $size);
@@ -794,16 +807,28 @@ class Download extends Page
 
 
         function _get_attachment() {
+            $filesystem = new Filesystem();
             $rows = $this->db->pq("SELECT filefullpath
                 FROM datacollectionfileattachment
                 WHERE datacollectionid=:1 AND datacollectionfileattachmentid=:2", array($this->arg('id'), $this->arg('aid')));
 
             if (!sizeof($rows)) $this->_error('No such attachment');
 
-            $size = filesize($rows[0]['FILEFULLPATH']);
-            $this->app->response->headers->set("Content-length", $size);
-            $this->_header(basename($rows[0]['FILEFULLPATH']));
-            readfile($rows[0]['FILEFULLPATH']);
+            $filename = $rows[0]['FILEFULLPATH'];
+
+            if ($filesystem->exists($filename)) {
+                $response = new BinaryFileResponse($filename);
+                $response->headers->set("Content-Type", "application/octet-stream");
+                $response->setContentDisposition(
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                    basename($filename)
+                );
+                $response->headers->set("Content-Length", filesize($filename));
+                $response->send();
+            } else {
+                error_log("Download file " . $filename . " not found");
+                $this->_error('Attachment not found on filesystem', 404);
+            }
         }
 
 
@@ -811,6 +836,7 @@ class Download extends Page
         # ------------------------------------------------------------------------
         # Download Data
         function _download() {
+            $filesystem = new Filesystem();
             session_write_close();
             if (!$this->has_arg('id')) {
                 $this->_error('No data collection id specified');
@@ -826,22 +852,26 @@ class Download extends Page
             $info['VISIT'] = $this->arg('prop') .'-'.$info['VISIT_NUMBER'];
 
             $data = str_replace($info['VISIT'], $info['VISIT'].'/.ispyb', $this->ads($info['DIR']).$info['IMP'].'/download/download.zip');
-            if (file_exists($data)) {
-                $this->_header($this->arg('id').'_download.zip');
-                readfile($data);
+
+            if ($filesystem->exists($data)) {
+                $response = new BinaryFileResponse($data);
+                $response->headers->set("Content-Type", "application/octet-stream");
+                $response->setContentDisposition(
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                    $this->arg('id').'_download.zip'
+                );
+                $response->send();
+            } else {
+                error_log("Download file " . $data . " not found");
+                $this->_error('File not found on filesystem', 404);
             }
         }
 
 
         # ------------------------------------------------------------------------
         # Force browser to download file
+        # Deprecated function now we are using symfony filesystem
         function _header($f) {
-            /*$this->app->contentType("application/octet-stream");
-            $this->app->response->headers->set('Content-Description', 'File Transfer');
-            $this->app->response->headers->set("Content-Transfer-Encoding", "Binary");
-            $this->app->response->headers->set("Content-disposition", "attachment; filename=\"$f\"");
-            */
-
             header("Content-Type: application/octet-stream");
             header("Content-Transfer-Encoding: Binary");
             header("Content-disposition: attachment; filename=\"$f\"");
