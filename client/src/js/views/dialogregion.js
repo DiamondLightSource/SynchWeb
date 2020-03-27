@@ -1,4 +1,7 @@
-define(['marionette'], function(Marionette) {
+define(['marionette',
+    'jquery',
+    'jquery-ui/ui/widgets/dialog'
+    ], function(Marionette) {
     
     return Marionette.Region.extend({
         el: '#dialog',

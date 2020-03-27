@@ -8,8 +8,7 @@ define(['jquery', 'marionette',
         'templates/dc/gridplot.html',
         'heatmap',
         'utils',
-        'utils/xhrimage',
-        'jquery-ui',
+        'utils/xhrimage'
     ], function($, Marionette, Backbone, DISTL, GridInfo, XFMap, Attachments, canvas, template, HeatMap, utils, XHRImage) {
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {

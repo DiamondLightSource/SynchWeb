@@ -1,11 +1,16 @@
 define(['marionette', 
     'jquery', 
     'markdown', 
-    'jquery-ui', 
+    'jquery-ui/ui/widget',
+    'jquery-ui/ui/widgets/autocomplete',
+    'jquery-ui/ui/widgets/slider',
+    'jquery-ui/ui/widgets/datepicker',
+    'jquery-ui/ui/widgets/selectmenu',
+    'jquery-ui.timepicker',
+    'jquery-ui.combobox',
     'jquery.editable', 
-    'jquery.editable.datepicker', 
-    'jquery-ui.timepicker'], 
-    function(Marionette, $, markdown) {
+    'jquery.editable.datepicker'
+    ], function(Marionette, $, markdown) {
     
     var defaults = {
         submit: 'Ok',

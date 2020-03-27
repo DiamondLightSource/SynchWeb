@@ -19,9 +19,7 @@ define(['marionette',
         'utils',
     
         'jquery',
-        'jquery-ui',
-        'jquery-ui.combobox',
-    ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
+        ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
         sampletable, sampletablerow, sampletablerowedit, 
         forms, SG, Anom, CM, EXP, RS, utils, $) {
 

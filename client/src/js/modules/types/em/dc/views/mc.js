@@ -3,7 +3,9 @@ define(['marionette',
     'modules/types/em/dc/views/drift',
     'templates/types/em/dc/dc_mc.html', 
     'utils', 
-    'utils/xhrimage'], function(Marionette, LogView, 
+    'utils/xhrimage',
+    'jquery.mp'
+    ], function(Marionette, LogView,
         DriftPlot,
         template, utils, XHRImage) {
     

@@ -3,7 +3,6 @@ define(['marionette', 'backbone',
     
         'utils/forms',
         'utils/validation',
-        'jquery-ui',
     
         'vendor/backbone/backbone.syphon'
     

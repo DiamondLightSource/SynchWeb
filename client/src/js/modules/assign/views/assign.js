@@ -7,8 +7,7 @@ define(['marionette', 'backbone', 'views/pages',
     'modules/assign/collections/pucknames',
     
     'utils',
-    'templates/assign/assign.html',
-    'jquery-ui',
+    'templates/assign/assign.html'
     ], function(Marionette,
         Backbone,
         Pages,

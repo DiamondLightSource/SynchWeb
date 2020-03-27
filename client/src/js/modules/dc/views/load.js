@@ -1,5 +1,5 @@
-define(['marionette', 'utils', 'utils/xhrimage', 'templates/dc/load.html'], 
-    function(Marionette, utils, XHRImage, template) {
+define(['marionette', 'utils', 'utils/xhrimage', 'templates/dc/load.html', 'jquery.mp'
+], function(Marionette, utils, XHRImage, template) {
 
     return Marionette.ItemView.extend({
         template: template,

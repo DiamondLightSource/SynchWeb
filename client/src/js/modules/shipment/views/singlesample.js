@@ -11,8 +11,7 @@ define(['backbone',
     
     'templates/shipment/singlesample.html',
     'templates/shipment/singlesamplee.html',
-    
-    'jquery-ui'], function(Backbone, utils,
+    ], function(Backbone, utils,
         FormView, SG, Editable, Protein, Anom,
         ComponentsView,
         templatenew, template) {

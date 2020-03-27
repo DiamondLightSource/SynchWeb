@@ -16,7 +16,7 @@ define(['marionette',
     'modules/projects/views/users',
     
     'templates/projects/projectview.html',
-    'backbone', 'jquery', 'jquery-ui.combobox', 'backbone-validation'
+    'backbone', 'jquery', 'backbone-validation'
     ], function(Marionette, Editable, Proteins, Samples, DCCol, Users, ProjectUser, ProjectUsers, DCView, SampleList, ProteinList, ProjectUserView, template, Backbone, $) {
     
     
@@ -115,6 +115,7 @@ define(['marionette',
 
 
         onRender: function() {
+            console.log("PROJECT VIEW AUTO?")
             this.ui.user.autocomplete({ source: this.getUsers.bind(this) })
             
             if (this.model.get('IS_OWNER')) {

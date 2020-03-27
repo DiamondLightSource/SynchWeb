@@ -1,4 +1,9 @@
-define(['jquery', 'jquery-ui','jquery-ui.combobox'], function($) {
+define(['jquery',
+        'jquery-ui/ui/widget',
+        'jquery-ui/ui/widgets/datepicker',
+        'jquery-ui.timepicker',
+        'jquery-ui.combobox'
+      ], function($) {
 
     /*
      Methods to build form fields

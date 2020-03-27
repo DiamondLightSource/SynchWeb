@@ -8,7 +8,6 @@ define(['backbone',
     'backbone.paginator',
     'templates/dc/queuebuilder.html',
     'templates/dc/queue.xml',
-    'jquery-ui',
     ], function(Backbone, Backgrid, Marionette, DataCollections, Samples, TableView, table, PagableCollection, template, queuexml) {
         
       

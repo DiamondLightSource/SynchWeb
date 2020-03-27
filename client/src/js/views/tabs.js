@@ -1,4 +1,7 @@
-define(['marionette', 'jquery', 'jquery-ui'], function(Marionette, $) {
+define(['marionette',
+        'jquery',
+        'jquery-ui/ui/widgets/tabs'
+      ], function(Marionette, $) {
 
   /*
     Collection interface to jQuery UI Tabs

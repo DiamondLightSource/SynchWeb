@@ -6,7 +6,7 @@ define(['jquery', 'marionette',
         'caman',
         'utils',
         'utils/xhrimage',
-        'jquery-ui',
+        'jquery-ui/ui/widgets/progressbar'
     ], function($, Marionette, CanvasMixin, template, embed, caman, utils, XHRImage) {
     
     // Note we do not import the caman libray as Caman.

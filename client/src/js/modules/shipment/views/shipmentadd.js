@@ -11,7 +11,6 @@ define(['marionette', 'views/form',
     'jquery',
     'backbone',
     
-    'jquery-ui',
     'backbone-validation',
     
     ], function(Marionette, FormView,

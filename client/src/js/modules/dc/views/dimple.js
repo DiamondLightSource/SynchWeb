@@ -1,4 +1,4 @@
-define(['marionette', 'views/log', 'templates/dc/dc_dimple.html', 'utils', 'utils/xhrimage'], function(Marionette, LogView, template, utils, XHRImage) {
+define(['marionette', 'views/log', 'templates/dc/dc_dimple.html', 'utils', 'utils/xhrimage', 'jquery.mp'], function(Marionette, LogView, template, utils, XHRImage) {
     
     return Marionette.ItemView.extend({
         template: template,

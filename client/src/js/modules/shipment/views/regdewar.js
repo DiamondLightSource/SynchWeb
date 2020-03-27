@@ -126,8 +126,14 @@ define(['marionette',
 
 
         getHistory: function() {
-            this.history.queryParams.did = this.dewars.at(0).get('DEWARID')
-            this.history.fetch()
+            // Is there an existing history for this dewar code?
+            var dewar = this.dewars.at(0)
+            if (dewar) {
+                this.history.queryParams.did = dewar.get('DEWARID')
+                this.history.fetch()
+            } else {
+                console.log("No dewar history for this registered dewar")
+            }
         },
 
         
