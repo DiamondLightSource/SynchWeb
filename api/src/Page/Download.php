@@ -131,6 +131,7 @@ class Download extends Page
         #   TODO: Delete me
         function _auto_processing() {
             ini_set('memory_limit', '512M');
+            $filesystem = new Filesystem();
 
             if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
             if (!$this->has_arg('aid')) $this->_error('No auto processing id', 'No auto processing id specified');
@@ -162,8 +163,7 @@ class Download extends Page
                                 $tar = '/tmp/'.$this->arg('aid').'.tar';
                                 $f = $tar.'.gz';
 
-                                if (!file_exists($f)) {
-                                    error_log("Creating Archive to download " . $f);
+                                if (!$filesystem->exists($f)) {
                                     $a = new \PharData($tar);
                                     $a->buildFromDirectory($r['FILEPATH'], '/^((?!(HKL|cbf|dimple)).)*$/');
                                     $a->compress(\Phar::GZ);
@@ -171,15 +171,15 @@ class Download extends Page
                                     unlink($tar);
                                 }
 
-                                // $this->_header($this->arg('aid').'.tar.gz');
                                 // Use Symfony to download
                                 $response = new BinaryFileResponse($f);
                                 $response->setContentDisposition(
-                                    ResponseHeaderBag::DISPOSITION_ATTACHMENT
+                                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                                    $this->arg('aid').'.tar.gz'
                                 );
                                 $response->deleteFileAfterSend(true);
                                 $response->send();
-                                error_log("Symfony download response completed");
+                                // $this->_header($this->arg('aid').'.tar.gz');
                                 // readfile($f);
                                 exit;
 
@@ -190,15 +190,26 @@ class Download extends Page
                             }
                         }
 
-                        if (file_exists($f)) readfile($f);
+                        if ($filesystem->exists($f)) {
+                            // readfile($f);
+                            $response = new BinaryFileResponse($f);
+                            $response->setContentDisposition(
+                                ResponseHeaderBag::DISPOSITION_INLINE
+                            );
+                            $response->send();
+                        } else {
+                            error_log('Download requested file ' . $f . 'does not exist');
+                        }
                         exit;
+                    } else {
+                        error_log('Download Log or archive required but filetype = ' . $r['FILETYPE']);
                     }
 
                 } else {
                     // XIA2
                     if ($r['FILETYPE'] == 'Result') {
                         $f = $r['FILEPATH'].'/'.$r['FILENAME'];
-                        if (file_exists($f)) {
+                        if ($filesystem->exists($f)) {
                             $this->_header($r['FILENAME']);
                             readfile($f);
                             exit;
@@ -208,7 +219,7 @@ class Download extends Page
                     // FastDP
                     } else if ($r['FILETYPE'] == 'Log' && ($r['FILENAME'] == 'fast_dp.log' || $r['FILENAME'] == 'fast_dp-report.html')) {
                         $f = $r['FILEPATH'].'/fast_dp.mtz';
-                        if (file_exists($f)) {
+                        if ($filesystem->exists($f)) {
                             $this->_header($this->arg('aid').'_fast_dp.mtz');
                             readfile($f);
                             exit;
@@ -520,23 +531,28 @@ class Download extends Page
         }
 
         function _mtzmap_readfile($type, $files, $log_file) {
+            $filesystem = new Filesystem();
             $file = $files[0];
 
-            if (file_exists($file)) {
+            if ($filesystem->exists($file)) {
                 if ($this->has_arg('log')) {
-                    if (file_exists($log_file)) {
-                        if (pathinfo($log_file, PATHINFO_EXTENSION) == 'log') {
-                            $this->app->contentType("text/plain");
-                        }
-                        readfile($log_file);
+                    if ($filesystem->exists($log_file)) {
+                        $response = new BinaryFileResponse($log_file);
 
-                    } else $this->_error('Not found', 'That file couldnt be found');
+                        if (pathinfo($log_file, PATHINFO_EXTENSION) == 'log') {
+                            $response->headers->set("Content-Type", "text/plain");
+                        }
+                        // readfile($log_file);
+                        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+                        $response->send();
+
+                    } else $this->_error('Not found, that file could not be found');
 
                 } else {
                     $filename = '/tmp/'.$this->arg('id').'_'.$type;
+                    $archive_filename = $filename . 'tar.gz';
 
-                    if (!file_exists($filename . 'tar.gz')) {
-                        error_log("Creating Archive  " . $filename . 'tar.gz');
+                    if (!$filesystem->exists($archive_filename)) {
                         $a = new \PharData($filename.'.tar');
                         foreach ($files as $f) {
                             $a->addFile($f, basename($f));
@@ -546,9 +562,17 @@ class Download extends Page
 
                         unlink($filename.'.tar');
                     }
+                    $response = new BinaryFileResponse($archive_filename);
+                    $response->setContentDisposition(
+                        ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                        $this->arg('id').'_'.$type.'.tar.gz'
+                    );
+                    $response->deleteFileAfterSend(true);
+                    $response->send();
 
-                    $this->_header($this->arg('id').'_'.$type.'.tar.gz');
-                    readfile($filename.'.tar.gz');
+                    // Old method
+                    // $this->_header($this->arg('id').'_'.$type.'.tar.gz');
+                    // readfile($filename.'.tar.gz');
                     exit;
                 }
 
