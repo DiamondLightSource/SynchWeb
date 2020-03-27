@@ -180,6 +180,7 @@ class Download extends Page
 
                                 // Use Symfony to download
                                 $response = new BinaryFileResponse($f);
+                                $response->headers->set("Content-Type", "application/octet-stream");
                                 $response->setContentDisposition(
                                     ResponseHeaderBag::DISPOSITION_ATTACHMENT,
                                     $this->arg('aid').'.tar.gz'
@@ -578,7 +579,7 @@ class Download extends Page
 
                 } else {
                     $filename = '/tmp/'.$this->arg('id').'_'.$type;
-                    $archive_filename = $filename . 'tar.gz';
+                    $archive_filename = $filename . '.tar.gz';
 
                     if (!$filesystem->exists($archive_filename)) {
                         $a = new \PharData($filename.'.tar');
