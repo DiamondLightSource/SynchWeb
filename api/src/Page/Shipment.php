@@ -1376,7 +1376,7 @@ class Shipment extends Page
         function _queue_container() {
             if (!$this->has_arg('CONTAINERID')) $this->_error('No container specified');
 
-            $chkc = $this->db->pq("SELECT c.containerid,c.containerstatus FROM container c 
+            $chkc = $this->db->pq("SELECT c.containerid,c.containerstatus,c.containertype FROM container c
                 INNER JOIN dewar d ON c.dewarid = d.dewarid 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
@@ -1388,7 +1388,20 @@ class Shipment extends Page
             if ($this->has_arg('UNQUEUE')) {
                 $chkq = $this->db->pq("SELECT containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
                 if (!sizeof($chkq)) $this->_error('That container is not queued');
-                if (!in_array($chkc[0]['CONTAINERSTATUS'], array('in_storage', 'disposed', null))) $this->_error('Container is awaiting data collection and cannot be unqueued');
+
+                $validRequest = false;
+
+                if (stripos($chkc[0]['CONTAINERTYPE'], 'puck') !== false) {
+                    // Then we are a puck type and we allow pucks to be unqueued at any time
+                    $validRequest = true;
+                } else {
+                    if (in_array($chkc[0]['CONTAINERSTATUS'], array('in_storage', 'disposed', null))) {
+                        $validRequest = true;
+                    }
+                }
+                if (!$validRequest) {
+                    $this->_error('Container is awaiting data collection and cannot be unqueued');
+                }
 
                 $cqid = $chkq[0]['CONTAINERQUEUEID'];
 
