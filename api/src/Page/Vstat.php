@@ -699,8 +699,8 @@ class Vstat extends Page
                     SELECT GREATEST(TIMESTAMPDIFF('SECOND', MAX(dc.endtime), MAX(s.enddate))/3600,0) as rem, TIMESTAMPDIFF('SECOND', MAX(s.startdate), MAX(s.enddate))/3600 as len, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.visit_number, s.beamlinename, IF(st.typename IS NOT NULL, st.typename, 'Normal') as typename, vr.run, vr.runid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, s.startdate
                     FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid)
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid 
-                    LEFT OUTER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                    LEFT OUTER JOIN blsession s ON s.sessionid = dcg.sessionid
+                    LEFT OUTER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
+                    LEFT OUTER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid 
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where 
                     GROUP BY p.proposalid, s.visit_number
