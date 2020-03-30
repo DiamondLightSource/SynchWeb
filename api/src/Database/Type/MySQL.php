@@ -255,6 +255,9 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'InspectionType',
             'BLSampleImage',
             'BLSampleImageScore',
+            'BLSampleImageAutoScoreSchema',
+            'BLSampleImageAutoScoreClass',
+            'BLSampleImage_has_AutoScoreClass',
 
             // Queuing
             'ContainerQueueSample',
