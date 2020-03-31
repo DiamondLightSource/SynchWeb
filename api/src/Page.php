@@ -200,7 +200,7 @@ class Page
                                 }
                             }
                             
-                            if ($table == 'datacollection') {
+                            if ($table == 'datacollectiongroup') {
                                 $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
                                     FROM blsession s 
                                     INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
