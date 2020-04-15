@@ -186,12 +186,12 @@ class Page
                         
                         // Check user is in this visit
                         if ($this->has_arg('id')) {
-                            $types = array('data' => array('datacollection', 'datacollectionid'),
+                            $types = array('data' => array('datacollectiongroup', 'datacollectionid'),
                                            'edge' => array('energyscan', 'energyscanid'),
                                            'mca' => array('xfefluorescencespectrum', 'xfefluorescencespectrumid'),
                                            );
                             
-                            $table = 'datacollection';
+                            $table = 'datacollectiongroup';
                             $col = 'datacollectionid';
                             if ($this->has_arg('t')) {
                                 if (array_key_exists($this->arg('t'), $types)) {
@@ -200,7 +200,18 @@ class Page
                                 }
                             }
                             
-                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) INNER JOIN $table dc ON s.sessionid = dc.sessionid WHERE dc.$col = :1", array($this->arg('id')));
+                            if ($table == 'datacollectiongroup') {
+                                $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
+                                    FROM blsession s 
+                                    INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                                    INNER JOIN datacollectiongroup dcg ON s.sessionid = dcg.sessionid
+                                    INNER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid WHERE dc.datacollectionid = :1", array($this->arg('id')));
+                            } else {
+                                $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
+                                    FROM blsession s 
+                                    INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
+                                    INNER JOIN $table dc ON s.sessionid = dc.sessionid WHERE dc.$col = :1", array($this->arg('id')));
+                            }
 
                             if (sizeof($vis)) $this->proposalid = $vis[0]['PROPOSALID'];
                             $vis = sizeof($vis) ? $vis[0]['VIS'] : '';
