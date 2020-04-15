@@ -2,7 +2,7 @@
 // ---------------------------------------------------------
 
 #header {
-    background: $header-background url('./stylesheets/images/diamond_gs_small.png') top center no-repeat;
+    background: $header-background url(./stylesheets/images/#{$site-image}) top center no-repeat;
     // background: $header-background inline-image('diamond_gs_small.png') top center no-repeat;
     
     color: $header-color;

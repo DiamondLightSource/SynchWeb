@@ -20,5 +20,9 @@
 	"maintenance_message": "This is the maintenance message",
 	"maintenance": false,
 
-	"ga_ident": ""
+	"ga_ident": "",
+
+	"site_name": "my site",
+	"site_link": "https://www.mysite.com",
+	"site_image": "diamond_gs_small.png"
 }
