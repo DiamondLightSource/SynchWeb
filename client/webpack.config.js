@@ -35,6 +35,7 @@ module.exports = (env) => ({
             proxyReq.setHeader('Authorization', req.headers.authorization);
           }
         },
+        secure: env && env.proxy.secure && JSON.parse(env.proxy.secure)
       },
     },
   },
