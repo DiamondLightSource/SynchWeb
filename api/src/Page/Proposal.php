@@ -317,7 +317,7 @@ class Proposal extends Page
             }
             
             if ($this->has_arg('next')) {
-                $where .= " AND s.enddate > SYSDATE AND TO_CHAR(s.startdate,'YYYY') > 2009 AND p.proposalcode not in ('lb')";
+                $where .= " AND s.enddate > SYSDATE AND TO_CHAR(s.startdate,'YYYY') > 2009";
                 $this->args['order'] = 'asc';
                 $this->args['sort_by'] = 'ST';
             }
