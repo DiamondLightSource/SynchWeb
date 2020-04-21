@@ -1,11 +1,11 @@
 # SynchWeb
-New ISPyB web application which consists of a PHP REST API and a Backbone/Marionette javascript client.
+SynchWeb is an ISPyB web application which consists of a PHP REST API and a Backbone/Marionette javascript client.
 The client includes some newer components written in Vue.js
 
 Read More: https://diamondlightsource.github.io/SynchWeb/
 
 ## Installation
-Running SynchWeb requires setting up a Linux, Apache, MySQL and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server.
+Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server.
 
 For development, a simple environment can be setup by using scripts provided [here](https://github.com/DiamondLightSource/synchweb-devel-env). They are not intended for production use but include scripts to automatically build and deploy the software on a local VM.
 
