@@ -287,6 +287,8 @@
                       'gen' => array('i11'),
                       );
 
+    # Beamlines to exlucde from the front page overview
+    $overview_blacklist = array('i02');
 
     # Webcam IPs
     # - These are show on the beamline status and active datacollection lists

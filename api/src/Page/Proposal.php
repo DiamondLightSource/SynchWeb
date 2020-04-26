@@ -274,7 +274,7 @@ class Proposal extends Page
         # ------------------------------------------------------------------------
         # Get visits for a proposal
         function _get_visits($visit=null, $output=true) {
-            global $bl_types, $mx_beamlines;
+            global $bl_types, $mx_beamlines, $overview_blacklist;
 
             if ($this->has_arg('current')) {
                 $this->_current_visits();
@@ -329,6 +329,11 @@ class Proposal extends Page
 
             if ($this->has_arg('cm')) {
                 $where .= " AND p.proposalcode LIKE 'cm' AND s.startdate <= SYSDATE";
+            }
+
+            if ($this->has_arg('blacklist')) {
+                $bls = implode("', '", $overview_blacklist);
+                $where .= " AND s.beamlinename NOT IN ('$bls')";
             }
             
             if ($this->has_arg('ty')) {
@@ -480,6 +485,7 @@ class Proposal extends Page
             $this->args['per_page'] = 1;
             $this->args['page'] = 1;
             $this->args['all'] = 1;
+            $this->args['blacklist'] = 1;
 
             $rows = array();
             foreach (array('next', 'prev', 'cm') as $t) {
