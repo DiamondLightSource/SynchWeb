@@ -9,7 +9,6 @@ define(['marionette',
   */
   var TabItem = Marionette.ItemView.extend({
     tagName: 'li',
-    modelEvents: { 'change': 'render' },
     initialize: function(options) {
       var id = this.model.get(this.getOption('tabID')).replace(/\s+/g, '')
       this.template = _.template('<a href="#tabs-'+id+'"><%='+this.getOption('tabTitle')+'%></a>')
@@ -28,19 +27,15 @@ define(['marionette',
     },
       
     onRender: function() {
-        console.log('render tabs')
-        //this.content.show(this.subview)
         this.$el.html(this.subview.render().$el)
         this.$el.attr('id', 'tabs-'+this.model.get(this.options.tabID).replace(/\s+/g, ''))
     },
       
     onShow: function() {
-        console.log('show tabs')
         this.subview.triggerMethod('show');
     },
       
     onDomRefresh: function() {
-        console.log('domref tabs')
         this.subview.triggerMethod('domRefresh');
     },
       
@@ -78,15 +73,12 @@ define(['marionette',
           
         childViewOptions: $.extend({}, options.childViewOptions, cvo, this.getOption('childViewOptions'), { tabContentInner: (options.tabContentItem || this.getOption('tabContentItem')), tabID: options.tabID || this.getOption('tabID') })
       })
-        
-      console.log('inti tabs')
     },
       
     onRender: function() {
-      console.log('render tabs')
       this.tabs.show(this.tabView);
       this.content.show(this.tabContentView);
-      $('.tab-container').tabs();
+      this.$el.find('.tab-container').tabs();
     },
 
   })

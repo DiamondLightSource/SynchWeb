@@ -11,7 +11,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().trim();
 const config = require('./src/js/config.json')
 
-module.exports = {
+module.exports = (env) => ({
   entry: {
       main: './src/index.js',
   },
@@ -21,20 +21,21 @@ module.exports = {
     publicPath: path.join('/dist', gitHash, '/'),
   },
   devServer: {
-    port: 9000,
+    port: (env && env.port) || 9000,
     historyApiFallback: {
       index: '/dist/'+gitHash+'/index.html',
     },
     proxy: {
       '/api': {
         // Change this target to where SynchWeb server is running
-        target: 'http://192.168.33.10',
+        target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
         // Intercept the request and add auth header
         onProxyReq: function(proxyReq, req, res) {
           if (req.headers.authorization) {
             proxyReq.setHeader('Authorization', req.headers.authorization);
           }
         },
+        secure: env && env.proxy.secure && JSON.parse(env.proxy.secure)
       },
     },
   },
@@ -183,7 +184,11 @@ module.exports = {
           // Extract the CSS into separate files
           MiniCssExtractPlugin.loader,
           "css-loader", // translates CSS into CommonJS
-          "sass-loader" // compiles Sass to CSS, using Node Sass by default
+          { loader: "sass-loader",
+            options: {
+                data: "$site_image: '" + (config.site_image || 'diamond_gs_small.png') + "';"
+            }
+          } // compiles Sass to CSS, using Node Sass by default
         ]
       },
       {
@@ -252,4 +257,4 @@ module.exports = {
       chunkFilename: '[id].css',
     }),
   ]
-}
+})

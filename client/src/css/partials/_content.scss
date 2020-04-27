@@ -1953,12 +1953,20 @@ ul.messages {
         border-radius: 5px;
         padding: 10px;
 
-        h1 {
-            font-size: 16px;
+        h3 {
+            cursor: pointer;
+            transition: color 0.25s ease-in-out;
+
+            &:hover {
+                color: #666;
+            }
         }
 
-        h2 {
-            font-size: 14px;
+        pre {
+            font-family: monospace;
+            border-top: 1px solid;
+            margin-top: 5px;
+            padding-top: 5px;
         }
 
         p {

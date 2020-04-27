@@ -67,7 +67,7 @@
                 <div class="whatnow">
                     <a href="http://diamondlightsource.github.io/SynchWeb/">SynchWeb? What is This?</a>
                 </div>
-                <p><a href="http://diamond.ac.uk">Diamond Light Source</a> &copy;2013-<script>document.write(new Date().getFullYear())</script></p>
+                <p><a href="<%= htmlWebpackPlugin.options.jsonConfig.site_link || 'https://www.diamond.ac.uk' %>"><%- htmlWebpackPlugin.options.jsonConfig.site_name || 'Diamond Light Source' %></a> &copy;2013-<script>document.write(new Date().getFullYear())</script></p>
             </div>
         
         </div>
