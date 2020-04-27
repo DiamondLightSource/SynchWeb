@@ -62,6 +62,25 @@ $ cd SynchWeb/api
 $ composer install
 ```
 
+### Developing the client application
+It is possible to run the client code on a local machine and connect to an existing SynchWeb installation on a server.
+The steps required are to build the front end code and then run a webpack dev server to host the client code.
+```sh
+$ cd SynchWeb/client
+$ npm run build:dev
+$ npm run serve -- --env.port=8080 --env.proxy.target=http://192.168.33.10
+```
+In this example a browser pointed at localhost:8080 will connect to a SynchWeb back end on 192.168.33.10. Don't ignore the middle '--' otherwise the dev server will not receive the arguments!
+
+The command line options available are described in this table. These override the defaults set in webpack.config.js.
+
+| Parameter | Description |
+| ------ | ------ |
+| env.port | Webpack dev server port |
+| env.proxy.target | Full address of the SynchWeb PHP backend server (can include port if required) |
+| env.proxy.secure | Flag to set if connecting to an https address for the SynchWeb backend |
+
+
 Acknowledgements
 ----------------
 If you make use of code from this repository, please reference:
