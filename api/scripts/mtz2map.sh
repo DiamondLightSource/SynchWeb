@@ -8,12 +8,12 @@ cd /tmp
 
 # If not, define the environment variables required below
 #export CCP4_MASTER=/dls_sw/apps/ccp4/<ccp4 version>
-export CCP4_MASTER=/dls_sw/apps/ccp4/latest
-export CINCL=$CCP4_MASTER/ccp4-7.0/include
-export CLIBD=$CCP4_MASTER/ccp4-7.0/lib/data
+export CCP4_MASTER=/dls_sw/apps/ccp4/latest/ccp4-7.1
+export CINCL=$CCP4_MASTER/include
+export CLIBD=$CCP4_MASTER/lib/data
 
 export CCP4_SCR=/tmp
-export root=$CCP4_MASTER/ccp4-7.0/bin
+export root=$CCP4_MASTER/bin
 
 if [ $3 == 'dimple' -o $3 == 'mrbump' ]; then
 
