@@ -53,7 +53,7 @@
     "flot-pie": "^1.0.0",
     "font-awesome": "^4.2.0",
     "highcharts": "^7.1.2",
-    "jquery": "^1.12.4",
+    "jquery": "^3.5.0",
     "jquery-color": "^3.0.0-alpha.1",
     "jquery-flot-resize": "^1.0.0",
     "jquery-touchswipe": "^1.6.19",
