@@ -617,6 +617,8 @@ class Page
             $ret = array();
             $ds=ldap_connect($ldap_server);
             if ($ds) {
+		// Explictly set the protocol version to prevent bind errors
+		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
                 $r=ldap_bind($ds);
                 $sr=ldap_search($ds, $ldap_search, $search);
                 $info = ldap_get_entries($ds, $sr);
