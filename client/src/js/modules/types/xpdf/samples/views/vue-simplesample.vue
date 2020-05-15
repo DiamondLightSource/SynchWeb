@@ -19,9 +19,10 @@
                             <span class="file">
                                 <input type="file" name="csv_file" v-on:change="setCSVFile($event)" accept=".csv">
                                 <span v-if="fileValid" style="color:green; font-size:medium">File OK</span>
+                                <button type="button" onclick="window.open('/assets/files/simple_sample_csv_template.csv');return false">Download CSV Template</button>
                             </span>
-                            <p>CSV files must contain 4 comma separated columns: Sample Name, Composition, Density, Packing Fraction.</p>
-                            <p>An optional column is: Comments.</p>
+                            <p>CSV files must contain 4 comma separated columns with the following mandatory headers on the first row: Sample Name,Composition,Density,Packing Fraction</p>
+                            <p>An optional column is: Comments</p>
                         </li>
                     </ul>
                     <br /><br />
@@ -41,7 +42,7 @@
                         <li>
                             <label>Composition
                             <span class="small">Chemical formula of the material</span></label>
-                            <span class="composition"><input type="text" name="seq" v-model="seq" v-bind:class="{ferror: errors.has('seq')}" v-validate="'required'" v-on:input="updateMolecularMass()" /></span>
+                            <span class="composition"><input type="text" name="seq" v-model="seq" v-bind:class="{ferror: errors.has('seq')}" v-validate="{required: true, closeExp: true, regex:/^[a-zA-Z0-9\(\)\.]*$/ }" /></span>
                             <span v-if="errors.has('seq')" class="errormessage ferror">{{ errors.first('seq') }}</span>
                         </li>
 
@@ -148,6 +149,9 @@
     const requiredError = (headerName, rowNumber, columnNumber) => {
         return `${headerName} is required in row ${rowNumber} / column ${columnNumber}`
     }
+    const headerError = (headerName, rowNumber, columnNumber) => {
+        return `Please add a column header for ${headerName}`
+    }
 
     const csvConfig = {
         headers: [
@@ -155,19 +159,45 @@
                 name: 'Sample Name',
                 inputName: 'sampleName',
                 required: true,
-                requiredError
+                requiredError,
+                headerError
             },
             {
                 name: 'Composition',
                 inputName: 'composition',
                 required: true,
-                requiredError
+                requiredError,
+                headerError,
+                validate: function(composition){
+                    if(composition.includes('[') || composition.includes(']') || composition.includes('{') || composition.includes('}'))
+                        return false
+
+                    var count = 0
+                    for(var i=0;i<composition.length;i++){
+                        if(composition.charAt(i) === '(')
+                            count++
+                        else if(composition.charAt(i) === ')'){
+                            if(count === 0)
+                                return false
+                            else
+                                count--
+                        }
+                    }
+                    if(count === 0)
+                        return true
+                    else
+                        return false
+                },
+                validateError: function(headerName, rowNumber, columnNumber){
+                    return `${headerName} cannot have [] or {} and any () must be correctly closed in row ${rowNumber} / column ${columnNumber}`
+                }
             },
             {
                 name: 'Density',
                 inputName: 'density',
                 required: true,
                 requiredError,
+                headerError,
                 validate: function(density){
                     return !isNaN(density)
                 },
@@ -180,6 +210,7 @@
                 inputName: 'packingFraction',
                 required: true,
                 requiredError,
+                headerError,
                 validate: function(packingFraction){
                     return !isNaN(packingFraction) && packingFraction >= 0 && packingFraction <= 1
                 },
@@ -190,7 +221,7 @@
             {
                 name: 'Comments',
                 inputName: 'comments',
-                required: false,
+                optional: true
             },
         ]
     }
@@ -207,7 +238,6 @@
                 capillaries: new Capillaries().__proto__.capillaries,
                 existingCapillaryID: null,
                 seq: '',
-                mass: 0,
                 type: '',
                 capacity: 25,
                 name: '',
@@ -226,7 +256,8 @@
                 fileValid: false,
                 csvFile: null,
                 csvData: [],
-                csvErrors: []
+                csvErrors: [],
+                commaInComments: false
             }
         },
 
@@ -292,7 +323,7 @@
                 
                 this.$validator.validateAll().then(function(result){
                     if(self.fileUpload){
-                        if(result && self.csvErrors.length === 0 && self.defaultDewarId){
+                        if(result && self.fileValid && self.csvErrors.length === 0 && self.defaultDewarId){
                             self.prepareFromFile()
                         } else {
                             console.log('File submission prevented, validation failed');
@@ -325,7 +356,7 @@
 
                     console.log(item)
 
-                    if(self.type.endsWith('_CP'))
+                    if(self.type.endsWith('_CP') || self.type.endsWith('_Capillary'))
                         self.existingCapillaryID = self.type.substring(0, self.type.indexOf(':'))
                     
                     let capillaryPhase = new Phase({
@@ -400,7 +431,7 @@
 
                 this.isLoading = true
 
-                if(this.type.endsWith('_CP'))
+                if(this.type.endsWith('_CP') || this.type.endsWith('_Capillary'))
                     this.existingCapillaryID = this.type.substring(0, this.type.indexOf(':'))
 
                 let capillaryPhase = new Phase({
@@ -428,7 +459,7 @@
                     NAME: this.name,
                     ACRONYM: 'xpdfPhase'+(new Date().getTime().toString()),
                     DENSITY: this.density,
-                    MOLECULARMASS: this.mass,
+                    MOLECULARMASS: phaseCompositor.molecularMassFromComposition(this.seq),
                     SEQUENCE: this.seq
                 })
 
@@ -502,10 +533,6 @@
                 })
             },
 
-            updateMolecularMass: function() {
-                this.mass = phaseCompositor.molecularMassFromComposition(this.seq)
-            },
-
             getCapillaryInfo: function(field) {
                 for(var i=0;i<this.capillaries.length;i++){
                     if(this.capillaries[i].name == this.type){
@@ -527,20 +554,79 @@
             },
             
             setCSVFile: function(event){
+                if(event.target.files.length === 0){
+                    this.fileValid = false
+                    this.csvFile = null
+                    this.csvData = []
+                    this.csvErrors = []
+                    return
+                }
+
                 this.csvFile = event.target.files[0]
                 var self = this
-                CSVFileValidator(this.csvFile, csvConfig)
-                    .then(csvData => {
-                        self.csvData = csvData.data
-                        self.csvErrors = csvData.inValidMessages
-                        if(self.csvErrors.length === 0)
-                            self.fileValid = true
-                        else
-                            self.fileValid = false
-                        console.log(csvData.data)
-                        console.log(self.csvErrors)
-                        
+                var ready = false
+
+                // callback function to make sure we have finished trimming white space from uploaded file
+                // before passing it through the CSVFileValidator
+                var check = function(){
+                    if(ready === true){
+                        CSVFileValidator(self.csvFile, csvConfig)
+                        .then(csvData => {
+                            self.csvData = csvData.data
+                            self.csvErrors = csvData.inValidMessages
+
+                            if(self.commaInComments)
+                                self.csvErrors.push("Column count is greater than expected, you likely have a comma in a comment. Please remove any additional commas")
+
+                            if(self.csvData.length === 1 && self.csvErrors.length === 0){
+                                self.csvErrors.push("Only headers have been submitted, please add some sample information")
+                            }
+                            if(self.csvErrors.length === 0)
+                                self.fileValid = true
+                            else
+                                self.fileValid = false
+
+                            console.log(csvData.data)
+                            console.log(csvData.inValidMessages)
+                        })
+                    } else {
+                        setTimeout(check, 1000)
+                    }
+                }
+                check()
+
+                // CSVFileValidator library doesn't handle white space, so we need to remove it
+                // by trimming the data then writing it back to a Blob
+                // It's pretty cool we can 'edit' files in memory client side with JavaScript!
+                var reader = new FileReader()
+                reader.onload = function(e) {
+                    // If we have more than 5 cells per row there is probably a rogue comma
+                    // We won't try to fix this, just tell the user
+                    self.commaInComments = false;
+                    var newLineSplit = e.target.result.split("\n")
+                    newLineSplit.forEach(function(row){
+                        var cells = row.split(',')
+                        if(cells.length > 5){
+                            self.commaInComments = true
+                            ready = true
+                            return
+                        }
                     })
+
+                    // Remove all leading and trailing white space
+                    var split = e.target.result.split(',')
+                    var trimmed = ''
+                    split.forEach(function(item){
+                        trimmed += item.trim()
+                        if(!item.endsWith("\n"))
+                            trimmed +=','
+                    })
+                    var blob = new Blob([trimmed], {type:self.csvFile.type});
+                    blob.name = self.csvFile.name
+                    self.csvFile = blob
+                    ready = true
+                }
+                reader.readAsText(this.csvFile)
             },
 
             closeDialog: function(){

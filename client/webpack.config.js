@@ -241,7 +241,10 @@ module.exports = {
         to: path.resolve(__dirname, 'assets/js/') },
       { context: path.resolve(__dirname, 'src'),
         from: 'js/vendor/jquery/jquery-1.9.1.min.js',
-        to: path.resolve(__dirname, 'assets/js/') }
+        to: path.resolve(__dirname, 'assets/js/') },
+      { context: path.resolve(__dirname, 'src'),
+        from: 'files/**',
+        to: path.resolve(__dirname, 'assets') }
     ]),
     // Ignore all locale files of moment.js
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
