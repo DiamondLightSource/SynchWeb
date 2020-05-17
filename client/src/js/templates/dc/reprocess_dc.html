@@ -15,7 +15,7 @@
 
 <ul class="clearfix reproc">
     <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
-    <li>&Omega; Start: <%-AXISSTART%>&deg;, Osc: <%-AXISRANGE%>&deg;</li>
+    <li>&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;, Osc: <%-AXISRANGE%>&deg;</li>
     <% if (SI != 1 ) { %> <li>First Image: <%-SI%></li><% } %>
     <li>Resolution: <%-RESOLUTION%>&#197;</li>
     <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
