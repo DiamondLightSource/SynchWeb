@@ -128,8 +128,8 @@ define(['jquery', 'marionette',
             this.blocks = 0
             this.invert_change = false
 
-            this.ps = this.model.get('DETECTORPIXELSIZEHORIZONTAL') || 0.172
-            this.diwidth = this.model.get('DETECTORNUMBEROFPIXELSX') || 2527
+            this.ps = parseFloat(this.model.get('DETECTORPIXELSIZEHORIZONTAL'))/1000 || 0.172
+            this.diwidth = parseInt(this.model.get('DETECTORNUMBEROFPIXELSX')) || 2527
         },
             
         
@@ -478,13 +478,13 @@ define(['jquery', 'marionette',
                 
         // Draw ice rings
         _draw_ice_rings: function() {
-            rings = [3.897, 3.669,3.441,2.671,2.249,2.07,1.95,1.92,1.88,1.72]
+            var rings = [3.897, 3.669,3.441,2.671,2.249,2.07,1.95,1.92,1.88,1.72]
           
             this.ctx.strokeStyle='blue';
             for (var i = 0; i < rings.length; i++) {
               this.ctx.beginPath();
-              rad = this._res_to_dist(rings[i])/this.ps*this.imscale
-              this.ctx.arc(this.model.get('YBEAM')/this.ps*this.imscale,this.model.get('XBEAM')/this.ps*this.imscale,rad,0,2*Math.PI);
+              var rad = this._res_to_dist(rings[i])/this.ps*this.imscale
+              this.ctx.arc(this.model.get('XBEAM')/this.ps*this.imscale,this.model.get('YBEAM')/this.ps*this.imscale,rad,0,2*Math.PI);
               this.ctx.stroke();
             }
         },
@@ -495,11 +495,11 @@ define(['jquery', 'marionette',
             this.ctx.font = this.imscale < 1 ? '10px Arial' : '30px Arial';
           
             for (var i = 0; i < 5; i++) {
-              rad = (((this.height-10)/2)/5)*(i+1)
+              var rad = (((this.height-10)/2)/5)*(i+1)
               this.ctx.beginPath();
-              this.ctx.arc(this.model.get('YBEAM')/this.ps*this.imscale,this.model.get('XBEAM')/this.ps*this.imscale,rad,0,2*Math.PI);
+              this.ctx.arc(this.model.get('XBEAM')/this.ps*this.imscale,this.model.get('YBEAM')/this.ps*this.imscale,rad,0,2*Math.PI);
               this.ctx.stroke();
-              this.ctx.fillText(this._dist_to_res(rad*this.ps/this.imscale).toFixed(2) + 'A',this.model.get('YBEAM')/this.ps*this.imscale-(this.low ? 10 : 40 ),this.model.get('XBEAM')/this.ps*this.imscale-rad+(this.low ? 10 : 40));
+              this.ctx.fillText(this._dist_to_res(rad*this.ps/this.imscale).toFixed(2) + 'A',this.model.get('XBEAM')/this.ps*this.imscale-(this.low ? 10 : 40 ),this.model.get('YBEAM')/this.ps*this.imscale-rad+(this.low ? 10 : 40));
             }
         },
         
@@ -625,11 +625,11 @@ define(['jquery', 'marionette',
         touchMove: function(e) {
             this.mouseMove(e)
             if (e.originalEvent.touches && e.originalEvent.touches.length == 2) {
-                x = e.originalEvent.touches[0]
-                y = e.originalEvent.touches[1]
-                v = Math.sqrt(Math.pow(x.pageX-y.pageX,2)+Math.pow(x.pageY-y.pageY,2))
+                var x = e.originalEvent.touches[0]
+                var y = e.originalEvent.touches[1]
+                var v = Math.sqrt(Math.pow(x.pageX-y.pageX,2)+Math.pow(x.pageY-y.pageY,2))
                         
-                xy = []
+                var xy = []
                 xy.push((x.pageX < y.pageX ? x.pageX : y.pageX) + (Math.abs(x.pageX-y.pageX)/2))
                 xy.push((x.pageY < y.pageY ? x.pageY : y.pageY) + (Math.abs(x.pageY-y.pageY)/2))
                          
@@ -716,7 +716,7 @@ define(['jquery', 'marionette',
                 
         // Convert xy coord on image to distance from centre
         _xy_to_dist: function(x, y) {
-            return Math.sqrt(Math.pow(Math.abs(x*this.ps/this.imscale-this.model.get('YBEAM')),2)+Math.pow(Math.abs(y*this.ps/this.imscale-this.model.get('XBEAM')),2))
+            return Math.sqrt(Math.pow(Math.abs(x*this.ps/this.imscale-this.model.get('XBEAM')),2)+Math.pow(Math.abs(y*this.ps/this.imscale-this.model.get('YBEAM')),2))
         },
           
           
@@ -777,7 +777,7 @@ define(['jquery', 'marionette',
         },
             
         doInvert: function() {
-            invert_change = true
+            this.invert_change = true
             this._dra()
         },
 
