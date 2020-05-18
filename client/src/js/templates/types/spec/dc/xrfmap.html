@@ -1,0 +1,34 @@
+<div class="data_collection" dcid="<%-ID%>" type="data">
+    <h1>
+        <a href="#" class="button button-notext flag <% if (FLAG) { %>button-highlight<% } %>" title="Click to add this data collection to the list of favourite data collections"><i class="fa fa-star-o"></i> <span>Favourite</span></a>
+        <a href="/dc/visit/<%-VIS_LINK%>/id/<%-ID%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
+        
+        <a href="#" class="comments button button-notext" title="Comments"><i class="fa fa-comments"></i> <b class="dcc"><%-DCCC%></b> <span>Comment(s)</span></a>
+
+        <a href="#" class="button attach"><i class="fa fa-file"></i> <%-DCAC%></a>
+
+        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%-VIS_LINK%>"><%-VIS_LINK%></a>]<% } %> <%-ST%></span><span class="spacer"> - </span><i class="button fa fa-caret-right expand"></i> <span class="temp"><span class="DIR"><%-DIR%></span><span class="FILETEMPLATE"><%-FILETEMPLATE%></span></span>
+        
+    </h1>
+    
+    <div class="image"></div>
+    <div class="diviewer spectrum"></div>
+
+    <ul class="clearfix single">
+        <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
+        <li>Energy: <span class="WAVELENGTH"></span>keV</li>
+        <li>Dwell: <span class="EXPOSURETIME"><%-EXPOSURETIME%></span>s</li>
+        <li>Beamsize: <span class="BSX"><%-BSX%></span>x<span class="BSY"><%-BSY%></span>&mu;m</li>
+        <li>No. Points: <span class="NUMIMG"><%-NUMIMG%></span></li>
+        <li>Step Size: <span class="boxx"></span>&mu;m x <span class="boxy"></span>&mu;m</li>
+        <li>Steps: <span class="stepx"></span>x<span class="stepy"></span></li>
+        
+        <li>
+            Point: <span class="img"></span>
+            Value: <span class="val"></span>
+        </li>
+
+        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
+        <li>Status: <b><%-RUNSTATUS%></b></li>
+    </ul>
+</div>
