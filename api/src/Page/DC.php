@@ -1574,18 +1574,22 @@ class DC extends Page
                 ORDER BY imq.imagenumber", $args);
 
             foreach ($imqs as $imq) {
-                array_push($iqs[0], array(intval($imq['NIM']), $this->_null_or($imq['S'], intval)));
-                array_push($iqs[1], array(intval($imq['NIM']), $this->_null_or($imq['B'], intval)));
-                array_push($iqs[2], array(intval($imq['NIM']), $this->_null_or($imq['RES'], floatval)));
-                array_push($iqs[3], array(intval($imq['NIM']), $this->_null_or($imq['TOTALINTEGRATEDSIGNAL'], floatval)));
-                array_push($iqs[4], array(intval($imq['NIM']), $this->_null_or($imq['D'], floatval)));
+                array_push($iqs[0], array(intval($imq['NIM']), $this->_null_or($imq['S'], 'int')));
+                array_push($iqs[1], array(intval($imq['NIM']), $this->_null_or($imq['B'], 'int')));
+                array_push($iqs[2], array(intval($imq['NIM']), $this->_null_or($imq['RES'], 'float')));
+                array_push($iqs[3], array(intval($imq['NIM']), $this->_null_or($imq['TOTALINTEGRATEDSIGNAL'], 'float')));
+                array_push($iqs[4], array(intval($imq['NIM']), $this->_null_or($imq['D'], 'float')));
             }
 
             $this->_output($iqs);
         }
 
         function _null_or($field, $conversion) {
-            return $field == null ? $field : $conversion($field);
+            $val = $field;
+            if ($conversion == 'float') $val = floatval($field);
+            if ($conversion == 'int') $val = intval($field);
+
+            return $field == null ? $field : $val;
         }
 
         # ------------------------------------------------------------------------
