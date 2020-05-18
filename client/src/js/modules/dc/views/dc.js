@@ -75,14 +75,26 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
     },
       
     modelEvents: {
-        'change': 'renderFlag',
+        'change': 'updateInPlace',
     },
       
     renderFlag: function() {
       this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
-      this.$el.find('.COMMENTS').text(this.model.get('COMMENTS'))
+    },
 
-      this.ui.cc.text(this.model.get('DCCC'))
+    updateInPlace: function(all) {
+      var attrs = all ? this.model.attributes : this.model.changedAttributes()
+      _.each(attrs, function(value, key) {
+        var attrEl = this.$el.find('.'+key)
+        var updatefn = 'update'+key
+        if (attrEl && value !== null) {
+          if (this[updatefn]) value = this[updatefn](value)
+          attrEl.text(value)
+        }
+      }, this)
+
+      if (all || 'FLAG' in attrs) this.renderFlag()
+      if ((all || 'DCCC' in attrs) && this.ui.cc) this.ui.cc.text(this.model.get('DCCC'))
     },
       
     events: {
