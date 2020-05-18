@@ -49,7 +49,7 @@ class DC extends Page
                               array('/rd/aid/:aid/:id', 'get', '_rd'),
                               array('/single/t/:t/:id', 'patch', '_set_comment'),
                               array('/sym', 'get', '_get_symmetry'),
-                              array('/xfm/(:id)', 'get', '_fluo_map'),
+                              array('/xfm(/:id)', 'get', '_fluo_map'),
 
                               array('/comments(/:dcid)', 'get', '_get_comments'),
                               array('/comments', 'post', '_add_comment'),
