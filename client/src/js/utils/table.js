@@ -178,7 +178,7 @@ define(['marionette', 'backgrid',
                 this.$el.empty()
                 
                 var st = ''
-                _.each(['R', 'GR', 'SC', 'AI', 'DC', 'AP'], function(t) {
+                _.each(['R', 'GR', 'SC', 'AI', 'XM', 'XS', 'ES', 'DC', 'AP'], function(t) {
                     if (this.model.get(t) > 0) st = '<li class="'+t+'"></li>'
                 }, this)
                 

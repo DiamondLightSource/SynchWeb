@@ -823,7 +823,9 @@ ol.rounded {
         }
     }
 
-
+    .diffraction.spectrum-small {
+        width: 34%;
+    }
 
     .image {
         cursor: pointer;
@@ -843,6 +845,10 @@ ol.rounded {
         
         @media (max-width: $breakpoint-vsmall) {
             display: none;
+        }
+
+        &.large {
+            width: 40%;
         }
     }
     
@@ -1175,6 +1181,30 @@ ul.status {
             }
             
             background-color: #87ceeb;
+        }
+
+        &.XS {
+            &:before {
+                content: 'XRF Spectrum'
+            }
+            
+            background-color: #d287eb;
+        }
+
+        &.XM {
+            &:before {
+                content: 'XRF Map'
+            }
+            
+            background-color: #d287eb;
+        }
+
+        &.ES {
+            &:before {
+                content: 'Energy Scan'
+            }
+            
+            background-color: #a087eb;
         }
     }
 }
