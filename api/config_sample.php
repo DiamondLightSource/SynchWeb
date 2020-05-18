@@ -263,7 +263,8 @@
     $auto = array('123.456.789.1');
     $auto_bls = array('i03', 'i04');
 
-
+    # Commissioning Proposal Type
+    $commissioning_code = 'cm';
 
     # Proposal to store beamline presets in
     $preset_proposal = 'cm12345';
