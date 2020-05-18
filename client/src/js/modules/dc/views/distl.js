@@ -14,8 +14,16 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
       events: {
           'plotselected': 'plotSelected',
           'plotunselected': 'plotUnselected',
+          'plotclick': 'plotClick',
       },
+      numimg: true,
+      clickable: false,
 
+      plotClick: function(e, pos, item) {
+          if (item && item.datapoint.length) {
+              this.trigger('plot:click', item.datapoint[0], item.datapoint[1])
+          }
+      },
 
       plotSelected: function(e, ranges) {
           this.trigger('plot:select', Math.floor(ranges.xaxis.from), Math.ceil(ranges.xaxis.to))
@@ -51,10 +59,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
           var p = this.getOption('parent')
           //this.lazyLoad()
           if (this.model.get('data')) {
-              var osc = []
-              _.each(this.model.get('data')[0], function(d,i) {
-                osc.push([(d[0]-parseFloat(p.get('SI')))*parseFloat(p.get('AXISRANGE')) + parseFloat(p.get('AXISSTART')), 0])
-              })
+              
 
               var options = $.extend({}, utils.default_plot, {
                   xaxis: {
@@ -62,14 +67,29 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
                       tickDecimals: 0,
                   },
                   yaxes: [{}, { position: 'right', transform: function (v) { return -v; } }, { ticks: [] }],
-                  xaxes: [{ max: parseInt(p.get('NUMIMG'))+parseInt(p.get('SI'))-1 }, { position: 'top' }],
+                  grid: {
+                    borderWidth: 0,
+                    clickable: this.getOption('clickable'),
+                    hoverable: this.getOption('clickable'),
+                  }
               })
 
-              var d = [{ data: this.model.get('data')[0], label: 'Spots' },
-                       { data: this.model.get('data')[1], label: 'Bragg' },
-                       { data: this.model.get('data')[2], label: 'Res', yaxis: 2 },
-                       { data: osc, yaxis: 3, xaxis: 2, points: { show: false }, lines: { show: false } },
-                       ]
+              var d = []
+              _.each({ 'Spots': [0, 1], 'Bragg': [1, 1], 'Res': [2, 2], 'Total': [3, 4] }, function(val, title) {
+                if (this.model.get('data')[val[0]].length && this.model.get('data')[val[0]][0][1] !== null) {
+                  d.push({ data: this.model.get('data')[val[0]], label: title, yaxis: val[1] },)
+                }
+              }, this)
+
+              if (this.getOption('numimg')) {
+                options.xaxes = [{ max: parseInt(p.get('NUMIMG'))+parseInt(p.get('SI'))-1 }, { position: 'top' }]
+                var osc = []
+                _.each(this.model.get('data')[0], function(d,i) {
+                  osc.push([(d[0]-parseFloat(p.get('SI')))*parseFloat(p.get('AXISRANGE')) + parseFloat(p.get('AXISSTART')), 0])
+                })
+                d.push({ data: osc, yaxis: 3, xaxis: 2, points: { show: false }, lines: { show: false } })
+              }
+              
                   
               console.log('sel', this.getOption('selection'))
               if (this.getOption('selection')) {
