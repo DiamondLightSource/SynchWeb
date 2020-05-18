@@ -37,9 +37,8 @@ define(['backbone'], function(Backbone){
         var d = this.get('data')
         if (d && d[0].length > 0) {
           if (this.nimg == _.last(d[0])[0]) refresh = false
-          if (this.pm.get('AGE') > 15) refresh = false
         }
-
+        if (this.pm.get('AGE') > 15) refresh = false
         if (refresh) this.refresh_thread = setTimeout(this.fetch.bind(this), 10000)
       }
     },
