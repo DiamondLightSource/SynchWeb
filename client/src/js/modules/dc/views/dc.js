@@ -1,41 +1,54 @@
-define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/views/distl', 'modules/dc/views/autoindexing', 'modules/dc/views/autointegration', 'modules/dc/views/downstream',
-    'modules/projects/views/addto',
+define(['marionette', 
+    'views/dialog',
+    'views/tabs', 
+    'modules/dc/views/distl', 
+    'modules/dc/views/autoindexing', 
+    'modules/dc/views/autointegration', 
+    'modules/dc/views/downstream',
     'utils/editable',
     'backbone',
     'modules/dc/views/imagestatusitem',
     'modules/dc/views/apstatusitem',
     'modules/dc/views/apmessagestatusitem',
-    'modules/dc/views/reprocess2',
-    'modules/dc/views/attachments',
     'modules/dc/views/apmessages',
+    'modules/dc/views/reprocess2',
+    'modules/dc/views/dcbase',
     'templates/dc/dc.html', 'backbone-validation'], function(Marionette, 
-      TabView, DCCommentsView, DCDISTLView, 
+      DialogView, TabView, DCDISTLView, 
       DCAutoIndexingView, DCAutoIntegrationView, DCDownstreamView, 
-      AddToProjectView, Editable, Backbone, DCImageStatusItem, APStatusItem, APMessageStatusItem,
+      Editable, Backbone, 
+      DCImageStatusItem, APStatusItem, APMessageStatusItem, APMessagesView,
       ReprocessView,
-      AttachmentsView, APMessagesView,
+      DCBase,
       template) {
 
-  return Marionette.LayoutView.extend({
+
+  return DCView = DCBase.extend({
     template: template,
     plotView: DCDISTLView,
     imageStatusItem: DCImageStatusItem,
     apStatusItem: APStatusItem,
     apMessageStatusItem: APMessageStatusItem,
 
+    extraButtons: Marionette.ItemView.extend({
+      template: _.template('<% if (ARCHIVED == "0") { %>\
+        <a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>\
+      <% } %>\
+      <span class="message-holder"></span>')
+    }),
+
+
     initialize: function(options) {
       this.strat = null
       this.ap = null
       this.dp = null
-
-      this.fullPath = false
     },
       
     onShow: function() {
       // element not always available at this point?
       var w = 0.175*$(window).width()*0.95
       var h = $(window).width() > 1280 ? w : ($(window).width() > 800 ? w*1.3 : (w*1.65))
-      $('.distl,.diffraction,.snapshots', this.$el).height(h*0.8)
+      this.$el.find('.distl,.diffraction,.snapshots', this.$el).height(h*0.8)
         
       //var w = 0.175*this.$el.width()
       //var h = $(window).width() > 800 ? w : (w*1.65)
@@ -52,6 +65,8 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), SCREEN: (this.model.get('OVERLAP') != 0 && this.model.get('AXISRANGE')), statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
       this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
+
+      this.updateInPlace(true)
     },
 
 
@@ -74,51 +89,18 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       this.apstatus.destroy()
     },
       
-    modelEvents: {
-        'change': 'updateInPlace',
-    },
-      
-    renderFlag: function() {
-      this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
-    },
-
-    updateInPlace: function(all) {
-      var attrs = all ? this.model.attributes : this.model.changedAttributes()
-      _.each(attrs, function(value, key) {
-        var attrEl = this.$el.find('.'+key)
-        var updatefn = 'update'+key
-        if (attrEl && value !== null) {
-          if (this[updatefn]) value = this[updatefn](value)
-          attrEl.text(value)
-        }
-      }, this)
-
-      if (all || 'FLAG' in attrs) this.renderFlag()
-      if ((all || 'DCCC' in attrs) && this.ui.cc) this.ui.cc.text(this.model.get('DCCC'))
-    },
-      
     events: {
       'click .holder h1.strat': 'loadStrategies',
       'click .holder h1.ap': 'loadAP',
       'click .holder h1.dp': 'loadDP',
       'click .distl': 'showDistl',
       'click .diffraction': 'diViewer',
-      'click .atp': 'addToProject',
-      'click .flag': 'flag',
-      'click .comments': 'showComments',
       'click a.dl': 'showDistl',
-      'click a.sn': 'showSnapshots',
-      'click li.sample a': 'setProposal',
-      'click @ui.exp': 'expandPath',
       'click @ui.rp': 'reprocess',
-      'click a.attach': 'attachments',
       'click a.messages': 'showMessages',
     },
       
     ui: {
-      temp: 'span.temp',
-      exp: 'i.expand',
-      cc: '.dcc',
       rp: 'a.reprocess',
     },
 
@@ -135,60 +117,12 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
         }))
     },
 
-
-    attachments: function(e) {
-        e.preventDefault()
-
-        var d = []
-        if (this.model.get('DCC') > 1) d.dcg = this.model.get('DCG')
-        else d.id = this.model.get('ID')
-
-        app.dialog.show(new DialogView({ 
-            title: 'Attachments', 
-            view: new AttachmentsView(d)
-        }))
-    },
-
     reprocess: function(e) {
         e.preventDefault()
 
         if (app.dialog.currentView instanceof ReprocessView) app.dialog.currentView.collection.add(this.model)
         else app.dialog.show(new ReprocessView({ model: this.model, visit: this.getOption('visit') }))
     },
-
-    expandPath: function(e) {
-        e.preventDefault()
-
-        this.ui.temp.text(this.fullPath ? (this.model.get('DIR')+this.model.get('FILETEMPLATE')) : (this.model.get('DIRFULL')+this.model.get('FILETEMPLATE')))
-        this.ui.exp.toggleClass('fa-caret-right')
-        this.ui.exp.toggleClass('fa-caret-left')
-        
-        this.fullPath = !this.fullPath
-    },
-
-
-    setProposal: function(e) {
-        console.log('setting proposal', this.model.get('PROP'))
-        if (this.model.get('PROP')) app.cookie(this.model.get('PROP'))
-    },
-      
-      
-    showSnapshots: function(e) {
-        e.preventDefault()
-        this.$el.find('.snapshots a').eq(0).trigger('click')
-    },
-      
-    flag: function(e) {
-        e.preventDefault()
-        this.model.flag()
-    },
-      
-      
-    addToProject: function(e) {
-        e.preventDefault()
-        app.dialog.show(new AddToProjectView({ name: this.model.get('DIR')+this.model.get('FILETEMPLATE'), type: 'dc', iid: this.model.get('DCG') }))
-    },
-    
       
     diViewer: function() {
         var self = this
@@ -205,16 +139,10 @@ define(['marionette', 'views/tabs', 'modules/dc/views/dccomments', 'modules/dc/v
       e.preventDefault()
       app.dialog.show(new DialogView({ title: 'DISTL Plot', view: new DCDISTLView({ parent: this.model }), autoSize: true }))
     },
-
-    showComments: function(e) {
-      e.preventDefault()
-      app.dialog.show(new DialogView({ title: 'Data Collection Comments', view: new DCCommentsView({ model: this.model }), autoSize: true }))
-    },
-      
     
     loadStrategies: function(e) {
       if (!this.strat) {
-        this.strat = new DCAutoIndexingView({ id: this.model.get('ID') , el: $('div.strategies', this.$el) })
+        this.strat = new DCAutoIndexingView({ id: this.model.get('ID') , el: this.$el.find('div.strategies', this.$el) })
         this.strat.render()
       } else this.strat.$el.slideToggle()
     },
