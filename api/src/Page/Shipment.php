@@ -100,6 +100,7 @@ class Shipment extends Page
                               'STORAGETEMPERATURE' => '[\w-]+',
                               'AUTOMATED' => '\d+',
                               'PUCK' => '\d',
+                              'PROCESSINGPIPELINEID' => '\d+',
 
                               'CONTAINERREGISTRYID' => '\d+',
                               'PROPOSALID' => '\d+',
@@ -1334,6 +1335,7 @@ class Shipment extends Page
             $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, 
                 count(distinct ss.blsubsampleid) as subsamples, 
                 ses3.beamlinename as firstexperimentbeamline,
+                pp.name as pipeline,
                 TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell
                                   FROM container c 
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid 
@@ -1355,6 +1357,7 @@ class Shipment extends Page
                                   LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
 
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
+                                  LEFT OUTER JOIN processingpipeline pp ON c.prioritypipelineid = pp.processingpipelineid
 
                                   $join
                                   WHERE $where
@@ -1466,9 +1469,10 @@ class Shipment extends Page
             
             if (!sizeof($chkc)) $this->_error('No such container');
 
-            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID');
+            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID');
             foreach ($fields as $k => $f) {
                 if ($this->has_arg($k)) {
+                    error_log("PROCESSING patch update " . $k);
                     $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($this->arg($k), $this->arg('cid')));
                     $this->_output(array($k => $this->arg($k)));
                 }
@@ -1503,9 +1507,11 @@ class Shipment extends Page
 
             $crid = $this->has_arg('CONTAINERREGISTRYID') ? $this->arg('CONTAINERREGISTRYID') : null;
 
-            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid) 
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13) RETURNING containerid INTO :id", 
-              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid));
+            $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
+
+            $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid)
+              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING containerid INTO :id",
+              array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline));
                                  
             $cid = $this->db->id();
             
