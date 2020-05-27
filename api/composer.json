@@ -23,7 +23,9 @@
     "phpxmlrpc/phpxmlrpc": "3.1.2",
     "ralouphie/getallheaders": "2.0.5",
     "slim/slim": "2.4.3",
-    "stomp-php/stomp-php": "3.0.6"
+    "stomp-php/stomp-php": "3.0.6",
+    "symfony/http-foundation": "^2.8",
+    "symfony/filesystem": "^2.8"
   },
   "autoload": {
     "psr-4": {
