@@ -110,7 +110,8 @@ class Cell extends Page
                 INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid AND app.processingstatus = 1
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid 
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON s.proposalid = p.proposalid $nostafft 
                 WHERE p.proposalcode != 'in' AND apss.scalingstatisticstype LIKE 'overall' AND (ap.refinedcell_a BETWEEN :1 AND :2) AND (ap.refinedcell_b BETWEEN :3 AND :4) AND (ap.refinedcell_c BETWEEN :5 AND :6) AND (ap.refinedcell_alpha BETWEEN :7 AND :8) AND (ap.refinedcell_beta BETWEEN :9 AND :10) AND (ap.refinedcell_gamma BETWEEN :11 AND :12) AND TO_DATE(:13, 'HH24:MI YYYY-MM-DD') >= dc.starttime $rest $sgt", $tot_args);
             
@@ -143,7 +144,8 @@ class Cell extends Page
                     INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                     INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid AND app.processingstatus = 1
                     INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid 
-                    INNER JOIN blsession s ON s.sessionid = dc.sessionid 
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     INNER JOIN proposal p ON s.proposalid = p.proposalid $nostaff 
                     WHERE p.proposalcode != 'in' AND apss.scalingstatisticstype LIKE 'overall' AND (ap.refinedcell_a BETWEEN :1 AND :2) AND (ap.refinedcell_b BETWEEN :3 AND :4) AND (ap.refinedcell_c BETWEEN :5 AND :6) AND (ap.refinedcell_alpha BETWEEN :7 AND :8) AND (ap.refinedcell_beta BETWEEN :9 AND :10) AND (ap.refinedcell_gamma BETWEEN :11 AND :12) AND TO_DATE(:19, 'HH24:MI YYYY-MM-DD') >= dc.starttime $res $sg 
                     ORDER BY dist", $args);
@@ -258,7 +260,8 @@ class Cell extends Page
                 FROM pdbentry p
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = p.autoprocprogramid
                 LEFT OUTER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
-                LEFT OUTER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 WHERE p.pdbdate > TO_DATE('2010-05', 'YYYY-MM')
                 GROUP BY CASE WHEN p.autoprocprogramid > 0 THEN UPPER(s.beamlinename) ELSE $replace END, TO_CHAR(p.pdbdate, 'YYYY')
                 ORDER BY TO_CHAR(p.pdbdate, 'YYYY')");
@@ -332,7 +335,8 @@ class Cell extends Page
                 FROM pdbentry p 
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = p.autoprocprogramid
                 LEFT OUTER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
-                LEFT OUTER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 WHERE 1=1 $where
                 ORDER BY p.pdbdate DESC", $args);
 

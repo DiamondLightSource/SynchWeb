@@ -253,7 +253,8 @@ class Image extends Page
             
             list($info) = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
                 FROM datacollection dc 
-                INNER JOIN blsession s ON s.sessionid=dc.sessionid 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                 WHERE dc.datacollectionid=:1", array($this->arg('id')));
             

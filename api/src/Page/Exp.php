@@ -164,7 +164,8 @@ class Exp extends Page
             $rows = $this->db->pq("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(distinct dc.datacollectionid) as dcs, count(distinct bls.beamlinesetupid) as blsetups, count(distinct dphd.detectorid) as dps,count(distinct dp.detectorid) as dps2, CONCAT(IFNULL(GROUP_CONCAT(distinct ses.beamlinename),''),IFNULL(GROUP_CONCAT(distinct bls.beamlinename),'')) as beamlines, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax
                 FROM detector d
                 LEFT OUTER JOIN datacollection dc ON dc.detectorid = d.detectorid
-                LEFT OUTER JOIN blsession ses on dc.sessionid = ses.sessionid
+                LEFT OUTER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                LEFT OUTER JOIN blsession ses ON ses.sessionid = dcg.sessionid
                 LEFT OUTER JOIN beamlinesetup bls ON bls.detectorid = d.detectorid
                 LEFT OUTER JOIN datacollectionplan_has_detector dphd ON dphd.detectorid = d.detectorid
                 LEFT OUTER JOIN diffractionplan dp ON dp.detectorid = d.detectorid
