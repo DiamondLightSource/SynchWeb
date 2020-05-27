@@ -525,6 +525,10 @@ define(['backbone',
             this.ready.push(this.users.fetch())
 
             this.proteins = new DistinctProteins()
+            // If we want to only allow valid samples
+            if (app.valid_samples) {
+                this.proteins.queryParams.externalid = 1
+            }
             this.ready.push(this.proteins.fetch())
 
             this.gproteins = new DistinctProteins()
