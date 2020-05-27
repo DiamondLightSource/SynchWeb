@@ -10,10 +10,38 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
     },
 
     validation: {
+        PROPOSALID: {
+            required: true,
+            pattern: 'number',
+        },
+        STARTDATE: {
+            required: true,
+            pattern: 'datetime'
+        },
+        ENDDATE: {
+            required: true,
+            pattern: 'datetime'
+        },
+        BEAMLINENAME: {
+            required: true,
+            pattern: 'word',
+        },
+        BEAMLINEOPERATOR: {
+            required: false,
+            pattern: 'wwsdash',
+        },
+        SCHEDULED: {
+            required: false,
+            pattern: 'number',
+        },
+        BEAMLINESETUPID: {
+          required: false,
+          pattern: 'number',
+        },
         COMMENTS: {
             required: false,
             pattern: 'wwsdash',
-        }
+        },
     },
       
     addDate: function() {
