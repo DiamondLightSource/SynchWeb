@@ -22,7 +22,7 @@ $ git clone https://github.com/DiamondLightSource/SynchWeb
 ```
 ### Customise front end - config.json
 An example configuration is provided in client/src/js/config_sample.json
-This file should be edited to customise the application for your site
+This file should be copied to create a client/src/js/config.json file and edited to customise the application for your site.
 
 | Parameter | Description |
 | ------ | ------ |
