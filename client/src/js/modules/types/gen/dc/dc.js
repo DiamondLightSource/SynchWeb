@@ -24,6 +24,7 @@ define([
             'click a.assoc': 'associateSample',
             'click a.dd': utils.signHandler,
             'click a.attach': 'attachments',
+            'click @ui.exp': 'expandPath',
         },
 
         associateSample: function(e) {
