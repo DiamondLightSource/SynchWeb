@@ -22,7 +22,7 @@
     <ul class="clearfix single">
         <% if (BLSAMPLEID) { %><li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li><% } %>
         <li>&Omega; Start: <%-AXISSTART%>&deg;</li>
-        <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0)) { %><li>&kappa;: <%-KAPPA%>&deg; &phi;: <%-PHI%>&deg;</li><% } %>
+        <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0) || (CHISTART && CHISTART !=0)) { %><li><% if (KAPPA != null) { %>&kappa;: <%-KAPPA%>&deg;<% } %> <% if (PHI != null) { %>&phi;: <%-PHI%>&deg;<% } %> <% if (CHISTART != null) { %>&chi;: <%-CHISTART%>&deg;<% } %></li><% } %>
         <li>Resolution: <%-RESOLUTION%>&#197;</li>
         <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
         <li>Exposure: <%-EXPOSURETIME%>s</li>
