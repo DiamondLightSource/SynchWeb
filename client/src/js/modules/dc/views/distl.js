@@ -18,6 +18,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
       },
       numimg: true,
       clickable: false,
+      hidden: ['Total'],
 
       plotClick: function(e, pos, item) {
           if (item && item.datapoint.length) {
@@ -76,7 +77,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
 
               var d = []
               _.each({ 'Spots': [0, 1], 'Bragg': [1, 1], 'Res': [2, 2], 'Total': [3, 4] }, function(val, title) {
-                if (this.model.get('data')[val[0]].length && this.model.get('data')[val[0]][0][1] !== null) {
+                if (this.model.get('data')[val[0]].length && this.model.get('data')[val[0]][0][1] !== null && this.getOption('hidden').indexOf(title) == -1) {
                   d.push({ data: this.model.get('data')[val[0]], label: title, yaxis: val[1] },)
                 }
               }, this)
