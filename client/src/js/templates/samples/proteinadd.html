@@ -1,4 +1,8 @@
-<h1>Add Protein</h1>
+<h1>New Protein</h1>
+
+<% if (IS_CLONE) { %>
+    <p class="help">This is a clone of a protein</p>
+<% } %>
 
 <form method="post" id="add_protein" enctype="multipart/form-data">
     
@@ -9,7 +13,13 @@
                 <label>Name
                     <span class="small">Name of the protein</span>
                 </label>
-                <span class="name"><input type="text" name="NAME" /></span>
+                <span class="name">
+                    <% if (IS_CLONE) { %>
+                        <input type="text" name="NAME" disabled>
+                    <% } else { %>
+                        <input type="text" name="NAME" />
+                    <% } %>
+                </span>
             </li>
             
             <li>

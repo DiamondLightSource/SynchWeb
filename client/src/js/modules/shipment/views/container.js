@@ -91,7 +91,7 @@ define(['marionette',
             
             this.proteins = new DistinctProteins()
             if (app.valid_samples) {
-                this.proteins.queryParams.externalid = 1
+                this.proteins.queryParams.external = 1
             }
             this.proteins.fetch()
 

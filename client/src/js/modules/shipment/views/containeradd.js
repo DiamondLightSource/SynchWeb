@@ -199,7 +199,7 @@ define(['backbone',
 
 
         limitProteins: function() {
-            this.proteins.queryParams.externalid = this.ui.imager.val() ? 1 : null
+            this.proteins.queryParams.external = this.ui.imager.val() ? 1 : null
             this.proteins.fetch()
 
             this.users.queryParams.login = this.ui.imager.val() ? 1 : null
@@ -527,7 +527,7 @@ define(['backbone',
             this.proteins = new DistinctProteins()
             // If we want to only allow valid samples
             if (app.valid_samples) {
-                this.proteins.queryParams.externalid = 1
+                this.proteins.queryParams.external = 1
             }
             this.ready.push(this.proteins.fetch())
 

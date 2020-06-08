@@ -2,6 +2,11 @@
 
 <p class="help">This page shows details for the selected protein and a list of samples which make use of it</p>
 
+<!-- Only allow cloning for valid/approved proteins -->
+<% if (EXTERNAL == 1) { %>
+    <a class="button" href="/proteins/pid/<%-PROTEINID%>/clone">Clone Protein</a>
+<% } %>
+
 <div class="form">
     <ul>
         <li>
