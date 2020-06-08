@@ -120,7 +120,10 @@ class Sample extends Page
                               'nodata' => '\d',
                               'notcompleted' => '\d',
 
+                               // external is a flag to indicate this protein/sample has a user office system id
+                               // whereas externalid is the actual reference
                               'external' => '\d',
+                              'EXTERNALID' => '\w+',
 
                               'COMPONENTLATTICEID' => '\d+',
 
@@ -1376,14 +1379,15 @@ class Sample extends Page
             $cmt = $this->has_arg('COMPONENTTYPEID') ? $this->arg('COMPONENTTYPEID') : null;
             $global = $this->has_arg('GLOBAL') ? $this->arg('GLOBAL') : null;
             $density = $this->has_arg('DENSITY') ? $this->arg('DENSITY') : null;
+            $externalid = $this->has_arg('EXTERNALID') ? $this->arg('EXTERNALID') : null;
             
             $chk = $this->db->pq("SELECT proteinid FROM protein
               WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $this->arg('ACRONYM')));
             if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
 
-            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density) 
-              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9) RETURNING proteinid INTO :id',
-              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density));
+            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density, externalid)
+              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9,UNHEX(:10)) RETURNING proteinid INTO :id',
+              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density, $externalid));
             
             $pid = $this->db->id();
             
