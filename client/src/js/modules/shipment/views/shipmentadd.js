@@ -16,7 +16,7 @@ define(['marionette', 'views/form',
     ], function(Marionette, FormView,
         Shipment, Visits, LabContacts, DewarRegistry,
         DialogView, AddContactView,
-        template, $_, Backbone) {  
+        template, $_, Backbone) {
 
     /*
      List of facility codes
@@ -62,6 +62,7 @@ define(['marionette', 'views/form',
             'change @ui.name': 'checkFCodes',
             'click a.add_lc': 'addLC',
             'click @ui.noexp': 'updateFirstExp',
+            'click @ui.dynamic': 'updateDynamicSchedule',
         },
         
         ui: {
@@ -70,6 +71,8 @@ define(['marionette', 'views/form',
             first: 'select[name=FIRSTEXPERIMENTID]',
             name: 'input[name=SHIPPINGNAME]',
             noexp: 'input[name=noexp]',
+            dynamic: 'input[name=dynamic]', // A checkbox to indicate dynamic/remote mail-in scheduling
+            comments: 'textarea[name=COMMENTS]', // We need this so we can prefill comments to aid users
         },
         
         addLC: function(e) {
@@ -97,10 +100,29 @@ define(['marionette', 'views/form',
         updateFirstExp: function() {
             if (this.ui.noexp.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
+                this.ui.dynamic.prop('checked', false)
+
+                var text = this.getOption('comments').automated || ''
+                this.ui.comments.val(text)
             } else {
                 this.ui.first.html(this.visits.opts())    
+                this.ui.comments.val('')
             }
         },  
+
+        updateDynamicSchedule: function() {
+            // Added as a fix to allow dynamic sessions
+            // An extra option for proposals with no sessions yet that are not automated
+            if (this.ui.dynamic.is(':checked')) {
+                this.ui.first.html('<option value=""> - </option>')
+                this.ui.noexp.prop('checked', false)
+                var text = this.getOption('comments').dynamic || ''
+                this.ui.comments.val(text)
+            } else {
+                this.ui.first.html(this.visits.opts())
+                this.ui.comments.val('')
+            }
+        },
 
         onRender: function() {
             var self = this
