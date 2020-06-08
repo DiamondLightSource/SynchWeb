@@ -95,9 +95,20 @@ define(['backbone',
     },
       
     add: function() {
-      app.log('ship add view')
-      app.bc.reset([bc, { title: 'Add New Shipment' }])
-      app.content.show(new ShipmentAddView())
+        app.log('ship add view')
+        app.bc.reset([bc, { title: 'Add New Shipment' }])
+
+        // Get any comments to prefill from the server
+        Backbone.ajax({
+            url: app.appurl+'/assets/js/shipment_comments.json',
+            dataType: 'json',
+            success: function(shipmentComments) {
+                app.content.show(new ShipmentAddView({comments: shipmentComments}))
+            },
+            error: function() {
+                app.content.show(new ShipmentAddView({comments: {}}))
+            }
+        })
     },
 
 

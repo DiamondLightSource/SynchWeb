@@ -8,7 +8,6 @@ define(['marionette', 'views/form',
     'modules/contact/views/addcontact',
     
     'templates/shipment/shipmentadd.html',
-    'templates/shipment/shipment_comments.json',
     'jquery',
     'backbone',
     
@@ -17,7 +16,7 @@ define(['marionette', 'views/form',
     ], function(Marionette, FormView,
         Shipment, Visits, LabContacts, DewarRegistry,
         DialogView, AddContactView,
-        template, ShipmentComments, $_, Backbone) {
+        template, $_, Backbone) {
 
     /*
      List of facility codes
@@ -72,7 +71,7 @@ define(['marionette', 'views/form',
             first: 'select[name=FIRSTEXPERIMENTID]',
             name: 'input[name=SHIPPINGNAME]',
             noexp: 'input[name=noexp]',
-            dynamic: 'input[name=dynamic]', // A checkbox to indicate dynamic scheduling
+            dynamic: 'input[name=dynamic]', // A checkbox to indicate dynamic/remote mail-in scheduling
             comments: 'textarea[name=COMMENTS]', // We need this so we can prefill comments to aid users
         },
         
@@ -102,9 +101,12 @@ define(['marionette', 'views/form',
             if (this.ui.noexp.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.dynamic.prop('checked', false)
-                this.ui.comments.val('')
+
+                var text = this.getOption('comments').automated || ''
+                this.ui.comments.val(text)
             } else {
                 this.ui.first.html(this.visits.opts())    
+                this.ui.comments.val('')
             }
         },  
 
@@ -114,7 +116,7 @@ define(['marionette', 'views/form',
             if (this.ui.dynamic.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.noexp.prop('checked', false)
-                var text = ShipmentComments.dynamic
+                var text = this.getOption('comments').dynamic || ''
                 this.ui.comments.val(text)
             } else {
                 this.ui.first.html(this.visits.opts())
