@@ -120,7 +120,7 @@ class Sample extends Page
                               'nodata' => '\d',
                               'notcompleted' => '\d',
 
-                              'externalid' => '\d',
+                              'external' => '\d',
 
                               'COMPONENTLATTICEID' => '\d+',
 
@@ -1074,7 +1074,7 @@ class Sample extends Page
                 array_push($args, $this->arg('type'));
             }
 
-            if ($this->has_arg('externalid')) {
+            if ($this->has_arg('external')) {
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
             
@@ -1184,7 +1184,7 @@ class Sample extends Page
                 $where = '(pr.proposalid=:1 OR pr.global=1)';
             }
 
-            if ($this->has_arg('externalid')) {
+            if ($this->has_arg('external')) {
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
 
