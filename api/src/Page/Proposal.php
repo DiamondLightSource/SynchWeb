@@ -867,7 +867,14 @@ class Proposal extends Page
 
             // Get container information - note that if the container has no owner - we use the proposal person.
             // A person record is required for UAS so we can set investigators. UAS needs one 'TEAM_LEADER' and others as 'DATA_ACCESS'
-            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, c.containerid, HEX(p.externalid) as externalid, IFNULL(HEX(pe.externalid), HEX(pe2.externalid)) as pexternalid, s.shippingid
+            $cont = $this->db->pq("SELECT c.sessionid, p.proposalid, ses.visit_number, CONCAT(p.proposalcode, p.proposalnumber) as proposal, 
+                c.containerid,
+                HEX(p.externalid) as externalid,
+                pe.personid as ownerid,
+                HEX(pe.externalid) as ownerexternalid,
+                pe2.personid as piid,
+                HEX(pe2.externalid) as piexternalid,
+                s.shippingid
                 FROM proposal p
                 INNER JOIN shipping s ON s.proposalid = p.proposalid
                 INNER JOIN dewar d ON d.shippingid = s.shippingid
@@ -882,8 +889,20 @@ class Proposal extends Page
             // Store container info for convenience
             $cont = $cont[0];
 
+            // Check if the container owner is a valid person (in User Office)
+            // If not try and use the Proposal/Principal Investigator
+            if ($cont['OWNERID'] && $cont['OWNEREXTERNALID']) {
+                $cont['PEXTERNALID'] = $cont['OWNEREXTERNALID'];
+                $cont['PERSONID'] = $cont['OWNERID'];
+            } else {
+                if ($cont['PIID'] && $cont['PIEXTERNALID']) {
+                    $cont['PEXTERNALID'] = $cont['PIEXTERNALID'];
+                    $cont['PERSONID'] = $cont['PIID'];
+                }
+            }
+
             if (!$cont['PEXTERNALID']) {
-                $this->_error('That container does not have an owner');
+                $this->_error('That container does not have a valid owner');
             }
             if ($cont['SESSIONID']) {
                 error_log('That container already has a session ' . $cont['SESSIONID']);
@@ -907,7 +926,7 @@ class Proposal extends Page
 
                 if(!sizeof($auto_sessions)) {
                     // Create new session - passing containerID, proposalID and UAS proposal ID
-                    $sessionNumber = $this->_create_new_autocollect_session($cont['CONTAINERID'], $cont['PROPOSALID'], $cont['EXTERNALID'] );
+                    $sessionNumber = $this->_create_new_autocollect_session($cont['CONTAINERID'], $cont['PROPOSALID'], $cont['EXTERNALID'], $cont['PERSONID'], $cont['PEXTERNALID'] );
 
                     if ($sessionNumber > 0) {
                         $result = array('VISIT' => $cont['PROPOSAL'].'-'.$sessionNumber, 'CONTAINERS' => array($cont['CONTAINERID']));
@@ -920,7 +939,7 @@ class Proposal extends Page
                     // Update existing session - passing Session ID, UAS Session ID and Container ID
                     $auto_session = $auto_sessions[0];
 
-                    $result = $this->_update_autocollect_session($auto_session['SESSIONID'], $auto_session['SEXTERNALID'], $cont['CONTAINERID']);
+                    $result = $this->_update_autocollect_session($auto_session['SESSIONID'], $auto_session['SEXTERNALID'], $cont['CONTAINERID'], $cont['PEXTERNALID']);
 
                     if ($result) {
                         // Add visit to return value...
@@ -943,7 +962,7 @@ class Proposal extends Page
          * @param array $uasProposalId UAS ProposalID (from Proposal.externalId)
          * @return integer Returns session number generated from UAS
          */
-        function _create_new_autocollect_session($containerId, $proposalId, $uasProposalId) {
+        function _create_new_autocollect_session($containerId, $proposalId, $uasProposalId, $personId, $uasPersonId) {
             global $auto_exp_hazard, $auto_sample_hazard, $auto_user, $auto_pass, $auto_session_type;
             // Return session number generated from UAS ( will be > 0 if OK)
             $sessionNumber = 0;
@@ -952,6 +971,10 @@ class Proposal extends Page
             $sampleInfo = $this->_get_valid_samples_from_containers(array($containerId));
 
             if ($sampleInfo['INVESTIGATORS'] && $sampleInfo['SAMPLES']) {
+                // Set the first investigator as the team lead
+                $investigators = $sampleInfo['INVESTIGATORS'];
+                $investigators[0]['role'] = 'TEAM_LEADER';
+
                 // Create new session.....
                 $data = array(
                     'proposalId' => strtoupper($uasProposalId),
@@ -981,6 +1004,7 @@ class Proposal extends Page
 
                     $this->db->pq("INSERT INTO sessiontype (sessionid, typename) VALUES (:1, :2)", array($sessionId, $auto_session_type));
                     $this->db->pq("UPDATE container SET sessionid=:1, bltimestamp=CURRENT_TIMESTAMP WHERE containerid=:2", array($sessionId, $containerId));
+                    $this->db->pq("INSERT INTO session_has_person (sessionid, personid, role) VALUES (:1, :2, 'Team Leader')", array($sessionId, $personId));
 
                     $sessionNumber = $sess['resp']->sessionNumber;
 
@@ -1002,7 +1026,7 @@ class Proposal extends Page
          * @param array $containerId ISPyB ContainerID 
          * @return Array Result of updating session - null or array with samples/investigators added
          */
-        function _update_autocollect_session($sessionId, $uasSessionId, $containerId) {
+        function _update_autocollect_session($sessionId, $uasSessionId, $containerId, $teamLeader) {
             global $auto_user, $auto_pass;
             // Return response if successful
             $result = null;
@@ -1025,6 +1049,12 @@ class Proposal extends Page
                 }, $containers);
 
                 $sampleInfo = $this->_get_valid_samples_from_containers($containerList);
+
+                foreach($sampleInfo['INVESTIGATORS'] as $investigator) {
+                    if ($investigator['personId'] == $teamLeader) {
+                        $investigator['role'] = 'TEAM_LEADER';
+                    }
+                }
 
                 // Patch the UAS session
                 $data = array(
@@ -1099,14 +1129,6 @@ class Proposal extends Page
             $uas_investigators = array_map(function($item) {
                 return array('role' => 'DATA_ACCESS', 'personId' => $item);
             }, $investigators);
-
-            // Ensure there is a team leader
-            if (sizeof($uas_investigators)) {
-                $uas_investigators[0]['role'] = 'TEAM_LEADER';
-            } else {
-                error_log("No valid investigators found for " . $containerIds);
-                $uas_investigators = array();
-            }
 
             return array('SAMPLES' => $samples, 'INVESTIGATORS' => $uas_investigators);
         }
