@@ -28,8 +28,7 @@ define(['backbone',
     'collections/users',
     'modules/shipment/collections/containerregistry',
     'collections/processingpipelines',
-    'views/form',
-    
+
     'templates/shipment/containeradd.html',
     'templates/shipment/sampletablenew.html',
     'templates/shipment/sampletablerownew.html'], function(Backbone,
@@ -61,7 +60,6 @@ define(['backbone',
     Users,
     ContainerRegistry,
     ProcessingPipelines,
-    FormView,
         
     template, table, row){
     
@@ -437,7 +435,7 @@ define(['backbone',
         loadContainerCache: function() {
             if (!this.cache.get('data')) return
 
-            this.ui.type.val(this.cache.get('data').type).trigger('change')
+            if (this.cache.get('data').type) this.ui.type.val(this.cache.get('data').type).trigger('change')
 
             _.each(this.cache.get('data').samples, function(s) {
                 var samp = this.samples.findWhere({ LOCATION: s.LOCATION })
