@@ -23,6 +23,8 @@ use SynchWeb\User;
 
 require 'vendor/autoload.php';
 
+require 'config.php';
+
 date_default_timezone_set('Europe/London');
 
 session_cache_limiter(false);
