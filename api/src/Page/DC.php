@@ -793,7 +793,7 @@ class DC extends Page
         # AutoProcProgram Messages
         function _ap_message_status() {
             if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
-            $where = 'WHERE p.proposalid=:1';
+            $where = 'WHERE s.proposalid=:1';
             $args = array($this->proposalid);
 
             $wids = array();
@@ -817,10 +817,9 @@ class DC extends Page
                 FROM autoprocprogrammessage appm
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid OR app.datacollectionid = dc.datacollectionid)
+                INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid)
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN proposal p ON p.proposalid = s.proposalid
                 $where
                 GROUP BY dc.datacollectionid", $args);
 
