@@ -936,10 +936,19 @@ class Proposal extends Page
                         $this->_error('Something went wrong creating a session for that container ' . $cont['CONTAINERID']);                        
                     }
                 } else {
-                    // Update existing session - passing Session ID, UAS Session ID and Container ID
+                    // Update existing session - passing Session ID, UAS Session ID, Container ID and the current Team Leader (so its preserved in UAS)
                     $auto_session = $auto_sessions[0];
 
-                    $result = $this->_update_autocollect_session($auto_session['SESSIONID'], $auto_session['SEXTERNALID'], $cont['CONTAINERID'], $cont['PEXTERNALID']);
+                    // Find the team leader for this auto collect session
+                    $team_leader = $this->db->pq("SELECT shp.role, pe.personId as teamleaderId, HEX(pe.externalId) as teamleaderExtId
+                        FROM Session_has_Person shp
+                        INNER JOIN Person pe ON pe.personId = shp.personId
+                        WHERE shp.sessionId = :1
+                        AND shp.role='Team Leader'", array($auto_session['SESSIONID']));
+
+                    if (!sizeof($team_leader)) error_log("Proposal::auto_session - no team leader for an existing Auto Collect Session");
+
+                    $result = $this->_update_autocollect_session($auto_session['SESSIONID'], $auto_session['SEXTERNALID'], $cont['CONTAINERID'], $team_leader[0]['TEAMLEADEREXTID']);
 
                     if ($result) {
                         // Add visit to return value...
@@ -972,8 +981,7 @@ class Proposal extends Page
 
             if ($sampleInfo['INVESTIGATORS'] && $sampleInfo['SAMPLES']) {
                 // Set the first investigator as the team lead
-                $investigators = $sampleInfo['INVESTIGATORS'];
-                $investigators[0]['role'] = 'TEAM_LEADER';
+                $sampleInfo['INVESTIGATORS'][0]['role'] = 'TEAM_LEADER';
 
                 // Create new session.....
                 $data = array(
@@ -1050,9 +1058,10 @@ class Proposal extends Page
 
                 $sampleInfo = $this->_get_valid_samples_from_containers($containerList);
 
-                foreach($sampleInfo['INVESTIGATORS'] as $investigator) {
-                    if ($investigator['personId'] == $teamLeader) {
-                        $investigator['role'] = 'TEAM_LEADER';
+                // Note specific syntax here that lets us update the sampleInfo['INVESTIGATORS'] array
+                foreach($sampleInfo['INVESTIGATORS'] as &$investigators) {
+                        if ($investigators['personId'] == $teamLeader) {
+                        $investigators['role'] = 'TEAM_LEADER';
                     }
                 }
 
@@ -1069,7 +1078,7 @@ class Proposal extends Page
                     $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $containerId));
                     // For debugging - actually just want to return Success!
                     $result = array('SAMPLES' => array_values($sampleInfo['SAMPLES']),
-                                    'INVESTIGATORS' => array_values($sampleInfo['INVESTIGATORS']),
+                                    'INVESTIGATORS' => array_values($investigators),
                                     'CONTAINERS' => $containerList,
                                     );
                 } else if ($code == 403) {
@@ -1113,6 +1122,7 @@ class Proposal extends Page
                 LEFT OUTER JOIN Person pe ON pe.personid = c.ownerid
                 LEFT OUTER JOIN Person pe2 ON pe2.personid = p.personid
                 WHERE c.containerId IN ('$containerIds') ORDER BY containerid");
+
 
             $samples = array_map(function($result) {
                 return strtoupper($result['EXTERNALID']);
