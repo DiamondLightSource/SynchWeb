@@ -1078,7 +1078,7 @@ class Proposal extends Page
                     $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $containerId));
                     // For debugging - actually just want to return Success!
                     $result = array('SAMPLES' => array_values($sampleInfo['SAMPLES']),
-                                    'INVESTIGATORS' => array_values($investigators),
+                                    'INVESTIGATORS' => array_values($sampleInfo['INVESTIGATORS']),
                                     'CONTAINERS' => $containerList,
                                     );
                 } else if ($code == 403) {
