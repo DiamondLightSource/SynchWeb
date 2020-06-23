@@ -338,7 +338,7 @@ class Stats extends Page
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
-                INNER JOIN v_run vr ON (s.startdate BETWEEN vr.startdate AND vr.enddate)
+                INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
                 LEFT OUTER JOIN autoprocprogram app ON app.processingjobid = rp.processingjobid
                 GROUP BY run
             ");
