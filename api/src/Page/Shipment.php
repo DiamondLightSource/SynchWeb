@@ -172,7 +172,7 @@ class Shipment extends Page
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
                               
-                              array('/containers/notify/:containerid', 'get', '_notify_container'),
+                              array('/containers/notify/:BARCODE', 'get', '_notify_container'),
 
                               array('/cache/:name', 'put', '_session_cache'),
                               array('/cache/:name', 'get', '_get_session_cache'),
@@ -2384,7 +2384,7 @@ class Shipment extends Page
          * Controller method for notify container endpoint.
          * This is called from an acquisition system when new data is available.
          * 
-         * The calling application must be in the auto whitelist group and include the containerid in the URL
+         * The calling application must be in the auto whitelist group and include the BARCODE in the URL
          * On success, the container status is updated to "notify_email".
          * If the container status is anything other than "notify_email", send email if preconditions met.
          * Preconditions are that the container has an owner with an email address and the container has entries in container history.
@@ -2395,7 +2395,7 @@ class Shipment extends Page
             global $auto;
             
             if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
-            if (!$this->has_arg('containerid')) $this->_error('No container specified');
+            if (!$this->has_arg('BARCODE')) $this->_error('No container specified');
 
             $cont = $this->db->pq("SELECT c.containerid, pe.emailaddress, pe.givenname, pe.familyname, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.code, sh.shippingname
                 FROM container c
@@ -2404,7 +2404,7 @@ class Shipment extends Page
                 INNER JOIN person pe ON pe.personid = c.ownerid
                 INNER JOIN blsession s ON s.sessionid = c.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE c.containerid=:1", array($this->arg('containerid')));
+                WHERE c.barcode=:1", array($this->arg('BARCODE')));
 
             if (!sizeof($cont)) $this->_error('Container not found', 404);
 
