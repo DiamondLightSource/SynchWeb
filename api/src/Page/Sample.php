@@ -192,6 +192,20 @@ class Sample extends Page
             $capillaryPhaseId = null;
             $capillaryId = null;
             $blSampleCapillaryId = null;
+
+            // Default values used for diffraction plan
+            $defaultBeamSizeX = 70;
+            $defaultBeamSizeY = 70;
+            $defaultEnergy = 76600;
+            $defaultMonoBandwidth = 0.1;
+
+            // Hardcoded detector ids?
+            $detector1_id = 28;
+            $detector1_distance = 200;
+
+            $detector2_id = 25;
+            $detector2_distance = 800;
+
             $this->db->start_transaction();
 
             foreach($this->args as $model => $attrs) {
@@ -305,7 +319,8 @@ class Sample extends Page
 
                     // ADD BLSAMPLES
                     $blSamples = array();
-                    $maxLocation = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids[$model]['CONTAINERID']))[0]['LOCATION'];
+                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
+                    $maxLocation = $maxloc_tmp[0]['LOCATION'];
                     
                     if(array_key_exists('CAPILLARYID', $ids[$model]) && $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS)
                         $blSamples['capillary'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CAPILLARYID'], 'PROTEINID' => $ids[$model]['CAPILLARYPHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $capillary->NAME, 'PACKINGFRACTION' => 1, 'COMMENTS' => array_key_exists('COMMENTS', $capillary) ? $capillary->COMMENTS : '', 'DIMENSION1' => $capillary->OUTERDIAMETER, 'DIMENSION2' => $capillary->INNERDIAMETER, 'DIMENSION3' => $capillary->LENGTH, 'SHAPE' => $capillary->SHAPE, 'LOOPTYPE' => 1);
@@ -326,7 +341,7 @@ class Sample extends Page
 
                         // Add DiffractionPlan (DataCollectionPlan) information
                         $this->db->pq("INSERT INTO diffractionplan (preferredbeamsizex, preferredbeamsizey, energy, monobandwidth)
-                            VALUES (:1, :2, :3, :4)", array(70, 70, 76600, 0.1));
+                            VALUES (:1, :2, :3, :4)", array($defaultBeamSizeX, $defaultBeamSizeY, $defaultEnergy, $defaultMonoBandwidth));
                         if($key == 'capillary')
                             $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] = $this->db->id();
                         else
@@ -338,10 +353,10 @@ class Sample extends Page
                             VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0));
                         
                         $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
-                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 28, $expTime, 200));
+                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $detector1_id, $expTime, $detector1_distance));
 
                         $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
-                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 25, $expTime, 800));
+                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $detector2_id, $expTime, $detector2_distance));
 
                         $this->db->pq("INSERT INTO scanparametersmodel (scanparametersserviceid, datacollectionplanid, sequencenumber, start, stop, step) 
                             VALUES (:1, :2, :3, :4, :5, :6)", array(5, $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0, 0, 0, 1));
@@ -353,10 +368,13 @@ class Sample extends Page
                         $ids[$model]['SAMPLEGROUPID'] = $this->db->id();
                         
                         if(!array_key_exists('BLSAMPLECAPILLARYID', $ids[$model])){
-                            if($attrs->fromFile && $capillaryId != null)
-                                $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillaryId))[0]['BLSAMPLEID'];
-                            else
-                                $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID))[0]['BLSAMPLEID'];
+                            if($attrs->fromFile && $capillaryId != null) {
+                                $tmp_ids = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillaryId));
+                                $ids[$model]['BLSAMPLECAPILLARYID'] = $tmp_ids[0]['BLSAMPLEID'];
+                            } else {
+                                $tmp_ids = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID));
+                                $ids[$model]['BLSAMPLECAPILLARYID'] = $tmp_ids[0]['BLSAMPLEID'];
+                            }
                         }
 
                         $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
