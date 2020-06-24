@@ -172,7 +172,7 @@ class Shipment extends Page
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
                               
-                              array('/containers/notify/:containerid', 'get', '_notify_container'),
+                              array('/containers/notify/:BARCODE', 'get', '_notify_container'),
 
                               array('/cache/:name', 'put', '_session_cache'),
                               array('/cache/:name', 'get', '_get_session_cache'),
@@ -2380,11 +2380,22 @@ class Shipment extends Page
             $this->_output($data);
         }
 
+        /**
+         * Controller method for notify container endpoint.
+         * This is called from an acquisition system when new data is available.
+         * 
+         * The calling application must be in the auto whitelist group and include the BARCODE in the URL
+         * On success, the container status is updated to "notify_email".
+         * If the container status is anything other than "notify_email", send email if preconditions met.
+         * Preconditions are that the container has an owner with an email address and the container has entries in container history.
+         * Returns 200 on success or if status is notify_email. Response body is {'EMAIL_SENT' => 1 or 0} depending on if email was sent.
+         * Returns 404 if no container found, 412 if preconditions not met
+         */
         function _notify_container() {
             global $auto;
             
             if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
-            if (!$this->has_arg('containerid')) $this->_error('No container specified');
+            if (!$this->has_arg('BARCODE')) $this->_error('No container specified');
 
             $cont = $this->db->pq("SELECT c.containerid, pe.emailaddress, pe.givenname, pe.familyname, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.code, sh.shippingname
                 FROM container c
@@ -2393,46 +2404,34 @@ class Shipment extends Page
                 INNER JOIN person pe ON pe.personid = c.ownerid
                 INNER JOIN blsession s ON s.sessionid = c.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE c.containerid=:1", array($this->arg('containerid')));
+                WHERE c.barcode=:1", array($this->arg('BARCODE')));
 
-            if (!sizeof($cont)) return;
+            if (!sizeof($cont)) $this->_error('Container not found', 404);
+
             $cont = $cont[0];
+
+            if (!$cont['EMAILADDRESS']) $this->_error('Precondition failed, no email address for this container owner', 412);
 
             $hist = $this->db->pq("SELECT h.containerhistoryid, h.status, h.bltimestamp
                 FROM containerhistory h
                 WHERE h.containerid=:1
-                ORDER BY h.bltimestamp DESC
-                LIMIT 10", array($cont['CONTAINERID']));
-            if (!sizeof($hist)) return;
+                ORDER BY h.containerhistoryid DESC
+                LIMIT 1", array($cont['CONTAINERID']));
 
-            $last = array();
-            foreach ($hist as $h) {
-                array_push($last, $h['STATUS']);
-            }
-            if (in_array('notify_email', $last)) return;
+            if (!sizeof($hist)) $this->_error('Precondition failed, no history for this container', 412);
 
-            // If we want to match to a specific container history sequence...
-            // $send_notification = False;
-            // foreach ($new_data as $n) {
-            //     for ($i = 0; $i < (sizeof($last)-sizeof($n)); $i++) {
-            //         $match = True;
-            //         foreach ($n as $j => $p) {
-            //             if ($last[$i+$j] != $p) $match = False;
-            //         }
+            // Case insensitive check. If we have already sent an email, return.
+            if (strcasecmp($hist[0]['STATUS'], 'notify_email') == 0) {
+		$this->_output(array('EMAIL_SENT' => 0));
+	    } else {
+                $email = new Email('data-new', '*** New data available for your container ***');
+                $email->data = $cont;
+                $email->send($cont['EMAILADDRESS']);
 
-            //         if ($match) $send_notification = True;
-            //     }
-            // }
+                $this->db->pq("INSERT INTO containerhistory (status,containerid) VALUES (:1, :2)", array('notify_email', $cont['CONTAINERID']));
 
-            // if ($send_notification) {
-            //     $email = new Email('data-new', '*** New data available for your container ***');
-            //     $email->data = $cont;
-            //     $email->send($cont['EMAILADDRESS']);
-            // }
-            $email = new Email('data-new', '*** New data available for your container ***');
-            $email->data = $cont;
-            $email->send($cont['EMAILADDRESS']);
-
-            $this->db->pq("INSERT INTO containerhistory (status,containerid) VALUES (:1, :2)", array('notify_email', $cont['CONTAINERID']));
+                // Everything OK, send result
+                $this->_output(array('EMAIL_SENT' => 1));
+           }
         }
     }
