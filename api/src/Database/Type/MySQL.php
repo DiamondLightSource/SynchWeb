@@ -189,6 +189,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'ShippingHasSession',
             'DewarTransportHistory',
             'DewarRegistry',
+            'DewarRegistry_has_Proposal',
             'DewarReport',
             'CourierTermsAccepted',
 
