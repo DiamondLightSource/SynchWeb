@@ -7,7 +7,7 @@ define(['backbone',
         'modules/shipment/views/shipments',
         'modules/shipment/views/shipment',
         'modules/shipment/views/shipmentadd',
-    
+
         'models/container',
         'collections/containers',
         'modules/shipment/views/container',
@@ -26,6 +26,7 @@ define(['backbone',
         'modules/shipment/views/dewarreg',
         'modules/shipment/views/regdewar',
         'modules/shipment/views/regdewaradd',
+        'modules/shipment/views/dewarregistry',
 
         'modules/shipment/views/dispatch',
         'modules/shipment/views/transfer',
@@ -45,11 +46,11 @@ define(['backbone',
     
 ], function(Backbone,
     GetView,
-    Dewar, Shipment, Shipments, 
+    Dewar, Shipment, Shipments,
     ShipmentsView, ShipmentView, ShipmentAddView,
     Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
-    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
+    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView, DewarRegistryView,
     DispatchView, TransferView, Dewars, DewarOverview, ManifestView, DewarStats, CreateAWBView, RebookPickupView,
     PlanView, MigrateView,
     ProposalLookup) {
@@ -307,6 +308,21 @@ define(['backbone',
     },
 
 
+    dewar_registry: function(ty, s, page) {
+      app.loading()
+      var dewars = new DewarRegistry()
+        
+      page = page ? parseInt(page) : 1
+        
+      dewars.state.currentPage = page
+      dewars.queryParams.all = 1
+      dewars.fetch().done(function() {
+        app.bc.reset([bc, { title: 'Registered Dewars', url: '/dewars' }])
+        app.content.show(new DewarRegistryView({ collection: dewars, params: { s: s, ty: ty } }))
+      })
+    },
+
+
     dewar_list: function(s, page) {
       console.log('dew list')
       app.loading()
@@ -321,7 +337,7 @@ define(['backbone',
 
 
     view_dewar: function(fc) {
-      app.log('cont view')
+      app.log('rdewar view')
       var dewar = new RegisteredDewar({ FACILITYCODE: fc })
         dewar.fetch({
             success: function() {
@@ -445,7 +461,7 @@ define(['backbone',
     })
 
     app.on('rdewar:show', function(fc) {
-      app.navigate('dewars/fc/'+fc)
+      app.navigate('dewars/registry/'+fc)
       controller.view_dewar(fc)
     })
 

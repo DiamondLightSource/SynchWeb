@@ -19,12 +19,10 @@ define(['backbone'], function(Backbone) {
                 required: false,
                 fn: 'validateFacilityCode',
             },
-
-            LABCONTACTID: {
-                required: true,
-                pattern: 'number',
+            PURCHASEDATE: {
+                required: false,
+                pattern: 'wwsdash'
             },
-
         },
 
         validateFacilityCode: function(value, attr, state) {

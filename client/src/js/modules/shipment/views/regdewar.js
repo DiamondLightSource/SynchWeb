@@ -3,6 +3,7 @@ define(['marionette',
     'backgrid', 
     'modules/shipment/collections/dewarhistory',
     'modules/shipment/collections/dewarreports',
+    'modules/shipment/collections/dewarproposals',
     'collections/dewars',
     'collections/labcontacts',
 
@@ -18,6 +19,7 @@ define(['marionette',
     Backgrid,
     DewarHistory,
     DewarReports,
+    DewarProposals,
     Dewars,
     LabContacts,
 
@@ -25,6 +27,22 @@ define(['marionette',
     table,
     Editable, XHRImage, template, $){
 
+    var DeleteCell = Backgrid.Cell.extend({
+        events: {
+            'click a.delete': 'deleteProposal',
+        },
+        
+        deleteProposal: function(e) {
+            e.preventDefault()
+            this.model.destroy()
+        },
+
+        render() {
+            this.$el.empty()
+            this.$el.html('<a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a></span>')
+            return this
+        }
+    })
 
     var ImageCell = Backgrid.Cell.extend({ 
         render: function() {
@@ -50,6 +68,7 @@ define(['marionette',
             hist: '.history',
             dew: '.dewars',
             rep: '.reports',
+            props: '.proposals',
         },
 
         initialize: function(options) {
@@ -118,6 +137,27 @@ define(['marionette',
                 backgrid: { emptyText: 'No reports found' }
             })
 
+            this.proposals = new DewarProposals()
+            this.proposals.queryParams.DEWARREGISTRYID = this.model.get('DEWARREGISTRYID')
+            this.proposals.fetch()
+
+            var columns = [
+                { name: 'PROPOSAL', label: 'Proposal', cell: 'string', editable: false },
+                { name: 'GIVENNAME', label: 'Given Name', cell: 'string', editable: false },
+                { name: 'FAMILYNAME', label: 'Family Name', cell: 'string', editable: false },
+                { name: 'LABNAME', label: 'Lab Name', cell: 'string', editable: false },
+                { name: 'ADDRESS', label: 'Address', cell: 'string', editable: false },
+            ]
+
+            if (app.staff) {
+                columns.push({ name: '', label: '', cell: DeleteCell, editable: false })
+            }
+
+            this.proptable = new TableView({
+                collection: this.proposals,
+                columns: columns,
+            })
+
         },
 
         setupPopups: function() {
@@ -151,6 +191,7 @@ define(['marionette',
             this.hist.show(this.histtable)
             this.dew.show(this.dewtable)
             this.rep.show(this.reptable)
+            this.props.show(this.proptable)
 
             if (app.staff) {
                 edit.create('NEWFACILITYCODE')
