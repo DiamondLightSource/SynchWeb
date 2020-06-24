@@ -659,6 +659,7 @@ class Page
         # ------------------------------------------------------------------------
         # Talk to channel archiver to get a pv
         function _get_archive($pv, $s, $e, $n=100) {
+            global $timezone;
 
             $m = new xmlrpcmsg('archiver.values', array(
                                                         new xmlrpcval(1000, 'int'),
@@ -685,7 +686,7 @@ class Page
                     $v = $vs->structMem('value')->arrayMem(0)->scalarVal();
                     $t = $vs->structMem('secs')->scalarVal()-3600;
                     
-                    $inputTZ = new \DateTimeZone('Europe/London');
+                    $inputTZ = new \DateTimeZone($timezone);
                     $transitions = $inputTZ->getTransitions($t, $t);
                     if ($transitions[0]['isdst']) $t += 3600;
                     
