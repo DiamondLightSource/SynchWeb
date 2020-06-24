@@ -43,6 +43,8 @@ class Shipment extends Page
                               'FIRSTEXPERIMENTID' => '\d+',
                               'SHIPPINGID' => '\d+',
 
+                              'DEWARREGISTRYID' => '\d+',
+
                               'BARCODE' => '([\w-])+',
                               'LOCATION' => '[\w|\s|-]+',
                               'NEXTLOCATION' => '[\w|\s|-]+',
@@ -135,6 +137,10 @@ class Shipment extends Page
 
                               array('/dewars/history(/did/:did)', 'get', '_get_history'),
                               array('/dewars/history', 'post', '_add_history'),
+
+                              array('/dewars/registry/proposals', 'get', '_get_prop_dewar'),
+                              array('/dewars/registry/proposals', 'post', '_add_prop_dewar'),
+                              array('/dewars/registry/proposals/:DEWARREGISTRYHASPROPOSALID', 'delete', '_rem_prop_dewar'),
 
                               array('/dewars/registry(/:FACILITYCODE)', 'get', '_dewar_registry'),
                               array('/dewars/registry/:FACILITYCODE', 'patch', '_update_dewar_registry'),
@@ -460,17 +466,12 @@ class Shipment extends Page
             $args = array($this->proposalid);
             $where = 'p.proposalid=:1';
 
-            $fields = "CONCAT(p.proposalcode, p.proposalnumber) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, l.city, l.postcode, l.country, count(d.dewarid) as dewars";
-            $group = "CONCAT(p.proposalcode, p.proposalnumber), r.facilitycode, r.purchasedate, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name, l.address";
+            $fields = "r.dewarregistryid, max(CONCAT(p.proposalcode, p.proposalnumber)) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, count(d.dewarid) as dewars, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, r.bltimestamp, TO_CHAR(max(d.bltimestamp),'DD-MM-YYYY') as lastuse, count(dr.dewarreportid) as reports";
+            $group = "r.facilitycode";
 
-            if ($this->has_arg('all')) {
+            if ($this->has_arg('all') && $this->staff) {
                 $args = array();
                 $where = '1=1';
-
-                if (!$this->bcr() && !$this->staff) {
-                    $fields = "CONCAT(p.proposalcode, p.proposalnumber) as prop, r.facilitycode";
-                    $group = "CONCAT(p.proposalcode, p.proposalnumber), r.facilitycode";
-                }
             }
 
             if ($this->has_arg('FACILITYCODE')) {
@@ -483,10 +484,16 @@ class Shipment extends Page
                 array_push($args, $this->arg('s'));
             }
 
+            if ($this->has_arg('t')) {
+                if ($this->arg('t') == 'orphan') $where .= " AND rhp.dewarregistryid IS NULL";
+            }
+
 
             $tot = $this->db->pq("SELECT count(r.facilitycode) as tot 
               FROM dewarregistry r 
-              INNER JOIN proposal p ON p.proposalid = r.proposalid WHERE $where", $args);
+              LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
+              LEFT OUTER JOIN proposal p ON p.proposalid = r.proposalid 
+              WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
 
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -499,19 +506,28 @@ class Shipment extends Page
             array_push($args, $start);
             array_push($args, $end);
 
+            $order = 'r.facilitycode';
+            if ($this->has_arg('sort_by')) {
+                $cols = array(
+                  'FACILITYCODE' => 'r.facilitycode', 'DEWARS' => 'count(distinct d.dewarid)', 
+                  'LASTUSE' => 'max(d.bltimestamp)', 'BLTIMESTAMP' => 'r.bltimestamp',
+                  'REPORTS' => 'count(dr.dewarreportid)'
+                );
+                $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+                if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
+            }
+
             $rows = $this->db->paginate("SELECT $fields
               FROM dewarregistry r 
-              INNER JOIN proposal p ON p.proposalid = r.proposalid 
-              INNER JOIN labcontact lc ON r.labcontactid = lc.labcontactid
-              INNER JOIN person pe ON pe.personid = lc.personid
-              INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
+              LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
+              LEFT OUTER JOIN dewarreport dr ON r.facilitycode = dr.facilitycode
+              LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
               LEFT OUTER JOIN dewar d ON d.facilitycode = r.facilitycode
               LEFT OUTER JOIN shipping s ON d.shippingid = s.shippingid 
 
               WHERE $where 
               GROUP BY $group
-
-              ORDER BY r.facilitycode DESC", $args);
+              ORDER BY $order", $args);
             
             if ($this->has_arg('FACILITYCODE')) {
                 if (sizeof($rows)) $this->_output($rows[0]);
@@ -523,11 +539,11 @@ class Shipment extends Page
 
 
         function _add_dewar_registry() {
+            if (!$this->staff) $this->_error('No access');
             if (!$this->has_arg('FACILITYCODE')) $this->_error('No dewar code specified');
-            if (!$this->has_arg('LABCONTACTID')) $this->_error('No lab contact specified');
             $purchase = $this->has_arg('PURCHASEDATE') ? $this->arg('PURCHASEDATE') : '';
 
-            $this->db->pq("INSERT INTO dewarregistry (facilitycode, labcontactid, proposalid, purchasedate, bltimestamp) VALUES (:1, :2, :3, TO_DATE(:4, 'DD-MM-YYYY'), SYSDATE)", array($this->arg('FACILITYCODE'), $this->arg('LABCONTACTID'), $this->proposalid, $purchase));
+            $this->db->pq("INSERT INTO dewarregistry (facilitycode, purchasedate, bltimestamp) VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY'), SYSDATE)", array($this->arg('FACILITYCODE'), $purchase));
             $this->_output(array('FACILITYCODE' => $this->arg('FACILITYCODE')));
         }
 
@@ -540,7 +556,7 @@ class Shipment extends Page
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            $fields = array('LABCONTACTID', 'PURCHASEDATE', 'PROPOSALID');
+            $fields = array('PURCHASEDATE');
             if ($this->staff) array_push($fields, 'NEWFACILITYCODE');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
@@ -559,6 +575,46 @@ class Shipment extends Page
                     }
                 }
             }
+        }
+
+        function _get_prop_dewar() {
+            if (!$this->has_arg('DEWARREGISTRYID')) $this->_error('No dewar specified');
+
+            // , pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, l.city, l.postcode, l.country
+            // LEFT OUTER JOIN labcontact lc ON drhp.labcontactid = lc.labcontactid
+            // LEFT OUTER JOIN person pe ON pe.personid = lc.personid
+            // LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
+            $rows = $this->db->pq("SELECT drhp.dewarregistryhasproposalid,drhp.dewarregistryid,drhp.proposalid,CONCAT(p.proposalcode, p.proposalnumber) as proposal
+              FROM dewarregistry_has_proposal drhp
+              INNER JOIN proposal p ON p.proposalid = drhp.proposalid
+              
+              WHERE drhp.dewarregistryid = :1", array($this->arg('DEWARREGISTRYID')));
+
+            $this->_output($rows);
+        }
+
+        function _add_prop_dewar() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('DEWARREGISTRYID')) $this->_error('No dewar specified');
+            if (!$this->has_arg('PROPOSALID')) $this->_error('No proposal specified');
+            if (!$this->has_arg('LABCONTACTID')) $this->_error('No lab contact specified');
+
+            $chk = $this->db->pq("SELECT dewarregistryid 
+              FROM dewarregistry_has_proposal
+              WHERE dewarregistryid = :1 AND proposalid = :2", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID')));
+            if (sizeof($chk)) $this->_error('That dewar is already registered to that proposal');
+
+            $this->db->pq("INSERT INTO dewarregistry_has_proposal (dewarregistryid,proposalid,personid,labcontactid) 
+              VALUES (:1,:2,:3,:4)", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personid, $this->arg('LABCONTACTID')));
+
+            $this->_output(array('DEWARREGISTRYHASPROPOSALID' => $this->db->id()));
+        }
+
+        function _rem_prop_dewar() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('DEWARREGISTRYHASPROPOSALID')) $this->_error('No dewar proposal specified');
+
+            $this->db->pq("DELETE FROM dewarregistry_has_proposal WHERE dewarregistryhasproposalid=:1", array($this->arg('DEWARREGISTRYHASPROPOSALID')));
         }
 
 
