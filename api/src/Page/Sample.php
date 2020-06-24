@@ -273,7 +273,8 @@ class Sample extends Page
 
             // ADD BLSAMPLES
             $blSamples = array();
-            $maxLocation = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']))[0]['LOCATION'];
+            $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
+            $maxLocation = $maxloc_tmp[0]['LOCATION'];
             
             if(array_key_exists('CAPILLARYID', $ids) && $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS)
                 $blSamples['capillary'] = array('CONTAINERID' => $ids['CONTAINERID'], 'CRYSTALID' => $ids['CAPILLARYID'], 'PROTEINID' => $ids['CAPILLARYPHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $capillary->NAME, 'PACKINGFRACTION' => $this->has_arg('PACKINGFRACTION') ? $this->arg('PACKINGFRACTION') : null, 'COMMENTS' => array_key_exists('COMMENTS', $capillary) ? $capillary->COMMENTS : '', 'DIMENSION1' => $capillary->OUTERDIAMETER, 'DIMENSION2' => $capillary->INNERDIAMETER, 'DIMENSION3' => $capillary->LENGTH, 'SHAPE' => $capillary->SHAPE, 'LOOPTYPE' => 1);
@@ -317,7 +318,8 @@ class Sample extends Page
                 $ids['SAMPLEGROUPID'] = $this->db->id();
 
                 if(!array_key_exists('BLSAMPLECAPILLARYID', $ids)){
-                    $ids['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID))[0]['BLSAMPLEID'];
+                    $tmp_id = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID));
+                    $ids['BLSAMPLECAPILLARYID'] = $tmp_id[0]['BLSAMPLEID'];
                 }
 
                 $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
