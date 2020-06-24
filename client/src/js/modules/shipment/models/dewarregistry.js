@@ -21,7 +21,7 @@ define(['backbone'], function(Backbone) {
             },
             PURCHASEDATE: {
                 required: false,
-                pattern: 'wwsdash'
+                pattern: 'edate'
             },
         },
 
