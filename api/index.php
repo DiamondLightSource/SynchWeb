@@ -25,7 +25,7 @@ require 'vendor/autoload.php';
 
 require 'config.php';
 
-date_default_timezone_set('Europe/London');
+date_default_timezone_set($timezone);
 
 session_cache_limiter(false);
 
