@@ -57,6 +57,10 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
             if (this.inspectionimages) this.listenTo(this.inspectionimages, 'sync', this.render, this)
         },
 
+        setAutoScores: function(scores) {
+            this.autoscores = scores
+        },
+
         setShowSampleStatus: function(status) {
             this.showSampleStatus = status
             this.showImageStatus = !status
@@ -67,7 +71,11 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
             this.rankOption = rank
             this.drawPlate()
         },
-        
+
+        setAutoStatus: function(auto) {
+            this.autoOption = auto
+            this.drawPlate()
+        },
         
         onDomRefresh: function() {
             this.canvas = this.$el[0]
@@ -135,7 +143,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
         drawPlate: function() {
             console.log('draw plate')
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-          
+
             if (this.rankOption) {
                 var vals = this.collection.map(function(m) { 
                     if (m.get(this.rankOption.value)) return m.get(this.rankOption.value) 
@@ -273,6 +281,18 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                                 } 
                             }
 
+                        }
+
+                        // Auto image scores
+                        if (sample && this.autoOption && this.autoscores) {
+                            if (im) {
+                                var score = this.autoscores.findWhere({ BLSAMPLEIMAGEID: im.get('BLSAMPLEIMAGEID')})
+                                var cls = score && score.get('CLASSES')[this.autoOption]
+                                this.ctx.fillStyle = cls
+                                    ? utils.rainbow((1-cls)/4) 
+                                    : '#dfdfdf'
+                                this.ctx.fill()
+                            }
                         }
                         
                         this.ctx.stroke()

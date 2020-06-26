@@ -34,6 +34,9 @@ define(['marionette',
     'modules/dc/views/reprocess2',
     'views/dialog',
 
+    'modules/imaging/collections/autoscoreschemas',
+    'modules/imaging/collections/autoscores',
+
     'utils/editable',
     'views/table',
     'utils/table',
@@ -67,6 +70,8 @@ define(['marionette',
     InspectionTypes,
         
     DCCol, GetDCView, ReprocessView, DialogView,
+
+    AutoScoreSchemas, AutoScores,
 
     Editable, TableView, table, XHRImage, utils,
     template, templateimage){
@@ -253,6 +258,10 @@ define(['marionette',
 
             param: 'select[name=param]',
             rank: 'input[name=rank]',
+
+            auto: 'input[name=auto]',
+            schema: 'select[name=schema]',
+            class: 'select[name=class]',
         },
 
         events: {
@@ -274,6 +283,11 @@ define(['marionette',
 
             'click @ui.rank': 'setRankStatus',
             'change @ui.param': 'setRankStatus',
+
+            'click @ui.auto': 'setAutoStatus',
+            'change @ui.class': 'setAutoStatus',
+
+            'change @ui.schema': 'selectSchema',
         },
 
         modelEvents: {
@@ -282,6 +296,8 @@ define(['marionette',
 
 
         toggleSampleStatus: function(e) {
+            this.ui.auto.prop('checked', false)
+            this.plateView.setAutoStatus(false)
             this.plateView.setShowSampleStatus(this.ui.ss.is(':checked'))
         },
 
@@ -303,6 +319,16 @@ define(['marionette',
                     this.toggleSampleStatus()
                 }
             }
+        },
+
+        setAutoStatus: function(e) {
+            this.ui.ss.prop('checked', false)
+            this.ui.rank.prop('checked', false)
+            this.plateView.setShowSampleStatus(false)
+
+            var enabled = this.ui.auto.is(':checked')
+            console.log('setAutoStatus', enabled, this.ui.class.val(), enabled && this.ui.class.val())
+            this.plateView.setAutoStatus(enabled && this.ui.class.val())
         },
 
         updateAdhoc: function() {
@@ -483,8 +509,13 @@ define(['marionette',
         //     this.singlesample.toggleExtra()
         // },
 
+        selectSchema: function() {
+            this.autoscores.fetch().done(this.updateClasses.bind(this))
+        },
+
         selectInspection: function() {
             this.inspectionimages.fetch().done(this.inspectionLoaded.bind(this))
+            this.autoscoreschemas.fetch().done(this.updateSchemas.bind(this))
         },
 
         inspectionLoaded: function() {
@@ -609,6 +640,20 @@ define(['marionette',
             Backbone.Validation.bind(this)
         },
 
+        updateSchemas: function() {
+            this.ui.schema.html(this.autoscoreschemas.opts())
+            this.selectSchema()
+        },
+
+        updateClasses: function() {
+            var first = this.autoscores.at(0)
+            var opts = ''
+            _.each(first.get('CLASSES'), function(prob, cl) {
+                opts += '<option value="'+cl+'">'+cl+'</option>'
+            }, this)
+            this.ui.class.html(opts)
+        },
+
         updateTypes: function(e) {
             this.ui.ity.html(this.inspectiontypes.opts())
         },
@@ -640,6 +685,10 @@ define(['marionette',
 
         getInspection: function() {
             return this.ui.ins.val()
+        },
+
+        getSchema: function() {
+            return this.ui.schema.val()
         },
 
         getSample: function() {
@@ -677,6 +726,9 @@ define(['marionette',
 
                 var im = this.inspectionimages.findWhere({ BLSAMPLEID: s.get('BLSAMPLEID') })
                 if (im) {
+                    var score = this.autoscores.findWhere({ BLSAMPLEIMAGEID: im.get('BLSAMPLEIMAGEID')})
+                    console.log('select image', im.get('BLSAMPLEIMAGEID'),score && score.get('CLASSES'))
+
                     this.image.setModel(im)
                     this.ui.add.removeClass('enable')
                 } else {
@@ -790,7 +842,15 @@ define(['marionette',
                 this.inspectionimages = new InspectionImages()
                 this.inspectionimages.queryParams.iid = this.getInspection.bind(this)
 
+                this.autoscoreschemas = new AutoScoreSchemas()
+                this.autoscoreschemas.queryParams.CONTAINERINSPECTIONID = this.getInspection.bind(this)
+
+                this.autoscores = new AutoScores()
+                this.autoscores.queryParams.CONTAINERINSPECTIONID = this.getInspection.bind(this)
+                this.autoscores.queryParams.BLSAMPLEIMAGEAUTOSCORESCHEMAID = this.getSchema.bind(this)
+
                 this.plateView.setInspectionImages(this.inspectionimages)
+                this.plateView.setAutoScores(this.autoscores)
 
                 this.historyimages = new InspectionImages()
                 this.historyimages.queryParams.sid = this.getSample.bind(this)
