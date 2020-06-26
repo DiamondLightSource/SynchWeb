@@ -185,10 +185,18 @@ class Sample extends Page
         );
 
 
-        // Insert Protein, Crystal, Container and BLSample information as a single transaction
-        // Adds a single capillary with a single protein material
+        /**
+         * Insert Protein, Crystal, Container, BLSample, DiffractionPlan (+associated tables) and PDB file information as a single transaction
+         * Can add one or more complete sets of sample information to ISPyB from a form submission or a file upload
+         * */
         function _add_simple_sample() {
+            // ID holder for all the ids associated with the current iteration
+            // This will be populated by getting ids of each entity after insertion
+            // Mostly a helper store for ids but also the return value of this method
             $ids = array();
+
+            // Placeholder capillary id variables that will be null until populated (if required) on first iteration of foreach loop below
+            // For further iterations the value assigned will be re-used to associated remaining samples with the set capillary
             $capillaryPhaseId = null;
             $capillaryId = null;
             $blSampleCapillaryId = null;
@@ -208,7 +216,12 @@ class Sample extends Page
 
             $this->db->start_transaction();
 
+            /**
+             * Sets of sample information will appear in $args as "sample_1", "sample_2" etc
+             * Therefore we can reuse the code for form submission or file upload
+             * */
             foreach($this->args as $model => $attrs) {
+                // Not interested in anything that isn't sample information
                 if(substr($model, 0, strpos($model, '_', 0)) != 'sample') {
                     continue;
                 } else {
@@ -226,7 +239,8 @@ class Sample extends Page
                     $container = $attrs->container;
                     $capillary = $attrs->capillary;
                     $capillaryPhase = $attrs->capillaryPhase;
-                    
+
+                    // Critical sub model validation, we again can't proceed if anything is missing
                     if (!array_key_exists('ACRONYM', $phase)) $this->_error('No protein acronym');
                     if (!array_key_exists('ACRONYM', $capillaryPhase)) $this->_error('No protein acronym for capillary material');
                     if (!array_key_exists('NAME', $crystal)) $this->_error('No crystal name specified');
@@ -234,9 +248,19 @@ class Sample extends Page
                     if (!array_key_exists('NAME', $container)) $this->_error('No container name specified');
                     if (!array_key_exists('CONTAINERTYPE', $container)) $this->_error('No container type specified');
 
+                    // Create ID holder for this iteration (this set of sample information)
                     $ids[$model] = array();
                     
-                    // Insert Proteins
+                    /**
+                     * Insert Proteins
+                     * For each iteration there will be an actual protein and usually (not always) a capillary in which the protein is held
+                     * A Protein can be 'containerless' (no capillary) as identified by a boolean flag, or it may be associated with an existing capillary already in ISPyB
+                     * We need to check the above conditions to see if we are being asked to create a new capillary, re-use an existing one or do nothing (containerless)
+                     * If we need to add protein information for a capillary it will be added to an array with the actual protein information
+                     *
+                     * When a file upload is received, it's only possible to associate all the samples with one capillary (whether it already existed or is to be created)
+                     * The variable $capillaryPhaseId will be null on first iteration which will ensure a new capillary is added and then re-used for all other iterations
+                     */
                     $phases = null;
                     if($attrs->fromFile)
                         $phases = $capillaryPhaseId == null && !$capillary->CONTAINERLESS && $capillary->CRYSTALID == null ? array($capillaryPhase, $phase) : array($phase);
@@ -269,7 +293,13 @@ class Sample extends Page
                         $isCapillary = false;
                     }
 
-                    // Insert Crystals
+                    /**
+                     * Insert Crystals
+                     * The same as Proteins, in each iteration we need to check if we have Crystal information for both the actual crystal and its capillary (if required)
+                     * If the crystal is to be containerless there will not be any crystal information for a capillary.
+                     *
+                     * Same logic on proteins applies to the file upload where $capillaryId holds the same single capillary id ready to associate it with all samples added in the transaction
+                     * */
                     $crystals = null;
                     if($attrs->fromFile)
                         $crystals = $capillaryId == null && !$capillary->CONTAINERLESS && $capillary->CRYSTALID == null ? array($capillary, $crystal) : array($crystal);
@@ -319,9 +349,13 @@ class Sample extends Page
 
                     // ADD BLSAMPLES
                     $blSamples = array();
+                    // In ISPyB a container can be various things, but for simple sample it is a box that can be imagined to have a grid layout
+                    // We need to know which space the next sample needs to be added into. This query looks up the next free space
                     $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
                     $maxLocation = $maxloc_tmp[0]['LOCATION'];
                     
+                    // Like Proteins and Crystals, we need to check if we need to add the BLSample related information for the capillary as well as the sample
+                    // Also: LoopType = 1 means the BLSample is a container/capillary. Took some hunting to figure that out...
                     if(array_key_exists('CAPILLARYID', $ids[$model]) && $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS)
                         $blSamples['capillary'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CAPILLARYID'], 'PROTEINID' => $ids[$model]['CAPILLARYPHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $capillary->NAME, 'PACKINGFRACTION' => 1, 'COMMENTS' => array_key_exists('COMMENTS', $capillary) ? $capillary->COMMENTS : '', 'DIMENSION1' => $capillary->OUTERDIAMETER, 'DIMENSION2' => $capillary->INNERDIAMETER, 'DIMENSION3' => $capillary->LENGTH, 'SHAPE' => $capillary->SHAPE, 'LOOPTYPE' => 1);
                     
@@ -339,7 +373,12 @@ class Sample extends Page
                             $ids[$model]['BLSAMPLEID'] = $this->db->id();
                         }
 
-                        // Add DiffractionPlan (DataCollectionPlan) information
+                        /**
+                         * Add DiffractionPlan (DataCollectionPlan DCP) information
+                         * This is a set of inserts that collectively make up a DCP and associate it to a BLSample
+                         * There are two detectors required for xpdf on I15-1 so we have one insert for each and the detector distance for each is an agreed constant
+                         * The dectectors and detector distance values can be changed by users from the plan experiements page in SynchWeb
+                         *  */
                         $this->db->pq("INSERT INTO diffractionplan (preferredbeamsizex, preferredbeamsizey, energy, monobandwidth)
                             VALUES (:1, :2, :3, :4)", array($defaultBeamSizeX, $defaultBeamSizeY, $defaultEnergy, $defaultMonoBandwidth));
                         if($key == 'capillary')
@@ -362,7 +401,12 @@ class Sample extends Page
                             VALUES (:1, :2, :3, :4, :5, :6)", array(5, $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0, 0, 0, 1));
                     }
 
-                    // Add Container Group (group capillary instance with sample instance)
+                    /**
+                     * Add Container Group
+                     * Assuming a sample is not marked as containerless, we need to create a container group which is just an id number
+                     * This container group id is used by BLSampleGroup_has_BLSample in a many to many relationship by mapping it to a BLSample id
+                     * Doing this allows a sample to be associated with a capillary for experiment planning which can be useful for background subtraction
+                     *  */
                     if(!$capillary->CONTAINERLESS){
                         $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
                         $ids[$model]['SAMPLEGROUPID'] = $this->db->id();
@@ -384,7 +428,10 @@ class Sample extends Page
                         VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLEID'], $ids[$model]['SAMPLEGROUPID'], 1, 'sample'));
                     }
 
-                    // Insert CIF file(s) reference
+                    /**
+                     * Insert CIF file(s) reference
+                     * CIF files will be associated with ALL submitted samples
+                     *  */
                     $fileCount = 0;
                     foreach($_FILES as $f){
                         $fileRef = 'pdb_file_'.$fileCount;
