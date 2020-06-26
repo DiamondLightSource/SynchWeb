@@ -143,6 +143,11 @@ define(['backbone', 'collections/components',
                 pattern: 'word',
             },
 
+            USERPATH: {
+                required: false,
+                pattern: 'twopath',
+            },
+
 
             COMPONENTAMOUNTS: function(from_ui, attr, all_values) {
                 var values = all_values.components.pluck('ABUNDANCE')
