@@ -411,8 +411,7 @@ class Cell extends Page
             curl_close($ch);
 
             $this->app->contentType('text/xml');
-            print $response;
-
+            $this->app->response()->body($response);
         }
 
 
@@ -435,6 +434,7 @@ class Cell extends Page
             $response = curl_exec($ch);
             curl_close($ch);
 
-            print $response;
+            $this->app->contentType('text/plain');
+            $this->app->response()->body($response);
         }
 }
