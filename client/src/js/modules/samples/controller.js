@@ -173,6 +173,35 @@ define(['marionette',
         app.content.show(GetView.ProteinAdd.get(app.type))
     },
 
+    proteinclone: function(pid) {
+        app.loading()
+
+        var title = GetView.ProteinList.title(app.type)
+        var pbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+
+        var lookup = new ProposalLookup({ field: 'PROTEINID', value: pid })
+        lookup.find({
+            success: function() {
+                var protein = new Protein({ PROTEINID: pid })
+                protein.fetch({
+                    success: function() {
+                        app.bc.reset([pbc, { title: 'Clone '+title }])
+                        app.content.show(GetView.ProteinAdd.get(app.type, { model: protein }))
+                    },
+                    error: function() {
+                        app.bc.reset([pbc])
+                        app.message({ title: 'No such '+title, message: 'The specified '+title+' could not be found'})
+                    },
+                })
+            },
+
+            error: function() {
+                app.bc.reset([pbc])
+                app.message({ title: 'No such '+title, message: 'The specified '+title+' could not be found'})
+            }
+        })
+    },
+
   }
        
        
