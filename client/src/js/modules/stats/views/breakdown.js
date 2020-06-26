@@ -150,7 +150,7 @@ define(['marionette', 'templates/stats/breakdown.html',
                   xaxis: {
                         mode: 'time',
                         // timeformat: '%m %b %H:%M',
-                        timezone: 'Europe/London',
+                        timezone: app.options.get('timezone'),
                         min: this.model.get('info').start,
                         max: this.model.get('info').end,
                   },
@@ -202,7 +202,7 @@ define(['marionette', 'templates/stats/breakdown.html',
                 this.options3 = {
                     xaxis: {
                         mode: 'time',
-                        timezone: 'Europe/London',
+                        timezone: app.options.get('timezone'),
                         min: this.model.get('info').start,
                         max: this.model.get('info').end,
                     },

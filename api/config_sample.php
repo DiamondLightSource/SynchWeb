@@ -53,6 +53,8 @@
     # - Disables site access, showing a message
     # - This is defined in client/js/config.json
 
+    # Timezone
+    $timezone = 'Europe/London';
 
     # String replacements for autoprocessing types
     # First part is searched for in the processing command line
