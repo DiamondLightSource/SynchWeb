@@ -199,7 +199,7 @@
 
     # These idents are used when searching the RCSB for PDBs to generate PDB stats
     $facility_pdb_ident = array('DIAMOND BEAMLINE', 'DIAMOND LIGHT SOURCE BEAMLINE');
-
+    $facility_pdb_site = 'DIAMOND';
 
     # Shipping Address for Labels
     # - This is added to all shipment label PDFs
