@@ -859,11 +859,11 @@ class Proposal extends Page
         function _auto_visit() {
             global $auto, $auto_bls, $auto_exp_hazard, $auto_sample_hazard, $auto_user, $auto_pass, $auto_session_type;
 
-            if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
+            if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource', 401);
 
             if (!$this->has_arg('CONTAINERID')) $this->_error('No container specified');
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
-            if (!in_array($this->arg('bl'), $auto_bls)) $this->_error('That beamline cannot create autocollect visits');
+            if (!in_array($this->arg('bl'), $auto_bls)) $this->_error('That beamline cannot create autocollect visits', 401);
 
             // Get container information - note that if the container has no owner - we use the proposal person.
             // A person record is required for UAS so we can set investigators. UAS needs one 'TEAM_LEADER' and others as 'DATA_ACCESS'
@@ -902,7 +902,7 @@ class Proposal extends Page
             }
 
             if (!$cont['PEXTERNALID']) {
-                $this->_error('That container does not have a valid owner');
+                $this->_error('That container does not have a valid owner', 412);
             }
             if ($cont['SESSIONID']) {
                 error_log('That container already has a session ' . $cont['SESSIONID']);
@@ -946,7 +946,10 @@ class Proposal extends Page
                         WHERE shp.sessionId = :1
                         AND shp.role='Team Leader'", array($auto_session['SESSIONID']));
 
-                    if (!sizeof($team_leader)) error_log("Proposal::auto_session - no team leader for an existing Auto Collect Session");
+                    if (!sizeof($team_leader)) {
+                        error_log('Proposal::auto_session - no team leader for an existing Auto Collect Session');
+                        $this->_error('Precondition failed, no team leader role found while adding container ' . $cont['CONTAINERID'] . ' to session ' . $auto_session['SESSIONID'], 412);
+                    }
 
                     $result = $this->_update_autocollect_session($auto_session['SESSIONID'], $auto_session['SEXTERNALID'], $cont['CONTAINERID'], $team_leader[0]['TEAMLEADEREXTID']);
 
@@ -957,7 +960,7 @@ class Proposal extends Page
                         $resp['CONTAINERS'] = $result['CONTAINERS'];
                         $this->_output($resp);
                     } else {
-                        $this->_error('Something went wrong adding container ' . $cont['CONTAINERID'] . ' to session ' . $auto_session['SESSIONID']);                        
+                        $this->_error('Something went wrong adding container ' . $cont['CONTAINERID'] . ' to session ' . $auto_session['SESSIONID']);
                     }
                 }
             }

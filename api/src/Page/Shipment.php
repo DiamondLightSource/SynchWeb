@@ -2422,8 +2422,8 @@ class Shipment extends Page
 
             // Case insensitive check. If we have already sent an email, return.
             if (strcasecmp($hist[0]['STATUS'], 'notify_email') == 0) {
-		$this->_output(array('EMAIL_SENT' => 0));
-	    } else {
+                $this->_output(array('EMAIL_SENT' => 0));
+            } else {
                 $email = new Email('data-new', '*** New data available for your container ***');
                 $email->data = $cont;
                 $email->send($cont['EMAILADDRESS']);

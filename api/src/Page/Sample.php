@@ -1483,6 +1483,10 @@ class Sample extends Page
             $global = $this->has_arg('GLOBAL') ? $this->arg('GLOBAL') : null;
             $density = $this->has_arg('DENSITY') ? $this->arg('DENSITY') : null;
             $externalid = $this->has_arg('EXTERNALID') ? $this->arg('EXTERNALID') : null;
+
+            // Only staff should be able to create Proteins that are not approved (i.e. no EXTERNALID) in User System
+            // TODO - add ability to switch this on/off per site. Need a global 'valid_samples' or 'strict mode' variable
+            if (!$externalid && !$this->staff) $this->_error('Only staff can create Proteins that are not approved in ISPyB', 401);
             
             $chk = $this->db->pq("SELECT proteinid FROM protein
               WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $this->arg('ACRONYM')));
