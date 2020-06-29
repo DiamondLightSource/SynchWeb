@@ -1,9 +1,9 @@
 <h1><%-title%>s</h1>
 <p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p>
-<p class="help">Only staff are able to create new <%-title.toLowerCase()%>s from this page. Samples should be created in UAS and when approved will be displayed here.</p>
+<p class="help">Only staff are able to create new <%-title.toLowerCase()%>s from this page. Samples should be created in UAS and when approved will be displayed here. Approved samples can be cloned in ISPyB by following the links in the table below.</p>
 
 <div class="ra">
-<% if (IS_STAFF) { %>
+<% if (CAN_CREATE) { %>
     <a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a>
 <% } %>
 </div>

@@ -41,7 +41,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
         return {
           title: this.getOption('title'),
           url: this.getOption('url'),
-          IS_STAFF: app.staff,
+          CAN_CREATE: app.staff, // In future combine with a global 'strict mode' or 'valid_samples' config option
         }
     },
 
