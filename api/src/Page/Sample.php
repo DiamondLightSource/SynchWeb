@@ -322,10 +322,11 @@ class Sample extends Page
                     // Do we have a container associated with this dewar?
                     $chk = $this->db->pq("SELECT containerid FROM container WHERE dewarid =:1", array($ids[$model]['DEWARID']));
                     if (sizeof($chk)) $ids[$model]['CONTAINERID'] = $chk[0]['CONTAINERID'];
-            // ADD BLSAMPLES
-            $blSamples = array();
-            $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
-            $maxLocation = $maxloc_tmp[0]['LOCATION'];
+
+                    // ADD BLSAMPLES
+                    $blSamples = array();
+                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
+                    $maxLocation = $maxloc_tmp[0]['LOCATION'];
 
                     // Insert Container if we don't already have one
                     if(!array_key_exists('CONTAINERID', $ids[$model])) {
