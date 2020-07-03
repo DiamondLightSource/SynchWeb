@@ -10,8 +10,11 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
     
     
     var EventItemView = Marionette.ItemView.extend({
-        template: _.template('<%-BL%>: <a href="/dc/visit/<%-VISIT%>"><%-VISIT%></a> (<%-LEN%>h)<% if(LC) { %><br />&nbsp; - <%-LC%><% } %><%if(SESSIONTYPE) { %><br />[<%-SESSIONTYPE%>]<% } %>'),
+        template: _.template('<%-BL%>: <a class="setVisit" href="/dc/visit/<%-VISIT%>"><%-VISIT%></a> (<%-LEN%>h)<% if(LC) { %><br />&nbsp; - <%-LC%><% } %><%if(SESSIONTYPE) { %><br />[<%-SESSIONTYPE%>]<% } %>'),
         tagName: 'li',
+        events:{
+            'click .setVisit': 'setVisit'
+        },
         
         className: function() {
             var c = []
@@ -19,6 +22,10 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             if (this.model.get('ACTIVE') == 1) c.push('active')
                 
             return c.join(' ')
+        },
+
+        setVisit: function(){
+            app.visit = this.model.get('VIS')
         },
     })
     

@@ -524,7 +524,7 @@ define(['marionette',
                 BEAMLINESETUPS: this.beamlinesetups
             })
 
-            this.datacollectionplans = new DataCollectionPlans()
+            this.datacollectionplans = new DataCollectionPlans(null, { state: { pageSize: 100 }})
             this.datacollectionplans.queryParams.CONTAINERID = this.model.get('CONTAINERID')
             // hmm this is not what you'd expect
             this.datacollectionplans.fetch({
