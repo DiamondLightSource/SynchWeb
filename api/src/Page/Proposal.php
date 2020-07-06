@@ -274,7 +274,7 @@ class Proposal extends Page
         # ------------------------------------------------------------------------
         # Get visits for a proposal
         function _get_visits($visit=null, $output=true) {
-            global $bl_types, $mx_beamlines;
+            global $bl_types, $mx_beamlines, $commissioning_code;
 
             if ($this->has_arg('current')) {
                 $this->_current_visits();
@@ -328,7 +328,8 @@ class Proposal extends Page
             }
 
             if ($this->has_arg('cm')) {
-                $where .= " AND p.proposalcode LIKE 'cm' AND s.startdate <= SYSDATE";
+                $where .= " AND p.proposalcode LIKE :".(sizeof($args)+1)." AND s.startdate <= SYSDATE";
+                array_push($args, $commissioning_code);
             }
             
             if ($this->has_arg('ty')) {
