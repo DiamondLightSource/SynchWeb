@@ -37,7 +37,7 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
 
     function authenticate($login, $password)
     {
-        global $cas_url;
+        global $cas_url, $cacert;
 
         $fields = array(
             'username' => $login,
@@ -48,6 +48,7 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
         curl_setopt($ch, CURLOPT_URL, 'https://' . $cas_url . '/cas/v1/tickets');
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_CAINFO, $cacert);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($fields));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $this->response = curl_exec($ch);
@@ -67,7 +68,7 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
 
     function service($service)
     {
-        global $cas_url;
+        global $cas_url, $cacert;
 
         $fields = array(
             'service' => $service,
@@ -76,6 +77,7 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'https://' . $cas_url . '/cas/v1/tickets/' . $this->tgt);
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_CAINFO, $cacert);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($fields));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $resp = curl_exec($ch);
@@ -87,7 +89,7 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
 
     function validate($service, $ticket)
     {
-        global $cas_url;
+        global $cas_url, $cacert;
 
         $fields = array(
             'service' => $service,
@@ -98,6 +100,7 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'https://' . $cas_url . '/cas/v1/serviceValidate');
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_CAINFO, $cacert);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($fields));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $resp = curl_exec($ch);
@@ -107,3 +110,4 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
         return rtrim($resp);
     }
 }
+
