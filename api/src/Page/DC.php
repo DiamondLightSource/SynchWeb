@@ -1582,18 +1582,26 @@ class DC extends Page
             #im.datacollectionid=:1 
             $imqs = $this->db->pq("SELECT imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b, imq.dozor_score as d
                 FROM imagequalityindicators imq 
-            	WHERE imq.datacollectionid IN ($where)
+                WHERE imq.datacollectionid IN ($where)
                 ORDER BY imq.imagenumber", $args);
 
             foreach ($imqs as $imq) {
-                array_push($iqs[0], array(intval($imq['NIM']), intval($imq['S'])));
-                array_push($iqs[1], array(intval($imq['NIM']), intval($imq['B'])));
-                array_push($iqs[2], array(intval($imq['NIM']), floatval($imq['RES'])));
-                array_push($iqs[3], array(intval($imq['NIM']), floatval($imq['TOTALINTEGRATEDSIGNAL'])));
-                array_push($iqs[4], array(intval($imq['NIM']), floatval($imq['D'])));
+                array_push($iqs[0], array(intval($imq['NIM']), $this->_null_or($imq['S'], 'int')));
+                array_push($iqs[1], array(intval($imq['NIM']), $this->_null_or($imq['B'], 'int')));
+                array_push($iqs[2], array(intval($imq['NIM']), $this->_null_or($imq['RES'], 'float')));
+                array_push($iqs[3], array(intval($imq['NIM']), $this->_null_or($imq['TOTALINTEGRATEDSIGNAL'], 'float')));
+                array_push($iqs[4], array(intval($imq['NIM']), $this->_null_or($imq['D'], 'float')));
             }
 
             $this->_output($iqs);
+        }
+
+        function _null_or($field, $conversion) {
+            $val = $field;
+            if ($conversion == 'float') $val = floatval($field);
+            if ($conversion == 'int') $val = intval($field);
+
+            return $field == null ? $field : $val;
         }
 
         # ------------------------------------------------------------------------
