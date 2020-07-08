@@ -3,9 +3,11 @@
  */
 
 define(['marionette',
+        'backgrid',
         'utils/table',
         'modules/samples/views/proteinlist'
         ], function(Marionette,
+            Backgrid,
             table,
             ProteinList) {
     
@@ -14,6 +16,17 @@ define(['marionette',
         event: 'phases:view',
         argument: 'PROTEINID',
         cookie: true,
+
+        render: function() {
+            Backgrid.Row.prototype.render.call(this)
+
+            // Highlight approved samples
+            // Currently all samples with an external id are green
+            // In future use Protein safetyLevel to discriminate
+            if (this.model.get('EXTERNAL') == '1') this.$el.addClass('active')
+
+            return this
+        },
     })
 
 

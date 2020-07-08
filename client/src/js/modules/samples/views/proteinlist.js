@@ -25,7 +25,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p><div class="ra"><a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
+    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p><div class="ra"><% if (IS_STAFF) { %><a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a><% } %></div><div class="filter type"></div><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper', type: '.type' },
 
     clickableRow: ClickableRow,
@@ -37,7 +37,8 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     templateHelpers: function() {
         return {
           title: this.getOption('title'),
-          url: this.getOption('url')
+          url: this.getOption('url'),
+          IS_STAFF: app.staff
         }
     },
 

@@ -25,6 +25,7 @@ define(['marionette', 'modules/samples/controller'], function(Marionette, c) {
       'phases(/s/:s)(/page/:page)': 'proteinlist',
       'phases/pid/:pid': 'proteinview',
       'phases/add': 'proteinadd',
+      'phases/pid/:pid/clone': 'proteinclone',
     },
       
     loadEvents: ['samples:show', 'proteins:show', 'samples:view', 'proteins:view', 
