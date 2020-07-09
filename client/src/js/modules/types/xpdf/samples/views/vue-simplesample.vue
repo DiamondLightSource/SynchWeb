@@ -83,20 +83,18 @@
                         <span>
                             <label>Containerless?</label>
                             <input type="checkbox" v-model="containerless" value="true" v-on:change="toggleSelectEnabled()"/><br />
-                            <select id="containerSelect" name="type" style="width: 400px" v-model="type" v-on:change="getCapillaryInfo('density')" v-validate="'required'">
-                                <option v-if="!hasExistingCapillaries" disabled value="">Container*</option>
-                                <option v-for="container in containers">{{ container }}</option>
-                            </select>
-                            <span v-if="errors.has('type')" class="errormessage ferror">{{ errors.first('type') }}</span>
                         </span>
                     </li>
 
                     <li>
-                        <span>
-                            <select style="width: 400px" title="Not currently supported" disabled>
-                                <option>ERA* !NOT CURRENTLY SUPPORTED!</option>
-                            </select>
-                        </span>
+                        <label>Container
+                                <span class="small">The capillary or container that should be associated with this sample</span>
+                        </label>
+                        <select id="containerSelect" name="type" style="width: 400px" v-model="type" v-on:change="getCapillaryInfo('density')" v-validate="'required'">
+                            <option v-if="!hasExistingCapillaries" disabled value="">Container*</option>
+                            <option v-for="container in containers">{{ container }}</option>
+                        </select>
+                        <span v-if="errors.has('type')" class="errormessage ferror">{{ errors.first('type') }}</span>
                     </li>
 
                     <button type="button" v-on:click="showCifFileDialog()">Upload CIF</button> 
@@ -509,12 +507,8 @@
 
                 models.save({}, {
                     success: function(){
-                        app.triggerMethod('sample:reloadSampleTable')
                         app.alert({className: 'message notify', message: "Successfully added sample and relevant capillary data."})
                         self.isLoading = false
-                        if (app.dialog.currentView) 
-                            app.dialog.currentView.closeDialog()
-                        
                     },
                     error: function(model, response, options){
                         let alertMessage = "Failed to add Simple Sample information"
@@ -527,8 +521,6 @@
 
                         app.alert({message: alertMessage})
                         self.isLoading = false
-                        if (app.dialog.currentView) 
-                            app.dialog.currentView.closeDialog()
                     }
                 })
             },

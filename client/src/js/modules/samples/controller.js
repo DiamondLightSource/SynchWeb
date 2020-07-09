@@ -121,6 +121,13 @@ define(['marionette',
         app.content.show(GetView.CrystalAdd.get(app.type))
     },
 
+    simplesampleadd: function() {
+        var title = GetView.SimpleSampleAdd.title(app.type)
+        var cbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+        app.bc.reset([cbc, { title: 'Add '+title }])
+        app.content.show(GetView.SimpleSampleAdd.get(app.type))
+    },
+
 
 
     // Proteins
