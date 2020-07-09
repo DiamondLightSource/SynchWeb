@@ -134,7 +134,7 @@ class Page
             $bl_type = null;
 
             foreach ($bl_types as $tty => $bls) {
-                if (in_array($b, $bls)) {
+                if (in_array($bl, $bls)) {
                     $bl_type = $tty;
                     break;
                 }

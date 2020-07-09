@@ -453,7 +453,7 @@ class Proposal extends Page
 
                 if ($bl_type) {
                     $r['TYPE'] = $bl_type;
-                    break
+                    break;
                 }
 
                 if (!$r['TYPE']) $r['TYPE'] = 'gen';

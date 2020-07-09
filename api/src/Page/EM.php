@@ -946,7 +946,8 @@ class EM extends Page
     private function checkElectronMicroscopesAreConfigured()
     {
         // Check electron microscopes are listed in global variables - see $bl_types in config.php.
-        if (empty($this->_get_beamlines_from_type('em'))) {
+        $bls = $this->_get_beamlines_from_type('em');
+        if (empty($bls)) {
             $message = 'Electron microscopes are not specified';
 
             error_log($message);
