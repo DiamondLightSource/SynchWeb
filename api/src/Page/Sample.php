@@ -352,7 +352,7 @@ class Sample extends Page
                     $blSamples = array();
                     // In ISPyB a container can be various things, but for simple sample it is a box that can be imagined to have a grid layout
                     // We need to know which space the next sample needs to be added into. This query looks up the next free space
-                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
+                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids[$model]['CONTAINERID']));
                     $maxLocation = $maxloc_tmp[0]['LOCATION'];
                     
                     // Like Proteins and Crystals, we need to check if we need to add the BLSample related information for the capillary as well as the sample
