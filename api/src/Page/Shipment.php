@@ -336,7 +336,6 @@ class Shipment extends Page
 
         function _add_history() {
             global $in_contacts, $transfer_email;
-            global $bl_types; # Added for beamline names
             # Flag to indicate we should e-mail users their dewar has returned from BL
             $from_beamline = False;
 
@@ -376,11 +375,10 @@ class Shipment extends Page
                 // Not particularly efficient, but this is not a time critical operation so
                 // this approach covers all beamlines for future proofing.
                 // Stop/break if we find a match
-                foreach($bl_types as $beamlines) {
-                    if (in_array($last_location, $beamlines)) {
-                        $from_beamline = True;
-                        break;
-                    }
+                $bls = $this->_get_beamlines_from_type('all');
+
+                if (in_array($last_location, $bls)) {
+                    $from_beamline = True;
                 }
             } else {
                 // No history - could be a new dewar, so not necessarily an error...
@@ -855,7 +853,6 @@ class Shipment extends Page
         # ------------------------------------------------------------------------
         # List of dewars for a shipment
         function _get_dewars() {
-            global $bl_types;
             if (!$this->has_arg('prop') && !$this->user->has('all_dewars')) $this->_error('No proposal id specified');
 
             $where = 's.proposalid=:1';
@@ -896,8 +893,9 @@ class Shipment extends Page
             }
 
             if ($this->has_arg('ty')) {
-                if (array_key_exists($this->arg('ty'), $bl_types)) {
-                    $bls = implode("', '", $bl_types[$this->arg('ty')]);
+                $bls_tmp = $this->_get_beamlines_from_type($this->arg('ty'));
+                if (!empty($bls_tmp)) {
+                    $bls = implode("', '", $bls_tmp);
                     $where .= " AND se.beamlinename IN ('$bls')";
                 }
             }
@@ -1275,7 +1273,10 @@ class Shipment extends Page
                 $where .= ' AND c.ownerid = :'.(sizeof($args)+1);
                 array_push($args, $this->user->personid);
             }
-                
+            error_log("CONTAINER TOTAL QUERY for Proposal " . $this->proposalid);
+            error_log($where);
+            error_log(print_r($args, true));
+
             $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
                 FROM container c 
                 INNER JOIN dewar d ON d.dewarid = c.dewarid 
@@ -1293,6 +1294,8 @@ class Shipment extends Page
                 $having", $args);
             $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
             
+            error_log('TOTAL NUMBER OF CONTAINERS = ' . $tot);
+
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
                 $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
@@ -1331,6 +1334,9 @@ class Shipment extends Page
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
+            error_log("CONTAINER QUERY");
+            error_log($where);
+            error_log(print_r($args, true));
             // $this->db->set_debug(True);
             $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, 
                 count(distinct ss.blsubsampleid) as subsamples, 

@@ -163,12 +163,6 @@
                         );
 
 
-    # Array of container histories to trigger a new data notification email
-    $new_data = array(
-        array('processing', 'in_transit_unloading', 'in_local_storage')
-    );
-
-
     # Beamline Sample Registration Machines
     # - Used for touchscreen application (unauthenticated)
     $blsr = array('1.2.3.4', # my touchscreen computer
@@ -273,9 +267,6 @@
 
     # Beamlines on which to scale the gridplot to 1024
     $scale_grid = array('i24');
-
-    # Proposal codes to list
-    $prop_codes = array('lb', 'cm', 'mx', 'nt', 'nr', 'sw', 'in', 'mt', 'ee', 'em', 'sm');
 
 
     # These map proposal types to their proposalcode

@@ -114,11 +114,10 @@ class Stats extends Page
         
         // Data collections / Hour
         function _data_collections($sc=False,$all=False) {
-            global $bl_types;
             $where = $sc ? 'dc.overlap != 0' : 'dc.axisrange > 0 AND dc.overlap = 0';
             $where = $all ? '1=1' : $where;
 
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $bls = implode('\', \'', $this->_get_beamlines_from_type($this->ty));
             
             $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, run, bl FROM (
                     SELECT count(dc.datacollectionid) as datacollections, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
@@ -146,8 +145,7 @@ class Stats extends Page
         
         // Images / Hour
         function _images() {
-            global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $bls = implode('\', \'', $this->_get_beamlines_from_type($this->ty));
 
             $dcs = $this->db->pq("SELECT AVG(images) as avg, run, bl FROM (
                     SELECT sum(dc.numberofimages) as images, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
@@ -172,8 +170,7 @@ class Stats extends Page
         
         // Data collection times
         function _data_collection_time() {
-            global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $bls = implode('\', \'', $this->_get_beamlines_from_type($this->ty));
 
             $dcs = $this->db->pq("SELECT avg(TIMESTAMPDIFF('SECOND', dc.starttime, dc.endtime)/60) as dctime, vr.run, ses.beamlinename as bl
                                  FROM datacollection dc
@@ -200,8 +197,7 @@ class Stats extends Page
         
         // Samples Loaded / Hour
         function _samples_loaded() {
-            global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $bls = implode('\', \'', $this->_get_beamlines_from_type($this->ty));
 
             $dcs = $this->db->pq("SELECT AVG(count) as avg, count(count) as count, run, bl FROM (
                     SELECT count(r.robotactionid) as count, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24') as dh, vr.run, ses.beamlinename as bl
@@ -228,8 +224,7 @@ class Stats extends Page
                                  
                                  
         function _daily_usage() {
-            global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $bls = implode('\', \'', $this->_get_beamlines_from_type($this->ty));
 
             $dcs = $this->db->pq("SELECT AVG(datacollections) as avg, sum(datacollections) as count, dh as hour, bl FROM (
                     SELECT count(dc.datacollectionid) as datacollections, HOUR(dc.starttime) as dh, ses.beamlinename as bl
@@ -270,8 +265,7 @@ class Stats extends Page
                                  
                                  
         function _auto_indexing() {
-            global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $bls = implode('\', \'', $this->_get_beamlines_from_type($this->ty));
 
             $dcs = $this->db->pq("SELECT avg(TIMESTAMPDIFF('SECOND', dc.endtime, s.bltimestamp)) as duration, count(s.screeningid) as count, s.shortcomments as ty, vr.run
                 FROM screening s
@@ -294,8 +288,8 @@ class Stats extends Page
     
                                  
         function _auto_integration() {
-            global $ap_types, $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            global $ap_types;
+            $bls = implode('\', \'', $this->_get_beamlines_from_type($this->ty));
 
             $ty_tmp = array();
             foreach ($ap_types as $search => $replace) {
@@ -330,8 +324,7 @@ class Stats extends Page
 
     
         function _processing() {
-            global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $bls = implode('\', \'', $this->_get_beamlines_from_type($this->ty));
 
             $dcs = $this->db->pq("SELECT vr.run, COUNT(rp.processingjobid) as jobs, AVG(app.processingendtime - app.processingstarttime)/60 as time, 1 as ty
                 FROM processingjob rp
