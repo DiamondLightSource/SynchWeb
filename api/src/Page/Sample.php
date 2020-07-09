@@ -101,6 +101,7 @@ class Sample extends Page
                               'CENTRINGMETHOD' => '\w+',
                               'RADIATIONSENSITIVITY' => '\w+',
                               'ENERGY' => '\w+',
+                              'USERPATH' => '(\w|-)+\/?(\w|-)+',
                               'EXPOSURETIME' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEX' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEY' => '\d+(.\d+)?',
@@ -200,6 +201,19 @@ class Sample extends Page
             $capillaryPhaseId = null;
             $capillaryId = null;
             $blSampleCapillaryId = null;
+
+            // Default values used for diffraction plan
+            $defaultBeamSizeX = 70;
+            $defaultBeamSizeY = 70;
+            $defaultEnergy = 76600;
+            $defaultMonoBandwidth = 0.1;
+
+            // Hardcoded detector ids?
+            $detector1_id = 28;
+            $detector1_distance = 200;
+
+            $detector2_id = 25;
+            $detector2_distance = 800;
 
             $this->db->start_transaction();
 
@@ -323,11 +337,6 @@ class Sample extends Page
                     $chk = $this->db->pq("SELECT containerid FROM container WHERE dewarid =:1", array($ids[$model]['DEWARID']));
                     if (sizeof($chk)) $ids[$model]['CONTAINERID'] = $chk[0]['CONTAINERID'];
 
-                    // ADD BLSAMPLES
-                    $blSamples = array();
-                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
-                    $maxLocation = $maxloc_tmp[0]['LOCATION'];
-
                     // Insert Container if we don't already have one
                     if(!array_key_exists('CONTAINERID', $ids[$model])) {
                         $cap = array_key_exists('CAPACITY', $container) ? $container->CAPACITY : 16;
@@ -341,10 +350,8 @@ class Sample extends Page
 
                     // ADD BLSAMPLES
                     $blSamples = array();
-
                     // In ISPyB a container can be various things, but for simple sample it is a box that can be imagined to have a grid layout
                     // We need to know which space the next sample needs to be added into. This query looks up the next free space
-                    // SF modified from older PHP version
                     $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
                     $maxLocation = $maxloc_tmp[0]['LOCATION'];
                     
@@ -374,7 +381,7 @@ class Sample extends Page
                          * The dectectors and detector distance values can be changed by users from the plan experiements page in SynchWeb
                          *  */
                         $this->db->pq("INSERT INTO diffractionplan (preferredbeamsizex, preferredbeamsizey, energy, monobandwidth)
-                            VALUES (:1, :2, :3, :4)", array(70, 70, 76600, 0.1));
+                            VALUES (:1, :2, :3, :4)", array($defaultBeamSizeX, $defaultBeamSizeY, $defaultEnergy, $defaultMonoBandwidth));
                         if($key == 'capillary')
                             $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] = $this->db->id();
                         else
@@ -386,10 +393,10 @@ class Sample extends Page
                             VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0));
                         
                         $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
-                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 28, $expTime, 200));
+                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $detector1_id, $expTime, $detector1_distance));
 
                         $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
-                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 25, $expTime, 800));
+                            VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $detector2_id, $expTime, $detector2_distance));
 
                         $this->db->pq("INSERT INTO scanparametersmodel (scanparametersserviceid, datacollectionplanid, sequencenumber, start, stop, step) 
                             VALUES (:1, :2, :3, :4, :5, :6)", array(5, $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0, 0, 0, 1));
@@ -406,10 +413,13 @@ class Sample extends Page
                         $ids[$model]['SAMPLEGROUPID'] = $this->db->id();
                         
                         if(!array_key_exists('BLSAMPLECAPILLARYID', $ids[$model])){
-                            if($attrs->fromFile && $capillaryId != null)
-                                $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillaryId))[0]['BLSAMPLEID'];
-                            else
-                                $ids[$model]['BLSAMPLECAPILLARYID'] = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID))[0]['BLSAMPLEID'];
+                            if($attrs->fromFile && $capillaryId != null) {
+                                $tmp_ids = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillaryId));
+                                $ids[$model]['BLSAMPLECAPILLARYID'] = $tmp_ids[0]['BLSAMPLEID'];
+                            } else {
+                                $tmp_ids = $this->db->pq("SELECT blsampleid FROM blsample where crystalid = :1", array($capillary->CRYSTALID));
+                                $ids[$model]['BLSAMPLECAPILLARYID'] = $tmp_ids[0]['BLSAMPLEID'];
+                            }
                         }
 
                         $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
@@ -901,7 +911,7 @@ class Sample extends Page
             
             $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
-                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy
+                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath
                                   
                                   FROM blsample b
 
@@ -992,8 +1002,8 @@ class Sample extends Page
             if (array_key_exists('PROTEINID', $a)) {
                 $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10", 
                   array($a['SPACEGROUP'], $a['PROTEINID'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['THEORETICALDENSITY'], $samp['CRYSTALID']));
-                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6 WHERE diffractionplanid=:7", 
-                  array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $samp['DIFFRACTIONPLANID']));
+                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7 WHERE diffractionplanid=:8", 
+                  array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $samp['DIFFRACTIONPLANID']));
             }
 
             $init_comps = explode(',', $samp['COMPONENTIDS']);
@@ -1083,7 +1093,7 @@ class Sample extends Page
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
             }
 
-            foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY') as $f) {
+            foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY', 'USERPATH') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
             }
@@ -1093,8 +1103,8 @@ class Sample extends Page
 
 
         function _do_add_sample($a) {
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6) RETURNING diffractionplanid INTO :id", 
-                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY']));
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7) RETURNING diffractionplanid INTO :id", 
+                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH']));
             $did = $this->db->id();
 
             if (!array_key_exists('CRYSTALID', $a)) {
@@ -1358,7 +1368,7 @@ class Sample extends Page
                 }
             }
 
-            $dfields = array('REQUIREDRESOLUTION', 'ANOMALOUSSCATTERER', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'ENERGY');
+            $dfields = array('REQUIREDRESOLUTION', 'ANOMALOUSSCATTERER', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'ENERGY', 'USERPATH');
             foreach ($dfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE diffractionplan SET $f=:1 WHERE diffractionplanid=:2", array($this->arg($f), $samp['DIFFRACTIONPLANID']));
@@ -1473,6 +1483,10 @@ class Sample extends Page
             $global = $this->has_arg('GLOBAL') ? $this->arg('GLOBAL') : null;
             $density = $this->has_arg('DENSITY') ? $this->arg('DENSITY') : null;
             $externalid = $this->has_arg('EXTERNALID') ? $this->arg('EXTERNALID') : null;
+
+            // Only staff should be able to create Proteins that are not approved (i.e. no EXTERNALID) in User System
+            // TODO - add ability to switch this on/off per site. Need a global 'valid_samples' or 'strict mode' variable
+            if (!$externalid && !$this->staff) $this->_error('Only staff can create Proteins that are not approved in ISPyB', 401);
             
             $chk = $this->db->pq("SELECT proteinid FROM protein
               WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $this->arg('ACRONYM')));
