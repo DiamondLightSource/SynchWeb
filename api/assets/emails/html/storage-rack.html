@@ -4,6 +4,14 @@
 		<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
 			<h2>Dear <?php echo $data['LCRET'] ?></h2>
 			<p>Your dewar, <?php echo $data['FACILITYCODE'] ?>, has arrived back at the storage area, awaiting your instructions.</p>
+			<?php if (array_key_exists('DC', $data)) { ?>
+				<p>Samples from this dewar have datacollections recorded in ISPyB. Click the link(s) below to review your data:</p>
+				<ul>
+					<?php foreach($data['DC'] as $item): ?>
+					<li><a href="https://ispyb.diamond.ac.uk/dc/visit/<?php echo $item['VISIT'] ?>">https://ispyb.diamond.ac.uk/dc/visit/<?php echo $item['VISIT'] ?></a></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php } ?>
 			<p>Please either fill out the dewar dispatch form if you would like your dewar to be returned to you:<br /><a href="https://ispyb.diamond.ac.uk/dewars/dispatch/<?php echo $data['DEWARID'] ?>">https://ispyb.diamond.ac.uk/dewars/dispatch/<?php echo $data['DEWARID'] ?></a></p>
 			<p>Or fill out the dewar transfer form if you would like it to be transferred to another beamline for another visit:<br /><a href="https://ispyb.diamond.ac.uk/dewars/transfer/<?php echo $data['DEWARID'] ?>">https://ispyb.diamond.ac.uk/dewars/transfer/<?php echo $data['DEWARID'] ?></a></p>
 			<p>Your dewar will be topped up with liquid nitrogen in the meantime.</p>
