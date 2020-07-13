@@ -1,7 +1,13 @@
 Dear <?php echo $data['LCRET'] ?>,
 
 Your dewar, <?php echo $data['FACILITYCODE'] ?>, has arrived back at the storage area, awaiting your instructions.
-
+<?php if (array_key_exists('DC', $data)) { ?>
+Samples from this dewar have datacollections recorded in ISPyB. Click the link(s) below to review your data:
+<?php foreach($data['DC'] as $item): ?>
+https://ispyb.diamond.ac.uk/dc/visit/<?php echo $item['VISIT'] ?>
+<?php endforeach; ?>
+<?php } ?>
+    
 To return the dewar back to you, click here - https://ispyb.diamond.ac.uk/dewars/dispatch/<?php echo $data['DEWARID'] ?>
 
 To transfer the dewar to another visit or another beamline, click here - https://ispyb.diamond.ac.uk/dewars/transfer/<?php echo $data['DEWARID'] ?>

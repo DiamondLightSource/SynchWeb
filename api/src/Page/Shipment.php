@@ -443,6 +443,21 @@ class Shipment extends Page
             // The old version assumed rack-<word>-from-bl
             //if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
             if ($from_beamline && $dew['LCRETEMAIL']) {
+                // Any data collections for this dewar's containers?
+                // Note this counts data collection ids for containers and uses the DataCollection.SESSIONID to determine the session/visit
+                // Should work for UDC (where container.sessionid is set) as well as any normal scheduled session (where container.sessionid is not set)
+                $rows = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, dc.sessionid, count(dc.datacollectionid) as dccount
+                    FROM Dewar d
+                    INNER JOIN Container c on c.dewarid = d.dewarid
+                    INNER JOIN BLSample bls ON bls.containerid = c.containerid
+                    INNER JOIN DataCollection dc ON dc.blsampleid = bls.blsampleid
+                    INNER JOIN BLSession ses ON dc.sessionid = ses.sessionid
+                    INNER JOIN Proposal p ON p.proposalid = ses.proposalid
+                    WHERE d.dewarid = :1
+                    GROUP BY dc.sessionid", array($dew['DEWARID']));
+
+                if (sizeof($rows)) $dew['DC'] = $rows;
+
                 // Log the event if debugging
                 if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
 
