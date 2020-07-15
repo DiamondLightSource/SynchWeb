@@ -26,7 +26,6 @@ define(['marionette', 'templates/sidebar.html', 'jquery.cookie'], function(Mario
             
             //app.on('proposal:change', this.setProposal, this)
             this.listenTo(app, 'proposal:change', this.setProposal, this)
-            this.listenTo(app, 'visit:change', this.setVisit, this)
             this.listenTo(app, 'sidebar:render', this.render, this)
             this.listenTo(app.content, 'show', this.doToggleHelp, this)
         },

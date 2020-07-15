@@ -357,7 +357,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
   if(visit) sessionStorage.setItem('visit', visit)
   else visit = sessionStorage.getItem('visit')
   app.visit = visit
-  app.trigger('visit:change', visit)
 }
 
 /*
@@ -367,7 +366,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
 app.clearVisit = function(){
     sessionStorage.removeItem('visit')
     delete app.visit
-    app.triggerMethod('visit:change', null)
 }  
 
 
