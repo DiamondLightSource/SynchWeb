@@ -85,6 +85,9 @@ class Download extends Page
         # ------------------------------------------------------------------------
         # Download mtz/log file for Fast DP / XIA2
         #   TODO: Delete me
+        # This method either returns a list of plots from MX auto processing tools (n_obs, n_uniq, completeness etc.)
+        # Or returns a specific plot based on auto processing attachment id (aid).
+        # Individual plotly format Graphs can be returned via an aid, but will not be included in the list of plots (as their format is different)
         function _auto_processing_plots() {
             global $ap_types;
             if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
@@ -147,7 +150,10 @@ class Download extends Page
                 unset($r['FILENAME']);
                 unset($r['FILEPATH']);
             }
-            $this->_output($rows);
+            // Because we may have removed plotly type plots from the list, we should re-index to provide a consistent array.
+            // Also ensures there will be an index at 0 for the first item.
+            $results = array_values($rows);
+            $this->_output($results);
         }
 
 
