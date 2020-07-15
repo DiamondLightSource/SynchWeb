@@ -13,8 +13,11 @@ define(['marionette', 'backgrid', 'views/table', 'collections/visits', 'utils/ta
         },
         argument: 'VISIT',
         onClick: function() {
-          app.setVisit(this.model.get('VIS'))
-          app.trigger('dclist:show')
+          let visit_number = this.model.get('VIS')
+          app.setVisit(visit_number)
+          // Trigger event to show data collections for this visit
+          let visit = ''.concat(app.prop, '-', visit_number)
+          app.trigger('dclist:show', visit)
         }
     })
     
