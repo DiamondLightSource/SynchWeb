@@ -524,7 +524,7 @@ class DC extends Page
                 
                 // Data collections
                 if ($dc['TYPE'] == 'data') {
-                    $nf = array(1 => array('AXISSTART'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE'), 3 => array('EXPOSURETIME'), 4 => array('WAVELENGTH'));
+                    $nf = array(1 => array('AXISSTART'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE'), 3 => array('EXPOSURETIME'), 5 => array('WAVELENGTH'));
 
                     $dc['DIRFULL'] = $dc['DIR'];
                     $dc['DIR'] = preg_replace('/.*\/'.$this->arg('prop').'-'.$dc['VN'].'\//', '', $dc['DIR']);
@@ -569,6 +569,7 @@ class DC extends Page
                 } else if ($dc['TYPE'] == 'load') {
                     $nf = array();
                     if ($dc['IMP'] == 'ANNEAL' || $dc['IMP'] == 'WASH') $dc['TYPE'] = 'action';
+                    if ($dc['IMP'] == 'MOSAIC') $dc['TYPE'] = 'mosaic';
                 }
                 
                 
