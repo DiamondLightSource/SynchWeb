@@ -446,17 +446,10 @@ class Proposal extends Page
                 $dc = array_key_exists($r['SESSIONID'], $dcs) ? $dcs[$r['SESSIONID']] : 0;
                 $r['COMMENT'] = $r['COMMENTS'];
                 $r['DCCOUNT'] = $dc;
-                
-                $r['TYPE'] = null;
 
                 $bl_type = $this->_get_type_from_beamline($r['BL']);
 
-                if ($bl_type) {
-                    $r['TYPE'] = $bl_type;
-                    break;
-                }
-
-                if (!$r['TYPE']) $r['TYPE'] = 'gen';
+                $r['TYPE'] = $bl_type ? $bl_type : 'gen';
             }
             
             if ($output) {
