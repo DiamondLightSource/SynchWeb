@@ -225,13 +225,13 @@ module.exports = (env) => ({
     // }),
     // This builds an index.php file from the src template
     new HtmlWebpackPlugin({
-      title: 'SynchWeb Webpack',
+      title: 'SynchWeb',
       filename: path.resolve(__dirname, 'index.php'),
       template: 'src/index.php',
       jsonConfig: config,
     }),
     new HtmlWebpackPlugin({
-      title: 'SynchWeb Webpack',
+      title: 'SynchWeb',
       filename: path.resolve(__dirname, 'dist/', gitHash, 'index.html'),
       template: 'src/index.php',
       jsonConfig: config,
