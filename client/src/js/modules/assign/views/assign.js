@@ -357,6 +357,16 @@ define(['marionette', 'backbone', 'views/pages',
                 shipments.push(shipment)
             }, this)
             
+            // If all containers from shipments are assigned, then no shipments are available as drop targets.
+            // This means that there is no ability to unassign containers. Fix: add a dummy shipment here.
+            // Dragging a container to a shipment does not associate the container with that shipment - it will still be in the original shipment.
+            if (shipments.length == 0) {
+                var unassignShipment = new Shipment({
+                    SHIPPINGID: 0,
+                    SHIPPINGNAME: 'Drag Container here to unassign',
+                })
+                shipments.push(unassignShipment)
+            }
             this.collection.reset(shipments)
         },
         
