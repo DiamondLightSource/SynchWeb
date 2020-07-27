@@ -94,19 +94,19 @@ class Proposal extends Page
         
 
         function _get_beamlines() {
-            global $bl_types;
 
             if (!$this->has_arg('ty')) $this->_error('No type specified');
-            if (!array_key_exists($this->arg('ty'), $bl_types)) $this->_error('No such proposal type');
 
-            $this->_output($bl_types[$this->arg('ty')]);
+            $bls = $this->_get_beamlines_from_type($this->arg('ty'));
+
+            if (empty($bls)) $this->_error('No such proposal type');
+
+            $this->_output($bls);
         }
 
 
         function _get_types() {
-            global $bl_types;
-
-            $bls = implode("', '", $bl_types[$this->ty]);
+            $bls = implode("', '", $this->get_beamlines_from_type($this->ty));
             $rows = $this->db->pq("SELECT distinct p.proposalcode 
                 FROM proposal p
                 INNER JOIN blsession s ON s.proposalid = p.proposalid
@@ -118,7 +118,7 @@ class Proposal extends Page
         # ------------------------------------------------------------------------
         # List proposals for current user
         function _get_proposals($id=null) {
-            global $prop_types, $bl_types;
+            global $prop_types;
 
             $args = array();
             $where = "WHERE 1=1";
@@ -135,7 +135,8 @@ class Proposal extends Page
                         if (strpos($p, '_admin')) {
                             $parts = explode('_', $p);
                             $ty = $parts[0];
-                            if (array_key_exists($ty, $bl_types)) $bls = array_merge($bls, $bl_types[$ty]);
+                            // _get_beamlines_from_type returns an empty array if type not found, so we can just merge....
+                            $bls = array_merge($bls, $this->_get_beamlines_from_type($ty));
                         }
                     }
 
@@ -205,12 +206,8 @@ class Proposal extends Page
                     if (sizeof($bls)) {
                         foreach ($bls as $bl) {
                             $b = $bl['BEAMLINENAME'];
-                            foreach ($bl_types as $tty => $bls) {
-                                if (in_array($b, $bls)) {
-                                    $ty = $tty;
-                                    break 2;
-                                }
-                            }
+                            $ty = $this->_get_type_from_beamline($b);
+                            if ($ty) break;
                         }
                     }
                 }
@@ -274,7 +271,7 @@ class Proposal extends Page
         # ------------------------------------------------------------------------
         # Get visits for a proposal
         function _get_visits($visit=null, $output=true) {
-            global $bl_types, $mx_beamlines, $commissioning_code;
+            global $commissioning_code;
 
             if ($this->has_arg('current')) {
                 $this->_current_visits();
@@ -333,8 +330,10 @@ class Proposal extends Page
             }
             
             if ($this->has_arg('ty')) {
-                if (array_key_exists($this->arg('ty'), $bl_types)) {
-                    $bls = implode("', '", $bl_types[$this->arg('ty')]);
+                $beamlines = $this->_get_beamlines_from_type($this->arg('ty'));
+
+                if (!empty($beamlines)) {
+                    $bls = implode("', '", $beamlines);
                     $where .= " AND s.beamlinename IN ('$bls')";
                 }
             }
@@ -449,15 +448,10 @@ class Proposal extends Page
                 $dc = array_key_exists($r['SESSIONID'], $dcs) ? $dcs[$r['SESSIONID']] : 0;
                 $r['COMMENT'] = $r['COMMENTS'];
                 $r['DCCOUNT'] = $dc;
-                
-                $r['TYPE'] = null;
-                foreach ($bl_types as $tty => $bls) {
-                    if (in_array($r['BL'], $bls)) {
-                        $r['TYPE'] = $tty;
-                        break;
-                    }
-                }
-                if (!$r['TYPE']) $r['TYPE'] = 'gen';
+
+                $bl_type = $this->_get_type_from_beamline($r['BL']);
+
+                $r['TYPE'] = $bl_type ? $bl_type : 'gen';
             }
             
             if ($output) {
@@ -474,12 +468,11 @@ class Proposal extends Page
         # ------------------------------------------------------------------------
         # Get current visits
         function _current_visits() {
-            global $bl_types;
             unset($this->args['current']);
 
-            if (!array_key_exists($this->ty, $bl_types)) $this->_error('No such proposal type');
-
-            $beamlines = $bl_types[$this->ty];
+            $beamlines = $this->_get_beamlines_from_type($this->ty);
+            // The proposal type is synonymous with beamline type/group
+            if (empty($beamlines)) $this->_error('No such proposal type');
 
             $this->args['per_page'] = 1;
             $this->args['page'] = 1;
@@ -767,7 +760,6 @@ class Proposal extends Page
         # ------------------------------------------------------------------------
         # Lookup visit from container, dewar, sample, etc, ...
         function _lookup() {
-            global $bl_types;
 
             $fields = array(
                 'BLSAMPLEID' => 's.blsampleid',
@@ -801,7 +793,8 @@ class Proposal extends Page
                         if (strpos($p, '_admin')) {
                             $parts = explode('_', $p);
                             $ty = $parts[0];
-                            if (array_key_exists($ty, $bl_types)) $bls = array_merge($bls, $bl_types[$ty]);
+                            // _get_beamlines_from_type returns an empty array if type not found, so we can just merge....
+                            $bls = array_merge($bls, $this->_get_beamlines_from_type($ty)); 
                         }
                     }
 
