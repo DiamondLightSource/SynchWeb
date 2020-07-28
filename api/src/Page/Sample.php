@@ -60,7 +60,7 @@ class Sample extends Page
 
                               'NAME' => '[\w\s-()]+',
                               'COMMENTS' => '.*',
-                              'SPACEGROUP' => '\w+',
+                              'SPACEGROUP' => '(\w+)|^$', // Any word character or empty string
                               'CELL_A' => '\d+(.\d+)?',
                               'CELL_B' => '\d+(.\d+)?',
                               'CELL_C' => '\d+(.\d+)?',
@@ -68,7 +68,7 @@ class Sample extends Page
                               'CELL_BETA' => '\d+(.\d+)?',
                               'CELL_GAMMA' => '\d+(.\d+)?',
                               'REQUIREDRESOLUTION' => '\d+(.\d+)?',
-                              'ANOMALOUSSCATTERER' => '\w+',
+                              'ANOMALOUSSCATTERER' => '(\w+)|^$', // Any word character or empty string
                               'BLSUBSAMPLEID' => '\d+',
                               'SCREENCOMPONENTGROUPID' => '\d+',
 
