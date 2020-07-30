@@ -6,12 +6,13 @@ define(['marionette', 'backgrid',
     'views/form',
     'views/filter',
     'views/table', 'utils/table', 
+    'moment',
     'templates/shipment/dewarregistryadd.html', 
     'templates/shipment/dewarregistry.html'], 
     function(Marionette, Backgrid, DewarRegistry, DewarProposal, 
       Proposals, LabContacts,
       FormView, FilterView,
-      TableView, table, addtemplate, template) {
+      TableView, table, moment, addtemplate, template) {
       
     var ClickableRow = table.ClickableRow.extend({
         event: 'rdewar:show',
@@ -44,6 +45,7 @@ define(['marionette', 'backgrid',
         
         success: function(model, response, options) {
             this.ui.fc.val('')
+            this.model.set({ DEWARS: 0, REPORTS: 0, BLTIMESTAMP: moment().format('YYYY-MM-DD HH:mm:ss') })
             this.trigger('model:saved', this.model)
             this.setupValidation()
         },
@@ -150,7 +152,7 @@ define(['marionette', 'backgrid',
             this.table = new TableView({ 
                 collection: options.collection, 
                 columns: columns, tableClass: 'dewars', filter: 's', search: options.params.s, loading: true, 
-                backgrid: { row: ClickableRow, emptyText: 'No dewars found' } 
+                backgrid: { row: ClickableRow, emptyText: 'No dewars found' }
             })
 
             if (app.staff) {
@@ -171,8 +173,8 @@ define(['marionette', 'backgrid',
 
                 this.table2 = new TableView({
                     collection: this.proposals,
-                    columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, noPageUrl: true, noSearchUrl: true,
-                    backgrid: { emptyText: 'No proposals found' } 
+                    columns: columns, tableClass: 'proposals', filter: 's', loading: true, noPageUrl: true, noSearchUrl: true,
+                    backgrid: { emptyText: 'No proposals found' },
                 })
 
                 this.ty = new FilterView({
@@ -200,6 +202,7 @@ define(['marionette', 'backgrid',
                         props = props ? props.split(',') : []
                         props.push(p.get('PROPOSAL'))
                         m.set('PROPOSALS', props.join(','))
+                        if (!m.get('PROP')) m.set('PROP', p.get('PROPOSAL'))
                     }
                 })
             }, this)
