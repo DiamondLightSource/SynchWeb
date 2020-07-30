@@ -542,9 +542,11 @@ class Shipment extends Page
             if (!$this->staff) $this->_error('No access');
             if (!$this->has_arg('FACILITYCODE')) $this->_error('No dewar code specified');
             $purchase = $this->has_arg('PURCHASEDATE') ? $this->arg('PURCHASEDATE') : '';
+            $fc = strtoupper($this->arg('FACILITYCODE'));
 
-            $this->db->pq("INSERT INTO dewarregistry (facilitycode, purchasedate, bltimestamp) VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY'), SYSDATE)", array($this->arg('FACILITYCODE'), $purchase));
-            $this->_output(array('FACILITYCODE' => $this->arg('FACILITYCODE')));
+            $this->db->pq("INSERT INTO dewarregistry (facilitycode, purchasedate, bltimestamp) VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY'), SYSDATE)", array($fc, $purchase));
+
+            $this->_output(array('FACILITYCODE' => $fc, 'DEWARREGISTRYID' => $this->db->id()));
         }
 
 
@@ -580,13 +582,12 @@ class Shipment extends Page
         function _get_prop_dewar() {
             if (!$this->has_arg('DEWARREGISTRYID')) $this->_error('No dewar specified');
 
-            // , pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, l.city, l.postcode, l.country
-            // LEFT OUTER JOIN labcontact lc ON drhp.labcontactid = lc.labcontactid
-            // LEFT OUTER JOIN person pe ON pe.personid = lc.personid
-            // LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
-            $rows = $this->db->pq("SELECT drhp.dewarregistryhasproposalid,drhp.dewarregistryid,drhp.proposalid,CONCAT(p.proposalcode, p.proposalnumber) as proposal
+            $rows = $this->db->pq("SELECT drhp.dewarregistryhasproposalid,drhp.dewarregistryid,drhp.proposalid,CONCAT(p.proposalcode, p.proposalnumber) as proposal, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, l.city, l.postcode, l.country
               FROM dewarregistry_has_proposal drhp
               INNER JOIN proposal p ON p.proposalid = drhp.proposalid
+              LEFT OUTER JOIN labcontact lc ON drhp.labcontactid = lc.labcontactid
+              LEFT OUTER JOIN person pe ON pe.personid = lc.personid
+              LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
               
               WHERE drhp.dewarregistryid = :1", array($this->arg('DEWARREGISTRYID')));
 
