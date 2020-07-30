@@ -77,9 +77,8 @@ define(['marionette',
             this.history = new DewarHistory()
 
             var columns = [
-                //{ name: 'VISIT', label: 'First Exp', cell: 'string', editable: false },
-                //{ label: 'First Exp', cell: table.TemplateCell, editable: false, template: '<%-VISIT%> (<%-BL%>)' },
-                //{ name: 'LOCALCONTACT', label: 'Local Contact', cell: 'string', editable: false },
+                { label: 'First Exp', cell: table.TemplateCell, editable: false, template: '<%-VISIT%> (<%-BL%>)' },
+                { name: 'LOCALCONTACT', label: 'Local Contact', cell: 'string', editable: false },
                 { name: 'ARRIVAL', label: 'Date', cell: 'string', editable: false },
                 { name: 'DEWARSTATUS', label: 'Status', cell: 'string', editable: false },
                 { name: 'STORAGELOCATION', label: 'Location', cell: 'string', editable: false }
