@@ -541,9 +541,15 @@ class Shipment extends Page
         function _add_dewar_registry() {
             if (!$this->staff) $this->_error('No access');
             if (!$this->has_arg('FACILITYCODE')) $this->_error('No dewar code specified');
-            $purchase = $this->has_arg('PURCHASEDATE') ? $this->arg('PURCHASEDATE') : '';
-            $fc = strtoupper($this->arg('FACILITYCODE'));
 
+            $fc = strtoupper($this->arg('FACILITYCODE'));
+            $check = $this->db->pq("SELECT dewarregistryid FROM dewarregistry WHERE facilitycode=:1", array($fc));
+
+            if (sizeof($check)) {
+              $this->_error('That facility code is already in use');
+            }
+
+            $purchase = $this->has_arg('PURCHASEDATE') ? $this->arg('PURCHASEDATE') : '';
             $this->db->pq("INSERT INTO dewarregistry (facilitycode, purchasedate, bltimestamp) VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY'), SYSDATE)", array($fc, $purchase));
 
             $this->_output(array('FACILITYCODE' => $fc, 'DEWARREGISTRYID' => $this->db->id()));
