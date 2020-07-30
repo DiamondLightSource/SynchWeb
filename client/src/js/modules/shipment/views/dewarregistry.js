@@ -43,14 +43,14 @@ define(['marionette', 'backgrid',
             this.model = new DewarRegistry()
         },
         
-        success: function(model, response, options) {
+        success: function() {
             this.ui.fc.val('')
             this.model.set({ DEWARS: 0, REPORTS: 0, BLTIMESTAMP: moment().format('YYYY-MM-DD HH:mm:ss') })
             this.trigger('model:saved', this.model)
             this.setupValidation()
         },
 
-        failure: function(model, response, options) {
+        failure: function(model, response) {
             console.log(response)
             if (response.responseText.indexOf('already') > -1) app.alert({ message: 'That facility code is already registered'})
             else app.alert({ message: 'Something went wrong registering that dewar, please try again'})
@@ -162,7 +162,7 @@ define(['marionette', 'backgrid',
                 this.listenTo(this.proposals, 'backgrid:selected', this.selectModel, this)
                 this.proposals.fetch()
 
-                var columns = [
+                var columns2 = [
                     { label: '', cell: 'select-row', headerCell: 'select-all', editable: false },
                     { name: '', label: '', cell: LabContactCell, editable: false },
                     { name: 'PROPOSALCODE', label: 'Code', cell: 'string', editable: false },
@@ -173,7 +173,7 @@ define(['marionette', 'backgrid',
 
                 this.table2 = new TableView({
                     collection: this.proposals,
-                    columns: columns, tableClass: 'proposals', filter: 's', loading: true, noPageUrl: true, noSearchUrl: true,
+                    columns: columns2, tableClass: 'proposals', filter: 's', loading: true, noPageUrl: true, noSearchUrl: true,
                     backgrid: { emptyText: 'No proposals found' },
                 })
 
@@ -192,7 +192,6 @@ define(['marionette', 'backgrid',
         },
 
         addProposalsToModel: function(m) {
-            var self = this
             var models = this.proposals.where({ isGridSelected: true })
             _.each(models, function(p) {
                 var chp = new DewarProposal({ PROPOSALID: p.get('PROPOSALID'), DEWARREGISTRYID: m.get('DEWARREGISTRYID'), LABCONTACTID: p.get('LABCONTACTID') })
