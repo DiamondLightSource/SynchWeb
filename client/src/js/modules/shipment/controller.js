@@ -278,9 +278,9 @@ define(['backbone',
 
     container_registry: function(ty, s, page) {
       app.loading()
-      var containers = new ContainersRegistry()
         
       page = page ? parseInt(page) : 1
+      var containers = new ContainersRegistry(null, { state: { currentPage: page }, queryParams: { s: s, ty: ty } })
         
       containers.state.currentPage = page
       containers.queryParams.all = 1
@@ -310,10 +310,10 @@ define(['backbone',
 
     dewar_registry: function(ty, s, page) {
       app.loading()
-      var dewars = new DewarRegistry()
         
       page = page ? parseInt(page) : 1
-        
+      var dewars = new DewarRegistry(null, { state: { currentPage: page }, queryParams: { s: s, ty: ty } })
+
       dewars.state.currentPage = page
       dewars.queryParams.all = 1
       dewars.fetch().done(function() {
