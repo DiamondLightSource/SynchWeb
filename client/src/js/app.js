@@ -67,6 +67,15 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
 
   app.parseQuery()
 
+  // Strip trailing forward slash sci-8800
+  if (location.href.endsWith('/')) {
+    location.href = location.href.replace(/\/+$/, '')
+  }
+
+  // Convert uppercase url to lowercase sci-8799
+  if (location.href.match(/[A-Z]/)) {
+    location.href = location.href.toLowerCase()
+  }
 
   // Allow the app to autoupdate itself when running
   app.checkForUpdate = function() {
