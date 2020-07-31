@@ -227,7 +227,7 @@ define(['backbone', 'marionette', 'backgrid',
             e.preventDefault()
 
             var group = new SampleGroup({
-                BLSAMPLEID: this.getOption('BLSAMPLEID'),
+                BLSAMPLEID: this.sample.get('BLSAMPLEID'),
                 TYPE: 'sample',
             })
             group.save().done(this.fetchGroups.bind(this))
