@@ -8,15 +8,17 @@ define(['backbone',
     'utils/anoms',
 
     'modules/samples/views/componentsview',
-        
-    'utils/safetylevel',
 
+    'views/dialog',
+    'modules/samples/views/samplegroups',
+    
     'templates/shipment/singlesample.html',
     'templates/shipment/singlesamplee.html',
     ], function(Backbone, utils,
         FormView, SG, Editable, Protein, Anom,
         ComponentsView,
         safetyLevel,
+        DialogView, SampleGroupView,
         templatenew, template) {
 
     return FormView.extend({
@@ -60,6 +62,18 @@ define(['backbone',
             'click a.clear': 'clearSample',
 
             'click a.extrainfo': 'toggleExtra',
+            'click a.group': 'showSampleGroups',
+        },
+
+        showSampleGroups: function(e) {
+            e.preventDefault()
+
+            app.dialog.show(new DialogView({ 
+                title: 'Sample Groups', 
+                view: new SampleGroupView({
+                    sample: this.model
+                })
+            }))
         },
 
         toggleExtra: function(e) {
