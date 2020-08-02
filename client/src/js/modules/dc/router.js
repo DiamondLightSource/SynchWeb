@@ -12,6 +12,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
             'dc/apstatussummary/visit/:visit(/ty/:ty)': 'apstatussummary',
             'dc/sc/visit/:visit': 'sampleChanger',
             'dc/queue/visit/:visit': 'queue',
+            'dc/bl/:bl(/page/:page)(/s/:search)(/ty/:ty)': 'beamlineactivity'
         },
         
         loadEvents: ['dclist:show', 'dc:show'],

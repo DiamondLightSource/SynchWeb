@@ -28,6 +28,7 @@ class DC extends Page
                               'PROCESSINGJOBID' => '\d+',
 
                               'debug' => '\d',
+                              'bl' => '[\w-]+',
 
                               );
         
@@ -202,14 +203,12 @@ class DC extends Page
                                 array('project_has_xfefspectrum', 'xrf', 'xfefluorescencespectrumid'),
                                 );
 
-                $extc = "CONCAT(CONCAT(CONCAT(prop.proposalcode,prop.proposalnumber), '-'), ses.visit_number) as vis, CONCAT(prop.proposalcode, prop.proposalnumber) as prop, ";
-                $extcg = "max(CONCAT(CONCAT(CONCAT(prop.proposalcode,prop.proposalnumber), '-'), ses.visit_number)) as vis, max(CONCAT(prop.proposalcode, prop.proposalnumber)) as prop, ";
                 if ($this->has_arg('dcg')) $extcg = $extc;
 
                 foreach ($tables as $i => $t) {
                     $ct = sizeof($t) == 4 ? $t[3] : $t[2];
                     
-                    $extj[$i] .= " LEFT OUTER JOIN $t[0] prj ON $t[1].$t[2] = prj.$ct INNER JOIN proposal prop ON ses.proposalid = prop.proposalid";
+                    $extj[$i] .= " LEFT OUTER JOIN $t[0] prj ON $t[1].$t[2] = prj.$ct";
                     $sess[$i] = 'prj.projectid=:'.($i+1);
                     
                     if ($this->has_arg('imp')) {
@@ -259,6 +258,14 @@ class DC extends Page
                 array_push($args, $this->arg('PROCESSINGJOBID'));
                 $extj[0] .= ' LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.datacollectionid=dc.datacollectionid';
 
+            # Beamline
+            } else if ($this->has_arg('bl') && $this->staff) {
+                $info = array(array('bl' => $this->arg('bl')));
+                for ($i = 0; $i < 4; $i++) {
+                    $sess[$i] = 'ses.beamlinename=:'.($i+1);
+                    array_push($args, $this->arg('bl'));
+                }
+
             # Proposal
             } else if ($this->has_arg('prop')) {
                 $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
@@ -272,32 +279,22 @@ class DC extends Page
             if (!sizeof($info)) $this->_error('The specified visit, sample, or project doesnt exist');
             
             
-            # Filter by time for visits
-            if (($this->has_arg('h') && ($this->has_arg('visit') || $this->has_arg('dmy'))) || $this->has_arg('dmy')) {
-                $where .= "AND dc.starttime > TO_DATE(:".(sizeof($args)+1).", 'HH24:MI:SS DDMMYYYY') AND dc.starttime < TO_DATE(:".(sizeof($args)+2).", 'HH24:MI:SS DDMMYYYY')";
-                $where2 .= "AND es.starttime > TO_DATE(:".(sizeof($args)+3).", 'HH24:MI:SS DDMMYYYY') AND es.starttime < TO_DATE(:".(sizeof($args)+4).", 'HH24:MI:SS DDMMYYYY')";
-                $where3 .= "AND r.starttimestamp > TO_DATE(:".(sizeof($args)+5).", 'HH24:MI:SS DDMMYYYY') AND r.starttimestamp < TO_DATE(:".(sizeof($args)+6).", 'HH24:MI:SS DDMMYYYY')";
-                $where4 .= "AND xrf.starttime > TO_DATE(:".(sizeof($args)+7).", 'HH24:MI:SS DDMMYYYY') AND xrf.starttime < TO_DATE(:".(sizeof($args)+8).", 'HH24:MI:SS DDMMYYYY')";
-                
-                if ($this->has_arg('dmy')) {
-                    $my = $this->arg('dmy');
-                } else {
-                    $my = $info['DMY'];
-                    if ($this->arg('h') < $info['SH']) {
-                        $sd = mktime(0,0,0,substr($my,2,2), substr($my,0,2), substr($my,4,4))+(3600*24);
-                        $my = date('dmY', $sd);
-                    }
-                }
-                
+            # Filter by day (and hour)
+            if ($this->has_arg('dmy')) {
+                $where .= " AND dc.starttime > TO_DATE(:".(sizeof($args)+1).", 'HH24:MI:SS DDMMYYYY') AND dc.starttime < TO_DATE(:".(sizeof($args)+2).", 'HH24:MI:SS DDMMYYYY')";
+                $where2 .= " AND es.starttime > TO_DATE(:".(sizeof($args)+3).", 'HH24:MI:SS DDMMYYYY') AND es.starttime < TO_DATE(:".(sizeof($args)+4).", 'HH24:MI:SS DDMMYYYY')";
+                $where3 .= " AND r.starttimestamp > TO_DATE(:".(sizeof($args)+5).", 'HH24:MI:SS DDMMYYYY') AND r.starttimestamp < TO_DATE(:".(sizeof($args)+6).", 'HH24:MI:SS DDMMYYYY')";
+                $where4 .= " AND xrf.starttime > TO_DATE(:".(sizeof($args)+7).", 'HH24:MI:SS DDMMYYYY') AND xrf.starttime < TO_DATE(:".(sizeof($args)+8).", 'HH24:MI:SS DDMMYYYY')";
                 
                 if ($this->has_arg('h')) {
                     $st = $this->arg('h').':00:00 ';
                     $en = $this->arg('h').':59:59 ';
                 } else {
-                    $st = '00:00:00';
+                    $st = '00:00:00 ';
                     $en = '23:59:59 ';
                 }
                 
+                $my = $this->arg('dmy');
                 for ($i = 0; $i < 4; $i++) {
                     array_push($args, $st.$my);
                     array_push($args, $en.$my);
@@ -337,6 +334,7 @@ class DC extends Page
             }
             
 
+            $visit = "CONCAT(prop.proposalcode, prop.proposalnumber, '-', ses.visit_number) as vis, CONCAT(prop.proposalcode, prop.proposalnumber) as prop";
             # Data collection group
             if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
                 $count_field = 'dc.datacollectionid';
@@ -374,7 +372,8 @@ class DC extends Page
                     d.numberofpixelsx as detectornumberofpixelsx,
                     d.numberofpixelsy as detectornumberofpixelsy,
                     ses.archived,
-                    dc.rotationaxis
+                    dc.rotationaxis,
+                    $visit
                     ";
                 $groupby = 'GROUP BY smp.name,smp.blsampleid,ses.visit_number,dc.kappastart,dc.phistart, dc.startimagenumber, dc.experimenttype, dc.datacollectiongroupid, dc.runstatus, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.overlap, dc.flux, dc.imageprefix, dc.datacollectionnumber, dc.filetemplate, dc.datacollectionid, dc.numberofimages, dc.imagedirectory, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages, TO_CHAR(dc.starttime, \'DD-MM-YYYY HH24:MI:SS\'), dc.transmission, dc.axisrange, dc.wavelength, dc.comments, dc.xtalsnapshotfullpath1, dc.xtalsnapshotfullpath2, dc.xtalsnapshotfullpath3, dc.xtalsnapshotfullpath4, dc.starttime, dc.detectordistance, dc.xbeam, dc.ybeam, dc.chistart';
                 // $this->db->set_debug(True);
@@ -424,7 +423,8 @@ class DC extends Page
                     max(d.numberofpixelsx) as detectornumberofpixelsx,
                     max(d.numberofpixelsy) as detectornumberofpixelsy,
                     max(ses.archived) as archived,
-                    max(dc.rotationaxis) as rotationaxis";
+                    max(dc.rotationaxis) as rotationaxis,
+                    $visit";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
             }
 
@@ -432,24 +432,28 @@ class DC extends Page
             $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count($count_field) as tot FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+                INNER JOIN proposal prop ON ses.proposalid = prop.proposalid
                 LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
                 $extj[0]
                 WHERE $sess[0] $where
                 
                 UNION SELECT count(es.energyscanid) as tot FROM energyscan es
                 INNER JOIN blsession ses ON ses.sessionid = es.sessionid
+                INNER JOIN proposal prop ON ses.proposalid = prop.proposalid
                 LEFT OUTER  JOIN blsample smp ON es.blsampleid = smp.blsampleid
                 $extj[1]
                 WHERE $sess[1] $where2
                                 
                 UNION SELECT count(xrf.xfefluorescencespectrumid) as tot from xfefluorescencespectrum xrf
                 INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
+                INNER JOIN proposal prop ON ses.proposalid = prop.proposalid
                 LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid
                 $extj[3]
                 WHERE $sess[3] $where4
                                 
                 UNION SELECT count(r.robotactionid) as tot FROM robotaction r
                 INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
+                INNER JOIN proposal prop ON ses.proposalid = prop.proposalid
                 LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
                 $extj[2]
                 WHERE $sess[2]  $where3) inq", $args);
@@ -469,6 +473,7 @@ class DC extends Page
              FROM datacollection dc
              INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
              INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+             INNER JOIN proposal prop ON ses.proposalid = prop.proposalid
              LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
              LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
              LEFT OUTER JOIN datacollectionfileattachment dca ON dc.datacollectionid = dca.datacollectionid
@@ -481,9 +486,10 @@ class DC extends Page
              UNION
              SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',es.beamsizehorizontal,es.beamsizevertical,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.axisposition, es.peakfdoubleprime, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1, 0, 
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', es.starttime, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, es.blsubsampleid, '', '', ses.archived, ''
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, es.blsubsampleid, '', '', ses.archived, '', $visit
             FROM energyscan es
             INNER JOIN blsession ses ON ses.sessionid = es.sessionid
+            INNER JOIN proposal prop ON ses.proposalid = prop.proposalid
             LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid
             $extj[1]
             WHERE $sess[1] $where2
@@ -491,9 +497,10 @@ class DC extends Page
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',xrf.beamsizehorizontal,xrf.beamsizevertical,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, xrf.axisposition, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', xrf.starttime, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, xrf.blsubsampleid, '', '', ses.archived, ''
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, xrf.blsubsampleid, '', '', ses.archived, '', $visit
             FROM xfefluorescencespectrum xrf
             INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
+            INNER JOIN proposal prop ON ses.proposalid = prop.proposalid
             LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid     
             $extj[3]
             WHERE $sess[3] $where4
@@ -501,9 +508,10 @@ class DC extends Page
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)), 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, smp.code, r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, r.xtalsnapshotbefore, r.xtalsnapshotafter, 'A', 'A', r.starttimestamp as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', r.starttimestamp, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, 1 as blsubsampleid, '', '', ses.archived, ''
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, 1 as blsubsampleid, '', '', ses.archived, '', $visit
             FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
+            INNER JOIN proposal prop ON ses.proposalid = prop.proposalid
             LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
             $extj[2]
             WHERE $sess[2] $where3
@@ -691,7 +699,9 @@ class DC extends Page
                                 
             $where = '('.implode(' OR ', $where).')';
             
-            if ($this->has_arg('visit')) {
+            if ($this->staff) {
+
+            } else if ($this->has_arg('visit')) {
                 $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :".(sizeof($ids)+1);
                 array_push($ids, $this->arg('visit'));
             } else {
@@ -792,9 +802,15 @@ class DC extends Page
         # ------------------------------------------------------------------------
         # AutoProcProgram Messages
         function _ap_message_status() {
-            if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
-            $where = 'WHERE s.proposalid=:1';
-            $args = array($this->proposalid);
+            if ($this->staff) {
+                $where = 'WHERE 1=1';
+                $args = array();
+
+            } else {
+                if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
+                $where = 'WHERE s.proposalid=:1';
+                $args = array($this->proposalid);
+            }
 
             $wids = array();
             if ($this->has_arg('ids')) {
@@ -831,8 +847,14 @@ class DC extends Page
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('id') && !$this->has_arg('AUTOPROCPROGRAMMESSAGEID')) $this->_error('No datacollection or message specified');
 
-            $where = 'WHERE p.proposalid=:1';
-            $args = array($this->proposalid);
+            if ($this->has_arg('id')) {
+                $where = 'WHERE 1=1';
+                $args = array();
+
+            } else {
+                $where = 'WHERE p.proposalid=:1';
+                $args = array($this->proposalid);
+            }
 
             if ($this->has_arg('AUTOPROCPROGRAMMESSAGEID')) {
                 $where .= ' AND appm.autoprocprogrammessageid=:'.(sizeof($args)+1);
@@ -840,7 +862,7 @@ class DC extends Page
             }
 
             if ($this->has_arg('id')) {
-                $where .= ' AND dc.datacollectionid=:2';
+                $where .= ' AND dc.datacollectionid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('id'));
             }
 

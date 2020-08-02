@@ -250,8 +250,14 @@ class Download extends Page
         function _get_autoproc_attachments() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specific', 'No proposal specified');
 
-            $args = array($this->proposalid);
-            $where = '';
+            if ($this->staff) {
+                $where = '1=1';
+                $args = array();
+
+            } else {
+                $where = 's.proposalid=:1';
+                $args = array($this->proposalid);
+            }
 
             if ($this->has_arg('AUTOPROCPROGRAMID')) {
                 $where .= ' AND api.autoprocprogramid=:'.(sizeof($args)+1);
@@ -270,7 +276,7 @@ class Download extends Page
                 INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                WHERE s.proposalid=:1 $where", $args);
+                WHERE $where", $args);
 
             // exit();
             if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
