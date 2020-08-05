@@ -52,6 +52,10 @@ define(['marionette',
             'click a.pdf': utils.signHandler,
             'click a.cancel_pickup': 'cancelPickup',
         },
+
+        ui: {
+            add_dewar: '#add_dewar',
+        },
         
 
         cancelPickup: function(e) {
@@ -143,7 +147,7 @@ define(['marionette',
             if (did == this.lastDewarID && !force) return
                 
             this.$el.find('.dewar_name').text(this.dewars.findWhere({ DEWARID: did }).get('CODE'))
-            this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
+            if (app.proposal && app.proposal.get('ACTIVE') == '1') this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
             this.dewarcontent.dewarID = did
             this.dewarcontent.fetch()
             this.dewarhistory.id = did
@@ -168,6 +172,8 @@ define(['marionette',
         },
         
         onRender: function() {
+            if (app.proposal && app.proposal.get('ACTIVE') != '1') this.ui.add_dewar.hide()
+
             this.table.show(new DewarsView({ collection: this.dewars }))
             this.cont.show(new DewarContentView({ collection: this.dewarcontent }))
             this.history.show(new DewarHistoryView({ collection: this.dewarhistory }))
