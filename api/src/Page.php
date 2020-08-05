@@ -71,7 +71,7 @@ class Page
     
 
         function _get_type() {
-            global $prop_types, $bl_types;
+            global $prop_types;
             $this->ty = 'gen';
 
             if ($this->user) {
@@ -97,12 +97,10 @@ class Page
                             if (sizeof($bls)) {
                                 foreach ($bls as $bl) {
                                     $b = $bl['BEAMLINENAME'];
-                                    foreach ($bl_types as $tty => $bls) {
-                                        if (in_array($b, $bls)) {
-                                            $ty = $tty;
-                                            break 2;
-                                        }
-                                    }
+
+                                    $ty = $this->_get_type_from_beamline($b);
+
+                                    if ($ty) break;
                                 }
                             }
                         }
@@ -119,11 +117,56 @@ class Page
                         }
                     }
                 }
-
-                $this->ty = $ty;
+                // Possible we set ty to null while trying to get type from beamline
+                $this->ty = $ty ? $ty : 'gen';
             }
         }
 
+        /**
+        * Return the type (group) that belongs to the passed beamline
+        *
+        * @param String $bl Beamline e.g. 'i01', 'm01', etc. 
+        * @return String Returns beamline type/group e.g. 'mx', 'em', 'xpdf' or null if not found
+        */
+        function _get_type_from_beamline($bl) {
+            global $bl_types;
+
+            $bl_type = null;
+
+            foreach ($bl_types as $tty => $bls) {
+                if (in_array($bl, $bls)) {
+                    $bl_type = $tty;
+                    break;
+                }
+            }
+            return $bl_type;
+        }
+
+        /**
+        * Return a list of beamlines based on the type/group (mx, em, gen)
+        * The return value can be checked with empty() if required
+        *
+        * @param String $ty Beamline type/group 'mx', 'em', etc. or 'all' to get all beamlines
+        * @return Array Returns list of beamlines within the group or empty array
+        */
+        function _get_beamlines_from_type($ty) {
+            global $bl_types;
+
+            $bls = array();
+
+            // Guard against null value passed in
+            if (!$ty) return $bls;
+
+            if ($ty == 'all') {
+                foreach($bl_types as $beamlines) {
+                    $bls = array_merge($bls, $beamlines);
+                }
+            } else {            
+                if(array_key_exists($ty, $bl_types)) $bls = $bl_types[$ty];
+            }
+            
+            return $bls;
+        }
 
 
         function auth($require_staff) {

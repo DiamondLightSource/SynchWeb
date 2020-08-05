@@ -84,11 +84,10 @@ class EM extends Page
 
     function _relion_start()
     {
-        global $bl_types,
-               $visit_directory,
+        global $visit_directory,
                $zocalo_relion_start_queue;
 
-        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $this->checkElectronMicroscopesAreConfigured();
         $session = $this->determineSession($this->arg('session'));
         $this->checkSessionIsActive($session);
 
@@ -270,11 +269,10 @@ class EM extends Page
 
     function _relion_stop()
     {
-        global $bl_types,
-               $visit_directory,
+        global $visit_directory,
                $zocalo_relion_stop_queue;
 
-        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $this->checkElectronMicroscopesAreConfigured();
         $session = $this->determineSession($this->arg('session'));
         $this->checkSessionIsActive($session);
 
@@ -305,11 +303,10 @@ class EM extends Page
 
     function _relion_reset()
     {
-        global $bl_types,
-               $visit_directory,
+        global $visit_directory,
                $zocalo_relion_reset_queue;
 
-        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $this->checkElectronMicroscopesAreConfigured();
         $session = $this->determineSession($this->arg('session'));
         $this->checkSessionIsActive($session);
 
@@ -340,10 +337,9 @@ class EM extends Page
 
     function _relion_status()
     {
-        global $bl_types,
-               $visit_directory;
+        global $visit_directory;
 
-        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $this->checkElectronMicroscopesAreConfigured();
         $session = $this->determineSession($this->arg('session'));
         $this->checkSessionIsActive($session);
 
@@ -363,14 +359,13 @@ class EM extends Page
 
     function _scipion_start()
     {
-        global $bl_types,
-               $visit_directory,
+        global $visit_directory,
                $zocalo_scipion_template_path,
                $zocalo_scipion_template_file,
                $zocalo_scipion_workflow_path,
                $zocalo_scipion_start_queue;
 
-        $this->checkElectronMicroscopesAreConfigured($bl_types);
+        $this->checkElectronMicroscopesAreConfigured();
         $session = $this->determineSession($this->arg('session'));
         $this->checkSessionIsActive($session);
 
@@ -948,10 +943,11 @@ class EM extends Page
         readfile($file);
     }
 
-    private function checkElectronMicroscopesAreConfigured(array $bl_types)
+    private function checkElectronMicroscopesAreConfigured()
     {
         // Check electron microscopes are listed in global variables - see $bl_types in config.php.
-        if (!array_key_exists('em', $bl_types)) {
+        $bls = $this->_get_beamlines_from_type('em');
+        if (empty($bls)) {
             $message = 'Electron microscopes are not specified';
 
             error_log($message);
