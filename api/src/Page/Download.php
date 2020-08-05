@@ -97,20 +97,34 @@ class Download extends Page
         # ------------------------------------------------------------------------
         # Download mtz/log file for Fast DP / XIA2
         #   TODO: Delete me
+        # This method either returns a list of plots from MX auto processing tools (n_obs, n_uniq, completeness etc.)
+        # Or returns a specific plot based on auto processing attachment id (aid).
+        # Individual plotly format Graphs can be returned via an aid, but will not be included in the list of plots (as their format is different)
         function _auto_processing_plots() {
             global $ap_types;
             if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
 
-            $rows = $this->db->pq("SELECT appa.filename, appa.filepath, api.autoprocprogramid, app.processingcommandline as type
+            $args = array($this->arg('id'));
+            $where = '';
+
+            // Are we asking for a specific plot attachment?
+            // Example Plotly plots are not included in the general processing results plot types
+            if ($this->has_arg('aid')) {
+                $where .= ' AND appa.autoprocprogramattachmentid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('aid'));
+            }
+
+            $rows = $this->db->pq("SELECT appa.filename,
+                appa.filepath,
+                api.autoprocprogramid,
+                appa.autoprocprogramattachmentid,
+                app.processingcommandline as type
                 FROM autoprocintegration api 
-                INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
-                INNER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
-                INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
-                WHERE appa.filetype='Graph' AND api.datacollectionid = :1", array($this->arg('id')));
+                WHERE appa.filetype='Graph' AND api.datacollectionid = :1 $where", $args);
 
-            foreach ($rows as &$r) {
+            foreach ($rows as $k => &$r) {
                 foreach ($ap_types as $id => $name) {
                     if (strpos($r['TYPE'], $id)) {
                         $r['TYPE'] = $name;
@@ -122,14 +136,36 @@ class Download extends Page
                 $r['PLOTS'] = array();
                 if (file_exists($json)) {
                     $cont = file_get_contents($json);
-                    $r['PLOTS'] = json_decode($cont);
+
+                    $plotData = json_decode($cont);
+                    $r['PLOTS'] = $plotData;
+
+                    // We need to check if this is a plotly type (in which case this should be a request for a specific attachment)
+                    // A plotly chart must define two keys 'data' and 'layout'
+                    $r['PLOTLY'] = false;
+
+                    if (array_key_exists('data', $plotData) && array_key_exists('layout', $plotData)) {
+                        // This is a plotly chart
+                        // If we are looking for a specific plot (by attachment id) then OK...
+                        if($this->has_arg('aid')){
+                            $r['PLOTLY'] = true;
+                        } else {
+                            // ..if not, we should remove this from the list of returned plots
+                            // Autoprocessing results use the same bespoke format for charts
+                            // and we don't want to include plotly in those aggregated results
+                            unset($rows[$k]);
+                            continue;
+                        }
+                    }
                 }
 
                 unset($r['FILENAME']);
                 unset($r['FILEPATH']);
             }
-
-            $this->_output($rows);
+            // Because we may have removed plotly type plots from the list, we should re-index to provide a consistent array.
+            // Also ensures there will be an index at 0 for the first item.
+            $results = array_values($rows);
+            $this->_output($results);
         }
 
 
