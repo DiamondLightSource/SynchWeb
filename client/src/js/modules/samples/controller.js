@@ -121,11 +121,26 @@ define(['marionette',
         app.content.show(GetView.CrystalAdd.get(app.type))
     },
 
-    simplesampleadd: function() {
+    simplesampleadd: function(pid) {
         var title = GetView.SimpleSampleAdd.title(app.type)
         var cbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
-        app.bc.reset([cbc, { title: 'Add '+title }])
-        app.content.show(GetView.SimpleSampleAdd.get(app.type))
+
+        if (pid) {
+            var protein = new Protein({ PROTEINID: pid })
+            protein.fetch({
+                success: function(){
+                    app.bc.reset([cbc, { title: 'Add '+title }])
+                    app.content.show(GetView.SimpleSampleAdd.get(app.type, { model: protein }))
+                },
+                error: function(){
+                    app.bc.reset([cbc])
+                    app.message({ title: 'Protein not found!', message: 'The specified protein could not be found'})
+                }
+            })
+        } else {
+            app.bc.reset([cbc, { title: 'Add '+title }])
+            app.content.show(GetView.SimpleSampleAdd.get(app.type))
+        }
     },
 
 

@@ -4,6 +4,7 @@
 <!-- Only allow cloning for valid/approved proteins -->
 <% if (EXTERNAL == 1) { %>
     <a class="button" href="/phases/pid/<%-PROTEINID%>/clone">Clone Phase</a>
+    <a class="button" href="/xsamples/simple/add/<%-PROTEINID%>"><i class="fa fa-plus"></i> New Simple Sample</a>
 <% } %>
 
 <div class="form">

@@ -80,6 +80,7 @@ define([
                 this.ui.mass.val(this.model.get('MOLECULARMASS'))
                 this.ui.density.val(this.model.get('DENSITY'))
             } else {
+                this.ui.name.attr('disabled', false)
                 var millis = (new Date()).getTime()
                 this.ui.acronym.val('xpdf'+millis.toString())
             }

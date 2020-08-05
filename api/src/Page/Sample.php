@@ -242,7 +242,7 @@ class Sample extends Page
                     $capillaryPhase = $attrs->capillaryPhase;
 
                     // Critical sub model validation, we again can't proceed if anything is missing
-                    if (!array_key_exists('ACRONYM', $phase)) $this->_error('No protein acronym');
+                    if (!array_key_exists('PROTEINID', $phase) && !array_key_exists('ACRONYM', $phase)) $this->_error('No protein id or acronym');
                     if (!array_key_exists('ACRONYM', $capillaryPhase)) $this->_error('No protein acronym for capillary material');
                     if (!array_key_exists('NAME', $crystal)) $this->_error('No crystal name specified');
                     if (!array_key_exists('NAME', $capillary) || !array_key_exists('CRYSTALID', $capillary)) $this->_error('No capillary name specified');
@@ -251,7 +251,7 @@ class Sample extends Page
 
                     // Create ID holder for this iteration (this set of sample information)
                     $ids[$model] = array();
-                    
+
                     /**
                      * Insert Proteins
                      * For each iteration there will be an actual protein and usually (not always) a capillary in which the protein is held
@@ -275,14 +275,15 @@ class Sample extends Page
                         $phaseSeq = array_key_exists('SEQUENCE', $protein) ? $protein->SEQUENCE : '';
                         $phaseMass = array_key_exists('MOLECULARMASS', $protein) ? $protein->MOLECULARMASS : null;
                         $phaseDensity = array_key_exists('DENSITY', $protein) ? $protein->DENSITY : null;
+                        $externalid = array_key_exists('EXTERNALID', $protein) ? $protein->EXTERNALID : null;
                         
                         $chk = $this->db->pq("SELECT proteinid FROM protein
                             WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $protein->ACRONYM));
                             if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
 
-                        $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density) 
-                            VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6) RETURNING proteinid INTO :id',
-                            array($this->proposalid, $phaseName, $protein->ACRONYM, $phaseSeq, $phaseMass, $phaseDensity));
+                        $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density,externalid)
+                            VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,UNHEX(:7)) RETURNING proteinid INTO :id',
+                            array($this->proposalid, $phaseName, $protein->ACRONYM, $phaseSeq, $phaseMass, $phaseDensity, $externalid));
                             
                         if($isCapillary){
                             $ids[$model]['CAPILLARYPHASEID'] = $this->db->id();
