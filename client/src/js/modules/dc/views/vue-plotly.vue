@@ -5,7 +5,7 @@
 </template>
 
 <script>
-    import Plotly from 'plotly.js/dist/plotly'
+    import Plotly from 'utils/plotly-loader'
 
     export default {
         name: 'PlotlyChart',
