@@ -117,8 +117,8 @@ class Page
                         }
                     }
                 }
-
-                $this->ty = $ty;
+                // Possible we set ty to null while trying to get type from beamline
+                $this->ty = $ty ? $ty : 'gen';
             }
         }
 
