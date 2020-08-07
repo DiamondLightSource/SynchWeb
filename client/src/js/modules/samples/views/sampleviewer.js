@@ -271,7 +271,7 @@ define(['marionette',
                             }
                         }
 
-                        var pos = (ystep * map.STEPS_Y + xstep) * 4
+                        var pos = (ystep * map.STEPS_X + xstep) * 4
 
                         if (v == -1) {
                             buffer[pos] = 0;
