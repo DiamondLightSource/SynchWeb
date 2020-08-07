@@ -57,10 +57,6 @@ define([
             this.plot.setAdditionalData(data)
         },
 
-        onRender: function() {
-            this.updateInPlace(true)
-        },
-
         onShow: function() {
             DCItemView.__super__.onShow.call(this)
             

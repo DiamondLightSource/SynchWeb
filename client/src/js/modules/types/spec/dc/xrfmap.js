@@ -64,8 +64,6 @@ define([
             this.gridplot.gridPromise().done(this.showBox.bind(this))
             this.spectraPlot = new NexusSpectraPlot({ id: this.model.get('ID') })
             this.rplot.show(this.spectraPlot)
-
-            this.updateInPlace(true)
         },
 
 
