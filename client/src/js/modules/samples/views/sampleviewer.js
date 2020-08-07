@@ -20,7 +20,7 @@ define(['marionette',
     
     var SampleImageViewer = ImageViewer.extend({
         template: template,
-        zoomStep: 0.001,
+        zoomStep: 0.01,
         
         events: {
             'click canvas': 'onClick',
@@ -41,6 +41,8 @@ define(['marionette',
             if (this.inspections.length) {
                 this.inspections.at(0).set({ isSelected: true })
                 this.loadImages()
+            } else {
+                this.calculateLimits()
             }
         },
 
@@ -76,7 +78,7 @@ define(['marionette',
         calculateLimits: function() {
             console.log('all images loaded')
             this.limits = {
-                x1: 1e20, x2: 0, y1: 0, y2: 0,
+                x1: 1e20, x2: 0, y1: 1e20, y2: 0,
             }
             this.inspectionimages.each(function(m) {
                 var xhr = m.get('xhr')
@@ -98,7 +100,7 @@ define(['marionette',
                 else arr = {x1: 'X', y1: 'Y', x2: 'X', y2: 'Y'}
 
                 _.each(arr, function(v, k) {
-                    var val = s.get(v)
+                    var val = parseFloat(s.get(v))
                     if (k.indexOf('2') > -1) {
                         if (val > this.limits[k]) this.limits[k] = val
                     } else {
