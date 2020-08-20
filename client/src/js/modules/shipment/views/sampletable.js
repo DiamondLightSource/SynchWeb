@@ -120,12 +120,14 @@ define(['marionette',
                 var name_base = this.model.get('NAME').replace(/\d+$/, '')
                 var name_regexp = new RegExp(name_base)
                 var similar = this.model.collection.filter(function(m) { return m.get('NAME').match(name_regexp) })
+                var no
                 if (similar.length) no = similar[similar.length-1].get('NAME').match(/\d+$/)
+                if (!no) no = []
 
-                if (no) no = no.length > 0 ? parseInt(no[0]) : 1
-                else no = 1
+                var no_pad = no.length > 0 ? no[0].length : 0
+                no = no.length > 0 ? parseInt(no[0]) : 1
 
-                newm.set('NAME', name_base+(no+1))
+                newm.set('NAME', name_base+((no+1).toString().padStart(no_pad, '0')))
                 newm.set('LOCATION', empty[0].get('LOCATION'))
 
                 empty[0].attributes = newm.attributes
