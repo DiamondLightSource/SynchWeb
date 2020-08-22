@@ -32,6 +32,10 @@
         <a href="<%-APIURL%>/pdf/sid/<%-SHIPPINGID%>/prop/<%-PROP%>" class="label button pdf" title="Print Shipment Labels"><i class="fa fa-print"></i> Print Shipment Labels</a>
 
         <a href="<%-APIURL%>/pdf/container/sid/<%-SHIPPINGID%>/prop/<%-PROP%>" class="label button pdf" title="Print Shipment Contents"><i class="fa fa-print"></i> Print Contents</a>
+
+        <% if (app.config.csv_profile) { %>
+            <a href="/shipments/csv/<%-SHIPPINGID%>" class="label button" title="Import Shipment Contents from CSV"><i class="fa fa-file-text-o"></i> Import from CSV</a>
+        <% } %>
     </div>
     <% } %>
 
