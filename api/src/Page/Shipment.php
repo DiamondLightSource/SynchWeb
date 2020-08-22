@@ -87,6 +87,7 @@ class Shipment extends Page
                               'unassigned' => '[\w-]+',
                               
                               // Container fields
+                              'REGISTRY' => '([\w-])+',
                               'DEWARID' => '\d+',
                               'CAPACITY' => '\d+',
                               'CONTAINERTYPE' => '\w+',
@@ -1332,6 +1333,11 @@ class Shipment extends Page
                 $where .= " AND c.containertype LIKE '%puck'";
             }
 
+            # For a specific shipment
+            if ($this->has_arg('SHIPPINGID')) {
+                $where .= ' AND sh.shippingid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('SHIPPINGID'));
+            }
             
             if ($this->has_arg('did')) {
                 $where .= ' AND d.dewarid=:'.(sizeof($args)+1);
@@ -1381,6 +1387,11 @@ class Shipment extends Page
                 array_push($args, $this->arg('CONTAINERREGISTRYID'));
             }
 
+            if ($this->has_arg('REGISTRY')) {
+                $where .= ' AND reg.barcode = :'.(sizeof($args)+1);
+                array_push($args, $this->arg('REGISTRY'));
+            }
+
             if ($this->has_arg('currentuser')) {
                 $where .= ' AND c.ownerid = :'.(sizeof($args)+1);
                 array_push($args, $this->user->personid);
@@ -1398,6 +1409,7 @@ class Shipment extends Page
                 LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
                 LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
                 LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
+                LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
                 $join 
                 WHERE $where
                 $having", $args);
@@ -1436,7 +1448,8 @@ class Shipment extends Page
             if ($this->has_arg('sort_by')) {
                 $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' =>'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
                   'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)',
-                  'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)'
+                  'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)',
+                  'BLTIMESTAMP' => 'c.bltimestamp'
                   );
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
@@ -1446,8 +1459,7 @@ class Shipment extends Page
                 count(distinct ss.blsubsampleid) as subsamples, 
                 ses3.beamlinename as firstexperimentbeamline,
                 pp.name as pipeline,
-                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell,
-                c.ownerid, CONCAT(pe.givenname, ' ', pe.familyname) as owner
+                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell, c.ownerid, concat(pe.givenname, ' ', pe.familyname) as owner
                                   FROM container c 
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   LEFT OUTER JOIN blsession ses3 ON d.firstexperimentid = ses3.sessionid
@@ -1791,7 +1803,9 @@ class Shipment extends Page
               FROM containerregistry r 
               LEFT OUTER JOIN containerregistry_has_proposal rhp on rhp.containerregistryid = r.containerregistryid
               LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
-              WHERE $where", $args);
+              LEFT OUTER JOIN container c ON c.containerregistryid = r.containerregistryid
+              WHERE $where
+              GROUP BY r.containerregistryid", $args);
             $tot = intval($tot[0]['TOT']);
 
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -1816,7 +1830,7 @@ class Shipment extends Page
             }
 
             $rows = $this->db->paginate("SELECT r.containerregistryid, r.barcode, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, count(distinct c.containerid) as instances, TO_CHAR(r.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, 
-              TO_CHAR(max(c.bltimestamp),'DD-MM-YYYY') as lastuse, max(CONCAT(p.proposalcode,p.proposalnumber)) as prop, r.comments, COUNT(distinct cr.containerreportid) as reports
+              TO_CHAR(max(c.bltimestamp),'DD-MM-YYYY') as lastuse, max(CONCAT(p.proposalcode,p.proposalnumber)) as prop, r.comments, COUNT(distinct cr.containerreportid) as reports, c.code as lastname
               FROM containerregistry r 
               LEFT OUTER JOIN containerregistry_has_proposal rhp on rhp.containerregistryid = r.containerregistryid
               LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
