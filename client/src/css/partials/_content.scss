@@ -2026,3 +2026,19 @@ ul.messages {
     }
   }
 }
+
+
+.dropimage {
+    color: $content-search-background;
+    padding: 20px;
+    border: 2px dashed $content-search-background;
+    margin: 2% 0;
+    text-align: center;
+    border-radius: 5px;
+
+    &.active {
+        color: $content-header-color;
+        background: $content-dark-background;
+        text-decoration: italic;
+    }
+}
