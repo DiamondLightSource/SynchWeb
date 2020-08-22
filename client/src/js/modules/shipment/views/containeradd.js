@@ -116,6 +116,7 @@ define(['backbone',
             autoprocessing_pipeline: 'select[name=PIPELINE]',
             auto: 'input[name=AUTOMATED]',
             extrastate: '.extra-state',
+            dp: '.dp-state',
         },
         
         
@@ -136,6 +137,7 @@ define(['backbone',
             'change @ui.type': 'setType',
 
             'click @ui.ext': 'toggleExtra',
+            'click a.dpinfo': 'toggleDP',
 
             'keypress .ui-combobox input': 'excelNavigate',
             'keypress input.sname': 'excelNavigate',
@@ -274,6 +276,13 @@ define(['backbone',
                 this.table.currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
                                                     : this.ui.extrastate.addClass('fa-plus').removeClass('fa-minus')
             }
+        },
+
+        toggleDP: function(e) {
+            e.preventDefault()
+            this.table.currentView.toggleDP()
+            this.table.currentView.dpState() ? this.ui.dpstate.addClass('fa-minus').removeClass('fa-plus')
+                                             : this.ui.dpstate.addClass('fa-plus').removeClass('fa-minus')
         },
 
         isForImager: function() {

@@ -56,10 +56,12 @@ define(['marionette',
             ext: '.extrainfo',
             auto: '.auto',
             extrastate: '.extra-state',
+            dpstate: '.dp-state',
         },
 
         events: {
             'click @ui.ext': 'toggleExtra',
+            'click a.dpinfo': 'toggleDP',
             'click a.queue': 'confirmQueueContainer',
             'click a.unqueue': 'confirmUnqueueContainer',
         },
@@ -70,6 +72,13 @@ define(['marionette',
             this.table.currentView.toggleExtra()
             this.table.currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
                                                 : this.ui.extrastate.addClass('fa-plus').removeClass('fa-minus')
+        },
+
+        toggleDP: function(e) {
+            e.preventDefault()
+            this.table.currentView.toggleDP()
+            this.table.currentView.dpState() ? this.ui.dpstate.addClass('fa-minus').removeClass('fa-plus')
+                                             : this.ui.dpstate.addClass('fa-plus').removeClass('fa-minus')
         },
 
         createSamples: function() {

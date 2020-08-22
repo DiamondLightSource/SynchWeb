@@ -17,7 +17,7 @@
             padding: 5px;
         }
 
-        td.extra, th.extra, th.xtal, td.xtal, th.non-xtal, td.non-xtal, th.auto, td.auto {
+        td.extra, th.extra, th.xtal, td.xtal, th.non-xtal, td.non-xtal, th.auto, td.auto, th.dp, td.dp {
             display: none;
 
             &.show {
@@ -26,7 +26,7 @@
         }
 
         @media (max-width: $breakpoint-vsmall) {
-            td.extra, th.extra,, th.xtal, td.xtal, th.non-xtal, td.non-xtal, th.auto, td.auto {
+            td.extra, th.extra,, th.xtal, td.xtal, th.non-xtal, td.non-xtal, th.auto, td.auto, th.dp, td.dp {
                 &.show {
                     display: block;
                 }

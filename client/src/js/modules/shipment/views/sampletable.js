@@ -16,12 +16,13 @@ define(['marionette',
         'utils/centringmethods',
         'utils/experimentkinds',
         'utils/radiationsensitivity',
+        'utils/collectionmode',
         'utils',
     
         'jquery',
         ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
         sampletable, sampletablerow, sampletablerowedit, 
-        forms, SG, Anom, CM, EXP, RS, utils, $) {
+        forms, SG, Anom, CM, EXP, RS, COLM, utils, $) {
 
         
     // A Sample Row
@@ -71,13 +72,15 @@ define(['marionette',
         cancelEditSample: function(e) {
             this.editing = false
             e.preventDefault()
+            if (this.model.get('PROTEINID') > -1 && this.model.isNew()) this.model.set({ PROTEINID: -1, CRYSTALID: -1 })
             this.template = this.getOption('rowTemplate')
             this.render()
         },
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'ENERGY', 'RADIATIONSENSITIVITY', 'USERPATH'], function(f) {
+            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'ENERGY', 'RADIATIONSENSITIVITY', 'USERPATH',
+                'AIMEDRESOLUTION', 'COLLECTIONMODE', 'PRIORITY', 'EXPOSURETIME', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'PREFERREDBEAMSIZEX'], function(f) {
                 var el = this.$el.find('[name='+f+']')
                 if (el.length) data[f] = el.attr('type') == 'checkbox'? (el.is(':checked')?1:null) : el.val()
             }, this)
@@ -142,6 +145,7 @@ define(['marionette',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: '',
                 CRYSTALID: -1, PACKINGFRACTION: '', LOOPTYPE: '',
                 DIMENSION1: '', DIMENSION2: '', DIMENSION3: '', SHAPE: '', CENTRINGMETHOD: '', EXPERIMENTKIND: '', ENERGY: '', RADIATIONSENSITIVITY: '', USERPATH: '',
+                AIMEDRESOLUTION: '', COLLECTIONMODE: '', PRIORITY: '', EXPOSURETIME: '', AXISSTART: '', AXISRANGE: '', NUMBEROFIMAGES: '', TRANSMISSION: '', PREFERREDBEAMSIZEX: ''
             })
             this.model.get('components').reset()
             this.render()
@@ -191,13 +195,15 @@ define(['marionette',
             //if (this.model.get('CODE')) this.$el.find('input[name=CODE]').val(this.model.get('CODE'))
             //if (this.model.get('COMMENTS')) this.$el.find('input[name=COMMENTS]').val(this.model.get('COMMENTS'))
                 
-            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME', 'PACKINGFRACTION', 'USERPATH'], function(f, i) {
+            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME', 'PACKINGFRACTION', 'USERPATH',
+                'AIMEDRESOLUTION', 'COLLECTIONMODE', 'PRIORITY', 'EXPOSURETIME', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'PREFERREDBEAMSIZEX'], function(f, i) {
                 if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             }, this)
 
             this.ui.symbol.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
 
             if (this.getOption('extra').show) this.$el.find('.extra').addClass('show')
+            if (this.getOption('dp').show) this.$el.find('.dp').addClass('show')
 
             if (this.getOption('type') == 'non-xtal') {
                 this.$el.find('.non-xtal').addClass('show')
@@ -218,6 +224,7 @@ define(['marionette',
             this.$el.find('[name=EXPERIMENTKIND]').html(EXP.opts()).val(this.model.get('EXPERIMENTKIND'))
             this.$el.find('[name=ENERGY]').val(this.model.get('ENERGY'))
             this.$el.find('[name=RADIATIONSENSITIVITY]').html(RS.opts()).val(this.model.get('RADIATIONSENSITIVITY'))
+            this.$el.find('[name=COLLECTIONMODE]').html(COLM.opts()).val(this.model.get('COLLECTIONMODE'))
 
             this.compview = new ComponentsView({ collection: this.model.get('components'), editable: this.editing || this.model.get('new') })
             this.ui.comps.append(this.compview.render().$el)
@@ -346,9 +353,12 @@ define(['marionette',
             if (options.childEditTemplate) this.options.childViewOptions.editTemplate = options.childEditTemplate
 
             this.extra = { show: false }
+            this.dp = { show: false }
             this.auto = { show: options.auto == true ? true : false }
+
             this.options.childViewOptions.extra = this.extra
             this.options.childViewOptions.auto = this.auto
+            this.options.childViewOptions.dp = this.dp
             this.options.childViewOptions.type = this.getOption('type')
             
         },
@@ -370,6 +380,10 @@ define(['marionette',
             return this.extra.show
         },
 
+        dpState: function() {
+            return this.dp.show
+        },
+
         toggleExtra: function() {
             this.extra.show = !this.extra.show
 
@@ -377,6 +391,12 @@ define(['marionette',
             else this.$el.find('.extra').removeClass('show')
         },
 
+        toggleDP: function() {
+            this.dp.show = !this.dp.show
+
+            if (this.dp.show) this.$el.find('.dp').addClass('show')
+            else this.$el.find('.dp').removeClass('show')
+        },
 
         toggleAuto: function(val) {
             this.auto.show = val

@@ -52,6 +52,15 @@ define(['backbone', 'collections/components',
             DIMENSION2: '',
             DIMENSION3: '',
             SHAPE: '',
+            AIMEDRESOLUTION: '',
+            COLLECTIONMODE: '',
+            PRIORITY: '',
+            EXPOSURETIME: '',
+            AXISSTART: '',
+            AXISRANGE: '',
+            NUMBEROFIMAGES: '',
+            TRANSMISSION: '',
+            PREFERREDBEAMSIZEX: '',
         },
         
         validation: {
@@ -146,6 +155,51 @@ define(['backbone', 'collections/components',
             USERPATH: {
                 required: false,
                 pattern: 'twopath',
+            },
+
+            AIMEDRESOLUTION: {
+                required: false,
+                pattern: 'number',
+            },
+
+            COLLECTIONMODE: {
+                required: false,
+                pattern: 'word',
+            },
+            
+            PRIORITY: {
+                required: false,
+                pattern: 'number',
+            },
+            
+            EXPOSURETIME: {
+                required: false,
+                pattern: 'number',
+            },
+            
+            AXISSTART: {
+                required: false,
+                pattern: 'number',
+            },
+            
+            AXISRANGE: {
+                required: false,
+                pattern: 'number',
+            },
+            
+            NUMBEROFIMAGES: {
+                required: false,
+                pattern: 'number',
+            },
+            
+            TRANSMISSION: {
+                required: false,
+                pattern: 'number',
+            },
+            
+            PREFERREDBEAMSIZEX: {
+                required: false,
+                pattern: 'number',
             },
 
 
