@@ -7,6 +7,7 @@ define(['backbone',
         'modules/shipment/views/shipments',
         'modules/shipment/views/shipment',
         'modules/shipment/views/shipmentadd',
+        'modules/shipment/views/fromcsv',
     
         'models/container',
         'collections/containers',
@@ -46,7 +47,7 @@ define(['backbone',
 ], function(Backbone,
     GetView,
     Dewar, Shipment, Shipments, 
-    ShipmentsView, ShipmentView, ShipmentAddView,
+    ShipmentsView, ShipmentView, ShipmentAddView, ImportFromCSV,
     Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
@@ -114,6 +115,37 @@ define(['backbone',
             })
         }
     },
+
+    // Import csv based on selected profile
+    import_csv: function(sid) {
+        if (!app.config.csv_profile) {
+            app.message({ title: 'CSV Import Not Enabled', message: 'Shipment CSV import is not currently enabled'})
+            return
+        }
+
+        var lookup = new ProposalLookup({ field: 'SHIPPINGID', value: sid })
+        lookup.find({
+            success: function() {
+                var shipment = new Shipment({ SHIPPINGID: sid })
+                  shipment.fetch({
+                      success: function() {
+                          app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }, { title: 'Import from CSV' }])
+                          app.content.show(new ImportFromCSV({ model: shipment, format: 'imca' }))
+                      },
+                      error: function() {
+                          app.bc.reset([bc])
+                          app.message({ title: 'No such shipment', message: 'The specified shipment could not be found'})
+                      },
+                  })
+            }, 
+
+            error: function() {
+                app.bc.reset([bc, { title: 'No such shipment' }])
+                app.message({ title: 'No such shipment', message: 'The specified shipment could not be found'})
+            }
+        })
+    },
+
 
     create_awb: function(sid) {
         var shipment = new Shipment({ SHIPPINGID: sid })
