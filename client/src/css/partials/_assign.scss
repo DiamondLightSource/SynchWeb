@@ -13,6 +13,13 @@
     background: $content-sub-header-background;
     float: left;
     
+    input {
+        width: calc(99% - 10px);
+        padding: 10px 5px;
+        border-radius: 5px;
+        border: none;
+    }
+
     @media (max-width: $breakpoint-small) {
         @include cols(4,0.5%,0.2%);
     }
