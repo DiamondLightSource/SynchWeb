@@ -38,6 +38,8 @@ This file should be copied to create a client/src/js/config.json file and edited
 | site_name | Site Name to display in footer |
 | site_link | URL to site home page |
 | data_catalogue | Object that includes name and url property for a link to a data catalogue - displayed on the landing page |
+| site_image | PNG image of site logo to display in header|
+| csv_profile | The csv profile for importing shipments, currently only imca, see src/js/csv/imca.js |
 
 Site Image can be customised via the tailwind.config.js header-site-logo and footer-site-logo values.
 
