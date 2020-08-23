@@ -1799,13 +1799,12 @@ class Shipment extends Page
             }
 
 
-            $tot = $this->db->pq("SELECT count(r.containerregistryid) as tot 
+            $tot = $this->db->pq("SELECT count(distinct r.containerregistryid) as tot 
               FROM containerregistry r 
               LEFT OUTER JOIN containerregistry_has_proposal rhp on rhp.containerregistryid = r.containerregistryid
               LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
               LEFT OUTER JOIN container c ON c.containerregistryid = r.containerregistryid
-              WHERE $where
-              GROUP BY r.containerregistryid", $args);
+              WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
 
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
