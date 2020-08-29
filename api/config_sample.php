@@ -56,6 +56,11 @@
     # Timezone
     $timezone = 'Europe/London';
 
+    # Valid Components
+    #   Denotes that only staff may create proteins, otherwise they must come from replication 
+    #.  with a valid `externalid`, users may still clone proteins
+    $valid_components = false;
+
     # String replacements for autoprocessing types
     # First part is searched for in the processing command line
     $ap_types = array(

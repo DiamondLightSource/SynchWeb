@@ -257,6 +257,13 @@ define(['marionette',
         
         
         addProtein: function(ui, val) {
+            var validOnly = app.options.get('valid_components')
+            if (!(((validOnly && app.staff) || !validOnly)
+                && (app.proposal && app.proposal.get('ACTIVE') == 1))) {
+                ui.combobox('value', -1).trigger('change')
+                return
+            }
+
             console.log(ui, val)
             var safe = val.replace(/\W/g, '')
 
