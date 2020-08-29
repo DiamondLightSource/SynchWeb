@@ -85,7 +85,9 @@ define(['marionette', 'backbone',
         },
 
         findContainer: function() {
-            this.containers.fetch().done(this.assignContainer.bind(this))
+            if (this.ui.barcode.val().trim()) {
+                this.containers.fetch().done(this.assignContainer.bind(this))
+            }
         },
 
         assignContainer: function() {
@@ -138,7 +140,7 @@ define(['marionette', 'backbone',
 
             this.listenTo(this.getOption('pucknames'), 'sync', this.getNameModel)
 
-            this.assignContainer = _.debounce(this.assignContainer.bind(this), 500)
+            this.findContainer = _.debounce(this.findContainer.bind(this), 500)
 
             this.containers = new Containers()
             this.containers.queryParams.all = 1
