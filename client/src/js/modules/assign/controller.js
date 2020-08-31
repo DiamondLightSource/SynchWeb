@@ -55,7 +55,7 @@ define(['marionette',
                 return
             }
 
-            app.bc.reset([bc, { title: 'Assign Containers' }])
+            app.bc.reset([{ title: 'Assign Containers' }, { title: 'Barcode Scan'}, { title: bl }])
             app.content.show(new ScanAssignView({ bl: bl }))
         },
     }
