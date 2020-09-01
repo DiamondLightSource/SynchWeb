@@ -32,7 +32,7 @@ define(['marionette', 'backgrid',
 
         ui: {
             fc: 'input[name=FACILITYCODE]',
-            comments: 'input[name=COMMENTS]',
+            date: 'input[name=PURCHASEDATE]',
         },
 
         onRender: function() {
@@ -44,7 +44,9 @@ define(['marionette', 'backgrid',
         },
         
         success: function() {
+            app.alert({message: 'New dewar registered ' + this.model.get('FACILITYCODE'), notify: true})
             this.ui.fc.val('')
+            this.ui.date.val('')
             this.model.set({ DEWARS: 0, REPORTS: 0, BLTIMESTAMP: moment().format('YYYY-MM-DD HH:mm:ss') })
             this.trigger('model:saved', this.model)
             this.setupValidation()
@@ -202,6 +204,8 @@ define(['marionette', 'backgrid',
                         props.push(p.get('PROPOSAL'))
                         m.set('PROPOSALS', props.join(','))
                         if (!m.get('PROP')) m.set('PROP', p.get('PROPOSAL'))
+                        // This will be called multiple times for many proposals. Might be a cleaner method..?
+                        app.alert({message: 'Added registered dewar ' + m.get('FACILITYCODE') + ' to proposal(s) ' + props, notify: true})
                     }
                 })
             }, this)
