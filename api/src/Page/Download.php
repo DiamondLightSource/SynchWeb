@@ -896,7 +896,7 @@ class Download extends Page
                 return;
             }
 
-            $info = $this->db->pq('SELECT ses.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir 
+            $info = $this->db->pq('SELECT s.visit_number, dc.datacollectionnumber as scan, dc.imageprefix as imp, dc.imagedirectory as dir
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
