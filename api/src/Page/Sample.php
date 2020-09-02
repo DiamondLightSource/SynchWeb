@@ -1493,7 +1493,7 @@ class Sample extends Page
                 if (!$this->staff) {
                     $chkext = $this->db->pq("SELECT proteinid FROM protein
                         WHERE proposalid=:1 AND externalid=:2", array($this->proposalid, $externalid));
-                    if (sizeof($chk)) $this->_error('No such protein to clone from');
+                    if (sizeof($chkext)) $this->_error('No such protein to clone from');
                 }
             }
             
