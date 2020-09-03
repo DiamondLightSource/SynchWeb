@@ -2,12 +2,11 @@ define(['marionette',
     'collections/proposals',
     'collections/labcontacts',
     'collections/proteins',
-    'modules/shipment/collections/dewarregistry',
 
     'views/table',
     'templates/shipment/migrate.html'
     ], function(Marionette,
-        Proposals, LabContacts, Proteins, DewarRegistry,
+        Proposals, LabContacts, Proteins,
         TableView,
         template) {
 
@@ -31,9 +30,7 @@ define(['marionette',
         },
 
         events: {
-            'change @ui.dews': 'displayDewar',
             'change @ui.lc': 'displayLabContact',
-            'click button[name=dewar]': 'migrateDewar',
             'click button[name=lc]': 'migrateContact',
             'click button[name=protein]': 'migrateProtein',
         },
@@ -41,7 +38,6 @@ define(['marionette',
 
         ui: {
             prop: 'input[name=PROPOSAL]',
-            dews: 'select[name=DEWAR]',
             lc: 'select[name=LABCONTACT]',
             olc: 'select[name=OLABCONTACT]',
 
@@ -57,45 +53,6 @@ define(['marionette',
             ncn: '.NCARDNAME',
             nln: '.NLABNAME',
             nad: '.NADDRESS',
-        },
-
-
-        migrateDewar: function(e) {
-            e.preventDefault()
-
-            if (!this.ui.prop.val()) {
-                app.alert({ message: 'You must select a proposal to migrate to' })
-                return
-            }
-
-            if (!this.ui.dews.val()) {
-                app.alert({ message: 'You must select a dewar to migrate' })
-                return   
-            }
-
-            var d = this.dewars.findWhere({ FACILITYCODE: this.ui.dews.val() })
-            var p = this.proposals.findWhere({ PROPOSAL: this.ui.prop.val() })
-
-            if (p && d && this.ui.lc.val()) {
-                d.set({
-                    PROPOSALID: p.get('PROPOSALID'),
-                    LABCONTACTID: this.ui.lc.val()
-                })
-
-                var self = this
-                d.save(d.changedAttributes(), {
-                    patch: true,
-                    success: function() {
-                        app.alert({ message: 'Dewar successfully migrated to: '+p.get('PROPOSAL') })
-                        // self.reset()
-                        self.dewars.fetch()
-                    }, 
-
-                    failure: function() {
-                        app.alert({ message: 'Something went wrong when trying to migrate that Dewar' })
-                    },
-                })
-            }
         },
 
 
@@ -172,11 +129,6 @@ define(['marionette',
             this.proposals = new Proposals()
             this.ready = this.proposals.fetch()
 
-            // Increasing list of dewars available to drop down
-            // As of 2019-06 most recent proposals have less than 28 registered dewars
-            this.dewars = new DewarRegistry([], {state: {pageSize: 9999}})
-            this.dewars.fetch()
-
             // The list of lab contacts used in the drop down
             this.labcontacts = new LabContacts([], {state: {pageSize: 9999}})
 
@@ -199,25 +151,6 @@ define(['marionette',
         updateLabContacts: function() {
             this.ui.lc.html(this.labcontacts.opts())
             this.displayLabContact()
-        },
-
-	// Registered Dewars can now belong to multiple proposals so this is not required
-//        updateDewars: function() {
-//            this.ui.dews.html(this.dewars.opts())
-//            this.displayDewar()
-//        },
-
-        displayDewar: function() {
-            var d = this.dewars.findWhere({ FACILITYCODE: this.ui.dews.val() })
-            if (d) {
-                this.ui.cn.text(d.get('CARDNAME'))
-                this.ui.ln.text(d.get('LABNAME'))
-                this.ui.ad.text(d.get('ADDRESS'))
-            } else {
-                this.ui.cn.text('')
-                this.ui.ln.text('')
-                this.ui.ad.text('')
-            }
         },
 
         displayLabContact: function() {
@@ -269,9 +202,7 @@ define(['marionette',
 
 	// Registered Dewars can now belong to multiple proposals so dewar functions are not required
         onRender: function() {
-//            this.listenTo(this.dewars, 'sync', this.updateDewars)
             this.listenTo(this.labcontacts, 'sync', this.updateLabContacts)
-//            this.updateDewars()
             this.updateLabContacts()
 
             this.ui.prop.autocomplete({ 
