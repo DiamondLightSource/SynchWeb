@@ -328,11 +328,18 @@ define(['backbone',
 
         
         addProtein: function(ui, val) {
+            var validOnly = app.options.get('valid_components')
+            if (!(((validOnly && app.staff) || !validOnly)
+                && (app.proposal && app.proposal.get('ACTIVE') == 1))) {
+                ui.combobox('value', -1).trigger('change')
+                return
+            }
+            
             if (this.getOption('isForImager')) {
                 var ifi = this.getOption('isForImager')()
                 console.log('is for imager', ifi)
                 if (ifi) {
-                    ui.combobox('value', -1).trigger('change')    
+                    ui.combobox('value', -1).trigger('change')
                     return
                 }
             }

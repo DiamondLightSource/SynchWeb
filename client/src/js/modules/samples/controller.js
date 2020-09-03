@@ -167,8 +167,11 @@ define(['marionette',
     },
       
     proteinadd: function() {
-        var title = GetView.ProteinList.title(app.type)
-        if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+        var title = GetView.ProteinList.title(app.type) 
+
+        if (app.options.get('valid_components') && !app.staff) {
+            app.message({ title: 'Cannot Create '+title, message: 'Only staff may create new '+title+'s'} )
+        } else if (app.proposal && app.proposal.get('ACTIVE') != 1) {
             app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new '+title+'s cannot be added'} )
         } else {
             

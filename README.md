@@ -31,7 +31,6 @@ This file should be copied to create a client/src/js/config.json file and edited
 | production | deprecated with webpack build |
 | build | git hash of current build, used if dynamic reload of pages required post deployment|
 | pucks | Array that lists default number of puck positions in sample changers for beamlines |
-| valid_samples | Boolean that if true, prevents using any sample that has not come from a User Office (i.e. protein with an externalId) |
 | gsMajorAxisOrientation | Determines whether the major grid scan axis determines the orientation of the view |
 | maintenance_message | Can be used so app serves static page under maintenance periods |
 | maintenance | Flag to indicate if client is in maintenance mode|
@@ -54,7 +53,6 @@ An example configuration is provided in api/config_sample.php
 Main items to change include:
 - database connection parameters (user, password, host, port)
 - authentication type (cas, ldap, dummy/no authentication)
-
 
 ### Build backend end
 ```sh

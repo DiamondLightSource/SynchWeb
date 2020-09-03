@@ -40,11 +40,11 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     url: 'protein',
 
     templateHelpers: function() {
+        var validOnly = app.options.get('valid_components') 
         return {
           title: this.getOption('title'),
           url: this.getOption('url'),
-          // In future combine with a global 'strict mode' or 'valid_samples' config option
-          CAN_CREATE: app.staff && (app.proposal && app.proposal.get('ACTIVE') == 1),
+          CAN_CREATE: ((validOnly && app.staff) || !validOnly) && (app.proposal && app.proposal.get('ACTIVE') == 1),
         }
     },
 
