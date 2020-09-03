@@ -17,8 +17,11 @@ define(['marionette',
         className: 'content',
 
         templateHelpers: function() {
+	    var validOnly = app.options.get('valid_components')
             return {
-                proposal: app.prop
+                proposal: app.prop,
+		// Proteins can only be migrated if we are not using approved only samples from user office
+		CAN_MIGRATE_PROTEINS: !validOnly, 
             }
         },
 
@@ -198,10 +201,11 @@ define(['marionette',
             this.displayLabContact()
         },
 
-        updateDewars: function() {
-            this.ui.dews.html(this.dewars.opts())
-            this.displayDewar()
-        },
+	// Registered Dewars can now belong to multiple proposals so this is not required
+//        updateDewars: function() {
+//            this.ui.dews.html(this.dewars.opts())
+//            this.displayDewar()
+//        },
 
         displayDewar: function() {
             var d = this.dewars.findWhere({ FACILITYCODE: this.ui.dews.val() })
@@ -263,10 +267,11 @@ define(['marionette',
         },
 
 
+	// Registered Dewars can now belong to multiple proposals so dewar functions are not required
         onRender: function() {
-            this.listenTo(this.dewars, 'sync', this.updateDewars)
+//            this.listenTo(this.dewars, 'sync', this.updateDewars)
             this.listenTo(this.labcontacts, 'sync', this.updateLabContacts)
-            this.updateDewars()
+//            this.updateDewars()
             this.updateLabContacts()
 
             this.ui.prop.autocomplete({ 
@@ -286,15 +291,20 @@ define(['marionette',
                 { name: 'DCOUNT', label: 'Data Collections', cell: 'string', editable: false },
             ]
 
-            this.rprots.show(new TableView({ 
-                collection: this.proteins, 
-                columns: columns, 
-                tableClass: 'proteins', 
-                filter: 's', 
-                loading: true, 
-                noSearchUrl: false,
-                backgrid: { emptyText: 'No proteins found' } 
-            }))
+
+	    var validOnly = app.options.get('valid_components')
+	    
+            if (!validOnly) {
+		this.rprots.show(new TableView({ 
+                	collection: this.proteins, 
+               		columns: columns, 
+                	tableClass: 'proteins', 
+                	filter: 's', 
+                	loading: true, 
+                	noSearchUrl: false,
+                	backgrid: { emptyText: 'No proteins found' } 
+            	}))
+	    }
 
 
             var columns = [
