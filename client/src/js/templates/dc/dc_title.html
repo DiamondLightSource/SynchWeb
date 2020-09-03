@@ -1,0 +1,21 @@
+        <span class="button_holder">
+            <a href="#" class="atp button button-notext" ty="dc" iid="<%-DCG%>" name="<%-DIR%><%-FILETEMPLATE%>"><i class="fa fa-book"></i> <span>Add to Project</span></a>
+            <a href="#" class="button button-notext flag <% if (FLAG) { %>button-highlight<% } %>" title="Click to add this data collection to the list of favourite data collections"><i class="fa fa-star-o"></i> <span>Favourite</span></a>
+            <span class="dcglink">
+                <a href="/dc/visit/<%-VIS_LINK%>/dcg/<%-DCG%>" class="perm button button-notext" title="Permalink"><i class="fa fa-link"></i> <span>Permalink</span></a>
+            </span>
+            <span class="dclink">
+                <a href="/dc/visit/<%-VIS_LINK%>/id/<%-ID%>" class="perm button button-notext" title="Permalink"><i class="fa fa-link"></i> <span>Permalink</span></a>
+            </span>
+            <a href="#" class="comments button button-notext" title="Comments"><i class="fa fa-comments"></i> <b class="DCCC"><%-DCCC%></b> <span>Comment(s)</span></a>
+
+            <a href="#" class="button attach"><i class="fa fa-file"></i> <%-DCAC%></a>
+
+            <span class="extra"></span>
+        </span>
+
+        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%-VIS_LINK%>"><%-VIS_LINK%></a>]<% } %> <%-ST%></span><span class="spacer"> - </span><i class="button fa fa-caret-right expand"></i> <span class="temp"><%-DIR%><%-FILETEMPLATE%></span>
+
+        <% if (ARCHIVED == "1") { %>
+            <i class="fa fa-archive r" title="This data collection is archived and data is no longer available on disk"></i>
+        <% } %>
