@@ -405,7 +405,7 @@ app.clearVisit = function(){
           app.content.$el.find('.content .'+options.persist).remove()
       }
           
-      app.content.$el.find('.content').prepend(new utils.alert(options).render().$el)
+      app.content.$el.find('.content').first().prepend(new utils.alert(options).render().$el)
   }
     
     
