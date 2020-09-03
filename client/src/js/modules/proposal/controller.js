@@ -11,7 +11,7 @@ define(['underscore', 'marionette',
 ], function(_, Marionette, ProposalList, Proposals, Visits, VisitList, SAXSVisitList, GenVisitList) {
   var controller = {
     list: function(s, page) {
-      app.bc.reset([{ title: 'Proposals', url: '/proposals' }])
+      app.bc.reset([{ title: 'Proposals', url: '/proposal' }])
       app.loading()
       console.log('prop list')
         
@@ -24,7 +24,7 @@ define(['underscore', 'marionette',
     },
        
     visit_list: function(s, page) {
-        app.bc.reset([{ title: 'Proposals', url: '/proposals' },
+        app.bc.reset([{ title: 'Proposals', url: '/proposal' },
                       { title: 'Visits for '+app.prop }])
         app.loading()
         page = page ? parseInt(page) : 1
