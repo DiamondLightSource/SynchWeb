@@ -1163,7 +1163,7 @@ class DC extends Page
                 LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.processingjobid = pj.processingjobid
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
                 WHERE api.datacollectionid = :1 AND app.processingstatus IS NOT NULL
-                GROUP BY apss.autoprocscalingstatisticsid
+                GROUP BY app.autoprocprogramid, apss.autoprocscalingstatisticsid
                 ORDER BY apss.scalingstatisticstype DESC', array($id));
             
             $msg_tmp = $this->db->pq("SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description

@@ -1488,6 +1488,8 @@ class Sample extends Page
         
         
         function _add_protein() {
+            global $valid_components;
+
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('ACRONYM')) $this->_error('No protein acronym');
             
@@ -1501,8 +1503,15 @@ class Sample extends Page
             $externalid = $this->has_arg('EXTERNALID') ? $this->arg('EXTERNALID') : null;
 
             // Only staff should be able to create Proteins that are not approved (i.e. no EXTERNALID) in User System
-            // TODO - add ability to switch this on/off per site. Need a global 'valid_samples' or 'strict mode' variable
-            if (!$externalid && !$this->staff) $this->_error('Only staff can create Proteins that are not approved in ISPyB', 401);
+            if ($valid_components) {
+                if (!$externalid && !$this->staff) $this->_error('Only staff can create proteins that are not approved in ISPyB', 401);
+
+                if (!$this->staff) {
+                    $chkext = $this->db->pq("SELECT proteinid FROM protein
+                        WHERE proposalid=:1 AND externalid=:2", array($this->proposalid, $externalid));
+                    if (sizeof($chkext)) $this->_error('No such protein to clone from');
+                }
+            }
             
             $chk = $this->db->pq("SELECT proteinid FROM protein
               WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $this->arg('ACRONYM')));

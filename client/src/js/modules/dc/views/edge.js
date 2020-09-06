@@ -1,35 +1,13 @@
-define(['marionette', 'backbone', 'modules/dc/views/edgeplot', 'modules/projects/views/addto', 'utils/editable', 'templates/dc/edge.html', 'backbone-validation'], function(Marionette, Backbone, EdgeView, AddToProjectView, Editable, template) {
+define(['marionette', 'backbone', 'modules/dc/views/edgeplot', 'modules/projects/views/addto', 'utils/editable', 
+  'modules/dc/views/dcbase',
+  'templates/dc/edge.html', 'backbone-validation'], function(Marionette, Backbone, EdgeView, AddToProjectView, Editable, 
+    DCBase,
+    template) {
 
-  return Marionette.ItemView.extend({
+  return DCBase.extend({
     template: template,
     plotView: EdgeView,
     
-      
-    modelEvents: {
-        'change': 'renderFlag',
-    },
-      
-    renderFlag: function() {
-      this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
-      this.$el.find('.COMMENTS').text(this.model.get('COMMENTS'))
-    },
-      
-      
-    events: {
-      'click .atp': 'addToProject',
-      'click .flag': 'flag',
-    },
-      
-    flag: function(e) {
-        e.preventDefault()
-        this.model.flag()
-    },
-      
-    addToProject: function(e) {
-        e.preventDefault()
-        app.dialog.show(new AddToProjectView({ name: this.model.get('DIR')+' Edge Scan', type: 'edge', iid: this.model.get('ID') }))
-    },
-      
     onShow: function() {
       this.edgeview  = new (this.getOption('plotView'))({ id: this.model.get('ID'), el: $('.edge', this.$el) })
         

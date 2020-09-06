@@ -11,13 +11,7 @@ define([
         // imageStatusItem: DCImageStatusItem,
         
         events: {
-            'click .distl': 'showPlot',
             'click .diffraction': 'showDiff',
-            'click .atp': 'addToProject',
-            'click .flag': 'flag',
-            'click .comments': 'showComments',
-            'click a.dl': 'showPlot',
-            'click a.sn': 'showSnapshots',
             'click a.dd': utils.signHandler,
         },
         

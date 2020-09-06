@@ -14,14 +14,22 @@ define(['marionette',
     'models/visit',
     'modules/admin/views/visitview',
     'modules/admin/views/addvisit',
+
+    'collections/users',
+    'models/user',
+    'modules/admin/views/users',
+    'modules/admin/views/userview',
+    'modules/admin/views/adduser',
     ], function(Marionette,
         Group, GroupsEditor, GroupView,
         Proposal, Proposals, ProposalList, ProposalView, AddProposalView,
-        Visit, VisitView, AddVisitView) {
+        Visit, VisitView, AddVisitView,
+        Users, User, UserList, UserView, AddUserView) {
 
     // Breadcrumb data
     var bc = { title: 'Manage Groups & Permissions', url: '/admin/groups' }
     var bc2 = { title: 'Manage Proposals & Visits', url: '/admin/proposals' }
+    var bc3 = { title: 'Manage Users', url: '/admin/users' }
     
     var controller = {
         
@@ -46,7 +54,8 @@ define(['marionette',
                 }
             })
         },
-                // Manage Proposals
+
+        // Manage Proposals
         manageProposals: function(s, page) {
             if (!app.user_can('manage_proposal')) {
                 app.bc.reset([bc2])
@@ -137,6 +146,58 @@ define(['marionette',
                 }
             })
         },
+
+        // Manage Users
+        manageUsers: function(s, page) {
+            if (!app.user_can('manage_users')) {
+                app.bc.reset([bc3])
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+
+            app.bc.reset([bc3])
+
+            if (page) page = parseInt(page)
+            else page = 1
+
+            var users = new Users(null, { state: { currentPage: page }, queryParams: { s: s } })
+            users.fetch()
+
+            app.content.show(new UserList({ collection: users, params: { s: s } }))
+        },
+
+        addUser: function() {
+            if (!app.user_can('manage_users')) {
+                app.bc.reset([bc3])
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+
+            app.bc.reset([bc3, { title: 'Add User' }])
+            app.content.show(new AddUserView())
+        },
+
+        viewUser: function(person) {
+            if (!app.user_can('manage_users')) {
+                app.bc.reset([bc3])
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+
+            app.loading()
+            var user = new User({ PERSONID: person })
+            user.fetch({
+                success: function() {
+                    app.bc.reset([bc3, { title: user.get('FULLNAME') }])
+                    app.content.show(new UserView({ model: user }))
+                },
+
+                error: function() {
+                    app.bc.reset([bc3])
+                    app.message({ title: 'No such proposal', message: 'The specified proposal could not be found'})
+                }
+            })
+        },
                    
     }
 
@@ -154,6 +215,11 @@ define(['marionette',
         app.on('visit:show', function(visit) {
             app.navigate('admin/proposals/visit/'+visit)
             controller.viewVisit(visit)
+        })
+
+        app.on('useradm:show', function(person) {
+            app.navigate('admin/users/'+person)
+            controller.viewUser(person)
         })
     })
 

@@ -20,10 +20,10 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'containers/registry/:crid': 'view_rcontainer',
 
       'dewars(/s/:s)(/page/:page)': 'dewar_list',
-      'dewars/fc/:fc': 'view_dewar',
-      'dewars/add': 'add_dewar',
       'dewars/dispatch/:did': 'dispatch_dewar',
       'dewars/transfer/:did': 'transfer_dewar',
+      'dewars/registry(/ty/:ty)(/s/:s)(/page/:page)': 'dewar_registry',
+      'dewars/registry/:fc': 'view_dewar',
 
       'dewars/overview(/s/:s)(/page/:page)': 'dewar_overview',
       'shipments/manifest': 'manifest',
@@ -34,7 +34,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'migrate': 'migrate',
     },
     
-    loadEvents: ['shipments:show', 'shipment:show', 'container:show', 'dewar:show'],
+    loadEvents: ['shipments:show', 'shipment:show', 'rcontainer:show', 'rdewar:show'],
 
     loadModule: function(loadedCallback) {
         import(/* webpackChunkName: "shipping" */ 'modules/shipment/controller').then(controller => {
