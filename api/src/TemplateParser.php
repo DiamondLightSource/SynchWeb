@@ -7,6 +7,7 @@ class TemplateParser
 
         # YEAR         from visit
         # BEAMLINENAME from visit
+        # PILOGIN      from visit
 
         # VISITDIR     interpolated from config $visit_directory, requires DCID, SESSIONID, or VISIT
         
@@ -69,9 +70,10 @@ class TemplateParser
             if (array_key_exists('DCID', $options)) {
                 array_push($args, $options['DCID']);
 
-                $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, dc.imagedirectory
+                $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, dc.imagedirectory, pe.login as pilogin
                     FROM blsession s 
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN person pe ON pe.personid = p.personid
                     INNER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
                     INNER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid 
                     
@@ -83,9 +85,10 @@ class TemplateParser
                 $this->params['VISITDIR'] = preg_replace('/'.$visit['VISIT'].'\/.*/', $visit['VISIT'], $visit['IMAGEDIRECTORY']);
 
             } else {
-                $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
+                $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, pe.login as pilogin
                     FROM blsession s 
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
+                    INNER JOIN person pe ON pe.personid = p.personid
                     $where", $args);
 
                 if (sizeof($visit)) $visit = $visit[0];
