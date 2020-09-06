@@ -7,7 +7,7 @@ define([
     'backgrid',
     'views/table',
     'views/dialog',
-    'modules/types/xpdf/samples/views/simplesampleaddpop',
+    'modules/types/xpdf/samples/views/simplesampleaddpoploader',
     'modules/types/xpdf/samples/views/advancedsampleaddpop',
     'utils/table',
     'modules/types/xpdf/utils/phasecompositor',
@@ -16,7 +16,7 @@ define([
         Backgrid,
         TableView,
         DialogView,
-        AddSimpleSample,
+        AddSimpleSampleLoader,
         AddAdvancedSample,
         table,
         phaseCompositor,
@@ -93,7 +93,7 @@ define([
         addSimpleSample: function(e) {
             e.preventDefault()
 
-            var addSimpleSampleView = new AddSimpleSample({ dialog: true })
+            var addSimpleSampleView = new AddSimpleSampleLoader({ dialog: true })
             this.listenTo(app, 'sample:reloadSampleTable', this.refreshSampleTable)
             app.dialog.show(new DialogView({ title: 'Add New Simple Sample', className: 'content', view: addSimpleSampleView, autoSize: true }))
         },

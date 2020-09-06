@@ -15,6 +15,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         array: /^[\d+(.\d+)?),]+$/,
         country: /^(\w|\s|\-|,|\(|\)|')+$/,
         visit: /^\w+\d+-\d+$/,
+        twopath: /^(\w|-)+\/?(\w|-)+$/,
     })
     
     _.extend(Backbone.Validation.messages, {

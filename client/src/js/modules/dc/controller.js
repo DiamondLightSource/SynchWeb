@@ -234,6 +234,10 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
   app.addInitializer(function() {
     app.on('dclist:show', function(visit) {
       if (visit) {
+          // Record the visit number 
+          let visit_number = visit.split('-')[1]
+          app.setVisit(visit_number)
+
           app.navigate('dc/visit/'+visit)
           controller.dc_list(visit)
       } else {
@@ -243,6 +247,11 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
     })
       
     app.on('dc:show', function(type, id, visit) {
+        if (visit) {
+            // Record the visit number 
+            let visit_number = visit.substring(visit.lastIndexOf('-')+1, visit.length)
+            app.setVisit(visit_number)
+        }
         app.navigate('dc/'+(visit ? ('visit/'+visit) : '') + '/ty/'+type+'/id/'+id)
         controller.dc_list(visit, null, null, null, type, id)
     })

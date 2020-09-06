@@ -793,7 +793,7 @@ class DC extends Page
         # AutoProcProgram Messages
         function _ap_message_status() {
             if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
-            $where = 'WHERE p.proposalid=:1';
+            $where = 'WHERE s.proposalid=:1';
             $args = array($this->proposalid);
 
             $wids = array();
@@ -817,10 +817,9 @@ class DC extends Page
                 FROM autoprocprogrammessage appm
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid OR app.datacollectionid = dc.datacollectionid)
+                INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid)
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN proposal p ON p.proposalid = s.proposalid
                 $where
                 GROUP BY dc.datacollectionid", $args);
 
@@ -1164,7 +1163,7 @@ class DC extends Page
                 LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.processingjobid = pj.processingjobid
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
                 WHERE api.datacollectionid = :1 AND app.processingstatus IS NOT NULL
-                GROUP BY apss.autoprocscalingstatisticsid
+                GROUP BY app.autoprocprogramid, apss.autoprocscalingstatisticsid
                 ORDER BY apss.scalingstatisticstype DESC', array($id));
             
             $msg_tmp = $this->db->pq("SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
@@ -1583,18 +1582,26 @@ class DC extends Page
             #im.datacollectionid=:1 
             $imqs = $this->db->pq("SELECT imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b, imq.dozor_score as d
                 FROM imagequalityindicators imq 
-            	WHERE imq.datacollectionid IN ($where)
+                WHERE imq.datacollectionid IN ($where)
                 ORDER BY imq.imagenumber", $args);
 
             foreach ($imqs as $imq) {
-                array_push($iqs[0], array(intval($imq['NIM']), intval($imq['S'])));
-                array_push($iqs[1], array(intval($imq['NIM']), intval($imq['B'])));
-                array_push($iqs[2], array(intval($imq['NIM']), floatval($imq['RES'])));
-                array_push($iqs[3], array(intval($imq['NIM']), floatval($imq['TOTALINTEGRATEDSIGNAL'])));
-                array_push($iqs[4], array(intval($imq['NIM']), floatval($imq['D'])));
+                array_push($iqs[0], array(intval($imq['NIM']), $this->_null_or($imq['S'], 'int')));
+                array_push($iqs[1], array(intval($imq['NIM']), $this->_null_or($imq['B'], 'int')));
+                array_push($iqs[2], array(intval($imq['NIM']), $this->_null_or($imq['RES'], 'float')));
+                array_push($iqs[3], array(intval($imq['NIM']), $this->_null_or($imq['TOTALINTEGRATEDSIGNAL'], 'float')));
+                array_push($iqs[4], array(intval($imq['NIM']), $this->_null_or($imq['D'], 'float')));
             }
 
             $this->_output($iqs);
+        }
+
+        function _null_or($field, $conversion) {
+            $val = $field;
+            if ($conversion == 'float') $val = floatval($field);
+            if ($conversion == 'int') $val = intval($field);
+
+            return $field == null ? $field : $val;
         }
 
         # ------------------------------------------------------------------------

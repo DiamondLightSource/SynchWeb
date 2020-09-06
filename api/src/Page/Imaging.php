@@ -50,6 +50,8 @@ class Imaging extends Page
                                         'SCREENCOMPONENTID' => '\d+',
                                         'CONCENTRATION' => '\d+(.\d+)?',
                                         'PH' => '\d+(.\d+)?',
+
+                                        'BLSAMPLEIMAGEAUTOSCORESCHEMAID' => '\d',
                                );
         
 
@@ -62,6 +64,8 @@ class Imaging extends Page
                                         array('/inspection/images/:imid', 'patch', '_update_inspection_image'),
 
                                         array('/inspection/images/scores', 'get', '_get_image_scores'),
+                                        array('/inspection/images/scores/auto', 'get', '_get_auto_scores'),
+                                        array('/inspection/images/scores/auto/schemas', 'get', '_get_auto_score_schemas'),
 
                                         array('/inspection/image/:imid', 'get', '_get_image'),
 
@@ -631,6 +635,54 @@ class Imaging extends Page
 
             $scores = $this->db->pq("SELECT blsampleimagescoreid, name, score, colour, CONCAT(score, ' - ', name) as title FROM blsampleimagescore ORDER BY score");
             $this->_output($scores);
+        }
+
+
+        function _get_auto_score_schemas() {
+            if (!$this->has_arg('CONTAINERINSPECTIONID')) $this->_error('No container inspection specified');
+
+            $rows = $this->db->pq("SELECT  distinct sass.blsampleimageautoscoreschemaid, sass.schemaname
+                FROM containerinspection ci
+                INNER JOIN blsampleimage si ON si.containerinspectionid = ci.containerinspectionid
+                INNER JOIN blsampleimage_has_autoscoreclass as shasc ON si.blsampleimageid = shasc.blsampleimageid
+                INNER JOIN blsampleimageautoscoreclass sasc ON sasc.blsampleimageautoscoreclassid = shasc.blsampleimageautoscoreclassid
+                INNER JOIN blsampleimageautoscoreschema sass ON sass.blsampleimageautoscoreschemaid = sasc.blsampleimageautoscoreschemaid
+                INNER JOIN container c ON c.containerid = ci.containerid
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping s ON s.shippingid = d.shippingid
+                WHERE ci.containerinspectionid = :1 AND s.proposalid = :2", 
+                array($this->arg("CONTAINERINSPECTIONID"), $this->proposalid));
+
+            $this->_output($rows);
+        }
+
+        function _get_auto_scores() {
+            if (!$this->has_arg('CONTAINERINSPECTIONID')) $this->_error('No container inspection specified');
+            if (!$this->has_arg('BLSAMPLEIMAGEAUTOSCORESCHEMAID')) $this->_error('No schema specified');
+
+            $rows = $this->db->pq("SELECT si.blsampleimageid, sasc.blsampleimageautoscoreclassid, sasc.scoreclass, shasc.probability
+                FROM containerinspection ci
+                INNER JOIN blsampleimage si ON si.containerinspectionid = ci.containerinspectionid
+                INNER JOIN blsampleimage_has_autoscoreclass as shasc ON si.blsampleimageid = shasc.blsampleimageid
+                INNER JOIN blsampleimageautoscoreclass sasc ON sasc.blsampleimageautoscoreclassid = shasc.blsampleimageautoscoreclassid
+                INNER JOIN blsampleimageautoscoreschema sass ON sass.blsampleimageautoscoreschemaid = sasc.blSampleImageAutoScoreSchemaId
+                INNER JOIN container c ON c.containerid = ci.containerid
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping s ON s.shippingid = d.shippingid
+                WHERE ci.containerinspectionid = :1 AND s.proposalid = :2 AND sass.blsampleimageautoscoreschemaid = :3", 
+                array($this->arg("CONTAINERINSPECTIONID"), $this->proposalid, $this->arg('BLSAMPLEIMAGEAUTOSCORESCHEMAID')));
+
+            $inspection = array();
+            foreach ($rows as $r) {
+                if (!array_key_exists($r['BLSAMPLEIMAGEID'], $inspection)) $inspection[$r['BLSAMPLEIMAGEID']] = array(
+                    'BLSAMPLEIMAGEID' => $r['BLSAMPLEIMAGEID'],
+                    'CLASSES' => array(),
+                );
+
+                $inspection[$r['BLSAMPLEIMAGEID']]['CLASSES'][$r['SCORECLASS']] = floatval($r['PROBABILITY']);
+            }
+
+            $this->_output(array_values($inspection));
         }
 
 

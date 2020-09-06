@@ -48,7 +48,7 @@ define(['marionette',
         },
         
         showVisit: function(e) {
-            if ($(e.target).is('a') || $(e.target).is('i')) return
+            //if ($(e.target).is('a') || $(e.target).is('i')) return
             app.trigger('dclist:show', this.model.get('VISIT'))
         },
         

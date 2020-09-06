@@ -167,10 +167,47 @@ define(['marionette',
     },
       
     proteinadd: function() {
+        var title = GetView.ProteinList.title(app.type) 
+
+        if (app.options.get('valid_components') && !app.staff) {
+            app.message({ title: 'Cannot Create '+title, message: 'Only staff may create new '+title+'s'} )
+        } else if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+            app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new '+title+'s cannot be added'} )
+        } else {
+            
+            var pbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+            app.bc.reset([pbc, { title: 'Add '+title }])
+            app.content.show(GetView.ProteinAdd.get(app.type))
+        }
+    },
+
+    proteinclone: function(pid) {
+        app.loading()
+
         var title = GetView.ProteinList.title(app.type)
         var pbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
-        app.bc.reset([pbc, { title: 'Add '+title }])
-        app.content.show(GetView.ProteinAdd.get(app.type))
+
+        var lookup = new ProposalLookup({ field: 'PROTEINID', value: pid })
+        lookup.find({
+            success: function() {
+                var protein = new Protein({ PROTEINID: pid })
+                protein.fetch({
+                    success: function() {
+                        app.bc.reset([pbc, { title: 'Clone '+title }])
+                        app.content.show(GetView.ProteinAdd.get(app.type, { model: protein }))
+                    },
+                    error: function() {
+                        app.bc.reset([pbc])
+                        app.message({ title: 'No such '+title, message: 'The specified '+title+' could not be found'})
+                    },
+                })
+            },
+
+            error: function() {
+                app.bc.reset([pbc])
+                app.message({ title: 'No such '+title, message: 'The specified '+title+' could not be found'})
+            }
+        })
     },
 
   }

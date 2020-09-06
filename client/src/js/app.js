@@ -49,8 +49,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
   // Restore token if its in sessionStorage
   app.token = sessionStorage.getItem('token')
   
-  app.valid_samples = config.valid_samples ? config.valid_samples : false
-
   // Allow the app to load a proposal on bootstrap
   app.parseQuery = function() {
       var str = location.search.replace(/\?/, '').split(/&/)
@@ -271,6 +269,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           app.cookie(null, function() {
             if (options && options.callback) options.callback()
           })
+
+          app.setVisit()
       },
 
       error: function() {
@@ -334,6 +334,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
     sessionStorage.removeItem('prop')
 
     delete app.prop
+    app.clearVisit()
     // Reset type to the default for this user
     app.type = app.defaultType
     if (!app.type) {
@@ -345,6 +346,26 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
     // Now we need to tell any listening views that the proposal has changed...
     app.triggerMethod('proposal:change', null)
   },
+
+
+  /*
+   Set current visit number
+  */
+ app.setVisit = function(visit){
+  if(visit) sessionStorage.setItem('visit', visit)
+  else visit = sessionStorage.getItem('visit')
+  app.visit = visit
+}
+
+/*
+ Deselect selected visit.
+ Called by clearProposal() when navigating back to home page.
+*/
+app.clearVisit = function(){
+    sessionStorage.removeItem('visit')
+    delete app.visit
+}  
+
 
   /*
    Load client side options and show MOTD
@@ -384,7 +405,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           app.content.$el.find('.content .'+options.persist).remove()
       }
           
-      app.content.$el.find('.content').prepend(new utils.alert(options).render().$el)
+      app.content.$el.find('.content').first().prepend(new utils.alert(options).render().$el)
   }
     
     

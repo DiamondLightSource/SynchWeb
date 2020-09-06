@@ -43,6 +43,8 @@ class Shipment extends Page
                               'FIRSTEXPERIMENTID' => '\d+',
                               'SHIPPINGID' => '\d+',
 
+                              'DEWARREGISTRYID' => '\d+',
+
                               'BARCODE' => '([\w-])+',
                               'LOCATION' => '[\w|\s|-]+',
                               'NEXTLOCATION' => '[\w|\s|-]+',
@@ -136,6 +138,10 @@ class Shipment extends Page
                               array('/dewars/history(/did/:did)', 'get', '_get_history'),
                               array('/dewars/history', 'post', '_add_history'),
 
+                              array('/dewars/registry/proposals', 'get', '_get_prop_dewar'),
+                              array('/dewars/registry/proposals', 'post', '_add_prop_dewar'),
+                              array('/dewars/registry/proposals/:DEWARREGISTRYHASPROPOSALID', 'delete', '_rem_prop_dewar'),
+
                               array('/dewars/registry(/:FACILITYCODE)', 'get', '_dewar_registry'),
                               array('/dewars/registry/:FACILITYCODE', 'patch', '_update_dewar_registry'),
                               array('/dewars/registry/:FACILITYCODE', 'put', '_add_dewar_registry'),
@@ -172,7 +178,7 @@ class Shipment extends Page
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
                               
-                              array('/containers/notify/:containerid', 'get', '_notify_container'),
+                              array('/containers/notify/:BARCODE', 'get', '_notify_container'),
 
                               array('/cache/:name', 'put', '_session_cache'),
                               array('/cache/:name', 'get', '_get_session_cache'),
@@ -336,7 +342,6 @@ class Shipment extends Page
 
         function _add_history() {
             global $in_contacts, $transfer_email;
-            global $bl_types; # Added for beamline names
             # Flag to indicate we should e-mail users their dewar has returned from BL
             $from_beamline = False;
 
@@ -376,11 +381,10 @@ class Shipment extends Page
                 // Not particularly efficient, but this is not a time critical operation so
                 // this approach covers all beamlines for future proofing.
                 // Stop/break if we find a match
-                foreach($bl_types as $beamlines) {
-                    if (in_array($last_location, $beamlines)) {
-                        $from_beamline = True;
-                        break;
-                    }
+                $bls = $this->_get_beamlines_from_type('all');
+
+                if (in_array($last_location, $bls)) {
+                    $from_beamline = True;
                 }
             } else {
                 // No history - could be a new dewar, so not necessarily an error...
@@ -443,6 +447,21 @@ class Shipment extends Page
             // The old version assumed rack-<word>-from-bl
             //if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
             if ($from_beamline && $dew['LCRETEMAIL']) {
+                // Any data collections for this dewar's containers?
+                // Note this counts data collection ids for containers and uses the DataCollection.SESSIONID to determine the session/visit
+                // Should work for UDC (where container.sessionid is set) as well as any normal scheduled session (where container.sessionid is not set)
+                $rows = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, dc.sessionid, count(dc.datacollectionid) as dccount
+                    FROM Dewar d
+                    INNER JOIN Container c on c.dewarid = d.dewarid
+                    INNER JOIN BLSample bls ON bls.containerid = c.containerid
+                    INNER JOIN DataCollection dc ON dc.blsampleid = bls.blsampleid
+                    INNER JOIN BLSession ses ON dc.sessionid = ses.sessionid
+                    INNER JOIN Proposal p ON p.proposalid = ses.proposalid
+                    WHERE d.dewarid = :1
+                    GROUP BY dc.sessionid", array($dew['DEWARID']));
+
+                if (sizeof($rows)) $dew['DC'] = $rows;
+
                 // Log the event if debugging
                 if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
 
@@ -460,17 +479,12 @@ class Shipment extends Page
             $args = array($this->proposalid);
             $where = 'p.proposalid=:1';
 
-            $fields = "CONCAT(p.proposalcode, p.proposalnumber) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, l.city, l.postcode, l.country, count(d.dewarid) as dewars";
-            $group = "CONCAT(p.proposalcode, p.proposalnumber), r.facilitycode, r.purchasedate, r.labcontactid, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name, l.address";
+            $fields = "r.dewarregistryid, max(CONCAT(p.proposalcode, p.proposalnumber)) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, count(d.dewarid) as dewars, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, r.bltimestamp, TO_CHAR(max(d.bltimestamp),'DD-MM-YYYY') as lastuse, count(dr.dewarreportid) as reports";
+            $group = "r.facilitycode";
 
-            if ($this->has_arg('all')) {
+            if ($this->has_arg('all') && $this->staff) {
                 $args = array();
                 $where = '1=1';
-
-                if (!$this->bcr() && !$this->staff) {
-                    $fields = "CONCAT(p.proposalcode, p.proposalnumber) as prop, r.facilitycode";
-                    $group = "CONCAT(p.proposalcode, p.proposalnumber), r.facilitycode";
-                }
             }
 
             if ($this->has_arg('FACILITYCODE')) {
@@ -483,10 +497,16 @@ class Shipment extends Page
                 array_push($args, $this->arg('s'));
             }
 
+            if ($this->has_arg('t')) {
+                if ($this->arg('t') == 'orphan') $where .= " AND rhp.dewarregistryid IS NULL";
+            }
+
 
             $tot = $this->db->pq("SELECT count(r.facilitycode) as tot 
               FROM dewarregistry r 
-              INNER JOIN proposal p ON p.proposalid = r.proposalid WHERE $where", $args);
+              LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
+              LEFT OUTER JOIN proposal p ON p.proposalid = r.proposalid 
+              WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
 
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -499,19 +519,28 @@ class Shipment extends Page
             array_push($args, $start);
             array_push($args, $end);
 
+            $order = 'r.facilitycode';
+            if ($this->has_arg('sort_by')) {
+                $cols = array(
+                  'FACILITYCODE' => 'r.facilitycode', 'DEWARS' => 'count(distinct d.dewarid)', 
+                  'LASTUSE' => 'max(d.bltimestamp)', 'BLTIMESTAMP' => 'r.bltimestamp',
+                  'REPORTS' => 'count(dr.dewarreportid)'
+                );
+                $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+                if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
+            }
+
             $rows = $this->db->paginate("SELECT $fields
               FROM dewarregistry r 
-              INNER JOIN proposal p ON p.proposalid = r.proposalid 
-              INNER JOIN labcontact lc ON r.labcontactid = lc.labcontactid
-              INNER JOIN person pe ON pe.personid = lc.personid
-              INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
+              LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
+              LEFT OUTER JOIN dewarreport dr ON r.facilitycode = dr.facilitycode
+              LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
               LEFT OUTER JOIN dewar d ON d.facilitycode = r.facilitycode
               LEFT OUTER JOIN shipping s ON d.shippingid = s.shippingid 
 
               WHERE $where 
               GROUP BY $group
-
-              ORDER BY r.facilitycode DESC", $args);
+              ORDER BY $order", $args);
             
             if ($this->has_arg('FACILITYCODE')) {
                 if (sizeof($rows)) $this->_output($rows[0]);
@@ -523,12 +552,20 @@ class Shipment extends Page
 
 
         function _add_dewar_registry() {
+            if (!$this->staff) $this->_error('No access');
             if (!$this->has_arg('FACILITYCODE')) $this->_error('No dewar code specified');
-            if (!$this->has_arg('LABCONTACTID')) $this->_error('No lab contact specified');
-            $purchase = $this->has_arg('PURCHASEDATE') ? $this->arg('PURCHASEDATE') : '';
 
-            $this->db->pq("INSERT INTO dewarregistry (facilitycode, labcontactid, proposalid, purchasedate, bltimestamp) VALUES (:1, :2, :3, TO_DATE(:4, 'DD-MM-YYYY'), SYSDATE)", array($this->arg('FACILITYCODE'), $this->arg('LABCONTACTID'), $this->proposalid, $purchase));
-            $this->_output(array('FACILITYCODE' => $this->arg('FACILITYCODE')));
+            $fc = strtoupper($this->arg('FACILITYCODE'));
+            $check = $this->db->pq("SELECT dewarregistryid FROM dewarregistry WHERE facilitycode=:1", array($fc));
+
+            if (sizeof($check)) {
+              $this->_error('That facility code is already in use');
+            }
+
+            $purchase = $this->has_arg('PURCHASEDATE') ? $this->arg('PURCHASEDATE') : '';
+            $this->db->pq("INSERT INTO dewarregistry (facilitycode, purchasedate, bltimestamp) VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY'), SYSDATE)", array($fc, $purchase));
+
+            $this->_output(array('FACILITYCODE' => $fc, 'DEWARREGISTRYID' => $this->db->id()));
         }
 
 
@@ -540,7 +577,7 @@ class Shipment extends Page
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            $fields = array('LABCONTACTID', 'PURCHASEDATE', 'PROPOSALID');
+            $fields = array('PURCHASEDATE');
             if ($this->staff) array_push($fields, 'NEWFACILITYCODE');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
@@ -559,6 +596,45 @@ class Shipment extends Page
                     }
                 }
             }
+        }
+
+        function _get_prop_dewar() {
+            if (!$this->has_arg('DEWARREGISTRYID')) $this->_error('No dewar specified');
+
+            $rows = $this->db->pq("SELECT drhp.dewarregistryhasproposalid,drhp.dewarregistryid,drhp.proposalid,CONCAT(p.proposalcode, p.proposalnumber) as proposal, pe.familyname, pe.givenname, pe.phonenumber, pe.emailaddress, lc.cardname, l.name as labname, l.address, l.city, l.postcode, l.country
+              FROM dewarregistry_has_proposal drhp
+              INNER JOIN proposal p ON p.proposalid = drhp.proposalid
+              LEFT OUTER JOIN labcontact lc ON drhp.labcontactid = lc.labcontactid
+              LEFT OUTER JOIN person pe ON pe.personid = lc.personid
+              LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
+              
+              WHERE drhp.dewarregistryid = :1", array($this->arg('DEWARREGISTRYID')));
+
+            $this->_output($rows);
+        }
+
+        function _add_prop_dewar() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('DEWARREGISTRYID')) $this->_error('No dewar specified');
+            if (!$this->has_arg('PROPOSALID')) $this->_error('No proposal specified');
+            if (!$this->has_arg('LABCONTACTID')) $this->_error('No lab contact specified');
+
+            $chk = $this->db->pq("SELECT dewarregistryid 
+              FROM dewarregistry_has_proposal
+              WHERE dewarregistryid = :1 AND proposalid = :2", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID')));
+            if (sizeof($chk)) $this->_error('That dewar is already registered to that proposal');
+
+            $this->db->pq("INSERT INTO dewarregistry_has_proposal (dewarregistryid,proposalid,personid,labcontactid) 
+              VALUES (:1,:2,:3,:4)", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personid, $this->arg('LABCONTACTID')));
+
+            $this->_output(array('DEWARREGISTRYHASPROPOSALID' => $this->db->id()));
+        }
+
+        function _rem_prop_dewar() {
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('DEWARREGISTRYHASPROPOSALID')) $this->_error('No dewar proposal specified');
+
+            $this->db->pq("DELETE FROM dewarregistry_has_proposal WHERE dewarregistryhasproposalid=:1", array($this->arg('DEWARREGISTRYHASPROPOSALID')));
         }
 
 
@@ -855,7 +931,6 @@ class Shipment extends Page
         # ------------------------------------------------------------------------
         # List of dewars for a shipment
         function _get_dewars() {
-            global $bl_types;
             if (!$this->has_arg('prop') && !$this->user->has('all_dewars')) $this->_error('No proposal id specified');
 
             $where = 's.proposalid=:1';
@@ -896,8 +971,9 @@ class Shipment extends Page
             }
 
             if ($this->has_arg('ty')) {
-                if (array_key_exists($this->arg('ty'), $bl_types)) {
-                    $bls = implode("', '", $bl_types[$this->arg('ty')]);
+                $bls_tmp = $this->_get_beamlines_from_type($this->arg('ty'));
+                if (!empty($bls_tmp)) {
+                    $bls = implode("', '", $bls_tmp);
                     $where .= " AND se.beamlinename IN ('$bls')";
                 }
             }
@@ -1275,7 +1351,10 @@ class Shipment extends Page
                 $where .= ' AND c.ownerid = :'.(sizeof($args)+1);
                 array_push($args, $this->user->personid);
             }
-                
+            error_log("CONTAINER TOTAL QUERY for Proposal " . $this->proposalid);
+            error_log($where);
+            error_log(print_r($args, true));
+
             $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
                 FROM container c 
                 INNER JOIN dewar d ON d.dewarid = c.dewarid 
@@ -1293,6 +1372,8 @@ class Shipment extends Page
                 $having", $args);
             $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
             
+            error_log('TOTAL NUMBER OF CONTAINERS = ' . $tot);
+
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
                 $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
@@ -1331,6 +1412,9 @@ class Shipment extends Page
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
+            error_log("CONTAINER QUERY");
+            error_log($where);
+            error_log(print_r($args, true));
             // $this->db->set_debug(True);
             $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, 
                 count(distinct ss.blsubsampleid) as subsamples, 
@@ -2380,11 +2464,22 @@ class Shipment extends Page
             $this->_output($data);
         }
 
+        /**
+         * Controller method for notify container endpoint.
+         * This is called from an acquisition system when new data is available.
+         * 
+         * The calling application must be in the auto whitelist group and include the BARCODE in the URL
+         * On success, the container status is updated to "notify_email".
+         * If the container status is anything other than "notify_email", send email if preconditions met.
+         * Preconditions are that the container has an owner with an email address and the container has entries in container history.
+         * Returns 200 on success or if status is notify_email. Response body is {'EMAIL_SENT' => 1 or 0} depending on if email was sent.
+         * Returns 404 if no container found, 412 if preconditions not met
+         */
         function _notify_container() {
             global $auto;
 
             if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
-            if (!$this->has_arg('containerid')) $this->_error('No container specified');
+            if (!$this->has_arg('BARCODE')) $this->_error('No container specified');
 
             $cont = $this->db->pq("SELECT c.containerid, pe.emailaddress, pe.givenname, pe.familyname, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.code, sh.shippingname
                 FROM container c
@@ -2393,46 +2488,34 @@ class Shipment extends Page
                 INNER JOIN person pe ON pe.personid = c.ownerid
                 INNER JOIN blsession s ON s.sessionid = c.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE c.containerid=:1", array($this->arg('containerid')));
+                WHERE c.barcode=:1", array($this->arg('BARCODE')));
 
-            if (!sizeof($cont)) return;
+            if (!sizeof($cont)) $this->_error('Container not found', 404);
+
             $cont = $cont[0];
+
+            if (!$cont['EMAILADDRESS']) $this->_error('Precondition failed, no email address for this container owner', 412);
 
             $hist = $this->db->pq("SELECT h.containerhistoryid, h.status, h.bltimestamp
                 FROM containerhistory h
                 WHERE h.containerid=:1
-                ORDER BY h.bltimestamp DESC
-                LIMIT 10", array($cont['CONTAINERID']));
-            if (!sizeof($hist)) return;
+                ORDER BY h.containerhistoryid DESC
+                LIMIT 1", array($cont['CONTAINERID']));
 
-            $last = array();
-            foreach ($hist as $h) {
-                array_push($last, $h['STATUS']);
-            }
-            if (in_array('notify_email', $last)) return;
+            if (!sizeof($hist)) $this->_error('Precondition failed, no history for this container', 412);
 
-            // If we want to match to a specific container history sequence...
-            // $send_notification = False;
-            // foreach ($new_data as $n) {
-            //     for ($i = 0; $i < (sizeof($last)-sizeof($n)); $i++) {
-            //         $match = True;
-            //         foreach ($n as $j => $p) {
-            //             if ($last[$i+$j] != $p) $match = False;
-            //         }
+            // Case insensitive check. If we have already sent an email, return.
+            if (strcasecmp($hist[0]['STATUS'], 'notify_email') == 0) {
+                $this->_output(array('EMAIL_SENT' => 0));
+            } else {
+                $email = new Email('data-new', '*** New data available for your container ***');
+                $email->data = $cont;
+                $email->send($cont['EMAILADDRESS']);
 
-            //         if ($match) $send_notification = True;
-            //     }
-            // }
+                $this->db->pq("INSERT INTO containerhistory (status,containerid) VALUES (:1, :2)", array('notify_email', $cont['CONTAINERID']));
 
-            // if ($send_notification) {
-            //     $email = new Email('data-new', '*** New data available for your container ***');
-            //     $email->data = $cont;
-            //     $email->send($cont['EMAILADDRESS']);
-            // }
-            $email = new Email('data-new', '*** New data available for your container ***');
-            $email->data = $cont;
-            $email->send($cont['EMAILADDRESS']);
-
-            $this->db->pq("INSERT INTO containerhistory (status,containerid) VALUES (:1, :2)", array('notify_email', $cont['CONTAINERID']));
+                // Everything OK, send result
+                $this->_output(array('EMAIL_SENT' => 1));
+           }
         }
     }

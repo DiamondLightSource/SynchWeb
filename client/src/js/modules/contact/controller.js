@@ -55,8 +55,12 @@ define(['marionette',
         },
         
         add: function() {
-            app.bc.reset([bc,{ title: 'Add Contact' }])
-            app.content.show(new AddContactView())
+            if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+                app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new contacts cannot be added'} )
+            } else {
+                app.bc.reset([bc,{ title: 'Add Contact' }])
+                app.content.show(new AddContactView())
+            }
         },
 
 

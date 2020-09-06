@@ -84,7 +84,8 @@ define(['marionette',
         onRender: function() {
             var self = this
             var edit = new Editable({ model: this.model, el: this.$el })
-            edit.create('NAME', 'text')
+            // If this is protein is not from user office, allow changing name
+            if (this.model.get('EXTERNAL') == 0) edit.create('NAME', 'text')
             edit.create('ACRONYM', 'text')
             edit.create('SEQUENCE', 'markdown')
             edit.create('MOLECULARMASS', 'text')

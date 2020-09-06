@@ -77,7 +77,7 @@ define(['marionette',
         
         setData: function() {
             var data = {}
-            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'ENERGY', 'RADIATIONSENSITIVITY'], function(f) {
+            _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'ENERGY', 'RADIATIONSENSITIVITY', 'USERPATH'], function(f) {
                 var el = this.$el.find('[name='+f+']')
                 if (el.length) data[f] = el.attr('type') == 'checkbox'? (el.is(':checked')?1:null) : el.val()
             }, this)
@@ -116,16 +116,20 @@ define(['marionette',
                 var newm = this.model.clone()
                 newm.get('components').reset(this.model.get('components').toJSON())
 
+                // Automatically define the next sample name on clone.
+                // Finds the last number in the sample name (i.e. the number suffix, sample01 => 01) and increments the value.
+                // Takes into account '0' padding, so next sample would be sample02 etc.
                 var next = empty[0]
                 var name_base = this.model.get('NAME').replace(/\d+$/, '')
                 var name_regexp = new RegExp(name_base)
                 var similar = this.model.collection.filter(function(m) { return m.get('NAME').match(name_regexp) })
-                if (similar.length) no = similar[similar.length-1].get('NAME').match(/\d+$/)
+                var number_suffix = []
+                if (similar.length) number_suffix = similar[similar.length-1].get('NAME').match(/\d+$/)
 
-                if (no) no = no.length > 0 ? parseInt(no[0]) : 1
-                else no = 1
+                var number_pad = number_suffix.length > 0 ? number_suffix[0].length : 0
+                number_suffix = number_suffix.length > 0 ? parseInt(number_suffix[0]) : 1
 
-                newm.set('NAME', name_base+(no+1))
+    	        newm.set('NAME', name_base+((number_suffix+1).toString().padStart(number_pad, '0')))
                 newm.set('LOCATION', empty[0].get('LOCATION'))
 
                 empty[0].attributes = newm.attributes
@@ -141,7 +145,7 @@ define(['marionette',
                 PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '', SYMBOL: '',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: '',
                 CRYSTALID: -1, PACKINGFRACTION: '', LOOPTYPE: '',
-                DIMENSION1: '', DIMENSION2: '', DIMENSION3: '', SHAPE: '', CENTRINGMETHOD: '', EXPERIMENTKIND: '', ENERGY: '', RADIATIONSENSITIVITY: '',
+                DIMENSION1: '', DIMENSION2: '', DIMENSION3: '', SHAPE: '', CENTRINGMETHOD: '', EXPERIMENTKIND: '', ENERGY: '', RADIATIONSENSITIVITY: '', USERPATH: '',
             })
             this.model.get('components').reset()
             this.render()
@@ -191,7 +195,7 @@ define(['marionette',
             //if (this.model.get('CODE')) this.$el.find('input[name=CODE]').val(this.model.get('CODE'))
             //if (this.model.get('COMMENTS')) this.$el.find('input[name=COMMENTS]').val(this.model.get('COMMENTS'))
                 
-            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME', 'PACKINGFRACTION'], function(f, i) {
+            _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME', 'PACKINGFRACTION', 'USERPATH'], function(f, i) {
                 if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             }, this)
 
@@ -257,6 +261,13 @@ define(['marionette',
         
         
         addProtein: function(ui, val) {
+            var validOnly = app.options.get('valid_components')
+            if (!(((validOnly && app.staff) || !validOnly)
+                && (app.proposal && app.proposal.get('ACTIVE') == 1))) {
+                ui.combobox('value', -1).trigger('change')
+                return
+            }
+
             console.log(ui, val)
             var safe = val.replace(/\W/g, '')
 

@@ -189,6 +189,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'ShippingHasSession',
             'DewarTransportHistory',
             'DewarRegistry',
+            'DewarRegistry_has_Proposal',
             'DewarReport',
             'CourierTermsAccepted',
 
@@ -255,6 +256,9 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'InspectionType',
             'BLSampleImage',
             'BLSampleImageScore',
+            'BLSampleImageAutoScoreSchema',
+            'BLSampleImageAutoScoreClass',
+            'BLSampleImage_has_AutoScoreClass',
 
             // Queuing
             'ContainerQueueSample',

@@ -7,7 +7,7 @@ define(['backbone',
         'modules/shipment/views/shipments',
         'modules/shipment/views/shipment',
         'modules/shipment/views/shipmentadd',
-    
+
         'models/container',
         'collections/containers',
         'modules/shipment/views/container',
@@ -26,6 +26,7 @@ define(['backbone',
         'modules/shipment/views/dewarreg',
         'modules/shipment/views/regdewar',
         'modules/shipment/views/regdewaradd',
+        'modules/shipment/views/dewarregistry',
 
         'modules/shipment/views/dispatch',
         'modules/shipment/views/transfer',
@@ -45,11 +46,11 @@ define(['backbone',
     
 ], function(Backbone,
     GetView,
-    Dewar, Shipment, Shipments, 
+    Dewar, Shipment, Shipments,
     ShipmentsView, ShipmentView, ShipmentAddView,
     Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
-    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView,
+    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView, DewarRegistryView,
     DispatchView, TransferView, Dewars, DewarOverview, ManifestView, DewarStats, CreateAWBView, RebookPickupView,
     PlanView, MigrateView,
     ProposalLookup) {
@@ -95,11 +96,25 @@ define(['backbone',
     },
       
     add: function() {
-      app.log('ship add view')
-      app.bc.reset([bc, { title: 'Add New Shipment' }])
-      app.content.show(new ShipmentAddView())
-    },
+        if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+            app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new shipments cannot be added'} )
+        } else {
+            app.log('ship add view')
+            app.bc.reset([bc, { title: 'Add New Shipment' }])
 
+            // Get any comments to prefill from the server
+            Backbone.ajax({
+                url: app.appurl+'/assets/js/shipment_comments.json',
+                dataType: 'json',
+                success: function(shipmentComments) {
+                    app.content.show(new ShipmentAddView({comments: shipmentComments}))
+                },
+                error: function() {
+                    app.content.show(new ShipmentAddView({comments: {}}))
+                }
+            })
+        }
+    },
 
     create_awb: function(sid) {
         var shipment = new Shipment({ SHIPPINGID: sid })
@@ -179,30 +194,34 @@ define(['backbone',
     },
 
     add_container: function(did, visit) {
-      var lookup = new ProposalLookup({ field: 'DEWARID', value: did })
-        lookup.find({
-            success: function() {
-                app.log('cont view')
-                  
-                var dewar = new Dewar({ DEWARID: did})
-                  dewar.fetch({
-                      success: function() {
-                          app.bc.reset([bc, { title: dewar.get('SHIPPINGNAME'), url: '/shipments/sid/'+dewar.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Add Container' }])
-                          app.content.show(GetView.ContainerAddView.get(app.type, { dewar: dewar, visit: visit }))
-                      },
-                      error: function() {
-                          app.bc.reset([bc, { title: 'Error' }])
-                          app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
-                      },
-                  })
-            },
+      if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+          app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new containers cannot be added'} )
+      } else {
+          var lookup = new ProposalLookup({ field: 'DEWARID', value: did })
+            lookup.find({
+                success: function() {
+                    app.log('cont view')
+                      
+                    var dewar = new Dewar({ DEWARID: did})
+                      dewar.fetch({
+                          success: function() {
+                              app.bc.reset([bc, { title: dewar.get('SHIPPINGNAME'), url: '/shipments/sid/'+dewar.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Add Container' }])
+                              app.content.show(GetView.ContainerAddView.get(app.type, { dewar: dewar, visit: visit }))
+                          },
+                          error: function() {
+                              app.bc.reset([bc, { title: 'Error' }])
+                              app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+                          },
+                      })
+                },
 
-            error: function() {
-                app.bc.reset([bc, { title: 'Error' }])
-                app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
-            },
+                error: function() {
+                    app.bc.reset([bc, { title: 'Error' }])
+                    app.message({ title: 'No such dewar', message: 'The specified dewar could not be found'})
+                },
 
-        })
+            })
+        }
     },
 
 
@@ -277,9 +296,9 @@ define(['backbone',
 
     container_registry: function(ty, s, page) {
       app.loading()
-      var containers = new ContainersRegistry()
         
       page = page ? parseInt(page) : 1
+      var containers = new ContainersRegistry(null, { state: { currentPage: page }, queryParams: { s: s, ty: ty } })
         
       containers.state.currentPage = page
       containers.queryParams.all = 1
@@ -307,6 +326,21 @@ define(['backbone',
     },
 
 
+    dewar_registry: function(ty, s, page) {
+      app.loading()
+        
+      page = page ? parseInt(page) : 1
+      var dewars = new DewarRegistry(null, { state: { currentPage: page }, queryParams: { s: s, ty: ty } })
+
+      dewars.state.currentPage = page
+      dewars.queryParams.all = 1
+      dewars.fetch().done(function() {
+        app.bc.reset([bc, { title: 'Registered Dewars', url: '/dewars' }])
+        app.content.show(new DewarRegistryView({ collection: dewars, params: { s: s, ty: ty } }))
+      })
+    },
+
+
     dewar_list: function(s, page) {
       console.log('dew list')
       app.loading()
@@ -321,7 +355,7 @@ define(['backbone',
 
 
     view_dewar: function(fc) {
-      app.log('cont view')
+      app.log('rdewar view')
       var dewar = new RegisteredDewar({ FACILITYCODE: fc })
         dewar.fetch({
             success: function() {
@@ -445,7 +479,7 @@ define(['backbone',
     })
 
     app.on('rdewar:show', function(fc) {
-      app.navigate('dewars/fc/'+fc)
+      app.navigate('dewars/registry/'+fc)
       controller.view_dewar(fc)
     })
 

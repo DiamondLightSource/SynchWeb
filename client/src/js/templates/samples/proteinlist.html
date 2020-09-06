@@ -1,0 +1,16 @@
+<h1><%-title%>s</h1>
+<p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p>
+
+<% if (!CAN_CREATE) { %>
+<p class="help">Only staff are able to create new <%-title.toLowerCase()%>s from this page. Samples should be created in the user office system and when approved will be displayed here. Approved samples can be cloned by following the links in the table below.</p>
+<% } %>
+
+<div class="ra">
+<% if (CAN_CREATE) { %>
+    <a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a>
+<% } %>
+</div>
+
+<div class="filter type"></div>
+
+<div class="wrapper"></div>

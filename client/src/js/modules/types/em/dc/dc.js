@@ -5,7 +5,8 @@ define([
     'modules/types/em/dc/views/overview2',
     'modules/types/em/dc/views/micrograph',
     'modules/types/em/dc/views/autoprocessing',
-    'templates/types/em/dc/dc.html'], function(ImageStatusItem, DCItemView, 
+    'templates/types/em/dc/dc.html'], function(
+        ImageStatusItem, DCItemView, 
         APStatusItem, Overview, Micrograph, 
         EMAutoProcessingView, 
         template) {
@@ -15,27 +16,13 @@ define([
         plotView: null,
         apStatusItem: APStatusItem,
 
-        ui: {
-            temp: 'span.temp',
-            exp: 'i.expand',
-            cc: '.dcc',
-            rp: 'a.reprocess',
-        },
-
         regions: {
             mg: '.mg',
         },
 
-
         events: {
             'click .holder h1.ap': 'loadAP',
             'click .holder h1.dp': 'loadDP',
-            'click .atp': 'addToProject',
-            'click .flag': 'flag',
-            'click .comments': 'showComments',
-            'click li.sample a': 'setProposal',
-            'click @ui.exp': 'expandPath',
-            'click a.attach': 'attachments',
         },
 
         initialize: function(options) {
@@ -68,7 +55,6 @@ define([
                 this.ap.fetch(point)
             }
         },
-
 
         loadAP: function(e) {
             if (!this.ap) {

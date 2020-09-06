@@ -4,7 +4,10 @@ define(['marionette', 'templates/sidebar.html', 'jquery.cookie'], function(Mario
         template: template,
         templateHelpers: function() {
             return {
-                PROPOSAL: app.prop
+                PROPOSAL: app.prop,
+                VISIT: app.visit,
+                ACTIVE: app.proposal && app.proposal.get("ACTIVE"),
+                STATE: app.proposal && app.proposal.get("STATE"),
             }
         },
         

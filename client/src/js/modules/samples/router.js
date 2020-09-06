@@ -20,6 +20,7 @@ define(['marionette', 'modules/samples/controller'], function(Marionette, c) {
       'proteins(/s/:s)(/page/:page)': 'proteinlist',
       'proteins/pid/:pid': 'proteinview',
       'proteins/add': 'proteinadd',
+      'proteins/pid/:pid/clone': 'proteinclone',
 
       'phases(/s/:s)(/page/:page)': 'proteinlist',
       'phases/pid/:pid': 'proteinview',

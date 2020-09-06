@@ -53,6 +53,13 @@
     # - Disables site access, showing a message
     # - This is defined in client/js/config.json
 
+    # Timezone
+    $timezone = 'Europe/London';
+
+    # Valid Components
+    #   Denotes that only staff may create proteins, otherwise they must come from replication 
+    #   with a valid `externalid`, users may still clone proteins
+    $valid_components = false;
 
     # String replacements for autoprocessing types
     # First part is searched for in the processing command line
@@ -164,12 +171,6 @@
                         );
 
 
-    # Array of container histories to trigger a new data notification email
-    $new_data = array(
-        array('processing', 'in_transit_unloading', 'in_local_storage')
-    );
-
-
     # Beamline Sample Registration Machines
     # - Used for touchscreen application (unauthenticated)
     $blsr = array('1.2.3.4', # my touchscreen computer
@@ -200,7 +201,7 @@
 
     # These idents are used when searching the RCSB for PDBs to generate PDB stats
     $facility_pdb_ident = array('DIAMOND BEAMLINE', 'DIAMOND LIGHT SOURCE BEAMLINE');
-
+    $facility_pdb_site = 'DIAMOND';
 
     # Shipping Address for Labels
     # - This is added to all shipment label PDFs
@@ -266,7 +267,8 @@
     $auto = array('123.456.789.1');
     $auto_bls = array('i03', 'i04');
 
-
+    # Commissioning Proposal Type
+    $commissioning_code = 'cm';
 
     # Proposal to store beamline presets in
     $preset_proposal = 'cm12345';
@@ -274,9 +276,6 @@
 
     # Beamlines on which to scale the gridplot to 1024
     $scale_grid = array('i24');
-
-    # Proposal codes to list
-    $prop_codes = array('lb', 'cm', 'mx', 'nt', 'nr', 'sw', 'in', 'mt', 'ee', 'em', 'sm');
 
 
     # These map proposal types to their proposalcode

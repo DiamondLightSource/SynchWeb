@@ -1,7 +1,9 @@
 define(['marionette', 'backgrid', 'views/table', 'views/filter', 
   'collections/componenttypes', 
-  'modules/projects/views/addto', 'utils/table'], 
-  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, AddToProjectView, table) {
+  'modules/projects/views/addto',
+  'utils/table',
+  'templates/samples/proteinlist.html'], 
+  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, AddToProjectView, table, Template) {
     
     
   var ClickableRow = table.ClickableRow.extend({
@@ -25,8 +27,11 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p><div class="ra"><a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a></div><div class="filter type"></div><div class="wrapper"></div>'),
+    template: Template,
     regions: { 'wrap': '.wrapper', type: '.type' },
+    // ui: {
+    //   add: 'a.add',
+    // },
 
     clickableRow: ClickableRow,
     showFilter: true,
@@ -35,9 +40,11 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     url: 'protein',
 
     templateHelpers: function() {
+        var validOnly = app.options.get('valid_components') 
         return {
           title: this.getOption('title'),
-          url: this.getOption('url')
+          url: this.getOption('url'),
+          CAN_CREATE: ((validOnly && app.staff) || !validOnly) && (app.proposal && app.proposal.get('ACTIVE') == 1),
         }
     },
 
@@ -91,6 +98,8 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     },
                                       
     onRender: function() {
+      // if (app.proposal && app.proposal.get('ACTIVE') != 1) this.ui.add.hide()
+
       this.wrap.show(this.table)
       if (this.getOption('showFilter')) this.tr.done(this.showFilter.bind(this))
     },

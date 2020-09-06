@@ -369,6 +369,8 @@ class Process extends Page
 
         if (!$this->has_arg('PROCESSINGJOBID')) $this->_error('No processing job specified');
 
+        $this->db->wait_rep_sync(true);
+        
         $chk = $this->db->pq("SELECT rp.processingjobid
                 FROM processingjob rp
                 INNER JOIN datacollection dc ON dc.datacollectionid = rp.datacollectionid
@@ -376,6 +378,8 @@ class Process extends Page
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE p.proposalid = :1 AND rp.processingjobid = :2", array($this->proposalid, $this->arg('PROCESSINGJOBID')));
+
+        $this->db->wait_rep_sync(false);
 
         if (!sizeof($chk)) $this->_error('No such processing job');
 

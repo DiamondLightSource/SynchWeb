@@ -25,8 +25,11 @@ define(['marionette',
     
   return Marionette.LayoutView.extend({
     className: 'content',
-  template: '<div><h1>Shipments</h1><p class="help">This page shows a list of shipments associated with the currently selected proposal</p><p class="help">In order to register your samples you need to create a shipment. Shipments contain dewars, dewar contain containers, and containers individual samples. These can be created sequentially by viewing a particular shipment</p><div class="ra"><a class="button" href="/shipments/add"><i class="fa fa-plus"></i> Add Shipment</a></div><div class="wrapper"></div></div>',
+    template: '<div><h1>Shipments</h1><p class="help">This page shows a list of shipments associated with the currently selected proposal</p><p class="help">In order to register your samples you need to create a shipment. Shipments contain dewars, dewars contain containers, and containers individual samples. These can be created sequentially by viewing a particular shipment</p><div class="ra"><a class="button add" href="/shipments/add"><i class="fa fa-plus"></i> Add Shipment</a></div><div class="wrapper"></div></div>',
     regions: { 'wrap': '.wrapper' },
+    ui: {
+      add: 'a.add',
+    },
     
     initialize: function(options) {
       var columns = [{ name: 'SHIPPINGNAME', label: 'Name', cell: 'string', editable: false },
@@ -49,6 +52,8 @@ define(['marionette',
     },
                                       
     onRender: function() {
+      if (app.proposal && app.proposal.get('ACTIVE') != 1) this.ui.add.hide()
+
       this.wrap.show(this.table)
     }
   })

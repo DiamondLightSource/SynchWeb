@@ -28,7 +28,7 @@ define(['backbone',
     'collections/users',
     'modules/shipment/collections/containerregistry',
     'collections/processingpipelines',
-
+    
     'templates/shipment/containeradd.html',
     'templates/shipment/sampletablenew.html',
     'templates/shipment/sampletablerownew.html'], function(Backbone,
@@ -197,7 +197,7 @@ define(['backbone',
 
 
         limitProteins: function() {
-            this.proteins.queryParams.externalid = this.ui.imager.val() ? 1 : null
+            this.proteins.queryParams.external = this.ui.imager.val() ? 1 : null
             this.proteins.fetch()
 
             this.users.queryParams.login = this.ui.imager.val() ? 1 : null
@@ -254,7 +254,6 @@ define(['backbone',
             var group = $(cl)
             var cur = e.target
             var idx = group.index(cur)
-            console.log(typeof(cl), cl, group,cur,idx)
             if(e.which == 13) {
                 var dir = e.shiftKey ? -1 : 1
                 if (idx < group.length) group.eq(idx+dir).focus()
@@ -528,8 +527,8 @@ define(['backbone',
 
             this.proteins = new DistinctProteins()
             // If we want to only allow valid samples
-            if (app.valid_samples) {
-                this.proteins.queryParams.externalid = 1
+            if (app.options.get('valid_components') && !app.staff) {
+                this.proteins.queryParams.external = 1
             }
             this.ready.push(this.proteins.fetch())
 

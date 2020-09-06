@@ -9,9 +9,20 @@
     <li><a href="/proposal">Proposals</a></li>
     
     <li>
-        <span class="current"><%-PROPOSAL ? PROPOSAL : 'No Proposal'%> <i class="fa fa-angle-double-down"></i></span>
+        <span class="current">
+            <% if (PROPOSAL && ACTIVE != '1') { %> 
+                <i class="fa fa-warning red"></i>
+            <% } %>
+            <%-PROPOSAL ? PROPOSAL : 'No Proposal'%> <i class="fa fa-angle-double-down"></i>
+        </span>
         <% if (PROPOSAL) { %>
         <ul>
+            <% if (ACTIVE != '1') { %> 
+                <li class="message">
+                    <span>This proposal is <%-STATE%>. You cannot create shipments, proteins, or contacts</span>
+                </li>
+            <% } %>
+
             <% _.each(MENUS.menu, function(i,l) { %>
                 <li><a href="/<%-l%>"><%-i%></a></li>
             <% }) %>

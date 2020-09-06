@@ -31,10 +31,10 @@
             </li>
             
             <li>
-                <label>First Experiment
-                    <span class="small">First experiment for the dewars in this shipment</span>
+                <label>First Experiment / Scheduling
+                    <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>
                 </label>
-                <select name="FIRSTEXPERIMENTID"></select> <label class="secondary"><input type="checkbox" name="noexp"> None - Automated / Imager</label>
+                <select name="FIRSTEXPERIMENTID"></select> <label class="secondary"><input type="checkbox" name="noexp"> Automated / Imager</label><label class="secondary"><input type="checkbox" name="dynamic"> Responsive Remote / Mail-in</label>
             </li>
 
             <li>
@@ -52,7 +52,7 @@
                 <label>Comments
                     <span class="small">Comment for the shipment</span>
                 </label>
-                <textarea name="COMMENT"></textarea>
+                <textarea name="COMMENTS" maxlength="1000"></textarea>
             </li>
             
             <li>
