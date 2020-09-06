@@ -28,6 +28,7 @@ define(['backbone', 'marionette', 'backgrid',
                     BLSAMPLEID: c.get('BLSAMPLEID'),
                     SAMPLE: c.get('NAME'),
                     PROTEIN: c.get('PROTEIN'),
+                    CONTAINER: c.get('CONTAINER'),
                 })
             }
         },
@@ -42,7 +43,12 @@ define(['backbone', 'marionette', 'backgrid',
 
         render: function() {
             if (this.model.isNew()) {
-                var opts = this.column.get('samples').map(function(s) {
+                var collids = this.model.collection.pluck('BLSAMPLEID')
+                var filtered = this.column.get('samples').filter(function(s) {
+                    return collids.indexOf(s.get('BLSAMPLEID')) == -1 
+                        || (s.get('BLSAMPLEID') == this.model.get('BLSAMPLEID') && this.model.isNew())
+                }, this)
+                var opts = _.map(filtered, function(s) {
                     return '<option value="'+s.get('BLSAMPLEID')+'">'+s.get('LOCATION')+': '+s.get('NAME')+'</option>'
                 })
 
@@ -50,6 +56,7 @@ define(['backbone', 'marionette', 'backgrid',
 
                 this.$el.html('<select name="BLSAMPLEID">'+opts+'<select>')
                 this.$el.find('select[name=BLSAMPLEID]').val(this.model.get('BLSAMPLEID'))
+                this.$el.find('select[name=BLSAMPLEID]').combobox()
             } else {
                 this.$el.text(this.model.get('SAMPLE'))
             }
@@ -132,6 +139,7 @@ define(['backbone', 'marionette', 'backgrid',
                 columns: [
                     { name: 'SAMPLE', label: 'Name', cell: InstanceCell, editable: false, samples: this.getOption('samples') },
                     { name: 'GROUPORDER', label: 'Order', cell: 'string', editable: false },
+                    { name: 'CONTAINER', label: 'Container', cell: 'string', editable: false },
                     { name: 'PROTEIN', label: 'Component', cell: 'string', editable: false },
                     { name: 'TYPE', label: 'Type', cell: TypeCell, editable: false },
                     { label: '', cell: ViewCell, editable: false, PARENTBLSAMPLEID: this.getOption('PARENTBLSAMPLEID') },
@@ -256,6 +264,7 @@ define(['backbone', 'marionette', 'backgrid',
 
             this.samples = new Samples()
             this.samples.queryParams.cid = this.getContainer.bind(this)
+            this.samples.state.pageSize = 9999
 
             this.shipments.fetch()
         },
