@@ -88,7 +88,7 @@ define(['marionette', 'backbone', 'templates/header.html'], function(Marionette,
         
         setTitle: function() {
             console.log('set title')
-            document.title = 'ISPyB » ' + this.bc.pluck('title').join(' » ')
+            document.title = 'SynchWeb » ' + this.bc.pluck('title').join(' » ')
         },
         
     })
