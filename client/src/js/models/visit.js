@@ -24,7 +24,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         },
         BEAMLINENAME: {
             required: true,
-            pattern: 'word',
+            pattern: 'wwdash',
         },
         BEAMLINEOPERATOR: {
             required: false,
