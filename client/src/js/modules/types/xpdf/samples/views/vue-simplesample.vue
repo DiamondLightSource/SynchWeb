@@ -462,7 +462,6 @@
                 let capillaryCrystal = new Crystal({
                     CRYSTALID: this.existingCapillaryID,
                     NAME: this.name + '_CP',
-                    COMMENTS: this.comments,
                     THEORETICALDENSITY: this.getCapillaryInfo('density') != null ? this.getCapillaryInfo('density') : null,
                     ABUNDANCE: 1,
                     CONTAINERLESS: this.containerless,
