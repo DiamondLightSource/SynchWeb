@@ -1,4 +1,4 @@
-<h1 class="center nou">Time at <%- app.config.site_name || 'Diamond' %> is: <span class="time"></span></h1>
+<h1 class="center nou">Time at <%-SITE_NAME%> is: <span class="time"></span></h1>
 
 <h1>Current &amp; Next Visits</h1>
 <div class="next"></div>
@@ -6,7 +6,7 @@
 <h1>Last Visits</h1>
 <div class="prev"></div>
 
-<% if (app.staff) { %>
+<% if (IS_STAFF) { %>
 <h1>Commissioning Visits</h1>
 <div class="cm"></div>
 <% } %>
