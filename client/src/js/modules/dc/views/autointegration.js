@@ -36,12 +36,6 @@ define(['marionette',
             messages: '.messages'
         },
 
-        templateHelpers: function() {
-            return {
-                PROPOSAL_TYPE: app.type,
-            }
-        },
-
         onRender: function() {
             this.messages.show(new APMessagesView({ messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true }))
         },
@@ -100,6 +94,7 @@ define(['marionette',
                 templateHelpers: {
                     DCID: dcId,
                     APIURL: app.apiurl,
+                    PROPOSAL_TYPE: app.type,
                 }
             }
         },
