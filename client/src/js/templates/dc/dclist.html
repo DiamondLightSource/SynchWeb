@@ -31,7 +31,7 @@
         <a href="#" class="button dewars"><i class="fa fa-truck"></i> <span>Dewars</span></a>
         <a class="button"  href="/dc/sc/visit/<%-VISIT%>" title="Sample Changer"><i class="fa fa-exchange"></i> <span>Sample Changer</span></a>
         <a href="#" class="button rpo" title="Reprocessing Overview"><i class="fa fa-cog"></i> <span>Reprocessing</span></a>
-        <% if (app.staff) { %>
+        <% if (IS_STAFF) { %>
         <a class="button"  href="/status/bl/<%-BL%>" title="Beamline Status" class="blstat"><i class="fa fa-wrench"></i> <span>Beamline Status</span></a>
         <% } %>
     </div>
