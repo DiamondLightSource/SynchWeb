@@ -1,5 +1,16 @@
 <div class="data_collection" dcid="<%-ID%>" type="data">
-    <h1 class="title"></h1>
+    <h1>
+        <a href="#" class="atp button button-notext" ty="dc" iid="<%-DCG%>" name="<%-DIR%><%-FILETEMPLATE%>"><i class="fa fa-book"></i> <span>Add to Project</span></a>
+        <a href="#" class="button button-notext flag <% if (FLAG) { %>button-highlight<% } %>" title="Click to add this data collection to the list of favourite data collections"><i class="fa fa-star-o"></i> <span>Favourite</span></a>
+        <a href="/dc/visit/<%-VIS_LINK%>/id/<%-ID%>" class="perm button button-notext"><i class="fa fa-link"></i> <span>Permalink</span></a>
+        <a href="#" class="comments button button-notext" title="Comments"><i class="fa fa-comments"></i> <b class="dcc"><%-DCCC%></b> <span>Comment(s)</span></a>
+        
+        <span class="date"><% if (!IS_VISIT) { %>[<a href="/dc/visit/<%-VIS_LINK%>"><%-VIS_LINK%></a>]<% } %> <%-ST%></span><span class="spacer"> - </span><span class="temp"><%-DIR%><%-FILETEMPLATE%></span>
+        <a href="#" class="button k8s">Launch MAXIV Viewer</a>
+        <span class="podLoader" style="display:none">Starting Pod...<i class="fa icon grey fa-cog fa-spin"></i></span>
+        <a href="#" class="button podReady" style="display:none">Ready!</a>
+        
+    </h1>
 
     <div class="distl"></div>
     <div class="diffraction" title="Click to view diffraction image">
