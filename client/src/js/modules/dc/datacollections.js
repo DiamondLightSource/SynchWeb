@@ -116,6 +116,7 @@ function(Marionette, Pages, DCListView,
             IS_VISIT: !(!this.getOption('params').visit),
             IS_SAMPLE: !(!this.getOption('params').sid),
             IS_SINGLE: !(!this.getOption('params').id),
+            IS_STAFF: app.staff,
         }
     },
     
