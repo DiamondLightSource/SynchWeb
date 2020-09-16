@@ -68,6 +68,7 @@ define([
                 collection: this.collection,
                 columns: [
                     { name: 'NAME', label: 'Name', cell: table.TemplateCell, editable: false, template: '<% if (NAME) { %><%-NAME.replace(/__/g, " ") %><% } %>' },
+                    { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false },
                     { name: 'COMPOSITION', label: 'Composition', cell: CompositionCell, editable: false },
                     { name: 'THEORETICALDENSITY', label: 'Density', cell: 'string', editable: false },
                     { name: 'NPHASES', label: '# Phases', cell: table.TemplateCell, editable: false, template: '<%-((COMPONENTIDS||[]).length+1)%>' },

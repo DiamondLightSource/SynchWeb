@@ -38,6 +38,7 @@ define(['marionette',
         
         columns: [
             { name: 'NAME', label: 'Name', cell: 'string', editable: false },
+            { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false },
             { name: 'MOLECULARMASS', label: 'Molecular Mass', cell: 'string', editable: false },
             { name: 'SEQUENCE', label: 'Composition', cell: 'string', editable: false },
             { name: 'DENSITY', label: 'Crystallographic Density', cell: 'string', editable: false },
