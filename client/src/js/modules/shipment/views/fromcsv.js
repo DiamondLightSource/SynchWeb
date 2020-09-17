@@ -432,8 +432,7 @@ define(['backbone',
             var files = e.originalEvent.dataTransfer.files
             var f = files[0]
 
-            var types = ['text/csv', 'application/vnd.ms-excel', 'application/csv', 'text/x-csv', 'application/x-csv', 'text/comma-separated-values', 'text/x-comma-separated-values']
-            if (types.indexOf(f.type) > -1) {
+            if (f.name.endsWith('csv')) {
                 var reader = new FileReader()
                 var self = this
                 reader.onload = function(e) {
@@ -441,7 +440,7 @@ define(['backbone',
                 }
                 reader.readAsText(f)
             } else {
-                app.alert({ message: 'Cannot import file, type "'+f.type+'" is not in allowed formats: '+types.join(', ') })
+                app.alert({ message: 'Cannot import file "'+f.name+'" is not a csv file' })
             }
         },
 
