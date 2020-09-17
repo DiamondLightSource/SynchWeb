@@ -262,6 +262,8 @@
                 csvData: [],
                 csvErrors: [],
                 commaInComments: false,
+                duplicateAcronym: false,
+                duplicateAcronymRows: [],
                 proteinid: null,
                 externalid: null,
             }
@@ -575,6 +577,8 @@
                     this.csvFile = null
                     this.csvData = []
                     this.csvErrors = []
+                    this.duplicateAcronym = false
+                    this.duplicateAcronymRows = []
                     return
                 }
 
@@ -597,6 +601,10 @@
                             if(self.csvData.length === 1 && self.csvErrors.length === 0){
                                 self.csvErrors.push("Only headers have been submitted, please add some sample information")
                             }
+
+                            if(self.duplicateAcronym)
+                                self.csvErrors = self.csvErrors.concat(self.duplicateAcronymRows)
+
                             if(self.csvErrors.length === 0)
                                 self.fileValid = true
                             else
@@ -628,6 +636,38 @@
                             return
                         }
                     })
+
+                    // Display duplicate acronyms and the row they are on (only in file duplicates, not against database)
+                    // Hopefully this issue gets implemented then we can remove all this. https://github.com/shystruk/csv-file-validator/issues/20
+                    var acronyms = []
+                    var acronymIndex = 5
+
+                    for(var i=0; i<newLineSplit.length; i++){
+                        var cells = newLineSplit[i].split(',')
+
+                        for(var j=0; j<cells.length; j++){
+                            // if first row check which column is the Acronym
+                            if(i==0){
+                                if(cells[j] == 'Acronym'){
+                                    acronymIndex = j
+                                    break
+                                }
+                            }
+                            // ignore any non acronym columns
+                            if(j!=acronymIndex) break
+
+                            for(var k=0; k < acronyms.length; k++){
+                                if(acronyms[k] == cells[j]){
+                                    var currentRow = i
+                                    self.duplicateAcronym = true
+                                    self.duplicateAcronymRows.push(cells[j] + ' is a duplicate acronym on row ' + ++currentRow)
+                                    break
+                                }
+                            }
+
+                            acronyms[i] = cells[acronymIndex]
+                        }
+                    }
 
                     // Remove all leading and trailing white space
                     var split = e.target.result.split(',')

@@ -279,7 +279,7 @@ class Sample extends Page
                         
                         $chk = $this->db->pq("SELECT proteinid FROM protein
                             WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $protein->ACRONYM));
-                            if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
+                            if (sizeof($chk)) $this->_error('Protein acronym ' . $protein->ACRONYM . ' already exists in this proposal');
 
                         $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density,externalid)
                             VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,UNHEX(:7)) RETURNING proteinid INTO :id',
