@@ -1,5 +1,5 @@
 # Auth
-/authenticate/login:
+/authenticate:
   $ref: authenticate.yaml#/login
         
 /authenticate/check:
@@ -215,8 +215,8 @@
   $ref: processing.yaml#/strategy
 
 # Integration
-# /dc/ap/{id}:
-#   $ref: processing.yaml#/integration  
+/dc/ap/{id}:
+  $ref: processing.yaml#/integration  
 
 # Downstream
 # /dc/dp/{id}:

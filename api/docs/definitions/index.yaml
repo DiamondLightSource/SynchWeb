@@ -1,7 +1,7 @@
 LoginReq:
   type: object
   properties:
-    username:
+    login:
       type: string
       example: abd1234
     password:
@@ -199,3 +199,6 @@ DataCollectionComment:
 
 Strategies:
   $ref: strategies.yaml
+
+Integration:
+  $ref: integration.yaml
