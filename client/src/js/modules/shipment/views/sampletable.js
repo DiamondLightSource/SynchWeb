@@ -124,7 +124,7 @@ define(['marionette',
                 var name_regexp = new RegExp(name_base)
                 var similar = this.model.collection.filter(function(m) { return m.get('NAME').match(name_regexp) })
                 var number_suffix = []
-                if (similar.length) number_suffix = similar[similar.length-1].get('NAME').match(/\d+$/)
+                if (similar.length) number_suffix = similar[similar.length-1].get('NAME').match(/\d+$/) || 0
 
                 var number_pad = number_suffix.length > 0 ? number_suffix[0].length : 0
                 number_suffix = number_suffix.length > 0 ? parseInt(number_suffix[0]) : 1
