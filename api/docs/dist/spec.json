@@ -24,7 +24,7 @@
     "application/json"
   ],
   "paths": {
-    "/authenticate/login": {
+    "/authenticate": {
       "post": {
         "tags": [
           "auth"
@@ -3038,13 +3038,42 @@
           }
         }
       }
+    },
+    "/dc/ap/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "datacollections-processing"
+        ],
+        "summary": "Get integration results for a data collection",
+        "parameters": [
+          {
+            "$ref": "#/parameters/DCIDPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Integraton results",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Integration"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
     "LoginReq": {
       "type": "object",
       "properties": {
-        "username": {
+        "login": {
           "type": "string",
           "example": "abd1234"
         },
@@ -6199,6 +6228,537 @@
                 "NEXP": "0.008",
                 "NTRAN": 1,
                 "AP": "LARGE_APERTURE"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "Integration": {
+      "type": "object",
+      "properties": {
+        "0": {
+          "type": "number",
+          "description": "Number of integrations"
+        },
+        "1": {
+          "type": "object",
+          "title": "Integrations by auto processing integration id",
+          "properties": {
+            "1233456": {
+              "type": "object",
+              "title": "Integration Program",
+              "properties": {
+                "SG": {
+                  "type": "string",
+                  "description": "Spacegroup",
+                  "example": "P 4 2 2"
+                },
+                "PROCESSINGJOBID": {
+                  "type": "string",
+                  "description": "Processing job id",
+                  "example": 3461325
+                },
+                "IMAGESWEEPCOUNT": {
+                  "type": "string",
+                  "description": "Number of sweeps making up this integration",
+                  "example": 1
+                },
+                "TYPE": {
+                  "type": "string",
+                  "description": "Integration program",
+                  "example": "fast_dp"
+                },
+                "AID": {
+                  "type": "string",
+                  "description": "Auto processing integration id",
+                  "example": 80027370
+                },
+                "PROCESSINGSTATUS": {
+                  "type": "string",
+                  "description": "Processing status (1=success, 0=failed, null=running)",
+                  "example": 1
+                },
+                "PROCESSINGMESSAGE": {
+                  "type": "string",
+                  "description": "Message from pipeline",
+                  "example": "processing successful"
+                },
+                "MESSAGES": {
+                  "type": "array",
+                  "description": "Array of tntegration warnings / checks",
+                  "items": {
+                    "type": "object",
+                    "title": "Message",
+                    "properties": {
+                      "AUTOPROCPROGRAMID": {
+                        "type": "string",
+                        "description": "Auto processing integration id",
+                        "example": 81953629
+                      },
+                      "RECORDTIMESTAMP": {
+                        "type": "string",
+                        "description": "Timestamp for message",
+                        "example": "2020-09-16T03:20:38.000Z"
+                      },
+                      "SEVERITY": {
+                        "type": "string",
+                        "description": "Severity of message (error, warning, infp)",
+                        "example": "INFO"
+                      },
+                      "MESSAGE": {
+                        "type": "string",
+                        "description": "Message",
+                        "example": "Translational NCS does not appear to be present."
+                      },
+                      "DESCRIPTION": {
+                        "type": "string",
+                        "description": "Description",
+                        "example": "Largest Patterson peak with length larger than 15 Angstrom:\\n Frac. coord.              :    0.441   -0.444   -0.000\\n Distance to origin        :   27.367\\n Height relative to origin :    7.342 %\\n p_value(height)           :    4.382e-01\\n\\nExplanation\\n The p-value, the probability that a peak of the specified height or larger\\n is found in a Patterson function of a macromolecule that does not have any\\n translational pseudo-symmetry, is equal to 4.382e-01.  p_values smaller than\\n 0.05 might indicate weak translational pseudo symmetry, or the self vector of\\n a large anomalous scatterer such as Hg, whereas values smaller than 1e-3 are\\n a very strong indication for the presence of translational pseudo symmetry.\\n\\n"
+                      }
+                    }
+                  }
+                },
+                "CELL": {
+                  "type": "object",
+                  "title": "Cell information",
+                  "properties": {
+                    "CELL_A": {
+                      "type": "string",
+                      "description": "Cell a dimension",
+                      "example": 57.69
+                    },
+                    "CELL_B": {
+                      "type": "string",
+                      "description": "Cell b dimension",
+                      "example": 57.69
+                    },
+                    "CELL_C": {
+                      "type": "string",
+                      "description": "Cell c dimension",
+                      "example": 149.83
+                    },
+                    "CELL_AL": {
+                      "type": "string",
+                      "description": "Cell alpha angle",
+                      "example": 90
+                    },
+                    "CELL_BE": {
+                      "type": "string",
+                      "description": "Cell beta angle",
+                      "example": 90
+                    },
+                    "CELL_GA": {
+                      "type": "string",
+                      "description": "Cell gamma angle",
+                      "example": 90
+                    }
+                  }
+                },
+                "BEAM": {
+                  "type": "object",
+                  "title": "Beam information",
+                  "properties": {
+                    "XBEAM": {
+                      "type": "string",
+                      "description": "Initial beam x position",
+                      "example": 166.26
+                    },
+                    "YBEAM": {
+                      "type": "string",
+                      "description": "Initial beam y position",
+                      "example": 172.87
+                    },
+                    "REFINEDXBEAM": {
+                      "type": "string",
+                      "description": "Refined beam x position",
+                      "example": 172.92
+                    },
+                    "REFINEDYBEAM": {
+                      "type": "string",
+                      "description": "Refined beam y position",
+                      "example": 166.24
+                    }
+                  }
+                },
+                "SHELLS": {
+                  "type": "object",
+                  "title": "Integration shell details",
+                  "properties": {
+                    "outerShell": {
+                      "type": "object",
+                      "properties": {
+                        "CCHALF": {
+                          "type": "string",
+                          "description": "CC half",
+                          "example": 0.7
+                        },
+                        "CCANOMALOUS": {
+                          "type": "string",
+                          "description": "CC anomalous",
+                          "example": 0.2
+                        },
+                        "ANOMALOUS": {
+                          "type": "string",
+                          "description": "Has anomalous data (1=yes, 0=no)",
+                          "example": null
+                        },
+                        "TYPE": {
+                          "type": "string",
+                          "description": "Integration program",
+                          "example": "fast_dp"
+                        },
+                        "NTOBS": {
+                          "type": "string",
+                          "description": "Total observations",
+                          "example": 9964
+                        },
+                        "NUOBS": {
+                          "type": "string",
+                          "description": "Total unique observations",
+                          "example": 1548
+                        },
+                        "RLOW": {
+                          "type": "string",
+                          "description": "Low resolution limit",
+                          "example": 1.9
+                        },
+                        "RHIGH": {
+                          "type": "string",
+                          "description": "High resolution limit",
+                          "example": 1.85
+                        },
+                        "RMEAS": {
+                          "type": "string",
+                          "description": "R meas",
+                          "example": 1.005
+                        },
+                        "RMERGE": {
+                          "type": "string",
+                          "description": "R merge",
+                          "example": 0.719
+                        },
+                        "COMPLETENESS": {
+                          "type": "string",
+                          "description": "Completeness",
+                          "example": 96.8
+                        },
+                        "ANOMCOMPLETENESS": {
+                          "type": "string",
+                          "description": "Anomalous completeness",
+                          "example": 91.6
+                        },
+                        "ANOMMULTIPLICITY": {
+                          "type": "string",
+                          "description": "Anomalous multiplicity",
+                          "example": 3.4
+                        },
+                        "MULTIPLICITY": {
+                          "type": "string",
+                          "description": "Multiplicity",
+                          "example": 6.4
+                        },
+                        "ISIGI": {
+                          "type": "string",
+                          "description": "I/sig(I)",
+                          "example": 1.6
+                        },
+                        "NSWPS": {
+                          "type": "string",
+                          "description": "Number of sweeps",
+                          "example": 1
+                        },
+                        "PROCESSINGSTATUS": {
+                          "type": "string",
+                          "description": "Processing status (1=success, 0=failed, null=running)",
+                          "example": 1
+                        },
+                        "PROCESSINGMESSAGE": {
+                          "type": "string",
+                          "description": "Processing message",
+                          "example": "processing successful"
+                        }
+                      }
+                    },
+                    "innerShell": {
+                      "type": "object"
+                    },
+                    "overall": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "example": [
+        3,
+        {
+          "80027355": {
+            "BEAM": {
+              "XBEAM": "166.26",
+              "YBEAM": "172.87",
+              "REFINEDXBEAM": "172.93",
+              "REFINEDYBEAM": "166.24"
+            },
+            "SHELLS": {
+              "outerShell": {
+                "CCHALF": "0.4",
+                "CCANOMALOUS": "0.0",
+                "ANOMALOUS": null,
+                "TYPE": "xia2 dials",
+                "NTOBS": "13373",
+                "NUOBS": "2078",
+                "RLOW": "1.51",
+                "RHIGH": "1.48",
+                "RMEAS": "1.569",
+                "RMERGE": "1.367",
+                "COMPLETENESS": "99.5",
+                "ANOMCOMPLETENESS": "98.4",
+                "ANOMMULTIPLICITY": "3.4",
+                "MULTIPLICITY": "6.4",
+                "ISIGI": "0.4",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              },
+              "innerShell": {
+                "CCHALF": "1.0",
+                "CCANOMALOUS": "0.0",
+                "ANOMALOUS": null,
+                "TYPE": "xia2 dials",
+                "NTOBS": "19241",
+                "NUOBS": "2417",
+                "RLOW": "53.87",
+                "RHIGH": "4.02",
+                "RMEAS": "0.137",
+                "RMERGE": "0.121",
+                "COMPLETENESS": "100.0",
+                "ANOMCOMPLETENESS": "99.9",
+                "ANOMMULTIPLICITY": "4.8",
+                "MULTIPLICITY": "8.0",
+                "ISIGI": "13.6",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              },
+              "overall": {
+                "CCHALF": "1.0",
+                "CCANOMALOUS": "0.0",
+                "ANOMALOUS": null,
+                "TYPE": "xia2 dials",
+                "NTOBS": "362863",
+                "NUOBS": "43212",
+                "RLOW": "53.83",
+                "RHIGH": "1.48",
+                "RMEAS": "0.346",
+                "RMERGE": "0.304",
+                "COMPLETENESS": "100.0",
+                "ANOMCOMPLETENESS": "99.8",
+                "ANOMMULTIPLICITY": "4.5",
+                "MULTIPLICITY": "8.4",
+                "ISIGI": "3.8",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              }
+            },
+            "CELL": {
+              "CELL_A": "57.68",
+              "CELL_B": "57.68",
+              "CELL_C": "149.82",
+              "CELL_AL": "90.00",
+              "CELL_BE": "90.00",
+              "CELL_GA": "90.00"
+            },
+            "SG": "P 41 21 2",
+            "PROCESSINGJOBID": "3461310",
+            "IMAGESWEEPCOUNT": "1",
+            "TYPE": "xia2 dials",
+            "AID": "80027355",
+            "PROCESSINGSTATUS": "1",
+            "PROCESSINGMESSAGE": "processing successful",
+            "MESSAGES": []
+          },
+          "80027364": {
+            "BEAM": {
+              "XBEAM": "166.26",
+              "YBEAM": "172.87",
+              "REFINEDXBEAM": "172.96",
+              "REFINEDYBEAM": "166.28"
+            },
+            "SHELLS": {
+              "outerShell": {
+                "CCHALF": "0.3",
+                "CCANOMALOUS": "-0.0",
+                "ANOMALOUS": null,
+                "TYPE": "autoPROC",
+                "NTOBS": "6697",
+                "NUOBS": "1550",
+                "RLOW": "1.64",
+                "RHIGH": "1.61",
+                "RMEAS": "1.969",
+                "RMERGE": "1.767",
+                "COMPLETENESS": "94.2",
+                "ANOMCOMPLETENESS": "76.0",
+                "ANOMMULTIPLICITY": "2.6",
+                "MULTIPLICITY": "4.3",
+                "ISIGI": "0.7",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              },
+              "innerShell": {
+                "CCHALF": "1.0",
+                "CCANOMALOUS": "0.1",
+                "ANOMALOUS": null,
+                "TYPE": "autoPROC",
+                "NTOBS": "14721",
+                "NUOBS": "1877",
+                "RLOW": "45.71",
+                "RHIGH": "4.36",
+                "RMEAS": "0.138",
+                "RMERGE": "0.129",
+                "COMPLETENESS": "98.7",
+                "ANOMCOMPLETENESS": "99.5",
+                "ANOMMULTIPLICITY": "4.8",
+                "MULTIPLICITY": "7.8",
+                "ISIGI": "10.0",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              },
+              "overall": {
+                "CCHALF": "1.0",
+                "CCANOMALOUS": "0.0",
+                "ANOMALOUS": null,
+                "TYPE": "autoPROC",
+                "NTOBS": "221111",
+                "NUOBS": "33126",
+                "RLOW": "45.71",
+                "RHIGH": "1.61",
+                "RMEAS": "0.319",
+                "RMERGE": "0.297",
+                "COMPLETENESS": "97.9",
+                "ANOMCOMPLETENESS": "91.3",
+                "ANOMMULTIPLICITY": "3.8",
+                "MULTIPLICITY": "6.7",
+                "ISIGI": "3.8",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              }
+            },
+            "CELL": {
+              "CELL_A": "57.69",
+              "CELL_B": "57.69",
+              "CELL_C": "149.81",
+              "CELL_AL": "90.00",
+              "CELL_BE": "90.00",
+              "CELL_GA": "90.00"
+            },
+            "SG": "P 41 21 2",
+            "PROCESSINGJOBID": "3461322",
+            "IMAGESWEEPCOUNT": "1",
+            "TYPE": "autoPROC",
+            "AID": "80027364",
+            "PROCESSINGSTATUS": "1",
+            "PROCESSINGMESSAGE": "processing successful",
+            "MESSAGES": []
+          },
+          "80027370": {
+            "BEAM": {
+              "XBEAM": "166.26",
+              "YBEAM": "172.87",
+              "REFINEDXBEAM": "172.92",
+              "REFINEDYBEAM": "166.24"
+            },
+            "SHELLS": {
+              "outerShell": {
+                "CCHALF": "0.7",
+                "CCANOMALOUS": "0.2",
+                "ANOMALOUS": null,
+                "TYPE": "fast_dp",
+                "NTOBS": "9964",
+                "NUOBS": "1548",
+                "RLOW": "1.90",
+                "RHIGH": "1.85",
+                "RMEAS": "1.005",
+                "RMERGE": "0.719",
+                "COMPLETENESS": "96.8",
+                "ANOMCOMPLETENESS": "91.6",
+                "ANOMMULTIPLICITY": "3.4",
+                "MULTIPLICITY": "6.4",
+                "ISIGI": "1.6",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              },
+              "innerShell": {
+                "CCHALF": "1.0",
+                "CCANOMALOUS": "0.1",
+                "ANOMALOUS": null,
+                "TYPE": "fast_dp",
+                "NTOBS": "2078",
+                "NUOBS": "302",
+                "RLOW": "28.84",
+                "RHIGH": "8.29",
+                "RMEAS": "0.110",
+                "RMERGE": "0.097",
+                "COMPLETENESS": "97.0",
+                "ANOMCOMPLETENESS": "100.0",
+                "ANOMMULTIPLICITY": "4.8",
+                "MULTIPLICITY": "6.9",
+                "ISIGI": "13.6",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              },
+              "overall": {
+                "CCHALF": "1.0",
+                "CCANOMALOUS": "0.1",
+                "ANOMALOUS": null,
+                "TYPE": "fast_dp",
+                "NTOBS": "172939",
+                "NUOBS": "22210",
+                "RLOW": "28.84",
+                "RHIGH": "1.85",
+                "RMEAS": "0.277",
+                "RMERGE": "0.233",
+                "COMPLETENESS": "99.4",
+                "ANOMCOMPLETENESS": "98.1",
+                "ANOMMULTIPLICITY": "4.1",
+                "MULTIPLICITY": "7.8",
+                "ISIGI": "5.7",
+                "NSWPS": "1",
+                "PROCESSINGSTATUS": "1",
+                "PROCESSINGMESSAGE": "processing successful"
+              }
+            },
+            "CELL": {
+              "CELL_A": "57.69",
+              "CELL_B": "57.69",
+              "CELL_C": "149.83",
+              "CELL_AL": "90.00",
+              "CELL_BE": "90.00",
+              "CELL_GA": "90.00"
+            },
+            "SG": "P 4 2 2",
+            "PROCESSINGJOBID": "3461325",
+            "IMAGESWEEPCOUNT": "1",
+            "TYPE": "fast_dp",
+            "AID": "80027370",
+            "PROCESSINGSTATUS": "1",
+            "PROCESSINGMESSAGE": "processing successful",
+            "MESSAGES": [
+              {
+                "AUTOPROCPROGRAMID": "81953632",
+                "RECORDTIMESTAMP": "2020-09-16 03:08:28",
+                "SEVERITY": "INFO",
+                "MESSAGE": "Translational NCS does not appear to be present.",
+                "DESCRIPTION": " Largest Patterson peak with length larger than 15 Angstrom:\n Frac. coord.              :    0.443   -0.445   -0.000\n Distance to origin        :   27.401\n Height relative to origin :    7.701 %\n p_value(height)           :    3.810e-01\n\nExplanation\n The p-value, the probability that a peak of the specified height or larger\n is found in a Patterson function of a macromolecule that does not have any\n translational pseudo-symmetry, is equal to 3.810e-01.  p_values smaller than\n 0.05 might indicate weak translational pseudo symmetry, or the self vector of\n a large anomalous scatterer such as Hg, whereas values smaller than 1e-3 are\n a very strong indication for the presence of translational pseudo symmetry.\n\n"
               }
             ]
           }
