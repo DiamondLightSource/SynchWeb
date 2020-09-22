@@ -384,7 +384,7 @@ define(['backbone',
         initialize: function(options) {
             this.messages = new Backbone.Collection()
 
-            this.samples = new Samples()
+            this.samples = new Samples(null, { state: { pageSize: 9999 }})
             this.samples.queryParams.SHIPPINGID = this.model.get('SHIPPINGID')
             this.samples.fetch()
 
