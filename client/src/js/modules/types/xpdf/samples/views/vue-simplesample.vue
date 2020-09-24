@@ -373,9 +373,12 @@
                         return;
 
                     console.log(item)
+                    var shortName = ''
 
                     if(self.type.endsWith('_CP') || self.type.endsWith('_Capillary'))
                         self.existingCapillaryID = self.type.substring(0, self.type.indexOf(':'))
+                    else
+                        shortName = '_' + self.capillaries.find(cap => cap.name == self.type).short_name
                     
                     let capillaryPhase = new Phase({
                         NAME: self.name + '_CPM',
@@ -387,8 +390,7 @@
 
                     let capillaryCrystal = new Crystal({
                         CRYSTALID: self.existingCapillaryID,
-                        NAME: self.name + '_CP',
-                        COMMENTS: item.comments,
+                        NAME: self.name + shortName + '_CP',
                         THEORETICALDENSITY: self.getCapillaryInfo('density') != null ? self.getCapillaryInfo('density') : null,
                         ABUNDANCE: 1,
                         CONTAINERLESS: self.containerless,
@@ -449,9 +451,12 @@
             prepareSimpleSample: function(){
 
                 this.isLoading = true
+                var shortName = ''
 
                 if(this.type.endsWith('_CP') || this.type.endsWith('_Capillary'))
                     this.existingCapillaryID = this.type.substring(0, this.type.indexOf(':'))
+                else
+                    shortName = '_' + this.capillaries.find(cap => cap.name == this.type).short_name
 
                 let capillaryPhase = new Phase({
                     NAME: this.name + '_CPM',
@@ -463,7 +468,7 @@
 
                 let capillaryCrystal = new Crystal({
                     CRYSTALID: this.existingCapillaryID,
-                    NAME: this.name + '_CP',
+                    NAME: this.name + shortName + '_CP',
                     THEORETICALDENSITY: this.getCapillaryInfo('density') != null ? this.getCapillaryInfo('density') : null,
                     ABUNDANCE: 1,
                     CONTAINERLESS: this.containerless,
@@ -572,13 +577,14 @@
             },
             
             setCSVFile: function(event){
+                this.csvData = []
+                this.csvErrors = []
+                this.duplicateAcronym = false
+                this.duplicateAcronymRows = []
+
                 if(event.target.files.length === 0){
                     this.fileValid = false
                     this.csvFile = null
-                    this.csvData = []
-                    this.csvErrors = []
-                    this.duplicateAcronym = false
-                    this.duplicateAcronymRows = []
                     return
                 }
 
@@ -607,8 +613,10 @@
 
                             if(self.csvErrors.length === 0)
                                 self.fileValid = true
-                            else
+                            else {
                                 self.fileValid = false
+                                event.target.value = ''
+                            }
 
                             console.log(csvData.data)
                             console.log(csvData.inValidMessages)
