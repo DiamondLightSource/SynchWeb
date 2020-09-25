@@ -156,6 +156,16 @@ define(['backbone',
         },
 
         updateAutomated: function(e) {
+            // If now on, add safetylevel to query
+            // Automated collections limited to GREEN Low risk samples
+            console.log("State:  " + this.ui.auto.is(':checked'))
+            if (this.ui.auto.is(':checked')) {
+                this.proteins.queryParams.SAFETYLEVEL = 'GREEN';
+                this.proteins.fetch()
+            } else {
+                delete this.proteins.queryParams.SAFETYLEVEL;
+                this.proteins.fetch()
+            }
             if (this.table.currentView) this.table.currentView.toggleAuto(this.ui.auto.is(':checked'))
         },
 
