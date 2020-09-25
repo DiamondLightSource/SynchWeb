@@ -377,13 +377,31 @@ define(['backbone',
         
         updateProteins: function() {
             this.ui.prot.html(this.getOption('proteins').opts({
-                addClass: 'active',
-                classProperty: 'EXTERNAL',
-                classPropertyValue: '1',
+                // addClass: 'active',
+                // classProperty: 'EXTERNAL',
+                // classPropertyValue: '1',
+                callback: this.handleSafetyLevel
             }))
             this.ui.prot.combobox('value', this.model.get('PROTEINID'))
         },
-        
+        // Callback to style individual proteins within combobox
+        // Not sure if this will stay due to conflicts with validation colours.
+        handleSafetyLevel: function(m) {
+            var clss = ''
+
+            var safetyLevel = m.get('SAFETYLEVEL')
+            // isExternal means the sample has come from a User Office
+            var isExternal = m.get('EXTERNAL') == '1'
+            // approved_samples flag - if we care about validity check external, else its ok.
+            var approvedSample = app.options.get('valid_components') ? isExternal : true
+                
+            if (safetyLevel == 'GREEN' && approvedSample)  clss = 'active'
+            if (safetyLevel == 'YELLOW' && approvedSample) clss = 'minor'
+            if (safetyLevel == 'RED' && approvedSample)    clss = 'inactive'
+
+            return clss
+        },
+
         setModel: function(s) {
             Backbone.Validation.unbind(this)
             this.undelegateEvents()
