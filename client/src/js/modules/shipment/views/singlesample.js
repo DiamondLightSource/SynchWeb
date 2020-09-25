@@ -386,6 +386,8 @@ define(['backbone',
         },
         // Callback to style individual proteins within combobox
         // Not sure if this will stay due to conflicts with validation colours.
+        // Currently restrict plates to green/low risk only (e.g. VMXi)
+        // Will need combination of beamline and container type rules...
         handleSafetyLevel: function(m) {
             var clss = ''
 
@@ -396,8 +398,8 @@ define(['backbone',
             var approvedSample = app.options.get('valid_components') ? isExternal : true
                 
             if (safetyLevel == 'GREEN' && approvedSample)  clss = 'active'
-            if (safetyLevel == 'YELLOW' && approvedSample) clss = 'minor'
-            if (safetyLevel == 'RED' && approvedSample)    clss = 'inactive'
+            if (safetyLevel == 'YELLOW' && approvedSample) clss = 'hidden'
+            if (safetyLevel == 'RED' && approvedSample)    clss = 'hidden'
 
             return clss
         },
