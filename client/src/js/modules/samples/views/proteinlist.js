@@ -17,7 +17,16 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
       // Highlight approved samples
       // Currently all samples with an external id are green
       // In future use Protein safetyLevel to discriminate
-      if (this.model.get('EXTERNAL') == '1') this.$el.addClass('active')
+      // if (this.model.get('EXTERNAL') == '1') this.$el.addClass('active')
+      var safetyLevel = this.model.get('SAFETYLEVEL')
+      // isExternal means the sample has come from a User Office
+      var isExternal = this.model.get('EXTERNAL') == '1'
+      // approved_samples flag - if we care about validity check external, else its ok.
+      var approvedSample = app.options.get('valid_components') ? isExternal : true
+
+      if (safetyLevel == 'GREEN' && approvedSample) this.$el.addClass('active')
+      if (safetyLevel == 'YELLOW' && approvedSample) this.$el.addClass('minor')
+      if (safetyLevel == 'RED' && approvedSample) this.$el.addClass('inactive')
           
       return this
     },
