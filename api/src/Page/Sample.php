@@ -125,6 +125,7 @@ class Sample extends Page
                                // whereas externalid is the actual reference
                               'external' => '\d',
                               'EXTERNALID' => '\w+',
+                              'SAFETYLEVEL' => '\w+',
 
                               'COMPONENTLATTICEID' => '\d+',
 
@@ -1184,6 +1185,11 @@ class Sample extends Page
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
             
+            if ($this->has_arg('SAFETYLEVEL')) {
+                $where .= ' AND pr.safetylevel=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('SAFETYLEVEL'));
+            }
+            
 
             $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr INNER JOIN proposal p ON p.proposalid = pr.proposalid $join WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
@@ -1219,21 +1225,31 @@ class Sample extends Page
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype, CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass,pr.global, IF(pr.externalid IS NOT NULL, 1, 0) as external, HEX(pr.externalid) as externalid, pr.density, count(php.proteinid) as pdbs
-              /*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
-                                  FROM protein pr
-                                  LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
-                                  LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
-                                  LEFT OUTER JOIN protein_has_pdb php ON php.proteinid = pr.proteinid
-                                  /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
-                                  LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
-                                  LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid*/
-                                  INNER JOIN proposal p ON p.proposalid = pr.proposalid
-                                  $join
-                                  WHERE $where
-                                  GROUP BY pr.proteinid
-                                  /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, CONCAT(p.proposalcode,p.proposalnumber)*/
-                                  ORDER BY $order", $args);
+            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, 
+                                ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype,
+                                CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, 
+                                pr.proteinid,
+                                CONCAT(p.proposalcode,p.proposalnumber) as prop,
+                                pr.name, pr.acronym, pr.molecularmass, pr.global,
+                                IF(pr.externalid IS NOT NULL, 1, 0) as external,
+                                HEX(pr.externalid) as externalid,
+                                pr.density,
+                                count(php.proteinid) as pdbs,
+                                pr.safetylevel
+
+                                FROM protein pr
+                                LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
+                                LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
+                                LEFT OUTER JOIN protein_has_pdb php ON php.proteinid = pr.proteinid
+                                /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
+                                LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
+                                LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid*/
+                                INNER JOIN proposal p ON p.proposalid = pr.proposalid
+                                $join
+                                WHERE $where
+                                GROUP BY pr.proteinid
+                                /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, CONCAT(p.proposalcode,p.proposalnumber)*/
+                                ORDER BY $order", $args);
             
             $ids = array();
             $wcs = array();
@@ -1293,14 +1309,23 @@ class Sample extends Page
             if ($this->has_arg('external')) {
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
-
+            
+            if ($this->has_arg('SAFETYLEVEL')) {
+                $where .= ' AND pr.safetyLevel=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('SAFETYLEVEL'));
+            }
+            
             if ($this->has_arg('term')) {
                 $where .= " AND (lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+1)."), '%')) OR lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+2)."), '%')))";
                 array_push($args, $this->arg('term'));
                 array_push($args, $this->arg('term'));
             }
             
-            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as concentrationtype, 1 as hasph, IF(pr.externalid IS NOT NULL, 1, 0) as external
+            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, pr.safetylevel,
+              max(pr.proteinid) as proteinid,
+              ct.symbol as concentrationtype,
+              1 as hasph,
+              IF(pr.externalid IS NOT NULL, 1, 0) as external
               FROM protein pr 
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
               WHERE pr.acronym is not null AND $where 
