@@ -62,6 +62,17 @@
     background: $content-active;
 }
 
+.minor {
+    background: $content-minor;
+}
+
+.inactive {
+    background: $content-inactive;
+}
+.hidden {
+    display:none;
+}
+
 .clear {
     clear: both;
 }
