@@ -41,17 +41,16 @@ class Pod extends Page
             'podid' => $podId
         );
 
-        $crt = '/path/to/cert';
+        global $maxiv_launcher_server, $maxiv_launcher_cert;
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'launcher_ip');
+        curl_setopt($ch, CURLOPT_URL, $maxiv_launcher_server);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data, JSON_UNESCAPED_SLASHES));
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSLCERT, $crt);
+        curl_setopt($ch, CURLOPT_SSLCERT, $maxiv_launcher_cert);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // Blocks echo of curl response
-        //curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); // Fake async request, causes inconsistent success of request being sent
         $result = curl_exec($ch);
         curl_close($ch);
 
