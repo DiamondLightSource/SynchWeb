@@ -1,7 +1,7 @@
 swagger: '2.0'
 # openapi: 3.0.0
 info:
-  version: 1.0.0
+  version: 2020-R1
   title: SynchWeb REST API Specification
   description: SynchWeb
 host: ispyb.diamond.ac.uk
