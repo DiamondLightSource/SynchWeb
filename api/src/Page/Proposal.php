@@ -106,7 +106,7 @@ class Proposal extends Page
 
 
         function _get_types() {
-            $bls = implode("', '", $this->get_beamlines_from_type($this->ty));
+            $bls = implode("', '", $this->_get_beamlines_from_type($this->ty));
             $rows = $this->db->pq("SELECT distinct p.proposalcode 
                 FROM proposal p
                 INNER JOIN blsession s ON s.proposalid = p.proposalid
