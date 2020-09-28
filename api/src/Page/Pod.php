@@ -21,6 +21,10 @@ class Pod extends Page
     function _initiate_maxiv_pod(){
         $person = $this->_get_person();
 
+        // Currently we only allow users to spin up one MAXIV pod and we can't map a new file into existing Pod
+        $personHasPod = $this->db->pq("SELECT podId FROM Pod WHERE status IS NOT NULL AND status !=:1 AND STATUS !=:2 AND personId =:3", array('Terminated', 'Failed', $person));
+        if(sizeof($personHasPod) > 0) $this->_error('You have an existing instance of the MAXIV viewer running.');
+
         $filePath = $this->_get_file_path();
         $path = $filePath['IMAGEDIRECTORY'];
         $file = $filePath['FILETEMPLATE'];
