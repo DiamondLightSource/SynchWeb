@@ -10,9 +10,9 @@ class Pod extends Page
                                     'user' => '.*',
                             );
 
-    public static $dispatch = array(array('/maxiv/:id', 'get', '_initiate_maxiv_pod'),
-                                    array('/maxiv/running/:id', 'get', '_maxiv_pod_running'),
-                                    array('/maxiv/status/:id', 'get', '_maxiv_start_status'),
+    public static $dispatch = array(array('/maxiv/hdf5/:id', 'get', '_initiate_maxiv_pod'),
+                                    array('/maxiv/hdf5/running/:id', 'get', '_maxiv_pod_running'),
+                                    array('/maxiv/hdf5/status/:id', 'get', '_maxiv_start_status'),
                         );
 
     /**
