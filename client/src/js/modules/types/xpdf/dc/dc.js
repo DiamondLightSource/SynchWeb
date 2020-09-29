@@ -116,7 +116,7 @@ define([
 
             let self = this
             Backbone.ajax({
-                url: app.apiurl + '/pod/maxiv/' + this.model.get('ID'),
+                url: app.apiurl + '/pod/maxiv/hdf5/' + this.model.get('ID'),
                 method: 'get',
                 data: {
                     user: app.user
@@ -151,7 +151,7 @@ define([
             var count = 0;
             var check = function(count){
                 Backbone.ajax({
-                    url: app.apiurl + '/pod/maxiv/status/' + podId,
+                    url: app.apiurl + '/pod/maxiv/hdf5/status/' + podId,
                     method: 'get',
                     success: function(response){
                         console.log(response[0])
@@ -205,7 +205,7 @@ define([
 
         isPodRunning: function(self){
             Backbone.ajax({
-                url: app.apiurl + '/pod/maxiv/running/' + self.model.get('ID'),
+                url: app.apiurl + '/pod/maxiv/hdf5/running/' + self.model.get('ID'),
                 method: 'get',
                 data: { user: app.user },
                 success: function(response){
