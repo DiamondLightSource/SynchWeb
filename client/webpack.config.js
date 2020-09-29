@@ -28,7 +28,7 @@ module.exports = (env) => ({
       index: '/dist/'+gitHash+'/index.html',
     },
     proxy: [{
-        context: ['/api', '/assets'],
+        context: env && env.proxy && env.proxy.assets ? ['/api', '/assets'] : ['/api'],
         // Change this target to where SynchWeb server is running
         target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
         // Intercept the request and add auth header

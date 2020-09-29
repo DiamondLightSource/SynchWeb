@@ -77,6 +77,7 @@ The command line options available are described in this table. These override t
 | env.port | Webpack dev server port |
 | env.proxy.target | Full address of the SynchWeb PHP backend server (can include port if required) |
 | env.proxy.secure | Flag to set if connecting to an https address for the SynchWeb backend |
+| env.proxy.assets | Proxy client assets directory |
 
 
 Acknowledgements
