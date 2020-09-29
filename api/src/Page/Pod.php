@@ -45,15 +45,15 @@ class Pod extends Page
             'podid' => $podId
         );
 
-        global $maxiv_launcher_server, $maxiv_launcher_cert;
+        global $maxiv_hdf5service_url, $maxiv_hdf5service_cert;
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $maxiv_launcher_server);
+        curl_setopt($ch, CURLOPT_URL, $maxiv_hdf5service_url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data, JSON_UNESCAPED_SLASHES));
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSLCERT, $maxiv_launcher_cert);
+        curl_setopt($ch, CURLOPT_SSLCERT, $maxiv_hdf5service_cert);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // Blocks echo of curl response
         $result = curl_exec($ch);
         curl_close($ch);
