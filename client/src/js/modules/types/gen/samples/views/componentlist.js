@@ -10,7 +10,7 @@ define(['modules/samples/views/proteinlist', 'utils/table'], function(ProteinLis
             { name: 'COMPONENTTYPE', label: 'Type', cell: 'string', editable: false },
             { name: 'SCOUNT', label: 'Samples', cell: 'string', editable: false },
             { name: 'DCOUNT', label: 'Data Collections', cell: 'string', editable: false },
-            { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: 'string', editable: false },
+            { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
             { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
         ],
 

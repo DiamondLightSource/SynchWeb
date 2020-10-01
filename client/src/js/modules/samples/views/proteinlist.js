@@ -2,27 +2,14 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
   'collections/componenttypes', 
   'modules/projects/views/addto',
   'utils/table',
-  'utils/safetylevel',
   'templates/samples/proteinlist.html'], 
-  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, AddToProjectView, table, safetyLevel, Template) {
+  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, AddToProjectView, table, Template) {
     
     
   var ClickableRow = table.ClickableRow.extend({
     event: 'proteins:view',
     argument: 'PROTEINID',
     cookie: true,
-  })
-
-  var ClassCell = Backgrid.StringCell.extend({
-    render: function() {
-      ClassCell.__super__.render.call(this)
-
-      var cls = safetyLevel(this.model)
-      this.$el.html('<span class="badge '+cls+'">'+this.$el.html()+'</span>')
-
-      return this
-    }
-
   })
     
   return Marionette.LayoutView.extend({
@@ -58,7 +45,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
         { name: 'CONCENTRATIONTYPE', label: 'Unit', cell: 'string', editable: false },
         { name: 'SCOUNT', label: 'Samples', cell: 'string', editable: false },
         { name: 'DCOUNT', label: 'Data Collections', cell: 'string', editable: false },
-        { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: ClassCell, editable: false },
+        { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
         { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
     ],
 
