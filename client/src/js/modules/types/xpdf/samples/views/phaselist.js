@@ -35,6 +35,9 @@ define(['marionette',
         showFilter: false,
         title: 'Phase',
         url: 'phase',
+        events: {
+            'change .uas': 'showOriginalOnly'
+        },
         
         columns: [
             { name: 'NAME', label: 'Name', cell: 'string', editable: false },
@@ -46,6 +49,16 @@ define(['marionette',
         ],
     
         hiddenColumns: [],
-        
+
+        // Toggle between displaying all phases or only UAS approved originals
+        showOriginalOnly: function(){
+            if(this.ui.toggleUAS[0].checked == true){
+                this.collection.queryParams['uas'] = true
+                this.collection.fetch()
+            } else {
+                this.collection.queryParams['uas'] = ''
+                this.collection.fetch()
+            }
+        }
     })
 })

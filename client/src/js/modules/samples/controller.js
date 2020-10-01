@@ -153,7 +153,10 @@ define(['marionette',
         app.bc.reset([{ title: title+'s', url: '/'+title.toLowerCase()+'s' }])
         page = page ? parseInt(page) : 1
         var params = { s : s }
-        if (app.type == 'xpdf') params.seq = 1
+        if (app.type == 'xpdf') {
+            params.seq = 1
+            params.uas = true
+        }
         var proteins = new Proteins(null, { state: { currentPage: page }, queryParams: params })
         proteins.fetch().done(function() {
             app.content.show(GetView.ProteinList.get(app.type, { collection: proteins, params: { s: s } }))

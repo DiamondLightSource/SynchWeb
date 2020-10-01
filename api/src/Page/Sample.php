@@ -43,6 +43,7 @@ class Sample extends Page
                               'capillary' => '',
                               'capillaryPhase' => '',
                               'json' => '',
+                              'uas' => '\w+',
 
                               'DEWARID' => '\d+',
                               'PROTEINID' => '\d+',
@@ -1184,7 +1185,7 @@ class Sample extends Page
             if ($this->has_arg('external')) {
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
-            
+
 
             $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr INNER JOIN proposal p ON p.proposalid = pr.proposalid $join WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
@@ -1212,14 +1213,22 @@ class Sample extends Page
             array_push($args, $end);
             
             $order = 'pr.proteinid DESC';
-            
-            
+
+            $group = 'pr.proteinId';
+
+            // Only display original UAS approved proteins
+            if($this->has_arg('uas') && $this->arg('uas') == true){
+                $where .= ' AND pr.externalId IS NOT NULL';
+                $group = 'pr.externalId';
+                $order .= ', pr.bltimeStamp DESC';
+            }
+
             if ($this->has_arg('sort_by')) {
                 $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' =>'pr.molecularmass', 'HASSEQ' => "CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END");
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-            
+
             $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype, CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass,pr.global, IF(pr.externalid IS NOT NULL, 1, 0) as external, HEX(pr.externalid) as externalid, pr.density, count(php.proteinid) as pdbs
               /*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
                                   FROM protein pr
@@ -1232,7 +1241,7 @@ class Sample extends Page
                                   INNER JOIN proposal p ON p.proposalid = pr.proposalid
                                   $join
                                   WHERE $where
-                                  GROUP BY pr.proteinid
+                                  GROUP BY $group
                                   /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, CONCAT(p.proposalcode,p.proposalnumber)*/
                                   ORDER BY $order", $args);
             

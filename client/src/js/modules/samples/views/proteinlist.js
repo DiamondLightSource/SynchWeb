@@ -25,8 +25,9 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p><div class="ra"><% if (IS_STAFF) { %><a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a><% } %></div><div class="filter type"></div><div class="wrapper"></div>'),
+    template: _.template('<h1><%-title%>s</h1><p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p><div class="ra"><% if (app.type == "xpdf") { %><input type="checkbox" id="uas" class="uas" style="margin-right:3px" checked><label for="uas" style="margin-right:20px">Show Only UAS Samples</label><% } %><% if (IS_STAFF) { %><a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a><% } %></div><div class="filter type"></div><div class="wrapper"></div>'),
     regions: { 'wrap': '.wrapper', type: '.type' },
+    ui: { toggleUAS: '.uas' },
 
     clickableRow: ClickableRow,
     showFilter: true,
