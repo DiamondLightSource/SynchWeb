@@ -1,9 +1,8 @@
 define(['marionette', 'backgrid', 'views/table', 'views/filter', 
-  'collections/componenttypes', 
-  'modules/projects/views/addto',
+  'collections/componenttypes',
   'utils/table',
   'templates/samples/proteinlist.html'], 
-  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, AddToProjectView, table, Template) {
+  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, table, Template) {
     
     
   var ClickableRow = table.ClickableRow.extend({
