@@ -6,12 +6,15 @@ define(['backbone', 'marionette', 'backgrid',
     'collections/samplegroups',
     'models/samplegroup',
     'views/table',
-    'templates/samples/samplegroup.html'
+    'utils/editable',
+    'templates/samples/samplegroup.html',
+    'backbone-validation'
     ], function(
     Backbone, Marionette, Backgrid,
     Shipments, Dewars, Containers, Samples,
     SampleGroups, SampleGroup,
     TableView,
+    Editable,
     template) {
 
 
@@ -122,7 +125,7 @@ define(['backbone', 'marionette', 'backgrid',
     })
 
     var SampleGroupView = Marionette.LayoutView.extend({
-        template: _.template('<h3>Group: <%-INDEX%><h3><div class="members"></div>'),
+        template: _.template('<h3>Group: <%-INDEX%><h3><div>Name: <span class="NAME"><%-NAME%></span></div><div class="members"></div>'),
         regions: {
             rmembers: '.members',
         },
@@ -133,7 +136,14 @@ define(['backbone', 'marionette', 'backgrid',
             }
         },
 
+        initialize: function() {
+            Backbone.Validation.bind(this);
+        },
+
         onRender: function() {
+            var edit = new Editable({ model: this.model, el: this.$el })
+            edit.create('NAME', 'text')
+
             this.rmembers.show(new TableView({
                 collection: this.model.get('MEMBERS'),
                 columns: [
