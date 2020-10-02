@@ -184,7 +184,8 @@ class Sample extends Page
 
                               array('/groups', 'get', '_sample_groups'),
                               array('/groups', 'post', '_add_sample_to_group'),
-                              array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_group'),
+                              array('/groups/name/:BLSAMPLEGROUPID', 'patch', '_update_sample_group'),
+                              array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
         );
 
@@ -1942,9 +1943,10 @@ class Sample extends Page
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->paginate("SELECT b.blsampleid, bshg.blsamplegroupid, bshg.grouporder, bshg.type, CONCAT(bshg.blsamplegroupid, '-', b.blsampleid) as blsamplegroupsampleid, b.name as sample, b.dimension1, b.dimension2, b.dimension3, b.shape, b.packingfraction, cr.theoreticaldensity, b.blsampleid, cr.crystalid, cr.name as crystal, c.code as container, pr.name as protein
+            $rows = $this->db->paginate("SELECT b.blsampleid, bshg.blsamplegroupid, bshg.grouporder, bshg.type, CONCAT(bshg.blsamplegroupid, '-', b.blsampleid) as blsamplegroupsampleid, b.name as sample, b.dimension1, b.dimension2, b.dimension3, b.shape, b.packingfraction, cr.theoreticaldensity, b.blsampleid, cr.crystalid, cr.name as crystal, c.code as container, pr.name as protein, bsg.name
                 FROM blsample b
                 INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
+                INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
                 INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                 INNER JOIN protein pr ON pr.proteinid = cr.proteinid
                 INNER JOIN proposal p ON p.proposalid = pr.proposalid
@@ -1959,6 +1961,28 @@ class Sample extends Page
             ));
         }
 
+        function _update_sample_group() {
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+
+            $group = $this->db->pq("SELECT bsg.blsamplegroupid
+              FROM blsamplegroup bsg 
+              INNER JOIN blsamplegroup_has_blsample bshg ON bsg.blsamplegroupid = bshg.blsamplegroupid
+              INNER JOIN blsample b ON b.blsampleid = bshg.blsampleid
+              INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
+              INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
+              WHERE pr.proposalid = :1 AND bsg.blsamplegroupid = :2", array($this->proposalid, $this->arg('BLSAMPLEGROUPID')));
+            
+            if (!sizeof($group)) $this->_error('No such sample group');
+            else $group = $group[0];
+
+            $fields = array('NAME');
+            foreach ($fields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE blsamplegroup SET $f=:1 WHERE blsamplegroupid=:2", array($this->arg($f), $this->arg('BLSAMPLEGROUPID')));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
+        }
 
         function _add_sample_to_group() {
             if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
@@ -2008,7 +2032,7 @@ class Sample extends Page
         }
 
 
-        function _update_sample_group() {
+        function _update_sample_in_group() {
             if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No sample group sample specified');
             list($gid,$sid) = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
 
