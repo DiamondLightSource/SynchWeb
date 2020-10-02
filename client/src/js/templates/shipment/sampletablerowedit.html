@@ -1,15 +1,33 @@
 <td><%-LOCATION%></td>
-<td class="protein"><select name="PROTEINID"></select>
 
-<td class="name"><input type="text" name="NAME" value="<%-NAME%>" /></td>
+<% if (HASDATA) { %>
+	<td class="protein"><%-ACRONYM%></td>
+	<td class="name"><%-NAME%></td>
+<% } else { %>
+	<td class="protein"><select name="PROTEINID"></select>
+	<td class="name"><input type="text" name="NAME" value="<%-NAME%>" /></td>
+<% } %>
+
+
 <td class="spacegroup xtal auto-extra"><select name="SPACEGROUP"></select></td>
-<td class="barcode xtal auto-extra"><input name="CODE" type="text" value="<%-CODE%>" /></td>
+
+<% if (HASDATA) { %>
+	<td class="barcode xtal auto-extra"><%-CODE%>
+<% } else { %>
+	<td class="barcode xtal auto-extra"><input name="CODE" type="text" value="<%-CODE%>" /></td>
+<% } %>
+
 <td class="volume non-xtal"><input type="text" name="VOLUME" value="<%-VOLUME%>" /></td>
 
 <td class="centringmethod auto"><select name="CENTRINGMETHOD"></select></td>
 <td class="experimentkind auto"><select name="EXPERIMENTKIND"></select></td>
 <td class="energy auto"><input type="text" name="ENERGY" /></td>
-<td class="userpath auto extra"><input type="text" name="USERPATH" /></td>
+
+<% if (HASDATA) { %>
+	<td class="userpath auto extra"><%-USERPATH%></td>
+<% } else { %>
+	<td class="userpath auto extra"><input type="text" name="USERPATH" /></td>
+<% } %>
 
 <td class="comments"><input type="text" name="COMMENTS" value="<%-COMMENTS%>" /></td>
 
