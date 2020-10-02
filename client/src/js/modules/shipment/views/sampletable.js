@@ -2,10 +2,12 @@ define(['marionette',
         'models/protein',
         'collections/proteins',
     
+        'views/dialog',
         'views/validatedrow',
         'modules/shipment/collections/distinctproteins',
         'modules/samples/views/componentsview',
-    
+        'modules/samples/views/samplegroups',
+
         'templates/shipment/sampletable.html',
         'templates/shipment/sampletablerow.html',
         'templates/shipment/sampletablerowedit.html',
@@ -19,7 +21,8 @@ define(['marionette',
         'utils',
     
         'jquery',
-        ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
+        ], function(Marionette, Protein, Proteins, 
+        DialogView, ValidatedRow, DistinctProteins, ComponentsView, SampleGroupView,
         sampletable, sampletablerow, sampletablerowedit, 
         forms, SG, Anom, CM, EXP, RS, utils, $) {
 
@@ -35,6 +38,7 @@ define(['marionette',
             'click a.cancel': 'cancelEditSample',
             'click a.clone': 'cloneSample',
             'click a.clear': 'clearSample',
+            'click a.group': 'showSampleGroups',
         },
 
         ui: {
@@ -46,6 +50,17 @@ define(['marionette',
         modelEvents: {
             'change:isSelected': 'setSelected',
             'cloned': 'render',
+        },
+
+        showSampleGroups: function(e) {
+            e.preventDefault()
+
+            app.dialog.show(new DialogView({ 
+                title: 'Sample Groups', 
+                view: new SampleGroupView({
+                    sample: this.model
+                })
+            }))
         },
 
         setSelected: function(e) {
