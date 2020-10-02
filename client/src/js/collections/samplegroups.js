@@ -12,7 +12,15 @@ define(['backbone',
 
 
     var SampleGroup = Backbone.Model.extend({
+        urlRoot: '/sample/groups/name',
         idAttribute: 'BLSAMPLEGROUPID',
+
+        validation: {
+            NAME: {
+                required: false,
+                pattern: 'wwsbdash',
+            }
+        }
     })
 
     var SampleGroupCollection = Backbone.Collection.extend({
@@ -67,6 +75,7 @@ define(['backbone',
 
                 groups.push({
                     BLSAMPLEGROUPID: g,
+                    NAME: members.length && members[0].get('NAME'),
                     MEMBERS: new SampleGroupMembers(members)
                 })
             }, this)
