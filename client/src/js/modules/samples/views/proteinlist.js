@@ -1,38 +1,15 @@
 define(['marionette', 'backgrid', 'views/table', 'views/filter', 
-  'collections/componenttypes', 
-  'modules/projects/views/addto',
+  'collections/componenttypes',
   'utils/table',
   'templates/samples/proteinlist.html'], 
-  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, AddToProjectView, table, Template) {
+  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, table, Template) {
     
     
   var ClickableRow = table.ClickableRow.extend({
     event: 'proteins:view',
     argument: 'PROTEINID',
     cookie: true,
-
-    render: function() {
-      Backgrid.Row.prototype.render.call(this)
-
-      // Highlight approved samples
-      // Currently all samples with an external id are green
-      // In future use Protein safetyLevel to discriminate
-      // if (this.model.get('EXTERNAL') == '1') this.$el.addClass('active')
-      var safetyLevel = this.model.get('SAFETYLEVEL')
-      // isExternal means the sample has come from a User Office
-      var isExternal = this.model.get('EXTERNAL') == '1'
-      // approved_samples flag - if we care about validity check external, else its ok.
-      var approvedSample = app.options.get('valid_components') ? isExternal : true
-
-      if (safetyLevel == 'GREEN' && approvedSample) this.$el.addClass('active')
-      if (safetyLevel == 'YELLOW' && approvedSample) this.$el.addClass('minor')
-      if (safetyLevel == 'RED' && approvedSample) this.$el.addClass('inactive')
-          
-      return this
-    },
-
   })
-
     
   return Marionette.LayoutView.extend({
     className: 'content',
@@ -67,7 +44,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
         { name: 'CONCENTRATIONTYPE', label: 'Unit', cell: 'string', editable: false },
         { name: 'SCOUNT', label: 'Samples', cell: 'string', editable: false },
         { name: 'DCOUNT', label: 'Data Collections', cell: 'string', editable: false },
-        { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: 'string', editable: false },
+        { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
         { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
     ],
 

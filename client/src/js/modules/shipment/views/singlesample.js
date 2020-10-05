@@ -8,12 +8,15 @@ define(['backbone',
     'utils/anoms',
 
     'modules/samples/views/componentsview',
-    
+        
+    'utils/safetylevel',
+
     'templates/shipment/singlesample.html',
     'templates/shipment/singlesamplee.html',
     ], function(Backbone, utils,
         FormView, SG, Editable, Protein, Anom,
         ComponentsView,
+        safetyLevel,
         templatenew, template) {
 
     return FormView.extend({
@@ -389,19 +392,12 @@ define(['backbone',
         // Currently restrict plates to green/low risk only (e.g. VMXi)
         // Will need combination of beamline and container type rules...
         handleSafetyLevel: function(m) {
-            var clss = ''
-
-            var safetyLevel = m.get('SAFETYLEVEL')
-            // isExternal means the sample has come from a User Office
-            var isExternal = m.get('EXTERNAL') == '1'
-            // approved_samples flag - if we care about validity check external, else its ok.
-            var approvedSample = app.options.get('valid_components') ? isExternal : true
-                
-            if (safetyLevel == 'GREEN' && approvedSample)  clss = 'active'
-            if (safetyLevel == 'YELLOW' && approvedSample) clss = 'hidden'
-            if (safetyLevel == 'RED' && approvedSample)    clss = 'hidden'
-
-            return clss
+            var map = {
+                GREEN: 'active',
+                YELLOW:'hidden',
+                RED: 'hidden'
+            }
+            return safetyLevel(m, map)
         },
 
         setModel: function(s) {

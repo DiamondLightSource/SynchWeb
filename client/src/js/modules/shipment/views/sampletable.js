@@ -17,11 +17,13 @@ define(['marionette',
         'utils/experimentkinds',
         'utils/radiationsensitivity',
         'utils',
+
+        'utils/safetylevel',
     
         'jquery',
         ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
         sampletable, sampletablerow, sampletablerowedit, 
-        forms, SG, Anom, CM, EXP, RS, utils, $) {
+        forms, SG, Anom, CM, EXP, RS, utils, safetyLevel, $) {
 
         
     // A Sample Row
@@ -311,19 +313,7 @@ define(['marionette',
         // Callback to style individual proteins within combobox
         // Not sure if this will stay due to conflicts with validation colours.
         handleSafetyLevel: function(m) {
-            var clss = ''
-
-            var safetyLevel = m.get('SAFETYLEVEL')
-            // isExternal means the sample has come from a User Office
-            var isExternal = m.get('EXTERNAL') == '1'
-            // approved_samples flag - if we care about validity check external, else its ok.
-            var approvedSample = app.options.get('valid_components') ? isExternal : true
-                
-            if (safetyLevel == 'GREEN' && approvedSample)  clss = 'active'
-            if (safetyLevel == 'YELLOW' && approvedSample) clss = 'minor'
-            if (safetyLevel == 'RED' && approvedSample)    clss = 'inactive'
-
-            return clss
+            return safetyLevel(m)
         }    
     }))
     

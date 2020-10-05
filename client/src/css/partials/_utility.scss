@@ -205,3 +205,38 @@ ul.ui-autocomplete {
 .justify {
     text-align: justify;
 }
+
+.ui-menu {
+    li {
+        background: none;
+        position: relative;
+
+        &:after {
+            position: absolute;
+            left: 3px;
+            font-family: 'FontAwesome';
+            text-shadow: 0px 1px 2px rgba(150,150,150,0.5);
+        }
+    }
+
+    li.active {
+        &:after {
+            content: '\f00c';
+            color: $content-active
+        }
+    }
+
+    li.minor {
+        &:after {
+            content: '\f06a';
+            color: darken($content-minor, 5%);
+        }
+    }
+
+    li.inactive {
+        &:after {
+            content: '\f071';
+            color: $content-inactive;
+        }
+    }
+}
