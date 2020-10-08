@@ -101,7 +101,7 @@ class Sample extends Page
                               'CENTRINGMETHOD' => '\w+',
                               'RADIATIONSENSITIVITY' => '\w+',
                               'ENERGY' => '\w+',
-                              'USERPATH' => '(\w|-)+\/?(\w|-)+',
+                              'USERPATH' => '(?=.{0,40}$)(\w|-)+\/?(\w|-)+', // Up to two folders as a path, 40 characters maximum
                               'EXPOSURETIME' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEX' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEY' => '\d+(.\d+)?',
