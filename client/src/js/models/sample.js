@@ -146,6 +146,7 @@ define(['backbone', 'collections/components',
             USERPATH: {
                 required: false,
                 pattern: 'twopath',
+                maxLength: 40,
             },
 
 
