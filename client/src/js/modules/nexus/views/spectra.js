@@ -5,6 +5,7 @@ define([
     'jquery',
     'jquery.flot',
     'jquery.flot.resize',
+    'jquery.flot.selection'
 ], function(Marionette, Spectra, utils, $) {
 
     return Marionette.ItemView.extend({
@@ -12,6 +13,36 @@ define([
 
         ui: {
             plot: '.plot',
+        },
+
+        events: {
+            plotselected: 'zoom',
+            'dblclick @ui.plot': 'reset',
+        },
+
+        reset: function(e) {
+            this.zoom(e, { 
+                xaxis: {from: null, to: null},
+                yaxis: {from: null, to: null},
+            })
+        },
+
+        zoom: function (event, ranges) {
+            if (!ranges.xaxis) return
+            
+            var opts = this.plot.getOptions()
+            _.each(opts.xaxes, function(axis) {
+                axis.min = ranges.xaxis.from
+                axis.max = ranges.xaxis.to
+            })
+            _.each(opts.yaxes, function(axis) {
+                axis.min = ranges.yaxis.from
+                axis.max = ranges.yaxis.to
+            })
+            
+            this.plot.setupGrid()
+            this.plot.draw()
+            this.plot.clearSelection()
         },
 
         selectPoint: function(point) {
@@ -46,7 +77,10 @@ define([
                     grid: {
                         borderWidth: 0,
                         margin: 10,
-                    }
+                    },
+                    selection: {
+                        mode: 'xy',
+                    },
                 })
                 
                 var data = []
@@ -55,8 +89,11 @@ define([
                         data: _.map(m.get('DATA'), function(v,i) { return [i, v]}),
                         label: m.get('TITLE'),
                         lines: {
-                            show: true
-                        }
+                            show: true,
+                        },
+                        points: {
+                            show: false,
+                        },
                     })
                 })
                 this.$el.css({ background: 'none' })
