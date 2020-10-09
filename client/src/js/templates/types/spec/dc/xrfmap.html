@@ -18,6 +18,6 @@
         </li>
 
         <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
-        <li>Status: <b><%-RUNSTATUS%></b></li>
+        <% if (RUNSTATUS && !RUNSTATUS.match(/success/i)) { %><li>Status: <b><%-RUNSTATUS%></b></li><% } %>
     </ul>
 </div>

@@ -5,9 +5,12 @@ define([
         'modules/types/spec/dc/xrfmap',
         'modules/types/spec/dc/energyscan',
         'modules/types/spec/dc/mosaic',
+
+        'views/filter',
+
         'templates/types/gen/dc/dclist.html',
         ],
-function(DataCollections, DCList, DCItemView, XRFMapItemView, EnergyScanItemView, MosaicItemView, template) {
+function(DataCollections, DCList, DCItemView, XRFMapItemView, EnergyScanItemView, MosaicItemView, Filter, template) {
     
     var SpecDCList = DCList.extend({
         getChildView: function(item) {
@@ -28,8 +31,26 @@ function(DataCollections, DCList, DCItemView, XRFMapItemView, EnergyScanItemView
         }
     })
     
-    return DataCollections.extend({
+    var SpecDataCollections = DataCollections.extend({
         dcListView: SpecDCList,
         template: template,
+        filters: true,
+
+        initialize: function(options) {
+            SpecDataCollections.__super__.initialize.call(this, options)
+            if (this.getOption('filters')) this.ty = new Filter({ 
+                value: options.params.type, 
+                collection: options.collection, 
+                mobile: true, url: !options.noFilterUrl,
+                filters: [
+                    { id: 'success', name: 'Success' }, 
+                    { id: 'failed', name: 'Failed' },
+                    { id: 'xrfmap', name: 'XRF Maps' },
+                    { id: 'energyscan', name: 'Energy Scans'} ,
+                ]
+            })
+        }
     })
+
+    return SpecDataCollections
 })

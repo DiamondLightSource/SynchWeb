@@ -20,6 +20,6 @@
         <li>No. Repeats: <span class="NUMBEROFPASSES"><%-NUMBEROFPASSES%></span></li>
         
         <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
-        <% if (RUNSTATUS == 'aborted') { %><li>Status: <b>Stopped</b></li><% } %>
+        <% if (RUNSTATUS && !RUNSTATUS.match(/success/i)) { %><li>Status: <b><%-RUNSTATUS%></b></li><% } %>
     </ul>
 </div>
