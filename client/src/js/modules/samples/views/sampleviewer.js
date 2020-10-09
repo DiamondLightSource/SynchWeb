@@ -20,16 +20,18 @@ define(['marionette',
     
     var SampleImageViewer = ImageViewer.extend({
         template: template,
-        zoomStep: 0.01,
+        zoomStep: 0.005,
         
         events: {
             'click canvas': 'onClick',
             'change @ui.roi': 'draw',
+            'change @ui.hidden': 'toggleShowHidden',
         },
 
         ui: {
             controls: '.controls',
             roi: 'select[name=roi]',
+            hidden: 'input[name=hidden]',
         },
 
         getInspectionId: function() {
@@ -71,12 +73,12 @@ define(['marionette',
                 setTimeout(function() {
                     self.ui.progress.text('')
                 }, 100)
+                console.log('all images loaded')
                 self.calculateLimits()
             })
         },
 
         calculateLimits: function() {
-            console.log('all images loaded')
             this.limits = {
                 x1: 1e20, x2: 0, y1: 1e20, y2: 0,
             }
@@ -113,6 +115,8 @@ define(['marionette',
             this.width = this.limits.x2 - this.limits.x1
             this.height = this.limits.y2 - this.limits.y1
             
+
+
             this.calcZoom()
             this.offsetx = -this.limits.x1 * this.scalef
             this.offsety = -this.limits.y1 * this.scalef
@@ -124,11 +128,13 @@ define(['marionette',
             this.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
             this.ctx.clearRect(this.limits.x1, this.limits.y1, this.width, this.height)
 
+            this.drawMaps()
+
             this.inspectionimages.each(function(m) {
                 this.ctx.drawImage(
                     m.get('xhr'), 
-                    parseFloat(m.get('OFFSETX')), 
-                    parseFloat(m.get('OFFSETY')), 
+                    parseInt(m.get('OFFSETX')), 
+                    parseInt(m.get('OFFSETY')), 
                     Math.abs(m.get('MICRONSPERPIXELX'))*m.get('xhr').width*1000, 
                     Math.abs(m.get('MICRONSPERPIXELY'))*m.get('xhr').height*1000,
                 )
@@ -138,7 +144,7 @@ define(['marionette',
                 this._drawObject({ o: o })
             }, this)
 
-            this.drawMaps()
+            this.drawScroll()
         },
 
         populateMaps: function() {
@@ -147,7 +153,7 @@ define(['marionette',
                 return '<option value="'+title+'">'+title+'</option>'
             })
             this.ui.roi.html(opts.join())
-            this.drawMaps()
+            this.draw()
         },
 
         initialize: function(options) {
@@ -157,17 +163,24 @@ define(['marionette',
             this.sample = options.sample
             this.inspections = new Inspections()
             this.inspections.queryParams.cid = this.sample.get('CONTAINERID')
+            this.inspections.queryParams.allStates = 1
             this.listenTo(this.inspections, 'sync', this.populateInspections)
             this.inspections.fetch()
 
             this.inspectionimages = new InspectionImages()
             this.inspectionimages.queryParams.sid = this.sample.get('BLSAMPLEID')
             this.inspectionimages.queryParams.iid = this.getInspectionId.bind(this)
-            this.listenTo(this.inspectionimages, 'sync', this.plotImages)
 
             this.xfm = new XFMap({ running: false })
             this.listenTo(this.xfm, 'sync', this.populateMaps)
             this.xfm.fetch({ data: { sid: this.sample.get('BLSAMPLEID') } })
+
+            this.showHidden = false
+        },
+
+        toggleShowHidden: function() {
+            this.showHidden = !this.showHidden
+            this.draw()
         },
 
         onRender: function() {
@@ -280,12 +293,13 @@ define(['marionette',
                             buffer[pos + 3] = 0;
                         } else {
                             var scaled = Math.round((v - min) / (max - min) * 255);
+                            if (scaled > 255) scaled = 255
                             var cm = viridis[scaled]
 
                             buffer[pos]     = Math.round(cm[0] * 255)
                             buffer[pos + 1] = Math.round(cm[1] * 255)
                             buffer[pos + 2] = Math.round(cm[2] * 255)
-                            buffer[pos + 3] = Math.round(map.OPACITY * 255);
+                            buffer[pos + 3] = Math.round((this.showHidden ? 1 : map.OPACITY) * 255);
                         }
                     }, this)
 
@@ -312,6 +326,35 @@ define(['marionette',
 
             }, this)
         },
+
+        drawScroll: function() {
+            this.ctx.strokeStyle = 'rgb(200, 200, 200, 0.7)'
+
+            var height = (this.canvas.height/this.scalef / this.height) * this.canvas.height/this.scalef
+            if (height < this.canvas.height/this.scalef) {
+                var starty = -this.offsety/this.scalef
+                var pcy = (-this.offsety - this.limits.y1*this.scalef) / ((this.limits.y2 - this.limits.y1)*this.scalef)
+                var offsety = pcy * (this.canvas.height/this.scalef)
+
+                this.ctx.lineWidth = 15/this.scalef
+                this.ctx.beginPath()
+                this.ctx.moveTo((-this.offsetx + this.canvas.width)/this.scalef, starty + offsety)
+                this.ctx.lineTo((-this.offsetx + this.canvas.width)/this.scalef, starty + offsety + height)
+                this.ctx.stroke()
+            }
+
+            var width = (this.canvas.width/this.scalef / this.width) * this.canvas.width/this.scalef
+            if (width < this.canvas.width/this.scalef) {
+                var startx = -this.offsetx/this.scalef
+                var pcx = (-this.offsetx - this.limits.x1*this.scalef) / ((this.limits.x2 - this.limits.x1)*this.scalef)
+                var offsetx = pcx * (this.canvas.width/this.scalef)
+
+                this.ctx.beginPath()
+                this.ctx.moveTo(startx + offsetx, (-this.offsety + this.canvas.height)/this.scalef)
+                this.ctx.lineTo(startx + offsetx + width, (-this.offsety + this.canvas.height)/this.scalef)
+                this.ctx.stroke()
+            }
+        }
 
     })
 
