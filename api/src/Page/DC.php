@@ -141,6 +141,18 @@ class DC extends Page
                     $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
                         LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = app.datacollectionid)
                         INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
+
+                } else if ($this->arg('t') == 'failed') {
+                    $where = " AND dc.runstatus NOT LIKE '%success%'";
+
+                } else if ($this->arg('t') == 'success') {
+                    $where = " AND dc.runstatus LIKE '%success%'";
+
+                } else if ($this->arg('t') == 'energyscan') {
+                    $where = " AND dcg.experimenttype LIKE '%energy scan%'";
+
+                } else if ($this->arg('t') == 'xrfmap') {
+                    $where = " AND dcg.experimenttype LIKE '%xrf map%'";
                 }
             }
             
