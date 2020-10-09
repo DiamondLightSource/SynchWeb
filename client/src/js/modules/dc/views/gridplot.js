@@ -83,7 +83,6 @@ define(['jquery', 'marionette',
 
             this.xfm = new XFMap({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.xfm, 'change', this.draw, this)
-            this.xfm.fetch().done(this.populateXFM.bind(this))
 
             this.attachments = new Attachments()
             this.attachments.queryParams.id = this.getOption('ID')
@@ -150,6 +149,7 @@ define(['jquery', 'marionette',
         },
 
         populateXFM: function() {
+            this.xfmLoaded = true
             if (!this.xfm.get('data').length) return
 
             var opts = _.map(this.xfm.get('data'), function(m) {
@@ -178,6 +178,11 @@ define(['jquery', 'marionette',
                 this.getModel()
 
                 $.when.apply($, this._ready).done(this.populatePIA.bind(this))
+            }
+
+            if (utils.inView(this.$el) && !this.xfmLoading) {
+                this.xfmLoading = true
+                this.xfm.fetch().done(this.populateXFM.bind(this))
             }
         },
 
@@ -300,8 +305,11 @@ define(['jquery', 'marionette',
             if (this.ui.flu.is(':checked')) {
                 var tmp = _.findWhere(this.xfm.get('data'), { TITLE: this.ui.el.val() })
                 _.each(tmp.DATA, function(r, i) {
-                    d.push([i+1, r])
-                })
+                    var val = r
+                    if (tmp.MAX && r > tmp.MAX) val = tmp.MAX
+                    if (tmp.MAX && r < tmp.MIN) val = tmp.MIN
+                    d.push([i+1, val])
+                }, this)
             } else if (this.distl.get('data') && this.distl.get('data')[0].length) {
                 if (this.distl.get('data')) d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
             } else {
