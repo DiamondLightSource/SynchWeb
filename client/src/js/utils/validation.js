@@ -32,6 +32,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         array: 'This field may only contain numbers and commas',
         country: 'This field must contain only letters, numbers, spaces, underscores, dashes, and commas',
         visit: 'This field must be of the format xxx123-123',
+        twopath: 'This field can hold a path with two folders',
     })
 
 })
