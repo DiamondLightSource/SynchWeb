@@ -648,11 +648,11 @@ class Page
          * Search LDAP for 'mail' property via fedid
          *
          * @param string $fedid "abc12345"
-         * @return string Returns email address if found
+         * @return string Returns email address if found, fedid if not. (Not all entries have mail records)
          */
         function _get_email($fedid) {
             $src = $this->_ldap_search('uid='.$fedid, True);
-            return array_key_exists($fedid, $src) ? $src[$fedid] : '';
+            return array_key_exists($fedid, $src) ? $src[$fedid] : $fedid;
         }
 
         /**
