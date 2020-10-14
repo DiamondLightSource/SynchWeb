@@ -85,8 +85,12 @@ define(['marionette', 'backbone',
         },
 
         findContainer: function() {
-            if (this.ui.barcode.val().trim()) {
+            var barcode = this.ui.barcode.val()
+            if (!barcode) return
+            if (/^[\w-]+$/.test(barcode)) {
                 this.containers.fetch().done(this.assignContainer.bind(this))
+            } else {
+                app.alert({ message: 'Illegal characters in barcode: "'+barcode+'"' })
             }
         },
 
