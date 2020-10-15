@@ -26,12 +26,14 @@ define(['marionette',
             'click canvas': 'onClick',
             'change @ui.roi': 'draw',
             'change @ui.hidden': 'toggleShowHidden',
+            'slidechange @ui.opacity': 'draw',
         },
 
         ui: {
             controls: '.controls',
             roi: 'select[name=roi]',
             hidden: 'input[name=hidden]',
+            opacity: '.opacity',
         },
 
         getInspectionId: function() {
@@ -85,10 +87,11 @@ define(['marionette',
             this.inspectionimages.each(function(m) {
                 var xhr = m.get('xhr')
 
-                var offx = parseFloat(m.get('OFFSETX'))
-                var offy = parseFloat(m.get('OFFSETY'))
+                
                 var width = xhr.width * Math.abs(m.get('MICRONSPERPIXELX')*1000)
                 var height = xhr.height * Math.abs(m.get('MICRONSPERPIXELY')*1000)
+                var offx = parseFloat(m.get('OFFSETX')) - width / 2
+                var offy = parseFloat(m.get('OFFSETY')) - height / 2
 
                 if (offx < this.limits.x1) this.limits.x1 = offx
                 if ((offx + width) > this.limits.x2) this.limits.x2 = offx + width
@@ -128,17 +131,31 @@ define(['marionette',
             this.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
             this.ctx.clearRect(this.limits.x1, this.limits.y1, this.width, this.height)
 
-            this.drawMaps()
-
             this.inspectionimages.each(function(m) {
+
+                var sX = Math.sign(m.get('MICRONSPERPIXELX'))
+                // convert x,y to canvas x, -y
+                var sY = -Math.sign(m.get('MICRONSPERPIXELY'))
+
+                var cWidth = Math.abs(m.get('MICRONSPERPIXELX'))*m.get('xhr').width*1000
+                var cHeight = Math.abs(m.get('MICRONSPERPIXELY'))*m.get('xhr').height*1000
+
+                this.ctx.save()
+                this.ctx.scale(sX, sY)
+
                 this.ctx.drawImage(
                     m.get('xhr'), 
-                    parseInt(m.get('OFFSETX')), 
-                    parseInt(m.get('OFFSETY')), 
-                    Math.abs(m.get('MICRONSPERPIXELX'))*m.get('xhr').width*1000, 
-                    Math.abs(m.get('MICRONSPERPIXELY'))*m.get('xhr').height*1000,
+                    // coordinates are from the centre of the image
+                    sX*parseInt(m.get('OFFSETX')) - cWidth/2, 
+                    sY*parseInt(m.get('OFFSETY')) - cHeight /2, 
+                    cWidth, 
+                    cHeight,
                 )
+
+                this.ctx.restore()
             }, this)
+
+            this.drawMaps()
 
             this.subsamples.each(function(o) {
                 this._drawObject({ o: o })
@@ -185,6 +202,8 @@ define(['marionette',
 
         onRender: function() {
             this.ui.controls.hide()
+            this.ui.opacity.width(200).css('display', 'inline-block')
+            this.ui.opacity.slider({ min: 0, max: 1, step: 0.05, value: 1 })
         },
 
         clampOffsets: function() {
@@ -253,6 +272,9 @@ define(['marionette',
 
 
         drawMaps: function() {
+            this.ctx.save()
+            this.ctx.globalAlpha = parseFloat(this.ui.opacity.slider('value'))
+
             this.subsamples.each(function(ss) {
                 var maps = _.where(this.xfm.get('data'), { TITLE: this.ui.roi.val(), BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') })
 
@@ -325,6 +347,8 @@ define(['marionette',
                 }
 
             }, this)
+
+            this.ctx.restore()
         },
 
         drawScroll: function() {
