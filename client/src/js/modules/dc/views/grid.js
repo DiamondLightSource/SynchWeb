@@ -106,14 +106,13 @@ define(['marionette',
 
     showBox: function() {
         var gi = this.gridplot.gridInfo()
-        this.ui.bx.text((gi.get('DX_MM')*1000).toFixed(0))
-        this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
+        if (this.ui.bx.text) this.ui.bx.text((gi.get('DX_MM')*1000).toFixed(0))
+        if (this.ui.bx.text) this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
 
-        if (gi.get('STEPS_Y') > 10) this.ui.zoom.show()
+        if (gi.get('STEPS_Y') > 10 && this.ui.zoom.show) this.ui.zoom.show()
     },
 
     checkXRC: function() {
-        console.log('check xrc')
         if (!this.xrc) {
             var state = this.apstatus.getStatus({ type: 'XrayCentring' })
             console.log('xrc state', state)
