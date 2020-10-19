@@ -17,11 +17,13 @@ define(['marionette',
         'utils/experimentkinds',
         'utils/radiationsensitivity',
         'utils',
+
+        'utils/safetylevel',
     
         'jquery',
         ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
         sampletable, sampletablerow, sampletablerowedit, 
-        forms, SG, Anom, CM, EXP, RS, utils, $) {
+        forms, SG, Anom, CM, EXP, RS, utils, safetyLevel, $) {
 
         
     // A Sample Row
@@ -301,13 +303,18 @@ define(['marionette',
         
         updateProteins: function() {
             this.$el.find('select[name=PROTEINID]').html(this.proteins.opts({
-                addClass: 'active',
-                classProperty: 'EXTERNAL',
-                classPropertyValue: '1',
+                // addClass: 'active',
+                // classProperty: 'EXTERNAL',
+                // classPropertyValue: '1',
+                callback: this.handleSafetyLevel
             }))
             this.$el.find('select[name=PROTEINID]').combobox('value', this.model.get('PROTEINID'))
         },
-    
+        // Callback to style individual proteins within combobox
+        // Not sure if this will stay due to conflicts with validation colours.
+        handleSafetyLevel: function(m) {
+            return safetyLevel(m)
+        }    
     }))
     
            

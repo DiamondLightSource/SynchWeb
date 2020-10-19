@@ -8,12 +8,15 @@ define(['backbone',
     'utils/anoms',
 
     'modules/samples/views/componentsview',
-    
+        
+    'utils/safetylevel',
+
     'templates/shipment/singlesample.html',
     'templates/shipment/singlesamplee.html',
     ], function(Backbone, utils,
         FormView, SG, Editable, Protein, Anom,
         ComponentsView,
+        safetyLevel,
         templatenew, template) {
 
     return FormView.extend({
@@ -377,13 +380,26 @@ define(['backbone',
         
         updateProteins: function() {
             this.ui.prot.html(this.getOption('proteins').opts({
-                addClass: 'active',
-                classProperty: 'EXTERNAL',
-                classPropertyValue: '1',
+                // addClass: 'active',
+                // classProperty: 'EXTERNAL',
+                // classPropertyValue: '1',
+                callback: this.handleSafetyLevel
             }))
             this.ui.prot.combobox('value', this.model.get('PROTEINID'))
         },
-        
+        // Callback to style individual proteins within combobox
+        // Not sure if this will stay due to conflicts with validation colours.
+        // Currently restrict plates to green/low risk only (e.g. VMXi)
+        // Will need combination of beamline and container type rules...
+        handleSafetyLevel: function(m) {
+            var map = {
+                GREEN: 'active',
+                YELLOW:'hidden',
+                RED: 'hidden'
+            }
+            return safetyLevel(m, map)
+        },
+
         setModel: function(s) {
             Backbone.Validation.unbind(this)
             this.undelegateEvents()
