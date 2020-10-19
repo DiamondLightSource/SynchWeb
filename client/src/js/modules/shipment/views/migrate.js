@@ -16,11 +16,11 @@ define(['marionette',
         className: 'content',
 
         templateHelpers: function() {
-	    var validOnly = app.options.get('valid_components')
+	        var validOnly = app.options.get('valid_components')
             return {
                 proposal: app.prop,
-		// Proteins can only be migrated if we are not using approved only samples from user office
-		CAN_MIGRATE_PROTEINS: !validOnly, 
+                // Proteins can only be migrated if we are not using approved samples from user office
+                CAN_MIGRATE_PROTEINS: !validOnly, 
             }
         },
 
@@ -131,7 +131,6 @@ define(['marionette',
 
             // The list of lab contacts used in the drop down
             this.labcontacts = new LabContacts([], {state: {pageSize: 9999}})
-
 
             this.contacts = new LabContacts()
             this.listenTo(this.contacts, 'backgrid:selected', this.selectModel, this)
