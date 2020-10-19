@@ -87,18 +87,22 @@ define(['marionette',
         
         onRender: function() {
             var edit = new Editable({ model: this.model, el: this.$el })
-            edit.create('NAME', 'text')
             //edit.create('ACRONYM', 'select')
             edit.create('SPACEGROUP', 'select', { data: SG.obj() })
             edit.create('ANOMALOUSSCATTERER', 'select', { data: Anom.obj() })
             edit.create('COMMENTS', 'text')
-            edit.create('CODE', 'text')
             edit.create('VOLUME', 'text')
             edit.create('ABUNDANCE', 'text')
             edit.create('CENTRINGMETHOD', 'select', { data: CM.obj() })
             edit.create('EXPERIMENTKIND', 'select', { data: EXP.obj() })
             edit.create('RADIATIONSENSITIVITY', 'select', { data: RS.obj() })
             edit.create('ENERGY', 'text')
+
+            if (!this.model.get('HASDATA')) {
+                edit.create('CODE', 'text')
+                edit.create('NAME', 'text')
+                edit.create('USERPATH', 'text')
+            }
 
             _.each(['CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION'], function(f, i) {
                 edit.create(f, 'text')
