@@ -14,8 +14,11 @@
 
     <p class="r downloads">
         <% if (IMAGESWEEPCOUNT > 1) { %>
+            <span><%=IMAGESWEEPCOUNT%> image sweeps</span>
+        <% } %>
+        <% if (DCCOUNT > 1) { %>
         <a class="button" title="View Data Collections" href="/dc/pjid/<%=PROCESSINGJOBID%>">
-            <i class="fa fa-list"></i> <%=IMAGESWEEPCOUNT%> Data Sets
+            <i class="fa fa-list"></i> <%=DCCOUNT%> Data Sets
         </a>
         <% } %>
 
