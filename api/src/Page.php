@@ -633,16 +633,34 @@ class Page
         
         # ------------------------------------------------------------------------
         # LDAP: Return a name for a fedid
+        /**
+         * Search LDAP for name of user via fedid
+         *
+         * @param string $fedid "abc12345"
+         * @return string Returns name (givenname surname) if found
+         */
         function _get_name($fedid) {
-            $src = $this->_ldap_search('cn='.$fedid);
-            return array_key_exists($fedid, $src) ? $src[$fedid] : $fedid;
+            $src = $this->_ldap_search('uid='.$fedid);
+            return array_key_exists($fedid, $src) ? $src[$fedid] : '';
         }
         
+        /**
+         * Search LDAP for 'mail' property via fedid
+         *
+         * @param string $fedid "abc12345"
+         * @return string Returns email address if found, fedid if not. (Not all entries have mail records)
+         */
         function _get_email($fedid) {
-            $src = $this->_ldap_search('cn='.$fedid, True);
+            $src = $this->_ldap_search('uid='.$fedid, True);
             return array_key_exists($fedid, $src) ? $src[$fedid] : $fedid;
         }
 
+        /**
+         * Search LDAP for 'mail' property
+         *
+         * @param string $name "Firstname Surname" or "Title Firstname Surname"
+         * @return string Returns email address if found
+         */
         function _get_email_fn($name) {
             $parts = explode(' ', $name);
             if (sizeof($parts) == 2) {
@@ -665,22 +683,32 @@ class Page
               
 
         # Run an ldap search
+        /**
+         * Search LDAP for name or email
+         *
+         * @param boolean $email Search for an email adddress if true, search for name if false
+         * @param string $search ldap query, typically uid=fedid or name search
+         * @return array Returns array of results, either fedid=>emailAddresses or fedid=>"givenname sn" from ldap records
+         */
         function _ldap_search($search,$email=False) {
             global $ldap_server, $ldap_search;
 
             $ret = array();
             $ds=ldap_connect($ldap_server);
             if ($ds) {
-		// Explictly set the protocol version to prevent bind errors
-		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+                // Explictly set the protocol version to prevent bind errors
+                ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
                 $r=ldap_bind($ds);
                 $sr=ldap_search($ds, $ldap_search, $search);
                 $info = ldap_get_entries($ds, $sr);
 
                 for ($i=0; $i<$info["count"]; $i++) {
+                    // Strictly speaking we could set anything as the key here, since only the first record is used in e.g. _get_email_fn
+                    // But as the logic maps fedid=>email, use similar keys here
+                    $fedid = $info[$i]['uid'][0];
                     if ($email) {
-                        $ret[$info[$i]['cn'][0]] = array_key_exists('mail', $info[$i]) ? $info[$i]['mail'][0] : '';
-                    } else $ret[$info[$i]['cn'][0]] = $info[$i]['givenname'][0].' '.$info[$i]['sn'][0];
+                        $ret[$fedid] = array_key_exists('mail', $info[$i]) ? $info[$i]['mail'][0] : '';
+                    } else $ret[$fedid] = $info[$i]['givenname'][0].' '.$info[$i]['sn'][0];
                 }
                 
                 ldap_close($ds);                                  
