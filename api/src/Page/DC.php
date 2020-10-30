@@ -1204,6 +1204,8 @@ class DC extends Page
                         if ($k == 'CCANOMALOUS') $v = number_format($v, 1);
 
                         $beam = array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM');
+                        
+                        // We need to discriminate between NULL values from the database and when the value is a zero
                         if (in_array($k, $beam) && is_numeric($v)) $v = number_format($v, 2);
                         
                         if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL' || $k == 'PROCESSINGJOBID' || $k == 'IMAGESWEEPCOUNT') {
