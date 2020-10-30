@@ -43,19 +43,19 @@
         <tbody>
             <tr>
                 <td>Start</td>
-                <td><%= BEAM.XBEAM ? BEAM.XBEAM : '- -' %></td>
-                <td><%= BEAM.YBEAM ? BEAM.YBEAM : '- -' %></td>
+                <td><%- BEAM.XBEAM ? BEAM.XBEAM : '- -' %></td>
+                <td><%- BEAM.YBEAM ? BEAM.YBEAM : '- -' %></td>
             </tr>
             <!-- these are flipped, not sure why? -->
             <tr>
                 <td>Refined</td>
-                <td><%= BEAM.REFINEDYBEAM ? BEAM.REFINEDYBEAM : '- -' %></td>
-                <td><%= BEAM.REFINEDXBEAM ? BEAM.REFINEDXBEAM : '- -' %></td>
+                <td><%- BEAM.REFINEDYBEAM ? BEAM.REFINEDYBEAM : '- -' %></td>
+                <td><%- BEAM.REFINEDXBEAM ? BEAM.REFINEDXBEAM : '- -' %></td>
             </tr>
             <tr>
                 <td>&Delta;</td>
-                <td><%= BEAM.REFINEDYBEAM && BEAM.XBEAM ? (BEAM.XBEAM - BEAM.REFINEDYBEAM).toFixed(2) : '- -' %></td>
-                <td><%= BEAM.YBEAM && BEAM.REFINEDXBEAM ? (BEAM.YBEAM - BEAM.REFINEDXBEAM).toFixed(2) : '- -' %></td>
+                <td><%- BEAM.REFINEDYBEAM && BEAM.XBEAM ? (BEAM.XBEAM - BEAM.REFINEDYBEAM).toFixed(2) : '- -' %></td>
+                <td><%- BEAM.YBEAM && BEAM.REFINEDXBEAM ? (BEAM.YBEAM - BEAM.REFINEDXBEAM).toFixed(2) : '- -' %></td>
             </tr>
         </tbody>
     </table>
