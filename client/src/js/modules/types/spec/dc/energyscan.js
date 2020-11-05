@@ -13,6 +13,7 @@ define([
     var SpecDCDISTLView = DCDISTLView.extend({
         numimg: false,
         clickable: true,
+        hidden: []
     })
 
     return DCItemView.extend({
