@@ -32,10 +32,18 @@ define([
                 return Backbone.ajax({
                     url: app.apiurl+'/download/attachment/id/'+this.getOption('id')+'/aid/'+a.get('DATACOLLECTIONFILEATTACHMENTID'),
                     success: function(resp) {
-                        var data = _.map(resp.split(/\n/), function(l) {
+                        var data = _.filter(_.map(resp.split(/\n/), function(l) {
                             return l.split(/[\s|\t]+/)
-                        })
-                        a.set({ DATA: data }, { silent: true })
+                        }), function(line) { return !!line[0] })
+
+                        var headers = []
+                        if (data[0] && data[0][0] == '#') {
+                            headers = data.shift()
+                            headers.shift()
+                        }
+
+                        var transpose = _.map(data[0], function(col, i) { return _.map(data, function(row) { return row[i] }) });
+                        a.set({ X: transpose.shift(), SERIES: transpose, HEADERS: headers }, { silent: true })
                     }
                 })
             }, this)
@@ -57,14 +65,17 @@ define([
                     },
                 })
                 
-                var data = this.collection.map(function(m) {
-                    return {
-                        data: m.get('DATA'),
-                        label: m.get('NAME'),
-                        lines: {
-                            show: true
-                        }
-                    }
+                var data = []
+                this.collection.each(function(m) {
+                    _.each(m.get('SERIES'), function(ser, j) {
+                        data.push({
+                            data: _.map(ser, function(v, i) { return [m.get('X')[i], v] }),
+                            label: m.get('HEADERS')[j+1],
+                            lines: {
+                                show: true
+                            }
+                        })
+                    })
                 })
 
                 if (this.additionalData) {
