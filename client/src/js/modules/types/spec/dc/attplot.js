@@ -11,7 +11,50 @@ define([
     return Marionette.ItemView.extend({
         template: _.template('<div class="plot"></div>'),
 
+        ui: {
+            plot: '.plot',
+        },
+
+        events: {
+            plotselected: 'zoom',
+            'dblclick @ui.plot': 'reset',
+            'click span.series-toggle': 'toggleSeries',
+        },
+
+        reset: function(e) {
+            this.zoom(e, { 
+                xaxis: {from: null, to: null},
+                yaxis: {from: null, to: null},
+            })
+        },
+
+        zoom: function (event, ranges) {
+            if (!ranges.xaxis) return
+            
+            var opts = this.plot.getOptions()
+            _.each(opts.xaxes, function(axis) {
+                axis.min = ranges.xaxis.from
+                axis.max = ranges.xaxis.to
+            })
+            _.each(opts.yaxes, function(axis) {
+                axis.min = ranges.yaxis.from
+                axis.max = ranges.yaxis.to
+            })
+            
+            this.plot.setupGrid()
+            this.plot.draw()
+            this.plot.clearSelection()
+        },
+
+        toggleSeries: function(e) {
+            e.preventDefault()
+            var series = $(e.target).attr('data-series')
+            this.series[series] = series in this.series ? !this.series[series] : false
+            this.replot()
+        },
+
         initialize: function(options) {
+            this.series = {}
             this.collection = new Attachments()
             this.collection.queryParams.id = options.id
             this.collection.queryParams.filetype = 'xy'
@@ -57,26 +100,43 @@ define([
         },
 
         replot: function() {
+            console.log('replot', this.series)
+            var self = this
             if (this.collection.length) {
                 var options = $.extend({}, utils.default_plot, {
                     xaxis: {
                         minTickSize: 1,
                         tickDecimals: 0,
                     },
+                    selection: {
+                        mode: 'xy',
+                    },
+                    legend: {
+                        labelFormatter: function(label, series) {
+                            var active = (series.label in self.series ? self.series[series.label] : true) ? 'active' : ''
+                            return '<span class="series-toggle '+active+'" data-series="'+series.label+'">'+label+'</span>'
+                        }
+                    }
                 })
                 
                 var data = []
                 this.collection.each(function(m) {
                     _.each(m.get('SERIES'), function(ser, j) {
+                        var label = m.get('HEADERS')[j+1]
+                        var active = _.keys(this.series).length == 0 || (label in this.series ? this.series[label] : true)
+                            console.log(label, active)
                         data.push({
-                            data: _.map(ser, function(v, i) { return [m.get('X')[i], v] }),
-                            label: m.get('HEADERS')[j+1],
+                            data: active ? _.map(ser, function(v, i) { return [m.get('X')[i], v] }) : [],
+                            label: label,
                             lines: {
                                 show: true
+                            },
+                            points: {
+                                show: false
                             }
                         })
-                    })
-                })
+                    }, this)
+                }, this)
 
                 if (this.additionalData) {
                     data = data.concat(this.additionalData)
