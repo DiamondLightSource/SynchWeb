@@ -111,6 +111,7 @@ module.exports = (env, argv) => ({
       css: path.resolve(__dirname, 'src/css'),
       // vuejs: path.resolve(__dirname, 'src/js/vuejs'),
 
+      dateFnsTz: 'date-fns-tz'
     },
     modules: [
       path.resolve(__dirname, 'src/js'),
