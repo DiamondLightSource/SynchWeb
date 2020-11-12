@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/calendar.html'], function(Marionette, Backbone, Visits, template) {
+define(['marionette', 'backbone', 'dateFnsTz','collections/visits', 'templates/calendar/calendar.html'], function(Marionette, Backbone, DateFnsTz, Visits, template) {
     
     // humm
     DISABLE_DAY_SCROLL = false
@@ -59,11 +59,21 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         initialize: function(options) {
-            var hours = _.uniq(_.map(this.model.get('visits'), function(m) { return m.get('STISO').getUTCHours() }))
+            var { zonedTimeToUtc } = DateFnsTz
+
+            var hours = _.uniq(_.map(this.model.get('visits'), function(m) {
+                const sessionStartISO = m.get('STISO')
+                const utcTime = zonedTimeToUtc(sessionStartISO, this.timezone)
+                return utcTime.getUTCHours() 
+            }))
             
             hc = []
             _.each(hours, function(h) {
-                hc.push({ hour: h, visits: _.filter(this.model.get('visits'), function(m) { return m.get('STISO').getUTCHours() == h }) })
+                hc.push({ hour: h, visits: _.filter(this.model.get('visits'), function(m) {
+                    const sessionStartISO = m.get('STISO')
+                    const utcTime = zonedTimeToUtc(sessionStartISO, this.timezone)
+                    return utcTime.getUTCHours()  == h
+                }) })
             }, this)
             
             hc = _.sortBy(hc, function(h) { return h.hour })
@@ -285,6 +295,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             this.onScroll = _.debounce(this.onScroll, 100)
             this.collection = new Backbone.Collection()
             this.days = new Backbone.Collection()
+            this.timezone = app.options.get('timezone') ? app.options.get('timezone') : 'Europe/London'
             
             var d = new Date()
             this.year = options.y !== undefined ? options.y : d.getFullYear()
