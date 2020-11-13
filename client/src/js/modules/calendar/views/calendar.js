@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'dateFnsTz','collections/visits', 'templates/calendar/calendar.html'], function(Marionette, Backbone, DateFnsTz, Visits, template) {
+define(['marionette', 'backbone', 'zonedTimeToUtc','collections/visits', 'templates/calendar/calendar.html'], function(Marionette, Backbone, zonedTimeToUtc, Visits, template) {
     
     // humm
     DISABLE_DAY_SCROLL = false
@@ -59,11 +59,9 @@ define(['marionette', 'backbone', 'dateFnsTz','collections/visits', 'templates/c
         },
         
         initialize: function(options) {
-            var { zonedTimeToUtc } = DateFnsTz
-
             var hours = _.uniq(_.map(this.model.get('visits'), function(m) {
                 const sessionStartISO = m.get('STISO')
-                const utcTime = zonedTimeToUtc(sessionStartISO, this.timezone)
+                const utcTime = zonedTimeToUtc.default(sessionStartISO, this.timezone)
                 return utcTime.getUTCHours() 
             }))
             
@@ -71,7 +69,7 @@ define(['marionette', 'backbone', 'dateFnsTz','collections/visits', 'templates/c
             _.each(hours, function(h) {
                 hc.push({ hour: h, visits: _.filter(this.model.get('visits'), function(m) {
                     const sessionStartISO = m.get('STISO')
-                    const utcTime = zonedTimeToUtc(sessionStartISO, this.timezone)
+                    const utcTime = zonedTimeToUtc.default(sessionStartISO, this.timezone)
                     return utcTime.getUTCHours()  == h
                 }) })
             }, this)
