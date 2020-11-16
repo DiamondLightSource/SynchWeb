@@ -106,7 +106,8 @@ module.exports = (env) => ({
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate/dist/vee-validate.min',
-      zonedTimeToUtc: 'date-fns-tz/zonedTimeToUtc'
+      zonedTimeToUtc: 'date-fns-tz/zonedTimeToUtc',
+      formatDate: 'date-fns/format'
     },
     modules: [
       path.resolve(__dirname, 'src/js'),
@@ -255,8 +256,6 @@ module.exports = (env) => ({
         from: 'files/**',
         to: path.resolve(__dirname, 'assets') }
     ]),
-    // Ignore all locale files of moment.js
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
       filename: '[name].css',

@@ -6,13 +6,13 @@ define(['marionette', 'backgrid',
     'views/form',
     'views/filter',
     'views/table', 'utils/table', 
-    'moment',
+    'formatDate',
     'templates/shipment/dewarregistryadd.html', 
     'templates/shipment/dewarregistry.html'], 
     function(Marionette, Backgrid, DewarRegistry, DewarProposal, 
       Proposals, LabContacts,
       FormView, FilterView,
-      TableView, table, moment, addtemplate, template) {
+      TableView, table, formatDate, addtemplate, template) {
       
     var ClickableRow = table.ClickableRow.extend({
         event: 'rdewar:show',
@@ -47,7 +47,7 @@ define(['marionette', 'backgrid',
             app.alert({message: 'New dewar registered ' + this.model.get('FACILITYCODE'), notify: true})
             this.ui.fc.val('')
             this.ui.date.val('')
-            this.model.set({ DEWARS: 0, REPORTS: 0, BLTIMESTAMP: moment().format('YYYY-MM-DD HH:mm:ss') })
+            this.model.set({ DEWARS: 0, REPORTS: 0, BLTIMESTAMP: formatDate(new Date(), 'YYYY-MM-DD HH:mm:ss') })
             this.trigger('model:saved', this.model)
             this.setupValidation()
         },
