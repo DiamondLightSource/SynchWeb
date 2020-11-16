@@ -59,9 +59,11 @@ define(['marionette', 'backbone', 'zonedTimeToUtc','collections/visits', 'templa
         },
         
         initialize: function(options) {
+            var timezone = app.options.get('timezone') ? app.options.get('timezone') : 'America/New_York'
+
             var hours = _.uniq(_.map(this.model.get('visits'), function(m) {
                 const sessionStartISO = m.get('STISO')
-                const utcTime = zonedTimeToUtc.default(sessionStartISO, this.timezone)
+                const utcTime = zonedTimeToUtc.default(sessionStartISO, timezone)
                 return utcTime.getUTCHours() 
             }))
             
@@ -69,7 +71,7 @@ define(['marionette', 'backbone', 'zonedTimeToUtc','collections/visits', 'templa
             _.each(hours, function(h) {
                 hc.push({ hour: h, visits: _.filter(this.model.get('visits'), function(m) {
                     const sessionStartISO = m.get('STISO')
-                    const utcTime = zonedTimeToUtc.default(sessionStartISO, this.timezone)
+                    const utcTime = zonedTimeToUtc.default(sessionStartISO, timezone)
                     return utcTime.getUTCHours()  == h
                 }) })
             }, this)
@@ -293,7 +295,6 @@ define(['marionette', 'backbone', 'zonedTimeToUtc','collections/visits', 'templa
             this.onScroll = _.debounce(this.onScroll, 100)
             this.collection = new Backbone.Collection()
             this.days = new Backbone.Collection()
-            this.timezone = app.options.get('timezone') ? app.options.get('timezone') : 'Europe/London'
             
             var d = new Date()
             this.year = options.y !== undefined ? options.y : d.getFullYear()
