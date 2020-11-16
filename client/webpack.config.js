@@ -110,7 +110,8 @@ module.exports = (env, argv) => ({
       js: path.resolve(__dirname, 'src/js'),
       css: path.resolve(__dirname, 'src/css'),
       // vuejs: path.resolve(__dirname, 'src/js/vuejs'),
-      zonedTimeToUtc: 'date-fns-tz/zonedTimeToUtc'
+      zonedTimeToUtc: 'date-fns-tz/zonedTimeToUtc',
+      formatDate: 'date-fns/format'
     },
     modules: [
       path.resolve(__dirname, 'src/js'),
@@ -281,8 +282,6 @@ module.exports = (env, argv) => ({
         from: 'files/**',
         to: path.resolve(__dirname, 'assets') }
     ]),
-    // Ignore all locale files of moment.js
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
       filename: '[name].css',

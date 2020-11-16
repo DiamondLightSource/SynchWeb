@@ -18,7 +18,7 @@ define(['marionette',
     'views/table',
 
     'utils',
-    'moment',
+    'formatDate',
     'utils/editable',
     'templates/shipment/container.html'], function(Marionette,
     Backbone,
@@ -38,7 +38,7 @@ define(['marionette',
     
     TableView,    
 
-    utils, moment,
+    utils, formatDate,
     Editable, template){
             
     return Marionette.LayoutView.extend({
@@ -169,7 +169,7 @@ define(['marionette',
                     app.alert({ message: 'Container Successfully Queued' })
                     self.model.set({
                         CONTAINERQUEUEID: resp.CONTAINERQUEUEID,
-                        QUEUEDTIMESTAMP: moment().format('DD-MM-YYYY HH:mm')
+                        QUEUEDTIMESTAMP: formatDate(new Date(), 'dd-MM-yyyy HH:mm')
                     })
                     self.updateAutoCollection()
                     self.sampletable.toggleAuto(true)

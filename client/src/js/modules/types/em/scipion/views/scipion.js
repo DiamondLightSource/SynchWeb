@@ -3,7 +3,7 @@ define([
     'veevalidate',
     'promise',
     'utils/vuewrapper',
-    'moment',
+    'formatDate',
     'modules/types/em/scipion/models/scipion',
     'models/visit',
     'templates/vue/types/em/process/scipion.html',
@@ -12,7 +12,7 @@ define([
     VeeValidate,
     Promise,
     VueWrapper,
-    moment,
+    formatDate,
     ScipionModel,
     VisitModel,
     template
@@ -69,7 +69,7 @@ define([
                             self.isFormReadOnly = false;
                             self.resetForm();
                         } else {
-                            self.visitEndDateAsString = moment(self.visit['ENISO']).format('HH:mm on Do MMMM');
+                            self.visitEndDateAsString = formatDate(self.visit['ENISO'], "HH:mm 'on' do MMMM");
                         }
 
                         self.showSpinner = false;
@@ -165,7 +165,7 @@ define([
                             let alertMessage = 'Job successfully submitted.';
 
                             if ('timestamp_iso8601' in response) {
-                                alertMessage = alertMessage + ' Queued at ' + moment(response.timestamp_iso8601).format('HH:mm:ss') + '.';
+                                alertMessage = alertMessage + ' Queued at ' + formatDate(response.timestamp_iso8601, 'HH:mm:ss') + '.';
                             }
 
                             app.alert({className: 'message notify', message: alertMessage});
