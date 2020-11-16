@@ -59,7 +59,7 @@ define(['marionette', 'backbone', 'zonedTimeToUtc','collections/visits', 'templa
         },
         
         initialize: function(options) {
-            var timezone = app.options.get('timezone') ? app.options.get('timezone') : 'America/New_York'
+            var timezone = app.options.get('timezone') ? app.options.get('timezone') : 'Europe/London'
 
             var hours = _.uniq(_.map(this.model.get('visits'), function(m) {
                 const sessionStartISO = m.get('STISO')
