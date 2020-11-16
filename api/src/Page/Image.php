@@ -237,6 +237,8 @@ class Image extends Page
 
             if (file_exists($jpeg)) {
                 $this->_browser_cache();
+                $size = filesize($jpeg);
+                $this->app->response->headers->set("Content-length", $size);
                 $this->app->contentType('image/'.pathinfo($jpeg, PATHINFO_EXTENSION));
                 readfile($jpeg);
 
