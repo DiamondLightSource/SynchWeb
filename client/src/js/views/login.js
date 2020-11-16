@@ -14,7 +14,7 @@ define(['views/form',
         validation: {
             login: {
                 required: true,
-                pattern: 'word',
+                pattern: 'wwdash',
             },
 
             password: {
