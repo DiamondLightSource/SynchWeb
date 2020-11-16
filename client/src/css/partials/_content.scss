@@ -39,7 +39,7 @@
             padding: 10px;
         }
     }
-    
+
     p.message {
         padding: 1%;
         margin-bottom: 1%;
@@ -57,9 +57,12 @@
             color: $body-color;
         }
     }
-    
     p.help {
-        @extend p.message;
+        /*
+            Changed this to extend the full selector
+            If we use postcss-nested before postcss-extend then the selectors will be expanded into a flat list
+        */
+        @extend .content p.message;
         display: none;
     }
 
@@ -68,12 +71,12 @@
         width: 70%;
         display: block;
         margin: auto;
-        
+
         img {
             width: 100%;
             box-shadow: 3px 3px 3px 1px grey;
             margin: 5px;
-            
+
             &.match {
                 width: auto;
             }
@@ -176,6 +179,42 @@ div.log {
     }
 }
 
+/* Moved this so it is defined before being extended */
+// Block numbered list
+.block-nos {
+    white-space: nowrap;
+
+    ul {
+        list-style: none;
+
+        li {
+            display: inline-block;
+
+            a {
+                text-decoration: none;
+                display: block;
+                width: 25px;
+                padding: 3px 0;
+                text-align: center;
+                background: $content-page-background;
+                color: $content-page-color;
+                margin: 2px;
+
+                &:hover {
+                    color: $content-page-hover-color;
+                }
+
+                @media (max-width: $breakpoint-vsmall) {
+                    padding: 8px 5px;
+                }
+            }
+
+            &.selected a {
+                background: $content-page-selected-background;
+            }
+        }
+    }
+}
 
 // Paging
 .page_wrap {
@@ -235,58 +274,7 @@ div.log {
     }
 }
 
-
-// Block numbered list
-.block-nos {
-    white-space: nowrap;
-        
-    ul {
-        list-style: none;
-        
-        li {
-            display: inline-block;
-            
-            a {
-                text-decoration: none;
-                display: block;
-                width: 25px;
-                padding: 3px 0;
-                text-align: center;
-                background: $content-page-background;
-                color: $content-page-color;
-                margin: 2px;
-                
-                &:hover {
-                    color: $content-page-hover-color;
-                }
-                
-                @media (max-width: $breakpoint-vsmall) {
-                    padding: 8px 5px;
-                }
-            }
-            
-            &.selected a {
-                background: $content-page-selected-background;
-            }
-        }
-
-    }
-}
-
-
-// Page Filters
-.filter {
-    @extend .list-arrow;
-    margin-bottom: 5px;
-    
-    @media (max-width: $breakpoint-small) {
-        &:not(.filter-nohide) {
-            display: none;
-        }
-    }
-}
-
-
+/* Moved this so it is defined before being extended */
 // List arranged as horizontal arrows
 .list-arrow {
     overflow: hidden;
@@ -333,22 +321,37 @@ div.log {
 
     .fixed li {
         /*width: 4.5%;*/
-        @include cols(12,2% 3%, 0.2%);
+        @mixin cols 12,2% 3%, 0.2%;
         margin-bottom: 0.5%;
     }
 }
 
 
+// Page Filters
+.filter {
+    @extend .list-arrow;
+    margin-bottom: 5px;
+
+    @media (max-width: $breakpoint-small) {
+        &:not(.filter-nohide) {
+            display: none;
+        }
+    }
+}
+
+
+
+
 // Rounded numbered lists
 ol.rounded {
-    @include clearfix;
+    @mixin clearfix;
     counter-reset: li;
     list-style: none;
     *list-style: decimal;
     font: 18px $content-header-font;
     padding: 0;
     text-shadow: 0 1px 0 rgba(255,255,255,.5);
-    
+
     li {
         float:left;
         position: relative;
@@ -361,7 +364,7 @@ ol.rounded {
         text-decoration: none;
         border-radius: .3em;
         transition: all .3s ease-out;
-        
+
         &:before{
             content: counter(li);
             counter-increment: li;
@@ -381,11 +384,10 @@ ol.rounded {
 
         &:hover{
             background: $content-filter-current-background;
-            
+
             &:before{
                 transform: rotate(360deg);
             }
-
         }
 
     }
@@ -393,9 +395,255 @@ ol.rounded {
 }
 
 
+
+// List Styling
+.ul {
+    width: 34%;
+    list-style: none;
+
+    @media (max-width: $breakpoint-small) {
+        width: 100%;
+    }
+
+    &.single {
+        width: 17%;
+
+        > li {
+            width: 93%;
+            width: calc("95.5% - 15px");
+            padding: 2.5% 2%;
+        }
+
+        @media (max-width: $breakpoint-small) {
+            width: 100%;
+
+            > li {
+                width: 43%;
+                width: calc("47.5% - 15px");
+                padding: 1.5% 1%;
+            }
+        }
+    }
+
+    &.half {
+        width: 49%;
+
+        @media (max-width: $breakpoint-small) {
+            width: 100%;
+        }
+    }
+
+    > li {
+        float: left;
+        width: 43%;
+        width: calc("47.5% - 15px");
+        padding: 1.5% 1%;
+        margin: 0.5%;
+        background: darken($content-light-background,2%);
+        margin-left: 15px;
+        position: relative;
+        //white-space: nowrap;
+        transition: background .3s ease-out;
+
+        //@mixin cols 2,1.25% 1%;
+
+        &.active {
+            box-shadow: 0 0 2px #82d180 inset;
+        }
+
+        &:hover {
+            background: $content-light-background;
+        }
+
+        &:before {
+            content: "";
+            position: absolute;
+            background: $content-dark-background;
+            padding: 0;
+            top: 0;
+            left: -15px;
+            width: 10px;
+            height: 100%;
+        }
+
+        &:after{
+            position: absolute;
+            content: '';
+            border: .5em solid transparent;
+            left: -1em;
+            top: 50%;
+            margin-top: -.5em;
+            transition: all .3s ease-out;
+        }
+
+        &:hover:after{
+            left: -.5em;
+            border-left-color: $content-dark-background;
+        }
+
+        &.comment {
+            margin: 0.5%;
+            width: 95%;
+            width: calc("97.5% - 15px");
+            margin-left: 15px;
+
+            //@mixin cols 1,1.25% 1%;
+        }
+
+        &.sample {
+            white-space: nowrap;
+
+            .wrap {
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+                display: block;
+
+                &:hover {
+                    overflow-x: visible;
+                }
+            }
+        }
+
+        h1 {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    &.full {
+        width: 100%;
+
+        > li {
+            //@mixin cols 5,1.25% 1%;
+            margin: 0.5%;
+            padding: 1%;
+            width: 16%;
+            width: calc("17.5% - 15px");
+            margin-left: 15px;
+
+            @media (max-width: $breakpoint-small) {
+                //@mixin cols 2,1.25% 1%;
+                margin: 0.5%;
+                padding: 1%;
+                width: 45%;
+                width: calc("47.5% - 15px");
+                margin-left: 15px;
+            }
+        }
+    }
+
+    &.hover {
+        > li:hover {
+            cursor: pointer;
+        }
+    }
+}
+/*
+Post css extend templates.
+This is the normal method to extend a block with postcss-extend, rather than use a selector directly.
+Using a selector with no 'root' properties does not work because css-nested will optimise out the selector.
+ul.comments was extending ul.bubbles. So in this case ul.bubbles won't exist while "ul.bubbles li" will.
+*/
+%ul_bubbles_container {
+    li {
+        border-radius: 5px;
+        border: 1px solid $content-border;
+        padding: 1%;
+        margin-bottom: 5px;
+
+        h1 {
+            border-radius: 3px;
+            padding: 0.7%;
+            background: $content-main-background;
+        }
+    }
+}
+ul.bubbles {
+    @extend %ul_bubbles_container;
+}
+
+ul.comments {
+    @extend %ul_bubbles_container;
+}
+
+
+
+
+ul.status {
+    //text-align: left;
+    font-size: 10px;
+    white-space: nowrap;
+    margin-bottom: 0;
+
+    li {
+        padding: 2px 5px;
+        border-radius: 2px;
+        margin-bottom: 1px;
+    
+        &.R {
+            &:before {
+                content: 'Loaded by Robot'
+            }
+            background-color: #ff6961;
+        }
+
+        &.GR {
+            &:before {
+                content: 'Grid Scanned'
+            }
+            background-color: #fdfd96;
+        }
+
+        &.SC {
+            &:before {
+                content: 'Screened'
+            }
+            background-color: #fdfd96;
+        }
+
+        &.AI {
+            &:before {
+                content: 'Auto Indexed'
+            }
+            background-color: #ffb347;
+        }
+
+        &.DC {
+            &:before {
+                content: 'Data Collected'
+            }
+            background-color: #87ceeb;
+        }
+
+        &.AP {
+            &:before {
+                content: 'Auto Integrated'
+            }
+
+            background-color: #77dd77;
+        }
+
+
+        &.COMP {
+            &:before {
+                content: 'Completed'
+            }
+
+            background-color: #87ceeb;
+        }
+    }
+}
+
+li:last-child .visit_users {
+    right: 2%
+}
+
+
+/* Moved data collection class to here so it follows the ul definition */
 // Main data collections layout
 .data_collections {
-    @include clearfix;
+    @mixin clearfix;
 }
 
 .data_collection {
@@ -509,7 +757,7 @@ ol.rounded {
             padding: 8px;
             font-size: 12px;
             margin-top: 2px;
-            @include clearfix;
+            @mixin clearfix;
             
             &:hover {
                 background: $content-sub-header-hover-background;
@@ -944,245 +1192,6 @@ ol.rounded {
 }
 
 
-// List Styling
-.ul {
-    width: 34%;
-    list-style: none;
-    
-    @media (max-width: $breakpoint-small) {
-        width: 100%;
-    }
-
-    &.single {
-        width: 17%;
-
-        > li { 
-            width: 93%;
-            @include calc(width, "95.5% - 15px");
-            padding: 2.5% 2%;
-        }
-
-        @media (max-width: $breakpoint-small) {
-            width: 100%;
-
-            > li {
-                width: 43%;
-                @include calc(width, "47.5% - 15px");
-                padding: 1.5% 1%;
-            }
-        }
-    }
-
-    &.half {
-        width: 49%;
-        
-        @media (max-width: $breakpoint-small) {
-            width: 100%;
-        }
-    }
-    
-    > li {
-        float: left;
-        width: 43%;
-        @include calc(width, "47.5% - 15px");
-        padding: 1.5% 1%;
-        margin: 0.5%;
-        background: darken($content-light-background,2%);
-        margin-left: 15px;
-        position: relative;
-        //white-space: nowrap;
-        transition: background .3s ease-out;
-        
-        //@include cols(2,1.25% 1%);
-        
-        &.active {
-            box-shadow: 0 0 2px #82d180 inset;
-        }
-        
-        &:hover {
-            background: $content-light-background;
-        }
-        
-        &:before {
-            content: "";
-            position: absolute;
-            background: $content-dark-background;
-            padding: 0;
-            top: 0;
-            left: -15px;
-            width: 10px;
-            height: 100%;
-            
-        }
-        
-        &:after{
-            position: absolute;
-            content: '';
-            border: .5em solid transparent;
-            left: -1em;
-            top: 50%;
-            margin-top: -.5em;
-            transition: all .3s ease-out;
-        }
-        
-        &:hover:after{
-            left: -.5em;
-            border-left-color: $content-dark-background;
-        }
-        
-        
-        &.comment {
-            margin: 0.5%;
-            width: 95%;
-            @include calc(width, "97.5% - 15px");
-            margin-left: 15px;
-            
-            //@include cols(1,1.25% 1%);
-        }
-        
-        &.sample {
-            white-space: nowrap;
-            
-            .wrap {
-                overflow-x: hidden;
-                text-overflow: ellipsis;
-                display: block;
-                
-                &:hover {
-                    overflow-x: visible;
-                }
-            }
-        }
-        
-        h1 {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    }
-    
-    &.full {
-        width: 100%;
-        
-        > li {
-            //@include cols(5,1.25% 1%);
-            margin: 0.5%;
-            padding: 1%;
-            width: 16%;
-            @include calc(width, "17.5% - 15px");
-            margin-left: 15px;
-            
-            @media (max-width: $breakpoint-small) {
-                //@include cols(2,1.25% 1%);
-                margin: 0.5%;
-                padding: 1%;
-                width: 45%;
-                @include calc(width, "47.5% - 15px");
-                margin-left: 15px;
-            }
-        }
-    }
-    
-    &.hover {
-        > li:hover {
-            cursor: pointer;
-        }
-    }
-    
-}
-
-
-ul.bubbles {
-    li {
-        border-radius: 5px;
-        border: 1px solid $content-border;
-        padding: 1%;
-        margin-bottom: 5px;
-
-        h1 {
-            border-radius: 3px;
-            padding: 0.7%;
-            background: $content-main-background;
-        }
-    }
-}
-
-ul.comments {
-    @extend ul.bubbles;
-}
-
-
-
-
-ul.status {
-    //text-align: left;
-    font-size: 10px;
-    white-space: nowrap;
-    margin-bottom: 0;
-    
-    li {
-        padding: 2px 5px;
-        border-radius: 2px;
-        margin-bottom: 1px;
-        
-        &.R {
-            &:before {
-                content: 'Loaded by Robot'
-            }
-            background-color: #ff6961;
-        }
-        
-        &.GR {
-            &:before {
-                content: 'Grid Scanned'
-            }
-            background-color: #fdfd96;
-        }
-
-        &.SC {
-            &:before {
-                content: 'Screened'
-            }
-            background-color: #fdfd96;
-        }
-        
-        &.AI {
-            &:before {
-                content: 'Auto Indexed'
-            }
-            background-color: #ffb347;
-        }
-        
-        &.DC {
-            &:before {
-                content: 'Data Collected'
-            }
-            background-color: #87ceeb;
-        }
-        
-        &.AP {
-            &:before {
-                content: 'Auto Integrated'
-            }
-            
-            background-color: #77dd77;
-        }
-
-
-        &.COMP {
-            &:before {
-                content: 'Completed'
-            }
-            
-            background-color: #87ceeb;
-        }
-    }
-}
-
-li:last-child .visit_users {
-    right: 2%
-}
-
 .visit_users {
     position: absolute;
     background: #efefef;
@@ -1401,7 +1410,7 @@ h1.status {
 }
 
 div.status {
-    @include clearfix;
+    @mixin clearfix;
     display: none;
 }
 
@@ -1409,17 +1418,17 @@ div.status {
 
 .oav,
 .webcam {
-    @include cols(2,0,0.5%);
+    @mixin cols 2,0,0.5%;
     float: left;
     
     @media (max-width: $breakpoint-small) {
-        @include cols(1,0,0.5%);
+        @mixin cols 1,0,0.5%;
     }
 }
 
 .status.three {
     .webcam {
-        @include cols(3,0,0.5%);
+        @mixin cols 3,0,0.5%;
         float: left;
     }
 }
@@ -1444,17 +1453,17 @@ div.status.oavs {
     
     .pv {
         display: inline-block;
-        @include cols(8, 0.5%, 0.2%);
+        @mixin cols 8, 0.5%, 0.2%;
         background: $content-inlay-background;
         border-radius: 5px;
         text-align: center;
         
         @media (max-width: $breakpoint-small) {
-            @include cols(4, 1%, 1%);
+            @mixin cols 4, 1%, 1%;
         }
 
         @media (max-width: $breakpoint-vsmall) {
-            @include cols(2, 1.5%, 1.5%);
+            @mixin cols 2, 1.5%, 1.5%;
         }
         
         &.on {
@@ -1743,7 +1752,7 @@ textarea[name=pasted] {
 // EPICS
 .motor {
     float: left;
-    @include cols(2,2%,0.5%);
+    @mixin cols 2,2%,0.5%;
     background: #cdcdcd;
     border-radius: 5px;
     

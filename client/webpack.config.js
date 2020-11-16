@@ -11,7 +11,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().trim();
 const config = require('./src/js/config.json')
 
-module.exports = (env) => ({
+module.exports = (env,argv) => ({
   entry: {
       main: './src/index.js',
   },
@@ -184,13 +184,14 @@ module.exports = (env) => ({
         test: /\.(sa|sc|c)ss$/,
         use: [
           // Extract the CSS into separate files
-          MiniCssExtractPlugin.loader,
-          "css-loader", // translates CSS into CommonJS
-          { loader: "sass-loader",
+          {
+            loader: MiniCssExtractPlugin.loader,
             options: {
-                data: "$site_image: '" + (config.site_image || 'diamond_gs_small.png') + "';"
+              hmr: argv.mode === 'development',
             }
-          } // compiles Sass to CSS, using Node Sass by default
+          },
+          "css-loader", // translates CSS into CommonJS
+          "postcss-loader",
         ]
       },
       {
@@ -241,6 +242,9 @@ module.exports = (env) => ({
     // Also copy jquery to assets dir, so we can use it for Dialog popup with log files (see js/views/log.js)
     // Also copy config.json to assets dir, app uses the assets/js/config.json to tell if client needs updating
     new CopyPlugin([
+      { context: path.resolve(__dirname, 'node_modules/jquery-ui/themes/base'),
+        from: 'images/**',
+        to: path.resolve(__dirname, 'assets') },
       { context: path.resolve(__dirname, 'src'),
         from: 'images/**',
         to: path.resolve(__dirname, 'assets') },
@@ -261,5 +265,8 @@ module.exports = (env) => ({
       filename: '[name].css',
       chunkFilename: '[id].css',
     }),
+    // Allow use to use process.env.NODE_ENV in the build
+    // NODE_ENV should be set in scripts for production builds
+    new webpack.EnvironmentPlugin({'NODE_ENV': 'development'})
   ]
 })

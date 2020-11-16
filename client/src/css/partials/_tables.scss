@@ -1,3 +1,24 @@
+/*
+Post css extend container templates.
+*/
+%hover_row_container {
+    tr.selected td,
+    tr:hover td {
+        cursor: pointer;
+        background: $table-row-hover-background;
+    }
+}
+
+%no_wrap_last_container {
+    tr td:last-child {
+        white-space: nowrap;
+    }
+}
+
+%overflow_auto_container {
+    overflow-x: auto;
+}
+
 .table {
     margin: 10px 0;
 
@@ -160,39 +181,33 @@
                 font-weight: bold;
             }
         }
-
         
         // Background follows cursor
         &.hover-row {
-            tr.selected td,
-            tr:hover td {
-                cursor: pointer;
-                background: $table-row-hover-background;
-            }
+            /* Moved to the top of the file - postcss-extend */
+            @extend %hover_row_container;
         }
         
         // Stop last column word wrapping (for buttons)
         &.no-wrap-last {
-            tr td:last-child {
-                white-space: nowrap;
-            }
+            /* Moved to the top of the file - postcss-extend */
+            @extend %no_wrap_last_container;
         }
-        
     }
     
     // Overflow for small screns
     &.tw {
-        overflow-x: auto;
+        @extend %overflow_auto_container;
     }
 
     
     table.imagers, table.inspections, table.subsamples, table.schedules, table.groups, table.proposals,table.dewars, table.ehc, table.proteins.flt, table.samples.flt,table.blended_table, table.integrated, table.projects, table.shipments, table.visits, table.contacts, table.proteins, table.samples, table.peaks, table.containers, table.systems, table.components {
-        @extend table.hover-row;
+        @extend %hover_row_container;
     }
     
     table.samples, table.dewars, table.visits,
     table.systems,table.components {
-        @extend table.no-wrap-last;
+        @extend %no_wrap_last_container;
     }
     
     table.faults {
@@ -332,7 +347,7 @@
     }
 
     div.dataTables_wrapper {
-        @include clearfix;
+        @mixin clearfix;
     }
 
 
@@ -346,7 +361,7 @@
 
 
 .table.history {
-    @extend .table.tw;
+    @extend %overflow_auto_container;
 }
 
 .history .table {

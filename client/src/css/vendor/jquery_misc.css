@@ -1,0 +1,12 @@
+.ui-dialog .ui-dialog-content { padding: 0.5em; }
+
+.ui-autocomplete-loading {
+    background: url('./stylesheets/images/load_small.gif') no-repeat right center
+}
+
+/* Auto Complete */
+.ui-autocomplete {
+    max-height: 100px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}

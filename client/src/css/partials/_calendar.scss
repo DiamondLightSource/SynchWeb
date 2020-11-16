@@ -4,7 +4,7 @@
     
     &.links li {
         display: block;
-        @include cols(4,1%,0.2%);
+        @mixin cols 4,1%,0.2%;
         height: 15px;
         text-align: center;
         cursor: pointer;
@@ -19,14 +19,14 @@
     > li {
         float: left;
         display: block;
-        @include cols(7,1%,0.2%);
+        @mixin cols 7,1%,0.2%;
         background: $content-cal-background;
         height: 100px;
         //overflow: auto;
         overflow: hidden;
         
         @media (max-width: $breakpoint-small) {
-            @include cols(1,2%,0.5%);
+            @mixin cols 1,2%,0.5%;
             height: auto;
         }
         

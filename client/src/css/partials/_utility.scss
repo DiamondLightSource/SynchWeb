@@ -1,41 +1,43 @@
 // Clearfix
 .clearfix {
-    @include clearfix;
+    @mixin clearfix;
 }
 
 
 // Two column
 .right {
     float: right;
-    @include cols(2,0 0 0 1%);
+    @mixin cols 2,0 0 0 1%;
     
     &.third {
-        @include cols(3,0 1% 0 0);
+        @mixin cols 3,0 1% 0 0;
     }
 
     &.twothird {
-        @include cols(3,0 1% 0 0, 0, 2);   
+        @mixin cols 3,0 1% 0 0, 0, 2;
     }
-
-    @media (max-width: $breakpoint-vsmall) {
-        @include cols(1,0);
+}
+@media (max-width: $breakpoint-vsmall) {
+    .right {
+        @mixin cols 1,0;
     }
 }
 
 .left {
     float: left;
-    @include cols(2,0 1% 0 0);
+    @mixin cols 2,0 1% 0 0;
 
     &.third {
-        @include cols(3,0 1% 0 0);
+        @mixin cols 3,0 1% 0 0;
     }
 
     &.twothird {
-        @include cols(3,0 1% 0 0, 0, 2);   
+        @mixin cols 3,0 1% 0 0, 0, 2;
     }
-    
-    @media (max-width: $breakpoint-vsmall) {
-        @include cols(1,0);
+}
+@media (max-width: $breakpoint-vsmall) {
+    .left {
+        @mixin cols 1,0;
     }
 }
 

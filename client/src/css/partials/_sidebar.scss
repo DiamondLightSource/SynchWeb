@@ -12,7 +12,7 @@
         list-style: none;
         border: 1px solid $sidebar-border;
         background: $sidebar-grad-start;
-        background: linear-gradient(top, $sidebar-grad-start, $sidebar-grad-end);
+        background: linear-gradient(to top, $sidebar-grad-start, $sidebar-grad-end);
     
 
         li {
