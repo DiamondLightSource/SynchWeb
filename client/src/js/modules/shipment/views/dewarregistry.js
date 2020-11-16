@@ -47,7 +47,7 @@ define(['marionette', 'backgrid',
             app.alert({message: 'New dewar registered ' + this.model.get('FACILITYCODE'), notify: true})
             this.ui.fc.val('')
             this.ui.date.val('')
-            this.model.set({ DEWARS: 0, REPORTS: 0, BLTIMESTAMP: formatDate(new Date(), 'yyyy-MM-dd HH:mm:ss') })
+            this.model.set({ DEWARS: 0, REPORTS: 0, BLTIMESTAMP: formatDate.default(new Date(), 'yyyy-MM-dd HH:mm:ss') })
             this.trigger('model:saved', this.model)
             this.setupValidation()
         },

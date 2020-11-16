@@ -69,7 +69,7 @@ define([
                             self.isFormReadOnly = false;
                             self.resetForm();
                         } else {
-                            self.visitEndDateAsString = formatDate(self.visit['ENISO'], "HH:mm 'on' do MMMM");
+                            self.visitEndDateAsString = formatDate.default(self.visit['ENISO'], "HH:mm 'on' do MMMM");
                         }
 
                         self.showSpinner = false;
@@ -165,7 +165,7 @@ define([
                             let alertMessage = 'Job successfully submitted.';
 
                             if ('timestamp_iso8601' in response) {
-                                alertMessage = alertMessage + ' Queued at ' + formatDate(response.timestamp_iso8601, 'HH:mm:ss') + '.';
+                                alertMessage = alertMessage + ' Queued at ' + formatDate.default(response.timestamp_iso8601, 'HH:mm:ss') + '.';
                             }
 
                             app.alert({className: 'message notify', message: alertMessage});

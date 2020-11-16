@@ -101,8 +101,8 @@ define(['marionette', 'templates/stats/breakdown.html',
             if (this.hideOverview) return
             var opts = this.main.getOptions()
 
-            var from = formatDate(opts.xaxes[0].min, 'MMMM do yyyy')
-            var to = formatDate(opts.xaxes[0].max, 'MMMM do yyyy')
+            var from = formatDate.default(opts.xaxes[0].min, 'MMMM do yyyy')
+            var to = formatDate.default(opts.xaxes[0].max, 'MMMM do yyyy')
 
             if (from != to) this.ui.span.text(from+' - '+to)
             else this.ui.span.text(from)

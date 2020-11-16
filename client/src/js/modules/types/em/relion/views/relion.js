@@ -91,7 +91,7 @@ define([
                         if (self.isSessionActive) {
                             self.resetForm();
                         } else {
-                            self.sessionEndDateAsString = formatDate(self.session['ENISO'], "HH:mm 'on' do MMMM");
+                            self.sessionEndDateAsString = formatDate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
                         }
 
                         app.bc.reset([
@@ -291,7 +291,7 @@ define([
 
                                     if ('timestamp' in response) {
                                         self.sessionEvents.unshift({
-                                            timestamp_str: formatDate(response.timestamp, 'HH:mm:ss'),
+                                            timestamp_str: formatDate.default(response.timestamp, 'HH:mm:ss'),
                                             message: 'Start processing.'
                                         });
                                     }
@@ -325,7 +325,7 @@ define([
 
                             if ('timestamp' in xhr) {
                                 self.sessionEvents.unshift({
-                                    timestamp_str: formatDate(xhr.timestamp, 'HH:mm:ss'),
+                                    timestamp_str: formatDate.default(xhr.timestamp, 'HH:mm:ss'),
                                     message: 'Stop processing.'
                                 });
                             }
