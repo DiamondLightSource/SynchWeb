@@ -169,7 +169,7 @@ define(['marionette',
                     app.alert({ message: 'Container Successfully Queued' })
                     self.model.set({
                         CONTAINERQUEUEID: resp.CONTAINERQUEUEID,
-                        QUEUEDTIMESTAMP: formatDate(new Date(), 'dd-MM-yyyy HH:mm')
+                        QUEUEDTIMESTAMP: formatDate.default(new Date(), 'dd-MM-yyyy HH:mm')
                     })
                     self.updateAutoCollection()
                     self.sampletable.toggleAuto(true)
