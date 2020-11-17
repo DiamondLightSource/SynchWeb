@@ -4,7 +4,7 @@ define([
     'veevalidate',
     'promise',
     'utils/vuewrapper',
-    'moment',
+    'formatDate',
     'modules/types/em/relion/models/relion',
     'models/visit',
     'templates/vue/types/em/process/relion.html',
@@ -14,7 +14,7 @@ define([
     VeeValidate,
     Promise,
     VueWrapper,
-    moment,
+    formatDate,
     RelionModel,
     SessionModel,
     template
@@ -91,7 +91,7 @@ define([
                         if (self.isSessionActive) {
                             self.resetForm();
                         } else {
-                            self.sessionEndDateAsString = moment(self.session['ENISO']).format('HH:mm on Do MMMM');
+                            self.sessionEndDateAsString = formatDate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
                         }
 
                         app.bc.reset([
@@ -291,7 +291,7 @@ define([
 
                                     if ('timestamp' in response) {
                                         self.sessionEvents.unshift({
-                                            timestamp_str: moment(response.timestamp).format('HH:mm:ss'),
+                                            timestamp_str: formatDate.default(response.timestamp, 'HH:mm:ss'),
                                             message: 'Start processing.'
                                         });
                                     }
@@ -325,7 +325,7 @@ define([
 
                             if ('timestamp' in xhr) {
                                 self.sessionEvents.unshift({
-                                    timestamp_str: moment(xhr.timestamp).format('HH:mm:ss'),
+                                    timestamp_str: formatDate.default(xhr.timestamp, 'HH:mm:ss'),
                                     message: 'Stop processing.'
                                 });
                             }
