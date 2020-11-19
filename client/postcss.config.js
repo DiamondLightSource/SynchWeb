@@ -13,6 +13,7 @@ module.exports = ({env}) => (
       require('postcss-nested'),
       require('postcss-extend'),
       require('postcss-strip-inline-comments'),
+      require('postcss-color-function'),
       require('autoprefixer'),
     ]
   }
