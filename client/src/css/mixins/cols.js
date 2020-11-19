@@ -25,7 +25,9 @@ module.exports = function(mixin, numColumns, pad, marg='0', multi='1') {
     var p = getPadding(pad)
     var m = getPadding(marg)
     
-    var colWidth = (100/n)*scale - p - m;
+    var colWidth = (100/n)*scale - p - m
+    // Note this assumes all padding values are percentages
+    var colWidthPct = colWidth + '%'
 
     var node = parent
     // Handle media queries - in this case we want the first child node of the media query
@@ -33,7 +35,7 @@ module.exports = function(mixin, numColumns, pad, marg='0', multi='1') {
     if (!parent.selector && parent.name == 'media') {
         node = mixin.parent.first
     }
-    node.append({prop: 'width', value: colWidth})
+    node.append({prop: 'width', value: colWidthPct})
     node.append({prop: 'margin', value: marg})
     node.append({prop: 'padding',value: pad})
     // Crude method to output object.
