@@ -104,10 +104,6 @@ define([
             var self = this
             if (this.collection.length) {
                 var options = $.extend({}, utils.default_plot, {
-                    xaxis: {
-                        minTickSize: 1,
-                        tickDecimals: 0,
-                    },
                     selection: {
                         mode: 'xy',
                     },
