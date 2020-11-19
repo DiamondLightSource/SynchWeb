@@ -71,18 +71,16 @@ define(['jquery', 'marionette',
             this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.distl, 'change', this.draw, this)
             this.grid = new GridInfo({ id: this.getOption('ID') })
+            this.listenTo(this.grid, 'sync', this.afterFetchGrid)
 
             var self = this
             this.gridFetched = false
-            this._gridPromise = this.grid.fetch().done(function() {
-                self.gridFetched = true
-                if (self.grid.get('ORIENTATION')) self.vertical = self.grid.get('ORIENTATION') == 'vertical'
-                else self.vertical = (self.grid.get('STEPS_Y') > self.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
-                console.log('grid', self.grid.get('DATACOLLECTIONID'), self.grid.get('ORIENTATION'), 'vertical', self.vertical)
-            })
+            this.onGridFetch = options.onGridFetch
+            this._gridPromise = this.grid.fetch()
 
             this.xfm = new XFMap({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.xfm, 'change', this.draw, this)
+            this.listenTo(this.xfm, 'sync', this.populateXFM, this)
 
             this.attachments = new Attachments()
             this.attachments.queryParams.id = this.getOption('ID')
@@ -101,6 +99,23 @@ define(['jquery', 'marionette',
 
             this.snapshotLoading = false
             this.listenTo(app, 'window:scroll', this.lazyLoad, this)
+        },
+
+        afterFetchGrid: function() {
+            if (this.grid.get('STEPS_Y') > 0) {
+                this.gridFetched = true
+                if (this.grid.get('ORIENTATION')) this.vertical = this.grid.get('ORIENTATION') == 'vertical'
+                else this.vertical = (this.grid.get('STEPS_Y') > this.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
+                console.log('grid', this.grid.get('DATACOLLECTIONID'), this.grid.get('ORIENTATION'), 'vertical', this.vertical)
+
+            } else {
+                var self = this
+                setTimeout(function() {
+                    self._gridPromise = self.grid.fetch()
+                }, 5000)
+            }
+
+            if (this.onGridFetch) this.onGridFetch()
         },
 
         loadAttachment: function() {
@@ -182,7 +197,7 @@ define(['jquery', 'marionette',
 
             if (utils.inView(this.$el) && !this.xfmLoading) {
                 this.xfmLoading = true
-                this.xfm.fetch().done(this.populateXFM.bind(this))
+                this.xfm.fetch()
             }
         },
 
