@@ -135,7 +135,7 @@
             li {
                 width: 100%;
                 .current:hover {
-                    background: lighten($sidebar-mobile-hover-background,10%);
+                    background: color($sidebar-mobile-hover-background tint(10%));
                 }
                 
                 &.feedback, &.help {

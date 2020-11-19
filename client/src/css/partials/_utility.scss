@@ -149,9 +149,9 @@
     }
 
     &.active {
-        background: linear-gradient(lighten($content-active,10%), $content-active);
+        background: linear-gradient(color($content-active tint(10%)), $content-active);
         &:hover {
-            background: linear-gradient($content-active, lighten($content-active,10%));
+            background: linear-gradient($content-active, color($content-active tint(10%)));
         }
     }
     
@@ -231,7 +231,7 @@ ul.ui-autocomplete {
     li.minor {
         &:after {
             content: '\f06a';
-            color: darken($content-minor, 5%);
+            color: color($content-minor shade(5%));
         }
     }
 

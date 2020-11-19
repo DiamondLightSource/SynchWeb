@@ -135,10 +135,10 @@
                     
                     li {
                         &.past {
-                            color: lighten($body-color, 60%);
+                            color: color($body-color tint(60%));
                             
                             a {
-                                color: lighten($body-color, 60%);                                
+                                color: color($body-color tint(60%));
                             }
                         }
                         
@@ -146,7 +146,7 @@
                             display: block;
                             background: none;
                             padding: 0;
-                            color: lighten($body-color, 60%);
+                            color: color($body-color tint(60%));
                         }
                         
                         .type {
@@ -206,7 +206,7 @@
         }
         
         &.past {
-            color: lighten($body-color, 60%);
+            color: color($body-color tint(60%));
         }
         
         &.event {

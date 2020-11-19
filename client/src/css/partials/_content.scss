@@ -247,7 +247,7 @@ div.log {
             &:before {
                 content: 'Page';
                 background: $content-page-background;
-                color: lighten($content-page-color, 5%);
+                color: color($content-page-color tint(5%));
                 display: inline-block;
                 padding: 3px 5px;
                 margin-right: 2px;
@@ -439,7 +439,7 @@ ol.rounded {
         width: calc("47.5% - 15px");
         padding: 1.5% 1%;
         margin: 0.5%;
-        background: darken($content-light-background,2%);
+        background: color($content-light-background shade(2%));
         margin-left: 15px;
         position: relative;
         //white-space: nowrap;
@@ -539,6 +539,7 @@ ol.rounded {
         }
     }
 }
+
 /*
 Post css extend templates.
 This is the normal method to extend a block with postcss-extend, rather than use a selector directly.
@@ -681,7 +682,7 @@ li:last-child .visit_users {
     .links {
         display: none;
         text-align: center;
-        background: darken($content-light-background,2%);
+        background: color($content-light-background shade(2%));
         padding: 3%;
         margin: 5px 0;
         border-radius: 5px;
@@ -703,7 +704,7 @@ li:last-child .visit_users {
             text-align: center;
             padding: 5px;
             font-weight: bold;
-            background: darken($content-light-background,2%);
+            background: color($content-light-background shade(2%));
         }
         
         .downloads {
@@ -1985,17 +1986,17 @@ ul.messages {
 
         &.ERROR {
             border: 1px solid #ff0000;
-            background: lighten(#ff0000, 40%);
+            background: color(#ff0000 tint(40%));
         }
 
         &.WARNING {
             border: 1px solid #ffa500;
-            background: lighten(#ffa500, 40%);
+            background: color(#ffa500 tint(40%));
         }
 
         &.INFO {
             border: 1px solid #00ff00;
-            background: lighten(#00ff00, 40%);
+            background: color(#00ff00 tint(40%));
         }
     }
 
