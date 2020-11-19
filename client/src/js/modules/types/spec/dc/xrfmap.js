@@ -36,6 +36,7 @@ define([
 
         initialize: function() {
             this.gridplot = new GridPlot({ 
+                onGridFetch: this.updateGridPromise.bind(this),
                 BL: this.model.get('BL'), 
                 ID: this.model.get('ID'), 
                 NUMIMG: this.model.get('NUMIMG'), 
@@ -55,13 +56,17 @@ define([
             this.spectraPlot.selectPoint(number)
         },
 
+        updateGridPromise: function() {
+            this.gridplot.gridPromise().done(this.showBox.bind(this))
+        },
+
         onShow: function() {
             this.ui.im.append(this.gridplot.render().$el)
 
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('COMMENTS', 'text')
 
-            this.gridplot.gridPromise().done(this.showBox.bind(this))
+            this.updateGridPromise()
             this.spectraPlot = new NexusSpectraPlot({ id: this.model.get('ID') })
             this.rplot.show(this.spectraPlot)
         },
