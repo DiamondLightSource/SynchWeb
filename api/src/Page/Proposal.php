@@ -57,6 +57,7 @@ class Proposal extends Page
                               'SESSIONTYPE' => '\w+',
                               'BEAMLINESETUPID' => '\d+',
                               'BEAMCALENDARID' => '\d+',
+                              'VISITNUMBER' => '\d+',
 
                               // visit has person
                               'SHPKEY' => '\d+\-\d+',
@@ -522,7 +523,7 @@ class Proposal extends Page
                 $fields = array_merge($fields, array('STARTDATE', 'ENDDATE', 'BEAMLINENAME', 'BEAMLINEOPERATOR', 'SCHEDULED', 'ARCHIVED', 'BEAMLINESETUPID', 'BEAMCALENDARID'));
             }
             foreach ($fields as $f) {
-                $fl = in_array($f, array('STARTTIME', 'ENDTIME')) ? "TO_DATE(:1, 'DD-MM-YYYY HH24:MI')" : ':1';
+                $fl = in_array($f, array('STARTDATE', 'ENDDATE')) ? "TO_DATE(:1, 'DD-MM-YYYY HH24:MI')" : ':1';
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE blsession set $f=$fl where sessionid=:2", array($this->arg($f), $vis['SESSIONID']));
                     $this->_output(array($f => $this->arg($f)));
@@ -564,8 +565,14 @@ class Proposal extends Page
             $blsid = $this->has_arg('BEAMLINESETUPID') ? $this->arg('BEAMLINESETUPID') : null;
             $calid = $this->has_arg('BEAMCALENDARID') ? $this->arg('BEAMCALENDARID') : null;
 
+            if ($this->has_arg('VISITNUMBER')) {
+                // Does this visit already exist? If so, throw an error.
+                $chk = $this->db->pq("SELECT sessionid FROM blsession WHERE proposalid = :1 AND visit_number=:2", array($this->arg('PROPOSALID'), $this->arg('VISITNUMBER')));
+                if (sizeof($chk)) $this->_error('Error - visit number ' . $this->arg('VISITNUMBER') . ' already exists for the proposal');
+            }
             $max = $this->db->pq("SELECT MAX(visit_number) as max_visit FROM blsession WHERE proposalid=:1", array($this->arg('PROPOSALID')));
-            $vis = $max[0]['MAX_VISIT'] + 1;
+            // If a visit number has been specified use that, else use the next value
+            $vis = $this->has_arg('VISITNUMBER') ? $this->arg('VISITNUMBER') : $max[0]['MAX_VISIT'] + 1;
 
             $this->db->pq("INSERT INTO blsession (proposalid, startdate, enddate, beamlinename, beamlineoperator, scheduled, visit_number, externalid, archived, beamlinesetupid, beamcalendarid) 
                 VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY HH24:MI'), TO_DATE(:3, 'DD-MM-YYYY HH24:MI'), :4, :5, :6, :7, :8, :9, :10, :11)", 
