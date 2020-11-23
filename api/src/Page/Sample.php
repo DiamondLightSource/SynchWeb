@@ -1510,6 +1510,7 @@ class Sample extends Page
             $global = $this->has_arg('GLOBAL') ? $this->arg('GLOBAL') : null;
             $density = $this->has_arg('DENSITY') ? $this->arg('DENSITY') : null;
             $externalid = $this->has_arg('EXTERNALID') ? $this->arg('EXTERNALID') : null;
+            $safetyLevel = $this->has_arg('SAFETYLEVEL') ? $this->arg('SAFETYLEVEL') : null;
 
             // Only staff should be able to create Proteins that are not approved (i.e. no EXTERNALID) in User System
             if ($valid_components) {
@@ -1526,9 +1527,9 @@ class Sample extends Page
               WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $this->arg('ACRONYM')));
             if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
 
-            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density, externalid)
-              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9,UNHEX(:10)) RETURNING proteinid INTO :id',
-              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density, $externalid));
+            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density,externalid,safetylevel)
+              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9,UNHEX(:10),:11) RETURNING proteinid INTO :id',
+              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density, $externalid, $safetyLevel));
             
             $pid = $this->db->id();
             
