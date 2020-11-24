@@ -155,7 +155,7 @@ define(['marionette',
         var params = { s : s }
         if (app.type == 'xpdf') {
             params.seq = 1
-            params.uas = true
+            params.external = 1
         }
         var proteins = new Proteins(null, { state: { currentPage: page }, queryParams: params })
         proteins.fetch().done(function() {

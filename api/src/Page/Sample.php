@@ -43,7 +43,6 @@ class Sample extends Page
                               'capillary' => '',
                               'capillaryPhase' => '',
                               'json' => '',
-                              'uas' => '\w+',
 
                               'DEWARID' => '\d+',
                               'PROTEINID' => '\d+',
@@ -1217,8 +1216,7 @@ class Sample extends Page
             $group = 'pr.proteinId';
 
             // Only display original UAS approved proteins
-            if($this->has_arg('uas') && $this->arg('uas') == true){
-                $where .= ' AND pr.externalId IS NOT NULL';
+            if($this->has_arg('external') && $this->arg('external') == 1){
                 $group = 'pr.externalId';
                 $order .= ', pr.bltimeStamp DESC';
             }
