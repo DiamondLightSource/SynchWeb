@@ -3,7 +3,6 @@ define(['backbone', 'backgrid', 'marionette', 'views/table'],
 
     var PercentCell = Backgrid.Cell.extend({
         render: function() {
-            console.log(this.column)
             this.$el.text((this.model.get(
                 this.column.get('name'))/(this.column.get('total') 
                     ? this.column.get('total')
@@ -14,6 +13,12 @@ define(['backbone', 'backgrid', 'marionette', 'views/table'],
         }
     })
 
+    var MessageCollection = Backbone.Collection.extend({
+        comparator: function(m) {
+            return -m.get('count')
+        },
+    })
+
     var MessagesCell = Backgrid.Cell.extend({
         render: function() {
             var columns = [
@@ -22,9 +27,7 @@ define(['backbone', 'backgrid', 'marionette', 'views/table'],
                 { name: 'count', label: '%', cell: PercentCell, total: this.model.get('failed'), editable: false },
             ]
 
-            var collection = new Backbone.Collection(this.model.get('messages'))
-            console.log('collection', collection, this.model)
-
+            var collection = new MessageCollection(this.model.get('messages'))
             var table = new TableView({ 
                 collection: collection, 
                 pages: false,
