@@ -29,6 +29,7 @@ class Vstat extends Page
                               array('/pies(/:visit)', 'get', '_pies'),
                               array('/ehc/:visit', 'get', '_ehc_log'),
                               array('/call/:visit', 'get', '_callouts'),
+                              array('/errors(/:visit)', 'get', '_error_log'),
                               array('/overview', 'get', '_overview'),
                               array('/runs', 'get', '_runs'),
                               array('/histogram', 'get', '_parameter_histogram'),
@@ -535,6 +536,67 @@ class Vstat extends Page
             $this->_output(array('samples' => $slh, 'dcs' => $dch));
         }
         
+
+        function _error_log() {
+            $info = $this->_check_visit();
+
+            $dc_tot = $this->db->pq("SELECT dcg.experimenttype, count(dc.datacollectionid) as total
+                FROM datacollection dc
+                INNER JOIN datacollectiongroup dcg ON dc.datacollectiongroupid = dcg.datacollectiongroupid
+                WHERE dcg.sessionid=:1
+                GROUP BY dcg.experimenttype", array($info['SID']));
+            
+            $totals = array();
+            foreach($dc_tot as $tot) {
+                $totals[$tot['EXPERIMENTTYPE']] = intval($tot["TOTAL"]);
+            }
+
+            $dcs = $this->db->pq("SELECT dc.datacollectionid, dcg.experimenttype, dc.starttime, dc.endtime, dc.filetemplate, dc.imagedirectory, dc.runstatus, dca.filefullpath as logfile
+                FROM datacollection dc
+                INNER JOIN datacollectiongroup dcg ON dc.datacollectiongroupid = dcg.datacollectiongroupid
+                LEFT OUTER JOIN blsample sam ON dc.blsampleid = sam.blsampleid
+                LEFT OUTER JOIN datacollectionfileattachment dca ON dca.datacollectionid = dc.datacollectionid AND dca.filetype = 'log'
+                WHERE dcg.sessionid=:1 AND dc.runstatus NOT LIKE '%success%'", array($info['SID']));
+
+            $dc_types = array();
+            foreach ($dcs as $dc) {
+                if (!array_key_exists($dc['EXPERIMENTTYPE'], $dc_types)) {
+                    $dc_types[$dc['EXPERIMENTTYPE']] = array(
+                        'type' => $dc['EXPERIMENTTYPE'],
+                        'total' => array_key_exists($dc['EXPERIMENTTYPE'], $totals) ? $totals[$dc['EXPERIMENTTYPE']] : 0,
+                        'failed' => 0,
+                        'aborted' => 0,
+                        'messages' => array()
+                    );
+                }
+
+
+                if (preg_match('/aborted/i', $dc['RUNSTATUS'])) {
+                    $dc_types[$dc['EXPERIMENTTYPE']]['aborted']++;    
+                } else {
+                    $dc_types[$dc['EXPERIMENTTYPE']]['failed']++; 
+                    if ($dc['LOGFILE']) {
+                        $last = rtrim(end(file($dc['LOGFILE'])));
+
+                        if (!array_key_exists($last, $dc_types[$dc['EXPERIMENTTYPE']]['messages'])) {
+                            $dc_types[$dc['EXPERIMENTTYPE']]['messages'][$last] = array(
+                                'count' => 0,
+                                'message' => $last,
+                            );
+                        }
+
+                        $dc_types[$dc['EXPERIMENTTYPE']]['messages'][$last]['count']++;
+                    }
+                }
+            }
+
+            foreach ($dc_types as &$ty) {
+                $ty['messages'] = array_values($ty['messages']);
+            }
+
+            $this->_output(array_values($dc_types));
+        }
+
         
         function _ehc_log() {
             $info = $this->_check_visit();
