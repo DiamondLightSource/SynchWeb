@@ -15,7 +15,7 @@ class Sample extends Page
                               's' => '\w+',
 
 
-                              'prop' => '\w\w\d+',
+                              'prop' => '\w+\d+',
                               'term' => '\w+',
                               'pid' => '\d+',
                               'sid' => '\d+',
