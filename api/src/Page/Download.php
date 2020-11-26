@@ -421,26 +421,8 @@ class Download extends Page
 
                 $response = new BinaryFileResponse($filename);
 
-                $path_ext = pathinfo($file['FILENAME'], PATHINFO_EXTENSION);
-
-                if ($path_ext == 'html') {
-                    $response->headers->set("Content-Type", "text/html");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
-                } elseif ($path_ext == 'pdf') {
-                    $f = $file['FILENAME'];
-                    $response->headers->set("Content-Type", "application/pdf");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $f);
-                } elseif ($path_ext == 'png') {
-                    $f = $file['FILENAME'];
-                    $response->headers->set("Content-Type", "image/png");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$f);
-                } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json'))) {
-                    $response->headers->set("Content-Type", "text/plain");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
-                } else {
-                    $response->headers->set("Content-Type", "application/octet-stream");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$id.'_'.$file['FILENAME']);
-                }
+                # Set mime / content type
+                $this->set_mime_content($file['FILENAME'], $id);
 
                 // All OK - send it
                 // We were getting out of memory errors - switch off output buffer to fix
@@ -871,11 +853,8 @@ class Download extends Page
 
             if ($filesystem->exists($filename)) {
                 $response = new BinaryFileResponse($filename);
-                $response->headers->set("Content-Type", "application/octet-stream");
-                $response->setContentDisposition(
-                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                    basename($filename)
-                );
+
+                $this->set_mime_content($filename);
                 $response->headers->set("Content-Length", filesize($filename));
                 $response->send();
             } else {
@@ -885,6 +864,33 @@ class Download extends Page
         }
 
 
+        # ------------------------------------------------------------------------
+        # Set mime and content type for a file
+        function set_mime_content($filename, $prefix) {
+            $path_ext = pathinfo($filename, PATHINFO_EXTENSION);
+            if (in_array($path_ext, array('html', 'htm'))) {
+                $response->headers->set("Content-Type", "text/html");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+            } elseif ($path_ext == 'pdf') {
+                $response->headers->set("Content-Type", "application/pdf");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename);
+            } elseif ($path_ext == 'png') {
+                $response->headers->set("Content-Type", "image/png");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$filename);
+            } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
+                $response->headers->set("Content-Type", "image/jpeg");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$filename);
+            } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json'))) {
+                $response->headers->set("Content-Type", "text/plain");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+            } else {
+                $response->headers->set("Content-Type", "application/octet-stream");
+                $response->setContentDisposition(
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                    $prefix ? ($prefix+'_'+$filename) : basename($filename)
+                );    
+            }
+        }
 
         # ------------------------------------------------------------------------
         # Download Data
