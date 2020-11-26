@@ -165,6 +165,11 @@ define(['marionette',
         },
         
         search: function(e) {
+            if (!(this.ui.a.val() && this.ui.b.val() && this.ui.c.val() && this.ui.al.val() && this.ui.be.val() && this.ui.ga.val())) {
+                app.alert({ message: 'Please make sure to fill in all unit cell parameters: a, b, c, alpha, beta, gamma are required' })
+                return
+            }
+
             this.$el.find('.results').show()
             this.ui.count.html('<i class="fa fa-spin fa-circle-o-notch"></i>')
             if (e) e.preventDefault()
