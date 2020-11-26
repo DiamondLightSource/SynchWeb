@@ -628,8 +628,6 @@ class DC extends Page
             foreach ($dct as $d) $dcs[$d['ID']] = $d;
             
             $out = array();
-            
-            $tmp = new TemplateParser($this->db);
             foreach ($dcs as $dc) {
                 $debug = array();
 
@@ -649,6 +647,7 @@ class DC extends Page
                 $dc['DIR'] = $this->ads($dc['DIR']);
                 $dc['X'] = $images;
                 
+                $tmp = new TemplateParser($this->db);
                 $di = $tmp->interpolate($jpeg_thumb_location, array('DCID' => $dc['ID']));
                 
                 $this->profile('diffraction image');
