@@ -866,7 +866,7 @@ class Download extends Page
 
         # ------------------------------------------------------------------------
         # Set mime and content type for a file
-        function set_mime_content($filename, $prefix) {
+        function set_mime_content($filename, $prefix=null) {
             $path_ext = pathinfo($filename, PATHINFO_EXTENSION);
             if (in_array($path_ext, array('html', 'htm'))) {
                 $response->headers->set("Content-Type", "text/html");
