@@ -1,7 +1,7 @@
-
     <h1 class="no_mobile">
         <div class="usage r"></div>
         Data Collections
+        <% if (IS_VISIT) { %>for <%-VISIT%> on <%-BEAMLINENAME%><% } %>
     </h1>
 
     <p class="help">This page shows all data collections for the selected visit. If the visit is ongoing the page will automatically update as new data is collected. Auto processing results will be displayed</p>
@@ -37,9 +37,12 @@
     </div>
     <% } %>
 
-    <% if (IS_SINGLE) { %>
-    <h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%-VISIT%><% } %>">View All Data Collections</a></h1>
+    <% if (IS_SINGLE || IS_DCG) { %>
+        <h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%-VISIT%><% } %>">View All Data Collections</a></h1>
     <% } %>
+
+    <% if (IS_DCG) { %><h2>Data Collection Group</h2><% } %>
+    <% if (IS_PJ) { %><h2>Processing Job</h2><% } %>
 
     <div class="st"></div>
     <div class="sc"></div>
