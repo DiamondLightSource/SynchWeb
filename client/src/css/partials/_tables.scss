@@ -19,6 +19,31 @@ Post css extend container templates.
     overflow-x: auto;
 }
 
+
+/* 
+Tailwind: Tweaks to keep table forms consistent 
+They can be overriden by specific classes below
+*/
+.table table td input {
+    @apply tw-p-1;
+    @apply tw-bg-white tw-rounded tw-border tw-border-gray-500;
+    /* Turn on debugging... */
+    /* @apply tw-border-4 tw-border-orange-400; */
+}
+.table table td input:focus {
+    @apply tw-outline-none tw-border-blue-500;
+}
+
+/* Tailwind: Fix form input */
+.table table.dewars td input {
+    padding: 0.2rem;
+}
+
+/* Tailwind: Fix form input */
+.table table.samples td input {
+    padding: 0.25rem;
+}
+
 .table {
     margin: 10px 0;
 
@@ -70,15 +95,15 @@ Post css extend container templates.
             }
             
             &.sorting_asc {
-                background: $table-header-background url('./stylesheets/images/sort_asc.png') no-repeat right center;
+                background: $table-header-background url('~images/sort_asc.png') no-repeat right center;
             }
             
             &.sorting_desc {
-                background: $table-header-background url('./stylesheets/images/sort_desc.png') no-repeat right center;
+                background: $table-header-background url('~images/sort_desc.png') no-repeat right center;
             }
             
             &.sorting {
-                background: $table-header-background url('./stylesheets/images/sort_both.png') no-repeat right center;
+                background: $table-header-background url('~images/sort_both.png') no-repeat right center;
             }
         }
 
@@ -103,7 +128,7 @@ Post css extend container templates.
                     
                     &:hover {
                         padding-right: 2.5%;
-                        background: $content-search-background url('./stylesheets/images/edit.png') no-repeat right !important;
+                        background: $content-search-background url('~images/edit.png') no-repeat right !important;
                         // background: $content-search-background inline-image('edit.png') no-repeat right !important;
                     }
                 }
@@ -242,6 +267,8 @@ Post css extend container templates.
             width: 16%;
             input {
                 width: 25%;
+                /* Fix margin from tailwind port */
+                margin-bottom: 2px;
             }
         }
 

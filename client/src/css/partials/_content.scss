@@ -101,6 +101,8 @@
         border-radius: 6px;
         background: $content-search-background;
         height: 20px;
+        /* fix for tailwind */
+        box-sizing: content-box;
     }
 }
 
@@ -351,14 +353,16 @@ ol.rounded {
     font: 18px $content-header-font;
     padding: 0;
     text-shadow: 0 1px 0 rgba(255,255,255,.5);
-
+    /* Tailwind adjustment */
+    margin-bottom: 0.5em;
     li {
         float:left;
         position: relative;
         display: block;
-        padding: .4em .7em .4em 3em;
-        *padding: .4em;
-        margin: 0em .5em .5em 0;
+        /* Tailwind adjustment */
+        padding: 0.5em 1em 0.5em 1em;
+        margin-left: 2rem;
+
         color: $content-filter-color;
         background: $content-filter-background;
         text-decoration: none;
@@ -369,17 +373,17 @@ ol.rounded {
             content: counter(li);
             counter-increment: li;
             position: absolute;
-            left: -0.3em;
-            top: 50%;
-            margin-top: -1.3em;
             background: $content-active;
-            height: 2em;
-            width: 2em;
-            line-height: 2em;
             border: .3em solid $content-background;
             text-align: center;
             border-radius: 2em;
             transition: all .3s ease-out;
+            /* Tailwind adjustment */
+            top: -0.1em;
+            left: -1.75em;
+            padding-top: 0.4em;
+            height: 2.5em;
+            width: 2.5em;
         }
 
         &:hover{

@@ -14,6 +14,11 @@ div.form {
                     display: block;
                 }
             }
+
+            span {
+                /* Want consistent padding for form span elements */
+                @apply tw-px-1 tw-py-2;
+            }
         }
     }
     
@@ -33,7 +38,7 @@ div.form {
     
     span.label {
         display: inline-block;
-        padding: 1% 0;
+        // padding: 1% 0;
         font-weight: bold;
     }
     
@@ -60,9 +65,10 @@ div.form {
     }
     
     input, textarea, select {
-        &:not(.ui-combobox-input) {
-            padding: 0.1%;
-        }
+        /* Tailwind trying to avoid this... */
+        // &:not(.ui-combobox-input) {
+        //     padding: 0.1%;
+        // }
         margin: 0 0 20px 5px;
         
         @media (max-width: $breakpoint-small) {
@@ -149,10 +155,10 @@ div.form {
         content: '';
         border-right-color: $content-light-background;
     }
-    
-    textarea + span.ferror {
-        margin-left: 29%;
-    }
+    /* Tailwind - why was this required? */    
+    // textarea + span.ferror {
+    //     margin-left: 29%;
+    // }
     
     .floated {
         width: 71.6%;
@@ -222,8 +228,8 @@ div.form .fvalid {
 
 // Inline editable fields
 .editable {
-    padding: 0.7% 1%;
     border-radius: 4px;
+    @apply tw-px-1 tw-py-2;
 
     @media (max-width: $breakpoint-small) {
         padding: 2% 1%;
@@ -232,8 +238,7 @@ div.form .fvalid {
     
     &:hover {
         cursor: pointer;
-        background: $content-search-background url('./stylesheets/images/edit.png') no-repeat right;
-        // background: $content-search-background inline-image('edit.png') no-repeat right;
+        background: $content-search-background url('~images/edit.png') no-repeat right;
         padding-right: 2.5%;
         
         @media (max-width: $breakpoint-small) {
@@ -253,10 +258,15 @@ div.form .fvalid {
     }*/
     
     button {
-        margin: 3px;
+        /* Tailwind adjustments */
+        @apply tw-bg-content-background tw-m-1 tw-px-2 tw-py-1 tw-rounded;
     }
 }
 
+/* Override for unit cell (small embedded) tables */
+table.cell td>span.editable {
+    @apply tw-p-0;
+}
 
 .invalid {
     box-shadow: 0 0 8px $content-inactive;
@@ -267,24 +277,24 @@ div.form .fvalid {
 }
 
 
+/* Tailwind - Removed these, tables will fit into their containers */
+// div.text_table {
+//     width: 71%;
+//     margin: 0 0 1% 0;
+//     float: right;
 
-div.text_table {
-    width: 71%;
-    margin: 0 0 1% 0;
-    float: right;
+//     &.small {
+//         width: 47%;
+//     }
 
-    &.small {
-        width: 47%;
-    }
+//     &.half {
+//         width: 21%;
+//     }
 
-    &.half {
-        width: 21%;
-    }
-
-    table {
-        width: auto;
-    }
-}
+//     table {
+//         width: auto;
+//     }
+// }
 
 
 // Markdown
@@ -295,6 +305,8 @@ div.text {
     background: $content-light-background;
     border-radius: 5px;
     padding-right: 2.5%;
+    /* Want consistent padding for form span elements */
+    @apply tw-px-1 tw-py-2;
     
     @media (max-width: $breakpoint-small) {
         width: 93%;
@@ -401,7 +413,11 @@ table input[type=text] {
     }
 }
 
-
+/* 
+Tailwind note:
+Instead of reorder we can use tailwinds responsive classes
+Design for mobile layout then at sm, md breakpoints use desktop layout 
+*/
 @media (max-width: $breakpoint-small) {
     
     .reorder {
@@ -416,7 +432,11 @@ table input[type=text] {
         -ms-flex-direction: column;
         flex-direction: column;
     }
-    
+    /* 
+    Tailwind - we may want to remove this.
+    It sets a fixed font size for small screens.
+    We can scale better with tailwind.
+    */
     select, input, textarea {
         font-size: 16px !important;
     }
@@ -430,3 +450,38 @@ table input[type=text] {
     }
 }
 
+/* Tailwind: Tweaks to keep the old styles */
+input,
+.form input,
+.form optgroup,
+.form textarea {
+    font-family: inherit;
+    @apply tw-px-2 tw-py-1;
+    @apply tw-bg-white tw-rounded tw-border tw-border-gray-400;
+}
+
+.form input:focus, .form textarea:focus {
+    @apply tw-outline-none tw-border-blue-400;
+}
+
+/* Some forms are forms, others are div.forms */
+div.form > ul > li,
+form > ul > li {
+    @apply tw-flex tw-mb-4;
+}
+
+form > ul > li > select {
+    line-height: 1.5;
+    height: 30px;    
+}
+
+.errormessage {
+    @apply tw-inline;
+    @apply tw-text-xxs;
+}
+
+.errormessage.ferror {
+    @apply tw-bg-content-background;
+    @apply tw-ml-2;
+    @apply tw-py-2;
+}
