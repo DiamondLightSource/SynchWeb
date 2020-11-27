@@ -57,7 +57,8 @@ application.addInitializer(function() {
 // },
 
 function lookupVisit(visit) {
-  application.cookie(visit.split('-')[0])
+  // router guard takes care of setting proposal from route path
+  //application.cookie(visit.split('-')[0])
 
   return new Promise((resolve, reject) => {
       visitModel = new Visit({ VISIT: visit })
