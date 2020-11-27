@@ -45,12 +45,11 @@
 
 
 
-            <li class="clearfix reorder">
+            <li class="clearfix">
+                <span class="label">Description</span>
                 <div class="DESCRIPTION text">
                     <%=DESCRIPTIONMD%>
                 </div>
-                <span class="label">Description</span>
-
             </li>
 
 
@@ -93,11 +92,14 @@
                 <span class="ENDTIME"><%-ENDTIME%></span>
             </li>
 
-            <li class="fresolved clearfix reorder">
+            <!-- <li class="fresolved clearfix reorder">
                 <div class="RESOLUTION text"><%=RESOLUTIONMD%></div>
                 <span class="label">Resolution</span>
+            </li> -->
+            <li class="fresolved">
+                <span class="label">Resolution</span>
+                <div class="RESOLUTION text tw-inline-block tw-w-2/3"><%=RESOLUTIONMD%></div>
             </li>
-
             <% if (ELOGID) { %>
             <li>
                 <span class="label">eLog Entry</span>
