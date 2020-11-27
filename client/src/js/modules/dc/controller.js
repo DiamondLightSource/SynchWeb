@@ -9,10 +9,12 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
     'modules/dc/views/samplechangerfull',
     'modules/dc/views/queuebuilder',
     'models/proplookup',
+    'collections/beamlinetypes',
+    'modules/dc/views/beamlineactivity',
     
     ], function(Marionette, GetView, ImageViewer, MapModelViewer, ReciprocalSpaceViewer,
         Summary, APStatusSummary, DataCollection, DCCol, Sample, Visit, Proposal, SampleChangerView, QueueBuilder,
-        ProposalLookup) {
+        ProposalLookup, BeamlineTypes, BeamlineActivity) {
     
     var bc = { title: 'Data Collections', url: '/dc' }
     
@@ -40,7 +42,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
                 page = page ? parseInt(page) : 1
                 console.log('page', page)
                 var dcs = new DCCol(null, { queryParams: { visit: visit, s: search, t: type, id: id, dcg: dcg, PROCESSINGJOBID: pjid } })
-                dcs.setPageSize(app.mobile() ? 5 : 15)
+                dcs.state.pageSize = app.mobile() ? 5 : 15
                 dcs.state.currentPage = page
                 dcs.fetch().done(function() {
                     console.log('DC TYPE', model.get('TYPE'))
@@ -55,6 +57,28 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
         })
     },
       
+    // Beamline Activity
+    beamlineactivity: function(bl, page, search, type) {
+        if (!app.staff) {
+            app.bc.reset([bc])
+            app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            return
+        }
+
+        var types = new BeamlineTypes()
+        types.queryParams.bl = bl
+        types.fetch({
+            success: function() {
+                app.bc.reset([bc, { title: bl + ' Activity' }])
+                app.content.show(new BeamlineActivity({ bl: bl, type: types.at(0).get('TYPE'), params: { page: page, type: type, search: search } }))
+            },
+
+            error: function() {
+                app.bc.reset([bc])
+                app.message({ title: 'No such beamline', message: 'No such beamline' })
+            }
+        })
+    },
       
     // Diffraction Image Viewer
     di_viewer: function(id) {

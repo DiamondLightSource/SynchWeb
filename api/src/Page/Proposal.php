@@ -81,6 +81,7 @@ class Proposal extends Page
 
                                         array('/calendar', 'get', '_get_beam_calendar'),
 
+                                        array('/bls/types', 'get', '_get_beamline_types'),
                                         array('/bls/:ty', 'get', '_get_beamlines'),
                                         array('/type', 'get', '_get_types'),
                                         array('/lookup', 'post', '_lookup'),
@@ -102,6 +103,29 @@ class Proposal extends Page
             if (empty($bls)) $this->_error('No such proposal type');
 
             $this->_output($bls);
+        }
+
+        function _get_beamline_types() {
+            global $bl_types;
+
+            $blstype = array();
+            foreach ($bl_types as $ty => $bls) {
+                foreach ($bls as $bl) {
+                    if ($this->has_arg('bl')) {
+                        if ($bl == $this->arg('bl')) array_push($blstype, array('BL' => $bl, 'TYPE' => $ty));
+                    } else {
+                        array_push($blstype, array('BL' => $bl, 'TYPE' => $ty));
+                    }
+                }
+            }
+
+            if ($this->has_arg('bl')) {
+                if (!sizeof($blstype)) {
+                    $this->_error('No such beamline');
+                }
+            }
+                
+            $this->_output($blstype);
         }
 
 
