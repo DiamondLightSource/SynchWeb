@@ -449,8 +449,8 @@ define(['backbone', 'marionette', 'views/dialog',
             this.ui.cell.hide()
 
             this.pipelines = new Pipelines([
-                { NAME: 'Xia2 3dii', VALUE: 'xia2-3dii' },
                 { NAME: 'Xia2 DIALS', VALUE: 'xia2-dials' },
+                { NAME: 'Xia2 3dii', VALUE: 'xia2-3dii' },
                 { NAME: 'Fast DP', VALUE: 'fast_dp' },
             ])
 
