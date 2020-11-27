@@ -405,8 +405,8 @@ class Proposal extends Page
                     s.comments,
                     s.scheduled,
                     st.typename                                                   AS sessiontype,
-                    DATE_FORMAT(s.startdate, '%H:%i %d-%m-%Y')                    AS startdate,
-                    DATE_FORMAT(s.enddate, '%H:%i %d-%m-%Y')                      AS enddate,
+                    DATE_FORMAT(s.startdate, '%d-%m-%Y %H:%i')                    AS startdate,
+                    DATE_FORMAT(s.enddate, '%d-%m-%Y %H:%i')                      AS enddate,
                     s.beamlinename,
                     s.beamlineoperator,
                     s.archived,
@@ -415,7 +415,8 @@ class Proposal extends Page
                     bc.run                                                        AS beamcalendar,
                     s.beamcalendarid,
                     CONCAT(p.proposalcode, p.proposalnumber)                      AS proposal,
-                    COUNT(shp.personid)                                           AS persons
+                    COUNT(shp.personid)                                           AS persons,
+                    s.proposalid
                 FROM BLSession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     LEFT OUTER JOIN sessiontype st ON st.sessionid = s.sessionid
