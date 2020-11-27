@@ -20,7 +20,7 @@
         <li>
             <span class="label">Protein Acronym</span>
             <span class="ACRONYM"><%-ACRONYM%></span> 
-            <a href="/proteins/pid/<%-PROTEINID%>" class="button"><i class="fa fa-search"></i> View All</a>
+            <a href="/proteins/pid/<%-PROTEINID%>" class="button tw-ml-2 tw-py-2"><i class="fa fa-search"></i> View All</a>
         </li>
 
         <li>
@@ -50,8 +50,9 @@
             <span class="SPACEGROUP"><%-SPACEGROUP%></span>
         </li>
 
-        <li class="clearfix reorder">
-            <div class="text_table table">
+        <li>
+            <span class="label">Unit Cell</span>
+            <div class="text_table table tw-inline-block tw-w-1/3">
                 <table class="reflow cell">      
                     <thead>            
                         <tr>
@@ -75,7 +76,6 @@
                     </tbody>    
                 </table>
             </div>
-            <span class="label">Unit Cell</span>
         </li>
 
         <li>
@@ -126,9 +126,9 @@
         </li>
 
         <% if (INSPECTIONS > 0) { %>
-        <li class="clearfix reorder">
-            <div class="text im_history"></div>
+        <li class="clearfix">
             <span class="label">Inspections</span>
+            <div class="text im_history"></div>
         </li>
         <% } %>
 
