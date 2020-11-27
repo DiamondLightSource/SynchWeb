@@ -11,9 +11,9 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().trim();
 const config = require('./src/js/config.json')
 
-module.exports = (env,argv) => ({
+module.exports = (env, argv) => ({
   entry: {
-      main: './src/index.js',
+      main: './src/js/app/index.js',
   },
   output: {
     filename: '[name]-bundle.js',
@@ -106,12 +106,17 @@ module.exports = (env,argv) => ({
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate/dist/vee-validate.min',
+
+      js: path.resolve(__dirname, 'src/js'),
+      css: path.resolve(__dirname, 'src/css'),
+      // vuejs: path.resolve(__dirname, 'src/js/vuejs'),
+
     },
     modules: [
       path.resolve(__dirname, 'src/js'),
       path.resolve(__dirname, 'src/css'),
       path.resolve(__dirname, 'node_modules'),
-    ]
+    ],
   },
   module: {
     rules: [
@@ -170,7 +175,7 @@ module.exports = (env,argv) => ({
         ]
       },
       {
-        test: /vue\/.+\.html$/,
+        test: /templates\/vue\/.+\.html$/,
         use: ['html-loader']
       },
       // We need to help Caman load properly
@@ -184,16 +189,30 @@ module.exports = (env,argv) => ({
         test: /\.(sa|sc|c)ss$/,
         use: [
           // Extract the CSS into separate files
-          {
+          { 
             loader: MiniCssExtractPlugin.loader,
             options: {
               hmr: argv.mode === 'development',
+              // reloadAll: true,
             }
           },
           "css-loader", // translates CSS into CommonJS
           "postcss-loader",
         ]
       },
+      // {
+      //   test: /\.(sa|sc|c)ss$/,
+      //   use: [
+      //     // Extract the CSS into separate files
+      //     MiniCssExtractPlugin.loader,
+      //     "css-loader", // translates CSS into CommonJS
+      //     { loader: "sass-loader",
+      //       options: {
+      //           data: "$site_image: '" + (config.site_image || 'diamond_gs_small.png') + "';"
+      //       }
+      //     } // compiles Sass to CSS, using Node Sass by default
+      //   ]
+      // },
       {
         test: /\.(png|gif)$/,
         use: [
@@ -234,7 +253,7 @@ module.exports = (env,argv) => ({
     new HtmlWebpackPlugin({
       title: 'SynchWeb Webpack',
       filename: path.resolve(__dirname, 'dist/', gitHash, 'index.html'),
-      template: 'src/index.php',
+      template: 'src/index.html',
       jsonConfig: config,
     }),
     // Copy static assets to the assets folder
@@ -242,9 +261,6 @@ module.exports = (env,argv) => ({
     // Also copy jquery to assets dir, so we can use it for Dialog popup with log files (see js/views/log.js)
     // Also copy config.json to assets dir, app uses the assets/js/config.json to tell if client needs updating
     new CopyPlugin([
-      { context: path.resolve(__dirname, 'node_modules/jquery-ui/themes/base'),
-        from: 'images/**',
-        to: path.resolve(__dirname, 'assets') },
       { context: path.resolve(__dirname, 'src'),
         from: 'images/**',
         to: path.resolve(__dirname, 'assets') },
@@ -267,6 +283,6 @@ module.exports = (env,argv) => ({
     }),
     // Allow use to use process.env.NODE_ENV in the build
     // NODE_ENV should be set in scripts for production builds
-    new webpack.EnvironmentPlugin({'NODE_ENV': 'development'})
+    new webpack.EnvironmentPlugin(['NODE_ENV'])
   ]
 })
