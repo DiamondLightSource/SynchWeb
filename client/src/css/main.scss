@@ -1,5 +1,7 @@
-//@import "compass/reset";
-@import "modules/_mini_reset.scss";
+/* Using a variant of the tailwind/base reset */
+@import "modules/normalize_custom.css";
+
+@import "tailwindcss/components";
 
 // Partials
 @import "partials/_base.scss";
@@ -23,11 +25,10 @@
 
 
 // Third-party
-// @import "vendor/jquery-ui.scss";
-// @import "vendor/jquery-ui-timepicker.scss";
 @import "jquery-ui/themes/base/all.css";
 @import "jquery-ui-timepicker-addon/dist/jquery-ui-timepicker-addon.css";
 @import "vendor/jquery-ui.combobox.css";
 @import "vendor/magnific-popup.css";
 @import "vendor/jquery_misc.css";
-// @import "vendor/tipTip.scss";
+
+@import "tailwindcss/utilities";
