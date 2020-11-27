@@ -28,7 +28,9 @@
 @import "jquery-ui/themes/base/all.css";
 @import "jquery-ui-timepicker-addon/dist/jquery-ui-timepicker-addon.css";
 @import "vendor/jquery-ui.combobox.css";
+/* purgecss start ignore */
 @import "vendor/magnific-popup.css";
 @import "vendor/jquery_misc.css";
+/* purgecss end ignore */
 
 @import "tailwindcss/utilities";
