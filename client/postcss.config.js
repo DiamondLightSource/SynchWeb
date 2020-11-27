@@ -14,6 +14,7 @@ module.exports = ({env}) => (
       require('postcss-extend'),
       require('postcss-strip-inline-comments'),
       require('postcss-color-function'),
+      require('tailwindcss'),
       require('autoprefixer'),
     ]
   }
