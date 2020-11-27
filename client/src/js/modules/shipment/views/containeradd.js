@@ -220,11 +220,12 @@ define(['backbone',
             if (u) {
                 if (!u.get('EMAILADDRESS')) {
                     this.ui.pid.addClass('invalid')
-                    this.ui.pid.after('<span class="emsg ferror">Please update your email address by clicking view</span>')
+                    this.ui.pid.siblings('span.emsg').show()
+                    // this.ui.pid.after('<span class="emsg ferror">Please update your email address by clicking view</span>')
 
                 } else {
                     this.ui.pid.removeClass('invalid')
-                    this.ui.pid.siblings('span.emsg').remove()
+                    this.ui.pid.siblings('span.emsg').hide()
                 }
             }
         },
