@@ -217,7 +217,7 @@ define(['marionette',
         doOnShow: function() {
             var self = this
             var noData = _.reduce(this.samples.pluck('HASDATA'), function(a, b) { return a + b ? 1 : 0 }, 0) == 0
-            if (this.model.get('CONTAINERSTATUS') != 'processing' && noData) {
+            if (this.model.get('CONTAINERSTATUS') != 'processing' && (noData || !this.model.get('CONTAINERREGISTRYID'))) {
                 this.containerregistry.fetch().done(function() {
                     var opts = self.containerregistry.kv()
                     opts[''] = '-'
