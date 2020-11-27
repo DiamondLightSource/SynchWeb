@@ -1,5 +1,19 @@
 module.exports = {
-  // Adding a prefix so its clear where we are overriding styles 
+  /*
+  Tailwind can remove some of its generated classes
+  We are using purgecss as well but this still helps
+  */
+  purge: {
+    content: [
+      './src/**/*.html',
+      './src/**/*.vue',
+    ],
+  },
+  future: {
+    purgeLayersByDefault: true,
+    removeDeprecatedGapUtilities: true,
+  },
+  // Adding a prefix so its clear where we are overriding styles
   prefix: 'tw-',
   theme: {
     extend: {
@@ -10,7 +24,7 @@ module.exports = {
         'icon': ['FontAwesome'],
         'fixed': ["Courier"],
         },
-        /* Add a tiny font size for breadcrumbs etc. */
+      // Add a tiny font size for breadcrumbs etc.
       fontSize: {
         'xxs': '0.65rem',
         // These are the defaults
@@ -29,6 +43,10 @@ module.exports = {
         'header-site-logo': "url('~images/diamond_gs_small.png')",
         'footer-site-logo': "url('~images/ispyb_gs_medium.png')",
       },
+      /*
+      Define colors here to use tailwind bg, text variants.
+      Currently using sass variables via postcss-simple-vars plugin as well.
+      */
       colors: {
         'link-color': '#666666',
         'link-hover-color': '#222222',
