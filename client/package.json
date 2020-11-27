@@ -83,6 +83,8 @@
     "underscore": "1.6.0",
     "vee-validate": "^2.2.13",
     "vue": "^2.6.10",
+    "vue-router": "^3.4.3",
+    "vuex": "^3.5.1",
     "zlibjs": "^0.1.7"
   }
 }
