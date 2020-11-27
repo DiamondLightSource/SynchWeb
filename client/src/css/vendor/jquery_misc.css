@@ -1,7 +1,7 @@
 .ui-dialog .ui-dialog-content { padding: 0.5em; }
 
 .ui-autocomplete-loading {
-    background: url('./stylesheets/images/load_small.gif') no-repeat right center
+    background: url('~images/load_small.gif') no-repeat right center
 }
 
 /* Auto Complete */

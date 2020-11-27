@@ -8,7 +8,7 @@
 .ui-combobox-input {
 	cursor: pointer;
 	width: 100%;
-	line-height: 1.5rem; /* Made slightly larger to avoid discrepency with sample table inputs */
+	line-height: 1.2rem; /* Made slightly larger to avoid discrepency with sample table inputs */
 	padding-left: 0.2rem;
 }
 
