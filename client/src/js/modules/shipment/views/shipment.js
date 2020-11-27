@@ -126,6 +126,7 @@ define(['marionette',
             Backbone.Validation.bind(this);
             
             this.dewarcontent = new Containers()
+            this.dewarcontent.setSorting('NAME')
             this.dewarhistory = new DewarHistory()
             this.dewartracking = new DewarTracking()
             this.dewars = new Dewars(null, { id: this.model.get('SHIPPINGID') })
