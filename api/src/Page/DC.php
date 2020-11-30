@@ -1192,7 +1192,8 @@ class DC extends Page
                     foreach ($r as $k => &$v) {
                         if ($k == 'TYPE') {
                             if ($r['DCCOUNT'] > 1) {
-                                $v = $r['DCCOUNT'].'x multi-'.$v;
+                                $prefix = preg_match('/multi/', $v) ? '' : 'multi-';
+                                $v = $r['DCCOUNT'].'x '.$prefix.$v;
                             }
                         }
 
