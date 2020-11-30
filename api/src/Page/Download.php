@@ -422,7 +422,7 @@ class Download extends Page
                 $response = new BinaryFileResponse($filename);
 
                 # Set mime / content type
-                $this->set_mime_content($file['FILENAME'], $id);
+                $this->set_mime_content($response, $file['FILENAME'], $id);
 
                 // All OK - send it
                 // We were getting out of memory errors - switch off output buffer to fix
@@ -854,7 +854,7 @@ class Download extends Page
             if ($filesystem->exists($filename)) {
                 $response = new BinaryFileResponse($filename);
 
-                $this->set_mime_content($filename);
+                $this->set_mime_content($response, $filename);
                 $response->headers->set("Content-Length", filesize($filename));
                 $response->send();
             } else {
@@ -866,20 +866,32 @@ class Download extends Page
 
         # ------------------------------------------------------------------------
         # Set mime and content type for a file
-        function set_mime_content($filename, $prefix=null) {
+        /** 
+         * Set mime and content type headers for the provided response.
+         * Determines the mime type from the filename extension.
+         * 
+         * @param BinaryFileResponse $response Symfony Response Object
+         * @param string $filename Filename to be downloaded (will use basename in case file path is provided)
+         * @param string $prefix Add this string to the filename "prefix_filename"
+         * @return void
+         */
+        function set_mime_content($response, $filename, $prefix=null) {
             $path_ext = pathinfo($filename, PATHINFO_EXTENSION);
+            // If we are downloading the file (not inline) then set a sensible name
+            $saved_filename = $prefix ? implode('_', array($prefix, basename($filename))) : basename($filename);
+
             if (in_array($path_ext, array('html', 'htm'))) {
                 $response->headers->set("Content-Type", "text/html");
                 $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
             } elseif ($path_ext == 'pdf') {
                 $response->headers->set("Content-Type", "application/pdf");
-                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename);
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
             } elseif ($path_ext == 'png') {
                 $response->headers->set("Content-Type", "image/png");
-                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$filename);
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
             } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
                 $response->headers->set("Content-Type", "image/jpeg");
-                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$filename);
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
             } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json'))) {
                 $response->headers->set("Content-Type", "text/plain");
                 $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
@@ -887,7 +899,7 @@ class Download extends Page
                 $response->headers->set("Content-Type", "application/octet-stream");
                 $response->setContentDisposition(
                     ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                    $prefix ? ($prefix+'_'+$filename) : basename($filename)
+                    $saved_filename
                 );    
             }
         }
