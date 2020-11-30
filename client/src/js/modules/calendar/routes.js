@@ -51,6 +51,9 @@ const routes = [
           component: MarionetteView,
           props: { 
             mview: CalendarView,
+            options: {
+              all: 1,
+            }
           }
         },
         {

@@ -3,7 +3,7 @@
       <div class="">
         <router-link class="tw-mx-1 tw-inline md:tw-hidden hover:tw-text-header-hover-color" @click.native="showSidebar" to=""><span class="fa fa-2x fa-bars"/></router-link>
         <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" to="/"><span class="fa fa-2x fa-home"/><p class="tw-hidden md:tw-inline"> Home </p></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isLoggedIn" to="/current"><span class="fa fa-2x fa-calendar"/><p class="tw-hidden md:tw-inline"> Current </p></router-link>
+        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isStaff" to="/cal"><span class="fa fa-2x fa-calendar"/><p class="tw-hidden md:tw-inline"> Calendar </p></router-link>
         <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isLoggedIn" to="/" v-on:click.native="logout"><span class="fa fa-2x fa-sign-out"/><p class="tw-hidden md:tw-inline"> Logout </p></router-link>
         <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-else to="/login" @click.prevent="login"><span class="fa fa-2x fa-sign-in"/> <p class="tw-hidden md:tw-inline"> Login </p></router-link>
       </div>
