@@ -118,7 +118,7 @@ export default {
             var icon = legacyMenu[key]['icon']
             var permission = legacyMenu[key]['permission'] ? legacyMenu[key]['permission'] : ''
 
-            var item = {link: key, name: title, icon: 'fa-'+icon, permission: permission}
+            var item = {link: key, name: title, icon: icon, permission: permission}
             
             menu.push(item)
           })
