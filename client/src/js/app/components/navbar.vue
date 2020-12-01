@@ -42,7 +42,7 @@
 
         <!-- Help menu and tutorials -->
         <router-link to="" class="tw-relative md:tw-w-48 tw-py-4 tw-bg-sidebar-grad-end hover:tw-bg-gray-100 tw-border tw-border-gray-400 tw-text-gray-800 tw-text-center tw-text-xs"
-          @mouseover.native="showHelpMenu = true" @mouseleave.native="showHelpMenu=false" @click.native="showHelp=!showHelp">
+          @mouseover.native="showHelpMenu = true" @mouseleave.native="showHelpMenu=false" @click.native="onToggleHelp">
             <p class="tw-text-xs">Help ({{helpStatus}})</p>
 
             <div v-show="showHelpMenu" >
@@ -70,6 +70,7 @@ export default {
 
     data: function() {
         return {
+            // Display help text on a page
             showHelp: false,
             // If hover over help menu flag
             showHelpMenu: false,
@@ -106,5 +107,24 @@ export default {
             }
         },
     },
+    methods: {
+        onToggleHelp: function(event) {
+            event.preventDefault()
+
+            this.showHelp = !this.showHelp
+
+            // Update Store - in future other pages might react
+            this.$store.commit('set_help', this.showHelp)
+
+            if (this.showHelp) {
+                // Old code set an active class on sidebar but it does not show up
+                // $('#sidebar ul li.help').addClass('active')
+                $('p.help').fadeIn()
+            } else {
+                // $('#sidebar ul li.help').removeClass('active')
+                $('p.help').fadeOut()
+            }
+        },
+    }
 }
 </script>

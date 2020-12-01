@@ -38,6 +38,7 @@ const store = new Vuex.Store({
     notifications: [],
     isLoading: false,
     motd: 'Message of the day',
+    help: false, // Global help flag used to denote if we should display inline help on pages
     models: {}
   },
   mutations: {
@@ -77,6 +78,10 @@ const store = new Vuex.Store({
       state.motd = options.get('motd') || state.motd
 
       app.options = options
+    },
+    set_help(state, helpFlag) {
+      state.help = helpFlag ? true : false
+      sessionStorage.setItem('ispyb_help', state.help)
     },
     //
     // Loading screen
