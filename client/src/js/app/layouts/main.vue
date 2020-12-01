@@ -47,7 +47,7 @@ import Sidebar from 'app/components/sidebar.vue'
 import Navbar from 'app/components/navbar.vue'
 import Breadcrumbs from 'app/components/breadcrumbs.vue'
 import Motd from 'app/components/motd.vue'
-import Notification from 'app/components/utils/notification.vue'
+import Notification from 'app/components/notification.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import Dialog from 'app/components/dialogbox.vue'
 
