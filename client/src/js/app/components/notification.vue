@@ -79,7 +79,12 @@ export default {
     @apply tw-flex tw-flex-col tw-items-center tw-w-full;
 }
 .notify-item {
-    @apply tw-rounded tw-shadow tw-p-4 tw-w-1/2 tw-font-bold tw-border-2;
+    @apply tw-rounded tw-shadow tw-p-4 tw-w-full tw-font-bold tw-border-2;
+}
+@screen md {
+    .notify-item {
+        @apply tw-w-1/2;
+    }
 }
 
 .notify-enter-active, .notify-leave-active {
