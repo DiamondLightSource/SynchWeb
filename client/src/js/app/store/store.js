@@ -48,6 +48,7 @@ const store = new Vuex.Store({
         Vue.set(state.models, payload.name, payload.model)
       }
     },
+    // Payload is object with title, message, level attributes.
     add_notification(state, payload) {
       console.log("Adding notification " + payload.message)
       let notification = payload

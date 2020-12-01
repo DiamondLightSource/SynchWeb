@@ -37,8 +37,6 @@ export default {
     watch: {
         // We deal with clearing the notifications after a given time (5s)
         notifications: function(val) {
-            console.log("Notifications have changed " + val)
-
             let self = this
             let ids = val.map(item => {return item.id})
 
@@ -55,7 +53,7 @@ export default {
         },
     },
     methods: {
-        // Calculate total number of pages
+        // Determine classes to set based on message level
         notificationClass: function(level) {
             let classes = ""
 
