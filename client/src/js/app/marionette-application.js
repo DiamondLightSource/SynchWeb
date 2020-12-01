@@ -26,7 +26,7 @@ var MarionetteApplication = (function () {
     
           options = options || {};
           if (url) {
-              options.url = app.apiurl+url
+              options.url = application.apiurl+url
           }
 
           return oldSync.call(this, method, model, options);
@@ -88,20 +88,20 @@ var MarionetteApplication = (function () {
             var msg = json && (json.error || json.msg) ? (json.error ? json.error : json.msg) : error
         
             if (xhr.readyState == 0) {
-                app.alert({ message: 'A network request failed', persist: 'network' })
+                application.alert({ title: 'Network Error', message: 'A network request failed', persist: 'network' })
                 
             }
         
             if (xhr.status == 401) {
                 // Need to hook login into vue-router...
-                app.login(xhr)
+                application.login(xhr)
             }
             if (xhr.status == 500) {
-                app.alert({ message: 'An application error has occurred <pre>'+msg+'</pre>', persist: 'e500' })
+                application.alert({ title: 'Internal Server Error', message: 'An application error has occurred <pre>'+msg+'</pre>', persist: 'e500' })
             }
             if (xhr.status == 503) {
-                if (json) app.alert({ message: 'A database error has occurred <pre>'+msg+'</pre>', persist: 'e503' })
-                else  app.alert({ message: 'A server error has occurred <pre>'+msg+'</pre>', persist: 'e503' })
+                if (json) application.alert({ title: 'Service Unavailable', message: 'A database error has occurred <pre>'+msg+'</pre>', persist: 'e503' })
+                else  application.alert({ title: 'Service Unavailable', message: 'A server error has occurred <pre>'+msg+'</pre>', persist: 'e503' })
             }
         }, 300))
                  
