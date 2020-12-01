@@ -1,25 +1,40 @@
 <template>
     <div id="vue-login" class="content">
-        <p class="tw-m-4 tw-p-4 tw-text-4xl tw-text-center tw-mx-auto tw-border-b tw-border-gray-500">SynchWeb Experiment Information Management</p>
+        <p class="tw-m-4 tw-p-4 tw-text-xl md:tw-text-4xl tw-text-center tw-mx-auto tw-border-b tw-border-gray-500">SynchWeb Experiment Information Management</p>
 
         <h1>Login</h1>
         <p v-if="sso">Redirect to Single Sign On</p>
-        <form class="tw-w-full md:tw-w-1/2 tw-mx-auto tw-px-8 tw-pt-6 tw-pb-8 tw-mb-4">
-            <div class="tw-mb-4">
-                <label class="tw-block tw-text-gray-700 tw-text-sm tw-font-bold tw-mb-2" for="login">Username (fedid)</label>
-                <input class="tw-shadow tw-border tw-rounded tw-w-full tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline" v-model="username" type="text" name="login"/>
-            </div>
-            <div class="tw-mb-4">
-                <label class="tw-block tw-text-gray-700 tw-text-sm tw-font-bold tw-mb-2" for="password">Password</label>
-                <input class="tw-shadow tw-border tw-rounded tw-w-full tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline" v-model="password" type="password" name="password"/>
-            </div>
-            <button class="tw-bg-blue-500 hover:tw-bg-blue-700 tw-text-white tw-font-bold tw-py-2 tw-px-4 tw-rounded focus:tw-outline-none focus:tw-shadow-outline" v-on:click="onSubmit">Login</button>
+        <form class="tw-w-full md:tw-w-1/2 tw-mx-auto tw-mt-8">
+            <ul>
+                <li class="tw-flex-col md:tw-flex-row tw-mb-4">
+                    <label class="md:tw-w-1/3 tw-p-2 tw-text-left md:tw-text-right" for="username">Username (Fedid)</label>
+                    <input v-bind:class="[{ferror: errors.has('username')}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']" v-validate="'required'"  v-model="username" type="text" name="username"/>
+                    <div class="tw-content-center"><p v-if="errors.has('username')" class="tw-content-center tw-mt-2 md:tw-ml-2 tw-align-text-bottom tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800">{{ errors.first('username') }}</p></div>
+                </li>
+                <li class="tw-flex-col md:tw-flex-row tw-mb-4">
+                    <label class="md:tw-w-1/3 tw-p-2 tw-text-left md:tw-text-right" for="password">Password</label>
+                    <input v-bind:class="[{ferror: errors.has('password')}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']" v-validate="'required'" v-model="password" type="password" name="password"/>
+                    <div class="tw-content-center"><p v-if="errors.has('password')" class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800">{{ errors.first('password') }}</p></div>
+                </li>
+                <li class="tw-flex-col md:tw-flex-row tw-mb-4">
+                    <!-- Spacer to align login button neatly -->
+                    <div class="md:tw-w-1/3 tw-px-2"></div>
+                    <button class="tw-px-8 tw-py-2 tw-w-64 tw-border tw-border-gray-400 button submit" v-on:click.prevent="onSubmit">Login</button>
+                </li>
+            </ul>
         </form>
     </div>
 </template>
 
 <script>
 import EventBus from 'app/components/utils/event-bus.js'
+
+import Vue from 'vue'
+import VeeValidate from 'veevalidate'
+// Currently implemented with vee-validate
+// May want to move to vuelidate as it would fit with backbone models easier
+// Could reuse validation within backbone models then
+Vue.use(VeeValidate)
 
 export default {
     name: 'Login',
@@ -51,23 +66,36 @@ export default {
     },
 
     methods: {
-        singleSignOn: function() {
-            // If we are using SSO we need to check auth and redirect if required
-            // window.location.href='https://'+this.sso_url+'/cas/login?service='+encodeURIComponent(url)
-            if (this.sso && location.href.indexOf('?ticket=') == -1) {
-                let url = this.redirectUrl
-                console.log("Login should be Redirecting to CAS: " + url)
+        // Using the method below is simple alternative that
+        // allows us to clear form data after submission
+        resetForm: function() {
+            this.username = ''
+            this.password = ''
 
-                this.$store.dispatch('check_auth').then( (authenticated) => {
-                    console.log("Check Auth OK: " + authenticated)
-                    if (!authenticated) this.$router.replace(url)
-                })
-            }
+            // To reset form validation, we should wait for next tick
+            // Vue rectivity means the DOM will not be updated immediately
+            this.$nextTick(function() {
+                this.$validator.reset()
+            })
         },
+
         onSubmit: function(event) {
             event.preventDefault()
 
+            let self = this
+
+            this.$validator.validateAll().then(function(result) {
+                if (result) {
+                    self.doLogin()
+                } else {
+                    console.log('Form submission prevented, validation failed');
+                }
+            });
+        },
+
+        doLogin: function() {
             let credentials = { 'login': this.username, 'password': this.password }
+
 
             // Should probably move this into a combined login store method
             this.$store.dispatch('login', credentials)
@@ -84,6 +112,21 @@ export default {
             })
 
         },
+        // Methods to support SSO - TODO
+        singleSignOn: function() {
+            // If we are using SSO we need to check auth and redirect if required
+            // window.location.href='https://'+this.sso_url+'/cas/login?service='+encodeURIComponent(url)
+            if (this.sso && location.href.indexOf('?ticket=') == -1) {
+                let url = this.redirectUrl
+                console.log("Login should be Redirecting to CAS: " + url)
+
+                this.$store.dispatch('check_auth').then( (authenticated) => {
+                    console.log("Check Auth OK: " + authenticated)
+                    if (!authenticated) this.$router.replace(url)
+                })
+            }
+        },
+
         saveUrl: function(url) {
             // Save the URL we should redirect to after login
             if (url) {
