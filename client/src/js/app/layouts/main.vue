@@ -46,7 +46,7 @@ import Footer from 'app/components/footer.vue'
 import Sidebar from 'app/components/sidebar.vue'
 import Navbar from 'app/components/navbar.vue'
 import Breadcrumbs from 'app/components/breadcrumbs.vue'
-import Motd from 'app/components/utils/motd.vue'
+import Motd from 'app/components/motd.vue'
 import Notification from 'app/components/utils/notification.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import Dialog from 'app/components/dialogbox.vue'
@@ -69,7 +69,6 @@ export default {
       return {
         admin_menu: [],
         proposal_menu: [],
-        motd: 'This is the message of the day',
         bc: [{title: 'Home', link: '/'}],
       }
     },
@@ -88,7 +87,7 @@ export default {
       },
       // Combine with local computed properties, spread operator
       // Allows us to use this.proposal and this.isLoading mapped to vuex state
-      ...mapState(['proposal', 'isLoading'])
+      ...mapState(['proposal', 'isLoading', 'motd'])
     },
     created: function () {
       console.log(this.$options.name + " created")

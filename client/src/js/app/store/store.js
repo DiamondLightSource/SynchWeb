@@ -37,6 +37,7 @@ const store = new Vuex.Store({
     // Notifications and events
     notifications: [],
     isLoading: false,
+    motd: 'Message of the day',
     models: {}
   },
   mutations: {
@@ -71,6 +72,8 @@ const store = new Vuex.Store({
 
       console.log("Auth sso = " + state.auth.cas_sso)
       console.log("Auth sso url = " + state.auth.cas_url)
+
+      state.motd = options.get('motd') || state.motd
 
       app.options = options
     },
