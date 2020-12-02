@@ -1,5 +1,6 @@
 import Proposal from 'models/proposal.js'
 import ProposalLookup from 'models/proplookup.js'
+import Backbone from 'backbone'
 
 const proposalModule = {
   state: {
@@ -13,15 +14,21 @@ const proposalModule = {
     //
     // Proposal and visit information
     //
+    // Save backbone proposal model - set from action that retrieves model from server
     set_proposal_model(state, model) {
-      if (model) {
+      // Needs to be a backbone model as we use get methods
+      if (model instanceof Backbone.Model) {
         state.proposalModel = model
         app.proposal = state.proposalModel
+      } else {
+        console.log("Store.proposal - unsetting proposal model")
+        // Ensure proposal model is unset.
+        state.proposalModel = null
+        app.proposal = null
       }
     },
-    // proposal is a string representation of the currently selected proposal
+    // proposal is a string representation of the currently selected proposal - used heavily in code
     set_proposal(state, prop) {
-      console.log("store.proposal set to " + prop)
       if (prop) {
         state.proposal = prop
         sessionStorage.setItem('prop', prop)
@@ -32,8 +39,8 @@ const proposalModule = {
       // Legacy app
       app.prop = state.proposal
     },
+    // Code for the proposal type (mx, xpdf, sm etc.)
     set_proposal_type(state, proposalType) {
-      console.log("store.proposal set type  to " + proposalType)
       state.proposalType = proposalType
       app.type = state.proposalType
     },
@@ -46,21 +53,22 @@ const proposalModule = {
     },      
   },
   actions: {
-    set_proposal({commit, state}, prop) {
+    set_proposal({commit, state, rootState}, prop) {
         return new Promise((resolve, reject) => {
           // Only fetch a new model if this one is different from what we have already
           if (prop == state.proposal) { resolve(); return }
+          // If null reset (e.g. navigated back to home page)
           if (!prop) {
             commit('set_proposal', null)
+            commit('set_proposal_type', rootState.user.defaultType)
             commit('set_proposal_model', null)
             resolve()
             return
           }
           // Otherwise fetch an updated model
-
           // If we don't do this now - the ProposalModel appends the old proposal code onto the request
           commit('set_proposal', prop)
-    
+
           let proposalModel = new Proposal({ PROPOSAL: prop })
   
           proposalModel.fetch({
@@ -116,7 +124,8 @@ const proposalModule = {
       }
       return state.proposal
     },
-    currentProposalType: state => state.proposalType
+    currentProposalType: state => state.proposalType,
+    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null
   }
 }
 

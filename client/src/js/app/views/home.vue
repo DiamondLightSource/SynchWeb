@@ -65,10 +65,9 @@ export default {
     },
     created: function() {
         let self = this
-        // Get visits for this user
-        this.$store.commit('set_proposal', null)
-        // Set proposal type to user default
-        this.$store.commit('set_proposal_type', this.$store.state.user.defaultType)
+        // Reset proposal and associated type/model
+        // We call the action so the store can handle the proposal type and model
+        this.$store.dispatch('set_proposal', null)
         EventBus.$emit('bcChange', [{title: '/', url: '/'}])
 
         if (this.$store.getters.isLoggedIn) {
