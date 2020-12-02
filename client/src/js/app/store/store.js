@@ -2,11 +2,14 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 // VueX modules
+// TODO - adopt vue-enterprise-boiler plate design
 import AuthStore from './modules/store.auth.js'
 import MenuStore from './modules/store.menus.js'
 import ProposalStore from './modules/store.proposal.js'
 import UserStore from './modules/store.user.js'
+import NotificationStore from './modules/store.notifications.js'
 
+// Configuration
 import Options from 'models/options.js'
 import config from 'config.json'
 
@@ -22,6 +25,7 @@ const store = new Vuex.Store({
     menu: MenuStore,
     proposal: ProposalStore,
     user: UserStore,
+    notifications: NotificationStore,
   },
   state: {
     // Flag we use to check if we have already setup options
@@ -29,13 +33,7 @@ const store = new Vuex.Store({
     // Global api prefix
     apiUrl: config.apiurl,
     appUrl: config.appurl,
-    // Proposal / visit info
-    // proposal: '',        // The proposal string (e.g. mx12345)
-    // proposalType: 'mx',  // Type of the proposal or default type for the user
-    // proposalModel: null, // A backbone model for the current proposal
-    // visit: '',
-    // Notifications and events
-    notifications: [],
+
     isLoading: false,
     motd: 'Message of the day',
     help: false, // Global help flag used to denote if we should display inline help on pages
@@ -49,22 +47,7 @@ const store = new Vuex.Store({
         Vue.set(state.models, payload.name, payload.model)
       }
     },
-    // Payload is object with title, message, level attributes.
-    add_notification(state, payload) {
-      console.log("Adding notification " + payload.message)
-      let notification = payload
-      notification.id = Date.now() // Using number of miliseconds since 1970 as uid
 
-      state.notifications.push(notification)
-    },
-    clear_notifications(state) {
-      console.log("Clearing notifications")
-      state.notifications = []
-    },
-    clear_notification(state, id) {
-      console.log("Store Clearing notification for id " + id)
-      state.notifications = state.notifications.filter(notification => notification.id !== id)
-    },
     set_options(state, options) {
       console.log("STORE UPDATING OPTIONS SSO: " + JSON.stringify(options))
 
@@ -100,6 +83,9 @@ const store = new Vuex.Store({
       if (this.state.initialised) return Promise.resolve(true)
 
       console.log("Store.initialise")
+
+      // May want to set initialised true early to avoid clash with router initialisation
+      // this.state.initialised = true
 
       let application = MarionetteApplication.getInstance()
 
@@ -150,9 +136,9 @@ const store = new Vuex.Store({
   getters: {
     sso: state => state.auth.cas_sso,
     sso_url: state => state.auth.cas_url,
-    notifications: state => state.notifications,
-    
   }
 })
 
 export default store
+
+store.dispatch('initialise')
