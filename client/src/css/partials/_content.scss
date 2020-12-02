@@ -46,6 +46,7 @@
         border-radius: 5px;
         color: $content-help-color;
         background: $content-help-background;
+
         
         &.alert {
             background: $content-inactive;
@@ -1990,17 +1991,17 @@ ul.messages {
 
         &.ERROR {
             border: 1px solid #ff0000;
-            background: color(#ff0000 tint(40%));
+            background: color(#ff0000 tint(80%));
         }
 
         &.WARNING {
             border: 1px solid #ffa500;
-            background: color(#ffa500 tint(40%));
+            background: color(#ffa500 tint(80%));
         }
 
         &.INFO {
             border: 1px solid #00ff00;
-            background: color(#00ff00 tint(40%));
+            background: color(#00ff00 tint(80%));
         }
     }
 
