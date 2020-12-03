@@ -1,7 +1,7 @@
 <template>
 
         <div class="marionette-wrapper">
-            <!-- This is the element we pass into the marionette view so it can render here -->
+            <!-- This is the element we attach the marionette view to -->
             <div id="marionette-view" class="content"></div>
         </div>
     
@@ -28,6 +28,7 @@ export default {
     },
     data: function() {
         return {
+            marionetteRegion: null,
             marionetteView: null,
             loaded: false,
         }
@@ -50,6 +51,9 @@ export default {
     created: function() {
         console.log("MarionetteViewWrapper::created " + this.$router.currentRoute.path )
 
+        this.marionetteRegion = new Marionette.Region({
+            el: "#marionette-view"
+        });
         // If we have been passed breadcrumbs, send the update event
         // We will update the breadcrumbs again if the model loads and tags are present
         if (this.breadcrumbs) {
@@ -74,17 +78,18 @@ export default {
         if (this.marionetteView) {
             console.log("MarionetteViewWrapper::beforeDestroy - cleaning up view ")
             this.marionetteView.destroy()
+            this.marionetteRegion.reset()
         }
     },
     methods: {
         // Method to create an instance of the Marionette view
         // Handles the case if the passed mview prop is a Promise or a class
         initialiseView: function() {
+            console.log("MarionetteViewWrapper::initialiseView")
             if (!this.mview) { console.log("MarionetteViewWrapper::initaliseView could not find passed view"); return }
 
             let options = {}
 
-            options = Object.assign(options, {el: '#marionette-view'})
             // Now merge in any passed parameters
             if (this.options) options = Object.assign(options, this.options)
 
@@ -94,13 +99,13 @@ export default {
             // This might be a promise to resolve or a static constructor.
             // Most Marionette views will be lazy loaded from their AMD module definitions until we convert to es2015 exports
             if (this.mview instanceof Promise) {
-                console.log("Marionette View handle lazy loading view..." + this.mview)
+                console.log("Marionette View handle lazy loading view...")
                 this.mview.then((module) => {
                     this.marionetteView = new module.default(options)
                     this.renderView()
                 })
             } else {
-                console.log("Marionette View handle normal view..." + this.mview)
+                console.log("Marionette View handle normal view...")
                 this.marionetteView = new this.mview(options)
                 this.renderView()
             }
@@ -109,8 +114,8 @@ export default {
         renderView: function() {
             // Some views use an onShow method triggered when the view is attached to a region
             // We are not using a region in this template so trigger the event instead
-            this.marionetteView.render()
-            this.marionetteView.triggerMethod('show')
+            console.log("Marionette View attach view to region")
+            this.marionetteRegion.show(this.marionetteView)
         },
 
         //
