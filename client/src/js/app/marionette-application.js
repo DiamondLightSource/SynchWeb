@@ -206,6 +206,13 @@ var MarionetteApplication = (function () {
         application.config = config
         // Set the global app variable for legacy code
         window.app = application
+
+         /*
+        Single Event for window scrolling
+        */
+        $(window).scroll(_.debounce(function() {
+            app.trigger('window:scroll')
+        }, 10))
     }
 
     return {
