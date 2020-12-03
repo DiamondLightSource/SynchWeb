@@ -12,8 +12,8 @@
 </template>
 
 <script>
-// Allow us to map store state values to local computed properties
-import { mapState } from 'vuex'
+// Allow us to map store values to local computed properties
+import { mapGetters } from 'vuex'
 
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
@@ -76,23 +76,17 @@ export default {
             }
         },
         // Combine with local computed properties, spread operator
-        // Allows us to use this.proposal and this.proposalType mapped to vuex state
-        // ...mapState(['proposal.proposal', 'proposal.proposalType'])
-        proposal: function() {
-            return this.$store.getters.currentProposal
-        },
-        proposalType: function() {
-            return this.$store.state.proposal.proposalType
-        },
+        // Allows us to use this.currentProposal mapped to vuex state/getters
+        ...mapGetters(['currentProposal'])
     },
     created: function() {
         console.log("DC View Created")
 
         this.collection = new DCCol(null, {
                         state: { currentPage: this.page ? parseInt(this.page) : 1, pageSize: app.mobile() ? 5 : 15},
-                        queryParams: { visit: this.visit, s: this.search, t: this.type, id: this.id, dcg: this.dcg, PROCESSINGJOBID: this.pjid }
+                        queryParams: { visit: this.visit, s: this.search, t: this.ty, id: this.id, dcg: this.dcg, PROCESSINGJOBID: this.pjid }
                     })
-        this.params = { visit: this.visit, search: this.search, type: this.type, id: this.id, dcg: this.dcg }
+        this.params = { visit: this.visit, search: this.search, type: this.ty, id: this.id, dcg: this.dcg }
     },
     mounted: function() {
         console.log("DC View Mounted")
@@ -157,7 +151,7 @@ export default {
             } else {
                 console.log(this.$options.name + " DC SetModel WAS NOT PASSED VISIT")
                 // Lookup the current proposal data
-                this.model = new Proposal({ PROPOSAL: this.proposal })
+                this.model = new Proposal({ PROPOSAL: this.currentProposal })
                 this.error = 'The specified proposal does not exist'
             }
         },
@@ -167,7 +161,7 @@ export default {
                 this.bc.push({ title: this.model.get('BL') })
                 this.bc.push({ title: this.visit })
             } else {
-                this.bc.push({ title: this.proposal })
+                this.bc.push({ title: this.currentProposal })
             }
         },
         // Set marionette view based on a passed proposal type

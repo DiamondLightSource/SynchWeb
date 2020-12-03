@@ -13,7 +13,7 @@
 
 <script>
 // Allow us to map store state values to local computed properties
-import { mapState } from 'vuex'
+import { mapGetters } from 'vuex'
 
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
@@ -45,7 +45,7 @@ export default {
             }
         },
         // Combine vuex state with local computed properties
-        ...mapState(['proposal.proposal', 'proposal.proposalType'])
+        ...mapGetters(['currentProposal', 'currentProposalType'])
     },
     created: function() {
         this.model = new DataCollection({ ID: this.id })
@@ -77,7 +77,7 @@ export default {
         setProposal: function() {
             this.$store.dispatch('proposal_lookup', { field: 'DATACOLLECTIONID', value: this.id } )
                 .then((val) => {
-                    console.log(this.$options.name + " Proposal Lookup OK - type = " + this.proposalType)
+                    console.log(this.$options.name + " Proposal Lookup OK - type = " + this.currentProposalType)
                 }, (error) => {
                     console.log(this.$options.name + " Error " + error.msg)
                     app.alert({title: 'Error looking up proposal', msg: error.msg})
@@ -98,7 +98,7 @@ export default {
         },
         // Breadcrumbs are determined by the model retrieved from backend
         setBreadcrumbs: function() {
-            this.bc.push({ title: this.proposal+'-'+this.model.get('VN'), url: '/dc/visit/'+this.proposal+'-'+this.model.get('VN') })
+            this.bc.push({ title: this.currentProposal+'-'+this.model.get('VN'), url: '/dc/visit/'+this.currentProposal+'-'+this.model.get('VN') })
             this.bc.push({ title: 'Image Viewer' })
             this.bc.push({ title: this.model.get('FILETEMPLATE') })
         }
