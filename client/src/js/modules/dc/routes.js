@@ -99,19 +99,19 @@ let routes = [
     }),  
   },
   {
-    path: '/dc/map/id/:id([0-9]+)(/ty/)?:ty?(/dt/)?:dt?(/ppl/)?:ppl?',
+    path: '/dc/map/id/:id([0-9]+)(/ty/)?:ty([a-zA-Z0-9_-]+)?(/dt/)?:dt([a-zA-Z0-9_-]+)?(/ppl/)?:ppl([a-zA-Z0-9_-]+)?',
     name: 'dc-mapmodelviewer',
     component: MapModelWrapper,
     props: route => ({
       id: +route.params.id || null,
-      ty: route.params.ty || '',
+      ty: route.params.ty || 'dimple',
       dt: route.params.dt || '',
       ppl: route.params.ppl || '',
     }),
   },
   {
     path: '/dc/view/id/:id',
-    name: 'dc-mapmodelviewer',
+    name: 'dc-imageviewer',
     component: ImageViewWrapper,
     props: route => ({
       id: +route.params.id || null,
@@ -125,97 +125,6 @@ let routes = [
       id: +route.params.id || null,
     }),
   },
-  // {
-  //   path: '/dc/view/id/:id',
-  //   name: 'dc-image-viewer',
-  //   component: MarionetteView,
-  //   props: route => ({
-  //       mview: ImageViewer,
-  //       breadcrumbs: [{ title: 'Data Collections', url: '/dc' }, {title: 'Diffraction Image View for ' + route.params.id}],
-  //       breadcrumb_tags: ['FILETEMPLATE'],
-  //       id: route.params.id || '',
-  //       options: {
-  //         model: new DataCollection({ID: route.params.id})
-  //       }
-  //   }),
-  //   beforeEnter: (to, from, next) => {
-  //     // Call the loading state here because we are finding the proposal based on this contact id
-  //     // Prop lookup sets the proposal and type via set app.cookie method which we mapped to the store
-  //     app.loading()
-
-  //     store.dispatch('proposal_lookup', {field: 'DATACOLLECTIONID', value: to.params.id})
-  //     .then((response) => {
-  //       console.log("Lookup OK Prop = " + response.get('PROP'))
-  //       next()
-  //     }), (error) => {
-  //       console.log("Calling next - Error " + error)
-  //       app.message({ title: 'No such data collection', message: 'The specified data collection doesn\'t exist' })
-  //       next('/')
-  //     }
-  //   }
-  // },
-  // Map Model Viewer
-  // If no ty passed - use dimple as default
-  // {
-  //   path: '/dc/map/id/:id([0-9]+)(/ty/)?:ty?(/dt/)?:dt?(/ppl/)?:ppl?',
-  //   name: 'dc-mapmodelviewer',
-  //   component: MarionetteView,
-  //   props: route => ({
-  //       mview: MapModelViewer,
-  //       id: +route.params.id,
-  //       dt: route.params.dt || '',
-  //       ppl: route.params.ppl || '',
-  //       ty: route.params.ty || 'dimple',
-  //       options: {
-  //         model: new DataCollection({ID: route.params.id}),
-  //         params: { ty: route.params.ty, dt: route.params.dt, ppl: route.params.ppl}
-  //       },
-  //   }),
-  //   beforeEnter: (to, from, next) => {
-  //     // Call the loading state here because we are finding the proposal based on this contact id
-  //     // Prop lookup sets the proposal and type via set app.cookie method which we mapped to the store
-  //     app.loading()
-
-  //     store.dispatch('proposal_lookup', {field: 'DATACOLLECTIONID', value: to.params.id}).then((response) => {
-  //       console.log("Lookup OK Prop = " + response.get('PROP'))
-  //       next()
-  //     }), (error) => {
-  //       console.log("Calling next - Error, no proposal found")
-  //       next('/')
-  //     }
-  //   }
-  // },
-  // {
-  //   path: '/dc/rsv/id/:id([0-9]+)',
-  //   name: 'dc-rsviewer',
-  //   component: MarionetteView,
-  //   props: route => ({
-  //       id: route.params.id || '',
-  //       mview: ReciprocalSpaceViewer,
-  //       breadcrumbs: [
-  //         { title: 'Data Collections', url: '/dc' },
-  //         // { title: app.prop+'-'+dc.get('VN'), url: '/dc/visit/'+app.prop+'-'+dc.get('VN') },
-  //         { title: 'Reciprocal Space Viewer' },
-  //       ],
-  //       breadcrumb_tags: ['FILETEMPLATE'],
-  //       options: {
-  //         model: new DataCollection({ID: route.params.id}),
-  //       }
-  //   }),
-  //   beforeEnter: (to, from, next) => {
-  //     // Call the loading state here because we are finding the proposal based on this contact id
-  //     // Prop lookup sets the proposal and type via set app.cookie method which we mapped to the store
-  //     app.loading()
-
-  //     store.dispatch('proposal_lookup', {field: 'DATACOLLECTIONID', value: to.params.id}).then((response) => {
-  //       console.log("Lookup OK Prop = " + response.get('PROP'))
-  //       next()
-  //     }), (error) => {
-  //       console.log("Calling next - Error, no proposal found")
-  //       next('/notfound')
-  //     }
-  //   }
-  // },
   {
     path: '/dc/summary/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)',
     name: 'dc-summary',
