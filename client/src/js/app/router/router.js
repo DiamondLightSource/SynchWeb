@@ -37,7 +37,6 @@ import StatusRoutes from 'modules/status/routes.js'
 import FaultRoutes from 'modules/fault/routes.js'
 import StatsRoutes from 'modules/stats/routes.js'
 import { resolve } from 'promise'
-import { sortedIndex } from 'underscore'
 
 
 Vue.use(Router)
@@ -131,7 +130,6 @@ router.beforeEach((to, from, next) => {
           // Validate ticket
           store.dispatch('validate', to.query['ticket']).then( () => {
             console.log("Validated ticket...")
-            debugger;
           }).finally(() => {
             next(to.path)
           })
