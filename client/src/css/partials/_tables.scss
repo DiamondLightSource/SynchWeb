@@ -208,32 +208,32 @@ They can be overriden by specific classes below
         }
         
         // Background follows cursor
-        &.hover-row {
-            /* Moved to the top of the file - postcss-extend */
-            @extend %hover_row_container;
-        }
+        // &.hover-row {
+        //     /* Moved to the separate statement postcss-extend */
+        //     @extend %hover_row_container;
+        // }
         
         // Stop last column word wrapping (for buttons)
-        &.no-wrap-last {
-            /* Moved to the top of the file - postcss-extend */
-            @extend %no_wrap_last_container;
-        }
+        // &.no-wrap-last {
+        //     /* Moved to the top of the file - postcss-extend */
+        //     @extend %no_wrap_last_container;
+        // }
     }
     
     // Overflow for small screns
-    &.tw {
-        @extend %overflow_auto_container;
-    }
+    // &.tw {
+    //     @extend %overflow_auto_container;
+    // }
 
     
-    table.imagers, table.inspections, table.subsamples, table.schedules, table.groups, table.proposals,table.dewars, table.ehc, table.proteins.flt, table.samples.flt,table.blended_table, table.integrated, table.projects, table.shipments, table.visits, table.contacts, table.proteins, table.samples, table.peaks, table.containers, table.systems, table.components {
-        @extend %hover_row_container;
-    }
+    // table.imagers, table.inspections, table.subsamples, table.schedules, table.groups, table.proposals,table.dewars, table.ehc, table.proteins.flt, table.samples.flt,table.blended_table, table.integrated, table.projects, table.shipments, table.visits, table.contacts, table.proteins, table.samples, table.peaks, table.containers, table.systems, table.components {
+    //     @extend %hover_row_container;
+    // }
     
-    table.samples, table.dewars, table.visits,
-    table.systems,table.components {
-        @extend %no_wrap_last_container;
-    }
+    // table.samples, table.dewars, table.visits,
+    // table.systems,table.components {
+    //     @extend %no_wrap_last_container;
+    // }
     
     table.faults {
         @media (max-width: $breakpoint-small) {
@@ -374,9 +374,8 @@ They can be overriden by specific classes below
     }
 
     div.dataTables_wrapper {
-        @mixin clearfix;
+        @util clearfix;
     }
-
 
     @media (max-width: $breakpoint-small) {
         div.dataTables_filter {
@@ -386,9 +385,28 @@ They can be overriden by specific classes below
     
 }
 
+.table table.hover-row {
+    @extend %hover_row_container;
+}
 
+.table table.no-wrap-last {
+    @extend %no_wrap_last_container;
+}
 .table.history {
     @extend %overflow_auto_container;
+}
+
+.table.tw {
+    @extend %overflow_auto_container;
+}
+
+.table table.imagers, .table table.inspections, .table table.subsamples, .table table.schedules, .table table.groups, .table table.proposals,.table table.dewars, .table table.ehc, .table table.proteins.flt, .table table.samples.flt,.table table.blended_table, .table table.integrated, .table table.projects, .table table.shipments, .table table.visits, .table table.contacts, .table table.proteins, .table table.samples, .table table.peaks, .table table.containers, .table table.systems, .table table.components {
+    @extend %hover_row_container;
+}
+
+.table table.samples, .table table.dewars, .table table.visits,
+.table table.systems,.table table.components {
+    @extend %no_wrap_last_container;
 }
 
 .history .table {

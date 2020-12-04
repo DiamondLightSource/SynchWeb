@@ -60,10 +60,11 @@
     }
     p.help {
         /*
-            Changed this to extend the full selector
+            May be required to change this to extend the full selector
             If we use postcss-nested before postcss-extend then the selectors will be expanded into a flat list
+            Currently with postcss 8 and extend 1 its working using the relative selector
         */
-        @extend .content p.message;
+        @extend p.message;
         display: none;
     }
 
@@ -347,7 +348,7 @@ div.log {
 
 // Rounded numbered lists
 ol.rounded {
-    @mixin clearfix;
+    @util clearfix;
     counter-reset: li;
     list-style: none;
     *list-style: decimal;
@@ -426,6 +427,7 @@ ol.rounded {
                 width: 43%;
                 width: calc("47.5% - 15px");
                 padding: 1.5% 1%;
+                color: red;
             }
         }
     }
@@ -649,7 +651,7 @@ li:last-child .visit_users {
 /* Moved data collection class to here so it follows the ul definition */
 // Main data collections layout
 .data_collections {
-    @mixin clearfix;
+    @util clearfix;
 }
 
 .data_collection {
@@ -758,12 +760,12 @@ li:last-child .visit_users {
         }*/
         
         > h1 {
+            @util clearfix;
             cursor: pointer;
             background: $content-sub-header-background;
             padding: 8px;
             font-size: 12px;
             margin-top: 2px;
-            @mixin clearfix;
             
             &:hover {
                 background: $content-sub-header-hover-background;
@@ -832,13 +834,12 @@ li:last-child .visit_users {
                 }
                 
                 &.reflow {
+                    @extend .reflow;
                     @media (max-width: $breakpoint-vsmall) {
                         td {
                             padding-left: 50%;
                         }
                     }
-                    
-                    @extend .reflow
                 }
                 
             }
@@ -1191,12 +1192,15 @@ li:last-child .visit_users {
         }
 
     }
-    
-    > ul {
-        @extend .ul;
-    }
+    /* Postcss - not working here - move to separate declaration below */    
+    // > ul {
+    //     @extend .ul;
+    // }
 }
 
+.data_collection > ul {
+    @extend .ul;
+}
 
 .visit_users {
     position: absolute;
@@ -1416,7 +1420,7 @@ h1.status {
 }
 
 div.status {
-    @mixin clearfix;
+    @util clearfix;
     display: none;
 }
 
