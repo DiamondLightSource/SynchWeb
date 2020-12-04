@@ -1,3 +1,20 @@
+%message_template {
+    padding: 1%;
+    margin-bottom: 1%;
+    border-radius: 5px;
+    color: $content-help-color;
+    background: $content-help-background;
+
+    &.alert {
+        background: $content-inactive;
+        color: $body-color;
+    }
+
+    &.notify {
+        background: $content-active;
+        color: $body-color;
+    }
+}
 // Main Content Holder
 .content {
     padding-bottom: 1%;
@@ -41,32 +58,13 @@
     }
 
     p.message {
-        padding: 1%;
-        margin-bottom: 1%;
-        border-radius: 5px;
-        color: $content-help-color;
-        background: $content-help-background;
-
-        
-        &.alert {
-            background: $content-inactive;
-            color: $body-color;
-        }
-        
-        &.notify {
-            background: $content-active;
-            color: $body-color;
-        }
+        @extend %message_template;
     }
-    p.help {
-        /*
-            May be required to change this to extend the full selector
-            If we use postcss-nested before postcss-extend then the selectors will be expanded into a flat list
-            Currently with postcss 8 and extend 1 its working using the relative selector
-        */
-        @extend p.message;
-        display: none;
-    }
+    // p.help {
+    //     // Needed to move this because two extends at the same level did not work with postcss-extend rule!
+    //     @extend %message_template;
+    //     display: none;
+    // }
 
     
     p.inset {
@@ -92,6 +90,14 @@
     }
 }
 
+/*
+Moved here with postcss extend.
+Seems bit arbitrary what works and what doesn't when using with nested
+*/
+.content p.help {
+    @extend %message_template;
+    display: none;
+}
 
 // Block like lists
 .block {
