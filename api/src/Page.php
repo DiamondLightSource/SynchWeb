@@ -131,15 +131,17 @@ class Page
         function _get_type_from_beamline($bl) {
             global $bl_types;
 
-            $bl_type = null;
+            $matching_beam_line_group = null;
 
-            foreach ($bl_types as $tty => $bls) {
-                if (in_array($bl, $bls)) {
-                    $bl_type = $tty;
+            foreach($bl_types as $beam_line_type) {
+                if ($beam_line_type->name == $bl) {
+                    $matching_beam_line_group = $beam_line_type->group;
+              
                     break;
                 }
             }
-            return $bl_type;
+
+            return $matching_beam_line_group;
         }
 
         /**
@@ -152,20 +154,24 @@ class Page
         function _get_beamlines_from_type($ty) {
             global $bl_types;
 
-            $bls = array();
+            $beamlines = array();
 
             // Guard against null value passed in
-            if (!$ty) return $bls;
+            if (!$ty) return $beamlines;
 
             if ($ty == 'all') {
-                foreach($bl_types as $beamlines) {
-                    $bls = array_merge($bls, $beamlines);
+                foreach($bl_types as $beamline) {
+                    array_push($beamlines, $beamline->name);
                 }
-            } else {            
-                if(array_key_exists($ty, $bl_types)) $bls = $bl_types[$ty];
+            } else {
+                $beamlines = array_filter(array_map(function($k) use ($ty) {
+                    if ($k->group == $ty && !$k->archived) {
+                        return $k->name;
+                    }
+                }, $bl_types));
             }
             
-            return $bls;
+            return $beamlines;
         }
 
 
