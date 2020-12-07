@@ -676,7 +676,15 @@ class Vstat extends Page
         // BAG Overview Stats
         function _overview() {
             global $bl_types;
-            $bls = implode("', '", $bl_types[$this->ty]);
+            $beamline_type = $this->ty;
+
+            $beamlines = array_filter(array_map(function($k) use ($beamline_type) {
+                if ($k->group == $beamline_type && !$k->archived) {
+                    return $k->name;
+                }
+            }, $bl_types));
+
+            $bls = implode("', '", $beamlines);
 
             $where = " AND p.proposalcode NOT IN ('cm') AND s.beamlinename in ('$bls')";
             $args = array();
@@ -839,7 +847,15 @@ class Vstat extends Page
         // Histogram of beamline parameters
         function _parameter_histogram() {
             global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $beamline_type = $this->ty;
+
+            $beamlines = array_filter(array_map(function($k) use ($beamline_type) {
+                if ($k->group == $beamline_type && !$k->archived) {
+                    return $k->name;
+                }
+            }, $bl_types));
+
+            $bls = implode('\', \'', $beamlines);
 
             $types = array(
                 'energy' => array('unit' => 'eV', 'st' => 5000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
@@ -933,7 +949,15 @@ class Vstat extends Page
 
         function _dewars_breakdown() {
             global $bl_types;
-            $bls = implode("', '", $bl_types[$this->ty]);
+            $beamline_type = $this->ty;
+
+            $beamlines = array_filter(array_map(function($k) use ($beamline_type) {
+                if ($k->group == $beamline_type && !$k->archived) {
+                    return $k->name;
+                }
+            }, $bl_types));
+
+            $bls = implode("', '", $beamlines);
 
             // $where = " AND p.proposalcode NOT IN ('cm') AND ses.beamlinename in ('$bls')";
             $where = " AND p.proposalcode NOT IN ('cm')";
