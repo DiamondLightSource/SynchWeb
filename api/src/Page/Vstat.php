@@ -675,15 +675,7 @@ class Vstat extends Page
 
         // BAG Overview Stats
         function _overview() {
-            global $bl_types;
-            $beamline_type = $this->ty;
-
-            $beamlines = array_filter(array_map(function($k) use ($beamline_type) {
-                if ($k->group == $beamline_type && !$k->archived) {
-                    return $k->name;
-                }
-            }, $bl_types));
-
+            $beamlines = $this->_get_beamlines_from_type($this->ty);
             $bls = implode("', '", $beamlines);
 
             $where = " AND p.proposalcode NOT IN ('cm') AND s.beamlinename in ('$bls')";
@@ -846,15 +838,7 @@ class Vstat extends Page
 
         // Histogram of beamline parameters
         function _parameter_histogram() {
-            global $bl_types;
-            $beamline_type = $this->ty;
-
-            $beamlines = array_filter(array_map(function($k) use ($beamline_type) {
-                if ($k->group == $beamline_type && !$k->archived) {
-                    return $k->name;
-                }
-            }, $bl_types));
-
+            $beamlines = $this->_get_beamlines_from_type($this->ty);
             $bls = implode('\', \'', $beamlines);
 
             $types = array(
@@ -948,14 +932,7 @@ class Vstat extends Page
 
 
         function _dewars_breakdown() {
-            global $bl_types;
-            $beamline_type = $this->ty;
-
-            $beamlines = array_filter(array_map(function($k) use ($beamline_type) {
-                if ($k->group == $beamline_type && !$k->archived) {
-                    return $k->name;
-                }
-            }, $bl_types));
+            $beamlines = $this->_get_beamlines_from_type($this->ty);
 
             $bls = implode("', '", $beamlines);
 

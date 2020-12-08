@@ -283,22 +283,22 @@
     # - Internal maps a beamline to an api "type", there are currently:
     #     mx, gen, em
     $bl_types = array(
-        (object) array(
+        array(
             'name' => 'i02',
             'group' => 'mx',
             'archived' => True
         ),
-        (object) array(
+        array(
             'name' => 'i03',
             'group' => 'mx',
             'archived' => False
         ),
-        (object) array(
+        array(
             'name' => 'i04',
             'group' => 'mx',
             'archived' => False
         ),
-        (object) array(
+        array(
             'name' => 'i11',
             'group' => 'gen',
             'archived' => False
