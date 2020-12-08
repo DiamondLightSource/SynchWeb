@@ -152,7 +152,7 @@ class Page
         * @param Boolean $archived Default: False. Flag that allows archived beamlines to be included in result
         * @return Array Returns list of beamlines that are part of the beamline type
         */
-        function _get_beamlines_from_type($ty, $archived = false) {
+        function _get_beamlines_from_type($ty, $archived = False) {
             global $bl_types;
         
             $beamlines = array();
