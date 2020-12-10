@@ -256,6 +256,13 @@ module.exports = (env, argv) => ({
       template: 'src/index.html',
       jsonConfig: config,
     }),
+    // Generate main html file in root client dir
+    new HtmlWebpackPlugin({
+      title: 'SynchWeb Webpack',
+      filename: path.resolve(__dirname, 'index.html'),
+      template: 'src/index.html',
+      jsonConfig: config,
+    }),
     // Copy static assets to the assets folder
     // Anything matching in the from path is copied so images/file.png => assets/images/file.png
     // Also copy jquery to assets dir, so we can use it for Dialog popup with log files (see js/views/log.js)
