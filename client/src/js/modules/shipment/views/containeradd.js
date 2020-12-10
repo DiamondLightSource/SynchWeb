@@ -454,7 +454,9 @@ define(['backbone',
             
             this.ui.name.val(this.cache.get('data').title)
             
-            app.alert({ message: 'Container contents last saved: '+this.cache.get('data').time, persist: 'saved', className: 'message notify', scrollTo: false })
+            // Changed this to be an info message not alert.
+            // Also the container is not really saved but cached
+            app.message({ message: 'Container contents last cached: '+this.cache.get('data').time, persist: 'saved', className: 'message notify', scrollTo: false })
             console.log('loaded cache', this.cache)
         },
         
