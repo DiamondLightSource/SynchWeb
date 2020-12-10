@@ -7,10 +7,12 @@ const ContactList = import(/* webpackChunkName: "group-contacts" */  'modules/co
 const ContactView = import(/* webpackChunkName: "group-contacts" */ 'modules/contact/views/viewcontact.js')
 const AddContact = import(/* webpackChunkName: "group-contacts" */ 'modules/contact/views/addcontact.js')
 const ViewContact = import(/* webpackChunkName: "group-contacts" */ 'modules/contact/views/viewcontact.js')
+const ViewUser = import(/* webpackChunkName: "group-contacts" */ 'modules/contact/views/viewuser')
 
 import Contacts from 'collections/labcontacts.js'
 import Contact from 'models/labcontact.js'
 import ProposalLookup from 'models/proplookup.js'
+import User from 'models/user.js'
 
 import MarionetteApplication from 'app/marionette-application.js'
 
@@ -83,19 +85,21 @@ const routes = [
       {
         path: 'add',
         component: MarionetteView,
-        props: { 
+        props: {
           mview: AddContact,
           breadcrumbs: [bc, {title: 'Add Contact' }]
         }
       },
+      // Edit basic user contact details (email, phone etc.)
+      // If no id set, edit the current logged in user
       {
-        path: 'user(/:pid)',
+        path: 'user/:pid([0-9]+)?',
         component: MarionetteView,
-        props: route => ({ 
-          mview: ViewContact,
+        props: route => ({
+          mview: ViewUser,
           breadcrumbs: [bc, { title: 'View User' }],
           options: {
-            model: new User({PERSONID: route.params.id ? route.params.id : application.personid})
+            model: new User({PERSONID: route.params.pid ? +route.params.pid : application.personid})
           },
         }),
       },
