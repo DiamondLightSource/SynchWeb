@@ -7,20 +7,18 @@
         <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isLoggedIn" to="/" v-on:click.native="logout"><span class="fa fa-2x fa-sign-out"/><p class="tw-hidden md:tw-inline"> Logout </p></router-link>
         <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-else to="/login" @click.prevent="login"><span class="fa fa-2x fa-sign-in"/> <p class="tw-hidden md:tw-inline"> Login </p></router-link>
       </div>
-      <div v-if="isLoggedIn && isStaff" class="tw-flex">
-        <div v-if="isStaff" class="tw-flex">
-          <!-- Only show those links with correct permission -->
-          <router-link v-for="(item, index) in validStaffMenus"
-            :key="index" 
-            class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" 
-            :to="item.link | link"
-            :alt="item.name">
-            <div class="tw-flex tw-flex-row tw-items-center">
-              <i class="fa fa-2x" v-bind:class="item.icon"/>
-              <p class="tw-text-xs tw-mx-1 tw-hidden md:tw-inline">{{item.name}}</p>
-            </div>
-            </router-link>
-        </div>
+      <div v-if="isStaff" class="tw-flex">
+        <!-- Only show those links with correct permission -->
+        <router-link v-for="(item, index) in validStaffMenus"
+          :key="index"
+          class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color"
+          :to="item.link | link"
+          :alt="item.name">
+          <div class="tw-flex tw-flex-row tw-items-center">
+            <i class="fa fa-2x" v-bind:class="item.icon"/>
+            <p class="tw-text-xs tw-mx-1 tw-hidden md:tw-inline">{{item.name}}</p>
+          </div>
+          </router-link>
       </div>
     </div>
 </template>
