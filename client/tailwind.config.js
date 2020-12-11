@@ -64,8 +64,8 @@ module.exports = {
         'sidebar-mobile-hover-background': 'rgb(105,105,105)',
 // Header
         'header-background': '#2c2c2c',
-        'header-color': '#666666',
-        'header-hover-color': '#cdcdcd',
+        'header-color': '#aaaaaa',
+        'header-hover-color': '#ffffff',
 // Header Menu
         'header-menu-color': '#dddddd',
         'header-menu-hover': '#ffffff',
