@@ -82,7 +82,8 @@ const user = {
   },
   getters: {
     isStaff: state => state.isStaff,
-    permissions: state => state.permissions || []
+    permissions: state => state.permissions || [],
+    hasPermission: (state) => (permission) => state.permissions.indexOf(permission) < 0 ? false : true
   }
 }
 

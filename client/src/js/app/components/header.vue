@@ -9,8 +9,8 @@
       </div>
       <div v-if="isLoggedIn && isStaff" class="tw-flex">
         <div v-if="isStaff" class="tw-flex">
-          <!-- Extend this to selectively show those with correct permission -->
-          <router-link v-for="(item, index) in staff_menus" 
+          <!-- Only show those links with correct permission -->
+          <router-link v-for="(item, index) in validStaffMenus"
             :key="index" 
             class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" 
             :to="item.link | link"
@@ -31,6 +31,7 @@ import EventBus from './utils/event-bus.js'
 export default {
     name: 'Header',
     props: {
+      // Array of menu items: { name, link, icon, permission }
       'staff_menus' : Array
     },
     data: function() {
@@ -43,9 +44,17 @@ export default {
         isLoggedIn : function(){ return this.$store.getters.isLoggedIn},
         isStaff : function(){ return this.$store.getters.isStaff},
         currentProposal : function(){ return this.$store.getters.currentProposal},
-        loginUrl: function() {
-          return this.$store.sso ? this.$store.sso_url + '/cas/login?service=http://192.168.33.10:9000/current' : '/login'
+        ssoUrl: function() {
+          return this.$store.sso_url + '/cas/login?service='+encodeURIComponent(window.location.href)
         },
+        validStaffMenus: function() {
+          // filter the list of staff menus based on their permissions
+          let menus = this.staff_menus.filter( item => {
+            if (!item.permission) return item
+            else return (this.$store.getters.hasPermission(item.permission))
+          }, this)
+          return menus
+        }
     },
     methods: {
       logout: function () {
@@ -56,7 +65,7 @@ export default {
         })
       },
       login: function() {
-        if (this.$router.sso) this.$router.replace(this.loginUrl)
+        if (this.$store.sso) this.$router.replace(this.ssoUrl)
         else this.$router.push('/login')
       },
       showSidebar: function() {
