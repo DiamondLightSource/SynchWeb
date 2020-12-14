@@ -15,9 +15,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     className: 'content',
     template: Template,
     regions: { 'wrap': '.wrapper', type: '.type' },
-    // ui: {
-    //   add: 'a.add',
-    // },
+    ui: { toggleUAS: '.uas' },
 
     clickableRow: ClickableRow,
     showFilter: true,

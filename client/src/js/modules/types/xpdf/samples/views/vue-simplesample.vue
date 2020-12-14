@@ -21,7 +21,7 @@
                                 <span v-if="fileValid" style="color:green; font-size:medium">File OK</span>
                                 <button type="button" onclick="window.open('/assets/files/simple_sample_csv_template.csv');return false">Download CSV Template</button>
                             </span>
-                            <p>CSV files must contain 4 comma separated columns with the following mandatory headers on the first row: Sample Name,Composition,Density,Packing Fraction</p>
+                            <p>CSV files must contain 4 comma separated columns with the following mandatory headers on the first row: Acronym,Composition,Density,Packing Fraction</p>
                             <p>An optional column is: Comments</p>
                         </li>
                     </ul>
@@ -35,8 +35,15 @@
                         <li>
                             <label>Name
                             <span class="small">Name of the sample</span></label>
-                            <span class="name"><input type="text" name="name" v-model="name" v-bind:class="{ferror: errors.has('name')}" v-validate="'required'" /></span>
+                            <span class="name"><input type="text" name="name" v-model="name" v-bind:class="{ferror: errors.has('name')}" v-validate="'required'" :disabled="proteinid" /></span>
                             <span v-if="errors.has('name')" class="errormessage ferror">{{ errors.first('name') }}</span>
+                        </li>
+
+                        <li>
+                            <label>Acronym
+                            <span class="small">Short form name for sample (must be unique!)</span></label>
+                            <span class="name"><input type="text" name="acronym" v-model="acronym" v-bind:class="{ferror: errors.has('acronym')}" v-validate="'required'" /></span>
+                            <span v-if="errors.has('acronym')" class="errormessage ferror">{{ errors.first('acronym') }}</span>
                         </li>
 
                         <li>
@@ -78,56 +85,52 @@
                         <span><input type="text" name="expTime" v-model="expTime" v-bind:class="{ferror: errors.has('expTime')}" v-validate="'required|min_value:0'"/></span>
                         <span v-if="errors.has('expTime')" class="errormessage ferror">{{ errors.first('expTime') }}</span>
                     </li>
-                    
+
                     <li>
                         <span>
                             <label>Containerless?</label>
-                            <input type="checkbox" v-model="containerless" value="true" v-on:change="toggleSelectEnabled()"/><br />
-                            <select id="containerSelect" name="type" style="width: 400px" v-model="type" v-on:change="getCapillaryInfo('density')" v-validate="'required'">
-                                <option v-if="!hasExistingCapillaries" disabled value="">Container*</option>
-                                <option v-for="container in containers">{{ container }}</option>
-                            </select>
-                            <span v-if="errors.has('type')" class="errormessage ferror">{{ errors.first('type') }}</span>
+                            <input type="checkbox" v-model="containerless" /><br />
                         </span>
                     </li>
 
                     <li>
-                        <span>
-                            <select style="width: 400px" title="Not currently supported" disabled>
-                                <option>ERA* !NOT CURRENTLY SUPPORTED!</option>
-                            </select>
-                        </span>
+                        <label>Container
+                                <span class="small">The capillary or container that should be associated with this sample</span>
+                        </label>
+                        <select id="containerSelect" name="type" style="width: 400px" v-model="type" v-on:change="getCapillaryInfo('density')" v-validate="'required'" :disabled="containerless">
+                            <option v-if="!hasExistingCapillaries" disabled value="">Container*</option>
+                            <option v-for="container in containers">{{ container }}</option>
+                        </select>
+                        <span v-if="errors.has('type')" class="errormessage ferror">{{ errors.first('type') }}</span>
                     </li>
-
-                    <button type="button" v-on:click="showCifFileDialog()">Upload CIF</button> 
-                    <div v-show="showUploadDialog">
-                        <ul>
-                            <li>
-                                <label>Type:</label>
-                                <span>
-                                    <select name="type">
-                                        <option value="pdb_file">File</option>
-                                    </select>
-                                </span>
-                            </li>
-                            
-                            <li class="ty pdb_file">
-                                <label>File:</label>
-                                <span class="file">
-                                    <input type="file" name="pdb_file[]" v-on:change="setCifFile($event)" multiple/>
-                                </span>
-                            
-                            </li>
-                        </ul>
-                        <div class="progress"></div>
-                    </div>
-                    <p>Add a cif file to this sample to enable downstream processing of your data</p>
                 </ul>
-                
-                <div style="text-align:center">
-                    <button type="button" class="button submit" name="cancel" v-on:click="closeDialog()"><i class="fa"></i>Cancel</button>
-                    <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Sample</button>
+
+                <button type="button" v-on:click="showCifFileDialog()">Upload CIF</button>
+                <div v-show="showUploadDialog">
+                    <ul>
+                        <li>
+                            <label>Type:</label>
+                            <span>
+                                <select name="type">
+                                    <option value="pdb_file">File</option>
+                                </select>
+                            </span>
+                        </li>
+
+                        <li class="ty pdb_file">
+                            <label>File:</label>
+                            <span class="file">
+                                <input type="file" name="pdb_file[]" v-on:change="setCifFile($event)" multiple/>
+                            </span>
+                        </li>
+                    </ul>
+                    <div class="progress"></div>
                 </div>
+                <p>Add a cif file to this sample to enable downstream processing of your data</p>
+
+                <br />
+
+                <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Sample</button>
 
             </div>
 
@@ -156,8 +159,8 @@
     const csvConfig = {
         headers: [
             {
-                name: 'Sample Name',
-                inputName: 'sampleName',
+                name: 'Acronym',
+                inputName: 'acronym',
                 required: true,
                 requiredError,
                 headerError
@@ -241,6 +244,7 @@
                 type: '',
                 capacity: 25,
                 name: '',
+                acronym: null,
                 density: '',
                 fraction: null,
                 containers: null,
@@ -252,19 +256,23 @@
                 hasExistingCapillaries: false,
                 defaultDewarId: null,
                 expTime: 600,
-                fileUpload: true,
+                fileUpload: false,
                 fileValid: false,
                 csvFile: null,
                 csvData: [],
                 csvErrors: [],
-                commaInComments: false
+                commaInComments: false,
+                duplicateAcronym: false,
+                duplicateAcronymRows: [],
+                proteinid: null,
+                externalid: null,
             }
         },
 
         created: function(){
             // async:false probably not the best way (locks UI thread) but it seems to work well
             let existingGroups = new SampleGroups().fetch({async:false})
-            
+
             let self = this
 
             var groups = JSON.parse(existingGroups.responseText)
@@ -314,6 +322,16 @@
                     app.alert({ title: 'Error', message: 'The default dewar for this visit could not be created (no session-0?)' })
                 },
             })
+
+            // We should have arrived with an existing Phase to base the new simple samples on
+            // pre-populate fields with useful information
+            var protein = this.$getOption('model')
+            this.name = protein.get('NAME')
+            this.acronym = protein.get('ACRONYM')
+            this.seq = protein.get('SEQUENCE')
+            this.density = protein.get('DENSITY')
+            this.proteinid = protein.get('PROTEINID')
+            this.externalid = protein.get('EXTERNALID')
         },
 
         methods: {
@@ -355,12 +373,15 @@
                         return;
 
                     console.log(item)
+                    var shortName = ''
 
                     if(self.type.endsWith('_CP') || self.type.endsWith('_Capillary'))
                         self.existingCapillaryID = self.type.substring(0, self.type.indexOf(':'))
+                    else
+                        shortName = '_' + self.capillaries.find(cap => cap.name == self.type).short_name
                     
                     let capillaryPhase = new Phase({
-                        NAME: item.sampleName + '_CPM',
+                        NAME: self.name + '_CPM',
                         ACRONYM: 'xpdfCapillary'+(new Date().getTime().toString()+'_'+index),
                         DENSITY: self.getCapillaryInfo('density') != null ? self.getCapillaryInfo('density') : null,
                         SEQUENCE: self.getCapillaryInfo('sequence') != null ? self.getCapillaryInfo('sequence') : null,
@@ -369,8 +390,7 @@
 
                     let capillaryCrystal = new Crystal({
                         CRYSTALID: self.existingCapillaryID,
-                        NAME: item.sampleName + '_CP',
-                        COMMENTS: item.comments,
+                        NAME: self.name + shortName + '_CP',
                         THEORETICALDENSITY: self.getCapillaryInfo('density') != null ? self.getCapillaryInfo('density') : null,
                         ABUNDANCE: 1,
                         CONTAINERLESS: self.containerless,
@@ -381,15 +401,16 @@
                     })
 
                     let phase = new Phase({
-                        NAME: item.sampleName,
-                        ACRONYM: 'xpdfPhase'+(new Date().getTime().toString())+'_'+index,
+                        NAME: self.name,
+                        ACRONYM: item.acronym,
                         DENSITY: item.density,
                         MOLECULARMASS: phaseCompositor.molecularMassFromComposition(item.composition),
-                        SEQUENCE: item.composition
+                        SEQUENCE: item.composition,
+                        EXTERNALID: self.externalid
                     })
 
                     let crystal = new Crystal({
-                        NAME: item.sampleName,
+                        NAME: self.name,
                         COMMENTS: item.comments,
                         THEORETICALDENSITY: item.density,
                         ABUNDANCE: 1
@@ -430,9 +451,12 @@
             prepareSimpleSample: function(){
 
                 this.isLoading = true
+                var shortName = ''
 
                 if(this.type.endsWith('_CP') || this.type.endsWith('_Capillary'))
                     this.existingCapillaryID = this.type.substring(0, this.type.indexOf(':'))
+                else
+                    shortName = '_' + this.capillaries.find(cap => cap.name == this.type).short_name
 
                 let capillaryPhase = new Phase({
                     NAME: this.name + '_CPM',
@@ -444,8 +468,7 @@
 
                 let capillaryCrystal = new Crystal({
                     CRYSTALID: this.existingCapillaryID,
-                    NAME: this.name + '_CP',
-                    COMMENTS: this.comments,
+                    NAME: this.name + shortName + '_CP',
                     THEORETICALDENSITY: this.getCapillaryInfo('density') != null ? this.getCapillaryInfo('density') : null,
                     ABUNDANCE: 1,
                     CONTAINERLESS: this.containerless,
@@ -457,10 +480,11 @@
 
                 let phase = new Phase({
                     NAME: this.name,
-                    ACRONYM: 'xpdfPhase'+(new Date().getTime().toString()),
+                    ACRONYM: this.acronym != null ? this.acronym : 'xpdfPhase'+(new Date().getTime().toString()),
                     DENSITY: this.density,
                     MOLECULARMASS: phaseCompositor.molecularMassFromComposition(this.seq),
-                    SEQUENCE: this.seq
+                    SEQUENCE: this.seq,
+                    EXTERNALID: this.externalid,
                 })
 
                 let crystal = new Crystal({
@@ -508,13 +532,14 @@
                 let self = this
 
                 models.save({}, {
-                    success: function(){
-                        app.triggerMethod('sample:reloadSampleTable')
+                    success: function(model, response){
                         app.alert({className: 'message notify', message: "Successfully added sample and relevant capillary data."})
                         self.isLoading = false
-                        if (app.dialog.currentView) 
-                            app.dialog.currentView.closeDialog()
-                        
+                        if(self.fileUpload){
+                            app.trigger('proteins:show')
+                        } else {
+                            app.trigger('phases:view', response.sample_1.PHASEID)
+                        }
                     },
                     error: function(model, response, options){
                         let alertMessage = "Failed to add Simple Sample information"
@@ -527,8 +552,6 @@
 
                         app.alert({message: alertMessage})
                         self.isLoading = false
-                        if (app.dialog.currentView) 
-                            app.dialog.currentView.closeDialog()
                     }
                 })
             },
@@ -554,11 +577,14 @@
             },
             
             setCSVFile: function(event){
+                this.csvData = []
+                this.csvErrors = []
+                this.duplicateAcronym = false
+                this.duplicateAcronymRows = []
+
                 if(event.target.files.length === 0){
                     this.fileValid = false
                     this.csvFile = null
-                    this.csvData = []
-                    this.csvErrors = []
                     return
                 }
 
@@ -581,10 +607,16 @@
                             if(self.csvData.length === 1 && self.csvErrors.length === 0){
                                 self.csvErrors.push("Only headers have been submitted, please add some sample information")
                             }
+
+                            if(self.duplicateAcronym)
+                                self.csvErrors = self.csvErrors.concat(self.duplicateAcronymRows)
+
                             if(self.csvErrors.length === 0)
                                 self.fileValid = true
-                            else
+                            else {
                                 self.fileValid = false
+                                event.target.value = ''
+                            }
 
                             console.log(csvData.data)
                             console.log(csvData.inValidMessages)
@@ -613,6 +645,38 @@
                         }
                     })
 
+                    // Display duplicate acronyms and the row they are on (only in file duplicates, not against database)
+                    // Hopefully this issue gets implemented then we can remove all this. https://github.com/shystruk/csv-file-validator/issues/20
+                    var acronyms = []
+                    var acronymIndex = 5
+
+                    for(var i=0; i<newLineSplit.length; i++){
+                        var cells = newLineSplit[i].split(',')
+
+                        for(var j=0; j<cells.length; j++){
+                            // if first row check which column is the Acronym
+                            if(i==0){
+                                if(cells[j] == 'Acronym'){
+                                    acronymIndex = j
+                                    break
+                                }
+                            }
+                            // ignore any non acronym columns
+                            if(j!=acronymIndex) break
+
+                            for(var k=0; k < acronyms.length; k++){
+                                if(acronyms[k] == cells[j]){
+                                    var currentRow = i
+                                    self.duplicateAcronym = true
+                                    self.duplicateAcronymRows.push(cells[j] + ' is a duplicate acronym on row ' + ++currentRow)
+                                    break
+                                }
+                            }
+
+                            acronyms[i] = cells[acronymIndex]
+                        }
+                    }
+
                     // Remove all leading and trailing white space
                     var split = e.target.result.split(',')
                     var trimmed = ''
@@ -628,14 +692,6 @@
                 }
                 reader.readAsText(this.csvFile)
             },
-
-            closeDialog: function(){
-                app.dialog.currentView.closeDialog()
-            },
-
-            toggleSelectEnabled: function(){
-                this.containerless ? document.getElementById('containerSelect').disabled = true : document.getElementById('containerSelect').disabled = false;
-            }
         }
     }
 </script>
