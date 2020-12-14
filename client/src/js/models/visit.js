@@ -42,6 +42,10 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
             required: false,
             pattern: 'wwsdash',
         },
+        VISITNUMBER: {
+            required: false,
+            pattern: 'number',
+        },
     },
       
     addDate: function() {
