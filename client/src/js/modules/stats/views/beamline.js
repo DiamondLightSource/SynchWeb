@@ -74,14 +74,11 @@ define(['marionette',
 
         },
 
-        popuateRuns: function() {
+        populateRuns: function() {
             this.ui.run.html(this.runs.opts())
 
-            var last
-            if (this.getOption('params')) {
-                var p = this.getOption('params')
-                if (p.run) last = p.run
-            } else last = this.runs.first().get('RUNID')
+            var params = this.getOption('params')
+            var last = params.run ? params.run : this.runs.first().get('RUNID')
 
             this.ui.run.val(last)
             this.changeRun()
@@ -152,7 +149,7 @@ define(['marionette',
 
         onRender: function() {
             this.first = true
-            $.when(this.ready).done(this.popuateRuns.bind(this))
+            $.when(this.ready).done(this.populateRuns.bind(this))
         },
 
         
