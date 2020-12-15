@@ -35,7 +35,7 @@ const store = new Vuex.Store({
     appUrl: config.appurl,
 
     isLoading: false,
-    motd: 'Message of the day',
+    motd: '',
     help: false, // Global help flag used to denote if we should display inline help on pages
     models: {}
   },
