@@ -86,7 +86,7 @@ export default {
                         state: { currentPage: this.page ? parseInt(this.page) : 1, pageSize: app.mobile() ? 5 : 15},
                         queryParams: { visit: this.visit, s: this.search, t: this.ty, id: this.id, dcg: this.dcg, PROCESSINGJOBID: this.pjid }
                     })
-        this.params = { visit: this.visit, search: this.search, type: this.ty, id: this.id, dcg: this.dcg }
+        this.params = { visit: this.visit, search: this.search, type: this.ty, id: this.id, dcg: this.dcg, pjid: this.pjid }
     },
     mounted: function() {
         console.log("DC View Mounted")
