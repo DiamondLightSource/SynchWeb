@@ -1,6 +1,6 @@
 <template>
     <div id="vue-login" class="content">
-        <p class="tw-m-4 tw-p-4 tw-text-xl md:tw-text-4xl tw-text-center tw-mx-auto tw-border-b tw-border-gray-500">SynchWeb Experiment Information Management</p>
+        <hero-title />
 
         <h1>Login</h1>
         <p v-if="sso">Redirect to Single Sign On</p>
@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import Hero from 'app/components/herotitle.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 
 import Vue from 'vue'
@@ -38,6 +39,9 @@ Vue.use(VeeValidate)
 
 export default {
     name: 'Login',
+    components: {
+        'hero-title': Hero,
+    },
     props: [
         'redirect' // For future if we need to handle cas authentication and multiple redirects
     ],
