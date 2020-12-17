@@ -1,7 +1,6 @@
 import MarionetteApplication from 'app/marionette-application.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import Page from 'app/layouts/page.vue'
-import Debug from 'app/views/debug.vue'
 
 import store from 'app/store/store.js'
 
@@ -9,7 +8,6 @@ import Backbone from 'backbone'
 
 // Models and collections are imported here as normal
 // We need to be able to create new instances of them for lookups etc.
-import ProposalLookup from 'models/proplookup.js'
 import Shipments from 'collections/shipments.js'
 import Shipment from 'models/shipment.js'
 
@@ -17,19 +15,17 @@ import Containers from 'collections/containers.js'
 import ContainerRegistry from 'modules/shipment/models/containerregistry'
 import ContainersRegistry  from 'modules/shipment/collections/containerregistry'
 
-
 import RegisteredDewar from 'modules/shipment/models/dewarregistry'
 import DewarRegistry from 'modules/shipment/collections/dewarregistry'
+import Dewar from 'models/dewar.js'
 
+// Marionette View can deal with being passed a promise or a function
 const DewarRegView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/dewarreg')
 const RegDewarView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/regdewar')
-
 // RegDewarAddView was referenced in controller but not in old router?!
 // const RegDewarAddView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/regdewaradd')
 const DewarRegistryView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/dewarregistry')
 
-
-// Marionette View can deal with being passed a promise or a function
 const ShipmentsView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/shipments')
 const ShipmentView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/shipment')
 const ShipmentAddView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/shipmentadd')
@@ -37,6 +33,8 @@ const CreateAWBView = import(/* webpackChunkName: "group-shipment" */ 'modules/s
 const RebookPickupView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/rebookpickup')
 const ManifestView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/manifest')
 const DewarStats = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/dewarstats')
+const DispatchView = import(/*webpackChunkName: "group-shipment" */ 'modules/shipment/views/dispatch')
+const TransferView = import(/*webpackChunkName: "group-shipment" */ 'modules/shipment/views/transfer')
 
 // In future may want to move these into wrapper components 
 // Similar approach was used for samples with a samples-map to determine the correct view
@@ -89,9 +87,9 @@ let shipmentModel = {}
 // Dewar model used for dispatch
 let dewarModel = {}
 
-function lookupShipment(params) {
+function lookupShipment(shippingId) {
   return new Promise((resolve, reject) => {
-      shipmentModel = new Shipment({ SHIPPINGID: params.sid })
+      shipmentModel = new Shipment({ SHIPPINGID: shippingId })
 
       shipmentModel.fetch({
           // If OK trigger next 
@@ -105,39 +103,39 @@ function lookupShipment(params) {
       })    
   })
 }
-
-function lookupDefaultShipment(params) {
+// Shipment default returns a dewar id
+function lookupDefaultShipment(visit) {
   return new Promise((resolve, reject) => {
 
     Backbone.ajax({
       url: app.apiurl+'/shipment/dewars/default',
-      data: { visit: params.visit },
+      data: { visit: visit },
       
-      success: function(did) {
-        resolve(did)
+      success: function(dewarId) {
+        resolve(dewarId)
       },
       error: function() {
-        reject()
+        reject({msg: "Default Shipment lookup failed "})
       },
     })
   })
 }
 
-// Dewar dispatch uses dewar option which we want to retrieve before rendering view
-function lookupDewar(params) {
+// Dewar dispatch uses "dewar" as its model, which we want to retrieve before rendering view
+function lookupDewar(dewarId) {
   return new Promise((resolve, reject) => {
-      dewarModel = new Dewar({ DEWARID: params.did })
+    dewarModel = new Dewar({ DEWARID: dewarId })
 
-      dewarModel.fetch({
-          // If OK trigger next 
-          success: function(model) {
-            resolve(model)
-          },
-          // Original controller had no error condition...
-          error: function() {
-            reject({msg: 'The specified dewar could not be found'})
-          }
-      })    
+    dewarModel.fetch({
+        // If OK trigger next
+        success: function(model) {
+          resolve(model)
+        },
+        // Original controller had no error condition...
+        error: function() {
+          reject({msg: 'The specified dewar could not be found'})
+        }
+    })
   })
 }
 
@@ -225,18 +223,6 @@ const routes = [
               console.log("Calling next - Error, no proposal found")
               next('/notfound')
             })
-          // var lookup = new ProposalLookup({ field: 'SHIPPINGID', value: to.params.sid })
-          // lookup.find({
-          //   // If OK trigger next 
-          //   success: function() {
-          //     console.log("Calling next - Success. model will be prefetched in marionette view")
-          //     next()
-          //   },
-          //   error: function() {
-          //     console.log("Calling next - Error, no proposal found")
-          //     next('/notfound')
-          //   },
-          // })
         }
       },
       // Create Airway Bill
@@ -257,7 +243,7 @@ const routes = [
             // Start the loading animation
             app.loading()
 
-            lookupShipment(to.params).then((response) => {
+            lookupShipment(to.params.sid).then((response) => {
                 console.log("Lookup Model OK - " + JSON.stringify(response))
                 next()
             }, (error) => { 
@@ -286,7 +272,7 @@ const routes = [
             // Start the loading animation
             app.loading()
 
-            lookupShipment(to.params).then((response) => {
+            lookupShipment(to.params.sid).then((response) => {
                 // Response is the backbone model. Could use shipmentModel instead
                 // Only continue the navigation if we have a valid flight code
                 if (response.get('DELIVERYAGENT_FLIGHTCODE')) {
@@ -371,7 +357,7 @@ const routes = [
     name: 'container-add-visit',
     component: Page,
     beforeEnter: (to, from, next) => {
-      lookupDefaultShipment(to.params).then( (did) => {
+      lookupDefaultShipment(to.params.visit).then( (did) => {
         next('/containers/add/did/' + did)
       }, () => {
         app.message({ title: 'Error', message: 'The default dewar for this visit could not be created' })
@@ -459,8 +445,7 @@ const routes = [
       app.loading()
 
       const lookupProposal = store.dispatch('proposal_lookup', { field: 'DEWARID', value: +to.params.did } )
-
-      const lookupDewarModel = lookupDewar(to.params)
+      const lookupDewarModel = lookupDewar(to.params.did)
 
       Promise.all([lookupProposal, lookupDewarModel]).then( (values) => {
         console.log("Proposal and Dewar lookup ok : " + JSON.stringify(values))
@@ -478,7 +463,7 @@ const routes = [
     path: '/dewars/transfer/:did([0-9]+)',
     component: MarionetteView,
     props: route => ({
-      mview: DispatchView,
+      mview: TransferView,
       breadcrumbs: [bc, { title: 'Transfer Dewar' }],
       breadcrumb_tags: ['CODE'],
       options: {
@@ -491,7 +476,7 @@ const routes = [
 
       const lookupProposal = store.dispatch('proposal_lookup', { field: 'DEWARID', value: +to.params.did } )
 
-      const lookupDewarModel = lookupDewar(to.params)
+      const lookupDewarModel = lookupDewar(to.params.did)
 
       Promise.all([lookupProposal, lookupDewarModel]).then( (values) => {
         console.log("Proposal and Dewar lookup ok : " + JSON.stringify(values))
@@ -534,7 +519,6 @@ const routes = [
       options: {
         model: new RegisteredDewar({ FACILITYCODE: route.params.fc })
       }
-
     })
   },
   { 
