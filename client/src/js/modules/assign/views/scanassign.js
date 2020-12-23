@@ -2,16 +2,21 @@ define(['marionette', 'backbone',
     'views/pages',
     'collections/containers',
     'modules/assign/collections/pucknames',
+    'modules/shipment/models/containerregistry',
     'utils',
     'templates/assign/scanassign.html',
+    'backbone-validation'
     ], function(Marionette,
         Backbone,
         Pages,
         Containers,
         PuckNames,
+        ContainerRegistry,
         utils,
         template) {
             
+    var ValidatedContainerRegistry = ContainerRegistry.extend({})
+    _.extend(ValidatedContainerRegistry.prototype, Backbone.Validation.mixin);
     
     var ContainerView = Marionette.CompositeView.extend({
         template: _.template('<span class="r"><a class="button button-notext" title="Click to view container contents" href="/containers/cid/<%-CONTAINERID%>"><i class="fa fa-search"></i> <span>View Container</span></a></span><h1><%-PROP%>: <%-NAME%></h1>'),
@@ -85,9 +90,18 @@ define(['marionette', 'backbone',
         },
 
         findContainer: function() {
-            if (this.ui.barcode.val().trim()) {
+            if (this.ui.barcode.val() && this.validate()) {
                 this.containers.fetch().done(this.assignContainer.bind(this))
             }
+        },
+
+        validate: function() { 
+            var error = this.registryModel.preValidate('BARCODE', this.ui.barcode.val())
+
+            if (error) this.ui.barcode.addClass('ferror').removeClass('fvalid')
+            else this.ui.barcode.removeClass('ferror').addClass('fvalid')
+
+            return error ? false : true
         },
 
         assignContainer: function() {
@@ -145,6 +159,8 @@ define(['marionette', 'backbone',
             this.containers = new Containers()
             this.containers.queryParams.all = 1
             this.containers.queryParams.REGISTRY = this.getBarcode.bind(this)
+
+            this.registryModel = new ValidatedContainerRegistry()
         },
 
         getNameModel: function() {
