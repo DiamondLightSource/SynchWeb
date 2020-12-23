@@ -51,6 +51,7 @@ TypeParam:
     - saxs
     - sm
     - gen
+
 VisitParam:
   name: visit
   type: string
@@ -156,6 +157,39 @@ ImplicitParam:
   type: number
   enum:
     - 1
+
+SampleVisitParam:
+  name: visit
+  type: string
+  in: query
+  pattern: '\w+\d+-\d+'
+  description: Returns samples in sample changer for current visit. Containers must be assigned
+
+SampleStatusParam:
+  name: ty
+  in: query
+  type: string
+  required: true
+  description: Filter by sample status. R = Robot loaded, SC = Screened, AI = Auto indexed, DC = Data collected, AP = Auto processed
+  enum:
+    - R
+    - SC
+    - AI
+    - DC
+    - AP
+
+SampleGroupIDParam:
+  name: BLSAMPLEGROUPID
+  in: query
+  type: number
+  description: Sample group id  
+
+CollectedDuringParam:
+  name: collected_during
+  type: string
+  in: query
+  pattern: '\w+\d+-\d+'
+  description: Samples collected during this visit 
 
 # DCIDParam:
 #   name: id
