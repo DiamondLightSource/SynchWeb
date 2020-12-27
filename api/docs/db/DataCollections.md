@@ -39,14 +39,14 @@ exposuretime | float | Exposure time in s
 wavelength | float | Wavelength of beamline in angstrom
 detectordistance | float | Detector distance in mm
 resolution | float | Resolution at edge of detector in angstrom
-transmission | path | Transmission in %, i.e. 10
+transmission | float | Transmission in %, i.e. 10
 xtalSnapshotFullPath1 | path | Path to a snapshot of the crystal at 0
 xtalSnapshotFullPath2 | path | Path to a snapshot of the crystal at 90 (for gridscan with grid and results annotated)
 xtalSnapshotFullPath3 | path | Path to a snapshot of the crystal at 180 (for gridscans with grid annotated)
 phistart | float | For multi-axis goniomnetry, phi angle at start
-kappastart | float | For multi-axis goniomnetry, kappa angle at start
-omegastart | float | For multi-axis goniomnetry, omega angle at start
-chistart | float | For multi-axis goniomnetry, chi angle at start
+kappastart | float | For multi-axis goniometry, kappa angle at start
+omegastart | float | For multi-axis goniometry, omega angle at start
+chistart | float | For multi-axis goniometry, chi angle at start
 beamsizeatsamplex | float | Beamsize at the sample in microns in horizontal
 beamsizeatsampley | float | Beamsize at the sample in microns in vertical
 xbeam | float | Position of beam in horizontal

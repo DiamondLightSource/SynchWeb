@@ -8,7 +8,7 @@ The following columns are required in `Proposal`:
 
 Column | Type | Description
 --- | --- | ---
-title | str | The proposal tital
+title | str | The proposal title
 personid | int | Each proposal requires a Person to be associated
 proposalcode | str | A proposal code, usually for grouping proposals. Common standards include `mx` for mx crystallography, `in` for industry, `cm` for commissioning, `sw` for industrial service work
 proposalnumber | int | A unique number for the proposal
