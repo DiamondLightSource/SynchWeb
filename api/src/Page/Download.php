@@ -298,14 +298,24 @@ class Download extends Page
                 array_push($args, $this->arg('AUTOPROCPROGRAMATTACHMENTID'));
             }
 
-            $rows = $this->db->pq("SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid
-                FROM autoprocprogram app
-                INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
+            $rows = $this->db->union(array(
+                "SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid
+                FROM autoprocintegration api 
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                WHERE s.proposalid=:1 $where", $args);
+                WHERE s.proposalid=:1 $where",
+                "SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid
+                FROM autoprocprogram app
+                INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                WHERE s.proposalid=:1 $where"
+            ), $args);
 
             // exit();
             if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {

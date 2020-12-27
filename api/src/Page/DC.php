@@ -713,14 +713,23 @@ class DC extends Page
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE $where", $ids);
             
-            $processings = $this->db->pq("SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status
+            $processings = $this->db->union(array("SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status
+                FROM datacollection dc 
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN autoprocintegration api ON api.datacollectionid = dc.datacollectionid
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid
+                WHERE $where",
+                "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
-                WHERE $where", $ids);
+                WHERE $where"
+            ), $ids);
 
             $db_status = array();
             foreach($processings as $p) {
@@ -813,15 +822,26 @@ class DC extends Page
                                 
             $where .= ' AND ('.implode(' OR ', $wids).')';
 
-            $rows = $this->db->pq("SELECT app.autoprocprogramid, dc.datacollectionid as id, SUM(IF(appm.severity = 'ERROR', 1, 0)) as errors, SUM(IF(appm.severity = 'WARNING', 1, 0)) as warnings, SUM(IF(appm.severity = 'INFO', 1, 0)) as infos
+            $rows = $this->db->union(array(
+                "SELECT app.autoprocprogramid, dc.datacollectionid as id, SUM(IF(appm.severity = 'ERROR', 1, 0)) as errors, SUM(IF(appm.severity = 'WARNING', 1, 0)) as warnings, SUM(IF(appm.severity = 'INFO', 1, 0)) as infos
                 FROM autoprocprogrammessage appm
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
-                LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid)
+                INNER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 $where
-                GROUP BY dc.datacollectionid", $args);
+                GROUP BY dc.datacollectionid",
+                "SELECT app.autoprocprogramid, dc.datacollectionid as id, SUM(IF(appm.severity = 'ERROR', 1, 0)) as errors, SUM(IF(appm.severity = 'WARNING', 1, 0)) as warnings, SUM(IF(appm.severity = 'INFO', 1, 0)) as infos
+                FROM autoprocprogrammessage appm
+                INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
+                INNER JOIN processingjob pj ON pj.processingjobid = app.processingjobid
+                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                $where
+                GROUP BY dc.datacollectionid
+            "), $args, false, "SELECT autoprocprogramid, id, sum(errors) as errors, sum(warnings) as warnings, sum(infos) as infos FROM (:QUERY) inq GROUP BY id");
 
             $this->_output($rows);
         }
@@ -844,15 +864,26 @@ class DC extends Page
                 array_push($args, $this->arg('id'));
             }
 
-            $rows = $this->db->pq("SELECT app.processingprograms, appm.autoprocprogrammessageid, appm.recordtimestamp, appm.severity, appm.message, appm.description, api.autoprocintegrationid
+            $rows = $this->db->union(array(
+                "SELECT app.processingprograms, appm.autoprocprogrammessageid, appm.recordtimestamp, appm.severity, appm.message, appm.description, app.autoprocprogramid
                 FROM autoprocprogrammessage appm
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
-                LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                INNER JOIN datacollection dc ON (dc.datacollectionid = api.datacollectionid OR app.datacollectionid = dc.datacollectionid)
+                INNER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                $where", $args);
+                $where",
+                "SELECT app.processingprograms, appm.autoprocprogrammessageid, appm.recordtimestamp, appm.severity, appm.message, appm.description, app.autoprocprogramid
+                FROM autoprocprogrammessage appm
+                INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
+                INNER JOIN processingjob pj ON pj.processingjobid = app.processingjobid
+                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                $where"
+            ), $args);
 
             if ($this->has_arg('AUTOPROCPROGRAMMESSAGEID')) {
                 if (sizeof($rows)) {
