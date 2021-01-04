@@ -17,7 +17,8 @@ define([], function() {
         },
         
         admin: {
-            faults: { title: 'Fault Reports', icon: 'fa-tasks' },
+            'runs/overview': { title: 'Run Overview', icon: 'bar-chart'},
+            faults: { title: 'Fault Reports', icon: 'tasks' },
         },
     }
     
