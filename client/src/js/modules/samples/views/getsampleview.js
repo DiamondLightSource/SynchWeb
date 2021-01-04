@@ -5,6 +5,8 @@ define(['views/getview',
         'modules/types/gen/samples/views/list',
         'modules/types/gen/samples/views/view',
 
+        'modules/types/xpdf/samples/views/simplesampleaddpoploader',
+
         'modules/samples/views/proteinlist',
         'modules/samples/views/proteinview',
         'modules/samples/views/proteinadd',
@@ -28,6 +30,8 @@ define(['views/getview',
     SampleList, SampleView,
     GenSampleList, GenSampleView,
 
+    SimpleSampleAdd,
+
     ProteinList, ProteinView, AddProteinView,
     GenComponentList, GenComponentAdd, GenComponentView,
 
@@ -42,6 +46,10 @@ define(['views/getview',
     }
 
     var SampleDefault = 'Sample'
+
+    var SimpleSampleTitles = {
+        xpdf: 'Simple Sample',
+    }
 
 
     var ProteinTitles = {
@@ -85,6 +93,16 @@ define(['views/getview',
             default: GenSampleView,
 
             titles: SampleTitles,
+            default_title: SampleDefault,
+        }),
+
+        SimpleSampleAdd: new GetView({
+            views: {
+                xpdf: SimpleSampleAdd,
+            },
+            default: SimpleSampleAdd,
+
+            titles: SimpleSampleTitles,
             default_title: SampleDefault,
         }),
 

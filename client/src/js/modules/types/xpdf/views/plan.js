@@ -542,6 +542,7 @@ define(['marionette',
             var columns = [
                 { label: '#', cell: table.TemplateCell, editable: false, template: '<%-LOCATION%>' },
                 { name: 'NAME', label: 'Name', cell: 'string', editable: false },
+                { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false, template: '<%-ACRONYM%>' },
                 { name: 'CRYSTAL', label: 'Instance of', cell: 'string', editable: false },
                 { label: '', cell: AddCell, editable: false, datacollectionplans: this.datacollectionplans, scanmodels: this.scanmodels, dpdetectors: this.datacollectionplandetectors },
             ]

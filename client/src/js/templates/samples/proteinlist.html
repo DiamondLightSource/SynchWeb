@@ -1,6 +1,12 @@
 <h1><%-title%>s</h1>
 <p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p>
 
+<!-- At the moment only use filtering option for XPDF / Phases. Could expand for others (e.g. regular proteins) if needed -->
+<% if (PROPOSAL_TYPE == "xpdf") { %>
+	<input type="checkbox" id="uas" class="uas" style="margin-right:3px" checked>
+	<label for="uas" style="margin-right:20px">Show Only UAS Samples</label>
+<% } %>
+
 <% if (!CAN_CREATE) { %>
 <p class="help">Only staff are able to create new <%-title.toLowerCase()%>s from this page. Samples should be created in the user office system and when approved will be displayed here. Approved samples can be cloned by following the links in the table below.</p>
 <% } %>

@@ -15,9 +15,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     className: 'content',
     template: Template,
     regions: { 'wrap': '.wrapper', type: '.type' },
-    // ui: {
-    //   add: 'a.add',
-    // },
+    ui: { toggleUAS: '.uas' },
 
     clickableRow: ClickableRow,
     showFilter: true,
@@ -31,6 +29,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
           title: this.getOption('title'),
           url: this.getOption('url'),
           CAN_CREATE: ((validOnly && app.staff) || !validOnly) && (app.proposal && app.proposal.get('ACTIVE') == 1),
+          PROPOSAL_TYPE: app.type,
         }
     },
 
