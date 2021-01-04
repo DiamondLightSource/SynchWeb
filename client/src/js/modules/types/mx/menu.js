@@ -23,6 +23,7 @@ define([], function() {
         },
         
         admin: {
+            'runs/overview': { title: 'Run Overview', icon: 'bar-chart'},
             'stats/overview/beamlines': { title: 'Reporting', icon: 'line-chart', permission: 'all_prop_stats' },
             'admin/imaging': { title: 'Imaging', icon: 'image', permission: 'imaging_dash' },
             'dewars/overview': { title: 'Logistics', icon: 'truck', permission: 'all_dewars' },
@@ -30,5 +31,4 @@ define([], function() {
             faults: { title: 'Fault Reports', icon: 'tasks' },
         },
     }
-    
 })

@@ -13,6 +13,7 @@ define([], function() {
         },
         
         admin: {
+            'runs/overview': { title: 'Run Overview', icon: 'bar-chart'},
             faults: { title: 'Fault Reports', icon: 'tasks' },
         },
     }
