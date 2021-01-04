@@ -49,8 +49,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
   // Restore token if its in sessionStorage
   app.token = sessionStorage.getItem('token')
   
-  app.valid_samples = config.valid_samples ? config.valid_samples : false
-
   // Allow the app to load a proposal on bootstrap
   app.parseQuery = function() {
       var str = location.search.replace(/\?/, '').split(/&/)
@@ -407,7 +405,7 @@ app.clearVisit = function(){
           app.content.$el.find('.content .'+options.persist).remove()
       }
           
-      app.content.$el.find('.content').prepend(new utils.alert(options).render().$el)
+      app.content.$el.find('.content').first().prepend(new utils.alert(options).render().$el)
   }
     
     

@@ -1,4 +1,6 @@
-define(['marionette', 'views/tabs', 
+define(['marionette', 
+    'modules/dc/views/dcbase',
+    'views/tabs', 
     'modules/projects/views/addto',
     'utils/editable',
     'backbone',
@@ -10,18 +12,20 @@ define(['marionette', 'views/tabs',
     'modules/dc/views/apstatusitem',
     'modules/dc/models/gridxrc',
     'templates/dc/grid.html', 'backbone-validation'], 
-    function(Marionette, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, 
+    function(Marionette, DCBase, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, 
       DialogView, DCCommentsView, AttachmentsView, APStatusItem, GridXRC,
       template) {
 
-  return Marionette.ItemView.extend({
+  return DCBase.extend({
     template: template,
 
     apStatusItem: APStatusItem,
 
+    events: {
+      'click @ui.zoom': 'toggleZoom'
+    },
+
     ui: {
-      temp: 'span.temp',
-      exp: 'i.expand',
       di: 'div.diviewer',
       im: 'div.image',
 
@@ -61,7 +65,6 @@ define(['marionette', 'views/tabs',
     initialize: function(options) {
       this.xrc = null
       this.hasXRC = false
-      this.fullPath = false
 
       this.gridplot = new GridPlot({ BL: this.model.get('BL'), ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
       this.listenTo(this.gridplot, 'current', this.loadImage, this)
@@ -96,19 +99,20 @@ define(['marionette', 'views/tabs',
       this.gridplot.gridPromise().done(this.showBox.bind(this))
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), XRC: true, statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'model:change', this.checkXRC)
+
+      this.updateInPlace(true)
     },
 
 
     showBox: function() {
         var gi = this.gridplot.gridInfo()
-        this.ui.bx.text((gi.get('DX_MM')*1000).toFixed(0))
-        this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
+        if (this.ui.bx.text) this.ui.bx.text((gi.get('DX_MM')*1000).toFixed(0))
+        if (this.ui.bx.text) this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
 
-        if (gi.get('STEPS_Y') > 10) this.ui.zoom.show()
+        if (gi.get('STEPS_Y') > 10 && this.ui.zoom.show) this.ui.zoom.show()
     },
 
     checkXRC: function() {
-        console.log('check xrc')
         if (!this.xrc) {
             var state = this.apstatus.getStatus({ type: 'XrayCentring' })
             console.log('xrc state', state)
@@ -138,69 +142,8 @@ define(['marionette', 'views/tabs',
     onDomRefresh: function() {
       this.diviewer.triggerMethod('dom:refresh')
       this.gridplot.triggerMethod('dom:refresh')
-    },  
-      
-    modelEvents: {
-        'change': 'renderFlag',
     },
-      
-    renderFlag: function() {
-      this.model.get('FLAG') ? this.$el.find('.flag').addClass('button-highlight') : this.$el.find('.flag').removeClass('button-highlight')
-      this.$el.find('.COMMENTS').text(this.model.get('COMMENTS'))
-    },
-      
-    events: {
-      'click .atp': 'addToProject',
-      'click .flag': 'flag',
-      'click li.sample a': 'setProposal',
-      'click @ui.exp': 'expandPath',
-      'click .comments': 'showComments',
-      'click a.attach': 'attachments',
-      'click @ui.zoom': 'toggleZoom'
-    },
-      
-    attachments: function(e) {
-        e.preventDefault()
-        app.dialog.show(new DialogView({ 
-            title: 'Attachments', 
-            view: new AttachmentsView({ id: this.model.get('ID') })
-        }))
-    },
-
-    showComments: function(e) {
-      e.preventDefault()
-      app.dialog.show(new DialogView({ title: 'Data Collection Comments', view: new DCCommentsView({ model: this.model }), autoSize: true }))
-    },
-
-    expandPath: function(e) {
-        e.preventDefault()
-
-        this.ui.temp.text(this.fullPath ? (this.model.get('DIR')+this.model.get('FILETEMPLATE')) : (this.model.get('DIRFULL')+this.model.get('FILETEMPLATE')))
-        this.ui.exp.toggleClass('fa-caret-right')
-        this.ui.exp.toggleClass('fa-caret-left')
-        
-        this.fullPath = !this.fullPath
-    },
-
-
-    setProposal: function(e) {
-        console.log('setting proposal', this.model.get('PROP'))
-        if (this.model.get('PROP')) app.cookie(this.model.get('PROP'))
-    },
-      
-
-      
-    flag: function(e) {
-        e.preventDefault()
-        this.model.flag()
-    },
-      
-      
-    addToProject: function(e) {
-        e.preventDefault()
-        app.dialog.show(new AddToProjectView({ name: this.model.get('DIR')+this.model.get('FILETEMPLATE'), type: 'dc', iid: this.model.get('DCG') }))
-    },
-      
+ 
   })
 
 })

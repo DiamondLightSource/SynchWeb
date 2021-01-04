@@ -15,5 +15,14 @@ sftp-config.json
 
 .sass-cache/
 .DS_Store
+
 /api/composer.lock
 /api/composer.phar
+
+client/node_modules
+client/assets
+client/index.php
+client/dist
+
+api/config.php
+api/vendor

@@ -1,5 +1,5 @@
 # Auth
-/authenticate/login:
+/authenticate:
   $ref: authenticate.yaml#/login
         
 /authenticate/check:
@@ -96,6 +96,18 @@
 
 /shipment/terms/{shippingid}:
   $ref: shipment.yaml#/terms
+
+/shipment/awb/{shippingid}:
+  $ref: shipment.yaml#/awb
+
+/shipment/awb/quote:
+  $ref: shipment.yaml#/awbQuote
+
+/shipment/pickup/{shippingid}:
+  $ref: shipment.yaml#/pickup
+
+/shipment/pickup/cancel/{shippingid}:
+  $ref: shipment.yaml#/pickupCancel
 
 
 # Dewars
@@ -215,8 +227,8 @@
   $ref: processing.yaml#/strategy
 
 # Integration
-# /dc/ap/{id}:
-#   $ref: processing.yaml#/integration  
+/dc/ap/{id}:
+  $ref: processing.yaml#/integration  
 
 # Downstream
 # /dc/dp/{id}:

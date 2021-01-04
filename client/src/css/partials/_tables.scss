@@ -95,6 +95,11 @@
                 }
                 
                 span {
+                    &.badge {
+                        padding: 5px;
+                        border-radius: 5px;
+                    }
+
                     &.active {
                         background: $content-active;
                     }

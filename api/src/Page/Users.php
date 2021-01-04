@@ -195,10 +195,12 @@ class Users extends Page
             $where .= ' AND p.personid=:'.(sizeof($args)+1);
             array_push($args, $this->arg('PERSONID'));
 
-            $where .= ' AND (prhp.proposalid=:'.(sizeof($args)+1).' OR lc.proposalid=:'.(sizeof($args)+2).' OR p.personid=:'.(sizeof($args)+3).')';
-            array_push($args, $this->proposalid);
-            array_push($args, $this->proposalid);
-            array_push($args, $this->user->personid);
+            if (!$this->user->has('manage_users')) {
+                $where .= ' AND (prhp.proposalid=:'.(sizeof($args)+1).' OR lc.proposalid=:'.(sizeof($args)+2).' OR p.personid=:'.(sizeof($args)+3).')';
+                array_push($args, $this->proposalid);
+                array_push($args, $this->proposalid);
+                array_push($args, $this->user->personid);
+            }
         }
 
         if (!$this->staff && !$this->has_arg('visit') && !$this->has_arg('pid')) {
@@ -325,10 +327,9 @@ class Users extends Page
         if (!$this->has_arg('GIVENNAME')) $this->_error('No given name specified');
         if (!$this->has_arg('FAMILYNAME')) $this->_error('No family name specified');
 
-        $pw = $this->has_arg('PASSWORD') ? password_hash($this->arg('PASSWORD')) : null;
-
-        $this->db->pq("INSERT INTO person (login, givenname, familyname, password) VALUES (:1, :2, :3, :4)", 
-            array($this->arg('LOGIN'), $this->arg('GIVENNAME'), $this->arg('FAMILYNAME'), $pw));
+        $email = $this->has_arg('EMAILADDRESS') ? $this->arg('EMAILADDRESS') : null;
+        $this->db->pq("INSERT INTO person (login, givenname, familyname, emailaddress) VALUES (:1, :2, :3, :4)", 
+            array($this->arg('LOGIN'), $this->arg('GIVENNAME'), $this->arg('FAMILYNAME'), $email));
 
         $this->_output(array('PERSONID' => $this->db->id()));
     }
@@ -349,14 +350,13 @@ class Users extends Page
         $person = $person[0];
 
         # Update person
-        $pfields = array('FAMILYNAME', 'GIVENNAME', 'PHONENUMBER', 'EMAILADDRESS', 'PASSWORD');
+        $pfields = array('FAMILYNAME', 'GIVENNAME', 'PHONENUMBER', 'EMAILADDRESS');
         foreach ($pfields as $i => $f) {
             if ($this->has_arg($f)) {
                 $v = $this->arg($f);
-                if ($f == 'PASSWORD') $v = password_hash($v);
 
                 $this->db->pq('UPDATE person SET '.$f.'=:1 WHERE personid=:2', array($v, $person['PERSONID']));
-                $this->_output($f == 'PASSWORD' ? new \stdClass : array($f => $this->arg($f)));
+                $this->_output(array($f => $this->arg($f)));
             }
         }
 

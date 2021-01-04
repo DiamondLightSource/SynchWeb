@@ -14,8 +14,11 @@
 
     <p class="r downloads">
         <% if (IMAGESWEEPCOUNT > 1) { %>
+            <span><%=IMAGESWEEPCOUNT%> image sweeps</span>
+        <% } %>
+        <% if (DCCOUNT > 1) { %>
         <a class="button" title="View Data Collections" href="/dc/pjid/<%=PROCESSINGJOBID%>">
-            <i class="fa fa-list"></i> <%=IMAGESWEEPCOUNT%> Data Sets
+            <i class="fa fa-list"></i> <%=DCCOUNT%> Data Sets
         </a>
         <% } %>
 
@@ -31,7 +34,7 @@
     </p>
 
     <!-- Beam Centre information and movement warning not useful for i19 small molecule experiment type -->
-    <% if (app.type != 'sm') { %>
+    <% if (PROPOSAL_TYPE != 'sm') { %>
     <table class="reflow bc">
         <thead>
             <tr>
@@ -43,19 +46,19 @@
         <tbody>
             <tr>
                 <td>Start</td>
-                <td><%-BEAM.XBEAM%></td>
-                <td><%-BEAM.YBEAM%></td>
+                <td><%- BEAM.XBEAM ? BEAM.XBEAM : '- -' %></td>
+                <td><%- BEAM.YBEAM ? BEAM.YBEAM : '- -' %></td>
             </tr>
             <!-- these are flipped, not sure why? -->
             <tr>
                 <td>Refined</td>
-                <td><%-BEAM.REFINEDYBEAM%></td>
-                <td><%-BEAM.REFINEDXBEAM%></td>
+                <td><%- BEAM.REFINEDYBEAM ? BEAM.REFINEDYBEAM : '- -' %></td>
+                <td><%- BEAM.REFINEDXBEAM ? BEAM.REFINEDXBEAM : '- -' %></td>
             </tr>
             <tr>
                 <td>&Delta;</td>
-                <td><%-(BEAM.XBEAM-BEAM.REFINEDYBEAM).toFixed(2)%></td>
-                <td><%-(BEAM.YBEAM-BEAM.REFINEDXBEAM).toFixed(2)%></td>
+                <td><%- BEAM.REFINEDYBEAM && BEAM.XBEAM ? (BEAM.XBEAM - BEAM.REFINEDYBEAM).toFixed(2) : '- -' %></td>
+                <td><%- BEAM.YBEAM && BEAM.REFINEDXBEAM ? (BEAM.YBEAM - BEAM.REFINEDXBEAM).toFixed(2) : '- -' %></td>
             </tr>
         </tbody>
     </table>

@@ -374,7 +374,7 @@ class DC extends Page
                     d.numberofpixelsx as detectornumberofpixelsx,
                     d.numberofpixelsy as detectornumberofpixelsy,
                     ses.archived,
-                    dc.rotationaxis
+                    IFNULL(dc.rotationaxis, 'Omega') as rotationaxis
                     ";
                 $groupby = 'GROUP BY smp.name,smp.blsampleid,ses.visit_number,dc.kappastart,dc.phistart, dc.startimagenumber, dc.experimenttype, dc.datacollectiongroupid, dc.runstatus, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.overlap, dc.flux, dc.imageprefix, dc.datacollectionnumber, dc.filetemplate, dc.datacollectionid, dc.numberofimages, dc.imagedirectory, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages, TO_CHAR(dc.starttime, \'DD-MM-YYYY HH24:MI:SS\'), dc.transmission, dc.axisrange, dc.wavelength, dc.comments, dc.xtalsnapshotfullpath1, dc.xtalsnapshotfullpath2, dc.xtalsnapshotfullpath3, dc.xtalsnapshotfullpath4, dc.starttime, dc.detectordistance, dc.xbeam, dc.ybeam, dc.chistart';
                 // $this->db->set_debug(True);
@@ -424,7 +424,7 @@ class DC extends Page
                     max(d.numberofpixelsx) as detectornumberofpixelsx,
                     max(d.numberofpixelsy) as detectornumberofpixelsy,
                     max(ses.archived) as archived,
-                    max(dc.rotationaxis) as rotationaxis";
+                    IFNULL(max(dc.rotationaxis), 'Omega') as rotationaxis";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
             }
 
@@ -1152,7 +1152,7 @@ class DC extends Page
         # Auto processing for a data collection
         function _dc_auto_processing($id) {
             $rows = $this->db->pq('SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingprograms as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga, 
-                    (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as nswps, app.processingstatus, app.processingmessage, count(distinct pjis.datacollectionid) as imagesweepcount, max(pjis.processingjobid) as processingjobid
+                    (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as imagesweepcount, app.processingstatus, app.processingmessage, count(distinct pjis.datacollectionid) as dccount, max(pjis.processingjobid) as processingjobid
                 FROM autoprocintegration api 
                 LEFT OUTER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
                 LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
@@ -1163,7 +1163,7 @@ class DC extends Page
                 LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.processingjobid = pj.processingjobid
                 INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
                 WHERE api.datacollectionid = :1 AND app.processingstatus IS NOT NULL
-                GROUP BY apss.autoprocscalingstatisticsid
+                GROUP BY app.autoprocprogramid, apss.autoprocscalingstatisticsid
                 ORDER BY apss.scalingstatisticstype DESC', array($id));
             
             $msg_tmp = $this->db->pq("SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
@@ -1188,8 +1188,9 @@ class DC extends Page
                     $shell = array();
                     foreach ($r as $k => &$v) {
                         if ($k == 'TYPE') {
-                            if ($r['NSWPS'] > 1) {
-                                $v = $r['NSWPS'].'xMulti'.$v;
+                            if ($r['DCCOUNT'] > 1) {
+                                $prefix = preg_match('/multi/', $v) ? '' : 'multi-';
+                                $v = $r['DCCOUNT'].'x '.$prefix.$v;
                             }
                         }
 
@@ -1204,7 +1205,9 @@ class DC extends Page
                         if ($k == 'CCANOMALOUS') $v = number_format($v, 1);
 
                         $beam = array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM');
-                        if (in_array($k, $beam)) $v = number_format($v, 2);
+                        
+                        // We need to discriminate between NULL values from the database and when the value is a zero
+                        if (in_array($k, $beam) && is_numeric($v)) $v = number_format($v, 2);
                         
                         if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL' || $k == 'PROCESSINGJOBID' || $k == 'IMAGESWEEPCOUNT') {
                             continue;
@@ -1231,6 +1234,7 @@ class DC extends Page
 
                 $output[$r['AUTOPROCPROGRAMID']]['PROCESSINGJOBID'] = $r['PROCESSINGJOBID'];
                 $output[$r['AUTOPROCPROGRAMID']]['IMAGESWEEPCOUNT'] = $r['IMAGESWEEPCOUNT'];
+                $output[$r['AUTOPROCPROGRAMID']]['DCCOUNT'] = $r['DCCOUNT'];
 
                 $output[$r['AUTOPROCPROGRAMID']]['TYPE'] = $r['TYPE'];
                 $output[$r['AUTOPROCPROGRAMID']]['AID'] = $r['AUTOPROCPROGRAMID'];

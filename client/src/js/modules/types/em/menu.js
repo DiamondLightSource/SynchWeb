@@ -7,6 +7,7 @@ define([], function() {
             calendar: 'Calendar',
             shipments: 'Shipments',
             contacts: 'Lab Contacts',
+            'dewars/registry': 'Registered Dewars',
             stats: 'Statistics',
         },
         

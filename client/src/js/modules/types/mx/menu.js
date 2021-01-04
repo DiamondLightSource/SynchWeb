@@ -7,7 +7,7 @@ define([], function() {
             calendar: 'Calendar',
             assign: 'Assign Containers',
             shipments: 'Shipments',
-            dewars: 'Registered Dewars',
+            'dewars/registry': 'Registered Dewars',
             'containers/registry': 'Registered Containers',
             containers: 'Containers',
             samples: 'Samples',

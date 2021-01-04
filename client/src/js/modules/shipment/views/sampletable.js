@@ -17,11 +17,13 @@ define(['marionette',
         'utils/experimentkinds',
         'utils/radiationsensitivity',
         'utils',
+
+        'utils/safetylevel',
     
         'jquery',
         ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
         sampletable, sampletablerow, sampletablerowedit, 
-        forms, SG, Anom, CM, EXP, RS, utils, $) {
+        forms, SG, Anom, CM, EXP, RS, utils, safetyLevel, $) {
 
         
     // A Sample Row
@@ -116,16 +118,20 @@ define(['marionette',
                 var newm = this.model.clone()
                 newm.get('components').reset(this.model.get('components').toJSON())
 
+                // Automatically define the next sample name on clone.
+                // Finds the last number in the sample name (i.e. the number suffix, sample01 => 01) and increments the value.
+                // Takes into account '0' padding, so next sample would be sample02 etc.
                 var next = empty[0]
                 var name_base = this.model.get('NAME').replace(/\d+$/, '')
                 var name_regexp = new RegExp(name_base)
                 var similar = this.model.collection.filter(function(m) { return m.get('NAME').match(name_regexp) })
-                if (similar.length) no = similar[similar.length-1].get('NAME').match(/\d+$/)
+                var number_suffix = []
+                if (similar.length) number_suffix = similar[similar.length-1].get('NAME').match(/\d+$/) || 0
 
-                if (no) no = no.length > 0 ? parseInt(no[0]) : 1
-                else no = 1
+                var number_pad = number_suffix.length > 0 ? number_suffix[0].length : 0
+                number_suffix = number_suffix.length > 0 ? parseInt(number_suffix[0]) : 1
 
-                newm.set('NAME', name_base+(no+1))
+    	        newm.set('NAME', name_base+((number_suffix+1).toString().padStart(number_pad, '0')))
                 newm.set('LOCATION', empty[0].get('LOCATION'))
 
                 empty[0].attributes = newm.attributes
@@ -257,6 +263,13 @@ define(['marionette',
         
         
         addProtein: function(ui, val) {
+            var validOnly = app.options.get('valid_components')
+            if (!(((validOnly && app.staff) || !validOnly)
+                && (app.proposal && app.proposal.get('ACTIVE') == 1))) {
+                ui.combobox('value', -1).trigger('change')
+                return
+            }
+
             console.log(ui, val)
             var safe = val.replace(/\W/g, '')
 
@@ -290,13 +303,18 @@ define(['marionette',
         
         updateProteins: function() {
             this.$el.find('select[name=PROTEINID]').html(this.proteins.opts({
-                addClass: 'active',
-                classProperty: 'EXTERNAL',
-                classPropertyValue: '1',
+                // addClass: 'active',
+                // classProperty: 'EXTERNAL',
+                // classPropertyValue: '1',
+                callback: this.handleSafetyLevel
             }))
             this.$el.find('select[name=PROTEINID]').combobox('value', this.model.get('PROTEINID'))
         },
-    
+        // Callback to style individual proteins within combobox
+        // Not sure if this will stay due to conflicts with validation colours.
+        handleSafetyLevel: function(m) {
+            return safetyLevel(m)
+        }    
     }))
     
            

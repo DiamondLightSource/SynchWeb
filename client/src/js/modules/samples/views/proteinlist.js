@@ -1,29 +1,15 @@
 define(['marionette', 'backgrid', 'views/table', 'views/filter', 
-  'collections/componenttypes', 
-  'modules/projects/views/addto',
+  'collections/componenttypes',
   'utils/table',
   'templates/samples/proteinlist.html'], 
-  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, AddToProjectView, table, Template) {
+  function(Marionette, Backgrid, TableView, FilterView, ComponentTypes, table, Template) {
     
     
   var ClickableRow = table.ClickableRow.extend({
     event: 'proteins:view',
     argument: 'PROTEINID',
     cookie: true,
-
-    render: function() {
-      Backgrid.Row.prototype.render.call(this)
-
-      // Highlight approved samples
-      // Currently all samples with an external id are green
-      // In future use Protein safetyLevel to discriminate
-      if (this.model.get('EXTERNAL') == '1') this.$el.addClass('active')
-          
-      return this
-    },
-
   })
-
     
   return Marionette.LayoutView.extend({
     className: 'content',
@@ -40,11 +26,11 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
     url: 'protein',
 
     templateHelpers: function() {
+        var validOnly = app.options.get('valid_components') 
         return {
           title: this.getOption('title'),
           url: this.getOption('url'),
-          // In future combine with a global 'strict mode' or 'valid_samples' config option
-          CAN_CREATE: app.staff && (app.proposal && app.proposal.get('ACTIVE') == 1),
+          CAN_CREATE: ((validOnly && app.staff) || !validOnly) && (app.proposal && app.proposal.get('ACTIVE') == 1),
         }
     },
 
@@ -58,6 +44,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
         { name: 'CONCENTRATIONTYPE', label: 'Unit', cell: 'string', editable: false },
         { name: 'SCOUNT', label: 'Samples', cell: 'string', editable: false },
         { name: 'DCOUNT', label: 'Data Collections', cell: 'string', editable: false },
+        { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
         { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
     ],
 

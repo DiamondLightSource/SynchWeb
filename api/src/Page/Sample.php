@@ -15,7 +15,7 @@ class Sample extends Page
                               's' => '\w+',
 
 
-                              'prop' => '\w\w\d+',
+                              'prop' => '\w+\d+',
                               'term' => '\w+',
                               'pid' => '\d+',
                               'sid' => '\d+',
@@ -101,7 +101,7 @@ class Sample extends Page
                               'CENTRINGMETHOD' => '\w+',
                               'RADIATIONSENSITIVITY' => '\w+',
                               'ENERGY' => '\w+',
-                              'USERPATH' => '(\w|-)+\/?(\w|-)+',
+                              'USERPATH' => '(?=.{0,40}$)(\w|-)+\/?(\w|-)+', // Up to two folders as a path, 40 characters maximum
                               'EXPOSURETIME' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEX' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEY' => '\d+(.\d+)?',
@@ -125,6 +125,7 @@ class Sample extends Page
                                // whereas externalid is the actual reference
                               'external' => '\d',
                               'EXTERNALID' => '\w+',
+                              'SAFETYLEVEL' => '\w+',
 
                               'COMPONENTLATTICEID' => '\d+',
 
@@ -1184,6 +1185,11 @@ class Sample extends Page
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
             
+            if ($this->has_arg('SAFETYLEVEL')) {
+                $where .= ' AND pr.safetylevel=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('SAFETYLEVEL'));
+            }
+            
 
             $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr INNER JOIN proposal p ON p.proposalid = pr.proposalid $join WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
@@ -1219,21 +1225,31 @@ class Sample extends Page
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype, CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, pr.proteinid, CONCAT(p.proposalcode,p.proposalnumber) as prop, pr.name,pr.acronym,pr.molecularmass,pr.global, IF(pr.externalid IS NOT NULL, 1, 0) as external, HEX(pr.externalid) as externalid, pr.density, count(php.proteinid) as pdbs
-              /*,  count(distinct b.blsampleid) as scount, count(distinct dc.datacollectionid) as dcount*/ 
-                                  FROM protein pr
-                                  LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
-                                  LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
-                                  LEFT OUTER JOIN protein_has_pdb php ON php.proteinid = pr.proteinid
-                                  /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
-                                  LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
-                                  LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid*/
-                                  INNER JOIN proposal p ON p.proposalid = pr.proposalid
-                                  $join
-                                  WHERE $where
-                                  GROUP BY pr.proteinid
-                                  /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, CONCAT(p.proposalcode,p.proposalnumber)*/
-                                  ORDER BY $order", $args);
+            $rows = $this->db->paginate("SELECT /*distinct*/ $extc pr.concentrationtypeid, 
+                                ct.symbol as concentrationtype, pr.componenttypeid, cmt.name as componenttype,
+                                CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END as hasseq, 
+                                pr.proteinid,
+                                CONCAT(p.proposalcode,p.proposalnumber) as prop,
+                                pr.name, pr.acronym, pr.molecularmass, pr.global,
+                                IF(pr.externalid IS NOT NULL, 1, 0) as external,
+                                HEX(pr.externalid) as externalid,
+                                pr.density,
+                                count(php.proteinid) as pdbs,
+                                pr.safetylevel
+
+                                FROM protein pr
+                                LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
+                                LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
+                                LEFT OUTER JOIN protein_has_pdb php ON php.proteinid = pr.proteinid
+                                /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
+                                LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
+                                LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid*/
+                                INNER JOIN proposal p ON p.proposalid = pr.proposalid
+                                $join
+                                WHERE $where
+                                GROUP BY pr.proteinid
+                                /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, CONCAT(p.proposalcode,p.proposalnumber)*/
+                                ORDER BY $order", $args);
             
             $ids = array();
             $wcs = array();
@@ -1293,14 +1309,23 @@ class Sample extends Page
             if ($this->has_arg('external')) {
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
-
+            
+            if ($this->has_arg('SAFETYLEVEL')) {
+                $where .= ' AND pr.safetyLevel=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('SAFETYLEVEL'));
+            }
+            
             if ($this->has_arg('term')) {
                 $where .= " AND (lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+1)."), '%')) OR lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+2)."), '%')))";
                 array_push($args, $this->arg('term'));
                 array_push($args, $this->arg('term'));
             }
             
-            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, max(pr.proteinid) as proteinid, ct.symbol as concentrationtype, 1 as hasph, IF(pr.externalid IS NOT NULL, 1, 0) as external
+            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, pr.safetylevel,
+              max(pr.proteinid) as proteinid,
+              ct.symbol as concentrationtype,
+              1 as hasph,
+              IF(pr.externalid IS NOT NULL, 1, 0) as external
               FROM protein pr 
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
               WHERE pr.acronym is not null AND $where 
@@ -1472,6 +1497,8 @@ class Sample extends Page
         
         
         function _add_protein() {
+            global $valid_components;
+
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('ACRONYM')) $this->_error('No protein acronym');
             
@@ -1483,18 +1510,26 @@ class Sample extends Page
             $global = $this->has_arg('GLOBAL') ? $this->arg('GLOBAL') : null;
             $density = $this->has_arg('DENSITY') ? $this->arg('DENSITY') : null;
             $externalid = $this->has_arg('EXTERNALID') ? $this->arg('EXTERNALID') : null;
+            $safetyLevel = $this->has_arg('SAFETYLEVEL') ? $this->arg('SAFETYLEVEL') : null;
 
             // Only staff should be able to create Proteins that are not approved (i.e. no EXTERNALID) in User System
-            // TODO - add ability to switch this on/off per site. Need a global 'valid_samples' or 'strict mode' variable
-            if (!$externalid && !$this->staff) $this->_error('Only staff can create Proteins that are not approved in ISPyB', 401);
+            if ($valid_components) {
+                if (!$externalid && !$this->staff) $this->_error('Only staff can create proteins that are not approved in ISPyB', 401);
+
+                if (!$this->staff) {
+                    $chkext = $this->db->pq("SELECT proteinid FROM protein
+                        WHERE proposalid=:1 AND externalid=:2", array($this->proposalid, $externalid));
+                    if (sizeof($chkext)) $this->_error('No such protein to clone from');
+                }
+            }
             
             $chk = $this->db->pq("SELECT proteinid FROM protein
               WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $this->arg('ACRONYM')));
             if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
 
-            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density, externalid)
-              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9,UNHEX(:10)) RETURNING proteinid INTO :id',
-              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density, $externalid));
+            $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density,externalid,safetylevel)
+              VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9,UNHEX(:10),:11) RETURNING proteinid INTO :id',
+              array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density, $externalid, $safetyLevel));
             
             $pid = $this->db->id();
             

@@ -35,6 +35,7 @@ define(['marionette',
         },
         
         success: function(model, response, options) {
+            app.alert({message: 'New container registered ' + this.model.get('BARCODE'), notify: true})
             this.ui.barcode.val('')
             this.ui.comments.val('')
             this.trigger('model:saved', this.model)
@@ -154,6 +155,8 @@ define(['marionette',
                         props = props ? props.split(',') : []
                         props.push(p.get('PROPOSAL'))
                         m.set('PROPOSALS', props.join(','))
+                        // This will be called multiple times for many proposals. Might be a cleaner method..?
+                        app.alert({message: 'Added registered container ' + m.get('BARCODE') + ' to proposal(s) ' + props, notify: true})
                     }
                 })
             }, this)

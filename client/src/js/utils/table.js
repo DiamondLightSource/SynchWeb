@@ -1,8 +1,10 @@
 define(['marionette', 'backgrid', 
     'utils',
     'modules/projects/views/addto',
+    'utils/safetylevel',
     'backbone', 'backbone-validation'], function(Marionette, Backgrid, utils, 
-        AddToProjectView, 
+        AddToProjectView,
+        safetyLevel,
         Backbone) {
     
 
@@ -100,10 +102,21 @@ define(['marionette', 'backgrid',
         },
     })
 
+    var SafetyCell = Backgrid.StringCell.extend({
+        render: function() {
+          SafetyCell.__super__.render.call(this)
+    
+          var cls = safetyLevel(this.model)
+          this.$el.html('<span class="badge '+cls+'">'+this.$el.html()+'</span>')
+    
+          return this
+        }    
+    })
   
     return {
         ValidatedCell: ValidatedCell,
         ValidatedTemplateCell: ValidatedTemplateCell,
+        SafetyCell: SafetyCell,
 
         ClickableRow: Backgrid.Row.extend({
             events: {
