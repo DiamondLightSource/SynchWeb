@@ -46,6 +46,7 @@ define(['marionette',
             { name: 'SEQUENCE', label: 'Composition', cell: 'string', editable: false },
             { name: 'DENSITY', label: 'Crystallographic Density', cell: 'string', editable: false },
             { name: 'PDBS', label: 'Has CIF', cell: table.TemplateCell, editable: false, template: '<%-(PDBS > 0 ? "Yes" : "No")%>' },
+            { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
         ],
     
         hiddenColumns: [],
