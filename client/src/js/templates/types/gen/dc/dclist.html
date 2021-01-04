@@ -2,8 +2,8 @@
     <h1 class="no_mobile">
         <div class="usage r"></div>
         Data Collections
+        <% if (IS_VISIT) { %>for <%-VISIT%> on <%-BEAMLINENAME%><% } %>
     </h1>
-
 
     <% if (IS_VISIT && !IS_SINGLE) { %>
     <% if (VISIT.search('cm') == -1 && VISIT.search('nt') == -1 && VISIT.search('nr') == -1 && ACTIVE != '1') { %>
@@ -21,9 +21,13 @@
     </div>
     <% } %>
 
-    <% if (IS_SINGLE) { %>
-    <h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%-VISIT%><% } %>">View All Data Collections</a></h1>
+    <% if (IS_SINGLE || IS_DCG) { %>
+    <h1 class="message nou"><a class="button" href="/dc<% if (IS_VISIT) { %>/visit/<%-VISIT%><% } %>">View All Data
+    Collections</a></h1>
     <% } %>
+
+    <% if (IS_DCG) { %><h2>Data Collection Group</h2><% } %>
+    <% if (IS_PJ) { %><h2>Processing Job</h2><% } %>
 
     <div class="st"></div>
     <div class="lg"></div>
