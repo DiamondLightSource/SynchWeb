@@ -1,7 +1,8 @@
 <h1><%-title%>s</h1>
 <p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p>
 
-<% if (app.type == "xpdf") { %>
+<!-- At the moment only use filtering option for XPDF / Phases. Could expand for others (e.g. regular proteins) if needed -->
+<% if (PROPOSAL_TYPE == "xpdf") { %>
 	<input type="checkbox" id="uas" class="uas" style="margin-right:3px" checked>
 	<label for="uas" style="margin-right:20px">Show Only UAS Samples</label>
 <% } %>

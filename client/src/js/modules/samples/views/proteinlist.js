@@ -29,6 +29,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
           title: this.getOption('title'),
           url: this.getOption('url'),
           CAN_CREATE: ((validOnly && app.staff) || !validOnly) && (app.proposal && app.proposal.get('ACTIVE') == 1),
+          PROPOSAL_TYPE: app.type,
         }
     },
 
