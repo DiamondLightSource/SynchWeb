@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "1.0.0",
+    "version": "2020-R1",
     "title": "SynchWeb REST API Specification",
     "description": "SynchWeb"
   },
@@ -763,7 +763,16 @@
             "$ref": "#/parameters/CIDParam"
           },
           {
-            "$ref": "#/parameters/VisitParam"
+            "$ref": "#/parameters/SampleVisitParam"
+          },
+          {
+            "$ref": "#/parameters/SampleStatusParam"
+          },
+          {
+            "$ref": "#/parameters/SampleGroupIDParam"
+          },
+          {
+            "$ref": "#/parameters/CollectedDuringParam"
           }
         ],
         "responses": {
@@ -1487,6 +1496,185 @@
               "type": "object",
               "properties": {
                 "ACCEPTED": {
+                  "type": "string",
+                  "pattern": "\\d+",
+                  "example": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/awb/{shippingid}": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Request pickup of dewars from facility",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          },
+          {
+            "in": "body",
+            "name": "DECLAREDVALUE",
+            "type": "integer",
+            "description": "Declared value of dewar"
+          },
+          {
+            "in": "body",
+            "name": "DESCRIPTION",
+            "type": "string",
+            "description": "Shipment description"
+          },
+          {
+            "in": "body",
+            "name": "DEWARS",
+            "type": "object",
+            "description": "List of dewar ids"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AWB and pickup status",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "AWB": {
+                  "type": "string"
+                },
+                "PICKUP": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/awb/quote": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Generate quote for shipment from DHL",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          },
+          {
+            "in": "body",
+            "name": "DECLAREDVALUE",
+            "type": "integer",
+            "description": "Declared value of dewar"
+          },
+          {
+            "in": "body",
+            "name": "DESCRIPTION",
+            "type": "string",
+            "description": "Shipment description"
+          },
+          {
+            "in": "body",
+            "name": "DEWARS",
+            "type": "object",
+            "description": "List of dewar ids"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DHL Products and prices available",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ToDo": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/pickup/{shippingid}": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Rebook a pickup from the users facility",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status of pickup (1 or 0)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "PICKUP": {
+                  "type": "string",
+                  "pattern": "\\d+",
+                  "example": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipment/pickup/cancel/{shippingid}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "shipments"
+        ],
+        "summary": "Cancel a pickup from the users facility",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
+            "$ref": "#/parameters/ShippingIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status of cancellation request (1 or 0)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "CANCEL": {
                   "type": "string",
                   "pattern": "\\d+",
                   "example": 1
@@ -6755,7 +6943,7 @@
             "MESSAGES": [
               {
                 "AUTOPROCPROGRAMID": "81953632",
-                "RECORDTIMESTAMP": "2020-09-16 03:08:28",
+                "RECORDTIMESTAMP": "2020-02-23 06:08:28",
                 "SEVERITY": "INFO",
                 "MESSAGE": "Translational NCS does not appear to be present.",
                 "DESCRIPTION": " Largest Patterson peak with length larger than 15 Angstrom:\n Frac. coord.              :    0.443   -0.445   -0.000\n Distance to origin        :   27.401\n Height relative to origin :    7.701 %\n p_value(height)           :    3.810e-01\n\nExplanation\n The p-value, the probability that a peak of the specified height or larger\n is found in a Patterson function of a macromolecule that does not have any\n translational pseudo-symmetry, is equal to 3.810e-01.  p_values smaller than\n 0.05 might indicate weak translational pseudo symmetry, or the self vector of\n a large anomalous scatterer such as Hg, whereas values smaller than 1e-3 are\n a very strong indication for the presence of translational pseudo symmetry.\n\n"
@@ -6925,6 +7113,40 @@
       "enum": [
         1
       ]
+    },
+    "SampleVisitParam": {
+      "name": "visit",
+      "type": "string",
+      "in": "query",
+      "pattern": "\\w+\\d+-\\d+",
+      "description": "Returns samples in sample changer for current visit. Containers must be assigned"
+    },
+    "SampleStatusParam": {
+      "name": "ty",
+      "in": "query",
+      "type": "string",
+      "required": true,
+      "description": "Filter by sample status. R = Robot loaded, SC = Screened, AI = Auto indexed, DC = Data collected, AP = Auto processed",
+      "enum": [
+        "R",
+        "SC",
+        "AI",
+        "DC",
+        "AP"
+      ]
+    },
+    "SampleGroupIDParam": {
+      "name": "BLSAMPLEGROUPID",
+      "in": "query",
+      "type": "number",
+      "description": "Sample group id"
+    },
+    "CollectedDuringParam": {
+      "name": "collected_during",
+      "type": "string",
+      "in": "query",
+      "pattern": "\\w+\\d+-\\d+",
+      "description": "Samples collected during this visit"
     },
     "DCIDPathParam": {
       "name": "id",

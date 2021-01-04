@@ -13,7 +13,10 @@ samples:
       - $ref: '#/parameters/SortOrderParam'
       - $ref: '#/parameters/ProteinIDParam'
       - $ref: '#/parameters/CIDParam'
-      - $ref: '#/parameters/VisitParam'
+      - $ref: '#/parameters/SampleVisitParam'
+      - $ref: '#/parameters/SampleStatusParam'
+      - $ref: '#/parameters/SampleGroupIDParam'
+      - $ref: '#/parameters/CollectedDuringParam'
     responses:
       200:
         description: List of samples
