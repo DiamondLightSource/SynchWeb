@@ -1,7 +1,7 @@
 define(['utils/lazyrouter'], function(LazyRouter) {
     var Router = LazyRouter.extend({
         appRoutes: {
-            'runs/overview(/bl/:bl)(/:bl)(/run/:run)(/:id)': 'fetchBeamlineTypes'
+            'runs/overview(/bl/:bl)(/:bl)(/run/:run)(/:id)': 'fetchBeamlinesForRuns'
         },
 
         loadEvents: ['runs:show'],
