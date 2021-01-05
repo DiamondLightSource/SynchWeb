@@ -6,7 +6,7 @@ define([
     var bc = { title: 'Runs Overview For Beamlines', url: '/runs-overviews' }
 
     var controller = {
-        fetchBeamlineTypes: function() {
+        fetchBeamlinesForRuns: function() {
             app.loading()
 
             if (!app.user_can('all_breakdown')) {
