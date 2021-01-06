@@ -42,12 +42,27 @@ define([
             this.listenTo(this.beamlinePills, 'selected:change', this.showBeamlineStats.bind(this))
             this.pills.show(this.beamlinePills)
         },
+        showBeamlineOverview: function() {
+            var params = this.getOption('params')
+
+            if (params && params.bl) {
+                var hasBeamline = this.beamlines.findWhere({ BEAMLINE: params.bl })
+
+                if (hasBeamline) {
+                    this.showBeamlineStats(params.bl)
+                }
+            }
+        },
         initialize: function() {
-            this.beamlines = new Beamlines(null, { ty: app.type })
+            this.beamlines = new Beamlines(null, { ty: app.type }) 
             this.ready = this.beamlines.fetch()
         },
         onRender: function() {
-            $.when(this.ready).done(this.showFilter.bind(this))
+            $.when(this.ready).done(this.displayView.bind(this))
+        },
+        displayView: function() {
+            this.showFilter()
+            this.showBeamlineOverview()
         }
     })
 })
