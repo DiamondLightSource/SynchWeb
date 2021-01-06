@@ -38,8 +38,8 @@
             </div>
 
             <div class="tw-flex tw-flex-col w-w-full tw-m-2 tw-p-4">
-                <p class="tw-text-center tw-text-lg tw-mb-4"><router-link to='/login'>Login</router-link> to view your proposals and sessions</p>
-                <p class="tw-text-center tw-text-lg">If you are looking for archived data please visit the data catalogue <a :href="datacatalogue.url">{{datacatalogue.name}}</a></p>
+                <p class="tw-text-center tw-text-lg tw-mb-4"><router-link to='/login' class="tw-underline">Login</router-link> to view your proposals and sessions</p>
+                <p v-if="dataCatalogue" class="tw-text-center tw-text-lg">If you are looking for archived data please visit the data catalogue <a :href="dataCatalogue.url" class="tw-underline">{{dataCatalogue.name}}</a></p>
             </div>
         </div>
     </section>
@@ -48,6 +48,7 @@
 <script>
 import Hero from 'app/components/herotitle.vue'
 import EventBus from 'app/components/utils/event-bus.js'
+import Config from 'config.json'
 
 export default {
     name: 'Home',
@@ -58,15 +59,14 @@ export default {
         return {
             facility: 'Diamond',
             current_date: new Date(),
-            datacatalogue: {
-                url: 'https://topcat.diamond.ac.uk',
-                name: 'Topcat',
-            },
         }
     },
     computed: {
         isLoggedIn: function() {
             return this.$store.getters.isLoggedIn
+        },
+        dataCatalogue: function() {
+            return Config.data_catalogue
         }
     },
     created: function() {
