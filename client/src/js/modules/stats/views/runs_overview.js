@@ -17,8 +17,7 @@ define([
             stats: '.beamline-stats'
         },
         showBeamlineStats: function(beamline) {
-            // This regex replacement for the url is to allow the url of the page to match the selected beamline
-            // when the user selects a different beamline from the pill
+            // This regex replacement for the url is to allow the url of the page to match the selected beamline when the user selects a different beamline from the pill
 
             var regexExp = new RegExp(/\/bl\/.*/)
             var url = window.location.pathname
