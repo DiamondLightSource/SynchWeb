@@ -163,16 +163,21 @@ class Page
             if ($ty == 'all') {
                 $beamlines = array_filter(array_map(function($k) use ($archived) {
                     if ($archived) {
+                        // Then return all beamlines ignoring the archived property for each beamline
                         return $k['name'];
                     } else {
-                        return $k['archived'] ? NULL : $k['name'];
+                        // We need to filter beamlines where its archived property is set to true.
+                        // If there is no archived property set for the beamline, it's not archived
+                        $beamlineIsArchived = array_key_exists('archived', $k) ? $k['archived'] : False;
+                        return $beamlineIsArchived ? NULL : $k['name'];
                     }
                 }, $bl_types));
             } else {
                 $beamlines = array_filter(array_map(function($k) use ($ty, $archived) {
+                    $beamlineIsArchived = array_key_exists('archived', $k) ? $k['archived'] : False;
                     if ($archived && $k['group'] == $ty) {
                         return $k['name'];
-                    } else if ($k['group'] == $ty && !$k['archived']) {
+                    } else if ($k['group'] == $ty && !$beamlineIsArchived) {
                         return $k['name'];
                     }
                 }, $bl_types));
