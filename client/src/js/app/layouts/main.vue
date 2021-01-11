@@ -18,6 +18,7 @@
     <div class="tw-w-10/12 tw-mx-auto">
         <navbar-menu :proposalMenu="proposalMenu" :extrasMenu="extraMenu"/>
         <motd-display :message="motd"/>
+        <notification-persist-panel></notification-persist-panel>
         <div v-if="isLoading" ><div class="loading">&nbsp;</div></div>
 
         <!-- Main content section -->
@@ -48,6 +49,7 @@ import Navbar from 'app/components/navbar.vue'
 import Breadcrumbs from 'app/components/breadcrumbs.vue'
 import Motd from 'app/components/motd.vue'
 import Notification from 'app/components/notification.vue'
+import NotificationPersist from 'app/components/notification_persist.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import Dialog from 'app/components/dialogbox.vue'
 
@@ -62,6 +64,7 @@ export default {
         'sidebar-menu': Sidebar,
         'motd-display': Motd,
         'notification-dialog': Notification,
+        'notification-persist-panel': NotificationPersist,
         'breadcrumbs-panel': Breadcrumbs,
         'dialog-box': Dialog,
     },

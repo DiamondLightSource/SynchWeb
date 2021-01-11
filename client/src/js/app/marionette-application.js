@@ -176,14 +176,22 @@ var MarionetteApplication = (function () {
                 }
             }
 
+            // Alert is not always used as an error in marionette views.
+            // Can be a normal message if the classname is 'message notify'
+            // Added check so that if a level is explicitly set, use that, otherwise check className
             application.alert = function(options) {
-                console.log("ALERT MESSAGE " + JSON.stringify(options))
-                var payload = {message: options.message, title: options.title, level: 'error'}
+                var level = 'error'
+                if (options.className == 'message notify') level = 'success'
+
+                var payload = {message: options.message, title: options.title, persist: options.persist, level: options.level || level}
+
                 store.commit('add_notification', payload)
             }
 
+            // Options.level is not commonly used in code.
+            // Handled here for future use
             application.message = function(options) {
-                var payload = {message: options.message, title: options.title, level: 'info'}
+                var payload = {message: options.message, title: options.title, persist: options.persist, level: options.level || 'success'}
                 store.commit('add_notification', payload)
             }
         
