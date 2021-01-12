@@ -282,9 +282,28 @@
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
     #     mx, gen, em
-    $bl_types = array('mx' => array('i02', 'i03', 'i04'),
-                      'gen' => array('i11'),
-                      );
+    $bl_types = array(
+        array(
+            'name' => 'i02',
+            'group' => 'mx',
+            'archived' => True
+        ),
+        array(
+            'name' => 'i03',
+            'group' => 'mx',
+            'archived' => False
+        ),
+        array(
+            'name' => 'i04',
+            'group' => 'mx',
+            'archived' => False
+        ),
+        array(
+            'name' => 'i11',
+            'group' => 'gen',
+            'archived' => False
+        )
+    );
 
 
     # Webcam IPs
