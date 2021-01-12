@@ -69,7 +69,19 @@
                     <td class="grey px150">Local Contact</td>
                     <td><?php echo $d['BEAMLINEOPERATOR'] ?></td>
                 </tr>
+
+                <tr>
+                    <td class="grey px150">Containers Barcode</td>
+                    <td>
+                        <ul>
+                            <?php foreach(explode(',', $d['CONTAINERSBARCODE']) as $bar_code) { ?>
+                                <li><?php echo $bar_code ?></li> 
+                            <?php }?>
+                        </ul>
+                    </td>
+                </tr>
             </table>
+
         </div>
         <pagebreak />
 
