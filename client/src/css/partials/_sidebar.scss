@@ -12,7 +12,7 @@
         list-style: none;
         border: 1px solid $sidebar-border;
         background: $sidebar-grad-start;
-        background: linear-gradient(top, $sidebar-grad-start, $sidebar-grad-end);
+        background: linear-gradient(to top, $sidebar-grad-start, $sidebar-grad-end);
     
 
         li {
@@ -135,7 +135,7 @@
             li {
                 width: 100%;
                 .current:hover {
-                    background: lighten($sidebar-mobile-hover-background,10%);
+                    background: color($sidebar-mobile-hover-background tint(10%));
                 }
                 
                 &.feedback, &.help {

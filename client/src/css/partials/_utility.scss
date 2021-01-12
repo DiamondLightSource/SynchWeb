@@ -1,41 +1,43 @@
 // Clearfix
 .clearfix {
-    @include clearfix;
+    @util clearfix;
 }
 
 
 // Two column
 .right {
     float: right;
-    @include cols(2,0 0 0 1%);
+    @mixin cols 2,0 0 0 1%;
     
     &.third {
-        @include cols(3,0 1% 0 0);
+        @mixin cols 3,0 1% 0 0;
     }
 
     &.twothird {
-        @include cols(3,0 1% 0 0, 0, 2);   
+        @mixin cols 3,0 1% 0 0, 0, 2;
     }
-
-    @media (max-width: $breakpoint-vsmall) {
-        @include cols(1,0);
+}
+@media (max-width: $breakpoint-vsmall) {
+    .right {
+        @mixin cols 1,0;
     }
 }
 
 .left {
     float: left;
-    @include cols(2,0 1% 0 0);
+    @mixin cols 2,0 1% 0 0;
 
     &.third {
-        @include cols(3,0 1% 0 0);
+        @mixin cols 3,0 1% 0 0;
     }
 
     &.twothird {
-        @include cols(3,0 1% 0 0, 0, 2);   
+        @mixin cols 3,0 1% 0 0, 0, 2;
     }
-    
-    @media (max-width: $breakpoint-vsmall) {
-        @include cols(1,0);
+}
+@media (max-width: $breakpoint-vsmall) {
+    .left {
+        @mixin cols 1,0;
     }
 }
 
@@ -147,9 +149,9 @@
     }
 
     &.active {
-        background: linear-gradient(lighten($content-active,10%), $content-active);
+        background: linear-gradient(color($content-active tint(10%)), $content-active);
         &:hover {
-            background: linear-gradient($content-active, lighten($content-active,10%));
+            background: linear-gradient($content-active, color($content-active tint(10%)));
         }
     }
     
@@ -229,7 +231,7 @@ ul.ui-autocomplete {
     li.minor {
         &:after {
             content: '\f06a';
-            color: darken($content-minor, 5%);
+            color: color($content-minor shade(5%));
         }
     }
 

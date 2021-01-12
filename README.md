@@ -37,7 +37,9 @@ This file should be copied to create a client/src/js/config.json file and edited
 | ga_ident | Google Analytics id|
 | site_name | Site Name to display in footer |
 | site_link | URL to site home page |
-| site_image | PNG image of site logo to display in header|
+| data_catalogue | Object that includes name and url property for a link to a data catalogue - displayed on the landing page |
+
+Site Image can be customised via the tailwind.config.js header-site-logo and footer-site-logo values.
 
 ### Build front end
 See package.json for the full list of commands that can be run.

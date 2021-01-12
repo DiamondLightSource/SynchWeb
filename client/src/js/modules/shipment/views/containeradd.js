@@ -220,11 +220,12 @@ define(['backbone',
             if (u) {
                 if (!u.get('EMAILADDRESS')) {
                     this.ui.pid.addClass('invalid')
-                    this.ui.pid.after('<span class="emsg ferror">Please update your email address by clicking view</span>')
+                    this.ui.pid.siblings('span.emsg').show()
+                    // this.ui.pid.after('<span class="emsg ferror">Please update your email address by clicking view</span>')
 
                 } else {
                     this.ui.pid.removeClass('invalid')
-                    this.ui.pid.siblings('span.emsg').remove()
+                    this.ui.pid.siblings('span.emsg').hide()
                 }
             }
         },
@@ -453,7 +454,9 @@ define(['backbone',
             
             this.ui.name.val(this.cache.get('data').title)
             
-            app.alert({ message: 'Container contents last saved: '+this.cache.get('data').time, persist: 'saved', className: 'message notify', scrollTo: false })
+            // Changed this to be an info message not alert.
+            // Also the container is not really saved but cached
+            app.message({ message: 'Container contents last cached: '+this.cache.get('data').time, persist: 'saved', className: 'message notify', scrollTo: false })
             console.log('loaded cache', this.cache)
         },
         

@@ -1,33 +1,36 @@
-//@import "compass/reset";
-@import "modules/_mini_reset.scss";
+/* Using a variant of the tailwind/base reset */
+@import "modules/normalize_custom.css";
+
+@import "tailwindcss/components";
 
 // Partials
-@import "partials/base";
+@import "partials/_base.scss";
 
-@import "partials/icons";
-@import "partials/utility";
+@import "partials/_icons.scss";
+@import "partials/_utility.scss";
 
-@import "partials/plots";
-@import "partials/tables";
+@import "partials/_plots.scss";
+@import "partials/_tables.scss";
 
-@import "partials/header";
-@import "partials/sidebar";
-@import "partials/content";
+@import "partials/_header.scss";
+@import "partials/_sidebar.scss";
+@import "partials/_content.scss";
 
-@import "partials/calendar";
-@import "partials/form";
-@import "partials/assign";
-@import "partials/nearest";
-@import "partials/mc";
-@import "partials/imaging";
+@import "partials/_calendar.scss";
+@import "partials/_form.scss";
+@import "partials/_assign.scss";
+@import "partials/_nearest.scss";
+@import "partials/_mc.scss";
+@import "partials/_imaging.scss";
 
 
 // Third-party
-// @import "vendor/jquery-ui.scss";
-// @import "vendor/jquery-ui-timepicker.scss";
-@import "../../node_modules/jquery-ui/themes/base/all.css";
-@import "../../node_modules/jquery-ui-timepicker-addon/dist/jquery-ui-timepicker-addon.css";
+@import "jquery-ui/themes/base/all.css";
+@import "jquery-ui-timepicker-addon/dist/jquery-ui-timepicker-addon.css";
 @import "vendor/jquery-ui.combobox.css";
-@import "vendor/magnific_popup.scss";
-@import "vendor/jquery_misc.scss";
-// @import "vendor/tipTip.scss";
+/* purgecss start ignore */
+@import "vendor/magnific-popup.css";
+@import "vendor/jquery_misc.css";
+/* purgecss end ignore */
+
+@import "tailwindcss/utilities";

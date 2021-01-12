@@ -118,11 +118,10 @@
                 <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
 
-            <li class="clearfix reorder">
-                <div class="COMMENTS text"><%-COMMENTS%></div>
+            <li>
                 <span class="label">Comments</span>
+                <div class="COMMENTS text tw-inline-block tw-w-3/5"><%-COMMENTS%></div>
             </li>
-
         </ul>
         <div class="clear"></div>
     </div>
@@ -144,10 +143,28 @@
 
     <p class="help">This section shows contents and history for the selected dewar. Click the spyglass icon to view the contents of the container</p>
 
+    <!-- Legacy content starts here -->
+    <!-- 
     <div class="left dcontent"></div>
-
 
     <div class="right history table table-no-margin"></div>
     <div class="right tracking table table-no-margin"></div>
 
     <div class="clear"></div>
+    -->
+
+    <!-- Tailwind options here -->
+    <!-- If we want to move the Add Container button to be consistent with Add Dewar -->
+    <!-- <div class="tw-flex tw-justify-end tw-my-2">
+        <span class="r padded_button add_container"></span>
+    </div> -->
+
+    <div class="tw-flex tw-flex-col sm:tw-flex-row">
+        <div class="tw-w-full sm:tw-w-1/2 sm:tw-mr-2 dcontent"></div>
+        <div class="tw-w-full sm:tw-w-1/2 sm:tw-ml-2">
+            <div class="sm:tw-flex sm:tw-flex-col">
+                <div class="history table table-no-margin"></div>
+                <div class="tracking table table-no-margin"></div>
+            </div>
+        </div>
+    </div>

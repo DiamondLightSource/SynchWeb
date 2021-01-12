@@ -4,7 +4,7 @@
     
     &.links li {
         display: block;
-        @include cols(4,1%,0.2%);
+        @mixin cols 4,1%,0.2%;
         height: 15px;
         text-align: center;
         cursor: pointer;
@@ -19,14 +19,14 @@
     > li {
         float: left;
         display: block;
-        @include cols(7,1%,0.2%);
+        @mixin cols 7,1%,0.2%;
         background: $content-cal-background;
         height: 100px;
         //overflow: auto;
         overflow: hidden;
         
         @media (max-width: $breakpoint-small) {
-            @include cols(1,2%,0.5%);
+            @mixin cols 1,2%,0.5%;
             height: auto;
         }
         
@@ -135,10 +135,10 @@
                     
                     li {
                         &.past {
-                            color: lighten($body-color, 60%);
+                            color: color($body-color tint(60%));
                             
                             a {
-                                color: lighten($body-color, 60%);                                
+                                color: color($body-color tint(60%));
                             }
                         }
                         
@@ -146,7 +146,7 @@
                             display: block;
                             background: none;
                             padding: 0;
-                            color: lighten($body-color, 60%);
+                            color: color($body-color tint(60%));
                         }
                         
                         .type {
@@ -206,7 +206,7 @@
         }
         
         &.past {
-            color: lighten($body-color, 60%);
+            color: color($body-color tint(60%));
         }
         
         &.event {
@@ -216,4 +216,20 @@
         }
         
     }
+}
+/* Few fixes to work with tailwind preset */
+.calendar ul.links li {
+    box-sizing: content-box;
+}
+
+.calendar ul li.head {
+    box-sizing: content-box;
+}
+
+.calendar ul li {
+    box-sizing: content-box;
+}
+
+.ul li {
+    box-sizing: content-box;
 }

@@ -11,9 +11,9 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const gitHash = childProcess.execSync('git rev-parse --short HEAD').toString().trim();
 const config = require('./src/js/config.json')
 
-module.exports = (env) => ({
+module.exports = (env, argv) => ({
   entry: {
-      main: './src/index.js',
+      main: './src/js/app/index.js',
   },
   output: {
     filename: '[name]-bundle.js',
@@ -106,14 +106,19 @@ module.exports = (env) => ({
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate/dist/vee-validate.min',
+      // Replacement for moment.js
       zonedTimeToUtc: 'date-fns-tz/zonedTimeToUtc',
-      formatDate: 'date-fns/format'
+      formatDate: 'date-fns/format',
+
+      js: path.resolve(__dirname, 'src/js'),
+      css: path.resolve(__dirname, 'src/css'),
+
     },
     modules: [
       path.resolve(__dirname, 'src/js'),
       path.resolve(__dirname, 'src/css'),
       path.resolve(__dirname, 'node_modules'),
-    ]
+    ],
   },
   module: {
     rules: [
@@ -172,7 +177,7 @@ module.exports = (env) => ({
         ]
       },
       {
-        test: /vue\/.+\.html$/,
+        test: /templates\/vue\/.+\.html$/,
         use: ['html-loader']
       },
       // We need to help Caman load properly
@@ -186,13 +191,15 @@ module.exports = (env) => ({
         test: /\.(sa|sc|c)ss$/,
         use: [
           // Extract the CSS into separate files
-          MiniCssExtractPlugin.loader,
-          "css-loader", // translates CSS into CommonJS
-          { loader: "sass-loader",
+          { 
+            loader: MiniCssExtractPlugin.loader,
             options: {
-                data: "$site_image: '" + (config.site_image || 'diamond_gs_small.png') + "';"
+              hmr: argv.mode === 'development',
+              // reloadAll: true,
             }
-          } // compiles Sass to CSS, using Node Sass by default
+          },
+          "css-loader", // translates CSS into CommonJS
+          "postcss-loader",
         ]
       },
       {
@@ -235,7 +242,14 @@ module.exports = (env) => ({
     new HtmlWebpackPlugin({
       title: 'SynchWeb Webpack',
       filename: path.resolve(__dirname, 'dist/', gitHash, 'index.html'),
-      template: 'src/index.php',
+      template: 'src/index.html',
+      jsonConfig: config,
+    }),
+    // Generate main html file in root client dir
+    new HtmlWebpackPlugin({
+      title: 'SynchWeb Webpack',
+      filename: path.resolve(__dirname, 'index.html'),
+      template: 'src/index.html',
       jsonConfig: config,
     }),
     // Copy static assets to the assets folder
@@ -261,5 +275,8 @@ module.exports = (env) => ({
       filename: '[name].css',
       chunkFilename: '[id].css',
     }),
+    // Allow use to use process.env.NODE_ENV in the build
+    // NODE_ENV should be set in scripts for production builds
+    new webpack.EnvironmentPlugin(['NODE_ENV'])
   ]
 })
