@@ -146,10 +146,11 @@ class PDF extends Page
 
             $this->ship = $ship;
             
-            $this->dewars = $this->db->pq("SELECT bl.beamlinename, bl.beamlineoperator, TO_CHAR(bl.startdate, 'DD-MM-YYYY') as st, d.transportvalue, d.customsvalue, d.code, d.barcode, count(cq.containerqueueid) as auto, count(c.containerid) as containers
+            $this->dewars = $this->db->pq("SELECT bl.beamlinename, bl.beamlineoperator, TO_CHAR(bl.startdate, 'DD-MM-YYYY') as st, d.transportvalue, d.customsvalue, d.code, d.barcode, count(cq.containerqueueid) as auto, count(c.containerid) as containers, GROUP_CONCAT(COALESCE(cr.barCode, c.code)) as containersBarCode
                 FROM dewar d 
                 LEFT OUTER JOIN blsession bl ON d.firstexperimentid = bl.sessionid 
                 LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
+                LEFT OUTER JOIN containerregistry cr ON cr.containerregistryid = c.containerregistryid
                 LEFT OUTER JOIN containerqueue cq ON c.containerid = cq.containerid
                 WHERE d.shippingid=:1
                 GROUP BY d.dewarid", array($ship['SHIPPINGID']));
