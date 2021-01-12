@@ -22,7 +22,7 @@ class Email
         }
 
 
-        public function send($recepients) {
+        public function send($recepients, $cc) {
             global $email_from;
             ob_start();
             
@@ -45,6 +45,10 @@ class Email
                 $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
             }
 
-            mail($recepients, $this->subject, $content, $headers);
+            if ($cc) $headers .= "Cc: " . $cc;
+
+            $result = mail($recepients, $this->subject, $content, $headers);
+
+            return $result;
         }
 }
