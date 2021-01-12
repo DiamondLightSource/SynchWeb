@@ -517,7 +517,7 @@
                 let models = new MultiModelFileWrapper({
                     urlRoot: '/sample/simple',
                 })
-''
+
                 models.set('sample_1', model)
 
                 for(var i=0; i < this.cifFiles.length; i++){
@@ -678,13 +678,23 @@
                     }
 
                     // Remove all leading and trailing white space
-                    var split = e.target.result.split(',')
+                    // Also clean up trailing commas on each row to ensure new line works as expected
                     var trimmed = ''
-                    split.forEach(function(item){
-                        trimmed += item.trim()
-                        if(!item.endsWith("\n"))
-                            trimmed +=','
+                    newLineSplit.forEach(function(row){
+                        var cells = row.split(',')
+                        cells.forEach(function(cell, index){
+                            i = index + 1
+                            trimmed += cell.trim()
+                            if(cells.length != i){
+                                trimmed += ','
+                            } else {
+                                if(trimmed.endsWith(','))
+                                    trimmed = trimmed.substring(0, trimmed.length-1)
+                                trimmed += "\n"
+                            }
+                        })
                     })
+
                     var blob = new Blob([trimmed], {type:self.csvFile.type});
                     blob.name = self.csvFile.name
                     self.csvFile = blob
