@@ -78,7 +78,7 @@ define(['marionette',
             this.ui.run.html(this.runs.opts())
 
             var params = this.getOption('params')
-            var last = params.run ? params.run : this.runs.first().get('RUNID')
+            var last = params && params.run ? params.run : this.runs.first().get('RUNID')
 
             this.ui.run.val(last)
             this.changeRun()
