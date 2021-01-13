@@ -158,3 +158,30 @@ ol {
     font-size: 14px;
     border-bottom: none;
 }
+
+.container-title {
+    margin-right: 5px;
+    width: 136px;
+    padding: 2px;
+    margin-left: 2px;
+}
+
+.title-wrapper {
+    padding: 2px 0px
+}
+
+.container-item {
+    width: 80px;
+    height: 30px;
+    font-size: 12px;
+    padding: 5px;
+    margin-bottom: 3px;
+    margin-right: 3px;
+    margin-left: 3px;
+    float: left;
+    border: 1px solid gray;
+}
+
+.float-left {
+    float: left;
+}

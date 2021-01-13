@@ -69,18 +69,18 @@
                     <td class="grey px150">Local Contact</td>
                     <td><?php echo $d['BEAMLINEOPERATOR'] ?></td>
                 </tr>
-
-                <tr>
-                    <td class="grey px150">Containers Barcode</td>
-                    <td>
-                        <ul>
-                            <?php foreach(explode(',', $d['CONTAINERSBARCODE']) as $bar_code) { ?>
-                                <li><?php echo $bar_code ?></li> 
-                            <?php }?>
-                        </ul>
-                    </td>
-                </tr>
             </table>
+
+            <div class="float-left px150 title-wrapper">
+                <div class="grey container-title">
+                    Containers (<?php echo $d['CONTAINERS'] ?>)
+                </div>
+            </div>
+            <div class="containers-list">
+                <?php foreach(explode(',', $d['CONTAINERSBARCODE']) as $bar_code) { ?>
+                    <div class="container-item"><?php echo $bar_code ?></div> 
+                <?php }?>
+            </div>
 
         </div>
         <pagebreak />
