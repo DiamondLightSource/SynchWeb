@@ -29,7 +29,7 @@ define(['marionette', 'views/form',
         events: {
             'change @ui.lc': 'getlcdetails',    
             'change @ui.exp': 'updateLC',
-            'click @ui.useAnotherCourierAccount': 'toggleCourierAccountDisplay'  
+            'click @ui.useAnotherCourierAccount': 'toggleCourierAccountEditing'  
         },
         
         ui: {
@@ -148,7 +148,7 @@ define(['marionette', 'views/form',
             }
         },
         
-        toggleCourierAccountDisplay: function(event) {
+        toggleCourierAccountEditing: function(event) {
             if (event.target.checked) {
                 this.$el.find('input[name=DELIVERYAGENT_AGENTNAME]').attr('disabled', false)
                 this.$el.find('input[name=DELIVERYAGENT_AGENTCODE]').attr('disabled', false)
