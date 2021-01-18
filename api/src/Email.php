@@ -22,7 +22,7 @@ class Email
         }
 
 
-        public function send($recepients, $cc) {
+        public function send($recepients, $cc=null) {
             global $email_from;
             ob_start();
             
