@@ -155,6 +155,9 @@ define(['marionette', 'views/form',
             } else {
                 this.$el.find('input[name=DELIVERYAGENT_AGENTNAME]').val(this.dewar.get('DELIVERYAGENT_AGENTNAME'))
                 this.$el.find('input[name=DELIVERYAGENT_AGENTCODE]').val(this.dewar.get('DELIVERYAGENT_AGENTCODE'))
+
+                this.$el.find('input[name=DELIVERYAGENT_AGENTNAME]').attr('disabled', true)
+                this.$el.find('input[name=DELIVERYAGENT_AGENTCODE]').attr('disabled', true)
             }
         }
     })
