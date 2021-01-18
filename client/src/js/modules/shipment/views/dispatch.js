@@ -2,7 +2,7 @@ define(['marionette', 'views/form',
     'collections/visits',
     'collections/labcontacts',
     'collections/shipments',
-    'collections/dewars',
+    'models/dewar',
     'modules/shipment/collections/dewarhistory',
 
     'modules/shipment/models/dispatch',
@@ -13,7 +13,7 @@ define(['marionette', 'views/form',
     'backbone-validation',
     
     ], function(Marionette, FormView,
-        Visits, LabContacts, Shipments, Dewars, DewarHistory,
+        Visits, LabContacts, Shipments, Dewar, DewarHistory,
         DispatchModel,
         template, $_, Backbone) {
 
@@ -28,7 +28,8 @@ define(['marionette', 'views/form',
         
         events: {
             'change @ui.lc': 'getlcdetails',    
-            'change @ui.exp': 'updateLC',    
+            'change @ui.exp': 'updateLC',
+            'click @ui.useAnotherCourierAccount': 'toggleCourierAccountDisplay'  
         },
         
         ui: {
@@ -46,6 +47,7 @@ define(['marionette', 'views/form',
             lab: 'input[name=LABNAME]',
 
             courier: 'span.courier',
+            useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]'
         },
 
 
@@ -82,11 +84,12 @@ define(['marionette', 'views/form',
             var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
 
-            // if (this.model.get('FACILITYCODE')) {
-                // this.ui.courier.html('<select name="DELIVERYAGENT_AGENTNAME"><option value="Diamond DHL">Diamond DHL (UK ONLY)</option><option value="Diamond Fedex">Diamond Fedex (International ONLY)</option></select>')
-            // } else {
-                this.ui.courier.html('<input type="text" name="DELIVERYAGENT_AGENTNAME" />')
-            // }
+            this.ui.courier.html('<input type="text" name="DELIVERYAGENT_AGENTNAME" />')
+            this.$el.find('input[name=DELIVERYAGENT_AGENTNAME]').val(this.dewar.get('DELIVERYAGENT_AGENTNAME'))
+            this.$el.find('input[name=DELIVERYAGENT_AGENTCODE]').val(this.dewar.get('DELIVERYAGENT_AGENTCODE'))
+
+            this.$el.find('input[name=DELIVERYAGENT_AGENTNAME]').attr('disabled', true)
+            this.$el.find('input[name=DELIVERYAGENT_AGENTCODE]').attr('disabled', true)
             
             var self = this
             this.ready.done(function() {
@@ -95,7 +98,8 @@ define(['marionette', 'views/form',
             })
         },
 
-        initialize: function() {
+        initialize: function(options) {
+            this.dewar = options.dewar
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
             this.listenTo(this.contacts, 'sync', this.updateContacts)
             this.refreshContacts()
@@ -144,9 +148,15 @@ define(['marionette', 'views/form',
             }
         },
         
-
-        
-        
+        toggleCourierAccountDisplay: function(event) {
+            if (event.target.checked) {
+                this.$el.find('input[name=DELIVERYAGENT_AGENTNAME]').attr('disabled', false)
+                this.$el.find('input[name=DELIVERYAGENT_AGENTCODE]').attr('disabled', false)
+            } else {
+                this.$el.find('input[name=DELIVERYAGENT_AGENTNAME]').val(this.dewar.get('DELIVERYAGENT_AGENTNAME'))
+                this.$el.find('input[name=DELIVERYAGENT_AGENTCODE]').val(this.dewar.get('DELIVERYAGENT_AGENTCODE'))
+            }
+        }
     })
 
 })
