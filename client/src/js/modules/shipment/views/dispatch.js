@@ -2,7 +2,7 @@ define(['marionette', 'views/form',
     'collections/visits',
     'collections/labcontacts',
     'collections/shipments',
-    'collections/dewar',
+    'collections/dewars',
     'modules/shipment/collections/dewarhistory',
 
     'modules/shipment/models/dispatch',
