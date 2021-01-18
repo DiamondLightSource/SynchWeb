@@ -2,7 +2,7 @@ define(['marionette', 'views/form',
     'collections/visits',
     'collections/labcontacts',
     'collections/shipments',
-    'models/dewar',
+    'collections/dewar',
     'modules/shipment/collections/dewarhistory',
 
     'modules/shipment/models/dispatch',
@@ -13,7 +13,7 @@ define(['marionette', 'views/form',
     'backbone-validation',
     
     ], function(Marionette, FormView,
-        Visits, LabContacts, Shipments, Dewar, DewarHistory,
+        Visits, LabContacts, Shipments, Dewars, DewarHistory,
         DispatchModel,
         template, $_, Backbone) {
 
