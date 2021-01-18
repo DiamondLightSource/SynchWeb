@@ -21,12 +21,11 @@
             <div class="ca">
                 <img src="assets/images/dls_logo.jpg" width="250px" />
                 <br />
-                <br />
 
                 <barcode code="<?php echo $d['BARCODE'] ?>" type="QR" size="0.75" height="1.5" />
                 <div class="mono">*<?php echo $d['BARCODE'] ?>*</div>
             </div>
-    
+
             <?php if ($d['AUTO'] > 0): ?>
                 <div class="notification notification-inline">
                     <h1>Auto Collect</h1>
@@ -78,7 +77,10 @@
             </div>
             <div class="containers-list">
                 <?php foreach(explode(',', $d['CONTAINERSBARCODE']) as $bar_code) { ?>
-                    <div class="container-item"><?php echo $bar_code ?></div> 
+                    <div class="container-item"><?php echo strlen($bar_code) > 15 ? substr($bar_code,0,14).'+' : $bar_code ?></div>
+                <?php }?>
+                <?php if ($d['CONTAINERS'] > 10) { ?>
+                    <div class="container-item"><?php echo " plus " . ($d['CONTAINERS'] - count(explode(',', $d['CONTAINERSBARCODE']))) . " more" ?></div>
                 <?php }?>
             </div>
 
