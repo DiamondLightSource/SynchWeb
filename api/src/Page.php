@@ -846,4 +846,21 @@ class Page
             } else return $default;
         }
 
+
+        /** 
+         * Determine processed dir path based on data collection results
+         * This function needs to find the samples and investigators for this container
+         * 
+         * @param array $dc Array of data collection variables, must container VIS, DIR, IMP and RUN 
+         * @param string $location directory nane to append to visit directory that holds processed results
+         * @return string Returns processed directory path (falls back to legacy dir with extra underscore)
+         */
+        function get_visit_processed_dir($dc, $location) {
+            $root = preg_replace( '/' . $dc['VIS']   . '/', $dc['VIS'] . $location, $dc['DIR'], 1) . $dc['IMP'] . '_' . $dc['RUN'] . '/';
+            if (!is_dir($root)) {
+                $root = preg_replace( '/' . $dc['VIS']   . '/', $dc['VIS'] . $location, $dc['DIR'], 1) . $dc['IMP'] . '_' . $dc['RUN'] . '_' . '/';
+            }
+            return $root;
+        }
+
     }
