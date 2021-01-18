@@ -756,7 +756,8 @@ class DC extends Page
                         }
 
                         foreach ($ap_statuses['locations'] as $loc) {
-                            $root = preg_replace('/'.$dc['VIS'].'/', $dc['VIS'].$loc, $dc['DIR'], 1).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
+                            #$root = preg_replace('/'.$dc['VIS'].'/', $dc['VIS'].$loc, $dc['DIR'], 1).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
+                            $root = $this->get_visit_processed_dir($dc, $loc);
                             if (file_exists($root.$ap[0])) {
                                 $val = 1;
                                 $logs = glob($root.$ap[0].'*'.$ap[1]);
@@ -1274,8 +1275,8 @@ class DC extends Page
                 $dat = array();
                 
                 #$root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_'.'/'.$p[0].'/';
-                $root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_'.'/'.$p[0].'/';
-                
+                #$root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_'.'/'.$p[0].'/';
+                $root = $this->get_visit_processed_dir($info, '/processed') . $p[0].'/';
                 $file = $root . $p[1][0];
                 if (file_exists($file)) {
                     $dat['TYPE'] = $n;
@@ -1460,7 +1461,8 @@ class DC extends Page
                         $dtpt = 'big_ep/*'.$sgmatch[0];
                         foreach ( array ('/processed',
                                         '/tmp') as $loc ) {
-                            $settings_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt;
+                            #$settings_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt;
+                            $settings_root = $this->get_visit_processed_dir($info, $loc) . $dtpt;
                             $bigep_settings_glob = glob($settings_root.'/big_ep*/*/big_ep_settings.json');
                             if (sizeof($bigep_settings_glob)) {
                                 preg_match('/\/big_ep\/(?P<tag>\w+)\/xia2\/(3dii|dials)\-run\w*/', $bigep_settings_glob[0], $tagmatch);
@@ -1473,7 +1475,8 @@ class DC extends Page
                         }
                         foreach ( $bigep_patterns as $ppl => $pplpt ) {
                             foreach ( array ('/processed', '/tmp' ) as $loc ) {
-                                $bigep_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt . $pplpt;
+                                #$bigep_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt . $pplpt;
+                                $bigep_root = $this->get_visit_processed_dir($info, $loc) . $dtpt . $pplpt;
                                 $bigep_mdl_glob = glob($bigep_root.'big_ep_model_ispyb.json');
                                 if (sizeof($bigep_mdl_glob)) {
                                     $bigep_mdl_json = $bigep_mdl_glob[0];
@@ -1876,5 +1879,21 @@ class DC extends Page
             }
             
             $this->_output(array($data));
+        }
+
+        /** 
+         * Determine processed dir path based on data collection results
+         * This function needs to find the samples and investigators for this container
+         * 
+         * @param array $dc Array of data collection variables, must container VIS, DIR, IMP and RUN 
+         * @param string $location directory nane to append to visit directory that holds processed results
+         * @return string Returns processed directory path (falls back to legacy dir with extra underscore)
+         */
+        function get_visit_processed_dir($dc, $location) {
+            $root = preg_replace( '/' . $dc['VIS']   . '/', $dc['VIS'] . $location, $dc['DIR'], 1) . $dc['IMP'] . '_' . $dc['RUN'] . '/';
+            if (!is_dir($root)) {
+                $root = preg_replace( '/' . $dc['VIS']   . '/', $dc['VIS'] . $location, $dc['DIR'], 1) . $dc['IMP'] . '_' . $dc['RUN'] . '_' . '/';
+            }
+            return $root;
         }
 }
