@@ -6,7 +6,7 @@ define([
     'modules/stats/views/beamline',
     
     'views/filter',
-    'templates/runs/overview.html',
+    'templates/stats/runs_overview.html',
     'jquery'
 ], function(Marionette, Beamlines, BeamlineStatsView, FilterView, template, $) {
     return Marionette.LayoutView.extend({
