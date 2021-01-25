@@ -4,6 +4,8 @@
     <notification-dialog/>
     <!-- Header menus and breadcrumbs (full width) -->
     <header-menu :staff_menus="adminMenu"/>
+    <!-- Mobile search panel in same place as original -->
+    <search-mobile />
     <breadcrumbs-panel :bc="bc"/>
 
     <!-- Popout menu for mobile screens -->
@@ -52,6 +54,7 @@ import Notification from 'app/components/notification.vue'
 import NotificationPersist from 'app/components/notification_persist.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import Dialog from 'app/components/dialogbox.vue'
+import SearchMobile from 'app/components/search_mobile.vue'
 
 import { mapState } from 'vuex'
 
@@ -67,6 +70,7 @@ export default {
         'notification-persist-panel': NotificationPersist,
         'breadcrumbs-panel': Breadcrumbs,
         'dialog-box': Dialog,
+        'search-mobile': SearchMobile
     },
     data: function() {
       return {

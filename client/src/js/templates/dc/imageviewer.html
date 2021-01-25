@@ -4,14 +4,15 @@
 <p class="help">This page is a full scale diffraction image viewer. Mousehweel zooms in and out, drag click to pan around the image. Press &gt; to go to the next image and &lt; the previous.</p>
 
 <div class="data_collection dc_params">
-    <ul class="full clearfix">
-        <li>Exposure: <%-EXPOSURETIME%>s</li>
-        <li>Transmission: <%-TRANSMISSION%>%</li>
-        <li>Resolution: <%-RESOLUTION%>&#197;</li>
-        <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
-        <li>Oscillation: <%-AXISRANGE%>&deg;</li>
+    <ul class="full tw-flex">
+        <li class="tw-w-1/5">Exposure: <%-EXPOSURETIME%>s</li>
+        <li class="tw-w-1/5">Transmission: <%-TRANSMISSION%>%</li>
+        <li class="tw-w-1/5">Resolution: <%-RESOLUTION%>&#197;</li>
+        <li class="tw-w-1/5">Wavelength: <%-WAVELENGTH%>&#197;</li>
+        <li class="tw-w-1/5">Oscillation: <%-AXISRANGE%>&deg;</li>
     </ul>
 </div>
+
 
 <div class="tw-items-center">
     <a class="button" href="/dc/view/id/<%-ID%>">View Full Screen</a>
