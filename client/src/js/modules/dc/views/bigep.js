@@ -16,7 +16,14 @@ define(['marionette', 'views/log', 'templates/dc/dc_bigep.html', 'utils'], funct
         
         showLog: function(e) {
             e.preventDefault()
-            app.dialog.show(new LogView({ title: this.model.get('TYPE') + ' Log File', url: $(e.target).attr('href') }))
+            var url = $(e.target).attr('href')
+            var self = this
+            utils.sign({
+                url: url,
+                callback: function(resp) {
+                    app.dialog.show(new LogView({ title: self.model.get('TYPE') + ' Log File', url: url+'?token='+resp.token }))
+                }
+            })
         },
         
         
