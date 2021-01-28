@@ -135,7 +135,7 @@ define(['marionette', 'views/form',
             this.listenTo(this.contacts, 'sync', this.updateContacts)
             this.refreshContacts()
             
-            this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 9999 } })
+            this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 9999 }, timeZone: app.options.get('timezone') })
             this.visits.fetch().done(this.updateFirstExp.bind(this))
             
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE], input[name=DELIVERYAGENT_DELIVERYDATE]')

@@ -26,7 +26,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
           
         if (visit) {
             app.cookie(visit.split('-')[0])
-            model = new Visit({ VISIT: visit })
+            model = new Visit({ VISIT: visit }, { dateTimeZone: app.options.get('timezone')})
             error = 'The specified visit does not exist'
         } else {
             model = new Proposal({ PROPOSAL: app.prop })
@@ -150,7 +150,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
         console.log('summary')
         app.loading()
         app.cookie(visit.split('-')[0])
-        var vis = new Visit({ VISIT: visit })
+        var vis = new Visit({ VISIT: visit }, { dateTimeZone: app.options.get('timezone') })
         vis.fetch({
             success: function() {
                 app.bc.reset([bc, { title: 'Summary' }, { title: visit }])
@@ -174,7 +174,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
         console.log('apstatussummary')
         app.loading()
         app.cookie(visit.split('-')[0])
-        var vis = new Visit({ VISIT: visit })
+        var vis = new Visit({ VISIT: visit }, { dateTimeZone: app.options.get('timezone') })
         vis.fetch({
             success: function() {
                 app.bc.reset([bc, { title: 'Autoprocessing Status Summary' }, { title: visit }])
@@ -196,7 +196,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
     sampleChanger: function(visit) {
         app.loading()
         app.cookie(visit.split('-')[0])
-        var vis = new Visit({ VISIT: visit })
+        var vis = new Visit({ VISIT: visit }, { dateTimeZone: app.options.get('timezone') })
         vis.fetch({
             success: function() {
                 console.log('sc vis', vis, vis.get('BL'))
@@ -215,7 +215,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
     // Queue Builder
     queue: function(visit) {
         app.loading()
-        var vis = new Visit({ VISIT: visit })
+        var vis = new Visit({ VISIT: visit }, { dateTimeZone: app.options.get('timezone') })
         vis.fetch({
             success: function() {
                 app.bc.reset([bc, { title: 'Queue Builder' }, { title: visit }])

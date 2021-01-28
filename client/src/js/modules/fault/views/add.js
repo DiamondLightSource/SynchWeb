@@ -83,6 +83,7 @@ define(['views/form',
                         return self.ui.bl.val()
                     }
                 },
+                timeZone: app.options.get('timezone')
             })
             
             

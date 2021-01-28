@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'zonedTimeToUtc','collections/visits', 'templates/calendar/calendar.html'], function(Marionette, Backbone, zonedTimeToUtc, Visits, template) {
+define(['marionette', 'backbone', 'luxon','collections/visits', 'templates/calendar/calendar.html'], function(Marionette, Backbone, luxon, Visits, template) {
     
     // humm
     DISABLE_DAY_SCROLL = false
@@ -59,20 +59,16 @@ define(['marionette', 'backbone', 'zonedTimeToUtc','collections/visits', 'templa
         },
         
         initialize: function(options) {
-            var timezone = app.options.get('timezone') ? app.options.get('timezone') : 'Europe/London'
-
             var hours = _.uniq(_.map(this.model.get('visits'), function(m) {
-                const sessionStartISO = m.get('STISO')
-                const utcTime = zonedTimeToUtc.default(sessionStartISO, timezone)
-                return utcTime.getUTCHours() 
+                var sessionStartISO = m.get('STISO')
+                return sessionStartISO.hour 
             }))
             
             hc = []
             _.each(hours, function(h) {
                 hc.push({ hour: h, visits: _.filter(this.model.get('visits'), function(m) {
-                    const sessionStartISO = m.get('STISO')
-                    const utcTime = zonedTimeToUtc.default(sessionStartISO, timezone)
-                    return utcTime.getUTCHours()  == h
+                    var sessionStartISO = m.get('STISO')
+                    return sessionStartISO.hour  == h
                 }) })
             }, this)
             
@@ -315,7 +311,8 @@ define(['marionette', 'backbone', 'zonedTimeToUtc','collections/visits', 'templa
 
             this.visits = new Visits(null, {
                 queryParams: queryParams,
-                state: { pageSize: 9999 }
+                state: { pageSize: 9999 },
+                timeZone: app.options.get('timezone') 
             })
             
             this.listenTo(this.visits, 'request', this.displaySpinner)

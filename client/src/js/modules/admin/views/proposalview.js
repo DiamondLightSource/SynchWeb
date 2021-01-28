@@ -31,7 +31,7 @@ define(['marionette', 'backbone',
         },
 
         initialize: function(options) {
-            this.visits = new Visits()
+            this.visits = new Visits(null, { timeZone: app.options.get('timezone') })
             this.visits.queryParams.prop = this.model.get('PROPOSAL')
             this.visits.fetch()
         },

@@ -28,7 +28,7 @@ define(['marionette',
             app.cookie(prop)
             
             app.loading()
-            var vis = new Visit({ VISIT: visit })
+            var vis = new Visit({ VISIT: visit }, { dateTimeZone: app.options.get('timezone') })
             vis.fetch({
                 success: function() {
                     var breakdown = new BreakDown({ visit: visit })

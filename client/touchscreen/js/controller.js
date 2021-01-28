@@ -9,7 +9,7 @@ function($,
 
     var controller = {
         visits: function() {
-            var visits = new Visits(null)
+            var visits = new Visits(null, { timeZone: app.options.get('timezone') })
             var self = this
             visits.fetch({
                 success: function() {
@@ -19,7 +19,7 @@ function($,
         },
     
         assign: function(visit) {
-            var vis = new Visit({ VISIT: visit })
+            var vis = new Visit({ VISIT: visit }, { dateTimeZone: app.options.get('timezone')})
             var self = this
             vis.fetch({
                 success: function() {

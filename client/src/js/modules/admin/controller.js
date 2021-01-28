@@ -133,7 +133,7 @@ define(['marionette',
             }
 
             app.loading()
-            var visit = new Visit({ VISIT: vis })
+            var visit = new Visit({ VISIT: vis }, { dateTimeZone: app.options.get('timezone') })
             visit.fetch({
                 success: function() {
                     app.bc.reset([bc2, { title: visit.get('PROPOSAL'), url: '/admin/proposals/'+visit.get('PROPOSAL') }, { title: visit.get('VISIT') }])
