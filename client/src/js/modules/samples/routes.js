@@ -17,7 +17,7 @@ const CrystalViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modul
 const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-add-wrapper.vue')
 
 const SampleGroups = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleGroups.vue')
-import Debug from 'app/views/debug.vue'
+const SampleGroupEdit = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleGroupEdit.vue')
 
 app.addInitializer(function() {
   app.on('samples:show', function() {
@@ -220,9 +220,14 @@ const routes = [
     }),
   },
   {
-    path: '/samples/groups(/id/)?:gid([0-9]+)?',
+    path: '/samples/groups',
     name: 'samples-groups',
     component: SampleGroups,
+  },
+  {
+    path: '/samples/groups/edit(/id/)?:gid([0-9]+)?',
+    name: 'samples-group-edit',
+    component: SampleGroupEdit,
     props: route => ({
       gid: +route.params.gid || null
     }),
