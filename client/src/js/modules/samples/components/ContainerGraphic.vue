@@ -1,6 +1,6 @@
 <template>
-    <section class="tw-container tw-mx-auto">
-        <div class="tw-mb-4">
+    <section class="tw-mx-auto">
+        <!-- <div class="tw-mb-4">
             <h1 class="tw-text-xl">Scoring Color Schemes</h1>
             <label>Color Scale</label>
             <select v-model="colorScale" class="tw-border tw-rounded tw-shadow tw-px-2">
@@ -12,18 +12,28 @@
                 <label>Threshold Value: </label><input v-model="threshold" class="tw-align-bottom slider" type="range" min="0" max="100" id="myRange"/>
                 <div><p>Threshold: {{threshold}}%</p></div>
             </div>
-        </div>
+        </div> -->
 
-        <div>
-          <p>{{containerComponent}}</p>
+        <div v-if="containerComponent" class="tw-flex">
+          <div class="tw-w/2/3 tw-border tw-border-green-500 tw-m-1 tw-p-2">
+          <h1 class="tw-text-xl">Container</h1>
+            <component v-bind:is="containerComponent"
+                :container="geometry"
+                :samples="samples.data"
+                :threshold="threshold/100"
+                :color-scale="colorScale"
+                :selected="selectedItems"
+                @cell-clicked="onCellClicked"/>
+          </div>
+          <div class="tw-w-1/3 tw-border tw-border-green-500 tw-m-1 tw-p-2">
+            <h1 class="tw-text-xl">Samples to be added</h1>
+            <ul>
+              <li v-for="(sample, index) in selectedItems" :key="index">
+                <p class="tw-text-lg">{{sample}}</p>
+              </li>
+              </ul>
+          </div>
         </div>
-          <component v-bind:is="containerComponent"
-              :container="geometry"
-              :samples="samples.data"
-              :threshold="threshold/100"
-              :color-scale="colorScale"
-              :selected="selectedItems"
-              @cell-clicked="onCellClicked"/>
     </section>
 </template>
 
