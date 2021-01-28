@@ -1,21 +1,13 @@
 <template>
+
   <div class="content">
-    <h1>Sample Group Management</h1>
+    <h1 v-if="gid">Edit Sample Group</h1>
+    <h1 v-else>Add Sample Group</h1>
 
-    <!-- <pagination-table /> -->
-
-    <div class="r tw-mb-2">
-      <button @click="onAddSampleGroup" class="button"><i class="fa fa-plus"></i> Add Sample Group</button>
-      <button v-if="sampleGroupId" @click="onAddSampleGroup" class="button"><i class="fa fa-plus"></i> Edit Sample Group</button>
-    </div>
-    <table-panel
-      :headers="headers"
-      :data="groups"
-      @row-clicked="onSampleGroupSelected"
-    ></table-panel>
-
-    <pagination-panel />
-
+    <form>
+      <label for="name">Sample Group Name</label>
+      <input v-model="groupName" type="text" placeholder="group name">
+    </form>
 
 
     <div v-if="sampleGroupMembers.length > 0" class="content">
@@ -24,13 +16,48 @@
         :headers="sampleGroupHeaders"
         :data="sampleGroupMembers"
       ></table-panel>
-
-    <pagination-panel />
     </div>
+
+    <h1>Shipments</h1>
+    <table-panel
+      :headers="shipmentHeaders"
+      :data="shipments"
+      @row-clicked="onShipmentSelected"
+    ></table-panel>
+
+    <div v-if="dewars.length > 0" class="content">
+    <h1>Dewars</h1>
+    <table-panel
+      :headers="dewarHeaders"
+      :data="dewars"
+      @row-clicked="onDewarSelected"
+    ></table-panel>
+
+    </div>
+
+    <div v-if="containers.length > 0" class="content">
+    <h1>Containers</h1>
+    <table-panel
+      :headers="containerHeaders"
+      :data="containers"
+      @row-clicked="onContainerSelected"
+    ></table-panel>
+
+    </div>
+
+    <button @click.prevent="onSaveSampleGroup" class="r tw-rounded tw-px-4 tw-py-2 tw-text-white tw-border tw-border-green-700 tw-bg-green-500 hover:tw-bg-green-600">Save Sample Group</button>
+
+    <container-graphic
+    :geometry="containerGeometry"
+    :containerType="containerType"/>
+
+
+
   </div>
 </template>
 
 <script>
+
 import ContainerGraphic from './ContainerGraphic.vue'
 
 import Table from 'app/components/utils/table.vue'
@@ -45,21 +72,22 @@ import ContainersCollection from 'collections/containers.js'
 import ContainerTypes from 'modules/shipment/collections/platetypes.js'
 
 export default {
-  name: 'sample-group-management',
+  name: "sample-group-edit",
+  props: {
+    'gid': Number,
+    'sampleGroup': Object
+  },
   components: {
     'table-panel': Table,
     'pagination-panel': Pagination,
     'container-graphic': ContainerGraphic,
     'pagination-table': PaginationTable,
   },
-
   data: function() {
     return {
-      headers: [
-        { title: 'Group Name', key: 'NAME'},
-        { title: 'ID', key: 'BLSAMPLEGROUPID'},
-        { title: 'Number of Samples', key: 'NUM_MEMBERS'},
-      ],
+      groupName: "New Sample Group",
+      lockName: this.gid ? true : false,
+
       sampleGroupHeaders: [
         { title: 'ID', key: 'BLSAMPLEID'},
         { title: 'Name', key: 'SAMPLE'},
@@ -113,17 +141,16 @@ export default {
 
       sampleGroupMembers: [],
       sampleGroupName: null,
-      sampleGroupId: null
     }
   },
+
   created: function() {
-    console.log("SampleGroups page created: gid = " + this.gid)
-
     this.containerTypes = new ContainerTypes()
-    this.sampleGroups = new SampleGroupsCollection()
+    // this.sampleGroups = new SampleGroupsCollection()
     this.shipmentCollection = new ShipmentCollection()
-  },
 
+    this.sampleGroups = new SampleGroupsCollection()
+  },
   mounted: function() {
     this.$store.commit('loading', true)
 
@@ -132,16 +159,26 @@ export default {
       // for some reason groups method gives us an array of arrays!!!
       let collection = result.groups()
 
+      console.log("COLLECTION = " + JSON.stringify(collection))
+
       // We can store the result as the backbone collection - needed?
       this.sampleGroups = Object.assign(this.sampleGroups, result)
 
       // Update the sample group mapping we need
       this.groups = collection.toJSON()
 
+      // this.sampleGroupMembers = collection.models[0].MEMBERS.toJSON()
+      // this.sampleGroupName = item.NAME
+
+      let group = collection.findWhere({BLSAMPLEGROUPID: this.gid})
+      console.log("PLucked Group " + this.gid + " = " + JSON.stringify(group))
+
     }, (err) => console.log("Sample group error " + JSON.stringify(err))
     ).finally( () => {
       this.$store.commit('loading', false)
     })
+
+
 
     this.getShipments().then( (result) => {
       // We can store the result as the backbone collection - needed?
@@ -158,18 +195,10 @@ export default {
   },
 
   methods: {
-    onSampleGroupSelected: function(item) {
-      console.log("SampleGroup Row Clicked: " + JSON.stringify(item))
-      this.sampleGroupMembers = item.MEMBERS.toJSON()
-      this.sampleGroupName = item.NAME
-      this.sampleGroupId = item.BLSAMPLEGROUPID
-      console.log("SampleGroup Members: " + JSON.stringify(this.sampleGroupMembers))
+    onSaveSampleGroup: function() {
+      console.log("Save Sample Group")
     },
-    onEditSampleGroup: function() {
-      if (this.sampleGroupId) {
-        this.$router.push('/samples/groups/edit/id/' + this.sampleGroupId)
-      }
-    },
+
     onShipmentSelected: function(item) {
       console.log("Shipment ID Clicked: " + item.SHIPPINGID)
       // Reset containers view
@@ -215,10 +244,6 @@ export default {
       // What type of container is it?
       let type = item.CONTAINERTYPE
       this.setContainerType(type)
-    },
-
-    onAddSampleGroup: function() {
-      this.$router.push({name: 'samples-group-edit'})
     },
 
     // Wrap the method to get collection as promise
