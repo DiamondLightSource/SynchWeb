@@ -54,7 +54,7 @@ define(['backbone', 'backbone-validation', 'luxon'], function(Backbone, BackBone
         
         this.attributes.ENISO = DateTime.fromISO(this.get('ENISO'), { zone: this.dateTimeZone })
         this.attributes.STISO = DateTime.fromISO(this.get('STISO'), { zone: this.dateTimeZone })
-        this.attributes.LEN = (this.attributes.ENISO.diff(this.attributes.STISO))/(3600*1000).toFixed(2);
+        this.attributes.LEN = ((this.attributes.ENISO.diff(this.attributes.STISO))/(3600*1000)).toFixed(2);
         this.attributes.VISITDETAIL = this.get('VISIT')+' ('+this.get('BL')+': '+this.get('ST')+')'
     },
 
