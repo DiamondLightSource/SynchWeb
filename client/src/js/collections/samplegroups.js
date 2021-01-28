@@ -31,13 +31,16 @@ define(['backbone',
     
         model: SampleGroupMember,
         url: '/sample/groups',
-        
+
         mode: 'server',
-        
+
         state: {
             pageSize: 100,
         },
-        
+
+        addNew: true,
+        newType: 'container',
+
         initialize: function(options) {
             this._groups = new SampleGroupCollection()
             this._groups.parent = this
@@ -63,7 +66,9 @@ define(['backbone',
 
                 groups.push({
                     BLSAMPLEGROUPID: g,
-                    MEMBERS: new SampleGroupMembers(members)
+                    NAME: members.length && members[0].get('NAME'),
+                    MEMBERS: new SampleGroupMembers(members),
+                    NUM_MEMBERS: members.length
                 })
             }, this)
 
@@ -73,12 +78,12 @@ define(['backbone',
 
         groups: function() {
             return this._groups
-        }, 
+        },
 
         parseRecords: function(r, options) {
             return r.data
         },
-        
+
         parseState: function(r, q, state, options) {
             return { totalRecords: r.total }
         },
