@@ -64,7 +64,7 @@ function lookupProposal(params) {
         let proposal = new Proposal({ PROPOSAL: params.prop })
 
         proposal.fetch({
-            // If OK trigger next 
+            // If OK trigger next
             success: function(model) {
               console.log("Admin proposal model lookup OK")
               resolve(model)
@@ -73,7 +73,7 @@ function lookupProposal(params) {
             error: function() {
                 reject({msg: "Admin proposal model lookup failed"})
             }
-        })    
+        })
     })
 }
 
@@ -116,7 +116,7 @@ const routes = [
                         model: new Group({USERGROUPID: route.params.gid})
                     }
                 }),
-            }        
+            }
         ]
     },
     // Routes to manage proposals and visits/sessions
@@ -191,7 +191,7 @@ const routes = [
                         proposalModel = response
                         // store.commit('save_model', {name: 'admin-proposal', model: response})
                         next()
-                    }, (error) => { 
+                    }, (error) => {
                         console.log(error.msg)
                         next('/notfound')
                     }).finally( () => {
@@ -264,7 +264,7 @@ const routes = [
         // Left here as a reference for alternative method to meta
         beforeEnter(to, from, next) {
             if (!app.user_can('manage_users')) {
-                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page', level: 'error' })
                 next('/403?url='+to.fullPath)
             } else {
                 next()
