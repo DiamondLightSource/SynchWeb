@@ -36,7 +36,7 @@ const DewarStats = import(/* webpackChunkName: "group-shipment" */ 'modules/ship
 const DispatchView = import(/*webpackChunkName: "group-shipment" */ 'modules/shipment/views/dispatch')
 const TransferView = import(/*webpackChunkName: "group-shipment" */ 'modules/shipment/views/transfer')
 
-// In future may want to move these into wrapper components 
+// In future may want to move these into wrapper components
 // Similar approach was used for samples with a samples-map to determine the correct view
 // For now there are only two types 'normal' and 'xpdf'
 const ContainersView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/containers')
@@ -53,6 +53,7 @@ const ContainerPlanWrapper = () => import(/* webpackChunkName: "groups-shipment"
 const ContainerQueueWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ContainerQueueWrapper.vue')
 
 const DewarsOverviewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/DewarsOverviewWrapper.vue')
+const ShipmentAddWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ShipmentAddWrapper.vue')
 
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
@@ -61,11 +62,11 @@ app.addInitializer(function() {
   application.on('shipments:show', function() {
       application.navigate('/shipments')
   })
-      
+
   application.on('shipment:show', function(sid) {
       application.navigate('/shipments/sid/'+sid)
   })
-      
+
   application.on('container:show', function(cid, iid, sid) {
       application.navigate('/containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
   })
@@ -92,7 +93,7 @@ function lookupShipment(shippingId) {
       shipmentModel = new Shipment({ SHIPPINGID: shippingId })
 
       shipmentModel.fetch({
-          // If OK trigger next 
+          // If OK trigger next
           success: function(model) {
             resolve(model)
           },
@@ -100,7 +101,7 @@ function lookupShipment(shippingId) {
           error: function() {
             reject({msg: "Shipment model lookup failed "})
           }
-      })    
+      })
   })
 }
 // Shipment default returns a dewar id
@@ -110,7 +111,7 @@ function lookupDefaultShipment(visit) {
     Backbone.ajax({
       url: app.apiurl+'/shipment/dewars/default',
       data: { visit: visit },
-      
+
       success: function(dewarId) {
         resolve(dewarId)
       },
@@ -146,11 +147,11 @@ const routes = [
   {
     path: '/shipments(/page/)?:page([0-9]+)?',
     component: MarionetteView,
-    props: route => ({ 
+    props: route => ({
       mview: ShipmentsView,
       breadcrumbs: [bc],
       options: {
-        collection: new Shipments(null, { 
+        collection: new Shipments(null, {
           state: { currentPage: route.params.page ? parseInt(route.params.page) : 1},
           queryParams: { s: route.params.s }
         }),
@@ -164,11 +165,44 @@ const routes = [
     component: Page,
     children: [
       // Note that we need props to be a function so we pass in shippingComments correctly
+      // {
+      //   path: 'add',
+      //   component: MarionetteView,
+      //   props: route => ({
+      //     mview: ShipmentAddView,
+      //     breadcrumbs: [bc, { title: 'Add New Shipment' }],
+      //     options: {
+      //       comments: shipmentComments
+      //     }
+      //   }),
+      //   beforeEnter: (to, from, next) => {
+      //     // Is this proposal still open?
+      //     if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+      //       app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new shipments cannot be added'} )
+      //       next('/403?url='+to.fullPath)
+      //     } else {
+      //       app.log('ship add view')
+
+      //       // Get any comments to prefill from the server
+      //       Backbone.ajax({
+      //           url: app.appurl+'/assets/js/shipment_comments.json',
+      //           dataType: 'json',
+      //           success: function(comments) {
+      //             shipmentComments = comments
+      //             next()
+      //           },
+      //           error: function() {
+      //             console.log("Warning no comments found")
+      //             next()
+      //           }
+      //       })
+      //     }
+      //   }
+      // },
       {
         path: 'add',
-        component: MarionetteView,
-        props: route => ({ 
-          mview: ShipmentAddView,
+        component: ShipmentAddWrapper,
+        props: route => ({
           breadcrumbs: [bc, { title: 'Add New Shipment' }],
           options: {
             comments: shipmentComments
@@ -198,10 +232,12 @@ const routes = [
           }
         }
       },
+
       {
         path: 'sid/:sid',
+        name: 'shipment-view',
         component: MarionetteView,
-        props: route => ({ 
+        props: route => ({
           mview: ShipmentView,
           breadcrumbs: [bc],
           breadcrumb_tags: ['SHIPPINGNAME'], // If we find a model append to the bc
@@ -231,7 +267,7 @@ const routes = [
       {
         path: 'awb/sid/:sid',
         component: MarionetteView,
-        props: route => ({ 
+        props: route => ({
           mview: CreateAWBView,
           breadcrumbs: [bc, { title: 'Create Airway Bill' }], // Actually swapped round with shippingname
           breadcrumb_tags: ['SHIPPINGNAME'], // If we find a model append to the bc
@@ -246,11 +282,11 @@ const routes = [
             lookupShipment(to.params.sid).then((response) => {
                 console.log("Lookup Model OK - " + JSON.stringify(response))
                 next()
-            }, (error) => { 
+            }, (error) => {
                 console.log("Lookup Shipment Error: " + error.msg)
                 app.alert({ title: 'No such shipment', message: 'Create AWB error' })
                 next(from.fullPath)
-            }).finally( () => { 
+            }).finally( () => {
                 // In either case we can stop the loading animation
                 app.loading(false)
             })
@@ -260,7 +296,7 @@ const routes = [
       {
         path: 'pickup/sid/:sid',
         component: MarionetteView,
-        props: route => ({ 
+        props: route => ({
           mview: RebookPickupView,
           breadcrumbs: [bc, { title: 'Rebook Pickup' }], // Actually swapped round with shippingname
           breadcrumb_tags: ['SHIPPINGNAME'], // If we find a model append to the bc
@@ -285,7 +321,7 @@ const routes = [
               }, (error) => {
                   app.alert({ title: 'No such shipment', message: error.msg })
                   next(from.fullPath)
-              }).finally( () => { 
+              }).finally( () => {
                   // In either case we can stop the loading animation
                   app.loading(false)
               })
@@ -319,13 +355,13 @@ const routes = [
     path: '/containers(/s/)?:s([a-zA-Z0-9_-]+)?(/ty/)?:ty?(/page/)?:page([0-9]+)?',
     name: 'container-list',
     component: MarionetteView,
-    props: route => ({ 
+    props: route => ({
       mview: app.type == 'xpdf' ? XpdfContainersView : ContainersView,
       breadcrumbs: [bc, { title: 'Containers' }],
       options: {
-        collection: new Containers(null, { 
-          state: { currentPage: route.params.page ? parseInt(route.params.page) : 1}, 
-          queryParams: { s: route.params.s, ty: route.params.ty } 
+        collection: new Containers(null, {
+          state: { currentPage: route.params.page ? parseInt(route.params.page) : 1},
+          queryParams: { s: route.params.s, ty: route.params.ty }
         }),
         params: {s: route.params.s, ty: route.params.ty},
       }
@@ -335,7 +371,7 @@ const routes = [
     path: '/containers/cid/:cid([0-9]+)(/iid/)?:iid([0-9]+)?(/sid/)?:sid([0-9]+)?',
     name: 'container-view',
     component: ContainerViewWrapper,
-    props: route => ({ 
+    props: route => ({
       cid: +route.params.cid,
       iid: +route.params.iid,
       sid: +route.params.sid,
@@ -345,7 +381,7 @@ const routes = [
     path: '/containers/add/did/:did([0-9]+)',
     name: 'container-add',
     component: ContainerAddWrapper,
-    props: route => ({ 
+    props: route => ({
       did: +route.params.did,
     }),
   },
@@ -369,7 +405,7 @@ const routes = [
     path: '/containers/queue/:cid([0-9]+)',
     name: 'container-queue',
     component: ContainerQueueWrapper,
-    props: route => ({ 
+    props: route => ({
       cid: +route.params.cid,
     }),
   },
@@ -388,13 +424,13 @@ const routes = [
       // Think there is an error in the original controller url was /dewars?
       breadcrumbs: [bc, { title: 'Registered Containers', url: '/containers/registry' }],
       options: {
-        collection: new ContainersRegistry(null, { 
-          state: { currentPage: +route.params.page || 1 }, 
+        collection: new ContainersRegistry(null, {
+          state: { currentPage: +route.params.page || 1 },
           queryParams: { s: route.params.s, ty: route.params.ty, all: 1 }
         }),
         params: { s: route.params.s, ty: route.params.ty}
       },
-    }) 
+    })
   },
   {
     path: '/containers/registry/:crid([0-9]+)',
@@ -408,19 +444,19 @@ const routes = [
         model: new ContainerRegistry({ CONTAINERREGISTRYID: +route.params.crid }),
         queryParams: { all: 1 } // These will be passed to the model fetch as data: { all: 1}
       },
-    }) 
+    })
   },
   //
   // Dewars Section
   //
-  { 
+  {
     path: '/dewars(/s/)?:s([a-zA-Z0-9_-]+)?(/page/)?:page([0-9]+)?',
     component: MarionetteView,
     props: route => ({
       mview: DewarRegView,
       breadcrumbs: [bc, { title: 'Registered Dewars', url: '/dewars' }],
       options: {
-        collection: new DewarRegistry(null, { 
+        collection: new DewarRegistry(null, {
           state: { currentPage: +route.params.page || 1}
         }),
         params: { s: route.params.s },
@@ -429,7 +465,7 @@ const routes = [
   },
   // To dispatch, lookup the proposal by dewarId and prefetch the dewar Model
   // The dewarModel is passed as an option to the view but is not the main model for the Marionette view itself
-  { 
+  {
     path: '/dewars/dispatch/:did([0-9]+)',
     component: MarionetteView,
     props: route => ({
@@ -459,7 +495,7 @@ const routes = [
       })
     }
   },
-  { 
+  {
     path: '/dewars/transfer/:did([0-9]+)',
     component: MarionetteView,
     props: route => ({
@@ -492,16 +528,16 @@ const routes = [
   },
   // This route is remarkably similar to /dewars - think the titles should be different?
   // This one has all: 1 in its queryParams and a different Marionette View
-  { 
+  {
     path: '/dewars/registry(/ty/)?:ty([a-zA-Z0-9_-]+)?(/s/)?:s([a-zA-Z0-9_-]+)?(/page/)?:page([0-9]+)?',
     component: MarionetteView,
     props: route => ({
       mview: DewarRegistryView,
       breadcrumbs: [bc, { title: 'Registered Dewars', url: '/dewars' }],
       options: {
-        collection: new DewarRegistry(null, { 
+        collection: new DewarRegistry(null, {
           state: { currentPage: +route.params.page || 1},
-          queryParams: { s: route.params.s, ty: route.params.ty, all: 1 } 
+          queryParams: { s: route.params.s, ty: route.params.ty, all: 1 }
         }),
         params: { s: route.params.s, ty: route.params.ty },
       }
@@ -509,7 +545,7 @@ const routes = [
   },
   // This route was the only place where dewar.fetched = true was set after the model was fetched.
   // No other controller does this so we have not tried to handle this edge case in MarionetteView
-  { 
+  {
     path: '/dewars/registry/:fc',
     component: MarionetteView,
     props: route => ({
@@ -521,7 +557,7 @@ const routes = [
       }
     })
   },
-  { 
+  {
     path: '/dewars/overview(/s/)?:s([a-zA-Z0-9_-]+)?(/page/)?:page([0-9]+)?',
     component: DewarsOverviewWrapper,
     props: route => ({
@@ -529,7 +565,7 @@ const routes = [
       page: +route.params.page || 1
     })
   },
-  { 
+  {
     path: '/migrate',
     component: MarionetteView,
     props: {
