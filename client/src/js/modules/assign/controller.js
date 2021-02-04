@@ -14,8 +14,7 @@ define(['marionette',
         selectVisit: function(visit) {
             app.loading()
             var visits = new Visits(null, {
-                queryParams: { next: 1 },
-                timeZone: app.options.get('timezone')
+                queryParams: { next: 1 }
             })
             visits.fetch({
                 success: function() {
@@ -34,7 +33,7 @@ define(['marionette',
         assignVisit: function(vis, page) {
             app.loading()
             app.cookie(vis.split('-')[0])
-            var visit = new Visit({ VISIT: vis }, { dateTimeZone: app.options.get('timezone') })
+            var visit = new Visit({ VISIT: vis })
             
             visit.fetch({
                 success: function() {

@@ -1,12 +1,11 @@
 define(['backbone', 'backbone-validation', 'luxon'], function(Backbone, BackBoneValidation, luxon) {
-
   var Visit = Backbone.Model.extend({
     idAttribute: 'VISIT',
     urlRoot: '/proposal/visits',
       
     initialize: function(attributes, options) {
       this.on('change', this.addDate, this)
-      this.dateTimeZone = this.collection ? this.collection.dateTimeZone : options.dateTimeZone
+      this.dateTimeZone = window.app.options.get('timezone')
       this.addDate()
     },
 

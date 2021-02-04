@@ -114,7 +114,7 @@ define(['marionette', 'backbone',
             edit.create('WEIGHT', 'text')
             
             var self = this
-            this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 5 }, timeZone: app.options.get('timezone') })
+            this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 5 } })
             this.visits.fetch().done(function() {
                 self.ui.first.html(self.visits.opts())
                 edit.create('FIRSTEXPERIMENTID', 'select', { data: self.visits.kv() }, true)

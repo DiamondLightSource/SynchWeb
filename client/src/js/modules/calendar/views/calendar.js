@@ -311,8 +311,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
 
             this.visits = new Visits(null, {
                 queryParams: queryParams,
-                state: { pageSize: 9999 },
-                timeZone: app.options.get('timezone') 
+                state: { pageSize: 9999 }
             })
             
             this.listenTo(this.visits, 'request', this.displaySpinner)

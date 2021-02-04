@@ -67,8 +67,7 @@ Editable, utils, XHRImage, template, Backbone) {
                         bl: function() {
                             return self.model.get('BEAMLINE')
                         }
-                    },
-                    timeZone: app.options.get('timezone')
+                    }
                 })
                 
                 this.systems = new Systems(null, {

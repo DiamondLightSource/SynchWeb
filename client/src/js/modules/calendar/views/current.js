@@ -93,9 +93,9 @@ define(['marionette',
         initialize: function() {
             this.deferreds = []
             if (app.staff) {
-                this.next = new Visits(null, { timeZone: app.options.get('timezone') })
-                this.prev = new Visits(null, { timeZone: app.options.get('timezone') })
-                this.cm = new Visits(null, { timeZone: app.options.get('timezone') })
+                this.next = new Visits(null)
+                this.prev = new Visits(null)
+                this.cm = new Visits(null)
                 
                 this.beamlines = new Beamlines(null, { ty: app.type })
                 this.beamlines.fetch()
@@ -105,7 +105,7 @@ define(['marionette',
                 _.each(['next', 'prev'], function(d) {
                     var p = { all: 1 }
                     p[d] = 1
-                    this[d] = new Visits(null, { state: { pageSize: 5 }, queryParams: p, timeZone: app.options.get('timezone') })
+                    this[d] = new Visits(null, { state: { pageSize: 5 }, queryParams: p })
                     this.deferreds.push(this[d].fetch())
                 }, this)
             }

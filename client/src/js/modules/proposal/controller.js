@@ -29,7 +29,7 @@ define(['underscore', 'marionette',
         app.loading()
         page = page ? parseInt(page) : 1
         
-        var visits = new Visits(null, { state: { currentPage: page }, queryParams: { s: s }, timeZone: app.options.get('timezone') })
+        var visits = new Visits(null, { state: { currentPage: page }, queryParams: { s: s } })
         visits.fetch().done(function() {
             var views = {
                 saxs: SAXSVisitList,

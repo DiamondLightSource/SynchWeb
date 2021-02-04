@@ -49,7 +49,7 @@ define(['views/form',
             this.model = new Visit({ 
                 PROPOSAL: this.getOption('proposal').get('PROPOSAL'),
                 PROPOSALID: this.getOption('proposal').get('PROPOSALID') 
-            }, { dateTimeZone: app.options.get('timezone') })
+            })
         },
 
         success: function(model, response, options) {
