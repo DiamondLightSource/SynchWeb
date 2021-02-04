@@ -4,9 +4,6 @@ define(['backbone.paginator', 'models/visit', 'utils/kvcollection'], function(Pa
         model: Visit,
         mode: 'server',
         url: '/proposal/visits',
-        initialize: function(models, options) {
-          this.dateTimeZone = options.timeZone ? options.timeZone : 'Europe/London'
-        },
                                           
         state: {
           pageSize: 10,

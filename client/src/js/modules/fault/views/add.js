@@ -82,7 +82,7 @@ define(['views/form',
                     bl: function() {
                         return self.ui.bl.val()
                     }
-                }
+                },
             })
             
             

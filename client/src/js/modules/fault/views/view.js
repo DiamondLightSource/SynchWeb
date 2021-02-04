@@ -67,7 +67,7 @@ Editable, utils, XHRImage, template, Backbone) {
                         bl: function() {
                             return self.model.get('BEAMLINE')
                         }
-                    }
+                    },
                 })
                 
                 this.systems = new Systems(null, {

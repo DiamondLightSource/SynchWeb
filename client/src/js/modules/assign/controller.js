@@ -13,9 +13,7 @@ define(['marionette',
         // Select visit to assign
         selectVisit: function(visit) {
             app.loading()
-            var visits = new Visits(null, {
-                queryParams: { next: 1 }
-            })
+            var visits = new Visits(null, { queryParams: { next: 1 } })
             visits.fetch({
                 success: function() {
                     app.bc.reset([bc]),
