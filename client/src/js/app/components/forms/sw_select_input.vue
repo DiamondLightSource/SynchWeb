@@ -1,7 +1,17 @@
-<!-- https://jschof.com/vue/a-form-component-in-vue-js-making-nice-wrappers/ -->
+<!--
+Select Wrapper
+Based on pattern from https://jschof.com/vue/a-form-component-in-vue-js-making-nice-wrappers/
+
+Options is a JSON object with at least two name:value pairs
+Pass in the key used to provide the value attribute and the key used for the display text
+So if the options were: [ { 'NAME': 'Green', 'ID': 0 }, { 'NAME': 'Yellow', 'ID': 1 } ]
+...and the optionTextKey = NAME, optionValueKey = ID
+...would result in: <option value="0">Green</option>
+
+-->
 <template>
   <div>
-    <label v-show="label" :for="id">{{label}}
+    <label v-if="label" :for="id">{{label}}
       <span v-if="description" class="small">{{description}}</span>
       <slot name="description"></slot>
     </label>
@@ -13,7 +23,7 @@
       v-bind="$attrs"
       v-on="getListeners">
       <option v-show="defaultText" disabled value="">{{defaultText}}</option>
-      <option v-for="item in items" :key="item[itemKey]" :value="item[itemKey]">{{item[itemValue]}}</option>
+      <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
     </select>
     <slot name="actions"></slot>
   </div>
@@ -24,19 +34,19 @@ export default {
   name: "SwSelectInput",
   inheritAttrs: false,
   props: {
-    value: {
+    value: { // Passed in automatically if v-model used
       type: String,
       required: true
     },
-    items: {
+    options: {
       type: Array,
       required:true
     },
-    itemKey: {
+    optionValueKey: {
       type: String,
       required: true
     },
-    itemValue: {
+    optionTextKey: {
       type: String,
       required: true
     },

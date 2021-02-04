@@ -5,7 +5,7 @@ Intended to abstract the logic from how the date picker part works so we can mig
 -->
 <template>
   <div>
-    <label :for="id">{{label}}
+    <label v-if="label" :for="id">{{label}}
       <span v-if="description" class="small">{{description}}</span>
       <slot name="description"></slot>
     </label>
@@ -59,10 +59,7 @@ export default {
     var self = this
     $('#'+this.id).datepicker({
       dateFormat: "dd-mm-yy",
-      onSelect: function(dateText) {
-        console.log("onSelect:" + dateText);
-        self.$emit("input", dateText);
-      }
+      onSelect: (dateText) => self.$emit("input", dateText)
     })
   }
 };

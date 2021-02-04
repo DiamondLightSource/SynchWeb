@@ -2,17 +2,27 @@
   <div class="content">
     <h1>New Shipment for SCM</h1>
 
-    <form method="post" id="add_shipment">
 
+    <form method="post" id="add_shipment">
     <div class="form">
 
         <div class="tw-flex-col">
 
-            <sw-text-input id="shipment-name" v-model="shipmentName" name="SHIPPINGNAME" description="Name for the shipment" label="Name"/>
+            <sw-text-input
+              id="shipment-name"
+              v-model="$v.SHIPPINGNAME.$model"
+              :validate="$v.SHIPPINGNAME.$error"
+              name="SHIPPINGNAME"
+              description="Name for the shipment"
+              label="Name">
+              <template v-slot:error-msg>
+                  <span class="ferror" v-if="!$v.SHIPPINGNAME.minLength">Name must have at least {{$v.SHIPPINGNAME.$params.minLength.min}} letters.</span>
+              </template>
+            </sw-text-input>
 
             <sw-text-input v-model="numPieces" label="Number of Dewars" type="number" name="DEWARS" description="Number of dewars to automatically create for this shipment" />
 
-            <div class="tw-flex tw-w-full tw-mb-2">
+            <div v-if="numPieces > 0" class="tw-flex tw-w-full tw-mb-2">
               <label>Facility Dewar Codes
                 <span class="small">Unique code for each dewar of the shipment.<br />No facility codes listed? Make sure they are <a href="/dewars/registry">Registered</a> to this proposal.</span>
               </label>
@@ -31,7 +41,7 @@
                 </label>
                 <div class="tw-flex">
                     <sw-radio-input class="tw-mt-2" :options="sessionTypes" v-model="sessionType" />
-                    <sw-select-input v-show="sessionType == 0" name="FIRSTEXPERIMENTID" class="tw-mr-2" v-model="selectedVisit" :items="visits" itemKey="SESSIONID" itemValue="VISITDETAIL" defaultText="Please select a visit"></sw-select-input>
+                    <sw-select-input v-show="sessionType == 0" name="FIRSTEXPERIMENTID" class="tw-mr-2" v-model="selectedVisit" :options="visits" optionValueKey="SESSIONID" optionTextKey="VISITDETAIL" defaultText="Please select a visit"></sw-select-input>
                 </div>
             </div>
 
@@ -41,24 +51,24 @@
               description="The safety level of the shipment"
               defaultText="Please select a risk rating"
               v-model="safetyLevel"
-              :items="[{'VALUE':'Green', 'KEY': 'Green'}, {'VALUE':'Yellow', 'KEY': 'Yellow'}, {'VALUE':'Red', 'KEY': 'Red'}]"
-              itemKey="KEY"
-              itemValue="VALUE"/>
+              :options="[{'NAME':'Green', 'ID': 'Green'}, {'NAME':'Yellow', 'ID': 'Yellow'}, {'NAME':'Red', 'ID': 'Red'}]"
+              optionValueKey="ID"
+              optionTextKey="NAME"/>
 
             <sw-textarea-input id="comments" v-model="comments" name="COMMENTS" description="Comment for the shipment" label="Comments"/>
 
-            <sw-select-input id="labcontacts-sending-id" name="SENDINGLABCONTACTID" v-model="sendingLabContact" :items="labContacts" itemKey="LABCONTACTID" itemValue="CARDNAME" label="Outgoing Lab Contact" defaultText="Please select a labcontact">
+            <sw-select-input id="labcontacts-sending-id" name="SENDINGLABCONTACTID" v-model="sendingLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Outgoing Lab Contact" defaultText="Please select a labcontact">
               <template v-slot:description><span class="small">Lab contact for outgoing transport | <a class="add_lc" @click.prevent="onAddLocalContact" href="/contact/add">Add</a></span></template>
             </sw-select-input>
 
-            <sw-select-input id="labcontacts-return-id" name="RETURNLABCONTACTID" v-model="returnLabContact" :items="labContacts" itemKey="LABCONTACTID" itemValue="CARDNAME" label="Return Lab Contact" defaultText="Please select a labcontact">
+            <sw-select-input id="labcontacts-return-id" name="RETURNLABCONTACTID" v-model="returnLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Return Lab Contact" defaultText="Please select a labcontact">
               <template v-slot:description><span class="small">Lab contact for return transport | <a class="add_lc" @click.prevent="onAddLocalContact" href="/contact/add">Add</a></span></template>
             </sw-select-input>
 
 
             <sw-date-input id="shipment-date" v-model="shipmentDate" name="DELIVERYAGENT_SHIPPINGDATE" description="Date shipment will leave lab / be picked up" label="Shipping Date"/>
 
-            <sw-text-input id="pickup-location" v-model="pickupLocation" name="PHYSICALLOCATION" description="Location where shipment can be picked up from. i.e. Reception" label="Pickup Location"/>
+            <sw-text-input id="pickup-location" v-model="$v.PHYSICALLOCATION.$model" :validate="$v.PHYSICALLOCATION.$error" name="PHYSICALLOCATION" description="Location where shipment can be picked up from. i.e. Reception" label="Pickup Location"/>
 
             <sw-time-input id="ready-time" v-model="readyTime" name="READYBYTIME" description="Time shipment will be ready for pickup" label="Ready by Time"/>
 
@@ -83,7 +93,8 @@
 </template>
 
 <script>
-import ShipmentModel from 'models/shipment'
+// import ShipmentModel from 'models/shipment'
+import { ShipmentModel, ShipmentModelValidation } from 'models/shipment.es6'
 import VisitsCollection from 'collections/visits'
 import LabContactsCollection from 'collections/labcontacts'
 import DewarRegistryCollection from 'modules/shipment/collections/dewarregistry'
@@ -114,7 +125,7 @@ export default {
     'sw-time-input': SwTimeInput
   },
   name: 'SCMShipment',
-    data: function() {
+  data: function() {
     return {
       // Number of packages included in this shipment
       numPieces: 1,
@@ -129,7 +140,7 @@ export default {
       ],
 
       // Values that will be added to the shipment request
-      shipmentName: '',
+      SHIPPINGNAME: '',
 
       shipmentDate: '',
       readyTime: '',
@@ -138,6 +149,7 @@ export default {
       courierAccount: '',
       deliveryDate: '',
       pickupLocation: '',
+      PHYSICALLOCATION: '',
 
       sendingLabContact: '',
       returnLabContact: '',
@@ -148,8 +160,26 @@ export default {
       comments: '',
 
       safetyLevel: 'Green',
+
+      // Testing vuelidate
+      name: '',
+      age: '',
     }
   },
+  validations: ShipmentModelValidation,
+  // validations: {
+  //   SHIPPINGNAME: {
+  //     required,
+  //     minLength: minLength(4)
+  //   },
+  //   comments: {
+  //     required
+  //   },
+  //   PHYSICALLOCATION: {
+  //     required:false,
+  //     maxLength: maxLength(5)
+  //   },
+  // },
   computed: {
     DHL_ENABLE: function() {
       return app.options.get('dhl_enable')
@@ -174,6 +204,7 @@ export default {
   },
 
   created: function() {
+
     let visitsCollection = new VisitsCollection(null, { queryParams: { next: 1 }, state: { pageSize: 9999 } })
     let dewarRegistryCollection = new DewarRegistryCollection(null, { state: { pageSize: 9999 } })
 
@@ -187,6 +218,8 @@ export default {
     this.$store.dispatch('getCollection', dewarRegistryCollection).then( (result) => {
       this.dewars = result.toJSON()
     })
+
+    console.log("VALIDATIONS: " + JSON.stringify(ShipmentModelValidation))
   },
 
   methods: {
@@ -194,7 +227,7 @@ export default {
       // The backbone model we are going to save
       // Its actually very simple - just specify the attributes in an object
       let shipmentModel = new ShipmentModel({
-        SHIPPINGNAME: this.shipmentName,
+        SHIPPINGNAME: this.SHIPPINGNAME,
         SAFETYLEVEL: this.safetyLevel,
         FCODES: this.dewarsList,
         DELIVERYAGENT_AGENTNAME: this.courierName,
@@ -209,13 +242,16 @@ export default {
         SENDINGLABCONTACTID: this.sendingLabContact,
         RETURNLABCONTACTID: this.returnLabContact
       })
-      // Check its valid
-      let ret = shipmentModel.validate()
-      console.log("Model.validate returns " + ret)
-      var valid = shipmentModel.isValid(true);
-
       console.log(JSON.stringify(shipmentModel))
 
+      this.$v.$touch()
+      if (this.$v.$invalid) {
+        console.log("VueValidate Error")
+      } else {
+        console.log("VueValidate OK")
+      }
+
+      let valid = false
       if (valid) {
         this.saveModel(shipmentModel)
       } else {

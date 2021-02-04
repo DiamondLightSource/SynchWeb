@@ -5,7 +5,7 @@ Intended to abstract the logic from how the time picker part works so we can mig
 -->
 <template>
   <div>
-    <label :for="id">{{label}}
+    <label v-if="label" :for="id">{{label}}
       <span v-if="description" class="small">{{description}}</span>
       <slot name="description"></slot>
     </label>
