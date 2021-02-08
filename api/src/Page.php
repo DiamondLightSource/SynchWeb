@@ -680,6 +680,39 @@ class Page
 
             if (sizeof($ret)) return $ret[0];
         }
+        /**
+         * Search ISPyB Person record for 'emailAddress' property
+         * This limits the search to staff users i.e. those with at least one usergroup association
+         * Its used when an LDAP lookup fails for a local contact
+         *
+         * @param string $name "Firstname Surname" or "Title Firstname Surname"
+         * @return string Returns email address if found
+         */
+        function _get_ispyb_email_fn($name) {
+            $email = '';
+            $fn = '';
+            $ln = '';
+            
+            $parts = explode(' ', $name);
+            if (sizeof($parts) == 2) {
+              $fn = $parts[0];
+              $ln = $parts[1];
+            } else if (sizeof($parts) == 3) {
+              $fn = $parts[1];
+              $ln = $parts[2];
+            }
+            if ($fn && $ln) {
+                // Try finding an email address from within ISPyB
+                // We are only interested in staff users so join with usergroup table
+                $lc_emails = $this->db->pq("SELECT pe.emailaddress
+                  FROM person pe
+                  INNER JOIN usergroup_has_person ugp ON ugp.personid = pe.personid
+                  WHERE pe.givenname =:1 AND pe.familyname =:2 AND pe.emailaddress IS NOT NULL", array($fn, $ln));
+
+                if (sizeof($lc_emails)) $email = $lc_emails[0]['EMAILADDRESS'];
+            }
+            return $email;
+        }
               
 
         # Run an ldap search
