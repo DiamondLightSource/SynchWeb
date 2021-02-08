@@ -4,25 +4,33 @@
 
         <h1>Login</h1>
         <p v-if="sso">Redirect to Single Sign On</p>
+        <!-- Wrap the form in an observer component so we can check validation state on submission -->
+        <validation-observer ref="observer" v-slot="{ invalid }">
+
         <form class="tw-w-full md:tw-w-1/2 tw-mx-auto tw-mt-8">
             <ul>
                 <li class="tw-flex-col md:tw-flex-row tw-mb-4">
                     <label class="md:tw-w-1/3 tw-p-2 tw-text-left md:tw-text-right" for="username">Username (Fedid)</label>
-                    <input v-bind:class="[{ferror: errors.has('username')}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']" v-validate="'required'"  v-model="username" type="text" name="username"/>
-                    <div class="tw-content-center"><p v-if="errors.has('username')" class="tw-content-center tw-mt-2 md:tw-ml-2 tw-align-text-bottom tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800">{{ errors.first('username') }}</p></div>
+                    <validation-provider rules="required" v-slot="{ errors }" name="username">
+                      <input v-bind:class="[{ferror: errors.length}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']" v-model="username" type="text" :name="name"/>
+                      <div class="tw-content-center"><p v-if="errors.length" class="tw-content-center tw-mt-2 md:tw-ml-2 tw-align-text-bottom tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800">{{ errors[0] }}</p></div>
+                    </validation-provider>
                 </li>
                 <li class="tw-flex-col md:tw-flex-row tw-mb-4">
                     <label class="md:tw-w-1/3 tw-p-2 tw-text-left md:tw-text-right" for="password">Password</label>
-                    <input v-bind:class="[{ferror: errors.has('password')}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']" v-validate="'required'" v-model="password" type="password" name="password"/>
-                    <div class="tw-content-center"><p v-if="errors.has('password')" class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800">{{ errors.first('password') }}</p></div>
+                    <validation-provider rules="required" v-slot="{ errors }" name="password">
+                      <input v-bind:class="[{ferror: errors.length}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']" v-model="password" type="password" :name="name"/>
+                      <div class="tw-content-center"><p v-if="errors.length" class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800">{{ errors[0] }}</p></div>
+                    </validation-provider>
                 </li>
                 <li class="tw-flex-col md:tw-flex-row tw-mb-4">
                     <!-- Spacer to align login button neatly -->
                     <div class="md:tw-w-1/3 tw-px-2"></div>
-                    <button class="tw-px-8 tw-py-2 tw-w-64 tw-border tw-border-gray-400 button submit" v-on:click.prevent="onSubmit">Login</button>
+                    <button :disabled="invalid" class="tw-px-8 tw-py-2 tw-w-64 tw-border tw-border-gray-400 button submit" v-on:click.prevent="onSubmit">Login</button>
                 </li>
             </ul>
         </form>
+        </validation-observer>
     </div>
 </template>
 
@@ -32,6 +40,7 @@ import EventBus from 'app/components/utils/event-bus.js'
 
 import Vue from 'vue'
 import VeeValidate from 'veevalidate'
+import { ValidationProvider, ValidationObserver } from 'vee-validate'
 // Currently implemented with vee-validate
 // May want to move to vuelidate as it would fit with backbone models easier
 // Could reuse validation within backbone models then
@@ -41,6 +50,8 @@ export default {
     name: 'Login',
     components: {
         'hero-title': Hero,
+        'validation-provider': ValidationProvider,
+        'validation-observer': ValidationObserver,
     },
     props: [
         'redirect' // For future if we need to handle cas authentication and multiple redirects
@@ -52,7 +63,7 @@ export default {
             redirectUrl: '/current'
         }
     },
-    
+
     computed: {
         sso: function() {
             return this.$store.getters.sso
@@ -75,26 +86,15 @@ export default {
         resetForm: function() {
             this.username = ''
             this.password = ''
-
-            // To reset form validation, we should wait for next tick
-            // Vue rectivity means the DOM will not be updated immediately
-            this.$nextTick(function() {
-                this.$validator.reset()
-            })
         },
 
         onSubmit: function(event) {
             event.preventDefault()
 
-            let self = this
-
-            this.$validator.validateAll().then(function(result) {
-                if (result) {
-                    self.doLogin()
-                } else {
-                    console.log('Form submission prevented, validation failed');
-                }
-            });
+            this.$refs.observer.validate().then( (result) => {
+              if (result) this.doLogin()
+              else console.log("Form validation failed ")
+            })
         },
 
         doLogin: function() {
