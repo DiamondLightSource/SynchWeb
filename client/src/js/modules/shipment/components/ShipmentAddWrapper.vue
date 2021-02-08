@@ -2,15 +2,12 @@
   <div class="content">
     <h1>Add Shipment</h1>
 
-    <div class="">
-      <h1 class="tw-text-2xl tw-mb-2">What are you sending?</h1>
-      <div class="tw-flex">
-        <div @click="onParcelsSelected" class="tw-w-1/2 tw-h-16 tw-py-4 tw-bg-gray-300 tw-border tw-border-gray-800 tw-mx-2">
-          <p class="tw-text-2xl tw-text-center"><i class="tw-text-2xl tw-mr-4 fa fa-truck"></i>Parcels</p>
-        </div>
-        <div @click="onDewarsSelected" class="tw-w-1/2 tw-h-16 tw-py-4 tw-bg-gray-300 tw-border tw-border-gray-800 tw-mx-2">
-          <p class="tw-text-2xl tw-text-center"><i class="tw-text-2xl tw-mr-4 fa fa-truck"></i>Dewars</p>
-        </div>
+    <div class="tw-flex">
+      <div @click="onParcelsSelected" class="tw-w-1/2 tw-h-16 tw-py-4 tw-bg-gray-300 tw-border tw-border-gray-800 tw-mx-2">
+        <p class="tw-text-2xl tw-text-center"><i class="tw-text-2xl tw-mr-4 fa fa-truck"></i>SCM Page</p>
+      </div>
+      <div @click="onDewarsSelected" class="tw-w-1/2 tw-h-16 tw-py-4 tw-bg-gray-300 tw-border tw-border-gray-800 tw-mx-2">
+        <p class="tw-text-2xl tw-text-center"><i class="tw-text-2xl tw-mr-4 fa fa-truck"></i>MX Style</p>
       </div>
     </div>
 
