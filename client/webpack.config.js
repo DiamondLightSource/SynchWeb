@@ -106,7 +106,7 @@ module.exports = (env) => ({
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate/dist/vee-validate.min',
-      zonedTimeToUtc: 'date-fns-tz/zonedTimeToUtc',
+      luxon: 'luxon',
       formatDate: 'date-fns/format'
     },
     modules: [
