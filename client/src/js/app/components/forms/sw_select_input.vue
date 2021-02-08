@@ -11,20 +11,36 @@ So if the options were: [ { 'NAME': 'Green', 'ID': 0 }, { 'NAME': 'Yellow', 'ID'
 -->
 <template>
   <div>
+
+    <!-- The label which includes an optional subtitle -->
     <label v-if="label" :for="id">{{label}}
-      <span v-if="description" class="small">{{description}}</span>
-      <slot name="description"></slot>
+      <slot name="description">
+        <span v-if="description" class="small">{{description}}</span>
+      </slot>
     </label>
+
+    <!-- The form input itself - bound to the v-model passed in -->
     <select
       :id="id"
       :name="name"
       :value="value"
-      @input="handleInput"
-      v-bind="$attrs"
-      v-on="getListeners">
+      :disabled="disabled"
+      :class="classObject"
+      @input="updateValue"
+      @change="updateValue"
+      @blur="$emit('blur')"
+      @focus="$emit('focus')"
+    >
       <option v-show="defaultText" disabled value="">{{defaultText}}</option>
       <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
     </select>
+
+    <!-- Placeholder for any error message placed after the input -->
+    <slot name="error-msg">
+      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
+    </slot>
+
+    <!-- Placeholder for any buttons that should be placed after the input -->
     <slot name="actions"></slot>
   </div>
 </template>
@@ -32,7 +48,6 @@ So if the options were: [ { 'NAME': 'Green', 'ID': 0 }, { 'NAME': 'Yellow', 'ID'
 <script>
 export default {
   name: "SwSelectInput",
-  inheritAttrs: false,
   props: {
     value: { // Passed in automatically if v-model used
       type: String,
@@ -69,17 +84,28 @@ export default {
     defaultText: {
       type: String,
       required: false
+    },
+    // Pass in class styling for input
+    inputClass: {
+      type: String,
+    },
+    errorClass: {
+      type: String,
+      required: false,
+      default: 'ferror'
+    },
+    errorMessage: {
+      type: String,
     }
   },
   computed: {
-    getListeners() {
-      const { input, ...others } = this.$listeners;
-      return { ...others };
+    // If a user passes in an error Message, add the error class to the input
+    classObject() {
+      return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
     }
   },
   methods: {
-    handleInput(event) {
-      console.log("Input event: " + event)
+    updateValue(event) {
       this.$emit("input", event.target.value);
     },
   }

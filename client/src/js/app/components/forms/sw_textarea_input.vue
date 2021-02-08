@@ -1,23 +1,42 @@
-<!-- https://jschof.com/vue/a-form-component-in-vue-js-making-nice-wrappers/ -->
+<!--
+Uses common pattern from SynchWeb with slots for defaults so you can override them
+Slots include:
+- description = sub title for the label
+- error-msg = place to show error messages
+- actions = place to show action buttons
+
+Form component design taken from couple of articles
+https://jschof.com/vue/a-form-component-in-vue-js-making-nice-wrappers/
+https://medium.com/@logaretm/authoring-validatable-custom-vue-input-components-1583fcc68314
+-->
 <template>
   <div>
+    <!-- The label which includes an optional subtitle -->
     <label v-if="label" :for="id">{{label}}
-      <span v-if="description" class="small">{{description}}</span>
-      <slot name="description"></slot>
+      <slot name="description">
+        <span v-if="description" class="small">{{description}}</span>
+      </slot>
     </label>
+
+    <!-- The form input itself - bound to the v-model passed in -->
     <textarea
       :id="id"
       :name="id"
       :maxLength="maxLength"
       :value="value"
       :class="classObject"
-      @input="handleInput"
-      v-bind="$attrs"
-      v-on="getListeners"
+      @input="updateValue"
+      @change="updateValue"
+      @blur="$emit('blur')"
+      @focus="$emit('focus')"
     ></textarea>
+
+    <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-if="validate" :class="classObject">Error with form input</span>
+      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
     </slot>
+
+    <!-- Placeholder for any buttons that should be placed after the input -->
     <slot name="actions"></slot>
   </div>
 </template>
@@ -25,7 +44,6 @@
 <script>
 export default {
   name: "SwTextAreaInput",
-  inheritAttrs: false,
   props: {
     value: { // Passed in automatically if v-model used
       type: String,
@@ -47,28 +65,31 @@ export default {
       type: Number,
       required: false
     },
-    validate: {
+    disabled: {
       type: Boolean,
-      required: false,
       default: false
+    },
+    // Pass in class styling for input
+    inputClass: {
+      type: String,
     },
     errorClass: {
       type: String,
       required: false,
       default: 'ferror'
+    },
+    errorMessage: {
+      type: String,
     }
   },
   computed: {
-    getListeners() {
-      const { input, ...others } = this.$listeners;
-      return { ...others };
-    },
+    // If a user passes in an error Message, add the error class to the input
     classObject() {
-      return this.validate ? this.errorClass : ''
+      return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
     }
   },
   methods: {
-    handleInput(event) {
+    updateValue(event) {
       this.$emit("input", event.target.value);
     }
   }

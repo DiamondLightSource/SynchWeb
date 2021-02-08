@@ -1,18 +1,20 @@
-<!-- https://jschof.com/vue/a-form-component-in-vue-js-making-nice-wrappers/ -->
+<!--
+https://jschof.com/vue/a-form-component-in-vue-js-making-nice-wrappers/
+https://medium.com/@logaretm/authoring-validatable-custom-vue-input-components-1583fcc68314
+-->
 <template>
   <div>
     <input
       :id="id"
-      :name="id"
+      :name="name"
       type="checkbox"
       :value="value"
-      @input="handleInput"
-      v-bind="$attrs"
-      v-on="getListeners"
+      @input="updateValue"
     >
     <label class="secondary" :for="id">{{label}}
-      <span v-if="description" class="small">{{description}}</span>
-      <slot name="description"></slot>
+      <slot name="description">
+        <span v-show="description" class="small">{{description}}</span>
+      </slot>
     </label>
     <slot name="actions"></slot>
   </div>
@@ -21,13 +23,16 @@
 <script>
 export default {
   name: "SwCheckboxInput",
-  inheritAttrs: false,
   props: {
     value: { // Passed in automatically if v-model used
       type: String,
       required: true
     },
     id: {
+      type: String,
+      required: false,
+    },
+    name: {
       type: String,
       required: false,
     },
@@ -41,21 +46,15 @@ export default {
     },
   },
   computed: {
-    getListeners() {
-      const { input, ...others } = this.$listeners;
-      return { ...others };
+    // If a user passes in an error Message, add the error class to the input
+    classObject() {
+      return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
     }
   },
   methods: {
-    handleInput(event) {
-      console.log("Checkbox control Input event: " + event.target.checked)
+    updateValue(event) {
       this.$emit("input", event.target.checked);
     },
-    // Don't think we need to handle change event - if so add @change=handleChange above
-    // handleChange(event) {
-    //   console.log("Checkbox control change event: " + event.target.checked)
-    //   this.$emit("change", event.target.checked);
-    // }
   }
 };
 </script>

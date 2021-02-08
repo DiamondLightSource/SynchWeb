@@ -5,18 +5,30 @@ Intended to abstract the logic from how the time picker part works so we can mig
 -->
 <template>
   <div>
+    <!-- The label which includes an optional subtitle -->
     <label v-if="label" :for="id">{{label}}
-      <span v-if="description" class="small">{{description}}</span>
-      <slot name="description"></slot>
+      <slot name="description">
+        <span v-if="description" class="small">{{description}}</span>
+      </slot>
     </label>
+
+    <!-- The form input itself - bound to the v-model passed in -->
     <input
       :id="id"
       :name="name"
       type="text"
       :value="value"
-      v-bind="$attrs"
-      v-on="getListeners"
+      :disabled="disabled"
+      :class="classObject"
+      @blur="$emit('blur')"
+      @focus="$emit('focus')"
     >
+    <!-- Placeholder for any error message placed after the input -->
+    <slot name="error-msg">
+      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
+    </slot>
+
+    <!-- Placeholder for any buttons that should be placed after the input -->
     <slot name="actions"></slot>
   </div>
 </template>
@@ -47,12 +59,28 @@ export default {
     description: {
       type: String,
       required: false
+    },
+    disabled: {
+      type: Boolean,
+      default: false
+    },
+    // Pass in class styling for input
+    inputClass: {
+      type: String,
+    },
+    errorClass: {
+      type: String,
+      required: false,
+      default: 'ferror'
+    },
+    errorMessage: {
+      type: String,
     }
   },
   computed: {
-    getListeners() {
-      const { input, ...others } = this.$listeners;
-      return { ...others };
+    // If a user passes in an error Message, add the error class to the input
+    classObject() {
+      return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
     }
   },
   mounted: function() {

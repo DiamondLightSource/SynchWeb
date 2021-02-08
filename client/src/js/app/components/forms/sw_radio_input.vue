@@ -8,8 +8,7 @@ Pass in an array of objects like so:
 Bind a model which will store the value of the selected option.
 To reset the state of the radio buttons pass a value of '' to the v-model parameter
 Based on initial approach by https://jschof.com/vue/a-form-component-in-vue-js-making-nice-wrappers/
-
-</template>
+and https://medium.com/@logaretm/authoring-validatable-custom-vue-input-components-1583fcc68314
 -->
 <template>
   <div>
@@ -20,11 +19,9 @@ Based on initial approach by https://jschof.com/vue/a-form-component-in-vue-js-m
         :name="option.id"
         type="radio"
         :value="option.value"
-        @change="handleChange"
-        v-bind="$attrs"
-        v-on="getListeners"
+        @change="updateValue"
       >
-      <label class="secondary" :for="option.id">{{option.label}}</label>
+      <label v-show="option.label" class="secondary" :for="option.id">{{option.label}}</label>
     </div>
   </div>
 </template>
@@ -32,7 +29,6 @@ Based on initial approach by https://jschof.com/vue/a-form-component-in-vue-js-m
 <script>
 export default {
   name: "SwRadioInput",
-  inheritAttrs: false,
   props: {
     value: { // Passed in automatically if v-model used
       type: String,
@@ -55,15 +51,9 @@ export default {
       if (newVal === '') this.selected = ''
     }
   },
-  computed: {
-    getListeners() {
-      const { input, ...others } = this.$listeners;
-      return { ...others };
-    }
-  },
   methods: {
     // Don't think we need to handle input event - if so add @input=handleInput above
-    handleChange(event) {
+    updateValue(event) {
       this.selected = event.target.value
       this.$emit("input", event.target.value);
     }
