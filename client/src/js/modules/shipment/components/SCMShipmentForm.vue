@@ -1,74 +1,95 @@
 <template>
   <div class="content">
-    <h1>New Shipment for SCM</h1>
+    <h1>Add Shipment</h1>
 
+    <!-- Wrap the form in an observer component so we can check validation state on submission -->
+    <validation-observer ref="observer" v-slot="{ invalid }">
 
-    <form method="post" id="add_shipment">
+    <form method="post" id="add_shipment" @submit.prevent="onSubmit">
+
     <div class="form">
 
         <div class="tw-flex-col">
-
+          <validation-provider name="SHIPPINGNAME" vid="shipment-name" :rules="validationRules('SHIPPINGNAME')" v-slot="{ errors }">
             <sw-text-input
               id="shipment-name"
-              v-model="$v.SHIPPINGNAME.$model"
-              :validate="$v.SHIPPINGNAME.$error"
-              name="SHIPPINGNAME"
+              label="Name"
+              inputClass="tw-border tw-border-green-500"
               description="Name for the shipment"
-              label="Name">
-              <template v-slot:error-msg>
-                  <span class="ferror" v-if="!$v.SHIPPINGNAME.minLength">Name must have at least {{$v.SHIPPINGNAME.$params.minLength.min}} letters.</span>
-              </template>
-            </sw-text-input>
+              v-model="shipmentName"
+              :errorMessage="errors[0]"
+            />
+          </validation-provider>
 
-            <sw-text-input v-model="numPieces" label="Number of Dewars" type="number" name="DEWARS" description="Number of dewars to automatically create for this shipment" />
-
-            <div v-if="numPieces > 0" class="tw-flex tw-w-full tw-mb-2">
-              <label>Facility Dewar Codes
-                <span class="small">Unique code for each dewar of the shipment.<br />No facility codes listed? Make sure they are <a href="/dewars/registry">Registered</a> to this proposal.</span>
-              </label>
-              <div class="tw-inline" v-for="(d,i) in dewarList" :key="i">
-                <select v-model="dewarList[i]">
-                  <option disabled value="">Please select a Dewar</option>
-                  <option v-for="dewar in dewars" :key="dewar.DEWARID">{{dewar.FACILITYCODE}}</option>
-                </select>
+          <!-- <div class="tw-mb-2">
+            <label>What are you sending?</label>
+            <div class="tw-flex">
+              <div @click="setPackageType('Dewar')" class="tw-cursor-pointer tw-rounded tw-py-1 tw-px-1 tw-border tw-mx-2" :class="[ packageType == 'Dewar' ? 'tw-bg-blue-200 tw-border-gray-600' : 'tw-bg-gray-200 tw-border-gray-200' ]">
+                <p class=" tw-text-center"><i class="tw-mr-1 fa fa-truck"></i>Dewars</p>
+              </div>
+              <div @click="setPackageType('Parcel')" class="tw-cursor-pointer tw-rounded tw-py-1 tw-px-1 tw-border tw-border-gray-400 tw-mx-2" :class="[ packageType == 'Parcel' ? 'tw-bg-blue-200 tw-border-gray-600' : 'tw-bg-gray-200 tw-border-gray-200' ]">
+                <p class=" tw-text-center"><i class="tw-mr-1 fa fa-truck"></i>Parcels</p>
               </div>
             </div>
+          </div> -->
+
+          <!-- <validation-provider rules="numeric">
+            <sw-text-input
+              :label="'Number of ' + packageType + 's'"
+              type="number"
+              description="Number of items to automatically create for this shipment"
+              name="NUMPIECES"
+              v-model="numPieces"
+              rules="numeric"
+              />
+          </validation-provider> -->
 
             <div>
                 <!-- Small tweaks to the styling here using tailwind flexbox -->
                 <label>First Experiment / Scheduling
                     <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>
                 </label>
-                <div class="tw-flex">
+                <div class="tw-flex tw-border tw-border-orange-400">
                     <sw-radio-input class="tw-mt-2" :options="sessionTypes" v-model="sessionType" />
                     <sw-select-input v-show="sessionType == 0" name="FIRSTEXPERIMENTID" class="tw-mr-2" v-model="selectedVisit" :options="visits" optionValueKey="SESSIONID" optionTextKey="VISITDETAIL" defaultText="Please select a visit"></sw-select-input>
                 </div>
             </div>
 
 
+          <validation-provider rules="required" name="safety level" v-slot="{ errors }">
             <sw-select-input
+              name="Safety Level"
               label="Safety Level"
               description="The safety level of the shipment"
               defaultText="Please select a risk rating"
               v-model="safetyLevel"
               :options="[{'NAME':'Green', 'ID': 'Green'}, {'NAME':'Yellow', 'ID': 'Yellow'}, {'NAME':'Red', 'ID': 'Red'}]"
               optionValueKey="ID"
-              optionTextKey="NAME"/>
+              optionTextKey="NAME"
+              :errorMessage="errors[0]"/>
+          </validation-provider>
 
             <sw-textarea-input id="comments" v-model="comments" name="COMMENTS" description="Comment for the shipment" label="Comments"/>
 
-            <sw-select-input id="labcontacts-sending-id" name="SENDINGLABCONTACTID" v-model="sendingLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Outgoing Lab Contact" defaultText="Please select a labcontact">
+          <validation-provider rules="required" name="Sending Lab Contact" v-slot="{ errors }">
+            <sw-select-input id="labcontacts-sending-id" name="SENDINGLABCONTACTID" v-model="sendingLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Outgoing Lab Contact" defaultText="Please select a labcontact" :errorMessage="errors[0]">
               <template v-slot:description><span class="small">Lab contact for outgoing transport | <a class="add_lc" @click.prevent="onAddLocalContact" href="/contact/add">Add</a></span></template>
             </sw-select-input>
+          </validation-provider>
 
-            <sw-select-input id="labcontacts-return-id" name="RETURNLABCONTACTID" v-model="returnLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Return Lab Contact" defaultText="Please select a labcontact">
+          <validation-provider rules="required" name="Return Lab Contact" v-slot="{ errors }">
+            <sw-select-input id="labcontacts-return-id" name="RETURNLABCONTACTID" v-model="returnLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Return Lab Contact" defaultText="Please select a labcontact" :errorMessage="errors[0]">
               <template v-slot:description><span class="small">Lab contact for return transport | <a class="add_lc" @click.prevent="onAddLocalContact" href="/contact/add">Add</a></span></template>
             </sw-select-input>
+          </validation-provider>
 
+          <validation-provider :rules="validationRules('DELIVERYAGENT_SHIPPINGDATE')" name="Shipment Date" v-slot="{ errors }">
+            <sw-date-input id="shipment-date" v-model="shipmentDate" name="DELIVERYAGENT_SHIPPINGDATE" description="Date shipment will leave lab / be picked up" label="Shipping Date" :errorMessage="errors[0]"/>
+          </validation-provider>
 
-            <sw-date-input id="shipment-date" v-model="shipmentDate" name="DELIVERYAGENT_SHIPPINGDATE" description="Date shipment will leave lab / be picked up" label="Shipping Date"/>
-
-            <sw-text-input id="pickup-location" v-model="$v.PHYSICALLOCATION.$model" :validate="$v.PHYSICALLOCATION.$error" name="PHYSICALLOCATION" description="Location where shipment can be picked up from. i.e. Reception" label="Pickup Location"/>
+            <validation-provider :rules="validationRules('PHYSICALLOCATION')" name="Pickup Location" v-slot="{ errors }">
+              <sw-text-input id="pickup-location" v-model="pickupLocation" name="PHYSICALLOCATION" description="Location where shipment can be picked up from. i.e. Reception" label="Pickup Location" :errorMessage="errors[0]"/>
+            </validation-provider>
 
             <sw-time-input id="ready-time" v-model="readyTime" name="READYBYTIME" description="Time shipment will be ready for pickup" label="Ready by Time"/>
 
@@ -82,19 +103,18 @@
 
             <sw-text-input id="courier-account" v-model="courierAccount" name="DELIVERYAGENT_AGENTCODE" description="Courier account number for the return shipment" label="Courier Account Number"/>
 
-            <button name="submit" type="submit" class="button submit" @click.prevent="onAddShipment">Add Shipment</button>
-
+            <button name="submit" type="submit" class="button submit" :class="{ 'tw-border tw-border-red-500' : invalid}">Add Shipment</button>
 
         </div>
     </div>
 
     </form>
+    </validation-observer>
   </div>
 </template>
 
 <script>
-// import ShipmentModel from 'models/shipment'
-import { ShipmentModel, ShipmentModelValidation } from 'models/shipment.es6'
+import ShipmentModel from 'models/shipment'
 import VisitsCollection from 'collections/visits'
 import LabContactsCollection from 'collections/labcontacts'
 import DewarRegistryCollection from 'modules/shipment/collections/dewarregistry'
@@ -102,17 +122,22 @@ import DewarRegistryCollection from 'modules/shipment/collections/dewarregistry'
 import AddContactView from 'modules/contact/views/addcontact'
 import DialogView from 'views/dialog'
 
-import SwTextInput from '../../../app/components/forms/sw_text_input.vue'
-import SwSelectInput from '../../../app/components/forms/sw_select_input.vue'
-import SwTextAreaInput from '../../../app/components/forms/sw_textarea_input.vue'
-import SwDateInput from '../../../app/components/forms/sw_date_input.vue'
-import SwTimeInput from '../../../app/components/forms/sw_time_input.vue'
-import SwCheckboxInput from '../../../app/components/forms/sw_checkbox_input.vue'
-import SwRadioInput from '../../../app/components/forms/sw_radio_input.vue'
+import SwTextInput from 'app/components/forms/sw_text_input.vue'
+import SwSelectInput from 'app/components/forms/sw_select_input.vue'
+import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
+import SwDateInput from 'app/components/forms/sw_date_input.vue'
+import SwTimeInput from 'app/components/forms/sw_time_input.vue'
+import SwCheckboxInput from 'app/components/forms/sw_checkbox_input.vue'
+import SwRadioInput from 'app/components/forms/sw_radio_input.vue'
+
+import ValidationRules from 'utils/validation_rules'
+
+import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 const SCHEDULED_SESSION = 0
 const AUTOMATED_SESSION = 1
 const RESPONSIVE_SESSION = 2
+
 
 export default {
   components: {
@@ -122,25 +147,30 @@ export default {
     'sw-date-input': SwDateInput,
     'sw-checkbox-input': SwCheckboxInput,
     'sw-radio-input': SwRadioInput,
-    'sw-time-input': SwTimeInput
+    'sw-time-input': SwTimeInput,
+    'validation-observer': ValidationObserver,
+    'validation-provider': ValidationProvider
   },
   name: 'SCMShipment',
   data: function() {
     return {
       // Number of packages included in this shipment
-      numPieces: 1,
+      numPieces: 0,
+      packageType: 'Dewar',
       // Arrays of options that will be presented to the user
       dewars: [],
       labContacts: [],
       visits: [],
       sessionTypes: [
-        {id: 0, label: 'Scheduled Session', value: SCHEDULED_SESSION},
+        {id: 0, label: 'Scheduled Session: ', value: SCHEDULED_SESSION},
         {id: 1, label: 'Automated / Imager', value: AUTOMATED_SESSION},
         {id: 2, label: 'Responsive Remote / Mail-in', value: RESPONSIVE_SESSION}
       ],
+      sessionType: SCHEDULED_SESSION,
+      selectedVisit: '',
 
       // Values that will be added to the shipment request
-      SHIPPINGNAME: '',
+      shipmentName: '',
 
       shipmentDate: '',
       readyTime: '',
@@ -149,37 +179,15 @@ export default {
       courierAccount: '',
       deliveryDate: '',
       pickupLocation: '',
-      PHYSICALLOCATION: '',
 
       sendingLabContact: '',
       returnLabContact: '',
 
-      sessionType: SCHEDULED_SESSION,
-      selectedVisit: '',
-
       comments: '',
-
-      safetyLevel: 'Green',
-
-      // Testing vuelidate
-      name: '',
-      age: '',
+      safetyLevel: '',
     }
   },
-  validations: ShipmentModelValidation,
-  // validations: {
-  //   SHIPPINGNAME: {
-  //     required,
-  //     minLength: minLength(4)
-  //   },
-  //   comments: {
-  //     required
-  //   },
-  //   PHYSICALLOCATION: {
-  //     required:false,
-  //     maxLength: maxLength(5)
-  //   },
-  // },
+
   computed: {
     DHL_ENABLE: function() {
       return app.options.get('dhl_enable')
@@ -190,8 +198,14 @@ export default {
     // Should handle the case where we have some dewars already selected
     // Only remove or popoff the difference rather than start again
     dewarList: function() {
-      return Array.from({length: this.numPieces}, () => { return {} })
-    }
+      return Array.from({length: this.numPieces}, () => { return '' })
+    },
+    vShippingName: function() {
+      return ShipmentModel.validationRules()['SHIPPINGNAME']
+    },
+    vPhysicalLocation: function() {
+      return ShipmentModel.validationRules()['PHYSICALLOCATION']
+    },
   },
 
   watch: {
@@ -200,6 +214,9 @@ export default {
       else if (newVal == RESPONSIVE_SESSION) this.comments = "Responsive session selected"
       else if (newVal == AUTOMATED_SESSION) this.comments = "Automated session selected"
       else this.comments = ""
+    },
+    dewarList: function(newVal) {
+      console.log("Dewar list updated: " + JSON.stringify(newVal))
     }
   },
 
@@ -212,22 +229,32 @@ export default {
 
     this.$store.dispatch('getCollection', visitsCollection).then( (result) => {
       this.visits = result.toJSON()
-      console.log("Visits: " + JSON.stringify(this.visits))
     })
 
     this.$store.dispatch('getCollection', dewarRegistryCollection).then( (result) => {
       this.dewars = result.toJSON()
     })
 
-    console.log("VALIDATIONS: " + JSON.stringify(ShipmentModelValidation))
+
+    console.log("Validation Rules: " + JSON.stringify(ValidationRules))
+    console.log("Validation Rule wwdash: " + ValidationRules.wwdash.regex)
   },
 
   methods: {
-    onAddShipment: function() {
+    validationRules: function(property) {
+      return ShipmentModel.validationRules()[property] || ''
+    },
+    onSubmit: function() {
+      this.$refs.observer.validate().then( (result) => {
+        if (result) this.saveShipment()
+        else console.log("Form validation failed ")
+      })
+    },
+    saveShipment: function() {
       // The backbone model we are going to save
       // Its actually very simple - just specify the attributes in an object
       let shipmentModel = new ShipmentModel({
-        SHIPPINGNAME: this.SHIPPINGNAME,
+        SHIPPINGNAME: this.shipmentName,
         SAFETYLEVEL: this.safetyLevel,
         FCODES: this.dewarsList,
         DELIVERYAGENT_AGENTNAME: this.courierName,
@@ -244,19 +271,7 @@ export default {
       })
       console.log(JSON.stringify(shipmentModel))
 
-      this.$v.$touch()
-      if (this.$v.$invalid) {
-        console.log("VueValidate Error")
-      } else {
-        console.log("VueValidate OK")
-      }
-
-      let valid = false
-      if (valid) {
-        this.saveModel(shipmentModel)
-      } else {
-        console.log("Shipment Model is not valid...")
-      }
+      this.saveModel(shipmentModel)
     },
 
     // Save the model
@@ -264,13 +279,15 @@ export default {
     // On error - add a notification and stay where we are
     saveModel: function(model) {
       let self = this
-      this.$store.dispatch('loading', true)
+      this.$store.commit('loading', true)
 
-      model.save({
+      model.save({}, {
         success: function(model, response) {
-          console.log("Shipment Model was saved " + JSON.stringify(response))
           self.$store.commit('loading', false)
-          self.$router.go({name: 'shipment-view', params: { 'sid': model.get('SHIPPINGID')}})
+          let sid = model.get('SHIPPINGID')
+          console.log("Shipment Model was saved " + JSON.stringify(response))
+          console.log("Shipment ID = " + sid)
+          self.$router.push({name: 'shipment-view', params: { sid } })
         },
         error: function(model, response, options) {
             console.log('failure from shipadd')
@@ -278,6 +295,9 @@ export default {
             self.$store.commit('add_notification', { message: 'Something went wrong registering this shipment, please try again', level: 'error'})
         },
       })
+    },
+    setPackageType: function(type) {
+      this.packageType = type
     },
     onAddLocalContact: function() {
       app.dialog.show(new DialogView({ title: 'Add Home Lab Contact', className: 'content', view: new AddContactView({ dialog: true }), autoSize: true }))
