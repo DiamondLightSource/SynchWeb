@@ -20,7 +20,7 @@
                 </tbody>
                 <tbody v-else>
                     <tr>
-                        <td :colspan="headers.length" class="renderable">No data found</td>
+                        <td :colspan="headers.length" class="renderable">{{noDataText}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -38,6 +38,11 @@ export default {
       'data': {
         type: Array,
         required: true
+      },
+      'noDataText': {
+        type: String,
+        required: false,
+        default: 'No data found'
       }
     }
 }
