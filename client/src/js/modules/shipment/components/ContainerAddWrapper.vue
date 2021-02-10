@@ -1,13 +1,22 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <component :is="componentType"
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
+            :breadcrumbs="bc"
+        />
+
+        <!-- <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc">
-        </marionette-view>
+        </marionette-view> -->
     </section>
 </template>
 
@@ -18,6 +27,7 @@
 * Then displays the addcontainer view specific to a proposal type
 */
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
+import SCMAddContainer from 'modules/shipment/components/SCMAddContainer.vue'
 
 import { ContainerAddMap } from 'modules/shipment/components/container-map'
 import Dewar from 'models/dewar'
@@ -27,7 +37,8 @@ import store from 'app/store/store'
 export default {
     name: 'container-add-wrapper',
     components: {
-        'marionette-view': MarionetteView
+        'marionette-view': MarionetteView,
+        'scm-add-container': SCMAddContainer,
     },
     props: {
         'did': Number,
@@ -42,6 +53,7 @@ export default {
             params: null,
             queryParams: null,
             bc : [],
+            componentType: 'marionette-view',
         }
     },
     computed: {
@@ -64,6 +76,10 @@ export default {
 
         this.getDewar().then( (val) => {
             this.mview = ContainerAddMap[this.proposalType] ? ContainerAddMap[this.proposalType].view : ContainerAddMap['default'].view
+
+            // USe the legacy components if we have then defined, else use the newer style component
+            if (!this.mview) this.componentType = 'scm-add-container'
+
             // Update the breadcrumbs
             this.bc.push({ title: this.model.get('SHIPPINGNAME'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
             this.bc.push({ title: 'Containers' })
@@ -71,7 +87,9 @@ export default {
         }, (error) => {
             console.log("Error getting dewar model " + error.msg)
             app.alert({ title: 'No such dewar', message: error.msg})
-        }).finally( () => { this.ready = true }) // Only render when complete
+        }).finally( () => {
+          this.ready = true
+        }) // Only render when complete
     },
     methods: {
         // We get the model here because the view we render depends on the container details
@@ -88,7 +106,7 @@ export default {
                     error: function() {
                         reject({msg: 'The specified dewar could not be found'})
                     },
-                })   
+                })
 
             })
         },

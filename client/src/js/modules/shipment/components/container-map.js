@@ -19,6 +19,8 @@ export const ContainerViewMap = {
 
 export const ContainerAddMap = {
     xpdf:   { title: 'Container', view: XpdfContainerAddView },
+    scm:    { title: 'Container', view: null }, // Because we want to use new components
+    saxs:    { title: 'Container', view: null }, // Because we want to use new components
     default:{ title: 'Container', view: ContainerAddView }
 }
 

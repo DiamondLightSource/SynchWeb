@@ -10,6 +10,9 @@
     <div class="form">
 
         <div class="tw-flex-col">
+
+          <h1 class="tw-text-lg tw-font-bold tw-mb-2">Shipment Details</h1>
+
           <validation-provider name="SHIPPINGNAME" vid="shipment-name" :rules="validationRules('SHIPPINGNAME')" v-slot="{ errors }">
             <sw-text-input
               id="shipment-name"
@@ -31,29 +34,29 @@
                 <p class=" tw-text-center"><i class="tw-mr-1 fa fa-truck"></i>Parcels</p>
               </div>
             </div>
-          </div> -->
+          </div>
 
-          <!-- <validation-provider rules="numeric">
+          <validation-provider rules="numeric">
             <sw-text-input
-              :label="'Number of ' + packageType + 's'"
+              label="How many items to add now?"
               type="number"
-              description="Number of items to automatically create for this shipment"
+              description="You can add packages later if required"
               name="NUMPIECES"
               v-model="numPieces"
               rules="numeric"
               />
           </validation-provider> -->
 
-            <div>
-                <!-- Small tweaks to the styling here using tailwind flexbox -->
-                <label>First Experiment / Scheduling
-                    <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>
-                </label>
-                <div class="tw-flex tw-border tw-border-orange-400">
-                    <sw-radio-input class="tw-mt-2" :options="sessionTypes" v-model="sessionType" />
-                    <sw-select-input v-show="sessionType == 0" name="FIRSTEXPERIMENTID" class="tw-mr-2" v-model="selectedVisit" :options="visits" optionValueKey="SESSIONID" optionTextKey="VISITDETAIL" defaultText="Please select a visit"></sw-select-input>
-                </div>
-            </div>
+          <div class="">
+              <!-- Small tweaks to the styling here using tailwind flexbox -->
+              <label>First Experiment / Scheduling
+                  <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>
+              </label>
+              <div class="tw-flex">
+                  <sw-radio-input class="tw-mt-2" :options="sessionTypes" v-model="sessionType" />
+                  <sw-select-input v-show="sessionType == 0" name="FIRSTEXPERIMENTID" class="tw-mr-2" v-model="selectedVisit" :options="visits" optionValueKey="SESSIONID" optionTextKey="VISITDETAIL" defaultText="Please select a visit"></sw-select-input>
+              </div>
+          </div>
 
 
           <validation-provider rules="required" name="safety level" v-slot="{ errors }">
@@ -71,6 +74,7 @@
 
             <sw-textarea-input id="comments" v-model="comments" name="COMMENTS" description="Comment for the shipment" label="Comments"/>
 
+          <h1 class="tw-text-lg tw-font-bold tw-mb-2">Delivery information</h1>
           <validation-provider rules="required" name="Sending Lab Contact" v-slot="{ errors }">
             <sw-select-input id="labcontacts-sending-id" name="SENDINGLABCONTACTID" v-model="sendingLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Outgoing Lab Contact" defaultText="Please select a labcontact" :errorMessage="errors[0]">
               <template v-slot:description><span class="small">Lab contact for outgoing transport | <a class="add_lc" @click.prevent="onAddLocalContact" href="/contact/add">Add</a></span></template>
