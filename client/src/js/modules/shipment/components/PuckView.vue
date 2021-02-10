@@ -6,10 +6,9 @@ OnClickEvent will only fire if there is data bound to the element with a valid L
 TODO - move the score colour methods to a utility class
 -->
 <template>
-    <div>
-        <p>Container Geometry: {{ JSON.stringify(container) }}</p>
-        <div id="puck"></div>
-    </div>
+  <div>
+    <div id="puck"></div>
+  </div>
 </template>
 
 
@@ -26,7 +25,8 @@ export default {
       'samples': Array, // Data bound to each cell / location
       'selected': {
         type: Array, // list of locations that should be highlighted
-        required: false
+        required: false,
+        default: []
       },
       label: {
         type: String, // Which key within the sample data should be shown (location index if nothing provided)
@@ -72,6 +72,8 @@ export default {
       preparedData: function() {
         // Firstly create an array of length == capacity of container
         let samplesArray = Array.from({length: this.centres.length}, () => { return {} })
+        // Store individual locations starting at 1
+        for (var j = 0; j<samplesArray.length; j++) samplesArray[j].location = j+1
 
         // Now fill in location with sample data at that location
         for (var i=0; i<this.samples.length; i++) {
@@ -79,7 +81,7 @@ export default {
           let location = this.samples[i].LOCATION || null
           // Not quite right - need to add as an array for consistency
           if (location && location < samplesArray.length) {
-            samplesArray[location-1] = this.samples[i]
+            samplesArray[location-1]['data'] = this.samples[i]
           }
         }
         return samplesArray;
@@ -97,9 +99,9 @@ export default {
 
       this.showLabels()
 
-      this.updateSampleCells(1, true)
-      this.updateSampleCells(3, false)
-      this.updateSampleCells(14, false)
+      // this.updateSampleCells(1, true)
+      // this.updateSampleCells(3, false)
+      // this.updateSampleCells(14, false)
   },
   methods: {
       // Create the svg graphic representation of the puck
@@ -107,8 +109,8 @@ export default {
         // For the puck we have no need for a label
         // In fact we keep the graphic as the same size as svg to map a background image
         // So this does not use the standard d3 margin setup - see plate view for that
-        const viewBoxWidth = 800
-        const viewBoxHeight = 600
+        const viewBoxWidth = 500
+        const viewBoxHeight = 500
 
         const viewBox = [0,0,viewBoxWidth,viewBoxHeight]
 
@@ -164,9 +166,13 @@ export default {
       // This method has some knowledge of the sample data
       // Used to inform the parent that a cell has been clicked
       onCellClicked: function(sampleData) {
-        if (sampleData.LOCATION) {
+        if (sampleData.data && sample.data.LOCATION) {
+          console.log("There is data in this cell")
           // Convert to an actual index not string
-          this.$emit('cell-clicked', +sampleData.LOCATION)
+          this.$emit('cell-clicked', +sampleData.data.LOCATION)
+        } else {
+          console.log("No data in this cell")
+          this.$emit('cell-clicked', +sampleData.location)
         }
       },
 
@@ -221,7 +227,7 @@ export default {
       // TODO - move these color functions into a separate utility class
       scoreColors: function(d) {
         let scale = null
-        let score = d.SCORE || null
+        let score = d['data'].SCORE || null
 
         switch(this.colorScale) {
           case 'rgb':

@@ -29,7 +29,8 @@ export default {
       'samples': Array, // Data bound to each cell / drop location
       'selected': {
           type: Array, // list of locations that should be highlighted
-          required: false
+          required: false,
+          default: []
       },
       label: {
           type: String, // Which key within the sample data should be shown (location index if nothing provided)
@@ -102,11 +103,13 @@ export default {
         // Firstly create an array of length == capacity of container
         let samples = Array.from({length: this.container.capacity}, () => { return {} })
 
+        for (var j = 0; j<samples.length; j++) samples[j].location = j+1
+
         // Now fill in location with sample data at that location
         for (var i=0; i<this.samples.length; i++) {
           let location = this.samples[i].LOCATION || null
           // Not quite right - need to add as an array for consistency
-          if (location) samples[location-1] = this.samples[i]
+          if (location) samples[location-1]['data'] = this.samples[i]
         }
 
         // Chop up the list of "samples" at each location into rows/wells
@@ -131,12 +134,18 @@ export default {
     watch: {
       selected: function() {
         this.updateSelected()
+      },
+      samples: function() {
+        console.log("Plate detected new samples")
+        console.log("Plate samples: " + JSON.stringify(this.samples))
+        this.updateScores()
       }
     },
     mounted: function() {
+      console.log("Plate Mounted")
       this.drawContainer()
       this.updateLabels()
-      // this.updateScores()
+      this.updateScores()
   },
   methods: {
       drawContainer: function() {
@@ -297,15 +306,18 @@ export default {
       // This method has some knowledge of the sample data
       // Used to inform the parent that a cell has been clicked
       onCellClicked: function(sampleData) {
-        if (sampleData.LOCATION) {
+        if (sampleData.data && sample.data.LOCATION) {
           // Convert to an actual index not string
           this.$emit('cell-clicked', +sampleData.LOCATION)
+        } else {
+          console.log("No data in this cell: sampleData = " + JSON.stringify(sampleData))
+          this.$emit('cell-clicked', +sampleData.location)
         }
       },
 
       scoreColors: function(d) {
         let scale = null
-        let score = d.SCORE || null
+        let score = (d['data'] && d['data'].SCORE) ? d['data'].SCORE : null
 
         switch(this.colorScale) {
           case 'rgb':
