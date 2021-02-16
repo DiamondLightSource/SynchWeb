@@ -8,6 +8,7 @@ import MenuStore from './modules/store.menus.js'
 import ProposalStore from './modules/store.proposal.js'
 import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
+import SampleGroups from './modules/store.sample-groups.js'
 
 // Configuration
 import Options from 'models/options.js'
@@ -26,6 +27,7 @@ const store = new Vuex.Store({
     proposal: ProposalStore,
     user: UserStore,
     notifications: NotificationStore,
+    sampleGroups: SampleGroups
   },
   state: {
     // Flag we use to check if we have already setup options
@@ -62,9 +64,6 @@ const store = new Vuex.Store({
       state.help = helpFlag ? true : false
       sessionStorage.setItem('ispyb_help', state.help)
     },
-    //
-    // Loading screen
-    //
     loading(state, status) {
       state.isLoading = status ? true : false
     },
@@ -209,6 +208,9 @@ const store = new Vuex.Store({
         })
       })
     },
+    updateLoadingState({ commit }, payload) {
+      commit('loading', payload)
+    }
   },
   getters: {
     sso: state => state.auth.cas_sso,
