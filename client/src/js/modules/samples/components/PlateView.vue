@@ -122,7 +122,7 @@ export default {
       return Array.from({ length: this.container.columns }, (v, i) => i)
     },
     preparedData: function () {
-      if (this.container.capacity <= 0) return [[]]
+      if (this.container.capacity <= 0) return ([])
       // Firstly create an array of length == capacity of container
       let samples = Array.from({ length: this.container.capacity }, () => ({}))
 
@@ -132,6 +132,10 @@ export default {
         // Not quite right - need to add as an array for consistency
         if (location) samples[location - 1] = this.samples[i]
       }
+
+      samples.forEach((sample, index) => {
+        sample['dropIndex'] = index + 1
+      })
 
       // Chop up the list of 'samples' at each location into rows/wells
       // [ A [ 1 [1,2], 2 [3,4], ... ], B [ 1 [ 5,6 ], 2 [7,8], ...] ]
@@ -215,39 +219,7 @@ export default {
         .style('fill', 'black')
         .style('pointer-events', 'visible')
         .text((d) => d)
-        .on('click', (event, index) => {
-          console.log({ index });
-          const isColumnSelected = event.target.classList.contains('all-column-selection')
-          const isPartiallySelected = event.target.classList.contains('partial-column-selection')
-          let selectedColumn = [];
-
-          if (this.currentSelectedDropIndex > -1 && !isColumnSelected) {
-            selectedColumn = d3SelectAll(`.plate-column-${index} .well-drop-${this.currentSelectedDropIndex} `)
-          }
-          else {
-            selectedColumn = d3SelectAll(`.plate-column-${index} .drop`)
-          }
-
-          let columnItemsWithSample = []
-
-          selectedColumn.each((drop) => {
-            if (drop.LOCATION) {
-              columnItemsWithSample.push(Number(drop.LOCATION))
-            }
-          })
-
-          if (isColumnSelected) {
-            self.$emit('unselect-cell', columnItemsWithSample)
-            event.target.classList.remove('all-column-selection')
-          }
-          else if (!isPartiallySelected) {
-            self.$emit('cell-clicked', columnItemsWithSample)
-            event.target.classList.add('partial-column-selection')
-          }
-          else if (isPartiallySelected) {
-            self.$emit('cell-clicked', columnItemsWithSample)
-          }
-        })
+        .on('click', (event, index) => self.handleDropSelection(event.target, index, 'column'))
 
       // Row labels scale - maps numbers to letters
       let letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -277,37 +249,7 @@ export default {
         .text((d, i) => letterScale(i))
 
       row_axis.each(function (item, index) {
-        d3Select(this).on('click', (event) => {
-          const isRowSelected = event.target.classList.contains('all-row-selected')
-          const isPartiallySelected = event.target.classList.contains('partial-column-selection')
-          let selectedRow = []
-          let rowItemWithSample = []
-
-          if (this.currentSelectedDropIndex > -1 && !isRowSelected) {
-            selectedRow = d3SelectAll(`.plate-row-${index + 1} .well-drop-${this.currentSelectedDropIndex} `)
-          }
-          else {
-            selectedRow = d3SelectAll(`.plate-row-${index + 1} .drop`)
-          }
-
-          selectedRow.each(drop => {
-            if (drop.LOCATION) {
-              rowItemWithSample.push(Number(drop.LOCATION))
-            }
-          })
-
-          if (isRowSelected) {
-            self.$emit('unselect-cell', rowItemWithSample)
-            event.target.classList.remove('all-row-selection')
-          }
-          else if (!isPartiallySelected) {
-            self.$emit('cell-clicked', rowItemWithSample)
-            event.target.classList.add('partial-column-selection')
-          }
-          else if (isPartiallySelected) {
-            self.$emit('cell-clicked', rowItemWithSample)
-          }
-        })
+        d3Select(this).on('click', (event) => self.handleDropSelection(event.target, index + 1, 'row'))
       })
 
       this.graphic = svg
@@ -359,29 +301,17 @@ export default {
             .data(d)
             .enter()
             .append('rect')
-              .attr('class', (d, i) => (d && d.LOCATION ? `pointer drop well-drop-${i + 1}` : `drop well-drop-${i + 1}`))
+              .attr('class', (d, i) => (d && d.LOCATION ? `pointer drop well-drop-${i + 1} drop-index-${d.dropIndex}` : `drop well-drop-${i + 1} drop-index-${d.dropIndex}`))
               .attr('x', (_, i) => self.dropCoords[i].x)
               .attr('y', (_, i) => self.dropCoords[i].y)
               .attr('width', self.dropWidth * self.container.drops.w)
               .attr('height', self.dropHeight * self.container.drops.h)
-              .attr('drop-index', (_, i) => i + 1)
+              .attr('well-drop-index', (_, i) => i + 1)
+              .attr('drop-index', (d) => d.dropIndex)
               .style('stroke', 'gray')
               .style('fill', (d) => d.LOCATION ? self.calculateColorFromScheme(d.SCORE) : 'none')
               .style('pointer-events', 'visible')
-              .on('click', function (event) {
-                let sampleCellLocation = d3Select(this).data()[0].LOCATION
-          
-                if (typeof sampleCellLocation == 'undefined') return
-
-                if (self.selectedDrops.includes(Number(sampleCellLocation))) {
-                  self.$emit('unselect-cell', [Number(sampleCellLocation)])
-                  self.currentSelectedDropIndex = -1
-                }
-                else {
-                  self.currentSelectedDropIndex = Number(event.target.attributes['drop-index'].value)
-                  self.$emit('cell-clicked', [Number(sampleCellLocation)])
-                }
-              })
+              .on('click', (event, data) => self.handleDropSelection(event.target, data.dropIndex, null))
 
           d3Select(this)
             .selectAll('text')
@@ -441,11 +371,99 @@ export default {
       this.allDropsSelected = !this.allDropsSelected
       this.$nextTick(() => {
         this.updateSelectedDrops()
+        this.clearHeaders(this.preparedData, 'row')
+        this.clearHeaders(this.columnLabels, 'column')
       })
       this.nextFilterState = this.allDropsSelected ? 'Deselect All Drops' : 'Select All Drops'
+    },
+    clearHeaders(data, type) {
+      data.forEach((_, index) => {
+        d3Select(`plate-${type}-${index + 1}-header`).classed(`partial-${type}-selection`, false)
+        d3Select(`plate-${type}-${index + 1}-header`).classed(`all-${type}-selection`, false)
+      })
+    },
+    /**
+     * handles the different states of selecting drop(s) in the plate
+     * 1. When a row or column is selected first, we select all drops for that column or row
+     * 2. When a drop is clicked, we add the selected drop and also note the index of the drop in the well
+     * 3. When a column or row is clicked and a drop index exist, we select all the drop with the same matching index for the row or column
+     * 4. When the column or row is clicked again with all the drop index for that row or column selected, we select all the drops for that row or column
+     */
+    handleDropSelection(target, index, type ) {
+      const isFullSelection = target.classList.contains(`all-${type}-selection`)
+      const isPartialSelection = target.classList.contains(`partial-${type}-selection`)
 
+      let selections = []
+      let itemsWithSample = []
+
+      if (type && this.currentSelectedDropIndex > 0 && !isFullSelection) {
+        selections = d3SelectAll(`.plate-${type}-${index} .well-drop-${this.currentSelectedDropIndex}`)
+      }
+      else if (type && this.currentSelectedDropIndex > 0 && isFullSelection) {
+        selections = d3SelectAll(`.plate-${type}-${index} .drop`)
+      }
+      else if (type && this.currentSelectedDropIndex < 1 && !isFullSelection) {
+        selections = d3SelectAll(`.plate-${type}-${index} .drop`)
+      }
+      else if (type && this.currentSelectedDropIndex < 1 && isFullSelection) {
+        selections = d3SelectAll(`.plate-${type}-${index} .drop`)
+      }
+      else {
+        selections = d3SelectAll(`.drop-index-${index}`)
+        this.currentSelectedDropIndex = Number(target.attributes['well-drop-index'].value)
+      }
+
+      selections.each(drop => {
+        if (drop.LOCATION) {
+          itemsWithSample.push(Number(drop.LOCATION))
+        }
+      })
+
+      if (itemsWithSample.length < 1) return
+
+      if (type) {
+        const allTypeSelected = itemsWithSample.every(drop => this.selectedDrops.includes(drop))
+  
+        if (isFullSelection) {
+          this.$emit('unselect-cell', itemsWithSample)
+          target.classList.remove(`all-${type}-selection`, `partial-${type}-selection`)
+          this.currentSelectedDropIndex = -1
+        }
+        else if (!isFullSelection && !isPartialSelection && this.currentSelectedDropIndex < 1) {
+          this.$emit('cell-clicked', itemsWithSample)
+          target.classList.add(`all-${type}-selection`)
+        }
+        else if (!isPartialSelection) {
+          this.$emit('cell-clicked', itemsWithSample)
+          target.classList.add(`partial-${type}-selection`)
+        }
+        else if (isPartialSelection && allTypeSelected) {
+          itemsWithSample = []
+          selections = d3SelectAll(`.plate-${type}-${index} .drop`).each(drop => {
+            if (drop.LOCATION) {
+              itemsWithSample.push(Number(drop.LOCATION))
+            }
+          })
+          this.$emit('cell-clicked', itemsWithSample)
+          target.classList.remove(`partial-${type}-selection`)
+          target.classList.add(`all-${type}-selection`)
+        }
+        else if (isPartialSelection && !isFullSelection) {
+          this.$emit('cell-clicked', itemsWithSample)
+        }
+      }
+      else {
+        if (this.selectedDrops.includes(itemsWithSample[0])) {
+          this.$emit('unselect-cell', itemsWithSample)
+          this.currentSelectedDropIndex = -1
+        }
+        else {
+          this.currentSelectedDropIndex = Number(target.attributes['well-drop-index'].value)
+          this.$emit('cell-clicked', itemsWithSample)
+        }
+      }
     }
-  },
+  }
 }
 </script>
 <style>
