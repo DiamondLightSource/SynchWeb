@@ -12,6 +12,7 @@ https://medium.com/@logaretm/authoring-validatable-custom-vue-input-components-1
       type="checkbox"
       :value="value"
       @input="updateValue"
+      @change="changeValue"
       @blur="onBlur"
       @focus="$emit('focus')"
     >
@@ -80,7 +81,12 @@ export default {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
       // If not them update value via input event
-      if (!this.inline) this.$emit("input", event.target.value);
+      if (!this.inline) this.$emit("input", event.target.checked);
+    },
+    changeValue(event) {
+      // If we are in inline editing mode, only update model on save
+      // If not them update value via input event
+      if (!this.inline) this.$emit("change", event.target.checked);
     },
     onBlur() {
       // If in inline edit mode cancel edit
@@ -95,9 +101,10 @@ export default {
     onSave() {
       this.editable = false
       // In this case we are in inline edit mode so need to explicitly save the input value
-      this.$emit("input", this.$refs.inputRef.value);
+      this.$emit("input", this.$refs.inputRef.checked);
+      this.$emit("change", this.$refs.inputRef.checked);
       // Also emit a save event so we can catch this change easily in the parent
-      this.$emit("save", this.$refs.inputRef.value);
+      this.$emit("save", this.$refs.inputRef.checked);
     },
     onEnter(event) {
       // If we are in inline edit mode - save the model on enter (key = 13)
