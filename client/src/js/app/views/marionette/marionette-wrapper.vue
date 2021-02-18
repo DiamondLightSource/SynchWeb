@@ -4,7 +4,7 @@
             <!-- This is the element we attach the marionette view to -->
             <div id="marionette-view" class="content"></div>
         </div>
-    
+
 </template>
 
 <script>
@@ -14,16 +14,21 @@ import EventBus from 'js/app/components/utils/event-bus.js'
 export default {
     name: 'MarionetteWrapper',
     props: {
-        'mview': [Function, Promise], // The marionette view could be lazy loaded or static import 
+        'mview': [Function, Promise], // The marionette view could be lazy loaded or static import
         'breadcrumbs' : Array,
         'breadcrumb_tags' : Array, // These are model properties appended to the breadcrumbs title
         'options': Object,
         // If this component is wrapped by another, then the beforeRouteEnter will not fire
         // beforeRouteEnter only fires when loaded directly as a component by VueRouter
         // Instead we can pass in models/collections and fetch them as soon as this component is mounted
-        'fetchOnLoad': { 
+        'fetchOnLoad': {
             type: Boolean,
             default: false,
+        },
+        // Catch another case where there is a model/collection but we don;t want to load it straight away
+        'skipLoad': {
+          type: Boolean,
+          default: false
         }
     },
     data: function() {
@@ -63,6 +68,8 @@ export default {
     },
     mounted: function() {
         console.log("MarionetteViewWrapper::mounted" )
+        if (this.skipLoad) this.initialiseView()
+
         if (this.prefetch === false) {
             // No prefetching, initialise now
             this.initialiseView()
@@ -125,7 +132,7 @@ export default {
         prefetchData: function() {
             if (!this.options) { this.loaded = true; return }
             if (!this.options.model && !this.options.collection) { this.loaded = true; return }
-            
+
             if (this.options.queryParams) console.log("MV Prefetch QUERY PARAMS= " + this.options.queryParams)
             const promiseCollection = this.fetchCollection(this.options.collection, this.options.queryParams)
             const promiseModel = this.fetchModel(this.options.model, this.options.queryParams)
@@ -182,7 +189,7 @@ export default {
             return new Promise((resolve, reject) => {
                 // If we have no model return immediately
                 if (!model) { resolve() }
-                
+
                 this.$store.commit('loading', true)
                 // We want to access 'this' from within the backbone callback
                 let self = this
