@@ -8,6 +8,7 @@
                         v-for="(header,index) in headers" :key="index"
                         class=""
                         @click="$emit('sort-by', header.key)">{{header.title}}</th>
+                    <th v-if="actions">{{actions}}</th>
                 </thead>
                 <!-- Change row[header.key] to row.get(header.key) if using Backbone models -->
                 <tbody v-if="data && data.length > 0">
@@ -16,6 +17,7 @@
                         <td
                             v-for="(header, index) in headers" :key="index"
                             class="">{{row[header.key]}}</td>
+                        <td v-if="actions"><slot name="actions" v-bind:row="row"></slot></td>
                     </tr>
                 </tbody>
                 <tbody v-else>
@@ -30,21 +32,26 @@
 
 <script>
 export default {
-    props: {
-      'headers': {
-        type: Object,
-        required: true
-      },
-      'data': {
-        type: Array,
-        required: true
-      },
-      'noDataText': {
-        type: String,
-        required: false,
-        default: 'No data found'
-      }
+  props: {
+    'headers': {
+      type: Object,
+      required: true
+    },
+    'data': {
+      type: Array,
+      required: true
+    },
+    'noDataText': {
+      type: String,
+      required: false,
+      default: 'No data found'
+    },
+    // Flag to indicate there are action buttons in the last column
+    'actions': {
+      type: String,
+      default: ''
     }
+  }
 }
 </script>
 

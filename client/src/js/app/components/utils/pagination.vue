@@ -2,9 +2,10 @@
 Pagination control
 Sends a page-changed event with page number and page size as payload
   payload = {
-    'current-page': this.currentPage,
-    'page-size': this.perPage
+    currentPage: this.currentPage,
+    pageSize: this.perPage
   }
+Set totalRecords(0), initalPage (1), pageSizes([]) and number of page links (0..5)
 -->
 <template>
     <div class="content">
@@ -17,7 +18,7 @@ Sends a page-changed event with page number and page size as payload
         <button v-on:click="onPrev" class="button">
             <i class="fa fa-angle-left"></i>
         </button>
-        <button class="button inactive">Page {{currentPage}}</button>
+        <button v-for="(page, index) in pages" :key="index" @click="onSetPage(page)" :class="['button tw-w-8 tw-mx-1 tw-px-2', page == currentPage ? 'tw-border tw-border-green-500' : '']">{{page}}</button>
         <button v-on:click="onNext" class="button">
             <i class="fa fa-angle-right"></i>
         </button>
@@ -28,6 +29,7 @@ Sends a page-changed event with page number and page size as payload
 </template>
 
 <script>
+const MAX_PAGE_LINKS = 5
 
 export default {
     name: 'Pagination',
@@ -43,6 +45,10 @@ export default {
         pageSizes: {
           type: Array,
           default: ['15', '25', '50', '100', '500'],
+        },
+        pageLinks: {
+          type: Number,
+          default: 0
         }
     },
 
@@ -59,7 +65,28 @@ export default {
                 return 1
             }
             return Math.ceil(this.totalRecords / this.perPage)
-        }
+        },
+        numberOfPageLinks: function() {
+          if (this.pageLinks < 1) return 1
+          if (this.pageLinks > this.maxPages) return this.maxPages
+          // Max of 5 links total
+          return Math.max(1, Math.min(this.pageLinks, MAX_PAGE_LINKS))
+        },
+        pages: function() {
+          let lower = Math.max(1, this.currentPage - Math.floor(this.numberOfPageLinks/2))
+          let upper = lower + this.numberOfPageLinks
+
+          // If we hit the max pages, we need to reset our lower bound value
+          if (upper >= this.maxPages) {
+            upper = this.maxPages+1 // So when we grab the range its correct
+            lower = Math.max(1, upper - this.numberOfPageLinks)
+          }
+          let range = upper - lower
+
+          let result = Array.from({length: range}, (d,i) => lower+i)
+
+          return result
+        },
     },
     methods: {
         onFirst: function() {
@@ -74,30 +101,37 @@ export default {
             this.currentPage = this.currentPage < this.maxPages ? this.currentPage + 1 : this.maxPages
             this.sendPageChangeEvent()
         },
+        onSetPage: function(page) {
+          this.currentPage = Math.min(page, this.maxPages)
+          this.sendPageChangeEvent()
+        },
         onLast: function() {
-            this.currentPage = this.maxPages
-            this.sendPageChangeEvent()
+          this.currentPage = this.maxPages
+          this.sendPageChangeEvent()
         },
         onPageSizeChange: function(event) {
-            console.log("Page Size changed..." + this.perPage + " event " + event.target.value)
-            this.sendPageChangeEvent()
+          // Which page should we be on if the page size has changed?
+          // For now set back to 1
+          this.currentPage = 1
+          this.sendPageChangeEvent()
         },
         sendPageChangeEvent: function() {
             let payload = {
-                'current-page': this.currentPage,
-                'page-size': this.perPage
+                currentPage: +this.currentPage,
+                pageSize: +this.perPage
             }
+            console.log("Page changed: " + JSON.stringify(payload))
             this.$emit('page-changed', payload)
         }
     },
 
     created: function() {
-        console.log("Created pagination component")
-        if (this.initialPage < 1) {
-            this.currentPage = 1
-        } else if (this.initialPage > this.maxPages) {
-            this.currentPage = this.maxPages
-        }
+        // if (this.initialPage < 1) {
+        //     this.currentPage = 1
+        // } else if (this.initialPage > this.maxPages) {
+        //     this.currentPage = this.maxPages
+        // }
+        this.currentPage = Math.max(1, Math.min(this.initialPage, this.maxPages))
     },
 }
 </script>
