@@ -2,6 +2,7 @@
 Date Time picker
 This converts an input text input type into a date picker using jquery-ui
 Intended to abstract the logic from how the date picker part works so we can migrate to something else in future
+Must have an id passed so we can associate the jquery-ui component to the control
 -->
 <template>
   <div>
@@ -15,15 +16,19 @@ Intended to abstract the logic from how the date picker part works so we can mig
 
     <!-- The form input itself - bound to the v-model passed in -->
     <input
+      v-show="editable"
+      ref="inputRef"
       :id="id"
       :name="name"
       type="text"
       :value="value"
       :disabled="disabled"
       :class="classObject"
-      @blur="$emit('blur')"
+      @blur="onBlur"
       @focus="$emit('focus')"
     >
+    <span v-show="inline && !editable">{{ value }} <span @click="onEdit" class="btn-edit"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
@@ -76,6 +81,20 @@ export default {
     },
     errorMessage: {
       type: String,
+    },
+    // Default behaviour is to act as normal input
+    inline: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      editable: true,
+      // Flag to tell us if dialog has been used
+      // In inline mode we use this to cancel the change if user clicks away
+      // They have to save by clicking OK to avoid surprising changes
+      dialogOpened: false,
     }
   },
   computed: {
@@ -84,13 +103,47 @@ export default {
       return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
     }
   },
+  created: function() {
+    // If created with inline then we are in inline-edit mode
+    this.editable = !this.inline
+  },
   mounted: function() {
+    // Bind the date picker to the input control
+    // In normal operation selecting a date updates the model
+    // In inline-edit mode, only save when the OK button is clicked
     var self = this
     $('#'+this.id).datepicker({
       dateFormat: "dd-mm-yy",
-      onSelect: (dateText) => self.$emit("input", dateText)
+      onSelect: (dateText) => { if (!self.inline) self.$emit("input", dateText) },
+      onClose: () => { self.dialogOpened = true; self.$refs.inputRef.focus() }
     })
+  },
+  methods: {
+    onBlur(event) {
+      // If in inline edit mode cancel edit
+      if (this.inline && this.dialogOpened) {
+        this.editable = false
+        this.dialogOpened = false
+      }
+      this.$emit("blur")
+    },
+    onEdit(event) {
+      this.$refs.inputRef.focus()
+
+      this.editable = true
+    },
+    onSave() {
+      // In this case we are in inline edit mode so need to explicitly save the input value
+      this.$emit("input", this.$refs.inputRef.value);
+      this.$emit("save", this.$refs.inputRef.value);
+      this.editable = false
+    },
   }
 };
 </script>
 
+<style scoped>
+.btn-edit {
+  cursor: pointer;
+}
+</style>

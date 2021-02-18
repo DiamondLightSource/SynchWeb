@@ -21,19 +21,24 @@ So if the options were: [ { 'NAME': 'Green', 'ID': 0 }, { 'NAME': 'Yellow', 'ID'
 
     <!-- The form input itself - bound to the v-model passed in -->
     <select
+      v-show="editable"
+      ref="inputRef"
       :id="id"
       :name="name"
-      :value="value"
+      :value="localValue"
       :disabled="disabled"
       :class="classObject"
       @input="updateValue"
       @change="updateValue"
-      @blur="$emit('blur')"
+      @blur="onBlur"
       @focus="$emit('focus')"
     >
       <option v-show="defaultText" disabled value="">{{defaultText}}</option>
       <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
     </select>
+
+    <span v-show="inline && !editable">{{ inlineText }} <span @click="onEdit" class="btn-edit"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
@@ -96,19 +101,71 @@ export default {
     },
     errorMessage: {
       type: String,
+    },
+    // Default behaviour is to act as normal input
+    // Set inline to enable edit/save behaviour
+    inline: {
+      type: Boolean,
+      default: false,
+    },
+    // For cases where you store an id but want the inline edit to show the text value
+    // pass an initial text value in. This will render the text while the span is visible
+    // Use the save event to update this prop
+    initialText: {
+      type: String,
+    }
+  },
+  data() {
+    return {
+      editable: true,
+      localValue: this.value
     }
   },
   computed: {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
       return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
+    },
+    inlineText() {
+      return this.initialText || this.localValue
     }
+  },
+  created() {
+    // If created with editable = false then we are in inline-edit mode
+    this.editable = !this.inline
   },
   methods: {
     updateValue(event) {
-      this.$emit("input", event.target.value);
+      this.localValue = event.target.value
+      console.log("Local changed value = " + this.localValue)
+
+      if (!this.inline) this.$emit("input", this.localValue);
+    },
+    onBlur() {
+      // If in inline edit mode cancel edit
+      if (this.inline) {
+        this.editable = false
+        this.localValue = this.value
+      }
+      this.$emit("blur")
+    },
+    onEdit() {
+      this.$refs.inputRef.focus()
+
+      this.editable = true
+    },
+    onSave() {
+      this.editable = false
+      // In this case we are in inline edit mode so need to explicitly save the input value
+      this.$emit("input", this.localValue);
+      this.$emit("save", this.localValue);
     },
   }
 };
 </script>
 
+<style scoped>
+.btn-edit {
+  cursor: pointer;
+}
+</style>
