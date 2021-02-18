@@ -19,7 +19,7 @@
     <div class="form">
         <sw-select-input
           label="Substance"
-          v-model="inputValue.acronym"
+          v-model="inputValue.PROTEINID"
           optionValueKey="PROTEINID"
           optionTextKey="ACRONYM"
           defaultText=" - "
@@ -27,40 +27,46 @@
           />
         <sw-select-input
           label="Sample Type"
-          v-model="inputValue.sampleType"
+          v-model="inputValue.TYPE"
           optionValueKey="ID"
           optionTextKey="TYPE"
           :options="sampleTypes"
         />
         <sw-text-input
           label="Sample Name"
-          v-model="inputValue.name"
+          v-model="inputValue.NAME"
           name="SAMPLE_NAME" />
 
         <sw-text-input
           label="Volume"
-          v-model="inputValue.volume"
+          v-model="inputValue.VOLUME"
           name="VOLUME" />
 
-        <sw-text-input
-          v-model="inputValue.column"
+      <!-- Issues getting this to update -->
+        <sw-select-input
+          :key="pkey"
+          v-model="inputValue.COLUMN"
+          :options="purificationColumns"
+          optionValueKey="PURIFICATIONCOLUMNID"
+          optionTextKey="NAME"
           label="Column"
-          name="COLUMN" />
+          name="COLUMN"
+          defaultText="Optionally set a column" />
 
         <sw-text-input
           label="Buffer"
-          v-model="inputValue.buffer"
+          v-model="inputValue.BUFFER"
           name="BUFFER" />
 
         <sw-text-input v-if="experimentKind == 'robot'"
           label="Robot Plate Temperature"
-          v-model="inputValue.plateTemperature"
-          name="PLATE_TEMPERATURE" />
+          v-model="inputValue.ROBOTPLATETEMPERATURE"
+          name="ROBOTPLATETEMPERATURE" />
 
         <sw-text-input v-if="experimentKind == 'robot'"
           label="Exposure Temperature"
-          v-model="inputValue.exposureTemperature"
-          name="EXPOSURE_TEMPERATURE" />
+          v-model="inputValue.EXPOSURETEMPERATURE"
+          name="EXPOSURETEMPERATURE" />
 
     </div>
 
@@ -68,6 +74,9 @@
 </template>
 
 <script>
+
+import PurificationColumns from 'modules/shipment/collections/purificationcolumns'
+
 import SwTextInput from 'app/components/forms/sw_text_input.vue'
 import SwSelectInput from 'app/components/forms/sw_select_input.vue'
 import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
@@ -97,6 +106,24 @@ export default {
     experimentKind: {
       type: String,
     }
+  },
+  data: function() {
+    return {
+      purificationColumns: [],
+      purificationColumn: '',
+      pkey: 0,
+    }
+  },
+  created: function() {
+    this.purificationColumnsCollection = new PurificationColumns()
+    this.purificationColumns = []
+
+    this.$store.dispatch('get_collection', this.purificationColumnsCollection).then( (result) => {
+      console.log("Purification columns collection: " + this.purificationColumnsCollection.toJSON())
+      console.log("Purification columns JSON: " + this.purificationColumns)
+      this.purificationColumns = result.toJSON()
+      this.pkey += 1
+    })
   },
   computed: {
     inputValue: {

@@ -24,30 +24,33 @@
             />
           </validation-provider>
 
-          <!-- <div class="tw-mb-2">
-            <label>What are you sending?</label>
-            <div class="tw-flex">
-              <div @click="setPackageType('Dewar')" class="tw-cursor-pointer tw-rounded tw-py-1 tw-px-1 tw-border tw-mx-2" :class="[ packageType == 'Dewar' ? 'tw-bg-blue-200 tw-border-gray-600' : 'tw-bg-gray-200 tw-border-gray-200' ]">
-                <p class=" tw-text-center"><i class="tw-mr-1 fa fa-truck"></i>Dewars</p>
-              </div>
-              <div @click="setPackageType('Parcel')" class="tw-cursor-pointer tw-rounded tw-py-1 tw-px-1 tw-border tw-border-gray-400 tw-mx-2" :class="[ packageType == 'Parcel' ? 'tw-bg-blue-200 tw-border-gray-600' : 'tw-bg-gray-200 tw-border-gray-200' ]">
-                <p class=" tw-text-center"><i class="tw-mr-1 fa fa-truck"></i>Parcels</p>
-              </div>
-            </div>
-          </div>
-
+          <div class="tw-mb-2">
           <validation-provider rules="numeric">
             <sw-text-input
-              label="How many items to add now?"
+              label="How many pre-registered dewar/parcels to add now?"
               type="number"
-              description="You can add packages later if required"
+              description="You can add items later if required"
               name="NUMPIECES"
               v-model="numPieces"
               rules="numeric"
               />
-          </validation-provider> -->
+          </validation-provider>
+          </div>
 
-          <div class="">
+          <div class="tw-mb-4">
+            <label>Number of Dewars/Parcels</label>
+            <div class="tw-flex">
+              <sw-select-input v-for="(dewar, index) in dewarList" :key="index"
+                v-model="dewar.value"
+                :options="dewars"
+                optionValueKey="FACILITYCODE"
+                optionTextKey="FACILITYCODE"
+              />
+            </div>
+            <div v-show="numPieces == 0" class="tw-flex"><span>No parcels defined yet</span></div>
+          </div>
+
+          <div class="tw-mb-2">
               <!-- Small tweaks to the styling here using tailwind flexbox -->
               <label>First Experiment / Scheduling
                   <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>
@@ -134,8 +137,6 @@ import SwTimeInput from 'app/components/forms/sw_time_input.vue'
 import SwCheckboxInput from 'app/components/forms/sw_checkbox_input.vue'
 import SwRadioInput from 'app/components/forms/sw_radio_input.vue'
 
-import ValidationRules from 'utils/validation_rules'
-
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 const SCHEDULED_SESSION = 0
@@ -160,7 +161,6 @@ export default {
     return {
       // Number of packages included in this shipment
       numPieces: 0,
-      packageType: 'Dewar',
       // Arrays of options that will be presented to the user
       dewars: [],
       labContacts: [],
@@ -202,13 +202,7 @@ export default {
     // Should handle the case where we have some dewars already selected
     // Only remove or popoff the difference rather than start again
     dewarList: function() {
-      return Array.from({length: this.numPieces}, () => { return '' })
-    },
-    vShippingName: function() {
-      return ShipmentModel.validationRules()['SHIPPINGNAME']
-    },
-    vPhysicalLocation: function() {
-      return ShipmentModel.validationRules()['PHYSICALLOCATION']
+      return Array.from({length: this.numPieces}, () => { return {value: ''} })
     },
   },
 
@@ -231,17 +225,13 @@ export default {
 
     this.getLocalContacts()
 
-    this.$store.dispatch('getCollection', visitsCollection).then( (result) => {
+    this.$store.dispatch('get_collection', visitsCollection).then( (result) => {
       this.visits = result.toJSON()
     })
 
-    this.$store.dispatch('getCollection', dewarRegistryCollection).then( (result) => {
+    this.$store.dispatch('get_collection', dewarRegistryCollection).then( (result) => {
       this.dewars = result.toJSON()
     })
-
-
-    console.log("Validation Rules: " + JSON.stringify(ValidationRules))
-    console.log("Validation Rule wwdash: " + ValidationRules.wwdash.regex)
   },
 
   methods: {
@@ -260,7 +250,8 @@ export default {
       let shipmentModel = new ShipmentModel({
         SHIPPINGNAME: this.shipmentName,
         SAFETYLEVEL: this.safetyLevel,
-        FCODES: this.dewarsList,
+        FCODES: this.dewarList.map( (item) => item.value ),
+        DEWARS: this.dewarList.length,
         DELIVERYAGENT_AGENTNAME: this.courierName,
         DELIVERYAGENT_AGENTCODE: this.courierAccount,
         DELIVERYAGENT_DELIVERYDATE: this.deliveryDate,
@@ -300,9 +291,6 @@ export default {
         },
       })
     },
-    setPackageType: function(type) {
-      this.packageType = type
-    },
     onAddLocalContact: function() {
       app.dialog.show(new DialogView({ title: 'Add Home Lab Contact', className: 'content', view: new AddContactView({ dialog: true }), autoSize: true }))
       app.listenTo(app.dialog.currentView, 'close', this.getLocalContacts, this)
@@ -310,7 +298,7 @@ export default {
     getLocalContacts: function() {
       let labContactsCollection = new LabContactsCollection(null, { state: { pageSize: 9999 } })
 
-      this.$store.dispatch('getCollection', labContactsCollection).then( (result) => {
+      this.$store.dispatch('get_collection', labContactsCollection).then( (result) => {
         this.labContacts = result.toJSON()
       })
     },

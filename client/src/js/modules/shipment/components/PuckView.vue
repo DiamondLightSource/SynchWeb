@@ -109,7 +109,7 @@ export default {
         // For the puck we have no need for a label
         // In fact we keep the graphic as the same size as svg to map a background image
         // So this does not use the standard d3 margin setup - see plate view for that
-        const viewBoxWidth = 500
+        const viewBoxWidth = 800
         const viewBoxHeight = 500
 
         const viewBox = [0,0,viewBoxWidth,viewBoxHeight]

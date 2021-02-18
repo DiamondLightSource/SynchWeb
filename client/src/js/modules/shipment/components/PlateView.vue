@@ -306,7 +306,7 @@ export default {
       // This method has some knowledge of the sample data
       // Used to inform the parent that a cell has been clicked
       onCellClicked: function(sampleData) {
-        if (sampleData.data && sample.data.LOCATION) {
+        if (sampleData.data && sampleData.data.LOCATION) {
           // Convert to an actual index not string
           this.$emit('cell-clicked', +sampleData.LOCATION)
         } else {

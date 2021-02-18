@@ -1,7 +1,7 @@
 <template>
   <section class="tw-mx-auto">
     <div v-if="containerComponent" class="tw-flex">
-      <div class="tw-w-full tw-border tw-border-green-500 tw-m-1 tw-p-2">
+      <div class="tw-w-full tw-border-l tw-border-gray-500 tw-m-1 tw-p-2">
         <h1 class="tw-text-xl">Container</h1>
         <component v-bind:is="containerComponent"
           :container="geometry"
@@ -53,8 +53,8 @@ export default {
 
   computed: {
     containerComponent: function() {
-      if (this.containerType == 'plate') return 'plate-view'
-      if (this.containerType == 'puck') return 'puck-view'
+      if (this.containerType == 'Plate') return 'plate-view'
+      if (this.containerType == 'Puck') return 'puck-view'
       return null
     },
   },
@@ -74,7 +74,7 @@ export default {
       alert("Saving Sample Group: " + this.sampleGroupName)
     },
     onCellClicked: function(location) {
-        console.log("Puck Cell location clicked event " + JSON.stringify(location))
+        console.log("Cell location clicked event " + JSON.stringify(location))
 
         let index = this.selectedItems.indexOf(location)
 

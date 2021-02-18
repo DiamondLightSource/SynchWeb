@@ -20,7 +20,7 @@
 
         <span v-if="DHL_ENABLE">
           <span v-if="DELIVERYAGENT_HAS_LABEL == '1'">
-            <a class="button pdf" :href="shipment.APIURL+'/pdf/awb/sid/'+shipment.SHIPPINGID"><i class="fa fa-print"></i> Print Airway Bill</a>
+            <a class="button pdf" :href="APIURL+'/pdf/awb/sid/'+shipment.SHIPPINGID" @click="onPrintPdf"><i class="fa fa-print"></i> Print Airway Bill</a>
             <!-- <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a> -->
             <span v-if="!DELIVERYAGENT_PICKUPCONFIRMATION">
                 <a class="button awb" :href="'/shipments/pickup/sid/'+shipment.SHIPPINGID"><i class="fa fa-truck"></i> Rebook Pickup</a>
@@ -30,12 +30,10 @@
           <span v-else>
             <a class="button awb" :href="'/shipments/awb/sid/'+shipment.SHIPPINGID"><i class="fa fa-credit-card"></i> Create Airway Bill</a>
           </span>
-
         </span>
 
-        <a :href="shipment.APIURL+'/pdf/sid/'+shipment.SHIPPINGID+'/prop/'+shipment.PROP" class="label button pdf" title="Print Shipment Labels"><i class="fa fa-print"></i> Print Shipment Labels</a>
-
-        <a :href="shipment.APIURL+'/pdf/container/sid/'+shipment.SHIPPINGID+'/prop/'+shipment.PROP" class="label button pdf" title="Print Shipment Contents"><i class="fa fa-print"></i> Print Contents</a>
+        <a :href="APIURL+'/pdf/sid/'+shipment.SHIPPINGID+'/prop/'+shipment.PROP" class="label button pdf" title="Print Shipment Labels" @click="onPrintPdf"><i class="fa fa-print"></i> Print Shipment Labels</a>
+        <a :href="APIURL+'/pdf/container/sid/'+shipment.SHIPPINGID+'/prop/'+shipment.PROP" class="label button pdf" title="Print Shipment Contents" @click="onPrintPdf"><i class="fa fa-print"></i> Print Contents</a>
       </div>
     </div>
 
@@ -45,7 +43,6 @@
             <li>
                 <span class="label">Created</span>
                 <span class="created">{{shipment.CREATED}}</span>
-                <span><i class="fa fa-unlock"></i> Edit</span>
             </li>
 
             <li>
@@ -54,62 +51,92 @@
             </li>
 
             <li>
+                <!--
+                  Lab contact renders the lab contact card name but saves the id.
+                  So we need to update LCOUT after a change
+                -->
                 <span class="label">Outgoing Lab Contact</span>
-                <span  v-if="!isEditable('SENDINGLABCONTACTID')" class="SENDINGLABCONTACTID">{{shipment.LCOUT}}</span>
-                <sw-select-input v-else v-model="shipment.SENDINGLABCONTACTID" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME"/>
-                <span @click="toggleEditable('SENDINGLABCONTACTID')"><i class="fa fa-lock"></i> Edit</span>
+                <sw-select-input
+                  :inline="true"
+                  :initialText="shipment.LCOUT"
+                  v-model="shipment.SENDINGLABCONTACTID"
+                  :options="labContacts"
+                  optionValueKey="LABCONTACTID"
+                  optionTextKey="CARDNAME"
+                  @save="onChangeLabContact('LCOUT', $event)"/>
             </li>
 
             <li>
+                <!--
+                  Lab contact renders the lab contact card name but saves the id.
+                  So we need to update LCRET after a change
+                -->
                 <span class="label">Return Lab Contact</span>
-                <span class="RETURNLABCONTACTID">{{shipment.LCRET}}</span>
+                <sw-select-input
+                  :inline="true"
+                  :initialText="shipment.LCRET"
+                  v-model="shipment.RETURNLABCONTACTID"
+                  :options="labContacts"
+                  optionValueKey="LABCONTACTID"
+                  optionTextKey="CARDNAME"
+                  @save="onChangeLabContact('LCRET', $event)"/>
             </li>
+
             <li>
+                <!--
+                  For safety level the text is the same as the value
+                  So we don;t need to pass any special initial text for inline display
+                -->
                 <span class="label">Safety Level</span>
-                <span class="SAFETYLEVEL">{{shipment.SAFETYLEVEL}}</span>
+                <sw-select-input
+                  :inline="true"
+                  v-model="shipment.SAFETYLEVEL"
+                  :options="[{'NAME':'Green', 'ID': 'Green'}, {'NAME':'Yellow', 'ID': 'Yellow'}, {'NAME':'Red', 'ID': 'Red'}]"
+                  optionValueKey="ID"
+                  optionTextKey="NAME"
+                  class="SAFETYLEVEL"
+                  @save="save('SAFETYLEVEL')"/>
             </li>
+
             <li>
                 <span class="label">Courier</span>
-                <span v-if="!isEditable('DELIVERYAGENT_AGENTNAME')" class="DELIVERYAGENT_AGENTNAME">{{shipment.DELIVERYAGENT_AGENTNAME}}</span>
-                <sw-text-input v-else v-model="shipment.DELIVERYAGENT_AGENTNAME"/>
-                <span @click="toggleEditable('DELIVERYAGENT_AGENTNAME')"><i :class="['fa', isEditable('DELIVERYAGENT_AGENTNAME') ? 'fa-unlock' : 'fa-lock']"></i> Edit</span>
+                <sw-text-input :inline="true" v-model="shipment.DELIVERYAGENT_AGENTNAME" @save="save('DELIVERYAGENT_AGENTNAME')"/>
             </li>
-
             <li>
                 <span class="label">Courier Account No.</span>
-                <span class="DELIVERYAGENT_AGENTCODE">{{shipment.DELIVERYAGENT_AGENTCODE}}</span>
+                <sw-text-input :inline="true" v-model="shipment.DELIVERYAGENT_AGENTCODE" @save="save('DELIVERYAGENT_AGENTCODE')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Date</span>
-                <span class="DELIVERYAGENT_SHIPPINGDATE">{{shipment.DELIVERYAGENT_SHIPPINGDATE}}</span>
+                <sw-date-input :inline="true" id="shipping-date" v-model="shipment.DELIVERYAGENT_SHIPPINGDATE" name="DELIVERYAGENT_SHIPPINGDATE" @save="save('DELIVERYAGENT_SHIPPINGDATE')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Airway Bill</span>
-                <span class="DELIVERYAGENT_FLIGHTCODE">{{shipment.DELIVERYAGENT_FLIGHTCODE}}</span>
+                <sw-text-input :inline="true" v-model="shipment.DELIVERYAGENT_FLIGHTCODE" @save="save('DELIVERYAGENT_FLIGHTCODE')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Pickup Location</span>
-                <span class="PHYSICALLOCATION">{{shipment.PHYSICALLOCATION}}</span>
+                <sw-text-input :inline="true" v-model="shipment.PHYSICALLOCATION"/>
             </li>
 
             <li>
                 <span class="label">Shipping Ready By</span>
-                <span class="READYBYTIME">{{shipment.READYBYTIME}}</span>
+                <sw-time-input :inline="true" id="ready-by" v-model="shipment.READYBYTIME"/>
             </li>
 
             <li>
                 <span class="label">Shipping Close Time</span>
-                <span class="CLOSETIME">{{shipment.CLOSETIME}}</span>
+                <sw-time-input :inline="true" id="close-time" v-model="shipment.CLOSETIME"/>
             </li>
 
             <div v-if="shipment.DELIVERYAGENT_PICKUPCONFIRMATION">
               <li>
                   <span class="label">Shipping Pickup Confirmed</span>
                   Yes - Confirmation Number: <span class="DELIVERYAGENT_PICKUPCONFIRMATION">{{shipment.DELIVERYAGENT_PICKUPCONFIRMATION}}</span>
-                  <a href="#" class="button cancel_pickup"><i class="fa fa-times"></i> Cancel</a>
+                  <a href="#" class="button cancel_pickup" @click="onCancelPickup"><i class="fa fa-times"></i> Cancel</a>
               </li>
               <li>
                   <span class="label">Shipping Confirmed Ready By</span>
@@ -124,12 +151,12 @@
 
             <li>
                 <span class="label">Estimated Delivery Date</span>
-                <span class="DELIVERYAGENT_DELIVERYDATE">{{shipment.DELIVERYAGENT_DELIVERYDATE}}</span>
+                <sw-date-input :inline="true" id="delivery-date" v-model="shipment.DELIVERYAGENT_DELIVERYDATE" name="DELIVERYAGENT_DELIVERYDATE"/>
             </li>
 
             <li>
-                <span class="label">Comments</span>
-                <div class="COMMENTS text tw-inline-block tw-w-3/5">{{shipment.COMMENTS}}</div>
+                <span class="label">Comments Area</span>
+                <sw-textarea-input :inline="true" v-model="shipment.COMMENTS" outerClass="tw-w-1/2"/>
             </li>
         </ul>
         <div class="clear"></div>
@@ -140,15 +167,41 @@
 
     <p class="help">Select a dewar by clicking on the row in the table below. Package details are then shown below. Click the + icon to add a container to the selected package</p>
 
-    <div class="ra"><a v-if="PROPOSAL_ACTIVE" href="#" class="button" id="add_dewar" title="Add a dewar to this shipment"><i class="fa fa-plus"></i> Add Dewar</a></div>
+    <div class="ra"><a v-if="PROPOSAL_ACTIVE" href="#" class="button" id="add_dewar" title="Add a dewar to this shipment" @click.prevent="onAddDewar"><i class="fa fa-plus"></i> Add Dewar</a></div>
 
     <!-- <div class="table"></div> -->
     <table-component
       :headers="dewarTableHeaders"
       :data="dewars"
+      :actions="'Actions'"
       @row-clicked="onShowDewar"
-    ></table-component>
+    >
+      <template slot="actions" slot-scope="{ row }">
+        <a class="button" :href="APIURL+'/pdf/container/did/'+row.DEWARID+'/prop/'+PROPOSAL" @click="onPrintPdf"><i class="fa fa-print "></i></a>
+        <a class="button" :href="'/containers/add/did/'+row.DEWARID"><i class="fa fa-plus"></i></a>
+        <a class="button" :href="'/dewars/dispatch/'+row.DEWARID"><i class="fa fa-home"></i></a>
+        <a class="button" :href="'/dewars/transfer/'+row.DEWARID"><i class="fa fa-arrows-h"></i></a>
+      </template>
+    </table-component>
 
+    <div v-show="addingNewDewar">
+      <form>
+        <label>Name</label>
+        <input type="text" placeholder="name"/>
+        <label>FacilityCode</label>
+        <input type="text" placeholder="fc"/>
+        <label>Weight</label>
+        <input type="text" placeholder="weight"/>
+        <label>First Exp</label>
+        <input type="text" placeholder="experiment"/>
+        <label>Tracking # To</label>
+        <input type="text" placeholder="to"/>
+        <label>Tracking # From</label>
+        <input type="text" placeholder="from"/>
+        <button class="button" @click.prevent="onSaveDewar"><i class="fa fa-check"></i></button>
+        <button class="button" @click.prevent="addingNewDewar = false"><i class="fa fa-times"></i></button>
+      </form>
+    </div>
 
     <h1>
         Package Details: {{currentDewarName}}
@@ -177,16 +230,16 @@
               {{container.CONTAINERID}} ({{container.SAMPLES}} Samples)
 
               <span class="r">
-                <a class="button button-notext print" title="Click to print container contents" :href="'/api/pdf/container/cid/'+container.CONTAINERID+'/prop/'+PROPOSAL"><i class="fa fa-print"></i> <span>Print Container Report</span></a>
+                <a class="button button-notext print" title="Click to print container contents" :href="'/api/pdf/container/cid/'+container.CONTAINERID+'/prop/'+PROPOSAL" onPrintPdf><i class="fa fa-print"></i> <span>Print Container Report</span></a>
                 <a class="button button-notext view" title="Click to View Container" :href="'/containers/cid/'+container.CONTAINERID"><i class="fa fa-search"></i> <span>View Container</span></a>
-                <a href="#" class="button button-notext move"><i class="fa fa-arrows"></i> <span>Move Container</span></a>
+                <a href="#" class="button button-notext move" @click.prevent="onMoveContainer(container.CONTAINERID)"><i class="fa fa-arrows"></i> <span>Move Container</span></a>
               </span>
 
             </li>
 
             <li v-if="containers.length < 1">No containers found</li>
           </ul>
-          <pagination-component @page-changed="onUpdateHistory" />
+          <pagination-component @page-changed="onUpdateContent" :totalRecords="containersTotal" :initialPage="1" :pageLinks="5" :pageSizes="[5,10,20]"/>
         </div>
 
         <div class="tw-w-full sm:tw-w-1/2 sm:tw-ml-2">
@@ -198,13 +251,23 @@
                   noDataText="No history available"/>
                   <pagination-component @page-changed="onUpdateHistory" />
                 </div>
+                <div class="form">
+                  <ul>
+                    <li>
+                      <span class="label">Origin</span>
+                      <span class="origin">{{dewarTracking.ORIGIN}}</span>
+                    </li>
+                    <li>
+                      <span class="label">Destination</span>
+                      <span class="destination">{{dewarTracking.DESTINATION}}</span>
+                    </li>
+                  </ul>
+                </div>
                 <div class="tracking table table-no-margin">
                   <table-component
                   :headers="dewarTrackingHeaders"
                   :data="dewarTracking"
                   noDataText="No tracking available"/>
-                </div>
-
                 </div>
             </div>
         </div>
@@ -215,13 +278,22 @@
 <script>
 
 import LabContactsCollection from 'collections/labcontacts'
+import Container from 'models/container'
 import Containers from 'collections/containers'
 
 import Dewars from 'collections/dewars'
 import DewarHistory from 'modules/shipment/collections/dewarhistory'
 import DewarTracking from 'modules/shipment/collections/dhl-tracking'
 
+import MoveContainerView from 'modules/shipment/views/movecontainer'
+// Utils contains confirmation dialog
+import utils from 'utils'
+import Backbone from 'backbone'
+
 import SwTextInput from 'app/components/forms/sw_text_input.vue'
+import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
+import SwDateInput from 'app/components/forms/sw_date_input.vue'
+import SwTimeInput from 'app/components/forms/sw_time_input.vue'
 import SwSelectInput from 'app/components/forms/sw_select_input.vue'
 
 import TableComponent from 'app/components/utils/table.vue'
@@ -231,6 +303,9 @@ export default {
   name: 'SCMShipmentView',
   components: {
     'sw-text-input': SwTextInput,
+    'sw-textarea-input': SwTextAreaInput,
+    'sw-time-input': SwTimeInput,
+    'sw-date-input': SwDateInput,
     'sw-select-input': SwSelectInput,
     'table-component': TableComponent,
     'pagination-component': PaginationComponent,
@@ -243,7 +318,7 @@ export default {
   },
   data: function() {
     return {
-      editable: [],
+      addingNewDewar: false,
       labContacts: [],
 
       dewarTableHeaders: [
@@ -256,7 +331,7 @@ export default {
         {key: 'TRACKINGNUMBERFROMSYNCHROTRON', title: 'Tracking # from'},
         {key: 'DEWARSTATUS', title: 'Status'},
         {key: 'STORAGELOCATION', title: 'Location'},
-        {key: 'CCOUNT', title: 'Containers'},
+        {key: 'CCOUNT', title: 'Containers'}
       ],
       dewars: [],
       currentDewarId: null,
@@ -268,6 +343,7 @@ export default {
         {key: 'DEWARSTATUS', title: 'Status'},
         {key: 'STORAGELOCATION', title: 'Location'},
       ],
+      dewarHistoryTotal: 0,
 
       dewarTracking: [],
       dewarTrackingHeaders: [
@@ -277,6 +353,9 @@ export default {
         {key: 'SIGNATORY', title: 'Signatory'},
       ],
       containers: [],
+      containersTotal: 0,
+
+      shipment: {},
     }
   },
 
@@ -288,14 +367,14 @@ export default {
       if (app.proposal && app.proposal.get('ACTIVE') == '1') return true
       else return false
     },
+    APIURL: function() {
+      return this.$store.state.apiUrl
+    },
     DHL_ENABLE: function() {
       return app.options.get('dhl_enable')
     },
     DHL_LINK: function() {
       return app.options.get('dhl_link')
-    },
-    shipment: function() {
-      return Object.assign({}, this.model.toJSON())
     },
     markAsSent: function() {
       return this.shipment.SHIPPINGSTATUS == 'opened' || this.shipment.SHIPPINGSTATUS == 'awb created' || this.shipment.SHIPPINGSTATUS == 'pickup booked'
@@ -303,46 +382,80 @@ export default {
   },
 
   created: function() {
-    // Get Lab Contacts
-    this.getLocalContacts()
+    this.shipment = Object.assign({}, this.model.toJSON())
+
+    console.log("Initial shipment = " + JSON.stringify(this.shipment))
 
     // Backbone models for dewar / parcel contents
-
     this.dewarsCollection = new Dewars(null, { id: this.model.get('SHIPPINGID') })
-
     this.getDewars()
+
+    // Get Lab Contacts
+    this.labContactsCollection = new LabContactsCollection(null, { state: { pageSize: 9999 } })
+    this.getLocalContacts()
   },
   watch: {
-    currentDewarId: function(newVal) {
-      console.log("New Dewar Selected: " + newVal)
+    currentDewarId: function(newVal, oldVal) {
+      // When the currently selected dewar changes we need to update the history and tracking tables
+      console.log("New Dewar Selected: " + newVal + ", oldVal: " + oldVal + ", current = " + this.currentDewarId)
       // Note inconsistent use of id and dewarID!!!
       let dewarHistory = new DewarHistory()
       dewarHistory.id = this.currentDewarId
 
-      let dewarContent = new Containers()
+      // Fetch the history and content for these dewars
+      this.$store.dispatch('get_collection', dewarHistory).then( (result) => {
+        console.log("DEWAR HISTORY: " + JSON.stringify(result))
+        this.dewarHistory = result.toJSON()
+        this.dewarHistoryTotal = result.state.totalRecords
+      })
+
+      let dewarContent = new Containers(null, {state: { pageSize: 5}})
       dewarContent.dewarID = this.currentDewarId
       dewarContent.setSorting('NAME')
 
+      this.updateDewarContent(dewarContent)
 
-      // TODO sort tracking as well
+      // Grab sort tracking as well
+      let dewartracking = new DewarTracking()
+      var d = this.dewarsCollection.findWhere({ DEWARID: this.currentDewarId })
 
+      if (d && (d.get('TRACKINGNUMBERTOSYNCHROTRON') || d.get('TRACKINGNUMBERTOSYNCHROTRON'))) {
+          dewartracking.queryParams.DEWARID = did
 
-      // Fetch the history and content for these dewars
-      this.$store.dispatch('getCollection', dewarHistory).then( (result) => {
-        console.log("DEWAR HISTORY: " + JSON.stringify(result))
-        this.dewarHistory = result.toJSON()
-      })
-      this.$store.dispatch('getCollection', dewarContent).then( (result) => {
-        console.log("DEWAR CONTENT: " + JSON.stringify(result))
-        this.containers = result.toJSON()
-      })
-    }
+          this.$store.dispatch('get_collection', dewartracking).then( (result) => {
+            console.log("DEWAR Tracking: " + JSON.stringify(result))
+            this.dewarTracking = result.toJSON()
+          })
+      } else {
+          this.dewarTracking = Object.assign({}, {ORIGIN: 'N/A', DESTINATION: 'N/A'})
+      }
+
+    },
   },
 
   methods: {
-    onMarkAsSent: function() {
-      console.log("Mark As Sent")
+    onAddDewar: function() {
+      this.addingNewDewar = true
+
+      // this.dewarsCollection.add(new Dewar({
+      //     SHIPPINGID: this.model.get('SHIPPINGID'),
+      //     new: true
+      // }))
     },
+    onSaveDewar: function() {
+      console.log("Save Dewar")
+      this.addingNewDewar = false
+      // TODO add dewar to shipment...
+    },
+    // Effetively a patch request to update specific fields
+    save: function(parameter) {
+      console.log("Saving " + parameter + " to " + this.shipment[parameter])
+      let params = {}
+      params[parameter] = this.shipment[parameter]
+      this.model.set( params )
+      this.model.save(params, {patch: true})
+    },
+
     onShowDewar: function(dewar) {
       // Had some issues with scope of the passed object.
       // So set the currently selected dewar here and then watch the value for changes
@@ -351,44 +464,140 @@ export default {
       this.currentDewarId = dewarId
       this.currentDewarName = dewar['CODE']
     },
-    onUpdateHistory: function(payload) {
-      console.log("Pagination changed for table")
-    },
-    toggleEditable: function(name) {
-      console.log("Toggle Edit for " + name)
-      let index = this.editable.indexOf(name)
-      if ( index > -1 ) {
-        console.log("Remove edit")
-        this.editable.splice(index, 1)
-      } else {
-        console.log("Add edit")
-        this.editable.push(name)
-      }
-      console.log("Editable State: " + JSON.stringify(this.editable))
-    },
-    isEditable: function(name) {
-      return this.editable.indexOf(name) > -1 ? true : false
-    },
-    getLocalContacts: function() {
-      let labContactsCollection = new LabContactsCollection(null, { state: { pageSize: 9999 } })
 
-      this.$store.dispatch('getCollection', labContactsCollection).then( (result) => {
+    onUpdateContent: function(payload) {
+      let dewarContent = new Containers(null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
+      dewarContent.dewarID = this.currentDewarId
+      dewarContent.setSorting('NAME')
+      // dewarContent.setPageSize(payload.pageSize)
+      // dewarContent.setPage(payload.currentPage)
+
+      this.updateDewarContent(dewarContent)
+    },
+
+    onUpdateHistory: function(payload) {
+      let dewarHistory = new DewarHistory( null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
+      dewarHistory.id = this.currentDewarId
+
+      this.$store.dispatch('get_collection', dewarHistory).then( (result) => {
+        this.dewarHistory = result.toJSON()
+        this.dewarHistoryTotal = result.state.totalRecords
+      })
+    },
+
+    onSaveLC: function(id, lc, value) {
+      // lc should be LCOUT or LCRET for shipment
+      // Its not used to save content but display the correct ID
+      let labcontact = this.labContactsCollection.findWhere({LABCONTACTID: value})
+      this.shipment[lc] = labcontact.get('CARDNAME')
+      this.save(id)
+    },
+    onChangeLabContact: function(lc, value) {
+      // lc should be LCOUT or LCRET for shipment
+      // Its not used to save content but display the correct ID
+      let labcontact = this.labContactsCollection.findWhere({LABCONTACTID: value})
+      this.shipment[lc] = labcontact.get('CARDNAME')
+    },
+    onCancelPickup: function(e) {
+      e.preventDefault()
+
+      utils.confirm({
+        title: 'Cancel Pickup',
+        content: 'Are you sure you want to cancel this pickup? This cannot be undone',
+        callback: this.doCancelPickup
+      })
+    },
+    doCancelPickup: function() {
+      var self = this
+
+      Backbone.ajax({
+        type: 'DELETE',
+        url: app.apiurl+'/shipment/pickup/cancel/'+this.model.get('SHIPPINGID'),
+        success: function() {
+          self.model.set('DELIVERYAGENT_PICKUPCONFIRMATION', null)
+          self.$store.commit('add_notification', { message: 'Pickup Cancelled', level: 'success' })
+        },
+
+        error: function(xhr, status, error) {
+          var json;
+          if (xhr.responseText) {
+              try {
+                json = $.parseJSON(xhr.responseText)
+              } catch(err) {
+                console.log("Error cancelling pickup?")
+              }
+            }
+            self.$store.commit('add_notification', { title: 'Pickup Request Failed:', message: json.message, level: 'error' })
+        }
+      })
+    },
+
+    onMarkAsSent: function(e) {
+      e.preventDefault()
+      var self = this
+      Backbone.ajax({
+        url: app.apiurl+'/shipment/send/'+this.model.get('SHIPPINGID'),
+        success: function() {
+          self.model.set({ SHIPPINGSTATUS: 'send to DLS' })
+          self.$store.commit('add_notification', { level: 'success', message: 'Shipment successfully marked as sent' })
+        },
+        error: function() {
+          self.$store.commit('add_notification', { message: 'Something went wrong sending this shipment, please try again', level: 'error' })
+        },
+      })
+    },
+
+    // Delegate pdf print to sign handler...
+    onPrintPdf: function(e) {
+      e.preventDefault()
+      utils.signHandler(e)
+    },
+
+    onMoveContainer: function(id) {
+      let self = this
+      let container = new Container({CONTAINERID: id})
+
+      this.$store.dispatch('get_model', container).then( (result) => {
+        app.dialog.show(new MoveContainerView({ model: result }))
+        app.on('container:moved', function() {
+          self.getDewars()
+
+          // Need to refactor this to make better code reuse
+          let dewarContent = new Containers(null, {state: { pageSize: 5}})
+          dewarContent.dewarID = self.currentDewarId
+          dewarContent.setSorting('NAME')
+
+          self.updateDewarContent(dewarContent)
+
+        })
+      })
+    },
+
+    getLocalContacts: function() {
+      this.$store.dispatch('get_collection', this.labContactsCollection).then( (result) => {
         this.labContacts = result.toJSON()
       })
     },
     // Get the dewars/packages from this shipment
     getDewars: function() {
-      this.$store.dispatch('getCollection', this.dewarsCollection).then( (result) => {
+      this.$store.dispatch('get_collection', this.dewarsCollection).then( (result) => {
         this.dewars = result.toJSON()
-        console.log("Found dewars for this shipment: " + JSON.stringify(this.dewars))
         // If this is first time, select the first dewar in the list.
-        if (this.currentDewarId == null) {
+        if (this.currentDewarId == null && this.dewars.length > 0) {
           this.currentDewarId = this.dewars[0].DEWARID
           this.currentDewarName = this.dewars[0].CODE
         }
-
       })
     },
+    updateDewarContent: function(collection) {
+      this.$store.dispatch('get_collection', collection).then( (result) => {
+        console.log("DEWAR CONTENT: " + JSON.stringify(result))
+        this.containers = result.toJSON()
+        this.containersTotal = result.state.totalRecords
+        console.log("Total: " + this.containersTotal)
+      })
+    }
   },
 }
 </script>
+
