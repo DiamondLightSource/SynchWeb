@@ -39,7 +39,7 @@ So if the options were: [ { 'NAME': 'Green', 'ID': 0 }, { 'NAME': 'Yellow', 'ID'
       </optgroup>
     </select>
 
-    <span v-show="inline && !editable">{{ inlineText }} <span @click="onEdit" class="btn-edit"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ value }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -168,5 +168,9 @@ export default {
 <style scoped>
 .btn-edit {
   cursor: pointer;
+  @apply tw-rounded;
+}
+.btn-edit:hover {
+  @apply tw-bg-content-search-background;
 }
 </style>

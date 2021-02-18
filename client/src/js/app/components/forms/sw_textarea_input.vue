@@ -33,7 +33,7 @@ https://medium.com/@logaretm/authoring-validatable-custom-vue-input-components-1
       @focus="$emit('focus')"
     ></textarea>
 
-    <span v-if="inline && !editable">{{ value }} <span @click="onEdit" class="btn-edit"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ value }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -141,9 +141,12 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .btn-edit {
   cursor: pointer;
+  @apply tw-rounded;
+}
+.btn-edit:hover {
+  @apply tw-bg-content-search-background;
 }
 </style>
