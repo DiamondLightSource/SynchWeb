@@ -134,9 +134,13 @@ const store = new Vuex.Store({
     },
 
     // Method that returns a collection promise
-    getCollection(context, collection) {
+    // We may need to add further parameters for data queries
+    // If so add destructuring to the payload {collection, params,...}
+    get_collection(context, collection) {
 
       return new Promise((resolve, reject) => {
+        if (!collection) reject(false)
+
         collection.fetch({
           success: function(result) {
             resolve(result)
@@ -149,8 +153,25 @@ const store = new Vuex.Store({
         })
       })
     },
+    save_collection(context, collection) {
+
+      return new Promise((resolve, reject) => {
+        collection.save({
+          success: function(result) {
+            console.log("Store Collection saved: " + JSON.stringify(result))
+            resolve(result)
+          },
+
+          error: function() {
+            console.log("Store Collection save error ")
+            reject(false)
+          },
+        })
+      })
+    },
+
     // Method that returns a collection promise
-    getModel(context, model) {
+    get_model(context, model) {
 
       return new Promise((resolve, reject) => {
         model.fetch({
@@ -159,12 +180,32 @@ const store = new Vuex.Store({
           },
 
           error: function() {
-            console.log("Error getting model")
+            reject(false)
+          },
+        })
+      })
+    },
+    // Method that returns a collection promise
+    // Passing {} as first argument means save all...
+    // Should pass additional arguments to make this more flexible
+    save_model(context, model) {
+      console.log("Store saving model: " + JSON.stringify(model))
+
+      return new Promise((resolve, reject) => {
+        model.save({}, {
+          success: function(result) {
+            console.log("Store Model saved: " + JSON.stringify(result))
+            resolve(result)
+          },
+
+          error: function() {
+            console.log("Store Model saved error ")
             reject(false)
           },
         })
       })
     }
+
   },
   getters: {
     sso: state => state.auth.cas_sso,
