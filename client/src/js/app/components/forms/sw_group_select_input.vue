@@ -123,9 +123,6 @@ export default {
       localValue: this.value
     }
   },
-  created: function() {
-    console.log("Created group select with " + JSON.stringify(this.groups))
-  },
   computed: {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
