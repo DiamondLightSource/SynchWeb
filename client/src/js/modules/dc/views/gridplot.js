@@ -15,7 +15,7 @@ define(['jquery', 'marionette',
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
         padMax: true,
-        snapshot: 2,
+        snapshotId: 2,
         template: template,
         className: 'content',
         
@@ -186,13 +186,14 @@ define(['jquery', 'marionette',
 
         lazyLoad: function() {
             // console.log('lazy loadjg')
-            if (!this.snapshotLoading && this.statusesLoaded && utils.inView(this.$el)) {
+            if (!this.snapshotLoading && this.statusesLoaded && utils.inView(this.$el) && !this.inView) {
                 this._ready.push(this.distl.fetch())
                 this._ready.push(this.attachments.fetch())
                 console.log('in view')
                 this.getModel()
 
                 $.when.apply($, this._ready).done(this.populatePIA.bind(this))
+                this.inView = true
             }
 
             if (utils.inView(this.$el) && !this.xfmLoading) {
@@ -216,7 +217,7 @@ define(['jquery', 'marionette',
         getModel: function() {
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
             if (m.get('SNS').length) {
-                if (m.get('SNS')[this.getOption('snapshot')] && this.hasSnapshot == false) {
+                if (m.get('SNS')[this.getOption('snapshotId')] && this.hasSnapshot == false) {
                     this.snapshotLoading = true
                     this.$el.addClass('loading')
                     this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')   
