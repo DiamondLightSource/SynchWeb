@@ -9,10 +9,9 @@ OnClickEvent will only fire if there is data bound to the element with a valid L
 TODO - move the score colour methods to a utility class
 -->
 <template>
-    <div>
-        <p>Container Geometry: {{ JSON.stringify(container) }}</p>
-        <div id="plate"></div>
-    </div>
+  <div>
+    <div id="plate"></div>
+  </div>
 </template>
 
 <script>
@@ -36,7 +35,11 @@ export default {
           type: String, // Which key within the sample data should be shown (location index if nothing provided)
           required: false
       },
-      'color-scale': String, // color-scale mapped to colorScale prop
+      'colorScale': String,
+      'colorAttr': {
+        type: String,
+        default: 'SCORE'
+      },
       'threshold': Number // Threshold used as part of colorScale
     },
     data: function() {
@@ -101,15 +104,13 @@ export default {
       preparedData: function() {
         if (this.container.capacity <= 0) return [[]]
         // Firstly create an array of length == capacity of container
-        let samples = Array.from({length: this.container.capacity}, () => { return {} })
-
-        for (var j = 0; j<samples.length; j++) samples[j].location = j+1
+        let samples = Array.from({length: this.container.capacity}, (_,i) => { return {LOCATION: i+1} })
 
         // Now fill in location with sample data at that location
         for (var i=0; i<this.samples.length; i++) {
           let location = this.samples[i].LOCATION || null
           // Not quite right - need to add as an array for consistency
-          if (location) samples[location-1]['data'] = this.samples[i]
+          if (location) samples[location-1] = this.samples[i]
         }
 
         // Chop up the list of "samples" at each location into rows/wells
@@ -306,18 +307,18 @@ export default {
       // This method has some knowledge of the sample data
       // Used to inform the parent that a cell has been clicked
       onCellClicked: function(sampleData) {
-        if (sampleData.data && sampleData.data.LOCATION) {
+        if (sampleData && sampleData.NAME) {
           // Convert to an actual index not string
           this.$emit('cell-clicked', +sampleData.LOCATION)
         } else {
           console.log("No data in this cell: sampleData = " + JSON.stringify(sampleData))
-          this.$emit('cell-clicked', +sampleData.location)
+          this.$emit('cell-clicked', +sampleData.LOCATION)
         }
       },
 
       scoreColors: function(d) {
         let scale = null
-        let score = (d['data'] && d['data'].SCORE) ? d['data'].SCORE : null
+        let score = (d.NAME && this.colorAttr && d[this.colorAttr]) ? d[this.colorAttr] : null
 
         switch(this.colorScale) {
           case 'rgb':

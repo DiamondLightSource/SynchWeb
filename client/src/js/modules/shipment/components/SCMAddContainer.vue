@@ -1,4 +1,10 @@
 <template>
+<!--
+Add Container built initially for SCM
+Includes ability to select container type from any proposal type
+Uses Container Graphic to show plate/pucks
+Once container is valid then samples are added
+-->
   <div class="content">
     <h1>Add Container SCM style</h1>
 
@@ -7,7 +13,7 @@
 
       <div class="tw-flex tw-flex-col">
 
-      <!-- Old Add containers had an assign button here - no point as there is a menu item for /assign -->
+      <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
       <form class="tw-flex" method="post" id="add_container" @submit.prevent="onSubmit">
 
         <!-- Left hand side is form controls -->
@@ -33,7 +39,7 @@
 
           <div class="tw-mb-2 tw-py-2">
             <sw-group-select-input
-              v-model="containerState.CONTAINERTYPE"
+              v-model="containerState.CONTAINERTYPEID"
               label="Container Type"
               :groups="groupedContainerTypes"
               optionValueKey="CONTAINERTYPEID"
@@ -89,7 +95,7 @@
               />
           </div>
 
-          <div>
+          <validation-provider tag="div" rules="required" name="owner">
             <sw-select-input
               label="Owner"
                 description="This user will be emailed with container updates. Check your email is up to date!"
@@ -100,15 +106,15 @@
                 optionTextKey="FULLNAME"
                 >
               <template v-slot:error-msg>
-                <span v-show="validEmail" class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6">Please update your email address by clicking view</span>
+                <span v-show="!ownerEmail" class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6">Please update your email address by clicking view</span>
               </template>
               <template v-slot:actions>
                 <a :href="'/contacts/user/'+containerState.PERSONID" class="button edit_user tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
               </template>
             </sw-select-input>
-          </div>
+          </validation-provider>
 
-          <div>
+          <div v-show="containerGroup == 'scm'">
             <label>Show all experiment types</label>
             <sw-checkbox-input
               name="SHOW_ALL_EXPERIMENT_TYPES"
@@ -163,7 +169,7 @@
           </div>
         </div>
 
-        <!-- Right hand side is form controls -->
+        <!-- Right hand side is container graphic -->
         <div class="tw-w-1/2">
           <div class="tw-justify-end">
           <container-graphic
@@ -180,6 +186,12 @@
 
       <div class="tw-border tw-border-orange-500">
         <!-- Sample specific fields -->
+        <puck-controls v-show="plateType=='Puck'"
+          @clone-puck="clonePuck"
+          @clear-puck="clearPuck"
+          @autofill-puck="autofillPuck"
+          @extra-puck="extraPuck" />
+
         <sample-editor
           :sampleComponent="plateType"
           :capacity="containerGeometry.capacity"
@@ -215,7 +227,12 @@
         </div> -->
       </div>
 
-      <button name="submit" type="submit" class="button submit" :class="{ 'tw-border tw-border-red-500' : invalid}">Add Container</button>
+      <div class="">
+        <button name="submit" type="submit" @click.prevent="onSubmit" :class="['button submit tw-text-base tw-px-4 tw-py-2', invalid ? 'tw-border tw-border-red-500' : '']">
+          <i class="fa fa-plus"></i>
+          Add Container
+        </button>
+      </div>
 
     </div>
 
@@ -248,6 +265,7 @@ import Samples from 'collections/samples'
 
 import SingleSample from 'modules/shipment/components/samples/SingleSample.vue'
 import SampleEditor from 'modules/shipment/components/samples/SampleEditor.vue'
+import PuckControls from 'modules/shipment/components/samples/PuckSampleControls.vue'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
@@ -259,7 +277,7 @@ const STORAGE_TEMP_0 = 0
 const STORAGE_TEMP_25 = 25
 
 const initialSampleState = {
-  PROTEINID: '',
+  PROTEINID: '-1',
   CRYSTALID: '-1',
   TYPE: '',
   NAME: 'sample1',
@@ -269,7 +287,8 @@ const initialSampleState = {
   SCORE: 1, // Proxy for valid
   LOCATION: '',
   ROBOTPLATETEMPERATURE: '',
-  EXPOSURETEMPERATURE: ''
+  EXPOSURETEMPERATURE: '',
+  valid: false,
 }
 
 // Use Location as idAttribute for this table
@@ -282,12 +301,13 @@ const initialContainerState = {
   BARCODECHECK: null,
   CAPACITY: 0,
   CONTAINERTYPE: null,
+  CONTAINERTYPEID: "!",
   PROCESSINGPIPELINEID: null,
   NAME: "",
   CONTAINERREGISTRYID: null,
   AUTOMATED: 0,
   BARCODE: "",
-  PERSONID: null,
+  PERSONID: "",
   EXPERIMENTTYPE: "",
   STORAGETEMPERATURE: "",
   COMMENTS: "",
@@ -309,6 +329,7 @@ export default {
     'validation-provider': ValidationProvider,
     'single-sample': SingleSample,
     'sample-editor': SampleEditor,
+    'puck-controls': PuckControls,
   },
   props: {
     'mview':[Function, Promise], // The marionette view could be lazy loaded or static import
@@ -409,7 +430,6 @@ export default {
         let containers = this.containerTypes.filter(container => container.PROPOSALTYPE === proposalType)
         groups.push({name: proposalType, options: containers})
       }
-      console.log("Container type groups: " + JSON.stringify(groups))
       return groups
     },
     groupedExperimentTypes: function() {
@@ -420,7 +440,6 @@ export default {
         let experiments = this.experimentTypes.filter(experiment => experiment.PROPOSALTYPE === proposalType)
         groups.push({name: proposalType, options: experiments})
       }
-      console.log("Experiment type groups: " + JSON.stringify(groups))
       return groups
     },
     // Build the complete list of proposal types included for each container type
@@ -442,26 +461,50 @@ export default {
     experimentFilter: function() {
       if (this.showAllExperimentTypes) return this.experimentTypesFilter
       return [this.$store.state.proposal.proposalType]
+    },
+    ownerEmail: function() {
+      // Does the selected owner have a valid email?
+      if (!this.containerState.PERSONID) return false
+
+      let owner = this.usersCollection.findWhere({PERSONID: this.containerState.PERSONID.toString()})
+
+      if (owner && owner.get('EMAILADDRESS')) return true
+      else return false
     }
   },
 
   watch: {
+    showAllContainerTypes: function(newVal) {
+      // Which container id should be selected
+      if (newVal) this.containerState.CONTAINERTYPEID = "!"
+
+    },
     sampleLocation: function(newLocation, oldLocation) {
       // Take what was saved in sample and store in array
       console.log("Temp save sample and use new location")
+      console.log("New Location: " + newLocation)
+      console.log("Old Location: " + oldLocation)
+
       if (!this.sample.name) this.sample.SCORE = 0
       this.samples.splice(oldLocation-1, 1, this.sample)
       this.samples[oldLocation-1].LOCATION = oldLocation
       let newState = this.samples[newLocation-1] || initialSampleState
       this.sample = Object.assign({}, this.sample, newState)
 
-      this.samplesCollection.set( new LocationSample(newState), { remove: false })
+      // this.samplesCollection.set( new LocationSample(newState), { remove: false })
       // Forces a plate re-render... TODO fix!
       this.plateKey += 1
     },
-    'containerState.CONTAINERTYPE': function(newVal) {
+    // When the container type changes we need to reset the samples list and redraw the container graphic
+    'containerState.CONTAINERTYPEID': function(newVal) {
+      console.log("Container Type ID has changed: " + newVal)
       let type = this.containerTypesCollection.findWhere({CONTAINERTYPEID: newVal})
-      // We can use the combination of plate/puck and proposal group to help determine which fields to show
+
+      if (!type) {
+        console.log("Could not find container type: " + newVal)
+        return
+      }
+      this.containerState.CONTAINERTYPE = type.get('NAME')
       this.containerGroup = type.get('PROPOSALTYPE')
       console.log("Container Type changed: " + newVal)
       console.log("Container Type group: " + this.containerGroup)
@@ -479,6 +522,7 @@ export default {
 
 
       this.updateContainerGeometry(type.toJSON())
+      this.resetSamples(type.get('CAPACITY'))
     },
     'containerState.EXPERIMENTTYPEID': function(newVal) {
       // Make sure we compare a number
@@ -494,6 +538,19 @@ export default {
           this.sampleComponent = ''
       }
       console.log("Switching sample component to " + this.sampleComponent)
+    },
+    'containerState.AUTOMATED': function(newVal) {
+        // If now on, add safetylevel to query
+        // Automated collections limited to GREEN Low risk samples
+        console.log("State:  " + newVal)
+        if (newVal) {
+            this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
+            this.proteinsCollection.fetch()
+        } else {
+            delete this.proteinsCollection.queryParams.SAFETYLEVEL;
+            this.proteinsCollection.fetch()
+        }
+        app.trigger('samples:automated', newVal)
     }
   },
 
@@ -536,7 +593,11 @@ export default {
     this.$store.dispatch('get_collection', this.containerTypesCollection).then( (result) => {
       console.log("Container Types collection: " + result.toJSON())
       this.containerTypes = result.toJSON()
-      this.containerType = this.containerTypes.length ? this.containerTypes[0]['CONTAINERTYPEID'] : ''
+      // Do we have valid start state?
+      if (this.containerTypes.length) {
+        let first = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
+        if (first) this.containerState.CONTAINERTYPEID =  first.get('CONTAINERTYPEID')
+      }
     })
     this.$store.dispatch('get_collection', this.experimentTypesCollection).then( (result) => {
       console.log("Experiment Types collection: " + result.toJSON())
@@ -556,13 +617,16 @@ export default {
     })
     this.$store.dispatch('get_collection', this.usersCollection).then( (result) => {
       this.users = result.toJSON()
-      this.owner = this.users[0]['PERSONID']
+      // Set plate owner to current user
+      this.containerState.PERSONID = this.$store.state.user.personId
+
+
     })
   },
 
   methods: {
     onSubmit: function() {
-      console.log("onSubmit")
+
       this.$refs.observer.validate().then( (result) => {
         if (result) this.addContainer()
         else console.log("Form validation failed ")
@@ -579,7 +643,7 @@ export default {
         CONTAINERREGISTRYID: this.containerRegistryId,
         AUTOMATED: this.automated,
         BARCODE: this.barCode,
-        PERSONID: this.owner,
+        PERSONID: this.containerState.PERSONID,
         EXPERIMENTTYPE: this.experimentType,
         STORAGETEMPERATURE: this.storageTemperature,
         COMMENTS: this.comments,
@@ -634,6 +698,18 @@ export default {
       }
     },
 
+    samplesValid: function() {
+      return false
+    },
+
+    // Reset Backbone Samples Collection
+    resetSamples: function(capacity) {
+      console.log("Resetting Samples Collection, capacity: " + capacity)
+      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
+
+      this.samplesCollection.reset(samples)
+    },
+
     resetForm: function() {
       console.log("Reset Form data")
     },
@@ -642,7 +718,17 @@ export default {
 
     onContainerCellClicked: function(location) {
       console.log("Cell clicked = " + location)
+      // Unset the previous selected sample
+      if (this.sampleLocation) {
+        let previousSample = this.samplesCollection.findWhere({LOCATION: this.sampleLocation.toString()})
+        if (previousSample) previousSample.set('isSelected', false)
+      }
+      // Now set the currently selected sample
       this.sampleLocation = location
+
+      let sample = this.samplesCollection.findWhere({LOCATION: location.toString()})
+
+      if (sample) sample.set('isSelected', true)
     },
     checkBarcode: function() {
       console.log("Check Barcode: " + this.barCode)
@@ -660,9 +746,6 @@ export default {
       // })
     },
 
-    validEmail: function() {
-      return false
-    },
     // Move this to container graphic
     updateContainerGeometry: function(geometry) {
       this.containerGeometry.capacity = geometry.CAPACITY
@@ -675,13 +758,29 @@ export default {
         this.containerGeometry.columns = geometry.WELLPERROW
         console.log("Number of plate = " + geometry.NAME)
         console.log("Number of columns = " + this.containerGeometry.columns)
-        this.containerState.CONTAINERTYPE = geometry.NAME
-        this.plateType = 'Plate'
+        this.plateType = this.containerGeometry.capacity > 20 ? 'single-sample' : 'sample-plate'
       } else {
         this.plateType = 'Puck'
       }
       this.plateKey += 1
-    }
+    },
+    clearPuck: function() {
+      console.log('clear-puck')
+      app.trigger('samples:clear-puck')
+      this.resetSamples(this.samplesCollection.length)
+    },
+    clonePuck: function() {
+      console.log('clone-puck')
+      app.trigger('samples:clone-puck')
+    },
+    extraPuck: function() {
+      console.log('extra-puck')
+      app.trigger('samples:extra-puck')
+    },
+    autofillPuck: function() {
+      console.log('auto-puck')
+      app.trigger('samples:autofill-puck')
+    },
   },
 }
 </script>

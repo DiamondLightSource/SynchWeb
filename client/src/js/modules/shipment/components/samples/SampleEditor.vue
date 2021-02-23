@@ -1,34 +1,34 @@
 <template>
-  <div class="table">
-    <marionette-view
-      v-if="showPuckSampleTable"
-      :key="$route.fullPath"
-      :options="options"
-      :skipLoad="true"
-      :mview="mview"/>
-    <Plate v-else/>
+  <div class="">
+    <div v-if="showPuckSampleTable" class="table">
+      <marionette-view
+        :key="$route.fullPath"
+        :options="options"
+        :skipLoad="true"
+        :mview="mview">
+      </marionette-view>
+    </div>
+    <div v-else>
+      <component
+        :is="sampleComponent"
+        :samples="samplesCollection"
+        :proteins="proteins"
+        :sample="model"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-import Vue from 'vue'
-
 import SampleTableView from 'modules/shipment/views/sampletable'
+import SingleSample from 'modules/shipment/components/samples/SingleSample.vue'
+import SamplePlateEditor from 'modules/shipment/components/samples/SamplePlateEditor.vue'
 
+// Templates we need to pass to the old MX style sample table
 import table from 'templates/shipment/sampletablenew.html'
 import row from 'templates/shipment/sampletablerownew.html'
 
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-
-Vue.component('Plate', {
-  name: 'vmxi',
-  template: "<p>{{msg}}",
-  data() {
-    return {
-      msg: 'VMXi Single Samples'
-    }
-  }
-})
 
 import Sample from 'models/sample'
 
@@ -41,7 +41,9 @@ var LocationSample = Sample.extend({
 export default {
   name: 'sample-editor',
   components: {
-    'marionette-view': MarionetteView
+    'marionette-view': MarionetteView,
+    'single-sample': SingleSample,
+    'sample-plate': SamplePlateEditor
 },
   props: {
     sampleComponent: {
@@ -90,12 +92,12 @@ export default {
   data() {
     return {
       mview: SampleTableView,
+      model: new LocationSample()
     }
   },
   watch: {
     sampleComponent: function(newVal) {
-      console.log("Sample Editor component has been specified...")
-      this.resetSamples(this.capacity)
+      console.log("Sample Editor component has been specified..." + newVal)
     }
   },
   mounted: function() {
@@ -106,16 +108,6 @@ export default {
   methods: {
     onSelectSample: function(location) {
       this.$emit('select-sample', location)
-    },
-
-    // Reset Backbone Samples Collection
-    resetSamples: function(capacity) {
-      console.log("Resetting Samples Collection, capacity: " + capacity)
-      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
-
-      this.samplesCollection.reset(samples)
-
-      console.log("Sample editor samples Collection: " + JSON.stringify(this.samplesCollection))
     },
   },
 

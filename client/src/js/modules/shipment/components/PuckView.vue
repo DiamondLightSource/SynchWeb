@@ -71,9 +71,7 @@ export default {
     computed: {
       preparedData: function() {
         // Firstly create an array of length == capacity of container
-        let samplesArray = Array.from({length: this.centres.length}, () => { return {} })
-        // Store individual locations starting at 1
-        for (var j = 0; j<samplesArray.length; j++) samplesArray[j].location = j+1
+        let samplesArray = Array.from({length: this.centres.length}, (_,i) => { return {LOCATION: i+1} })
 
         // Now fill in location with sample data at that location
         for (var i=0; i<this.samples.length; i++) {
@@ -81,7 +79,7 @@ export default {
           let location = this.samples[i].LOCATION || null
           // Not quite right - need to add as an array for consistency
           if (location && location < samplesArray.length) {
-            samplesArray[location-1]['data'] = this.samples[i]
+            samplesArray[location-1] = this.samples[i]
           }
         }
         return samplesArray;
@@ -166,13 +164,14 @@ export default {
       // This method has some knowledge of the sample data
       // Used to inform the parent that a cell has been clicked
       onCellClicked: function(sampleData) {
-        if (sampleData.data && sample.data.LOCATION) {
+        if (sampleData && sampleData.BLSAMPLEID) {
           console.log("There is data in this cell")
           // Convert to an actual index not string
-          this.$emit('cell-clicked', +sampleData.data.LOCATION)
+          this.$emit('cell-clicked', +sampleData.LOCATION)
         } else {
+          // All samples should have a location
           console.log("No data in this cell")
-          this.$emit('cell-clicked', +sampleData.location)
+          this.$emit('cell-clicked', +sampleData.LOCATION)
         }
       },
 

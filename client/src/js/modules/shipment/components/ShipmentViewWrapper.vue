@@ -15,12 +15,12 @@
 </template>
 
 <script>
-
+import EventBus from 'app/components/utils/event-bus.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import SCMShipmentView from 'modules/shipment/components/SCMShipmentView.vue'
 import ShipmentView from 'modules/shipment/views/shipment'
-
 import ShipmentModel from 'models/shipment'
+
 export default {
   name: "shipment-view-wrapper",
   props: {
@@ -55,16 +55,16 @@ export default {
 
     this.model = new ShipmentModel({ SHIPPINGID: this.sid })
 
-    this.getModel().then( (result) => {
+    this.$store.dispatch('get_model', this.model).then( (model) => {
+      console.log("Shipment View Wrapper got model " + JSON.stringify(model))
       this.setBreadcrumbs()
-      console.log("Got Shipment Model: " + JSON.stringify(result))
 
-      // if (propType == 'mx') this.showDewarView()
-      // else this.showParcelsView()
-      // this.showDewarView()
-      this.showParcelsView()
+      if (propType == 'mx') this.showDewarView()
+      else {
+        EventBus.$emit('bcChange', this.bc)
+        this.showParcelsView()
+      }
     })
-
   },
   methods: {
     showParcelsView: function() {
@@ -76,23 +76,6 @@ export default {
       console.log("Showing dewars")
       this.mview = ShipmentView
       this.ready = true
-    },
-    // We get the model here because the view we render depends on the container details
-    getModel: function() {
-        // Wrap the backbone request into a promise so we can wait for the result
-        return new Promise((resolve) => {
-            this.model.fetch({
-                success: function(model) {
-                    console.log("Shipment View got model " + JSON.stringify(model))
-                    resolve(model)
-                },
-                // Original controller had no error condition...
-                error: function() {
-                    reject({msg: 'The specified container could not be found'})
-                },
-            })
-
-        })
     },
     // Set Breadcrumbs - depends on if visit provided
     setBreadcrumbs: function() {
