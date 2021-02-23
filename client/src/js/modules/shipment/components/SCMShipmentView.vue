@@ -5,6 +5,7 @@
     <p class="help">This page shows details and contents of the selected shipment. Most parameters can be edited by simply clicking on them.</p>
     <p class="help excl">Shipments need to have an outgoing and return home lab contact before shipment labels can be printed</p>
 
+    <!-- Sets of buttons that relate to the shipment -->
     <div v-if="shipment.DHL_ENABLE">
         <div v-if="shipment.DELIVERYAGENT_HAS_LABEL == '1'">
             <p class="message notify">You can print your Airway Bill by clicking &quot;Print Airway Bill&quot; below</p>
@@ -37,6 +38,7 @@
       </div>
     </div>
 
+    <!-- Display Shipment information and allow editing some fields -->
     <div class="form">
         <ul>
 
@@ -85,7 +87,7 @@
             <li>
                 <!--
                   For safety level the text is the same as the value
-                  So we don;t need to pass any special initial text for inline display
+                  So we don't need to pass any special initial text for inline display
                 -->
                 <span class="label">Safety Level</span>
                 <sw-select-input
@@ -119,17 +121,17 @@
 
             <li>
                 <span class="label">Shipping Pickup Location</span>
-                <sw-text-input :inline="true" v-model="shipment.PHYSICALLOCATION"/>
+                <sw-text-input :inline="true" v-model="shipment.PHYSICALLOCATION" @save="save('PHYSICALLOCATION')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Ready By</span>
-                <sw-time-input :inline="true" id="ready-by" v-model="shipment.READYBYTIME"/>
+                <sw-time-input :inline="true" id="ready-by" v-model="shipment.READYBYTIME" @save="save('READYBYTIME')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Close Time</span>
-                <sw-time-input :inline="true" id="close-time" v-model="shipment.CLOSETIME"/>
+                <sw-time-input :inline="true" id="close-time" v-model="shipment.CLOSETIME" @save="save('CLOSETIME')"/>
             </li>
 
             <div v-if="shipment.DELIVERYAGENT_PICKUPCONFIRMATION">
@@ -151,12 +153,12 @@
 
             <li>
                 <span class="label">Estimated Delivery Date</span>
-                <sw-date-input :inline="true" id="delivery-date" v-model="shipment.DELIVERYAGENT_DELIVERYDATE" name="DELIVERYAGENT_DELIVERYDATE"/>
+                <sw-date-input :inline="true" id="delivery-date" v-model="shipment.DELIVERYAGENT_DELIVERYDATE" name="DELIVERYAGENT_DELIVERYDATE" @save="save('DELIVERYAGENT_DELIVERYDATE')"/>
             </li>
 
             <li>
                 <span class="label">Comments Area</span>
-                <sw-textarea-input :inline="true" v-model="shipment.COMMENTS" outerClass="tw-w-1/2"/>
+                <sw-textarea-input :inline="true" v-model="shipment.COMMENTS" outerClass="tw-w-1/2" @save="save('COMMENTS')"/>
             </li>
         </ul>
         <div class="clear"></div>
@@ -169,7 +171,7 @@
 
     <div class="ra"><a v-if="PROPOSAL_ACTIVE" href="#" class="button" id="add_dewar" title="Add a dewar to this shipment" @click.prevent="onAddDewar"><i class="fa fa-plus"></i> Add Dewar</a></div>
 
-    <!-- <div class="table"></div> -->
+    <!-- List of dewars/parcels within this shipment -->
     <table-component
       :headers="dewarTableHeaders"
       :data="dewars"
@@ -184,12 +186,13 @@
       </template>
     </table-component>
 
+    <!-- This allows user to add a new dewar - not quite in same table but just below... -->
     <div v-show="addingNewDewar">
       <form>
         <label>Name</label>
-        <input type="text" placeholder="name"/>
+        <input type="text" placeholder="name" v-model="newDewar.CODE"/>
         <label>FacilityCode</label>
-        <input type="text" placeholder="fc"/>
+        <input type="text" placeholder="fc" v-model="newDewar.FACILITYCODE"/>
         <label>Weight</label>
         <input type="text" placeholder="weight"/>
         <label>First Exp</label>
@@ -213,8 +216,7 @@
 
     <p class="help">This section shows contents and history for the selected package. Click the spyglass icon to view the contents of the container</p>
 
-    <!-- Tailwind options here -->
-    <!-- If we want to move the Add Container button to be consistent with Add Dewar -->
+    <!-- Tailwind style - makes the Add Container button to be consistent with Add Dewar -->
     <div class="tw-flex tw-justify-end tw-my-2">
         <span class="r padded_button add_container">
           <span v-if="PROPOSAL_ACTIVE" class="r padded_button add_container">
@@ -224,53 +226,59 @@
     </div>
 
     <div class="tw-flex tw-flex-col sm:tw-flex-row">
-        <div class="tw-w-full sm:tw-w-1/2 sm:tw-mr-2 dcontent">
-          <ul class="containers">
-            <li v-for="container in containers" :key="container.CONTAINERID">
-              {{container.CONTAINERID}} ({{container.SAMPLES}} Samples)
+      <!--
+        Show Contents of the selected Dewar/Parcel
+      -->
+      <div class="tw-w-full sm:tw-w-1/2 sm:tw-mr-2 dcontent">
+        <ul class="containers">
+          <li v-for="container in containers" :key="container.CONTAINERID">
+            {{container.CONTAINERID}} ({{container.SAMPLES}} Samples)
 
-              <span class="r">
-                <a class="button button-notext print" title="Click to print container contents" :href="'/api/pdf/container/cid/'+container.CONTAINERID+'/prop/'+PROPOSAL" onPrintPdf><i class="fa fa-print"></i> <span>Print Container Report</span></a>
-                <a class="button button-notext view" title="Click to View Container" :href="'/containers/cid/'+container.CONTAINERID"><i class="fa fa-search"></i> <span>View Container</span></a>
-                <a href="#" class="button button-notext move" @click.prevent="onMoveContainer(container.CONTAINERID)"><i class="fa fa-arrows"></i> <span>Move Container</span></a>
-              </span>
+            <span class="r">
+              <a class="button button-notext print" title="Click to print container contents" :href="'/api/pdf/container/cid/'+container.CONTAINERID+'/prop/'+PROPOSAL" onPrintPdf><i class="fa fa-print"></i> <span>Print Container Report</span></a>
+              <a class="button button-notext view" title="Click to View Container" :href="'/containers/cid/'+container.CONTAINERID"><i class="fa fa-search"></i> <span>View Container</span></a>
+              <a href="#" class="button button-notext move" @click.prevent="onMoveContainer(container.CONTAINERID)"><i class="fa fa-arrows"></i> <span>Move Container</span></a>
+            </span>
 
-            </li>
+          </li>
 
-            <li v-if="containers.length < 1">No containers found</li>
-          </ul>
-          <pagination-component @page-changed="onUpdateContent" :totalRecords="containersTotal" :initialPage="1" :pageLinks="5" :pageSizes="[5,10,20]"/>
-        </div>
+          <li v-if="containers.length < 1">No containers found</li>
+        </ul>
+        <pagination-component @page-changed="onUpdateContent" :totalRecords="containersTotal" :initialPage="1" :pageLinks="5" :pageSizes="[5,10,20]"/>
+      </div>
 
-        <div class="tw-w-full sm:tw-w-1/2 sm:tw-ml-2">
-            <div class="sm:tw-flex sm:tw-flex-col">
-                <div class="history table table-no-margin">
-                  <table-component
-                  :headers="dewarHistoryHeaders"
-                  :data="dewarHistory"
-                  noDataText="No history available"/>
-                  <pagination-component @page-changed="onUpdateHistory" />
-                </div>
-                <div class="form">
-                  <ul>
-                    <li>
-                      <span class="label">Origin</span>
-                      <span class="origin">{{dewarTracking.ORIGIN}}</span>
-                    </li>
-                    <li>
-                      <span class="label">Destination</span>
-                      <span class="destination">{{dewarTracking.DESTINATION}}</span>
-                    </li>
-                  </ul>
-                </div>
-                <div class="tracking table table-no-margin">
-                  <table-component
-                  :headers="dewarTrackingHeaders"
-                  :data="dewarTracking"
-                  noDataText="No tracking available"/>
-                </div>
-            </div>
-        </div>
+      <!--
+        Show History of the selected Dewar/Parcel
+      -->
+      <div class="tw-w-full sm:tw-w-1/2 sm:tw-ml-2">
+          <div class="sm:tw-flex sm:tw-flex-col">
+              <div class="history table table-no-margin">
+                <table-component
+                :headers="dewarHistoryHeaders"
+                :data="dewarHistory"
+                noDataText="No history available"/>
+                <pagination-component @page-changed="onUpdateHistory" />
+              </div>
+              <div class="form">
+                <ul>
+                  <li>
+                    <span class="label">Origin</span>
+                    <span class="origin">{{dewarTracking.ORIGIN}}</span>
+                  </li>
+                  <li>
+                    <span class="label">Destination</span>
+                    <span class="destination">{{dewarTracking.DESTINATION}}</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="tracking table table-no-margin">
+                <table-component
+                :headers="dewarTrackingHeaders"
+                :data="dewarTracking"
+                noDataText="No tracking available"/>
+              </div>
+          </div>
+      </div>
     </div>
   </div>
 </template>
@@ -281,6 +289,7 @@ import LabContactsCollection from 'collections/labcontacts'
 import Container from 'models/container'
 import Containers from 'collections/containers'
 
+import Dewar from 'models/dewar'
 import Dewars from 'collections/dewars'
 import DewarHistory from 'modules/shipment/collections/dewarhistory'
 import DewarTracking from 'modules/shipment/collections/dhl-tracking'
@@ -299,6 +308,13 @@ import SwSelectInput from 'app/components/forms/sw_select_input.vue'
 import TableComponent from 'app/components/utils/table.vue'
 import PaginationComponent from 'app/components/utils/pagination.vue'
 
+const initialDewarState = {
+  SHIPPINGID: '',
+  CODE: '',
+  FACILITYCODE: '',
+  new: false
+}
+
 export default {
   name: 'SCMShipmentView',
   components: {
@@ -311,6 +327,7 @@ export default {
     'pagination-component': PaginationComponent,
   },
   props: {
+    // The Shipment model will be passed into this page
     model: {
       type: Object,
       required: true
@@ -319,6 +336,8 @@ export default {
   data: function() {
     return {
       addingNewDewar: false,
+      newDewar: initialDewarState,
+
       labContacts: [],
 
       dewarTableHeaders: [
@@ -382,9 +401,8 @@ export default {
   },
 
   created: function() {
+    // Marshall the model into JSON so we can use v-model
     this.shipment = Object.assign({}, this.model.toJSON())
-
-    console.log("Initial shipment = " + JSON.stringify(this.shipment))
 
     // Backbone models for dewar / parcel contents
     this.dewarsCollection = new Dewars(null, { id: this.model.get('SHIPPINGID') })
@@ -397,7 +415,6 @@ export default {
   watch: {
     currentDewarId: function(newVal, oldVal) {
       // When the currently selected dewar changes we need to update the history and tracking tables
-      console.log("New Dewar Selected: " + newVal + ", oldVal: " + oldVal + ", current = " + this.currentDewarId)
       // Note inconsistent use of id and dewarID!!!
       let dewarHistory = new DewarHistory()
       dewarHistory.id = this.currentDewarId
@@ -435,16 +452,20 @@ export default {
 
   methods: {
     onAddDewar: function() {
+      this.newDewar = initialDewarState
       this.addingNewDewar = true
-
-      // this.dewarsCollection.add(new Dewar({
-      //     SHIPPINGID: this.model.get('SHIPPINGID'),
-      //     new: true
-      // }))
     },
     onSaveDewar: function() {
-      console.log("Save Dewar")
-      this.addingNewDewar = false
+      this.newDewar.SHIPPINGID = this.model.get('SHIPPINGID')
+      this.newDewar.new = true
+
+      let dewar = new Dewar(this.newDewar)
+      this.$store.dispatch('saveModel', { model: dewar }).then( (result) => {
+        console.log("Saved new dewar: " + JSON.stringify(result))
+        this.addingNewDewar = false
+        this.newDewar = initialDewarState
+        this.getDewars()
+      })
       // TODO add dewar to shipment...
     },
     // Effetively a patch request to update specific fields
@@ -452,8 +473,8 @@ export default {
       console.log("Saving " + parameter + " to " + this.shipment[parameter])
       let params = {}
       params[parameter] = this.shipment[parameter]
-      this.model.set( params )
-      this.model.save(params, {patch: true})
+
+      this.$store.dispatch('saveModel', {model: this.model, attributes: params})
     },
 
     onShowDewar: function(dewar) {
@@ -591,10 +612,8 @@ export default {
     },
     updateDewarContent: function(collection) {
       this.$store.dispatch('get_collection', collection).then( (result) => {
-        console.log("DEWAR CONTENT: " + JSON.stringify(result))
         this.containers = result.toJSON()
         this.containersTotal = result.state.totalRecords
-        console.log("Total: " + this.containersTotal)
       })
     }
   },
