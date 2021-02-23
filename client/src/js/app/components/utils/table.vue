@@ -21,7 +21,7 @@
 
             <!-- Default row layout override with the content slot if you need items like form inputs-->
             <slot name="content" v-bind:row="row">
-              <td v-for="(header, index) in headers" :key="index">{{row[header.key].model}}</td>
+              <td v-for="(header, index) in headers" :key="index">{{row[header.key]}}</td>
             </slot>
 
             <td v-if="actions"><slot name="actions" v-bind:row="row"></slot></td>
