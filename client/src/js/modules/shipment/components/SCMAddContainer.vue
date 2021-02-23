@@ -659,8 +659,7 @@ export default {
 
     saveContainer: function(model) {
       // this.$store.commit('loading', true)
-
-      this.$store.dispatch('save_model', model).then( (result) => {
+      this.$store.dispatch('saveModel', {model: model}).then( (result) => {
         let cid = model.get('CONTAINERID')
         console.log("Container Saved: " + JSON.stringify(result))
         console.log("Container ID = " + cid)
