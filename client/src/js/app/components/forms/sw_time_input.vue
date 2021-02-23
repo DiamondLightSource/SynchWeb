@@ -31,7 +31,7 @@ Must have an id passed so we can associate the jquery-ui component to the contro
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
+      <span v-show="errorMessage && !quiet" :class="errorClass">{{ errorMessage }}</span>
     </slot>
 
     <!-- Placeholder for any buttons that should be placed after the input -->
@@ -87,6 +87,12 @@ export default {
     inline: {
       type: Boolean,
       required: false,
+      default: false
+    },
+    // If using the input within a table, set quiet mode to suppress error messages
+    // Keeps the styling around input fields but does not show the error text
+    quiet: {
+      type: Boolean,
       default: false
     }
   },
@@ -147,5 +153,12 @@ export default {
 }
 .btn-edit:hover {
   @apply tw-bg-content-search-background;
+}
+/*
+Main CSS stylesheets are heavily dependent on html structure
+Defining styles here means they work in whatever structure we need
+*/
+input.ferror {
+  @apply tw-bg-content-inactive;
 }
 </style>

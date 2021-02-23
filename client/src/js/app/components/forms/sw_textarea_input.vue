@@ -38,7 +38,7 @@ https://medium.com/@logaretm/authoring-validatable-custom-vue-input-components-1
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
+      <span v-show="errorMessage && !quiet" :class="errorClass">{{ errorMessage }}</span>
     </slot>
 
     <!-- Placeholder for any buttons that should be placed after the input -->
@@ -91,6 +91,12 @@ export default {
     },
     // Default behaviour is to act as normal input
     inline: {
+      type: Boolean,
+      default: false
+    },
+    // If using the input within a table, set quiet mode to suppress error messages
+    // Keeps the styling around input fields but does not show the error text
+    quiet: {
       type: Boolean,
       default: false
     }
@@ -148,5 +154,12 @@ export default {
 }
 .btn-edit:hover {
   @apply tw-bg-content-search-background;
+}
+/*
+Main CSS stylesheets are heavily dependent on html structure
+Defining styles here means they work in whatever structure we need
+*/
+input.ferror {
+  @apply tw-bg-content-inactive;
 }
 </style>

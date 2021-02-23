@@ -121,6 +121,12 @@ export default {
       localValue: this.value
     }
   },
+  watch: {
+    // Because we are using a cached local value (for inline edit mode) we should react to the passed prop change
+    value: function(newVal) {
+      this.localValue = newVal
+    },
+  },
   computed: {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
@@ -131,6 +137,8 @@ export default {
     }
   },
   created() {
+    console.log("Select " + this.name + ", Initialised with value = " + this.value)
+    console.log("Options (" + this.name + ") = " + JSON.stringify(this.options))
     // If created with editable = false then we are in inline-edit mode
     this.editable = !this.inline
   },

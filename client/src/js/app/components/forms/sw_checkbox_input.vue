@@ -59,7 +59,7 @@ export default {
     inline: {
       type: Boolean,
       default: false
-    }
+    },
   },
   data() {
     return {

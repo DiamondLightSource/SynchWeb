@@ -25,7 +25,7 @@ So if the options were: [ { 'NAME': 'Green', 'ID': 0 }, { 'NAME': 'Yellow', 'ID'
       ref="inputRef"
       :id="id"
       :name="name"
-      :value="value"
+      :value="localValue"
       :disabled="disabled"
       :class="classObject"
       @input="updateValue"
@@ -33,7 +33,7 @@ So if the options were: [ { 'NAME': 'Green', 'ID': 0 }, { 'NAME': 'Yellow', 'ID'
       @blur="$emit('blur')"
       @focus="$emit('focus')"
     >
-      <option v-show="defaultText" disabled value="">{{defaultText}}</option>
+      <option v-show="defaultText" disabled value="!">{{defaultText}}</option>
       <optgroup v-for="(group, index) in groups" :key="index" :label="group.name">
         <option v-for="option in group.options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
       </optgroup>
@@ -131,6 +131,12 @@ export default {
     inlineText() {
       return this.initialText || this.localValue
     }
+  },
+  watch: {
+    // Because we are using a cached local value (for inline edit mode) we should react to the passed prop change
+    value: function(newVal) {
+      this.localValue = newVal
+    },
   },
   methods: {
     updateValue(event) {
