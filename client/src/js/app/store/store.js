@@ -188,11 +188,18 @@ const store = new Vuex.Store({
     // Method that returns a collection promise
     // Passing {} as first argument means save all...
     // Should pass additional arguments to make this more flexible
-    save_model(context, model) {
+    saveModel(context, {model, attributes}) {
+      let patch = false
+      let attrs = attributes || {}
+      // If we have attributes, assume a patch request
+      if (attrs != {}) patch = true
+
       console.log("Store saving model: " + JSON.stringify(model))
+      console.log("Store saving model attributes: " + JSON.stringify(attrs))
 
       return new Promise((resolve, reject) => {
-        model.save({}, {
+        model.save(attrs, {
+          patch: patch,
           success: function(result) {
             console.log("Store Model saved: " + JSON.stringify(result))
             resolve(result)
