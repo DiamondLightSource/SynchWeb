@@ -1,7 +1,7 @@
 define(['marionette',
         'models/protein',
         'collections/proteins',
-    
+
         'views/dialog',
         'views/validatedrow',
         'modules/shipment/collections/distinctproteins',
@@ -11,7 +11,7 @@ define(['marionette',
         'templates/shipment/sampletable.html',
         'templates/shipment/sampletablerow.html',
         'templates/shipment/sampletablerowedit.html',
-    
+
         'utils/forms',
         'utils/sgs',
         'utils/anoms',
@@ -21,14 +21,14 @@ define(['marionette',
         'utils',
 
         'utils/safetylevel',
-    
+
         'jquery',
-        ], function(Marionette, Protein, Proteins, 
+        ], function(Marionette, Protein, Proteins,
         DialogView, ValidatedRow, DistinctProteins, ComponentsView, SampleGroupView,
-        sampletable, sampletablerow, sampletablerowedit, 
+        sampletable, sampletablerow, sampletablerowedit,
         forms, SG, Anom, CM, EXP, RS, utils, safetyLevel, $) {
 
-        
+
     // A Sample Row
     var GridRow = ValidatedRow.extend(_.extend({}, forms, {
         rowTemplate: sampletablerow,
@@ -57,8 +57,8 @@ define(['marionette',
         showSampleGroups: function(e) {
             e.preventDefault()
 
-            app.dialog.show(new DialogView({ 
-                title: 'Sample Groups', 
+            app.dialog.show(new DialogView({
+                title: 'Sample Groups',
                 view: new SampleGroupView({
                     sample: this.model
                 })
@@ -74,9 +74,9 @@ define(['marionette',
         },
 
         className: function() {
-            if (this.model.get('isSelected')) return 'selected' 
+            if (this.model.get('isSelected')) return 'selected'
         },
-        
+
         editSample: function(e) {
             this.editing = true
             e.preventDefault()
@@ -84,14 +84,14 @@ define(['marionette',
             this.render()
             this.updateProteins()
         },
-        
+
         cancelEditSample: function(e) {
             this.editing = false
             e.preventDefault()
             this.template = this.getOption('rowTemplate')
             this.render()
         },
-        
+
         setData: function() {
             var data = {}
             _.each(['CODE', 'PROTEINID', 'CRYSTALID', 'NAME', 'COMMENTS', 'SPACEGROUP', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'LOOPTYPE', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'ENERGY', 'RADIATIONSENSITIVITY', 'USERPATH'], function(f) {
@@ -105,7 +105,7 @@ define(['marionette',
 
             console.log('set data', data)
         },
-            
+
         success: function(m,r,o) {
             var p = this.proteins.findWhere({ PROTEINID: this.model.get('PROTEINID') })
             if (p) {
@@ -118,7 +118,7 @@ define(['marionette',
             this.template = this.getOption('rowTemplate')
             this.render()
         },
-        
+
         cloneSample: function(e) {
             if (e) e.preventDefault()
 
@@ -155,10 +155,10 @@ define(['marionette',
             }
         },
 
-        
+
         clearSample: function(e) {
             e.preventDefault()
-            this.model.set({ 
+            this.model.set({
                 PROTEINID: -1, NAME: '', CODE: '', SPACEGROUP: '', COMMENTS: '', ABUNDANCE: '', SYMBOL: '',
                 CELL_A: '', CELL_B: '', CELL_C: '', CELL_ALPHA: '', CELL_BETA: '', CELL_GAMMA: '', REQUIREDRESOLUTION: '', ANOM_NO: '', ANOMALOUSSCATTERER: '',
                 CRYSTALID: -1, PACKINGFRACTION: '', LOOPTYPE: '',
@@ -167,11 +167,11 @@ define(['marionette',
             this.model.get('components').reset()
             this.render()
         },
-        
+
         initialize: function(options) {
             GridRow.__super__.initialize.apply(this, options)
             this.template = this.getOption('rowTemplate')
-            
+
             if (options && options.proteins) this.proteins = options.proteins
             else {
                 this.proteins = new DistinctProteins()
@@ -182,7 +182,7 @@ define(['marionette',
             else this.gproteins = new DistinctProteins()
 
             this.listenTo(this.proteins, 'reset add change', this.updateProteins, this)
-            
+
             var st = ''
             _.each(['R', 'SC', 'AI', 'DC', 'AP'], function(t) {
                 if (this.model.get(t) > 0) st = t
@@ -199,19 +199,19 @@ define(['marionette',
                 this.ui.symbol.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
             }
         },
-        
+
         onRender: function() {
             this.$el.find('[name=SPACEGROUP]').html(SG.opts()).val(this.model.get('SPACEGROUP'))
             this.$el.find('[name=ANOMALOUSSCATTERER]').html(Anom.opts()).val(this.model.get('ANOMALOUSSCATTERER'))
             this.$el.find('select[name=PROTEINID]').combobox({ invalid: this.addProtein.bind(this), change: this.selectProtein.bind(this), select: this.selectProtein.bind(this) })
             this.updateProteins()
-            
+
             // for pasting from spreadsheet
             if (this.model.get('PROTEINID') > -1) this.$el.find('select[name=PROTEINID]').combobox('value', this.model.get('PROTEINID'))
             //if (this.model.get('NAME')) this.$el.find('input[name=NAME]').val(this.model.get('NAME'))
             //if (this.model.get('CODE')) this.$el.find('input[name=CODE]').val(this.model.get('CODE'))
             //if (this.model.get('COMMENTS')) this.$el.find('input[name=COMMENTS]').val(this.model.get('COMMENTS'))
-                
+
             _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME', 'PACKINGFRACTION', 'USERPATH'], function(f, i) {
                 if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             }, this)
@@ -225,7 +225,7 @@ define(['marionette',
             } else {
                 this.$el.find('.xtal').addClass('show')
             }
-            this.ui.comp.autocomplete({ 
+            this.ui.comp.autocomplete({
                 source: this.getGlobalProteins.bind(this),
                 select: this.selectGlobalProtein.bind(this)
             })
@@ -275,8 +275,8 @@ define(['marionette',
             })
         },
 
-        
-        
+
+
         addProtein: function(ui, val) {
             var validOnly = app.options.get('valid_components')
             if (!(((validOnly && app.staff) || !validOnly)
@@ -300,7 +300,7 @@ define(['marionette',
                 callback: this.doAddProtein.bind(this, safe, ui)
             })
         },
-        
+
         doAddProtein: function(name, ui) {
             var protein = new Protein({ ACRONYM: name })
             var self = this
@@ -311,11 +311,11 @@ define(['marionette',
                     ui.combobox('value', protein.get('PROTEINID')).trigger('change')
                 },
                 error: function(message, xhr, options) {
-                
+
                 },
             })
         },
-        
+
         updateProteins: function() {
             this.$el.find('select[name=PROTEINID]').html(this.proteins.opts({
                 // addClass: 'active',
@@ -329,14 +329,14 @@ define(['marionette',
         // Not sure if this will stay due to conflicts with validation colours.
         handleSafetyLevel: function(m) {
             return safetyLevel(m)
-        }    
+        }
     }))
-    
-           
+
+
 
     /*
      The grid view for samples in a container
-     Works for both viewing and editing containers   
+     Works for both viewing and editing containers
     */
     var GridView = Marionette.CompositeView.extend({
         tagName: 'table',
@@ -355,17 +355,17 @@ define(['marionette',
 
         _cloning: false,
         _clone_count: 0,
-        
+
         hoverRow: function(e) {
 
         },
-        
+
         initialize: function(options) {
             this.proteins = options.proteins
             this.gproteins = options.gproteins
 
             this.in_use = options.in_use
-            
+
             this.options.childViewOptions = {
                 templateHelpers: function () {
                     return {
@@ -383,10 +383,14 @@ define(['marionette',
             this.options.childViewOptions.extra = this.extra
             this.options.childViewOptions.auto = this.auto
             this.options.childViewOptions.type = this.getOption('type')
-            
+
+            // Listen for changes to flags
+            app.on('samples:automated', this.toggleAuto.bind(this))
+            app.on('samples:extra-puck', this.toggleExtra.bind(this))
+            app.on('samples:clone-puck', this.cloneAll.bind(this))
         },
-        
-        onRender: function() { 
+
+        onRender: function() {
             console.log('rendering sample tale')
             if (this.getOption('type') == 'non-xtal') {
                 this.$el.find('.non-xtal').addClass('show')
@@ -398,7 +402,7 @@ define(['marionette',
                 this.toggleAuto(true)
             }
         },
-        
+
         extraState: function() {
             return this.extra.show
         },
@@ -412,6 +416,7 @@ define(['marionette',
 
 
         toggleAuto: function(val) {
+          console.log("Sample Table - ToggleAuto")
             this.auto.show = val
             if (val) {
                 this.$el.find('.auto').addClass('show')
@@ -454,7 +459,7 @@ define(['marionette',
         /*appendHtml: function(collectionView, itemView){
             collectionView.$("tbody").append(itemView.el);
         },*/
-        
+
     })
 
     GridView.GridRow = GridRow
