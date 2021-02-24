@@ -137,15 +137,12 @@ export default {
     }
   },
   created() {
-    console.log("Select " + this.name + ", Initialised with value = " + this.value)
-    console.log("Options (" + this.name + ") = " + JSON.stringify(this.options))
     // If created with editable = false then we are in inline-edit mode
     this.editable = !this.inline
   },
   methods: {
     updateValue(event) {
       this.localValue = event.target.value
-      console.log("Local changed value = " + this.localValue)
 
       if (!this.inline) this.$emit("input", this.localValue);
     },

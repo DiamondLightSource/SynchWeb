@@ -141,7 +141,6 @@ export default {
   methods: {
     updateValue(event) {
       this.localValue = event.target.value
-      console.log("Local changed value = " + this.localValue)
 
       if (!this.inline) this.$emit("input", this.localValue);
     },
