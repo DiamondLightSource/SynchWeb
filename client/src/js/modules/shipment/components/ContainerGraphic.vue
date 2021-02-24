@@ -3,6 +3,7 @@
     <div v-if="containerComponent" class="tw-flex">
       <div class="tw-w-full tw-border-l tw-border-gray-500 tw-m-1 tw-p-2">
         <h1 class="tw-text-xl">Container</h1>
+        <p>{{containerComponent}}</p>
         <component v-bind:is="containerComponent"
           :container="geometry"
           :samples="samples"
@@ -53,8 +54,10 @@ export default {
 
   computed: {
     containerComponent: function() {
-      if (this.containerType == 'Plate') return 'plate-view'
-      if (this.containerType == 'Puck') return 'puck-view'
+      if (!this.containerType) return null
+      if (this.containerType.endsWith('plate')) return 'plate-view'
+      if (this.containerType.endsWith('puck')) return 'puck-view'
+      // If we have an unknown type..
       return null
     },
   },
@@ -62,7 +65,8 @@ export default {
 
 
   created: function() {
-    // console.log("Container Graphic geometry = " + JSON.stringify(this.geometry))
+    console.log("Container Graphic geometry = " + JSON.stringify(this.geometry))
+    console.log("Container Graphic type = " + JSON.stringify(this.containerType))
   },
 
   methods: {

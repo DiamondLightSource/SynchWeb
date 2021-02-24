@@ -8,10 +8,10 @@ Once container is valid then samples are added
   <div class="content">
     <h1>Add Container SCM style</h1>
 
-    <!-- Wrap the form in an observer component so we can check validation state on submission -->
-    <validation-observer ref="observer" v-slot="{ invalid }">
-
       <div class="tw-flex tw-flex-col">
+
+      <!-- Wrap the form in an observer component so we can check validation state on submission -->
+      <validation-observer ref="observer" v-slot="{ invalid, errors }">
 
       <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
       <form class="tw-flex" method="post" id="add_container" @submit.prevent="onSubmit">
@@ -183,10 +183,13 @@ Once container is valid then samples are added
 
       </form>
 
+     <!-- </validation-observer> -->
 
       <div class="tw-border tw-border-orange-500">
+        <div v-for="(err, i) in errors" :key="i"><p v-if="err.length">{{err[0]}}</p></div>
+        <p>Form validity = {{ !invalid }}</p>
         <!-- Sample specific fields -->
-        <puck-controls v-show="plateType=='Puck'"
+        <puck-controls v-show="plateType=='puck'"
           @clone-puck="clonePuck"
           @clear-puck="clearPuck"
           @autofill-puck="autofillPuck"
@@ -196,7 +199,7 @@ Once container is valid then samples are added
           :sampleComponent="plateType"
           :capacity="containerGeometry.capacity"
           :selectedSample="selectedSample"
-          :experimentKind="containerState.EXPERIMENTKINDID"
+          :experimentKind="containerState.EXPERIMENTTYPEID"
           :samplesCollection="samplesCollection"
           :proteins="proteinsCollection"
           :gproteins="gProteinsCollection"
@@ -233,39 +236,36 @@ Once container is valid then samples are added
           Add Container
         </button>
       </div>
-
+     </validation-observer>
     </div>
 
-    </validation-observer>
   </div>
 </template>
 
 <script>
 import Container from 'models/container'
+import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import ContainerRegistry from 'modules/shipment/collections/containerregistry'
 
+import DistinctProteins from 'modules/shipment/collections/distinctproteins'
 import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 
-import ProcessingPipelines from 'collections/processingpipelines'
-import Users from 'collections/users'
+import EventBus from 'app/components/utils/event-bus.js'
+import Sample from 'models/sample'
+import Samples from 'collections/samples'
 
-import DistinctProteins from 'modules/shipment/collections/distinctproteins'
-
+import SingleSample from 'modules/shipment/components/samples/SingleSample.vue'
+import SampleEditor from 'modules/shipment/components/samples/SampleEditor.vue'
 import SwSelectInput from 'app/components/forms/sw_select_input.vue'
 import SwGroupSelectInput from 'app/components/forms/sw_group_select_input.vue'
 import SwTextInput from 'app/components/forms/sw_text_input.vue'
 import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
 import SwCheckboxInput from 'app/components/forms/sw_checkbox_input.vue'
 
-import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
-
-import Sample from 'models/sample'
-import Samples from 'collections/samples'
-
-import SingleSample from 'modules/shipment/components/samples/SingleSample.vue'
-import SampleEditor from 'modules/shipment/components/samples/SampleEditor.vue'
+import ProcessingPipelines from 'collections/processingpipelines'
 import PuckControls from 'modules/shipment/components/samples/PuckSampleControls.vue'
+import Users from 'collections/users'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
@@ -506,8 +506,6 @@ export default {
       }
       this.containerState.CONTAINERTYPE = type.get('NAME')
       this.containerGroup = type.get('PROPOSALTYPE')
-      console.log("Container Type changed: " + newVal)
-      console.log("Container Type group: " + this.containerGroup)
 
       // All plates have a well per row value
       if (type.get('WELLPERROW') > 0) {
@@ -524,32 +522,17 @@ export default {
       this.updateContainerGeometry(type.toJSON())
       this.resetSamples(type.get('CAPACITY'))
     },
-    'containerState.EXPERIMENTTYPEID': function(newVal) {
-      // Make sure we compare a number
-      let experiment = +newVal
-      switch(experiment) {
-        case EXPERIMENT_TYPE_ROBOT:
-          this.sampleComponent = 'robot'
-          break
-        case EXPERIMENT_TYPE_HPLC:
-          this.sampleComponent = 'hplc'
-          break
-        default:
-          this.sampleComponent = ''
-      }
-      console.log("Switching sample component to " + this.sampleComponent)
-    },
     'containerState.AUTOMATED': function(newVal) {
         // If now on, add safetylevel to query
         // Automated collections limited to GREEN Low risk samples
-        console.log("State:  " + newVal)
         if (newVal) {
             this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
-            this.proteinsCollection.fetch()
         } else {
             delete this.proteinsCollection.queryParams.SAFETYLEVEL;
-            this.proteinsCollection.fetch()
         }
+        this.$store.dispatch('get_collection', this.proteinsCollection).then( (result) => {
+          this.proteins = result.toJSON()
+        })
         app.trigger('samples:automated', newVal)
     }
   },
@@ -619,8 +602,6 @@ export default {
       this.users = result.toJSON()
       // Set plate owner to current user
       this.containerState.PERSONID = this.$store.state.user.personId
-
-
     })
   },
 
@@ -654,7 +635,6 @@ export default {
       this.saveContainer(containerModel)
       // Save the samples...
       console.log("addContainer: " + JSON.stringify(containerModel))
-      console.log("Samples: " + JSON.stringify(this.samples))
     },
 
     saveContainer: function(model) {
@@ -665,7 +645,9 @@ export default {
         console.log("Container ID = " + cid)
         this.$store.commit('add_notification', { message: 'New Container created, click <a href=/containers/cid/'+cid+'>here</a> to view it', level: 'info', persist: true})
 
-        this.saveSamples(cid)
+        EventBus.$emit('save-samples', cid)
+
+        // this.saveSamples(cid)
       }, (err) => {
         console.log("Error saving Container: " + err)
         this.$store.commit('add_notification', { message: 'Something went wrong creating this container, please try again', level: 'error'})
@@ -677,24 +659,13 @@ export default {
     saveSamples: function(cid) {
       // Save Samples
       // Loop through samples and set container id from model
-
+      // There is no validation here aside from making sure IDs are present.
+      // This is how the current process works - relying on backend to do the work
       this.samplesCollection.each(function(s) {
           s.set({ CONTAINERID: cid }, { silent: true })
       }, this)
 
-      var samples = new Samples(this.samplesCollection.filter(function(m) { return m.get('PROTEINID') > - 1 || m.get('CRYSTALID') > - 1 }))
-
-      console.log("Full Samples list = " + JSON.stringify(this.samplesCollection))
-      console.log("Filtered Samples list = " + JSON.stringify(samples))
-
-      if (samples.length) {
-        this.$store.dispatch('save_collection', samples).then( (result) => {
-          console.log("Samples Saved " + JSON.stringify(result))
-        }, () => {
-          console.log("sample save error")
-          this.$store.commit('add_notification', { message: 'Error saving samples', level: 'error'})
-        })
-      }
+      EventBus.$emit('save-samples', cid)
     },
 
     samplesValid: function() {
@@ -757,9 +728,9 @@ export default {
         this.containerGeometry.columns = geometry.WELLPERROW
         console.log("Number of plate = " + geometry.NAME)
         console.log("Number of columns = " + this.containerGeometry.columns)
-        this.plateType = this.containerGeometry.capacity > 20 ? 'single-sample' : 'sample-plate'
+        this.plateType = this.containerGeometry.capacity > 20 ? 'single-sample-plate' : 'sample-plate'
       } else {
-        this.plateType = 'Puck'
+        this.plateType = 'puck'
       }
       this.plateKey += 1
     },
@@ -767,6 +738,7 @@ export default {
       console.log('clear-puck')
       app.trigger('samples:clear-puck')
       this.resetSamples(this.samplesCollection.length)
+      EventBus.$emit('samples-clear')
     },
     clonePuck: function() {
       console.log('clone-puck')
