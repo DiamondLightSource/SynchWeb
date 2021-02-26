@@ -153,7 +153,7 @@ const store = new Vuex.Store({
         })
       })
     },
-    save_collection(context, collection) {
+    saveCollection(context, collection) {
 
       return new Promise((resolve, reject) => {
         collection.save({
