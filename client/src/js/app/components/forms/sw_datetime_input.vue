@@ -153,6 +153,7 @@ export default {
 .btn-edit {
   cursor: pointer;
   @apply tw-rounded;
+  @apply tw-inline-block;
 }
 .btn-edit:hover {
   @apply tw-bg-content-search-background;

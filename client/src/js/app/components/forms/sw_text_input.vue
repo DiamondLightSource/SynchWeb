@@ -14,7 +14,7 @@ https://jschof.com/vue/a-form-component-in-vue-js-making-nice-wrappers/
 https://medium.com/@logaretm/authoring-validatable-custom-vue-input-components-1583fcc68314
 -->
 <template>
-  <div>
+  <div :class="outerClass">
 
     <!-- The label which includes an optional subtitle -->
     <label v-if="label" :for="id">{{label}}
@@ -39,7 +39,7 @@ https://medium.com/@logaretm/authoring-validatable-custom-vue-input-components-1
       @focus="$emit('focus')"
     >
     <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ value }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
-    <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
+    <button v-if="inline && editable" class="button tw-px-2 tw-py-1" @mousedown="onSave">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
@@ -92,6 +92,9 @@ export default {
     errorMessage: {
       type: String,
     },
+    outerClass: {
+      type: String,
+    },
     // Default behaviour is to act as normal input
     // Set inline to enable edit/save behaviour
     inline: {
@@ -103,7 +106,7 @@ export default {
     quiet: {
       type: Boolean,
       default: false
-    }
+    },
   },
   data() {
     return {
@@ -113,7 +116,7 @@ export default {
   computed: {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
-      return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
+      return [ this.inputClass, this.errorMessage ? this.errorClass : '']
     }
   },
   created() {
@@ -156,6 +159,7 @@ export default {
 .btn-edit {
   cursor: pointer;
   @apply tw-rounded;
+  @apply tw-inline-block;
 }
 .btn-edit:hover {
   @apply tw-bg-content-search-background;

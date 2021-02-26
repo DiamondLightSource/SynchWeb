@@ -5,7 +5,7 @@ Intended to abstract the logic from how the time picker part works so we can mig
 Must have an id passed so we can associate the jquery-ui component to the control
 -->
 <template>
-  <div>
+  <div :class="outerClass">
     <!-- The label which includes an optional subtitle -->
     <label v-if="label" :for="id">{{label}}
       <slot name="description">
@@ -73,6 +73,9 @@ export default {
     inputClass: {
       type: String,
       required: false
+    },
+    outerClass: {
+      type: String
     },
     errorClass: {
       type: String,
@@ -150,6 +153,7 @@ export default {
 .btn-edit {
   cursor: pointer;
   @apply tw-rounded;
+  @apply tw-inline-block;
 }
 .btn-edit:hover {
   @apply tw-bg-content-search-background;
