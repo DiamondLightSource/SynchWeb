@@ -1,9 +1,9 @@
 div.form {
     padding: 10px;
-    
+
     ul {
         list-style: none;
-        
+
         li {
             //clear: both;
 
@@ -17,34 +17,34 @@ div.form {
 
             span {
                 /* Want consistent padding for form span elements */
-                @apply tw-px-1 tw-py-2;
+                @apply tw-px-2 tw-py-2;
             }
         }
     }
-    
-    
+
+
     label {
         float: left;
         display: block;
         font-size: 12px;
-        
+
         span.small {
             display: block;
             font-size: 10px;
         }
 
     }
-    
-    
+
+
     span.label {
         display: inline-block;
         // padding: 1% 0;
         font-weight: bold;
     }
-    
+
     span.label, label {
         width: 28%;
-        
+
         @media (max-width: $breakpoint-small) {
             //width: 100%;
             float: none;
@@ -58,59 +58,59 @@ div.form {
         display: inline;
     }
 
-    
+
     li.head {
         padding: 1% 0;
         font-weight: bold;
     }
-    
+
     input, textarea, select {
         /* Tailwind trying to avoid this... */
         // &:not(.ui-combobox-input) {
         //     padding: 0.1%;
         // }
         margin: 0 0 20px 5px;
-        
+
         @media (max-width: $breakpoint-small) {
             margin: 0 0 20px 0;
         }
     }
-    
-    
-    
+
+
+
     textarea {
         height: 200px;
     }
-    
+
     textarea, input[name=title], input[name=TITLE], input.full {
         width: 70%;
-        
+
         @media (max-width: $breakpoint-small) {
             width: 100%;
         }
     }
-    
-    
+
+
     button.submit {
         width: 150px;
         height: 30px;
     }
-    
-    
+
+
     select[multiple=multiple] {
         width: 200px;
         vertical-align: top;
-        
+
         @media (max-width: $breakpoint-small) {
             width: 60%;
         }
     }
-    
-    
+
+
     .progress {
         width: 150px;
     }
-    
+
     /*
     textarea + label.ferror,
     select + label.ferror,
@@ -131,12 +131,12 @@ div.form {
         margin-bottom: 10px;
         display: block;
     }*/
-    
+
     label.ferror {
         display: none !important;
     }
-    
-    
+
+
     span.ferror {
         margin-left: 15px;
         border: none;
@@ -155,21 +155,21 @@ div.form {
         content: '';
         border-right-color: $content-light-background;
     }
-    /* Tailwind - why was this required? */    
+    /* Tailwind - why was this required? */
     // textarea + span.ferror {
     //     margin-left: 29%;
     // }
-    
+
     .floated {
         width: 71.6%;
         margin: 1% 0;
         float: right;
-        
-        
+
+
         @media (max-width: $breakpoint-small) {
             width: 100%;
             float: none;
-            
+
             -webkit-box-ordinal-group: 2;
             -moz-box-ordinal-group: 2;
             -ms-flex-order: 1;
@@ -177,11 +177,11 @@ div.form {
             order: 1;
         }
     }
-    
+
     ul.visits li {
         clear: none;
     }
-    
+
     .puck {
         width: 25%;
         float: right;
@@ -189,11 +189,11 @@ div.form {
         @media (max-width: $breakpoint-small) {
             width: 40%;
         }
-        
+
         @media (max-width: $breakpoint-vsmall) {
             width: 100%;
             float: none;
-            
+
             -webkit-box-ordinal-group: 2;
             -moz-box-ordinal-group: 2;
             -ms-flex-order: 1;
@@ -235,28 +235,28 @@ div.form .fvalid {
         padding: 2% 1%;
         display: inline-block;
     }
-    
+
     &:hover {
         cursor: pointer;
         background: $content-search-background url('~images/edit.png') no-repeat right;
         padding-right: 2.5%;
-        
+
         @media (max-width: $breakpoint-small) {
             padding-right: 7%;
         }
     }
-    
-    
+
+
     /*
     span.ui-icon {
         display: none;
         height: 14px;
     }
-    
+
     &:hover span.ui-icon {
         display: inline-block !important;
     }*/
-    
+
     button {
         /* Tailwind adjustments */
         @apply tw-bg-content-background tw-m-1 tw-px-2 tw-py-1 tw-rounded;
@@ -307,47 +307,47 @@ div.text {
     padding-right: 2.5%;
     /* Want consistent padding for form span elements */
     @apply tw-px-1 tw-py-2;
-    
+
     @media (max-width: $breakpoint-small) {
         width: 93%;
         float: none;
-        
+
         -webkit-box-ordinal-group: 2;
         -moz-box-ordinal-group: 2;
         -ms-flex-order: 1;
         -webkit-order: 1;
         order: 1;
     }
-    
+
     p {
         padding: 1% !important;
     }
-    
+
     pre {
         background: $content-sub-background;
         padding: 1%;
         border-radius: 5px;
     }
-    
+
     code {
         font-size: 10px;
         word-wrap: break-word;
     }
-    
+
     ul {
         padding: 1% 2.5%;
-        
+
         li {
             list-style-type: circle;
         }
     }
-    
+
     h1 {
         text-decoration: underline;
         font-size: 14px;
         padding-bottom: 0.5%;
     }
-    
+
     h2 {
         text-decoration: underline;
         font-size: 12px;
@@ -403,7 +403,7 @@ table input[type=text] {
         -ms-flex-direction: column;
         flex-direction: column;
     }
-    
+
     .puck {
         -webkit-box-ordinal-group: 2;
         -moz-box-ordinal-group: 2;
@@ -413,13 +413,13 @@ table input[type=text] {
     }
 }
 
-/* 
+/*
 Tailwind note:
 Instead of reorder we can use tailwinds responsive classes
-Design for mobile layout then at sm, md breakpoints use desktop layout 
+Design for mobile layout then at sm, md breakpoints use desktop layout
 */
 @media (max-width: $breakpoint-small) {
-    
+
     .reorder {
         display: -webkit-box;
         display: -moz-box;
@@ -432,7 +432,7 @@ Design for mobile layout then at sm, md breakpoints use desktop layout
         -ms-flex-direction: column;
         flex-direction: column;
     }
-    /* 
+    /*
     Tailwind - we may want to remove this.
     It sets a fixed font size for small screens.
     We can scale better with tailwind.
@@ -467,12 +467,12 @@ input,
 /* Some forms are forms, others are div.forms */
 div.form > ul > li,
 form > ul > li {
-    @apply tw-flex tw-mb-4;
+    @apply tw-flex tw-mb-5;
 }
 
 form > ul > li > select {
     line-height: 1.5;
-    height: 30px;    
+    height: 30px;
 }
 
 .errormessage {
@@ -484,4 +484,10 @@ form > ul > li > select {
     @apply tw-bg-content-background;
     @apply tw-ml-2;
     @apply tw-py-2;
+}
+// This overrides the margin for older forms
+div.vform {
+  input, textarea, select {
+    margin: 0px;
+  }
 }
