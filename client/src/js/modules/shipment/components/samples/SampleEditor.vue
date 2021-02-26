@@ -12,15 +12,18 @@
     </div>
     <div v-else>
       <!-- Use plate table, single or table depending on capacity -->
+      <!-- Hardcoding experiment type for testing -->
       <component
         :is="sampleComponent"
         :proteins="proteins"
         v-model="samples"
         :experimentKind="experimentKind"
+        :containerId="containerId"
         @clone-sample="onCloneSample"
         @clear-sample="onClearSample"
         @clone-container="onCloneContainer"
         @clear-container="onClearContainer"
+        @save-sample="onSaveSamples"
       />
     </div>
   </div>
@@ -30,13 +33,24 @@
 import EventBus from 'app/components/utils/event-bus.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
+import Sample from 'models/sample'
+import Samples from 'collections/samples'
 import SampleTableView from 'modules/shipment/views/sampletable'
 import SingleSample from 'modules/shipment/components/samples/SingleSample.vue'
 import SamplePlateEditor from 'modules/shipment/components/samples/SamplePlateEditor.vue'
+import SamplePlateEdit from 'modules/shipment/components/samples/SamplePlateEdit.vue'
 
 // Templates we need to pass to the old MX style sample table
 import table from 'templates/shipment/sampletablenew.html'
 import row from 'templates/shipment/sampletablerownew.html'
+
+// Use Location as idAttribute for this table
+var LocationSample = Sample.extend({
+    idAttribute: 'LOCATION',
+})
+
+const EXPERIMENT_TYPE_ROBOT = 22
+const EXPERIMENT_TYPE_HPLC = 21
 
 const INITIAL_SAMPLE_STATE = {
   LOCATION: '',
@@ -81,7 +95,8 @@ export default {
   components: {
     'marionette-view': MarionetteView,
     'single-sample-plate': SingleSample,
-    'sample-plate': SamplePlateEditor
+    'sample-plate': SamplePlateEditor,
+    'sample-plate-edit': SamplePlateEdit
 },
   props: {
     sampleComponent: {
@@ -100,7 +115,7 @@ export default {
       type: Object
     },
     proteins: {
-      type: Object
+      type: Array
     },
     gproteins: {
       type: Object
@@ -109,7 +124,14 @@ export default {
       type: Boolean,
       default: false
     },
-
+    containerId: {
+      type: Number
+    }
+  },
+  watch: {
+    sampleComponent: function(newVal) {
+      console.log("Sample Editor sample component = " + newVal)
+    }
   },
   computed: {
     // These options will be passed into the marionette sample table view
@@ -131,18 +153,22 @@ export default {
     return {
       mview: SampleTableView,
       samples: [],
+      experimentKind: EXPERIMENT_TYPE_ROBOT
     }
   },
   // We are passing a plain JSON array to the sample plate view
   // So we need to detect when the parent backbone collection is changed (reset)
   // On reset, update our samples list
   created: function() {
+    console.log("Sample Editor created - sampleComponent = " + this.sampleComponent)
     this.samples = this.samplesCollection.toJSON()
+    console.log("Sample Editor created - samples = " + JSON.stringify(this.samples))
+
     // Register callback if collection is reset
     this.samplesCollection.bind('reset', this.updateSamples)
 
     // Parent Add Container component will send a message once it has successfully created the container
-    EventBus.$on('save-samples', this.saveSamples)
+    EventBus.$on('save-samples', this.onSaveSamples)
   },
   methods: {
     // We will need to pass up the event to select a sample in case graphic needs to change
@@ -226,24 +252,59 @@ export default {
     // This gets triggered on successful creation of container
     // Save the samples collection to the database
     // Could add final validation check here, but the container will already exist
-    // Better to catch earlier - prevent conatiner add for instance if samples are invalid
-    saveSamples: function(containerId) {
+    // Better to catch earlier - prevent container add for instance if samples are invalid
+    // If we are wrapping this component within a validation observer the submit container step will be prevented
+    onSaveSamples: function(containerId) {
       // Iterate through our JSON representation of the samples list,
       // for those with a valid (non-zero) protein id set the corresponding collection data
       // We actually don't use the return value, merely use the map to iterate through the array
-      this.samples.map(s => {
-        s.CONTAINERID = containerId
-        let locationIndex = +(s.LOCATION - 1)
-        let proteinId = +s.PROTEINID
-        if (proteinId > 0 && s.NAME != '') {
+      // Also used by plate editor to update samples if changed
+      if (containerId) {
+        // New samples added
+        this.samples.map(s => {
+          s.CONTAINERID = containerId
+          let locationIndex = +(s.LOCATION - 1)
+          let proteinId = +s.PROTEINID
+          if (proteinId > 0 && s.NAME != '') {
+            this.samplesCollection.at(locationIndex).set(s)
+            return s
+          }
+        })
+      } else {
+        console.log("Sample editor update samples: " + JSON.stringify(this.samples))
+        // Update collection
+        this.samples.map(s => {
+          let locationIndex = +(s.LOCATION - 1)
+          console.log("Location: " + locationIndex)
           this.samplesCollection.at(locationIndex).set(s)
-          return s
-        }
-      })
-      this.$store.dispatch('saveCollection', this.samplesCollection).then( (result) => {
+        })
+      }
+
+      console.log("Sample editor samples COLLECTION: " + JSON.stringify(this.samplesCollection.toJSON()))
+      let samples = new Samples(this.samplesCollection.filter(function(m) { return m.get('PROTEINID') > - 1 || m.get('CRYSTALID') > - 1 }))
+
+      this.$store.dispatch('saveCollection', samples).then( (result) => {
         console.log("Sample Editor saved collection: " + JSON.stringify(result))
+        if (containerId) this.resetSamples(this.samplesCollection.length)
+        // else this.refreshSamples(result)
       })
     },
+    resetSamples: function(capacity) {
+      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
+
+      this.samplesCollection.reset(samples)
+    },
+    // Reset Backbone Samples Collection
+    refreshSamples: function(collection) {
+      // Need to figure this part out...
+      // Force a refresh - updates the protein acronym..?
+      // this.$router.go()
+      collection.each( s => {
+        let i = +(s.get('LOCATION')) - 1
+        this.samples[i] = Object.assign({}, s)
+      })
+    },
+
   },
 
 

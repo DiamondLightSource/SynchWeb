@@ -13,7 +13,7 @@
 
           <h1 class="tw-text-lg tw-font-bold tw-mb-2">Shipment Details</h1>
 
-          <validation-provider name="SHIPPINGNAME" vid="shipment-name" :rules="validationRules('SHIPPINGNAME')" v-slot="{ errors }">
+          <validation-provider tag="div" class="tw-mb-4" name="SHIPPINGNAME" vid="shipment-name" :rules="validationRules('SHIPPINGNAME')" v-slot="{ errors }">
             <sw-text-input
               id="shipment-name"
               label="Name"
@@ -24,8 +24,7 @@
             />
           </validation-provider>
 
-          <div class="tw-mb-2">
-          <validation-provider rules="numeric">
+          <validation-provider tag="div" class="tw-mb-4" rules="numeric">
             <sw-text-input
               label="How many pre-registered dewar/parcels to add now?"
               type="number"
@@ -35,7 +34,6 @@
               rules="numeric"
               />
           </validation-provider>
-          </div>
 
           <div class="tw-mb-4">
             <label>Number of Dewars/Parcels</label>
@@ -50,7 +48,7 @@
             <div v-show="numPieces == 0" class="tw-flex"><span>No parcels defined yet</span></div>
           </div>
 
-          <div class="tw-mb-2">
+          <div class="tw-mb-4">
               <!-- Small tweaks to the styling here using tailwind flexbox -->
               <label>First Experiment / Scheduling
                   <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>

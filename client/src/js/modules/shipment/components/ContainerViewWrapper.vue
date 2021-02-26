@@ -1,13 +1,17 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="mViewReady"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>
+        <scm-container-plate-view
+          v-if="!mViewReady && useScmView"
+          :containerModel="model">
+        </scm-container-plate-view>
     </section>
 </template>
 
@@ -17,9 +21,8 @@
 * This handles plates as well as pucks and deals with xpdf type plates as well
 */
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-
-import { ContainerViewMap } from 'modules/shipment/components/container-map'
-import ContainerPlateView from 'modules/shipment/views/containerplate'
+import ScmContainerView from 'modules/shipment/components/SCMContainerPlateView.vue'
+import { ContainerViewMap, ContainerPlateViewMap } from 'modules/shipment/components/container-map'
 import Container from 'models/container'
 
 import store from 'app/store/store'
@@ -27,7 +30,8 @@ import store from 'app/store/store'
 export default {
     name: 'container-view-wrapper',
     components: {
-        'marionette-view': MarionetteView
+        'marionette-view': MarionetteView,
+        'scm-container-plate-view': ScmContainerView
     },
     props: {
         'cid': Number,
@@ -36,13 +40,14 @@ export default {
     },
     data: function() {
         return {
-            ready: false,
+            mViewReady: false,
             mview: null,
             model: null,
             collection: null,
             params: null,
             queryParams: null,
             bc : [],
+            useScmView: false,
         }
     },
     computed: {
@@ -61,13 +66,9 @@ export default {
     created: function() {
         // Set the proposal type if different to our current proposal
         // this.setProposalType()
-
         console.log("Container View Created for proposal Type = " + this.proposalType)
 
         // Determine the marionette view constructor we need based on the type
-        // The title is based on the proposal type
-        let title = ContainerViewMap[this.proposalType] ? ContainerViewMap[this.proposalType].title : 'Container'
-
         this.bc = [{ title: 'Shipments', url: '/shipments' }]
 
         // We need to know what the container type is before rendering
@@ -76,8 +77,8 @@ export default {
         this.getContainer().then( (isPlate) => {
             console.log("Container model is plate: " + isPlate)
             if (isPlate) {
-                this.mview = ContainerPlateView
-                this.params = { iid: this.iid, sid: this.sid } 
+                this.mview = ContainerPlateViewMap[this.proposalType] ? ContainerPlateViewMap[this.proposalType].view : null
+                this.params = { iid: this.iid, sid: this.sid }
             } else {
                 this.mview = ContainerViewMap[this.proposalType] ? ContainerViewMap[this.proposalType].view : ContainerViewMap['default'].view
             }
@@ -88,7 +89,12 @@ export default {
         }, (error) => {
             console.log("Error getting container model " + error.msg)
             app.alert({ title: 'No such container', message: error.msg})
-        }).finally( () => { this.ready = true }) // Only render when complete
+        }).finally( () => {
+          // Only render marionette view if we have one
+          if (this.mview != null) this.mViewReady = true
+          else this.useScmView = true
+          // If no mview, we use the new SCM general view
+        })
     },
     methods: {
         // This method performs a lookup via the store and sets the proposal type based on sample id
@@ -118,7 +124,7 @@ export default {
                     error: function() {
                         reject({msg: 'The specified container could not be found'})
                     },
-                })   
+                })
 
             })
         },

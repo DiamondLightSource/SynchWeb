@@ -11,6 +11,7 @@ const purgecss = require('@fullhuman/postcss-purgecss')({
   ],
   defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || []
 })
+const colsMixinFunction = require(path.join(__dirname, 'src', 'css', 'mixins', 'cols.js'))
 
 module.exports = ({env}) => (
   {
@@ -18,7 +19,10 @@ module.exports = ({env}) => (
     plugins: [
       require('postcss-import'),
       require('postcss-mixins')({
-        mixinsDir: path.join(__dirname, 'src', 'css', 'mixins')
+        // mixinsDir: path.join(__dirname, 'src', 'css', 'mixins')
+        mixins: {
+          cols: colsMixinFunction
+        }
       }),
       // Using utilities for clearfix - ie8 style is closer to original one used
       require('postcss-utilities')({ ie8: true}),

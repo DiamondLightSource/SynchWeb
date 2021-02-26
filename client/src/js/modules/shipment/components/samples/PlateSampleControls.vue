@@ -15,11 +15,5 @@
 <script>
 export default {
   name: 'PlateControls',
-  props: {
-    visit: {
-      type: String,
-      default: ''
-    }
-  },
 }
 </script>

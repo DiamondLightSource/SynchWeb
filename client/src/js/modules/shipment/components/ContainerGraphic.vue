@@ -3,7 +3,6 @@
     <div v-if="containerComponent" class="tw-flex">
       <div class="tw-w-full tw-border-l tw-border-gray-500 tw-m-1 tw-p-2">
         <h1 class="tw-text-xl">Container</h1>
-        <p>{{containerComponent}}</p>
         <component v-bind:is="containerComponent"
           :container="geometry"
           :samples="samples"

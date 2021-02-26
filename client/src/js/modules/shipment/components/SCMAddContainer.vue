@@ -11,7 +11,7 @@ Once container is valid then samples are added
       <div class="tw-flex tw-flex-col">
 
       <!-- Wrap the form in an observer component so we can check validation state on submission -->
-      <validation-observer ref="observer" v-slot="{ invalid, errors }">
+      <validation-observer ref="observer" v-slot="{ invalid }">
 
       <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
       <form class="tw-flex" method="post" id="add_container" @submit.prevent="onSubmit">
@@ -48,7 +48,7 @@ Once container is valid then samples are added
             />
           </div>
 
-          <validation-provider tag="div" rules="required" name="name" v-slot="{ errors }">
+          <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="name" v-slot="{ errors }">
             <sw-text-input
               label="Container Name"
               v-model="containerState.NAME"
@@ -67,7 +67,7 @@ Once container is valid then samples are added
             />
           </div>
 
-          <div v-show="puck" class="autoprocessing_options">
+          <div v-show="puck" class="autoprocessing_options tw-mb-2 tw-py-2">
             <sw-select-input
               v-model="containerState.PROCESSINGPIPELINEID"
               label="Priority Processing"
@@ -79,7 +79,7 @@ Once container is valid then samples are added
               />
           </div>
 
-          <div v-show="puck" class="pck">
+          <div v-show="puck" class="pck tw-mb-2 tw-py-2">
             <label>Automated Collection</label>
             <sw-checkbox-input
               name="AUTOMATED"
@@ -87,15 +87,15 @@ Once container is valid then samples are added
             />
           </div>
 
-          <div v-show="!puck" class="pcr plate">
-            <sw-text-input
+          <validation-provider v-show="!puck" tag="div" class="pcr plate tw-mb-2 tw-py-2" rules="required" name="BARCODE" v-slot="{ errors }">  <sw-text-input
               label="Barcode"
               name="BARCODE"
               v-model="containerState.BARCODE"
+              :errorMessage="errors[0]"
               />
-          </div>
+          </validation-provider>
 
-          <validation-provider tag="div" rules="required" name="owner">
+          <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="owner">
             <sw-select-input
               label="Owner"
                 description="This user will be emailed with container updates. Check your email is up to date!"
@@ -114,7 +114,7 @@ Once container is valid then samples are added
             </sw-select-input>
           </validation-provider>
 
-          <div v-show="containerGroup == 'scm'">
+          <div v-show="containerGroup == 'scm'" class="tw-mb-2 tw-py-2" >
             <label>Show all experiment types</label>
             <sw-checkbox-input
               name="SHOW_ALL_EXPERIMENT_TYPES"
@@ -133,7 +133,7 @@ Once container is valid then samples are added
             />
           </div>
 
-          <div v-show="containerGroup == 'scm'" class="pcr">
+          <div v-show="containerGroup == 'scm'" class="pcr tw-mb-2 tw-py-2">
             <sw-select-input
               v-model="containerState.STORAGETEMPERATURE"
               label="Storage Temperature"
@@ -144,24 +144,24 @@ Once container is valid then samples are added
               />
           </div>
 
-          <sw-text-input id="comments" v-model="containerState.COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
+          <sw-text-input outerClass="tw-mb-2 tw-py-2" id="comments" v-model="containerState.COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
 
           <!-- VMXi Plates... -->
-          <div v-show="plate && containerGroup == 'mx'" class="plate">
+          <div v-show="plate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
               <label>Requested Imager
                   <span class="small">Imager this container should go into</span>
               </label>
               <select name="REQUESTEDIMAGERID"></select>
           </div>
 
-          <div v-show="plate && containerGroup == 'mx'" class="plate">
+          <div v-show="plate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
               <label>Imaging Schedule
                   <span class="small">Requested imaging schedule</span>
               </label>
               <select name="SCHEDULEID" class="tw-h-6"></select> <a href="#" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
           </div>
 
-          <div v-show="plate && containerGroup == 'mx'" class="plate">
+          <div v-show="plate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
               <label>Crystallisation Screen
                   <span class="small">Crystallisation screen that was used for this container</span>
               </label>
@@ -185,9 +185,7 @@ Once container is valid then samples are added
 
      <!-- </validation-observer> -->
 
-      <div class="tw-border tw-border-orange-500">
-        <div v-for="(err, i) in errors" :key="i"><p v-if="err.length">{{err[0]}}</p></div>
-        <p>Form validity = {{ !invalid }}</p>
+      <div>
         <!-- Sample specific fields -->
         <puck-controls v-show="plateType=='puck'"
           @clone-puck="clonePuck"
@@ -206,32 +204,10 @@ Once container is valid then samples are added
           :automated="containerState.AUTOMATED"
           @select-sample="onSelectSample"
         />
-        <!-- <div v-show="plate && containerGroup == 'scm'">
-          <single-sample
-            :proteins="proteins"
-            v-model="sample"
-            :experimentKind="sampleComponent">
-            <!-- <template v-slot:experimentSampleMetaData>
-              <component :is="sampleComponent" v-bind="{ name: experimentKind }"/>
-            </template> -->
-          <!-- </single-sample>
-          <p>Protein selection: {{sample.PROTEINID}}</p>
-          <p>Sample name: {{sample.NAME}}</p>
-        </div> -->
-
-        <!-- <div>
-          <marionette-view
-            v-if="ready"
-            :key="$route.fullPath"
-            :options="options"
-            :fetchOnLoad="true"
-            :mview="mview"
-            :breadcrumbs="bc"/>
-        </div> -->
       </div>
 
       <div class="">
-        <button name="submit" type="submit" @click.prevent="onSubmit" :class="['button submit tw-text-base tw-px-4 tw-py-2', invalid ? 'tw-border tw-border-red-500' : '']">
+        <button name="submit" type="submit" @click.prevent="onSubmit" :class="['button submit tw-text-base tw-px-4 tw-py-2', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
           <i class="fa fa-plus"></i>
           Add Container
         </button>
@@ -269,22 +245,18 @@ import Users from 'collections/users'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
-const EXPERIMENT_TYPE_ROBOT = 22
-const EXPERIMENT_TYPE_HPLC = 21
-
 const STORAGE_TEMP_NEG_80 = -80
 const STORAGE_TEMP_0 = 0
 const STORAGE_TEMP_25 = 25
 
-const initialSampleState = {
+const INITIAL_SAMPLE_STATE = {
   PROTEINID: '-1',
   CRYSTALID: '-1',
   TYPE: '',
-  NAME: 'sample1',
-  VOLUME: '1',
-  COLUMN: '2',
-  BUFFER: '3',
-  SCORE: 1, // Proxy for valid
+  NAME: '',
+  VOLUME: '',
+  PURIFICATIONCOLUMNID: '',
+  BUFFER: '',
   LOCATION: '',
   ROBOTPLATETEMPERATURE: '',
   EXPOSURETEMPERATURE: '',
@@ -294,6 +266,7 @@ const initialSampleState = {
 // Use Location as idAttribute for this table
 var LocationSample = Sample.extend({
     idAttribute: 'LOCATION',
+    defaults: INITIAL_SAMPLE_STATE
 })
 
 const initialContainerState = {
@@ -339,11 +312,6 @@ export default {
   },
   data: function() {
     return {
-      automated: '',
-      barCode: '',
-      comments: '',
-      containerName: '',
-
       containerState: initialContainerState,
 
       containerType: '',
@@ -370,17 +338,12 @@ export default {
       experimentType: '',
       experimentTypes: [],
       experimentTypesCollection: null,
-      // experimentTypes: [
-      //   {ID: 0, NAME: '-'},
-      //   {ID: EXPERIMENT_TYPE_ROBOT, NAME: 'Robot'},
-      //   {ID: EXPERIMENT_TYPE_HPLC, NAME: 'HPLC'},
-      // ],
 
       containerRegistry: [],
       containerRegistryId: '',
       containerGroup: '',
 
-      sample: initialSampleState,
+      sample: INITIAL_SAMPLE_STATE,
       samples: [],
       samplesCollection: null,
       sampleComponent: '',
@@ -481,14 +444,12 @@ export default {
     },
     sampleLocation: function(newLocation, oldLocation) {
       // Take what was saved in sample and store in array
-      console.log("Temp save sample and use new location")
-      console.log("New Location: " + newLocation)
-      console.log("Old Location: " + oldLocation)
+      // Not currently used for plates...
 
       if (!this.sample.name) this.sample.SCORE = 0
       this.samples.splice(oldLocation-1, 1, this.sample)
       this.samples[oldLocation-1].LOCATION = oldLocation
-      let newState = this.samples[newLocation-1] || initialSampleState
+      let newState = this.samples[newLocation-1] || INITIAL_SAMPLE_STATE
       this.sample = Object.assign({}, this.sample, newState)
 
       // this.samplesCollection.set( new LocationSample(newState), { remove: false })
@@ -515,9 +476,6 @@ export default {
         this.puck = true
         this.plate = false
       }
-
-      console.log("Puck/plate Type: " + this.puck + ", " + this.plate)
-
 
       this.updateContainerGeometry(type.toJSON())
       this.resetSamples(type.get('CAPACITY'))
@@ -606,8 +564,9 @@ export default {
   },
 
   methods: {
+    // Called on Add Container
+    // Calls the validation method on our observer component
     onSubmit: function() {
-
       this.$refs.observer.validate().then( (result) => {
         if (result) this.addContainer()
         else console.log("Form validation failed ")
@@ -619,15 +578,15 @@ export default {
         BARCODECHECK: null,
         CAPACITY: this.containerGeometry.capacity,
         CONTAINERTYPE: this.containerState.CONTAINERTYPE,
-        PROCESSINGPIPELINEID: this.processingPipeline,
+        PROCESSINGPIPELINEID: this.containerState.PROCESSINGPIPELINEID,
         NAME: this.containerState.NAME,
-        CONTAINERREGISTRYID: this.containerRegistryId,
-        AUTOMATED: this.automated,
-        BARCODE: this.barCode,
+        CONTAINERREGISTRYID: this.containerState.CONTAINERREGISTRYID,
+        AUTOMATED: this.containerState.AUTOMATED,
+        BARCODE: this.containerState.CODE,
         PERSONID: this.containerState.PERSONID,
         EXPERIMENTTYPE: this.experimentType,
-        STORAGETEMPERATURE: this.storageTemperature,
-        COMMENTS: this.comments,
+        STORAGETEMPERATURE: this.containerState.STORAGETEMPERATURE,
+        COMMENTS: this.containerState.COMMENTS,
         REQUESTEDIMAGERID: "",
         SCHEDULEID: "",
         SCREENID: "",
@@ -647,29 +606,15 @@ export default {
 
         EventBus.$emit('save-samples', cid)
 
-        // this.saveSamples(cid)
+        // Reset container - we may want to add more containers so just reset the name and barcode
+        this.containerState.NAME = ''
+        this.containerState.BARCODE = ''
       }, (err) => {
         console.log("Error saving Container: " + err)
         this.$store.commit('add_notification', { message: 'Something went wrong creating this container, please try again', level: 'error'})
       }).finally( () => {
         // this.$store.commit('loading', false)
       })
-    },
-
-    saveSamples: function(cid) {
-      // Save Samples
-      // Loop through samples and set container id from model
-      // There is no validation here aside from making sure IDs are present.
-      // This is how the current process works - relying on backend to do the work
-      this.samplesCollection.each(function(s) {
-          s.set({ CONTAINERID: cid }, { silent: true })
-      }, this)
-
-      EventBus.$emit('save-samples', cid)
-    },
-
-    samplesValid: function() {
-      return false
     },
 
     // Reset Backbone Samples Collection
@@ -679,12 +624,6 @@ export default {
 
       this.samplesCollection.reset(samples)
     },
-
-    resetForm: function() {
-      console.log("Reset Form data")
-    },
-
-
 
     onContainerCellClicked: function(location) {
       console.log("Cell clicked = " + location)
@@ -728,7 +667,7 @@ export default {
         this.containerGeometry.columns = geometry.WELLPERROW
         console.log("Number of plate = " + geometry.NAME)
         console.log("Number of columns = " + this.containerGeometry.columns)
-        this.plateType = this.containerGeometry.capacity > 20 ? 'single-sample-plate' : 'sample-plate'
+        this.plateType = this.containerGeometry.capacity > 25 ? 'single-sample-plate' : 'sample-plate'
       } else {
         this.plateType = 'puck'
       }

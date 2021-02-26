@@ -39,7 +39,7 @@
     </div>
 
     <!-- Display Shipment information and allow editing some fields -->
-    <div class="form">
+    <div class="form vform">
         <ul>
 
             <li>
@@ -96,7 +96,6 @@
                   :options="[{'NAME':'Green', 'ID': 'Green'}, {'NAME':'Yellow', 'ID': 'Yellow'}, {'NAME':'Red', 'ID': 'Red'}]"
                   optionValueKey="ID"
                   optionTextKey="NAME"
-                  class="SAFETYLEVEL"
                   @save="save('SAFETYLEVEL')"/>
             </li>
 
@@ -169,7 +168,7 @@
 
     <p class="help">Select a dewar by clicking on the row in the table below. Package details are then shown below. Click the + icon to add a container to the selected package</p>
 
-    <div class="ra"><a v-if="PROPOSAL_ACTIVE" href="#" class="button" id="add_dewar" title="Add a dewar to this shipment" @click.prevent="onAddDewar"><i class="fa fa-plus"></i> Add Dewar</a></div>
+    <div class="ra"><a v-if="PROPOSAL_ACTIVE" href="#" class="button" id="add_dewar" title="Add a package to this shipment" @click.prevent="onAddDewar"><i class="fa fa-plus"></i> Add Item to Shipment</a></div>
 
     <!-- List of dewars/parcels within this shipment -->
     <table-component
@@ -232,7 +231,7 @@
       <div class="tw-w-full sm:tw-w-1/2 sm:tw-mr-2 dcontent">
         <ul class="containers">
           <li v-for="container in containers" :key="container.CONTAINERID">
-            {{container.CONTAINERID}} ({{container.SAMPLES}} Samples)
+            {{container.NAME}} ({{container.SAMPLES}} Samples)
 
             <span class="r">
               <a class="button button-notext print" title="Click to print container contents" :href="'/api/pdf/container/cid/'+container.CONTAINERID+'/prop/'+PROPOSAL" onPrintPdf><i class="fa fa-print"></i> <span>Print Container Report</span></a>
