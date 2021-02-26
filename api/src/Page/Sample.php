@@ -136,9 +136,14 @@ class Sample extends Page
                               'TYPE' => '\w+',
                               'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
 
+                              // Items added for SCM
+                              'EXPERIMENTTYPEID' => '\d+',
+                              'PURIFICATIONCOLUMNID' => '\d+',
+                              'ROBOTPLATETEMPERATURE' => '\d+',
+                              'EXPOSURETEMPERATURE' => '\d+',
                                );
-        
-        
+
+
         public static $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
                               array('/:sid', 'patch', '_update_sample'),
                               array('/:sid', 'put', '_update_sample_full'),
@@ -1117,7 +1122,10 @@ class Sample extends Page
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
             }
 
-            foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY', 'USERPATH') as $f) {
+            foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID',
+                            'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA',
+                            'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY', 'USERPATH',
+                            'ROBOTPLATETEMPERATURE', 'EXPOSURETEMPERATURE', 'EXPERIMENTTYPEID', 'PURIFICATIONCOLUMNID') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
             }
@@ -1127,8 +1135,8 @@ class Sample extends Page
 
 
         function _do_add_sample($a) {
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7) RETURNING diffractionplanid INTO :id", 
-                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH']));
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath, robotplatetemperature, exposuretemperature, experimenttypeid, purificationcolumnid) VALUES (s_diffrctionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11) RETURNING diffractionplanid INTO :id",
+                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['ROBOTPLATETEMPERATURE'], $a['EXPOSURETEMPERATURE'], $a['EXPERIMENTTYPEID'], $a['PURIFICATIONCOLUMNID']));
             $did = $this->db->id();
 
             if (!array_key_exists('CRYSTALID', $a)) {
@@ -1416,7 +1424,7 @@ class Sample extends Page
                 }
             }
 
-            $dfields = array('REQUIREDRESOLUTION', 'ANOMALOUSSCATTERER', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'ENERGY', 'USERPATH');
+            $dfields = array('REQUIREDRESOLUTION', 'ANOMALOUSSCATTERER', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'ENERGY', 'USERPATH', 'ROBOTPLATETEMPERATURE', 'EXPOSURETEMPERATURE', 'EXPERIMENTTYPEID', 'PURIFICATIONCOLUMNID');
             foreach ($dfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE diffractionplan SET $f=:1 WHERE diffractionplanid=:2", array($this->arg($f), $samp['DIFFRACTIONPLANID']));

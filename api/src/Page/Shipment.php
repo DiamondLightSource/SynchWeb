@@ -80,15 +80,15 @@ class Shipment extends Page
                               'DEWARS' => '\d+',
                               //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
                               'COMMENTS' => '.*',
-                              
+
                               'assigned' => '\d',
                               'bl' => '[\w-]+',
                               'unassigned' => '[\w-]+',
-                              
+
                               // Container fields
                               'DEWARID' => '\d+',
                               'CAPACITY' => '\d+',
-                              'CONTAINERTYPE' => '\w+',
+                              'CONTAINERTYPE' => '[\w+|\+|\-]+', // Need to include "B21_8+1"
                               'NAME' => '([\w-])+',
                               'SCHEDULEID' => '\d+',
                               'SCREENID' => '\d+',
@@ -177,7 +177,8 @@ class Shipment extends Page
                               array('/containers/history', 'get', '_container_history'),
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
-                              
+                              array('/containers/types', 'get', '_get_container_types'),
+
                               array('/containers/notify/:BARCODE', 'get', '_notify_container'),
 
                               array('/cache/:name', 'put', '_session_cache'),
@@ -1650,24 +1651,36 @@ class Shipment extends Page
             $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
             $start = $pg*$pp;
             $end = $pg*$pp+$pp;
-            
+
             $st = sizeof($args)+1;
             $en = $st + 1;
             array_push($args, $start);
             array_push($args, $end);
 
             $rows = $this->db->paginate("SELECT h.containerhistoryid, s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.containerid, h.status,h.location,TO_CHAR(h.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, h.beamlinename
-              FROM containerhistory h 
+              FROM containerhistory h
               INNER JOIN container c ON c.containerid = h.containerid
-              INNER JOIN dewar d ON d.dewarid = c.dewarid 
-              INNER JOIN shipping s ON d.shippingid = s.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid 
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping s ON d.shippingid = s.shippingid
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
               LEFT OUTER JOIN blsession b ON b.sessionid = d.firstexperimentid
               WHERE $where ORDER BY h.bltimestamp DESC", $args);
-            
+
             $this->_output(array('total' => $tot, 'data' => $rows));
         }
 
+        function _get_container_types() {
+          $where = '';
+          // By default only return active container types.
+          // If all param set return everything
+          if ($this->has_arg('all')) {
+              $where .= '1=1';
+          } else {
+              $where .= 'ct.active = 1';
+          }
+          $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM containertype ct WHERE $where");
+          $this->_output(array('total' => count($rows), 'data' => $rows));
+        }
 
         function _add_container_history() {
 
