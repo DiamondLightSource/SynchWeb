@@ -250,6 +250,7 @@ const STORAGE_TEMP_0 = 0
 const STORAGE_TEMP_25 = 25
 
 const INITIAL_SAMPLE_STATE = {
+  BLSAMPLEID: null,
   PROTEINID: '-1',
   CRYSTALID: '-1',
   TYPE: '',
@@ -452,7 +453,6 @@ export default {
       let newState = this.samples[newLocation-1] || INITIAL_SAMPLE_STATE
       this.sample = Object.assign({}, this.sample, newState)
 
-      // this.samplesCollection.set( new LocationSample(newState), { remove: false })
       // Forces a plate re-render... TODO fix!
       this.plateKey += 1
     },
@@ -532,7 +532,6 @@ export default {
     this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
 
     this.$store.dispatch('get_collection', this.containerTypesCollection).then( (result) => {
-      console.log("Container Types collection: " + result.toJSON())
       this.containerTypes = result.toJSON()
       // Do we have valid start state?
       if (this.containerTypes.length) {
@@ -541,7 +540,6 @@ export default {
       }
     })
     this.$store.dispatch('get_collection', this.experimentTypesCollection).then( (result) => {
-      console.log("Experiment Types collection: " + result.toJSON())
       this.experimentTypes = result.toJSON()
       this.experimentType = this.experimentTypes.length ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
     })
@@ -550,7 +548,6 @@ export default {
       this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
     })
     this.$store.dispatch('get_collection', this.proteinsCollection).then( (result) => {
-      console.log("Proteins = " + JSON.stringify(result))
       this.proteins = result.toJSON()
     })
     this.$store.dispatch('get_collection', processingPipelinesCollection).then( (result) => {
@@ -620,7 +617,7 @@ export default {
     // Reset Backbone Samples Collection
     resetSamples: function(capacity) {
       console.log("Resetting Samples Collection, capacity: " + capacity)
-      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
+      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ BLSAMPLEID: null, LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
 
       this.samplesCollection.reset(samples)
     },

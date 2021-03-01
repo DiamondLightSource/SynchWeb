@@ -276,7 +276,7 @@ export default {
     // Reset Backbone Samples Collection
     resetSamples: function(capacity) {
       console.log("Resetting Samples Collection, capacity: " + capacity)
-      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
+      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ BLSAMPLEID: null, LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
 
       this.samplesCollection.each( s => {
         console.log("CPV model = " + s.toJSON())

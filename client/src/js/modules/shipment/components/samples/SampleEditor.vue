@@ -23,7 +23,7 @@
         @clear-sample="onClearSample"
         @clone-container="onCloneContainer"
         @clear-container="onClearContainer"
-        @save-sample="onSaveSamples"
+        @save-sample="onSaveSample"
       />
     </div>
   </div>
@@ -270,41 +270,37 @@ export default {
             return s
           }
         })
-      } else {
-        console.log("Sample editor update samples: " + JSON.stringify(this.samples))
-        // Update collection
-        this.samples.map(s => {
-          let locationIndex = +(s.LOCATION - 1)
-          console.log("Location: " + locationIndex)
-          this.samplesCollection.at(locationIndex).set(s)
-        })
       }
 
       console.log("Sample editor samples COLLECTION: " + JSON.stringify(this.samplesCollection.toJSON()))
       let samples = new Samples(this.samplesCollection.filter(function(m) { return m.get('PROTEINID') > - 1 || m.get('CRYSTALID') > - 1 }))
 
-      this.$store.dispatch('saveCollection', samples).then( (result) => {
+      this.$store.dispatch('saveCollection', {collection: samples}).then( (result) => {
         console.log("Sample Editor saved collection: " + JSON.stringify(result))
         if (containerId) this.resetSamples(this.samplesCollection.length)
-        // else this.refreshSamples(result)
       })
     },
+    // Location should be the sample LOCATION
+    onSaveSample: function(location) {
+      console.log("Sample editor save sample: " + location)
+      let sampleIndex = +location -1
+
+      // Create a new Sample so it uses the BLSAMPLEID to check for post, update etc
+      let sampleModel = new Sample( this.samples[sampleIndex] )
+
+      this.$store.dispatch('saveModel', {model: sampleModel}).then( (result) => {
+        // Update BLSAMPLEID
+        if (!this.samples[sampleIndex]['BLSAMPLEID']) this.samples[sampleIndex]['BLSAMPLEID'] = result.get('BLSAMPLEID')
+
+        this.samplesCollection.at(sampleIndex).set(this.samples[sampleIndex])
+      }, (err) => console.log("Error saving model: " + JSON.stringify(err)))
+    },
+    // Reset Backbone Samples Collection
     resetSamples: function(capacity) {
       var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
 
       this.samplesCollection.reset(samples)
     },
-    // Reset Backbone Samples Collection
-    refreshSamples: function(collection) {
-      // Need to figure this part out...
-      // Force a refresh - updates the protein acronym..?
-      // this.$router.go()
-      collection.each( s => {
-        let i = +(s.get('LOCATION')) - 1
-        this.samples[i] = Object.assign({}, s)
-      })
-    },
-
   },
 
 
