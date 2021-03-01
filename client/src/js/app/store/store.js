@@ -153,18 +153,22 @@ const store = new Vuex.Store({
         })
       })
     },
-    saveCollection(context, collection) {
+    // Method that creates a new collection
+    // Note this will result in a POST to the server
+    // Most backend endpoints do not seem to support PATCH to update collection in one hit
+    // In future might need to provide more general sync method for collections
+    // Params: collection is the Backbone collection being saved
+    saveCollection(context, {collection}) {
 
       return new Promise((resolve, reject) => {
         collection.save({
           success: function(result) {
-            console.log("Store Collection saved: " + JSON.stringify(result))
             resolve(result)
           },
 
-          error: function() {
-            console.log("Store Collection save error ")
-            reject(false)
+          error: function(err) {
+            let response = err.responseJSON || {status: 400, message: 'Error saving collection'}
+            reject(response)
           },
         })
       })
@@ -185,34 +189,30 @@ const store = new Vuex.Store({
         })
       })
     },
-    // Method that returns a collection promise
+    // Method that saves a model to the server
     // Passing {} as first argument means save all...
-    // Should pass additional arguments to make this more flexible
+    // Passing an attributes object with parameters will patch the model, rather than post
+    // If the backbone model has an "ID" (as defined in it's Model class) and there are no attributes provided,
+    // then save will be a PUT request rather than POST request
     saveModel(context, {model, attributes}) {
-      let patch = false
-      let attrs = attributes || {}
       // If we have attributes, assume a patch request
-      if (attrs != {}) patch = true
-
-      console.log("Store saving model: " + JSON.stringify(model))
-      console.log("Store saving model attributes: " + JSON.stringify(attrs))
+      let patch = attributes ? true : false
+      let attrs = attributes || {}
 
       return new Promise((resolve, reject) => {
         model.save(attrs, {
           patch: patch,
           success: function(result) {
-            console.log("Store Model saved: " + JSON.stringify(result))
             resolve(result)
           },
 
-          error: function() {
-            console.log("Store Model saved error ")
-            reject(false)
+          error: function(err) {
+            let response = err.responseJSON || {status: 400, message: 'Error saving model'}
+            reject(response)
           },
         })
       })
-    }
-
+    },
   },
   getters: {
     sso: state => state.auth.cas_sso,
