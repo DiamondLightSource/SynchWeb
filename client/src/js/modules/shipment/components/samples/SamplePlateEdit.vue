@@ -8,7 +8,6 @@
     </div>
 
     <table-component
-      :key="tableKey"
       :headers="sampleHeaders"
       :data="inputValue"
       actions="Actions"
@@ -167,7 +166,6 @@ export default {
       // Reset temporary sample model
       this.sample = Object.assign({})
       this.editRowLocation = ''
-      this.tableKey += 1
     },
     onEditSample: function(row) {
       this.sample = Object.assign(this.sample, row)

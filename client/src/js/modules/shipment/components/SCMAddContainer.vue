@@ -90,7 +90,7 @@ Once container is valid then samples are added
           <validation-provider v-show="!puck" tag="div" class="pcr plate tw-mb-2 tw-py-2" rules="required" name="BARCODE" v-slot="{ errors }">  <sw-text-input
               label="Barcode"
               name="BARCODE"
-              v-model="containerState.BARCODE"
+              v-model="containerState.CODE"
               :errorMessage="errors[0]"
               />
           </validation-provider>
@@ -605,7 +605,7 @@ export default {
 
         // Reset container - we may want to add more containers so just reset the name and barcode
         this.containerState.NAME = ''
-        this.containerState.BARCODE = ''
+        this.containerState.CODE = ''
       }, (err) => {
         console.log("Error saving Container: " + err)
         this.$store.commit('add_notification', { message: 'Something went wrong creating this container, please try again', level: 'error'})

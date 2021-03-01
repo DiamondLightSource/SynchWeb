@@ -276,8 +276,9 @@ export default {
       let samples = new Samples(this.samplesCollection.filter(function(m) { return m.get('PROTEINID') > - 1 || m.get('CRYSTALID') > - 1 }))
 
       this.$store.dispatch('saveCollection', {collection: samples}).then( (result) => {
-        console.log("Sample Editor saved collection: " + JSON.stringify(result))
         if (containerId) this.resetSamples(this.samplesCollection.length)
+      }, (err) => {
+        this.$store.commit('add_notification', { message: err.message, level: 'error'})
       })
     },
     // Location should be the sample LOCATION
