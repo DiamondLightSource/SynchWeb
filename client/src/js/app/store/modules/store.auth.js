@@ -115,7 +115,7 @@ const auth = {
             console.log("Logout successful")
             commit('logout')
             commit('setProposal', null)
-            commit('update_user', {})
+            commit('updateUser', {})
             resolve()
           },
           error: function(req, status, error) {
@@ -123,7 +123,7 @@ const auth = {
             console.log("Error returned from logout URL")
             commit('logout')
             commit('setProposal', null)
-            commit('update_user', {})
+            commit('updateUser', {})
             reject()
         }})
       })

@@ -104,7 +104,7 @@ export default {
             // Should probably move this into a combined login store method
             this.$store.dispatch('login', credentials)
             .then(() => {
-                this.$store.dispatch('get_user').then(() => {
+                this.$store.dispatch('getUser').then(() => {
                     this.$router.push(this.redirectUrl)
                 })
             })
