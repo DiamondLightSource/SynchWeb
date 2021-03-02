@@ -95,11 +95,11 @@ const store = new Vuex.Store({
       var prop = sessionStorage.getItem('prop')
       var token = sessionStorage.getItem('token')
 
-      if (token) commit('authSuccess', token)
+      if (token) commit('auth/authSuccess', token)
 
-      const proposalPromise = dispatch('setProposal', prop)
+      const proposalPromise = dispatch('proposal/setProposal', prop)
       const optionsPromise = dispatch('getOptions')
-      const userPromise = dispatch('getUser')
+      const userPromise = dispatch('user/getUser')
 
       return Promise.all([proposalPromise, optionsPromise, userPromise]).then( () => {
         console.log("Store is initialised OK")

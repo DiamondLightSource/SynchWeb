@@ -3,6 +3,7 @@ import ProposalLookup from 'models/proplookup.js'
 import Backbone from 'backbone'
 
 const proposalModule = {
+  namespaced: true,
   state: {
     // Proposal / visit info
     proposal: '',        // The proposal string (e.g. mx12345)
@@ -80,7 +81,7 @@ const proposalModule = {
               },
 
               error: function() {
-                commit('addNotification', { title: 'No such proposal', message: 'The selected proposal ' + prop + ' does not exist', level: 'error' })
+                commit('notifications/addNotification', { title: 'No such proposal', message: 'The selected proposal ' + prop + ' does not exist', level: 'error' })
                 commit('setProposal', null)
                 reject()
               },
@@ -91,7 +92,7 @@ const proposalModule = {
       // Set the proposal based on looking up a collection/contact id
       // The ProposalLookup backbone model actually calls app.cookie which in turn sets the proposal mutation
       //
-      proposal_lookup(state, params) {
+      proposalLookup(state, params) {
         return new Promise((resolve, reject) => {
           let lookup = new ProposalLookup({ field: params.field, value: params.value })
 

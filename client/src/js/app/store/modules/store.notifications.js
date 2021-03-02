@@ -1,5 +1,6 @@
 // Module to deal with Notifications
 const notification = {
+  namespaced: true,
   state: {
     // Notifications and events
     notifications: [],

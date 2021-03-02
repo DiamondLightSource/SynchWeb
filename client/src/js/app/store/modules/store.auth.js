@@ -3,6 +3,7 @@ import Backbone from 'backbone'
 // Module to deal with authentication
 // Should handle any Single sign on requests and deal with login/logout actions
 const auth = {
+  namespaced: true,
   state: {
     type: 'cas',
     cas_sso: false,
@@ -84,7 +85,7 @@ const auth = {
 
     login({state, commit, rootState}, credentials) {
       return new Promise((resolve, reject) => {
-        commit('loading', true)
+        commit('loading', true, { root: true })
 
         Backbone.ajax({
           url: rootState.apiUrl+'/authenticate',
@@ -94,12 +95,12 @@ const auth = {
             const token = resp.jwt
             console.log("Authentication success for " + credentials.login) // Using passed fed id at the moment
             commit('authSuccess', token)
-            commit('loading', false)
+            commit('loading', false, { root: true })
             resolve(resp)
           },
           error: function(req, status, error) {
             commit('authError')
-            commit('loading', false)
+            commit('loading', false, { root: true })
             reject(error)
           }})
         })
@@ -114,16 +115,16 @@ const auth = {
           success: function(resp) {
             console.log("Logout successful")
             commit('logout')
-            commit('setProposal', null)
-            commit('updateUser', {})
+            commit('proposal/setProposal', null)
+            commit('user/updateUser', {})
             resolve()
           },
           error: function(req, status, error) {
             // Even if an error we can set our local properties to logged out
             console.log("Error returned from logout URL")
             commit('logout')
-            commit('setProposal', null)
-            commit('updateUser', {})
+            commit('proposal/setProposal', null)
+            commit('user/updateUser', {})
             reject()
         }})
       })

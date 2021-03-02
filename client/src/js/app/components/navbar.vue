@@ -84,13 +84,13 @@ export default {
 
     computed: {
         proposal: function() {
-            return this.$store.getters.currentProposal
+            return this.$store.getters['proposal/currentProposal']
         },
         isProposalClosed: function() {
-            return this.$store.getters.currentProposalState == 'Closed'
+            return this.$store.getters['proposal/currentProposalState'] == 'Closed'
         },
         isLoggedIn: function() {
-            return this.$store.getters.isLoggedIn
+            return this.$store.getters['auth/isLoggedIn']
         },
         // Only render extra menu if we have a valid proposal
         extras: function() {

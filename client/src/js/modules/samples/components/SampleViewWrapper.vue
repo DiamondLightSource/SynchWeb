@@ -1,11 +1,11 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc"
             :breadcrumb_tags="bc_tags">
         </marionette-view>
@@ -77,13 +77,13 @@ export default {
         //      success: function() {
         // For a model we pass the 'data' query parameters in as options.queryParameters
         if (this.proposalType == 'xpdf') this.queryParams = { seq: 1 }
-        
+
         this.ready = true
     },
     methods: {
         // This method performs a lookup via the store and sets the proposal type based on sample id
         setProposalType: function() {
-            this.$store.dispatch('proposal_lookup', {field: 'BLSAMPLEID', value: this.sid})
+            this.$store.dispatch('proposal/proposalLookup', {field: 'BLSAMPLEID', value: this.sid})
                 .then((val) => {
                     console.log("Proposal Lookup OK - type = " + this.$store.state.proposalType)
                 }, (error) => {

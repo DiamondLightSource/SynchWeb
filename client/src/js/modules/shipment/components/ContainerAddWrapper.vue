@@ -1,11 +1,11 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>
     </section>
@@ -88,14 +88,14 @@ export default {
                     error: function() {
                         reject({msg: 'The specified dewar could not be found'})
                     },
-                })   
+                })
 
             })
         },
     },
     beforeRouteEnter: (to, from, next) => {
       // Lookup the proposal first to make sure we can still add to it
-      store.dispatch('proposal_lookup', { field: 'DEWARID', value: to.params.did })
+      store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: to.params.did })
       .then((response) => {
         console.log("Proposal lookup response: " + JSON.stringify(response))
           // Make sure we can still add items to this proposal

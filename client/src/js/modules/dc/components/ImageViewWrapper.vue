@@ -1,11 +1,11 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>
     </section>
@@ -65,7 +65,7 @@ export default {
         }, (error) => {
             console.log(this.$options.name + " Error getting model " + error.msg)
             app.alert({ title: 'No such data collection', message: error.msg})
-        }).finally( () => { 
+        }).finally( () => {
             // Only render when complete
             this.$store.commit('loading', false)
             this.ready = true
@@ -75,7 +75,7 @@ export default {
     methods: {
         // This method performs a lookup via the store and sets the proposal type based on sample id
         setProposal: function() {
-            this.$store.dispatch('proposal_lookup', { field: 'DATACOLLECTIONID', value: this.id } )
+            this.$store.dispatch('proposal/proposalLookup', { field: 'DATACOLLECTIONID', value: this.id } )
                 .then((val) => {
                     console.log(this.$options.name + " Proposal Lookup OK - type = " + this.currentProposalType)
                 }, (error) => {

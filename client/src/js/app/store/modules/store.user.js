@@ -3,6 +3,7 @@ import Backbone from 'backbone'
 // Module to store information about a logged in user
 // Manages their authentication and permissions information
 const user = {
+  namespaced: true,
   state: {
     userName: '',
     isStaff: false,

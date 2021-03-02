@@ -39,9 +39,9 @@ export default {
       }
     },
     computed: {
-        isLoggedIn : function(){ return this.$store.getters.isLoggedIn},
-        isStaff : function(){ return this.$store.getters.isStaff},
-        currentProposal : function(){ return this.$store.getters.currentProposal},
+        isLoggedIn : function(){ return this.$store.getters['auth/isLoggedIn']},
+        isStaff : function(){ return this.$store.getters['user/isStaff']},
+        currentProposal : function(){ return this.$store.getters['proposal/currentProposal']},
         ssoUrl: function() {
           return this.$store.sso_url + '/cas/login?service='+encodeURIComponent(window.location.href)
         },
@@ -49,14 +49,14 @@ export default {
           // filter the list of staff menus based on their permissions
           let menus = this.staff_menus.filter( item => {
             if (!item.permission) return item
-            else return (this.$store.getters.hasPermission(item.permission))
+            else return (this.$store.getters['user/hasPermission'](item.permission))
           }, this)
           return menus
         }
     },
     methods: {
       logout: function () {
-        this.$store.dispatch('logout')
+        this.$store.dispatch('auth/logout')
         .then(() => {
           if (this.$store.sso) this.$router.replace(this.$store.sso_url+'/cas/logout')
           else this.$router.push('/')
@@ -79,7 +79,7 @@ export default {
 }
 </script>
 
-<!-- 
+<!--
   Header styles are only used within this component so css can be here.
   Example shows use of tailwind directives which can be chained together but show on separate lines for readability.
   Site logo can be customised by editing tailwind.config.js site-logo property.

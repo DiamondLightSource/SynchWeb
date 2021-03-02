@@ -111,7 +111,7 @@ export default {
       getMenuType: function(menuType) {
         var menu = []
         // On logout we seem to lose the getMenus getter...?
-        var legacyMenu = this.$store.getters.getMenu(menuType) || null
+        var legacyMenu = this.$store.getters['menu/getMenu'](menuType) || null
 
         // If nothing found return an empty menu
         if (legacyMenu === null) { console.log(this.$options.name + " Warning menu not found (" + menuType + ")"); return menu }

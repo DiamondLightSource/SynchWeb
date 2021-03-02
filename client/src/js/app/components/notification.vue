@@ -44,14 +44,14 @@ components: {
 
             setTimeout(function() {
                 ids.forEach(element => {
-                    self.$store.commit('clearNotification', element)
+                    self.$store.commit('notifications/clearNotification', element)
                 })
             }, 5000)
         }
     },
     computed: {
         notifications: function() {
-            return this.$store.getters.notifications
+            return this.$store.getters['notifications/notifications']
         },
     },
 }

@@ -1,11 +1,11 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>
     </section>
@@ -77,7 +77,7 @@ export default {
             console.log("Container model is plate: " + isPlate)
             if (isPlate) {
                 this.mview = ContainerPlateView
-                this.params = { iid: this.iid, sid: this.sid } 
+                this.params = { iid: this.iid, sid: this.sid }
             } else {
                 this.mview = ContainerViewMap[this.proposalType] ? ContainerViewMap[this.proposalType].view : ContainerViewMap['default'].view
             }
@@ -93,7 +93,7 @@ export default {
     methods: {
         // This method performs a lookup via the store and sets the proposal type based on sample id
         setProposalType: function() {
-            this.$store.dispatch('proposal_lookup', {field: 'CONTAINERID', value: this.cid})
+            this.$store.dispatch('proposal/proposalLookup', {field: 'CONTAINERID', value: this.cid})
                 .then((val) => {
                     console.log("Proposal Lookup OK - type = " + this.$store.state.proposal.proposalType)
                 }, (error) => {
@@ -118,7 +118,7 @@ export default {
                     error: function() {
                         reject({msg: 'The specified container could not be found'})
                     },
-                })   
+                })
 
             })
         },
@@ -141,7 +141,7 @@ export default {
     },
     beforeRouteEnter: function(to, from, next) {
       // Lookup the proposal first to make sure we can still add to it
-      store.dispatch('proposal_lookup', { field: 'CONTAINERID', value: to.params.cid })
+      store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
       .then((response) => {
           console.log("Proposal Lookup OK - type = " + store.state.proposalType)
           next()

@@ -155,7 +155,7 @@ var MarionetteApplication = (function () {
             application.cookie = function(prop, callbackFn) {
                 console.log("Saving proposal from legacy cookie fn")
 
-                store.dispatch('setProposal', prop)
+                store.dispatch('proposal/setProposal', prop)
 
                 if (callbackFn && callbackFn instanceof Function) {
                     callbackFn()
@@ -165,14 +165,14 @@ var MarionetteApplication = (function () {
             application.user_can = function(perm) {
                 console.log("CHECK USER PERMISSIONS LIST " + JSON.stringify(store.getters.permissions))
                 console.log("CHECK USER PERMISSIONS FOR " + perm)
-                return store.getters.permissions.indexOf(perm) > -1
+                return store.getters['user/permissions'].indexOf(perm) > -1
             }
 
             // Method to retrieve user information
             // Don't think we need this as we can load from login component
             application.getuser = function(options) {
-                if (store.isLoggedIn) {
-                    store.dispatch('getUser', options)
+                if (store.getters['auth/isLoggedIn']) {
+                    store.dispatch('user/getUser', options)
                 }
             }
 
@@ -185,14 +185,14 @@ var MarionetteApplication = (function () {
 
                 var payload = {message: options.message, title: options.title, persist: options.persist, level: options.level || level}
 
-                store.commit('addNotification', payload)
+                store.commit('notifications/addNotification', payload)
             }
 
             // Options.level is not commonly used in code.
             // Handled here for future use
             application.message = function(options) {
                 var payload = {message: options.message, title: options.title, persist: options.persist, level: options.level || 'success'}
-                store.commit('addNotification', payload)
+                store.commit('notifications/addNotification', payload)
             }
 
             application.loading = function(status=true) {
@@ -204,8 +204,8 @@ var MarionetteApplication = (function () {
                 // app.content.show(new LoginView())
                 // We have experienced an error and need to login again
                 // Message login session has expired...
-                store.commit('addNotification', {message: 'Authentication session has expired, please login again', level: 'error'})
-                store.dispatch('logout')
+                store.commit('notifications/addNotification', {message: 'Authentication session has expired, please login again', level: 'error'})
+                store.dispatch('auth/logout')
                 // Calling mapped function as we don't have a handle to the router in this method
                 application.navigate('/login')
             }

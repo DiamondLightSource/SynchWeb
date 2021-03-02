@@ -8,6 +8,7 @@ import TomoMenu from 'modules/types/tomo/menu.js'
 import XpdfMenu from 'modules/types/xpdf/menu.js'
 
 const menuStore = {
+    namespaced: true,
     state: () => ({
       menus: {
         'em': EmMenu,
