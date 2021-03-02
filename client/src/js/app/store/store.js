@@ -97,7 +97,7 @@ const store = new Vuex.Store({
 
       if (token) commit('authSuccess', token)
 
-      const proposalPromise = dispatch('set_proposal', prop)
+      const proposalPromise = dispatch('setProposal', prop)
       const optionsPromise = dispatch('get_options')
       const userPromise = dispatch('get_user')
 

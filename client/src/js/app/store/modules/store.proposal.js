@@ -15,7 +15,7 @@ const proposalModule = {
     // Proposal and visit information
     //
     // Save backbone proposal model - set from action that retrieves model from server
-    set_proposal_model(state, model) {
+    setProposalModel(state, model) {
       // Needs to be a backbone model as we use get methods
       if (model instanceof Backbone.Model) {
         state.proposalModel = model
@@ -28,7 +28,7 @@ const proposalModule = {
       }
     },
     // proposal is a string representation of the currently selected proposal - used heavily in code
-    set_proposal(state, prop) {
+    setProposal(state, prop) {
       if (prop) {
         state.proposal = prop
         sessionStorage.setItem('prop', prop)
@@ -40,48 +40,48 @@ const proposalModule = {
       app.prop = state.proposal
     },
     // Code for the proposal type (mx, xpdf, sm etc.)
-    set_proposal_type(state, proposalType) {
+    setProposalType(state, proposalType) {
       state.proposalType = proposalType
       app.type = state.proposalType
     },
     // Set current visit / session number
-    set_visit(state, visit) {
+    setVisit(state, visit) {
       state.visit = visit
     },
-    clear_visit(state) {
+    clearVisit(state) {
       state.visit = ''
     },
   },
   actions: {
-    set_proposal({commit, state, rootState}, prop) {
+    setProposal({commit, state, rootState}, prop) {
         return new Promise((resolve, reject) => {
           // Only fetch a new model if this one is different from what we have already
           if (prop == state.proposal) { resolve(); return }
           // If null reset (e.g. navigated back to home page)
           if (!prop) {
-            commit('set_proposal', null)
-            commit('set_proposal_type', rootState.user.defaultType)
-            commit('set_proposal_model', null)
+            commit('setProposal', null)
+            commit('setProposalType', rootState.user.defaultType)
+            commit('setProposalModel', null)
             resolve()
             return
           }
           // Otherwise fetch an updated model
           // If we don't do this now - the ProposalModel appends the old proposal code onto the request
-          commit('set_proposal', prop)
+          commit('setProposal', prop)
 
           let proposalModel = new Proposal({ PROPOSAL: prop })
 
           proposalModel.fetch({
               success: function() {
                 let proposalType = proposalModel.get('TYPE')
-                commit('set_proposal_type', proposalType)
-                commit('set_proposal_model', proposalModel)
+                commit('setProposalType', proposalType)
+                commit('setProposalModel', proposalModel)
                 resolve()
               },
 
               error: function() {
                 commit('addNotification', { title: 'No such proposal', message: 'The selected proposal ' + prop + ' does not exist', level: 'error' })
-                commit('set_proposal', null)
+                commit('setProposal', null)
                 reject()
               },
           })

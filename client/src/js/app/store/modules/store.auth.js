@@ -114,7 +114,7 @@ const auth = {
           success: function(resp) {
             console.log("Logout successful")
             commit('logout')
-            commit('set_proposal', null)
+            commit('setProposal', null)
             commit('update_user', {})
             resolve()
           },
@@ -122,7 +122,7 @@ const auth = {
             // Even if an error we can set our local properties to logged out
             console.log("Error returned from logout URL")
             commit('logout')
-            commit('set_proposal', null)
+            commit('setProposal', null)
             commit('update_user', {})
             reject()
         }})

@@ -73,7 +73,7 @@ export default {
         let self = this
         // Reset proposal and associated type/model
         // We call the action so the store can handle the proposal type and model
-        this.$store.dispatch('set_proposal', null)
+        this.$store.dispatch('setProposal', null)
         EventBus.$emit('bcChange', [{title: '/', url: '/'}])
 
         if (this.$store.getters.isLoggedIn) {

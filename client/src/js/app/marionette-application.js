@@ -155,7 +155,7 @@ var MarionetteApplication = (function () {
             application.cookie = function(prop, callbackFn) {
                 console.log("Saving proposal from legacy cookie fn")
 
-                store.dispatch('set_proposal', prop)
+                store.dispatch('setProposal', prop)
 
                 if (callbackFn && callbackFn instanceof Function) {
                     callbackFn()

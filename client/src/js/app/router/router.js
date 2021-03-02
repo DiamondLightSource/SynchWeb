@@ -139,8 +139,8 @@ router.beforeEach((to, from, next) => {
             next({
               path: '/login',
               query: { redirect: to.fullPath }
-            })  
-          }  
+            })
+          }
       } else {
         // Move this to separate authenticated function handler
         // Current prop
@@ -148,13 +148,13 @@ router.beforeEach((to, from, next) => {
         if (from.path === '/') {
           // Then we are arriving at a new page
           let pathProp = application.parseQuery(to.path)
-          // If path has a prop in it - pass to set_proposal
+          // If path has a prop in it - pass to setProposal
           // If not use the current proposal to keep the logic consistent
           console.log('Parsed new query = ' + pathProp)
           if (pathProp) prop = pathProp
         }
         // This will only set a new proposal if its different from what we have
-        const setProposal = store.dispatch('set_proposal', prop)
+        const setProposal = store.dispatch('setProposal', prop)
         const logPath = store.dispatch('log', to.path)
 
         Promise.all([setProposal, logPath]).finally( () => {
@@ -163,9 +163,9 @@ router.beforeEach((to, from, next) => {
 
           if (permissionOk) next()
           else {
-            application.message({ title: 'Access Denied', message: 'You do not have access to that page' })     
+            application.message({ title: 'Access Denied', message: 'You do not have access to that page' })
             next({path: '/403', query: { url: to.fullPath, prev: from.path}})
-          }  
+          }
         })
       }
     })
