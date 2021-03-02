@@ -172,7 +172,7 @@ var MarionetteApplication = (function () {
             // Don't think we need this as we can load from login component
             application.getuser = function(options) {
                 if (store.isLoggedIn) {
-                    store.dispatch('get_user', options)
+                    store.dispatch('getUser', options)
                 }
             }
 
