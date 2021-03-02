@@ -90,12 +90,12 @@ const store = new Vuex.Store({
       let application = MarionetteApplication.getInstance()
 
       application.initStateMapping(store)
-      
+
       // Get any stored value from sessionStorage and set the app object
       var prop = sessionStorage.getItem('prop')
       var token = sessionStorage.getItem('token')
-      
-      if (token) commit('auth_success', token)
+
+      if (token) commit('authSuccess', token)
 
       const proposalPromise = dispatch('set_proposal', prop)
       const optionsPromise = dispatch('get_options')
@@ -110,7 +110,7 @@ const store = new Vuex.Store({
         reject()
       })
     },
-    
+
     get_options({commit}) {
         let options = new Options()
 
@@ -125,7 +125,7 @@ const store = new Vuex.Store({
             error: function() {
               console.log("Error getting options - no authentication information available")
               reject(false)
-            },  
+            },
           })
         })
     },

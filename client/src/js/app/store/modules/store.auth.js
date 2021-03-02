@@ -13,13 +13,13 @@ const auth = {
       //
       // Authorisation status
       //
-      auth_success(state, token){
+      authSuccess(state, token){
         state.token = token
         sessionStorage.setItem('token', token)
         // Preserve legacy app
         app.token = state.token
       },
-      auth_error(state){
+      authError(state){
         console.log("store.auth - error trying to authenticate")
         state.token = ''
         sessionStorage.removeItem('token')
@@ -32,11 +32,11 @@ const auth = {
         sessionStorage.removeItem('token')
         // Preserve legacy app
         delete app.token
-      },      
+      },
   },
   actions: {
-    check_auth({state, rootState}, ticket) {
-      console.log("Store check_auth Ticket: " + ticket)
+    checkAuth({state, rootState}, ticket) {
+      console.log("Store checkAuth Ticket: " + ticket)
       return new Promise( (resolve) => {
         // If we have a token return
         if (state.token) resolve(true)
@@ -47,10 +47,10 @@ const auth = {
               success: function(response) {
                 console.log("Store check_auth success: " + JSON.stringify(response))
                 const token = response.jwt
-                commit('auth_success', token)
+                commit('authSuccess', token)
                 resolve(true)
               },
-              error: function(response) { 
+              error: function(response) {
                 console.log("Store check auth warning - no previous session")
                 resolve(false)
               }
@@ -71,10 +71,10 @@ const auth = {
             success: function(response) {
               console.log("Store validate success: " + JSON.stringify(response))
               const token = response.jwt
-              commit('auth_success', token)
+              commit('authSuccess', token)
               resolve(true)
             },
-            error: function(response) { 
+            error: function(response) {
               console.log("Store validate warning - no previous session")
               resolve(false)
             }
@@ -93,12 +93,12 @@ const auth = {
           success: function(resp) {
             const token = resp.jwt
             console.log("Authentication success for " + credentials.login) // Using passed fed id at the moment
-            commit('auth_success', token)
+            commit('authSuccess', token)
             commit('loading', false)
             resolve(resp)
           },
           error: function(req, status, error) {
-            commit('auth_error')
+            commit('authError')
             commit('loading', false)
             reject(error)
           }})
