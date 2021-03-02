@@ -52,7 +52,7 @@ export default {
             redirectUrl: '/current'
         }
     },
-    
+
     computed: {
         sso: function() {
             return this.$store.getters.sso
@@ -112,7 +112,7 @@ export default {
                 // The error for invalid login is not particularly helpful - just a generic 400
                 // When it becomes more helpful we could pass it to the notification
                 console.log(err)
-                this.$store.commit('add_notification', {title: 'Login Error', message: 'Please check you have correct username and password', level: 'error'})
+                this.$store.commit('addNotification', {title: 'Login Error', message: 'Please check you have correct username and password', level: 'error'})
             })
 
         },

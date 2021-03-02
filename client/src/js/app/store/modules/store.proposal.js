@@ -50,7 +50,7 @@ const proposalModule = {
     },
     clear_visit(state) {
       state.visit = ''
-    },      
+    },
   },
   actions: {
     set_proposal({commit, state, rootState}, prop) {
@@ -70,7 +70,7 @@ const proposalModule = {
           commit('set_proposal', prop)
 
           let proposalModel = new Proposal({ PROPOSAL: prop })
-  
+
           proposalModel.fetch({
               success: function() {
                 let proposalType = proposalModel.get('TYPE')
@@ -80,21 +80,21 @@ const proposalModule = {
               },
 
               error: function() {
-                commit('add_notification', { title: 'No such proposal', message: 'The selected proposal ' + prop + ' does not exist', level: 'error' })
+                commit('addNotification', { title: 'No such proposal', message: 'The selected proposal ' + prop + ' does not exist', level: 'error' })
                 commit('set_proposal', null)
                 reject()
               },
           })
         })
       },
-      // 
+      //
       // Set the proposal based on looking up a collection/contact id
       // The ProposalLookup backbone model actually calls app.cookie which in turn sets the proposal mutation
-      // 
+      //
       proposal_lookup(state, params) {
         return new Promise((resolve, reject) => {
           let lookup = new ProposalLookup({ field: params.field, value: params.value })
-          
+
           lookup.find({
               success: function() {
                 // If ok then ProposalLookup has set a new proposal for us

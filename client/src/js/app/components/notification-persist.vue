@@ -34,12 +34,12 @@ export default {
     watch: {
         $route (to, from){
             //Reset persist message
-            this.$store.commit('clear_persist_notification')
+            this.$store.commit('clearPersistNotification')
         }
     },
     methods: {
         onClose: function() {
-            this.$store.commit('clear_persist_notification')
+            this.$store.commit('clearPersistNotification')
         }
     }
 }

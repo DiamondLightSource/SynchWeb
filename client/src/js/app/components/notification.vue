@@ -44,7 +44,7 @@ components: {
 
             setTimeout(function() {
                 ids.forEach(element => {
-                    self.$store.commit('clear_notification', element)
+                    self.$store.commit('clearNotification', element)
                 })
             }, 5000)
         }
