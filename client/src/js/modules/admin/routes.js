@@ -64,7 +64,7 @@ function lookupProposal(params) {
         let proposal = new Proposal({ PROPOSAL: params.prop })
 
         proposal.fetch({
-            // If OK trigger next 
+            // If OK trigger next
             success: function(model) {
               console.log("Admin proposal model lookup OK")
               resolve(model)
@@ -73,7 +73,7 @@ function lookupProposal(params) {
             error: function() {
                 reject({msg: "Admin proposal model lookup failed"})
             }
-        })    
+        })
     })
 }
 
@@ -116,7 +116,7 @@ const routes = [
                         model: new Group({USERGROUPID: route.params.gid})
                     }
                 }),
-            }        
+            }
         ]
     },
     // Routes to manage proposals and visits/sessions
@@ -189,9 +189,9 @@ const routes = [
                         // Either set the module proposalModel or save within the VueX store
                         // If we change to use the store the above options.proposal would need to change
                         proposalModel = response
-                        // store.commit('save_model', {name: 'admin-proposal', model: response})
+                        // store.commit('saveBackboneModel', {name: 'admin-proposal', model: response})
                         next()
-                    }, (error) => { 
+                    }, (error) => {
                         console.log(error.msg)
                         next('/notfound')
                     }).finally( () => {

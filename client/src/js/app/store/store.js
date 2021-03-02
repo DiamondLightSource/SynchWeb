@@ -41,14 +41,14 @@ const store = new Vuex.Store({
   },
   mutations: {
     // For future use - save a model to a specified name
-    save_model(state, payload) {
+    saveBackboneModel(state, payload) {
       console.log("Saving model " + payload.name + " = " + JSON.stringify(payload.model))
       if (payload.model) {
         Vue.set(state.models, payload.name, payload.model)
       }
     },
 
-    set_options(state, options) {
+    setOptions(state, options) {
       console.log("STORE UPDATING OPTIONS SSO: " + JSON.stringify(options))
 
       state.auth.type = options.get('authentication_type')
@@ -62,7 +62,7 @@ const store = new Vuex.Store({
 
       app.options = options
     },
-    set_help(state, helpFlag) {
+    setHelp(state, helpFlag) {
       state.help = helpFlag ? true : false
       sessionStorage.setItem('ispyb_help', state.help)
     },
@@ -98,8 +98,8 @@ const store = new Vuex.Store({
       if (token) commit('authSuccess', token)
 
       const proposalPromise = dispatch('setProposal', prop)
-      const optionsPromise = dispatch('get_options')
-      const userPromise = dispatch('get_user')
+      const optionsPromise = dispatch('getOptions')
+      const userPromise = dispatch('getUser')
 
       return Promise.all([proposalPromise, optionsPromise, userPromise]).then( () => {
         console.log("Store is initialised OK")
@@ -111,14 +111,14 @@ const store = new Vuex.Store({
       })
     },
 
-    get_options({commit}) {
+    getOptions({commit}) {
         let options = new Options()
 
         return new Promise((resolve, reject) => {
           options.fetch({
             data: { t: new Date().getTime() },
             success: function() {
-              commit('set_options', options)
+              commit('setOptions', options)
               resolve(true)
             },
 

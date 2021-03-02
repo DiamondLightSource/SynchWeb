@@ -40,10 +40,8 @@ const user = {
         // If not already logged in - return false
         // Not an error, we just don't need to request user info
         if (!rootState.auth.token) {
-          console.log("store.auth GET_USER - we are not logged in ");
           resolve(false)
         } else {
-          console.log("store.auth GET_USER - we are logged in ");
 
           Backbone.ajax({
             url: rootState.apiUrl+'/users/current',
