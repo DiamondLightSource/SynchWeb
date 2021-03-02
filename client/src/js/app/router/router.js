@@ -121,7 +121,7 @@ router.beforeEach((to, from, next) => {
     // Moved this here so we don't get effectively logged out from a bad link
     if (to.matched.length === 0) { next('/notfound?url='+to.fullPath); return }
 
-    store.dispatch('check_auth').then( (authenticated) => {
+    store.dispatch('checkAuth').then( (authenticated) => {
       if (!authenticated) {
         // Move this to separate unauthenticated function handler
         if (to.query['ticket']) {

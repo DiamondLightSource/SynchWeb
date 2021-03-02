@@ -124,7 +124,7 @@ export default {
                 let url = this.redirectUrl
                 console.log("Login should be Redirecting to CAS: " + url)
 
-                this.$store.dispatch('check_auth').then( (authenticated) => {
+                this.$store.dispatch('checkAuth').then( (authenticated) => {
                     console.log("Check Auth OK: " + authenticated)
                     if (!authenticated) this.$router.replace(url)
                 })

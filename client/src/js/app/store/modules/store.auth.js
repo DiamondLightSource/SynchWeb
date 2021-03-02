@@ -45,7 +45,7 @@ const auth = {
               url: rootState.apiUrl+'/authenticate/check',
               type: 'GET',
               success: function(response) {
-                console.log("Store check_auth success: " + JSON.stringify(response))
+                console.log("Store checkAuth success: " + JSON.stringify(response))
                 const token = response.jwt
                 commit('authSuccess', token)
                 resolve(true)
