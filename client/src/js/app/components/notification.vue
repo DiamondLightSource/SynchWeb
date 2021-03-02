@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import NotificationCard from 'app/components/notification_card.vue'
+import NotificationCard from 'app/components/notification-card.vue'
 
 export default {
     name: 'Notification',
@@ -44,7 +44,7 @@ components: {
 
             setTimeout(function() {
                 ids.forEach(element => {
-                    self.$store.commit('clear_notification', element)   
+                    self.$store.commit('clear_notification', element)
                 })
             }, 5000)
         }

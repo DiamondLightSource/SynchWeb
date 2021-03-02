@@ -13,7 +13,7 @@
         <sidebar-menu :proposalMenu="proposalMenu" :extrasMenu="extraMenu"/>
     </div>
 
-    <!-- 
+    <!--
       Main panel to store proposal menu, messages and content
       Sets the main width of the content area on screen
     -->
@@ -30,8 +30,8 @@
         </div>
     </div>
 
-    <!-- 
-      Wrapping dialog box region in a component. In future we can redesign this 
+    <!--
+      Wrapping dialog box region in a component. In future we can redesign this
       For now it just registers the region and works with existing marionette views
     -->
     <dialog-box></dialog-box>
@@ -43,7 +43,6 @@
 
 
 <script>
-import Backbone from 'backbone'
 import Header from 'app/components/header.vue'
 import Footer from 'app/components/footer.vue'
 import Sidebar from 'app/components/sidebar.vue'
@@ -51,10 +50,10 @@ import Navbar from 'app/components/navbar.vue'
 import Breadcrumbs from 'app/components/breadcrumbs.vue'
 import Motd from 'app/components/motd.vue'
 import Notification from 'app/components/notification.vue'
-import NotificationPersist from 'app/components/notification_persist.vue'
+import NotificationPersist from 'app/components/notification-persist.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import Dialog from 'app/components/dialogbox.vue'
-import SearchMobile from 'app/components/search_mobile.vue'
+import SearchMobile from 'app/components/search-mobile.vue'
 
 import { mapState } from 'vuex'
 
@@ -113,7 +112,7 @@ export default {
         var menu = []
         // On logout we seem to lose the getMenus getter...?
         var legacyMenu = this.$store.getters.getMenu(menuType) || null
-        
+
         // If nothing found return an empty menu
         if (legacyMenu === null) { console.log(this.$options.name + " Warning menu not found (" + menuType + ")"); return menu }
 
@@ -125,7 +124,7 @@ export default {
             var permission = legacyMenu[key]['permission'] ? legacyMenu[key]['permission'] : ''
 
             var item = {link: key, name: title, icon: icon, permission: permission}
-            
+
             menu.push(item)
           })
         } else {
@@ -135,7 +134,7 @@ export default {
             menu.push(item)
           })
         }
-        
+
         return menu
       },
     },

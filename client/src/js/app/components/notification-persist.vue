@@ -1,4 +1,4 @@
-<!-- 
+<!--
 This panel shows a short message that should persist on the main page
 For example when a new container is created, the message can include a link to go to the new container
 When the navigation changes, the persistent notification will be reset via the watcher
@@ -14,7 +14,7 @@ When the navigation changes, the persistent notification will be reset via the w
 </template>
 
 <script>
-import NotificationCard from 'app/components/notification_card.vue'
+import NotificationCard from 'app/components/notification-card.vue'
 
 export default {
     name: 'notification-persist',
