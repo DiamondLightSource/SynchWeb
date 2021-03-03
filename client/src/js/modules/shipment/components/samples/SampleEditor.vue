@@ -62,6 +62,7 @@ const INITIAL_SAMPLE_STATE = {
   PURIFICATIONCOLUMNID: '',
   ROBOTPLATETEMPERATURE: '',
   EXPOSURETEMPERATURE: '',
+  EXPERIMENTTYPEID: '',
   CODE: '',
   SPACEGROUP: '',
   COMMENTS: '',
@@ -257,29 +258,33 @@ export default {
     onSaveSamples: function(containerId) {
       // Iterate through our JSON representation of the samples list,
       // for those with a valid (non-zero) protein id set the corresponding collection data
-      // We actually don't use the return value, merely use the map to iterate through the array
-      // Also used by plate editor to update samples if changed
-      if (containerId) {
-        // New samples added
-        this.samples.map(s => {
-          s.CONTAINERID = containerId
-          let locationIndex = +(s.LOCATION - 1)
-          let proteinId = +s.PROTEINID
-          if (proteinId > 0 && s.NAME != '') {
-            this.samplesCollection.at(locationIndex).set(s)
-            return s
-          }
-        })
-      }
 
-      console.log("Sample editor samples COLLECTION: " + JSON.stringify(this.samplesCollection.toJSON()))
+      // If no container id we can't correctly add the new samples to the container
+      if (!containerId) return
+
+      // New samples added
+      // We actually don't use the return value, merely use the map to iterate through the array, setting the collection sample
+      this.samples.map(s => {
+        s.CONTAINERID = containerId
+        let locationIndex = +(s.LOCATION - 1)
+        let proteinId = +s.PROTEINID
+        if (proteinId > 0 && s.NAME != '') {
+          this.samplesCollection.at(locationIndex).set(s)
+          return s
+        }
+      })
+
+      // Now filter for those with valid protein/crystal ids
       let samples = new Samples(this.samplesCollection.filter(function(m) { return m.get('PROTEINID') > - 1 || m.get('CRYSTALID') > - 1 }))
 
-      this.$store.dispatch('saveCollection', {collection: samples}).then( (result) => {
-        if (containerId) this.resetSamples(this.samplesCollection.length)
-      }, (err) => {
-        this.$store.commit('notifications/addNotification', { message: err.message, level: 'error'})
-      })
+      if (samples.length > 0) {
+        this.$store.dispatch('saveCollection', {collection: samples}).then( () => {
+          // If we have a container id we are creating all samples
+          this.resetSamples(this.samplesCollection.length)
+        }, (err) => {
+          this.$store.commit('notifications/addNotification', { message: err.message, level: 'error'})
+        })
+      } else console.log("SampleEditor: No samples to add...")
     },
     // Location should be the sample LOCATION
     onSaveSample: function(location) {

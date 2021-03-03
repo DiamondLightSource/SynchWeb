@@ -261,6 +261,7 @@ const INITIAL_SAMPLE_STATE = {
   LOCATION: '',
   ROBOTPLATETEMPERATURE: '',
   EXPOSURETEMPERATURE: '',
+  EXPERIMENTTYPEID: '',
   valid: false,
 }
 
@@ -336,7 +337,6 @@ export default {
       // The dewar that this container will belong to
       dewar: null,
 
-      experimentType: '',
       experimentTypes: [],
       experimentTypesCollection: null,
 
@@ -541,7 +541,7 @@ export default {
     })
     this.$store.dispatch('getCollection', this.experimentTypesCollection).then( (result) => {
       this.experimentTypes = result.toJSON()
-      this.experimentType = this.experimentTypes.length ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
+      this.containerState.EXPERIMENTTYPEID = this.experimentTypes.length ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
     })
     this.$store.dispatch('getCollection', containerRegistryCollection).then( (result) => {
       this.containerRegistry = result.toJSON()
@@ -570,6 +570,8 @@ export default {
       })
     },
     addContainer: function() {
+      let experimentType = this.experimentTypesCollection.findWhere({EXPERIMENTTYPEID: this.containerState.EXPERIMENTTYPEID})
+
       let containerModel = new Container({
         DEWARID: this.containerState.DEWARID,
         BARCODECHECK: null,
@@ -581,7 +583,7 @@ export default {
         AUTOMATED: this.containerState.AUTOMATED,
         BARCODE: this.containerState.CODE,
         PERSONID: this.containerState.PERSONID,
-        EXPERIMENTTYPE: this.experimentType,
+        EXPERIMENTTYPE: experimentType.get('NAME') || '',
         STORAGETEMPERATURE: this.containerState.STORAGETEMPERATURE,
         COMMENTS: this.containerState.COMMENTS,
         REQUESTEDIMAGERID: "",
