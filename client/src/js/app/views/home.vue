@@ -67,6 +67,9 @@ export default {
         },
         dataCatalogue: function() {
             return Config.data_catalogue
+        },
+        skipHome: function() {
+          return this.$store.state.skipHomePage
         }
     },
     created: function() {
@@ -76,8 +79,10 @@ export default {
         this.$store.dispatch('proposal/setProposal', null)
         EventBus.$emit('bcChange', [{title: '/', url: '/'}])
 
-        if (this.$store.getters['auth/isLoggedIn']) {
+        if (this.isLoggedIn) {
             this.$router.push('current')
+        } else if (this.skipHome) {
+            this.$router.push('/login')
         }
     },
 }
