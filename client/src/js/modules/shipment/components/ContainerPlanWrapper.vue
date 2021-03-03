@@ -1,11 +1,11 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>
     </section>
@@ -47,7 +47,7 @@ export default {
     computed: {
         options: function() {
             return {
-                model: this.model, 
+                model: this.model,
             }
         },
         proposalType : function() {
@@ -89,14 +89,14 @@ export default {
                     error: function() {
                         reject({msg: 'The specified dewar could not be found'})
                     },
-                })   
+                })
 
             })
         },
     },
     beforeRouteEnter: (to, from, next) => {
       // Lookup the proposal first to make sure we can still add to it
-      store.dispatch('proposal_lookup', { field: 'CONTAINERID', value: to.params.cid })
+      store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
       .then((response) => {
           console.log("Proposal lookup response: " + JSON.stringify(response))
           next()

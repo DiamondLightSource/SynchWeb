@@ -219,7 +219,7 @@
     <div class="tw-flex tw-justify-end tw-my-2">
         <span class="r padded_button add_container">
           <span v-if="PROPOSAL_ACTIVE" class="r padded_button add_container">
-            <a class="button" :href="'/containers/add/did/'+currentDewarId"><i class="fa fa-plus"></i> Add Container</a>
+            <router-link class="button" :to="'/containers/add/did/'+currentDewarId"><i class="fa fa-plus"></i> Add Container</router-link>
           </span>
         </span>
     </div>
@@ -419,7 +419,7 @@ export default {
       dewarHistory.id = this.currentDewarId
 
       // Fetch the history and content for these dewars
-      this.$store.dispatch('get_collection', dewarHistory).then( (result) => {
+      this.$store.dispatch('getCollection', dewarHistory).then( (result) => {
         console.log("DEWAR HISTORY: " + JSON.stringify(result))
         this.dewarHistory = result.toJSON()
         this.dewarHistoryTotal = result.state.totalRecords
@@ -438,7 +438,7 @@ export default {
       if (d && (d.get('TRACKINGNUMBERTOSYNCHROTRON') || d.get('TRACKINGNUMBERTOSYNCHROTRON'))) {
           dewartracking.queryParams.DEWARID = did
 
-          this.$store.dispatch('get_collection', dewartracking).then( (result) => {
+          this.$store.dispatch('getCollection', dewartracking).then( (result) => {
             console.log("DEWAR Tracking: " + JSON.stringify(result))
             this.dewarTracking = result.toJSON()
           })
@@ -499,7 +499,7 @@ export default {
       let dewarHistory = new DewarHistory( null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
       dewarHistory.id = this.currentDewarId
 
-      this.$store.dispatch('get_collection', dewarHistory).then( (result) => {
+      this.$store.dispatch('getCollection', dewarHistory).then( (result) => {
         this.dewarHistory = result.toJSON()
         this.dewarHistoryTotal = result.state.totalRecords
       })
@@ -535,7 +535,7 @@ export default {
         url: app.apiurl+'/shipment/pickup/cancel/'+this.model.get('SHIPPINGID'),
         success: function() {
           self.model.set('DELIVERYAGENT_PICKUPCONFIRMATION', null)
-          self.$store.commit('add_notification', { message: 'Pickup Cancelled', level: 'success' })
+          self.$store.commit('notifications/addNotification', { message: 'Pickup Cancelled', level: 'success' })
         },
 
         error: function(xhr, status, error) {
@@ -547,7 +547,7 @@ export default {
                 console.log("Error cancelling pickup?")
               }
             }
-            self.$store.commit('add_notification', { title: 'Pickup Request Failed:', message: json.message, level: 'error' })
+            self.$store.commit('notifications/addNotification', { title: 'Pickup Request Failed:', message: json.message, level: 'error' })
         }
       })
     },
@@ -559,10 +559,10 @@ export default {
         url: app.apiurl+'/shipment/send/'+this.model.get('SHIPPINGID'),
         success: function() {
           self.model.set({ SHIPPINGSTATUS: 'send to DLS' })
-          self.$store.commit('add_notification', { level: 'success', message: 'Shipment successfully marked as sent' })
+          self.$store.commit('notifications/addNotification', { level: 'success', message: 'Shipment successfully marked as sent' })
         },
         error: function() {
-          self.$store.commit('add_notification', { message: 'Something went wrong sending this shipment, please try again', level: 'error' })
+          self.$store.commit('notifications/addNotification', { message: 'Something went wrong sending this shipment, please try again', level: 'error' })
         },
       })
     },
@@ -577,7 +577,7 @@ export default {
       let self = this
       let container = new Container({CONTAINERID: id})
 
-      this.$store.dispatch('get_model', container).then( (result) => {
+      this.$store.dispatch('getModel', container).then( (result) => {
         app.dialog.show(new MoveContainerView({ model: result }))
         app.on('container:moved', function() {
           self.getDewars()
@@ -594,13 +594,13 @@ export default {
     },
 
     getLocalContacts: function() {
-      this.$store.dispatch('get_collection', this.labContactsCollection).then( (result) => {
+      this.$store.dispatch('getCollection', this.labContactsCollection).then( (result) => {
         this.labContacts = result.toJSON()
       })
     },
     // Get the dewars/packages from this shipment
     getDewars: function() {
-      this.$store.dispatch('get_collection', this.dewarsCollection).then( (result) => {
+      this.$store.dispatch('getCollection', this.dewarsCollection).then( (result) => {
         this.dewars = result.toJSON()
         // If this is first time, select the first dewar in the list.
         if (this.currentDewarId == null && this.dewars.length > 0) {
@@ -610,7 +610,7 @@ export default {
       })
     },
     updateDewarContent: function(collection) {
-      this.$store.dispatch('get_collection', collection).then( (result) => {
+      this.$store.dispatch('getCollection', collection).then( (result) => {
         this.containers = result.toJSON()
         this.containersTotal = result.state.totalRecords
       })

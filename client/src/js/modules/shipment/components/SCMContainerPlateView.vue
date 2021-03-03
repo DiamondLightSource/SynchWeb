@@ -204,12 +204,12 @@ export default {
         this.proteinsCollection.queryParams.external = 1
     }
 
-    this.$store.dispatch('get_collection', this.proteinsCollection).then( (result) => {
+    this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
       console.log("Proteins = " + JSON.stringify(result))
     })
 
     let experimentTypesCollection = new ExperimentTypes()
-    this.$store.dispatch('get_collection', experimentTypesCollection).then( (result) => {
+    this.$store.dispatch('getCollection', experimentTypesCollection).then( (result) => {
       console.log("Experiment Types collection: " + result.toJSON())
       this.experimentType = result.findWhere({EXPERIMENTTYPE: this.container.EXPERIMENTTYPE})
     })
@@ -217,7 +217,7 @@ export default {
     // Get the geometry for this container type
     // When backend can get container type by name or id we can make this more efficient
     let containerTypesCollection = new ContainerTypes()
-    this.$store.dispatch('get_collection', containerTypesCollection).then( (result) => {
+    this.$store.dispatch('getCollection', containerTypesCollection).then( (result) => {
       let containerTypeModel = result.findWhere({NAME: this.container.CONTAINERTYPE})
       if (containerTypeModel) this.updateContainerGeometry(containerTypeModel)
       else console.log("Container plate view cant find " + this.container.CONTAINERTYPE)
@@ -240,13 +240,13 @@ export default {
       // Make sure we are getting history for this container
       collection.queryParams.cid = this.containerId
       // Fetch the history and content for this container
-      this.$store.dispatch('get_collection', collection).then( (history) => {
+      this.$store.dispatch('getCollection', collection).then( (history) => {
         this.containerHistory = history.toJSON()
         this.containerHistoryTotal = history.state.totalRecords
       })
     },
     getSamples: function(collection) {
-      this.$store.dispatch('get_collection', collection).then( (result) => {
+      this.$store.dispatch('getCollection', collection).then( (result) => {
         console.log("Container plate view got samples")
         if (result) {
           this.resetSamples(this.container.CAPACITY)

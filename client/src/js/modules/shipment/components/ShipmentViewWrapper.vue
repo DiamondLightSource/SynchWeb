@@ -55,7 +55,7 @@ export default {
 
     this.model = new ShipmentModel({ SHIPPINGID: this.sid })
 
-    this.$store.dispatch('get_model', this.model).then( (model) => {
+    this.$store.dispatch('getModel', this.model).then( (model) => {
       console.log("Shipment View Wrapper got model " + JSON.stringify(model))
       this.setBreadcrumbs()
 

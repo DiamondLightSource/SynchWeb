@@ -3,6 +3,7 @@ import Backbone from 'backbone'
 // Module to deal with authentication
 // Should handle any Single sign on requests and deal with login/logout actions
 const auth = {
+  namespaced: true,
   state: {
     type: 'cas',
     cas_sso: false,
@@ -13,13 +14,13 @@ const auth = {
       //
       // Authorisation status
       //
-      auth_success(state, token){
+      authSuccess(state, token){
         state.token = token
         sessionStorage.setItem('token', token)
         // Preserve legacy app
         app.token = state.token
       },
-      auth_error(state){
+      authError(state){
         console.log("store.auth - error trying to authenticate")
         state.token = ''
         sessionStorage.removeItem('token')
@@ -32,11 +33,11 @@ const auth = {
         sessionStorage.removeItem('token')
         // Preserve legacy app
         delete app.token
-      },      
+      },
   },
   actions: {
-    check_auth({state, rootState}, ticket) {
-      console.log("Store check_auth Ticket: " + ticket)
+    checkAuth({state, rootState}, ticket) {
+      console.log("Store checkAuth Ticket: " + ticket)
       return new Promise( (resolve) => {
         // If we have a token return
         if (state.token) resolve(true)
@@ -45,12 +46,12 @@ const auth = {
               url: rootState.apiUrl+'/authenticate/check',
               type: 'GET',
               success: function(response) {
-                console.log("Store check_auth success: " + JSON.stringify(response))
+                console.log("Store checkAuth success: " + JSON.stringify(response))
                 const token = response.jwt
-                commit('auth_success', token)
+                commit('authSuccess', token)
                 resolve(true)
               },
-              error: function(response) { 
+              error: function(response) {
                 console.log("Store check auth warning - no previous session")
                 resolve(false)
               }
@@ -71,10 +72,10 @@ const auth = {
             success: function(response) {
               console.log("Store validate success: " + JSON.stringify(response))
               const token = response.jwt
-              commit('auth_success', token)
+              commit('authSuccess', token)
               resolve(true)
             },
-            error: function(response) { 
+            error: function(response) {
               console.log("Store validate warning - no previous session")
               resolve(false)
             }
@@ -84,7 +85,7 @@ const auth = {
 
     login({state, commit, rootState}, credentials) {
       return new Promise((resolve, reject) => {
-        commit('loading', true)
+        commit('loading', true, { root: true })
 
         Backbone.ajax({
           url: rootState.apiUrl+'/authenticate',
@@ -93,13 +94,13 @@ const auth = {
           success: function(resp) {
             const token = resp.jwt
             console.log("Authentication success for " + credentials.login) // Using passed fed id at the moment
-            commit('auth_success', token)
-            commit('loading', false)
+            commit('authSuccess', token)
+            commit('loading', false, { root: true })
             resolve(resp)
           },
           error: function(req, status, error) {
-            commit('auth_error')
-            commit('loading', false)
+            commit('authError')
+            commit('loading', false, { root: true })
             reject(error)
           }})
         })
@@ -114,16 +115,16 @@ const auth = {
           success: function(resp) {
             console.log("Logout successful")
             commit('logout')
-            commit('set_proposal', null)
-            commit('update_user', {})
+            commit('proposal/setProposal', null, {root: true})
+            commit('user/updateUser', {}, {root: true})
             resolve()
           },
           error: function(req, status, error) {
             // Even if an error we can set our local properties to logged out
             console.log("Error returned from logout URL")
             commit('logout')
-            commit('set_proposal', null)
-            commit('update_user', {})
+            commit('proposal/setProposal', null, {root: true})
+            commit('user/updateUser', {}, {root: true})
             reject()
         }})
       })

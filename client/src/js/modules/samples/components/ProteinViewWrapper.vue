@@ -1,11 +1,11 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc"
             :breadcrumb_tags="bc_tags">
         </marionette-view>
@@ -60,13 +60,13 @@ export default {
         this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }]
 
         this.model = new Protein({ PROTEINID: this.pid })
-        
+
         this.ready = true
     },
     methods: {
         // This method performs a lookup via the store and sets the proposal type based on sample id
         setProposalType: function() {
-            this.$store.dispatch('proposal_lookup', {field: 'PROTEINID', value: this.pid})
+            this.$store.dispatch('proposal/proposalLookup', {field: 'PROTEINID', value: this.pid})
                 .then((val) => {
                     console.log("Proposal Lookup OK - type = " + this.$store.state.proposalType)
                 }, (error) => {

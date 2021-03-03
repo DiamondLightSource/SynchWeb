@@ -41,28 +41,23 @@ const store = new Vuex.Store({
   },
   mutations: {
     // For future use - save a model to a specified name
-    save_model(state, payload) {
+    saveBackboneModel(state, payload) {
       console.log("Saving model " + payload.name + " = " + JSON.stringify(payload.model))
       if (payload.model) {
         Vue.set(state.models, payload.name, payload.model)
       }
     },
 
-    set_options(state, options) {
-      console.log("STORE UPDATING OPTIONS SSO: " + JSON.stringify(options))
-
+    setOptions(state, options) {
       state.auth.type = options.get('authentication_type')
       state.auth.cas_sso = options.get('cas_sso')
       state.auth.cas_url = options.get('cas_url')
-
-      console.log("Auth sso = " + state.auth.cas_sso)
-      console.log("Auth sso url = " + state.auth.cas_url)
 
       state.motd = options.get('motd') || state.motd
 
       app.options = options
     },
-    set_help(state, helpFlag) {
+    setHelp(state, helpFlag) {
       state.help = helpFlag ? true : false
       sessionStorage.setItem('ispyb_help', state.help)
     },
@@ -70,7 +65,6 @@ const store = new Vuex.Store({
     // Loading screen
     //
     loading(state, status) {
-      console.log("STORE set loading to: " + status)
       state.isLoading = status ? true : false
     },
   },
@@ -81,8 +75,6 @@ const store = new Vuex.Store({
     initialise({dispatch, commit}) {
       // Return immediately if we are already initialised
       if (this.state.initialised) return Promise.resolve(true)
-
-      console.log("Store.initialise")
 
       // May want to set initialised true early to avoid clash with router initialisation
       // this.state.initialised = true
@@ -95,11 +87,11 @@ const store = new Vuex.Store({
       var prop = sessionStorage.getItem('prop')
       var token = sessionStorage.getItem('token')
 
-      if (token) commit('auth_success', token)
+      if (token) commit('auth/authSuccess', token)
 
-      const proposalPromise = dispatch('set_proposal', prop)
-      const optionsPromise = dispatch('get_options')
-      const userPromise = dispatch('get_user')
+      const proposalPromise = dispatch('proposal/setProposal', prop)
+      const optionsPromise = dispatch('getOptions')
+      const userPromise = dispatch('user/getUser')
 
       return Promise.all([proposalPromise, optionsPromise, userPromise]).then( () => {
         console.log("Store is initialised OK")
@@ -111,14 +103,14 @@ const store = new Vuex.Store({
       })
     },
 
-    get_options({commit}) {
+    getOptions({commit}) {
         let options = new Options()
 
         return new Promise((resolve, reject) => {
           options.fetch({
             data: { t: new Date().getTime() },
             success: function() {
-              commit('set_options', options)
+              commit('setOptions', options)
               resolve(true)
             },
 
@@ -136,7 +128,7 @@ const store = new Vuex.Store({
     // Method that returns a collection promise
     // We may need to add further parameters for data queries
     // If so add destructuring to the payload {collection, params,...}
-    get_collection(context, collection) {
+    getCollection(context, collection) {
 
       return new Promise((resolve, reject) => {
         if (!collection) reject(false)
@@ -147,7 +139,6 @@ const store = new Vuex.Store({
           },
 
           error: function() {
-            console.log("Error getting collection")
             reject(false)
           },
         })
@@ -157,7 +148,8 @@ const store = new Vuex.Store({
     // Note this will result in a POST to the server
     // Most backend endpoints do not seem to support PATCH to update collection in one hit
     // In future might need to provide more general sync method for collections
-    // Params: collection is the Backbone collection being saved
+    // Params: collection is the Backbone collection being saved - same signature as saveModel
+    // Example: store.dispatch('saveCollection', {collection: myCollection})
     saveCollection(context, {collection}) {
 
       return new Promise((resolve, reject) => {
@@ -175,7 +167,7 @@ const store = new Vuex.Store({
     },
 
     // Method that returns a collection promise
-    get_model(context, model) {
+    getModel(context, model) {
 
       return new Promise((resolve, reject) => {
         model.fetch({
@@ -194,6 +186,7 @@ const store = new Vuex.Store({
     // Passing an attributes object with parameters will patch the model, rather than post
     // If the backbone model has an "ID" (as defined in it's Model class) and there are no attributes provided,
     // then save will be a PUT request rather than POST request
+    // Example: store.dispatch('saveModel', {model: myModel, attributes: myAttributes})
     saveModel(context, {model, attributes}) {
       // If we have attributes, assume a patch request
       let patch = attributes ? true : false

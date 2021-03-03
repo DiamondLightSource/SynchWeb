@@ -118,7 +118,7 @@ export default {
     this.purificationColumnsCollection = new PurificationColumns()
     this.purificationColumns = []
 
-    this.$store.dispatch('get_collection', this.purificationColumnsCollection).then( (result) => {
+    this.$store.dispatch('getCollection', this.purificationColumnsCollection).then( (result) => {
       console.log("Purification columns collection: " + this.purificationColumnsCollection.toJSON())
       console.log("Purification columns JSON: " + this.purificationColumns)
       this.purificationColumns = result.toJSON()

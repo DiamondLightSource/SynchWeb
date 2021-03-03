@@ -189,7 +189,7 @@ const routes = [
                         // Either set the module proposalModel or save within the VueX store
                         // If we change to use the store the above options.proposal would need to change
                         proposalModel = response
-                        // store.commit('save_model', {name: 'admin-proposal', model: response})
+                        // store.commit('saveBackboneModel', {name: 'admin-proposal', model: response})
                         next()
                     }, (error) => {
                         console.log(error.msg)

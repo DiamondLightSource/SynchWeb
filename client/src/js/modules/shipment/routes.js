@@ -260,7 +260,7 @@ const routes = [
           // TODO - change this for a store method
           // application.loading()
 
-          store.dispatch('proposal_lookup', { field: 'SHIPPINGID', value: to.params.sid } )
+          store.dispatch('proposal/proposalLookup', { field: 'SHIPPINGID', value: to.params.sid } )
             .then( () => {
               console.log("Calling next - Success. model will be prefetched in marionette view")
               next()
@@ -489,7 +489,7 @@ const routes = [
       // Start the loading animation
       app.loading()
 
-      const lookupProposal = store.dispatch('proposal_lookup', { field: 'DEWARID', value: +to.params.did } )
+      const lookupProposal = store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: +to.params.did } )
       const lookupDewarModel = lookupDewar(to.params.did)
 
       Promise.all([lookupProposal, lookupDewarModel]).then( (values) => {
@@ -519,7 +519,7 @@ const routes = [
       // Start the loading animation
       app.loading()
 
-      const lookupProposal = store.dispatch('proposal_lookup', { field: 'DEWARID', value: +to.params.did } )
+      const lookupProposal = store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: +to.params.did } )
 
       const lookupDewarModel = lookupDewar(to.params.did)
 

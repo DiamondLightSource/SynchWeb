@@ -121,14 +121,14 @@ router.beforeEach((to, from, next) => {
     // Moved this here so we don't get effectively logged out from a bad link
     if (to.matched.length === 0) { next('/notfound?url='+to.fullPath); return }
 
-    store.dispatch('check_auth').then( (authenticated) => {
+    store.dispatch('auth/checkAuth').then( (authenticated) => {
       if (!authenticated) {
         // Move this to separate unauthenticated function handler
         if (to.query['ticket']) {
           console.log('Router::beforeEach Detected CAS redirect')
           // Handle CAS redirect
           // Validate ticket
-          store.dispatch('validate', to.query['ticket']).then( () => {
+          store.dispatch('auth/validate', to.query['ticket']).then( () => {
             console.log("Validated ticket...")
           }).finally(() => {
             next(to.path)
@@ -144,17 +144,17 @@ router.beforeEach((to, from, next) => {
       } else {
         // Move this to separate authenticated function handler
         // Current prop
-        let prop = store.getters.currentProposal
+        let prop = store.getters['proposal/currentProposal']
         if (from.path === '/') {
           // Then we are arriving at a new page
           let pathProp = application.parseQuery(to.path)
-          // If path has a prop in it - pass to set_proposal
+          // If path has a prop in it - pass to setProposal
           // If not use the current proposal to keep the logic consistent
           console.log('Parsed new query = ' + pathProp)
           if (pathProp) prop = pathProp
         }
         // This will only set a new proposal if its different from what we have
-        const setProposal = store.dispatch('set_proposal', prop)
+        const setProposal = store.dispatch('proposal/setProposal', prop)
         const logPath = store.dispatch('log', to.path)
 
         Promise.all([setProposal, logPath]).finally( () => {

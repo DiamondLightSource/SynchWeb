@@ -99,7 +99,7 @@ export default {
     this.purificationColumnsCollection = new PurificationColumns()
     this.purificationColumns = []
 
-    this.$store.dispatch('get_collection', this.purificationColumnsCollection).then( (result) => {
+    this.$store.dispatch('getCollection', this.purificationColumnsCollection).then( (result) => {
       this.purificationColumns = result.toJSON()
     })
 

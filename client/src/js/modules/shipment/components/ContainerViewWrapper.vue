@@ -99,7 +99,7 @@ export default {
     methods: {
         // This method performs a lookup via the store and sets the proposal type based on sample id
         setProposalType: function() {
-            this.$store.dispatch('proposal_lookup', {field: 'CONTAINERID', value: this.cid})
+            this.$store.dispatch('proposal/proposalLookup', {field: 'CONTAINERID', value: this.cid})
                 .then((val) => {
                     console.log("Proposal Lookup OK - type = " + this.$store.state.proposal.proposalType)
                 }, (error) => {
@@ -147,7 +147,7 @@ export default {
     },
     beforeRouteEnter: function(to, from, next) {
       // Lookup the proposal first to make sure we can still add to it
-      store.dispatch('proposal_lookup', { field: 'CONTAINERID', value: to.params.cid })
+      store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
       .then((response) => {
           console.log("Proposal Lookup OK - type = " + store.state.proposalType)
           next()

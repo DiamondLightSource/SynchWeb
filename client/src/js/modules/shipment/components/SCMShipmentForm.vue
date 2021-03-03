@@ -223,11 +223,11 @@ export default {
 
     this.getLocalContacts()
 
-    this.$store.dispatch('get_collection', visitsCollection).then( (result) => {
+    this.$store.dispatch('getCollection', visitsCollection).then( (result) => {
       this.visits = result.toJSON()
     })
 
-    this.$store.dispatch('get_collection', dewarRegistryCollection).then( (result) => {
+    this.$store.dispatch('getCollection', dewarRegistryCollection).then( (result) => {
       this.dewars = result.toJSON()
     })
   },
@@ -285,7 +285,7 @@ export default {
         error: function(model, response, options) {
             console.log('failure from shipadd')
             self.$store.commit('loading', false)
-            self.$store.commit('add_notification', { message: 'Something went wrong registering this shipment, please try again', level: 'error'})
+            self.$store.commit('notifications/addNotification', { message: 'Something went wrong registering this shipment, please try again', level: 'error'})
         },
       })
     },
@@ -296,7 +296,7 @@ export default {
     getLocalContacts: function() {
       let labContactsCollection = new LabContactsCollection(null, { state: { pageSize: 9999 } })
 
-      this.$store.dispatch('get_collection', labContactsCollection).then( (result) => {
+      this.$store.dispatch('getCollection', labContactsCollection).then( (result) => {
         this.labContacts = result.toJSON()
       })
     },

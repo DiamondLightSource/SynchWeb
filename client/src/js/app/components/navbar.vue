@@ -1,6 +1,6 @@
 <template>
-    <!-- 
-        Navigation bar which holds proposal menu, extras and feedback/help menu 
+    <!--
+        Navigation bar which holds proposal menu, extras and feedback/help menu
         Was combined with mobile side bar menu but we have split it up so handle login and styles separately
     -->
     <div v-show="isLoggedIn" data-cy="navbar" class="tw-hidden tw-z-20 md:tw-flex md:flex-row tw-bg-sidebar-grad-end tw-justify-center tw-my-4 md:tw-mx-4">
@@ -32,12 +32,12 @@
         <router-link v-for="(item, index) in extras" :key="index" :to="item.link | link" class="md:tw-w-48 tw-py-4 tw-bg-sidebar-grad-end hover:tw-bg-gray-100 tw-border tw-border-gray-400 tw-text-gray-900 tw-text-center tw-text-xs">
             {{item.name}}
         </router-link>
-    
+
         <!-- Spacer element -->
         <div class="tw-flex-1 tw-py-4 tw-bg-sidebar-grad-end tw-border-t tw-border-b tw-border-gray-400">
             <p class="tw-text-gray-900 tw-text-center tw-text-xs"> </p>
         </div>
-    
+
         <!-- Feedback -->
         <router-link to="/feedback" class="md:tw-w-48 tw-py-4 tw-bg-sidebar-grad-end hover:tw-bg-gray-100 tw-border tw-border-gray-400 tw-text-gray-900 tw-text-center tw-text-xs">
             Feedback
@@ -84,13 +84,13 @@ export default {
 
     computed: {
         proposal: function() {
-            return this.$store.getters.currentProposal
+            return this.$store.getters['proposal/currentProposal']
         },
         isProposalClosed: function() {
-            return this.$store.getters.currentProposalState == 'Closed'
+            return this.$store.getters['proposal/currentProposalState'] == 'Closed'
         },
         isLoggedIn: function() {
-            return this.$store.getters.isLoggedIn
+            return this.$store.getters['auth/isLoggedIn']
         },
         // Only render extra menu if we have a valid proposal
         extras: function() {
@@ -119,7 +119,7 @@ export default {
             this.showHelp = !this.showHelp
 
             // Update Store - in future other pages might react
-            this.$store.commit('set_help', this.showHelp)
+            this.$store.commit('setHelp', this.showHelp)
 
             if (this.showHelp) {
                 // Old code set an active class on sidebar but it does not show up

@@ -113,7 +113,7 @@ export default {
     },
     beforeRouteEnter: (to, from, next) => {
       // Lookup the proposal first to make sure we can still add to it
-      store.dispatch('proposal_lookup', { field: 'DEWARID', value: to.params.did })
+      store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: to.params.did })
       .then((response) => {
         console.log("Proposal lookup response: " + JSON.stringify(response))
           // Make sure we can still add items to this proposal

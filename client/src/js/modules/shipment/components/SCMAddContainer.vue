@@ -488,7 +488,7 @@ export default {
         } else {
             delete this.proteinsCollection.queryParams.SAFETYLEVEL;
         }
-        this.$store.dispatch('get_collection', this.proteinsCollection).then( (result) => {
+        this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
           this.proteins = result.toJSON()
         })
         app.trigger('samples:automated', newVal)
@@ -531,7 +531,7 @@ export default {
     this.usersCollection.queryParams.all = 1
     this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
 
-    this.$store.dispatch('get_collection', this.containerTypesCollection).then( (result) => {
+    this.$store.dispatch('getCollection', this.containerTypesCollection).then( (result) => {
       this.containerTypes = result.toJSON()
       // Do we have valid start state?
       if (this.containerTypes.length) {
@@ -539,21 +539,21 @@ export default {
         if (first) this.containerState.CONTAINERTYPEID =  first.get('CONTAINERTYPEID')
       }
     })
-    this.$store.dispatch('get_collection', this.experimentTypesCollection).then( (result) => {
+    this.$store.dispatch('getCollection', this.experimentTypesCollection).then( (result) => {
       this.experimentTypes = result.toJSON()
       this.experimentType = this.experimentTypes.length ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
     })
-    this.$store.dispatch('get_collection', containerRegistryCollection).then( (result) => {
+    this.$store.dispatch('getCollection', containerRegistryCollection).then( (result) => {
       this.containerRegistry = result.toJSON()
       this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
     })
-    this.$store.dispatch('get_collection', this.proteinsCollection).then( (result) => {
+    this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
       this.proteins = result.toJSON()
     })
-    this.$store.dispatch('get_collection', processingPipelinesCollection).then( (result) => {
+    this.$store.dispatch('getCollection', processingPipelinesCollection).then( (result) => {
       this.processingPipelines = result.toJSON()
     })
-    this.$store.dispatch('get_collection', this.usersCollection).then( (result) => {
+    this.$store.dispatch('getCollection', this.usersCollection).then( (result) => {
       this.users = result.toJSON()
       // Set plate owner to current user
       this.containerState.PERSONID = this.$store.state.user.personId
@@ -599,18 +599,22 @@ export default {
         let cid = model.get('CONTAINERID')
         console.log("Container Saved: " + JSON.stringify(result))
         console.log("Container ID = " + cid)
-        this.$store.commit('add_notification', { message: 'New Container created, click <a href=/containers/cid/'+cid+'>here</a> to view it', level: 'info', persist: true})
+        this.$store.commit('notifications/addNotification', { message: 'New Container created, click <a href=/containers/cid/'+cid+'>here</a> to view it', level: 'info', persist: true})
 
         EventBus.$emit('save-samples', cid)
 
         // Reset container - we may want to add more containers so just reset the name and barcode
         this.containerState.NAME = ''
         this.containerState.CODE = ''
+        // Reset state of form
+        this.$refs.observer.reset()
       }, (err) => {
         console.log("Error saving Container: " + err)
-        this.$store.commit('add_notification', { message: 'Something went wrong creating this container, please try again', level: 'error'})
+        this.$store.commit('notifications/addNotification', { message: 'Something went wrong creating this container, please try again', level: 'error'})
       }).finally( () => {
         // this.$store.commit('loading', false)
+        // Test scroll to top
+        window.scrollTo(0,0);
       })
     },
 

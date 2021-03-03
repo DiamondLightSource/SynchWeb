@@ -102,9 +102,9 @@ export default {
 
 
             // Should probably move this into a combined login store method
-            this.$store.dispatch('login', credentials)
+            this.$store.dispatch('auth/login', credentials)
             .then(() => {
-                this.$store.dispatch('get_user').then(() => {
+                this.$store.dispatch('user/getUser').then(() => {
                     this.$router.push(this.redirectUrl)
                 })
             })
@@ -112,7 +112,7 @@ export default {
                 // The error for invalid login is not particularly helpful - just a generic 400
                 // When it becomes more helpful we could pass it to the notification
                 console.log(err)
-                this.$store.commit('add_notification', {title: 'Login Error', message: 'Please check you have correct username and password', level: 'error'})
+                this.$store.commit('notifications/addNotification', {title: 'Login Error', message: 'Please check you have correct username and password', level: 'error'})
             })
 
         },
@@ -124,7 +124,7 @@ export default {
                 let url = this.redirectUrl
                 console.log("Login should be Redirecting to CAS: " + url)
 
-                this.$store.dispatch('check_auth').then( (authenticated) => {
+                this.$store.dispatch('auth/checkAuth').then( (authenticated) => {
                     console.log("Check Auth OK: " + authenticated)
                     if (!authenticated) this.$router.replace(url)
                 })

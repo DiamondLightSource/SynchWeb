@@ -278,7 +278,7 @@ export default {
       this.$store.dispatch('saveCollection', {collection: samples}).then( (result) => {
         if (containerId) this.resetSamples(this.samplesCollection.length)
       }, (err) => {
-        this.$store.commit('add_notification', { message: err.message, level: 'error'})
+        this.$store.commit('notifications/addNotification', { message: err.message, level: 'error'})
       })
     },
     // Location should be the sample LOCATION
