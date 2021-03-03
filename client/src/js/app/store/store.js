@@ -49,14 +49,9 @@ const store = new Vuex.Store({
     },
 
     setOptions(state, options) {
-      console.log("STORE UPDATING OPTIONS SSO: " + JSON.stringify(options))
-
       state.auth.type = options.get('authentication_type')
       state.auth.cas_sso = options.get('cas_sso')
       state.auth.cas_url = options.get('cas_url')
-
-      console.log("Auth sso = " + state.auth.cas_sso)
-      console.log("Auth sso url = " + state.auth.cas_url)
 
       state.motd = options.get('motd') || state.motd
 
@@ -70,7 +65,6 @@ const store = new Vuex.Store({
     // Loading screen
     //
     loading(state, status) {
-      console.log("STORE set loading to: " + status)
       state.isLoading = status ? true : false
     },
   },
@@ -81,8 +75,6 @@ const store = new Vuex.Store({
     initialise({dispatch, commit}) {
       // Return immediately if we are already initialised
       if (this.state.initialised) return Promise.resolve(true)
-
-      console.log("Store.initialise")
 
       // May want to set initialised true early to avoid clash with router initialisation
       // this.state.initialised = true
@@ -131,6 +123,88 @@ const store = new Vuex.Store({
     },
     log({commit}, url) {
       console.log("Store tracking url: " + url)
+    },
+
+    // Method that returns a collection promise
+    // We may need to add further parameters for data queries
+    // If so add destructuring to the payload {collection, params,...}
+    getCollection(context, collection) {
+
+      return new Promise((resolve, reject) => {
+        if (!collection) reject(false)
+
+        collection.fetch({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function() {
+            reject(false)
+          },
+        })
+      })
+    },
+    // Method that creates a new collection
+    // Note this will result in a POST to the server
+    // Most backend endpoints do not seem to support PATCH to update collection in one hit
+    // In future might need to provide more general sync method for collections
+    // Params: collection is the Backbone collection being saved - same signature as saveModel
+    // Example: store.dispatch('saveCollection', {collection: myCollection})
+    saveCollection(context, {collection}) {
+
+      return new Promise((resolve, reject) => {
+        collection.save({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || {status: 400, message: 'Error saving collection'}
+            reject(response)
+          },
+        })
+      })
+    },
+
+    // Method that returns a collection promise
+    getModel(context, model) {
+
+      return new Promise((resolve, reject) => {
+        model.fetch({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function() {
+            reject(false)
+          },
+        })
+      })
+    },
+    // Method that saves a model to the server
+    // Passing {} as first argument means save all...
+    // Passing an attributes object with parameters will patch the model, rather than post
+    // If the backbone model has an "ID" (as defined in it's Model class) and there are no attributes provided,
+    // then save will be a PUT request rather than POST request
+    // Example: store.dispatch('saveModel', {model: myModel, attributes: myAttributes})
+    saveModel(context, {model, attributes}) {
+      // If we have attributes, assume a patch request
+      let patch = attributes ? true : false
+      let attrs = attributes || {}
+
+      return new Promise((resolve, reject) => {
+        model.save(attrs, {
+          patch: patch,
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || {status: 400, message: 'Error saving model'}
+            reject(response)
+          },
+        })
+      })
     },
   },
   getters: {
