@@ -8,10 +8,10 @@
             :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>
-        <scm-container-plate-view
-          v-if="!mViewReady && useScmView"
+        <saxs-container-plate-view
+          v-if="!mViewReady && useSaxsView"
           :containerModel="model">
-        </scm-container-plate-view>
+        </saxs-container-plate-view>
     </section>
 </template>
 
@@ -21,7 +21,7 @@
 * This handles plates as well as pucks and deals with xpdf type plates as well
 */
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import ScmContainerView from 'modules/shipment/components/SCMContainerPlateView.vue'
+import SaxsContainerPlateView from 'modules/types/saxs/shipment/views/container-plate-view.vue'
 import { ContainerViewMap, ContainerPlateViewMap } from 'modules/shipment/components/container-map'
 import Container from 'models/container'
 
@@ -31,7 +31,7 @@ export default {
     name: 'container-view-wrapper',
     components: {
         'marionette-view': MarionetteView,
-        'scm-container-plate-view': ScmContainerView
+        'saxs-container-plate-view': SaxsContainerPlateView
     },
     props: {
         'cid': Number,
@@ -47,7 +47,7 @@ export default {
             params: null,
             queryParams: null,
             bc : [],
-            useScmView: false,
+            useSaxsView: false,
         }
     },
     computed: {
@@ -92,8 +92,8 @@ export default {
         }).finally( () => {
           // Only render marionette view if we have one
           if (this.mview != null) this.mViewReady = true
-          else this.useScmView = true
-          // If no mview, we use the new SCM general view
+          else this.useSaxsView = true
+          // If no mview, we use the new Saxs general view
         })
     },
     methods: {

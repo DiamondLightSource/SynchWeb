@@ -1,12 +1,12 @@
 <template>
 <!--
-Add Container built initially for SCM
+Add Container built initially for Saxs
 Includes ability to select container type from any proposal type
 Uses Container Graphic to show plate/pucks
 Once container is valid then samples are added
 -->
   <div class="content">
-    <h1>Add Container SCM style</h1>
+    <h1>Add Container Saxs style</h1>
 
       <div class="tw-flex tw-flex-col">
 
@@ -289,10 +289,11 @@ const initialContainerState = {
   REQUESTEDIMAGERID: null,
   SCHEDULEID: null,
   SCREENID: null,
+  EXPERIMENTTYPEID: "",
 }
 
 export default {
-  name: 'SCMAddContainer',
+  name: 'SaxsAddContainer',
   components: {
     'sw-group-select-input': SwGroupSelectInput,
     'sw-select-input': SwSelectInput,
@@ -354,7 +355,7 @@ export default {
 
       storageTemperature: 0,
       storageTemperatures: [
-        {ID: -1, NAME: '-'},
+        {ID: '', NAME: '-'},
         {ID: STORAGE_TEMP_NEG_80, NAME: '-80'},
         {ID: STORAGE_TEMP_0, NAME: '0'},
         {ID: STORAGE_TEMP_25, NAME: '25'},

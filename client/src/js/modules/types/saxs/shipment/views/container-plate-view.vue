@@ -125,7 +125,7 @@ var LocationSample = Sample.extend({
 
 
 export default {
-  name: 'scm-container-view',
+  name: 'saxs-container-view',
   components: {
     'sw-text-input': SwTextInput,
     'sw-textarea-input': SwTextAreaInput,
@@ -251,7 +251,7 @@ export default {
         if (result) {
           this.resetSamples(this.container.CAPACITY)
         } else console.log("No samples found")
-      }, () => console.log("SCM Plate View - Error getting samples"))
+      }, () => console.log("Saxs Plate View - Error getting samples"))
     },
     // Move this to container graphic
     // Convert model into geometry

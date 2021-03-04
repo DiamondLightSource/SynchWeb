@@ -49,9 +49,6 @@ var LocationSample = Sample.extend({
     idAttribute: 'LOCATION',
 })
 
-const EXPERIMENT_TYPE_ROBOT = 22
-const EXPERIMENT_TYPE_HPLC = 21
-
 const INITIAL_SAMPLE_STATE = {
   LOCATION: '',
   PROTEINID: '-1',
@@ -132,7 +129,7 @@ export default {
   watch: {
     sampleComponent: function(newVal) {
       console.log("Sample Editor sample component = " + newVal)
-    }
+    },
   },
   computed: {
     // These options will be passed into the marionette sample table view
@@ -154,7 +151,6 @@ export default {
     return {
       mview: SampleTableView,
       samples: [],
-      experimentKind: EXPERIMENT_TYPE_ROBOT
     }
   },
   // We are passing a plain JSON array to the sample plate view
@@ -242,6 +238,8 @@ export default {
     // When cloning, take the last digits and pad the new samples names
     // So if 1: sample-01, 2: will equal sample-02 etc.
     generateSampleName: function(name, startAtIndex) {
+      if (!name) return null
+
       let name_base = name.replace(/([\d]+)$/, '')
       let digits = name.match(/([\d]+)$/)
       let number_pad = digits[1].length || 0

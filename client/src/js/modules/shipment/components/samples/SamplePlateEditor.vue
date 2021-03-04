@@ -94,6 +94,11 @@ export default {
       ]
     }
   },
+  watch: {
+    experimentKind: function(newVal) {
+      console.log("Sample Plate Editor, Experiment Kind has changed: " + newVal)
+    }
+  },
   created: function() {
     console.log("Sample Plate Editor - Experiment kind: " + this.experimentKind)
     this.purificationColumnsCollection = new PurificationColumns()
@@ -129,7 +134,7 @@ export default {
       if (this.experimentKind && this.experimentKind == EXPERIMENT_TYPE_ROBOT) return true
       else {
         // We could clear any temperature values here if needed/required
-        // this.inputValue.forEach( (v) => { v.ROBOTPLATETEMPERATURE = ''; v.EXPOSURETEMPERATURE = ''})
+        this.inputValue.forEach( (v) => { v.ROBOTPLATETEMPERATURE = ''; v.EXPOSURETEMPERATURE = ''})
         return false
       }
     }

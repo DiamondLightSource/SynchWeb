@@ -154,7 +154,7 @@ export default {
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider
   },
-  name: 'SCMShipment',
+  name: 'SaxsShipment',
   data: function() {
     return {
       // Number of packages included in this shipment

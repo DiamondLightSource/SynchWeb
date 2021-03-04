@@ -9,7 +9,7 @@
       :breadcrumbs="breadcrumbs">
     </marionette-view>
 
-    <scm-shipment-view v-if="parcels" :model="model"/>
+    <saxs-shipment-view v-if="parcels" :model="model"/>
 
   </div>
 </template>
@@ -17,7 +17,7 @@
 <script>
 import EventBus from 'app/components/utils/event-bus.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import SCMShipmentView from 'modules/shipment/components/SCMShipmentView.vue'
+import SaxsShipmentView from 'modules/types/saxs/shipment/views/shipment-view.vue'
 import ShipmentView from 'modules/shipment/views/shipment'
 import ShipmentModel from 'models/shipment'
 
@@ -29,7 +29,7 @@ export default {
   },
   components: {
     'marionette-view': MarionetteView,
-    'scm-shipment-view': SCMShipmentView
+    'saxs-shipment-view': SaxsShipmentView
   },
   data() {
     return {
@@ -59,15 +59,16 @@ export default {
       console.log("Shipment View Wrapper got model " + JSON.stringify(model))
       this.setBreadcrumbs()
 
-      if (propType == 'mx') this.showDewarView()
-      else {
+      if (propType == 'saxs') {
         EventBus.$emit('bcChange', this.bc)
-        this.showParcelsView()
+        this.showSaxsShipmentView()
+      } else {
+        this.showDewarView()
       }
     })
   },
   methods: {
-    showParcelsView: function() {
+    showSaxsShipmentView: function() {
       console.log("Showing parcels")
       this.parcels = true
       this.ready = false

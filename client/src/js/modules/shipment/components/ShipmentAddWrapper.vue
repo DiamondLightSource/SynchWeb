@@ -5,7 +5,7 @@
 
     <div class="tw-flex">
       <div @click="onParcelsSelected" class="tw-w-1/2 tw-h-16 tw-py-4 tw-bg-gray-300 tw-border tw-border-red-800 tw-mx-2">
-        <p class="tw-text-2xl tw-text-center"><i class="tw-text-2xl tw-mr-4 fa fa-truck"></i>Saxs / SCM Page</p>
+        <p class="tw-text-2xl tw-text-center"><i class="tw-text-2xl tw-mr-4 fa fa-truck"></i>Saxs / saxs Page</p>
       </div>
       <div @click="onDewarsSelected" class="tw-w-1/2 tw-h-16 tw-py-4 tw-bg-gray-300 tw-border tw-border-red-800 tw-mx-2">
         <p class="tw-text-2xl tw-text-center"><i class="tw-text-2xl tw-mr-4 fa fa-truck"></i>MX Style</p>
@@ -21,7 +21,7 @@
     :breadcrumbs="breadcrumbs">
   </marionette-view>
 
-  <scm-shipment v-if="parcels" />
+  <saxs-shipment v-if="parcels" />
 
   </div>
 </template>
@@ -29,7 +29,7 @@
 <script>
 
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import SCMShipmentForm from 'modules/shipment/components/SCMShipmentForm.vue'
+import SaxsShipmentForm from 'modules/types/saxs/shipment/views/add-shipment.vue'
 import ShipmentAddView from 'modules/shipment/views/shipmentadd'
 
 export default {
@@ -40,7 +40,7 @@ export default {
   },
   components: {
     'marionette-view': MarionetteView,
-    'scm-shipment': SCMShipmentForm
+    'saxs-shipment': SaxsShipmentForm
   },
   data() {
     return {
