@@ -17,7 +17,7 @@
         <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
     </div>
     <div class="form">
-        <sw-select-input
+        <base-input-select
           label="Substance"
           v-model="inputValue.PROTEINID"
           optionValueKey="PROTEINID"
@@ -25,25 +25,25 @@
           defaultText=" - "
           :options="proteins"
           />
-        <sw-select-input
+        <base-input-select
           label="Sample Type"
           v-model="inputValue.TYPE"
           optionValueKey="ID"
           optionTextKey="TYPE"
           :options="sampleTypes"
         />
-        <sw-text-input
+        <base-input-text
           label="Sample Name"
           v-model="inputValue.NAME"
           name="SAMPLE_NAME" />
 
-        <sw-text-input
+        <base-input-text
           label="Volume"
           v-model="inputValue.VOLUME"
           name="VOLUME" />
 
       <!-- Issues getting this to update -->
-        <sw-select-input
+        <base-input-select
           :key="pkey"
           v-model="inputValue.COLUMN"
           :options="purificationColumns"
@@ -53,17 +53,17 @@
           name="COLUMN"
           defaultText="Optionally set a column" />
 
-        <sw-text-input
+        <base-input-text
           label="Buffer"
           v-model="inputValue.BUFFER"
           name="BUFFER" />
 
-        <sw-text-input v-if="experimentKind == 'robot'"
+        <base-input-text v-if="experimentKind == 'robot'"
           label="Robot Plate Temperature"
           v-model="inputValue.ROBOTPLATETEMPERATURE"
           name="ROBOTPLATETEMPERATURE" />
 
-        <sw-text-input v-if="experimentKind == 'robot'"
+        <base-input-text v-if="experimentKind == 'robot'"
           label="Exposure Temperature"
           v-model="inputValue.EXPOSURETEMPERATURE"
           name="EXPOSURETEMPERATURE" />
@@ -77,20 +77,20 @@
 
 import PurificationColumns from 'modules/shipment/collections/purificationcolumns'
 
-import SwTextInput from 'app/components/forms/sw_text_input.vue'
-import SwSelectInput from 'app/components/forms/sw_select_input.vue'
-import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
-import SwCheckboxInput from 'app/components/forms/sw_checkbox_input.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
+import BaseInputSelect from 'app/components/base-input-select.vue'
+import BaseInputTextArea from 'app/components/base-input-textarea.vue'
+import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 export default {
   name: 'single-sample-new',
   components: {
-    'sw-select-input': SwSelectInput,
-    'sw-text-input': SwTextInput,
-    'sw-textarea-input': SwTextAreaInput,
-    'sw-checkbox-input': SwCheckboxInput,
+    'base-input-select': BaseInputSelect,
+    'base-input-text': BaseInputText,
+    'base-input-textarea': BaseInputTextArea,
+    'base-input-checkbox': BaseInputCheckbox,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
   },

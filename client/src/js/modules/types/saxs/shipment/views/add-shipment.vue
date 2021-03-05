@@ -14,7 +14,7 @@
           <h1 class="tw-text-lg tw-font-bold tw-mb-2">Shipment Details</h1>
 
           <validation-provider tag="div" class="tw-mb-4" name="SHIPPINGNAME" vid="shipment-name" :rules="validationRules('SHIPPINGNAME')" v-slot="{ errors }">
-            <sw-text-input
+            <base-input-text
               id="shipment-name"
               label="Name"
               inputClass="tw-border tw-border-green-500"
@@ -25,7 +25,7 @@
           </validation-provider>
 
           <validation-provider tag="div" class="tw-mb-4" rules="numeric">
-            <sw-text-input
+            <base-input-text
               label="How many pre-registered dewar/parcels to add now?"
               type="number"
               description="You can add items later if required"
@@ -38,7 +38,7 @@
           <div class="tw-mb-4">
             <label>Number of Dewars/Parcels</label>
             <div class="tw-flex">
-              <sw-select-input v-for="(dewar, index) in dewarList" :key="index"
+              <base-input-select v-for="(dewar, index) in dewarList" :key="index"
                 v-model="dewar.value"
                 :options="dewars"
                 optionValueKey="FACILITYCODE"
@@ -54,14 +54,14 @@
                   <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>
               </label>
               <div class="tw-flex">
-                  <sw-radio-input class="tw-mt-2" :options="sessionTypes" v-model="sessionType" />
-                  <sw-select-input v-show="sessionType == 0" name="FIRSTEXPERIMENTID" class="tw-mr-2" v-model="selectedVisit" :options="visits" optionValueKey="SESSIONID" optionTextKey="VISITDETAIL" defaultText="Please select a visit"></sw-select-input>
+                  <base-input-radio class="tw-mt-2" :options="sessionTypes" v-model="sessionType" />
+                  <base-input-select v-show="sessionType == 0" name="FIRSTEXPERIMENTID" class="tw-mr-2" v-model="selectedVisit" :options="visits" optionValueKey="SESSIONID" optionTextKey="VISITDETAIL" defaultText="Please select a visit"></base-input-select>
               </div>
           </div>
 
 
           <validation-provider rules="required" name="safety level" v-slot="{ errors }">
-            <sw-select-input
+            <base-input-select
               name="Safety Level"
               label="Safety Level"
               description="The safety level of the shipment"
@@ -73,40 +73,40 @@
               :errorMessage="errors[0]"/>
           </validation-provider>
 
-            <sw-textarea-input id="comments" v-model="comments" name="COMMENTS" description="Comment for the shipment" label="Comments"/>
+            <base-input-textarea id="comments" v-model="comments" name="COMMENTS" description="Comment for the shipment" label="Comments"/>
 
           <h1 class="tw-text-lg tw-font-bold tw-mb-2">Delivery information</h1>
           <validation-provider rules="required" name="Sending Lab Contact" v-slot="{ errors }">
-            <sw-select-input id="labcontacts-sending-id" name="SENDINGLABCONTACTID" v-model="sendingLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Outgoing Lab Contact" defaultText="Please select a labcontact" :errorMessage="errors[0]">
+            <base-input-select id="labcontacts-sending-id" name="SENDINGLABCONTACTID" v-model="sendingLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Outgoing Lab Contact" defaultText="Please select a labcontact" :errorMessage="errors[0]">
               <template v-slot:description><span class="small">Lab contact for outgoing transport | <a class="add_lc" @click.prevent="onAddLocalContact" href="/contact/add">Add</a></span></template>
-            </sw-select-input>
+            </base-input-select>
           </validation-provider>
 
           <validation-provider rules="required" name="Return Lab Contact" v-slot="{ errors }">
-            <sw-select-input id="labcontacts-return-id" name="RETURNLABCONTACTID" v-model="returnLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Return Lab Contact" defaultText="Please select a labcontact" :errorMessage="errors[0]">
+            <base-input-select id="labcontacts-return-id" name="RETURNLABCONTACTID" v-model="returnLabContact" :options="labContacts" optionValueKey="LABCONTACTID" optionTextKey="CARDNAME" label="Return Lab Contact" defaultText="Please select a labcontact" :errorMessage="errors[0]">
               <template v-slot:description><span class="small">Lab contact for return transport | <a class="add_lc" @click.prevent="onAddLocalContact" href="/contact/add">Add</a></span></template>
-            </sw-select-input>
+            </base-input-select>
           </validation-provider>
 
           <validation-provider :rules="validationRules('DELIVERYAGENT_SHIPPINGDATE')" name="Shipment Date" v-slot="{ errors }">
-            <sw-date-input id="shipment-date" v-model="shipmentDate" name="DELIVERYAGENT_SHIPPINGDATE" description="Date shipment will leave lab / be picked up" label="Shipping Date" :errorMessage="errors[0]"/>
+            <base-input-date id="shipment-date" v-model="shipmentDate" name="DELIVERYAGENT_SHIPPINGDATE" description="Date shipment will leave lab / be picked up" label="Shipping Date" :errorMessage="errors[0]"/>
           </validation-provider>
 
             <validation-provider :rules="validationRules('PHYSICALLOCATION')" name="Pickup Location" v-slot="{ errors }">
-              <sw-text-input id="pickup-location" v-model="pickupLocation" name="PHYSICALLOCATION" description="Location where shipment can be picked up from. i.e. Reception" label="Pickup Location" :errorMessage="errors[0]"/>
+              <base-input-text id="pickup-location" v-model="pickupLocation" name="PHYSICALLOCATION" description="Location where shipment can be picked up from. i.e. Reception" label="Pickup Location" :errorMessage="errors[0]"/>
             </validation-provider>
 
-            <sw-time-input id="ready-time" v-model="readyTime" name="READYBYTIME" description="Time shipment will be ready for pickup" label="Ready by Time"/>
+            <base-input-time id="ready-time" v-model="readyTime" name="READYBYTIME" description="Time shipment will be ready for pickup" label="Ready by Time"/>
 
-            <sw-time-input id="close-time" v-model="closeTime" name="CLOSETIME" description="Time after which shipment cannot be picked up" label="Close Time"/>
+            <base-input-time id="close-time" v-model="closeTime" name="CLOSETIME" description="Time after which shipment cannot be picked up" label="Close Time"/>
 
-            <sw-date-input id="delivery-date" v-model="deliveryDate" name="DELIVERYAGENT_DELIVERYDATE" description="Estimated date of delivery at facility" label="Delivery Date"/>
+            <base-input-date id="delivery-date" v-model="deliveryDate" name="DELIVERYAGENT_DELIVERYDATE" description="Estimated date of delivery at facility" label="Delivery Date"/>
 
-            <sw-text-input id="courier-name" v-model.trim="courierName" name="DELIVERYAGENT_AGENTNAME" description="Courier name for the return shipment" label="Courier Name">
+            <base-input-text id="courier-name" v-model.trim="courierName" name="DELIVERYAGENT_AGENTNAME" description="Courier name for the return shipment" label="Courier Name">
               <template v-slot:actions><span v-if="DHL_ENABLE"><a :href="DHL_LINK" class="dhl button"><i class="fa fa-envelope"></i> Use Facility Account (UK ONLY)</a></span></template>
-            </sw-text-input>
+            </base-input-text>
 
-            <sw-text-input id="courier-account" v-model="courierAccount" name="DELIVERYAGENT_AGENTCODE" description="Courier account number for the return shipment" label="Courier Account Number"/>
+            <base-input-text id="courier-account" v-model="courierAccount" name="DELIVERYAGENT_AGENTCODE" description="Courier account number for the return shipment" label="Courier Account Number"/>
 
             <button name="submit" type="submit" class="button submit" :class="{ 'tw-border tw-border-red-500' : invalid}">Add Shipment</button>
 
@@ -127,13 +127,13 @@ import DewarRegistryCollection from 'modules/shipment/collections/dewarregistry'
 import AddContactView from 'modules/contact/views/addcontact'
 import DialogView from 'views/dialog'
 
-import SwTextInput from 'app/components/forms/sw_text_input.vue'
-import SwSelectInput from 'app/components/forms/sw_select_input.vue'
-import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
-import SwDateInput from 'app/components/forms/sw_date_input.vue'
-import SwTimeInput from 'app/components/forms/sw_time_input.vue'
-import SwCheckboxInput from 'app/components/forms/sw_checkbox_input.vue'
-import SwRadioInput from 'app/components/forms/sw_radio_input.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
+import BaseInputSelect from 'app/components/base-input-select.vue'
+import BaseInputTextArea from 'app/components/base-input-textarea.vue'
+import BaseInputDate from 'app/components/base-input-date.vue'
+import BaseInputTime from 'app/components/base-input-time.vue'
+import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
+import BaseInputRadio from 'app/components/base-input-radio.vue'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
@@ -144,13 +144,13 @@ const RESPONSIVE_SESSION = 2
 
 export default {
   components: {
-    'sw-text-input': SwTextInput,
-    'sw-select-input': SwSelectInput,
-    'sw-textarea-input': SwTextAreaInput,
-    'sw-date-input': SwDateInput,
-    'sw-checkbox-input': SwCheckboxInput,
-    'sw-radio-input': SwRadioInput,
-    'sw-time-input': SwTimeInput,
+    'base-input-text': BaseInputText,
+    'base-input-select': BaseInputSelect,
+    'base-input-textarea': BaseInputTextArea,
+    'base-input-date': BaseInputDate,
+    'base-input-checkbox': BaseInputCheckbox,
+    'base-input-radio': BaseInputRadio,
+    'base-input-time': BaseInputTime,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider
   },

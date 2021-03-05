@@ -13,7 +13,7 @@
         <ul>
           <li>
             <span class="label">Name</span>
-            <sw-text-input v-model="container.NAME" :inline="true" @save="save('NAME')"/>
+            <base-input-text v-model="container.NAME" :inline="true" @save="save('NAME')"/>
           </li>
 
           <li>
@@ -36,7 +36,7 @@
           </li>
           <li>
             <span class="label">Barcode</span>
-            <sw-text-input v-model="container.BARCODE" :inline="true" @save="save('BARCODE')"/>
+            <base-input-text v-model="container.BARCODE" :inline="true" @save="save('BARCODE')"/>
           </li>
 
           <li v-if="container.EXPERIMENTTYPE">
@@ -46,7 +46,7 @@
 
           <li v-if="container.STORAGETEMPERATURE">
             <span class="label">Storage Temperature</span>
-            <sw-text-input v-model="container.STORAGETEMPERATURE" :inline="true" @save="save('STORAGETEMPERATURE')"/>
+            <base-input-text v-model="container.STORAGETEMPERATURE" :inline="true" @save="save('STORAGETEMPERATURE')"/>
           </li>
 
           <li v-if="container.VISIT">
@@ -56,7 +56,7 @@
 
           <li>
             <span class="label">Comments</span>
-            <sw-text-input v-model="container.COMMENTS" :inline="true" @save="save('COMMENTS')"/>
+            <base-input-text v-model="container.COMMENTS" :inline="true" @save="save('COMMENTS')"/>
           </li>
 
           <li class="clearfix">
@@ -110,13 +110,13 @@ import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 import Sample from 'models/sample'
 import Samples from 'collections/samples'
 import SampleEditor from 'modules/shipment/components/samples/SampleEditor.vue'
-import SwTextInput from 'app/components/forms/sw_text_input.vue'
-import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
-import SwSelectInput from 'app/components/forms/sw_select_input.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
+import BaseInputTextArea from 'app/components/base-input-textarea.vue'
+import BaseInputSelect from 'app/components/base-input-select.vue'
 
 import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
-import TableComponent from 'app/components/utils/table.vue'
-import PaginationComponent from 'app/components/utils/pagination.vue'
+import TableComponent from 'app/components/table.vue'
+import PaginationComponent from 'app/components/pagination.vue'
 
 // Use Location as idAttribute for this table
 var LocationSample = Sample.extend({
@@ -127,9 +127,9 @@ var LocationSample = Sample.extend({
 export default {
   name: 'saxs-container-view',
   components: {
-    'sw-text-input': SwTextInput,
-    'sw-textarea-input': SwTextAreaInput,
-    'sw-select-input': SwSelectInput,
+    'base-input-text': BaseInputText,
+    'base-input-textarea': BaseInputTextArea,
+    'base-input-select': BaseInputSelect,
     'sample-editor': SampleEditor,
     'container-graphic': ContainerGraphic,
     'table-component': TableComponent,

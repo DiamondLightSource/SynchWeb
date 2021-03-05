@@ -58,7 +58,7 @@
                   So we need to update LCOUT after a change
                 -->
                 <span class="label">Outgoing Lab Contact</span>
-                <sw-select-input
+                <base-input-select
                   :inline="true"
                   :initialText="shipment.LCOUT"
                   v-model="shipment.SENDINGLABCONTACTID"
@@ -74,7 +74,7 @@
                   So we need to update LCRET after a change
                 -->
                 <span class="label">Return Lab Contact</span>
-                <sw-select-input
+                <base-input-select
                   :inline="true"
                   :initialText="shipment.LCRET"
                   v-model="shipment.RETURNLABCONTACTID"
@@ -90,7 +90,7 @@
                   So we don't need to pass any special initial text for inline display
                 -->
                 <span class="label">Safety Level</span>
-                <sw-select-input
+                <base-input-select
                   :inline="true"
                   v-model="shipment.SAFETYLEVEL"
                   :options="[{'NAME':'Green', 'ID': 'Green'}, {'NAME':'Yellow', 'ID': 'Yellow'}, {'NAME':'Red', 'ID': 'Red'}]"
@@ -101,36 +101,36 @@
 
             <li>
                 <span class="label">Courier</span>
-                <sw-text-input :inline="true" v-model="shipment.DELIVERYAGENT_AGENTNAME" @save="save('DELIVERYAGENT_AGENTNAME')"/>
+                <base-input-text :inline="true" v-model="shipment.DELIVERYAGENT_AGENTNAME" @save="save('DELIVERYAGENT_AGENTNAME')"/>
             </li>
             <li>
                 <span class="label">Courier Account No.</span>
-                <sw-text-input :inline="true" v-model="shipment.DELIVERYAGENT_AGENTCODE" @save="save('DELIVERYAGENT_AGENTCODE')"/>
+                <base-input-text :inline="true" v-model="shipment.DELIVERYAGENT_AGENTCODE" @save="save('DELIVERYAGENT_AGENTCODE')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Date</span>
-                <sw-date-input :inline="true" id="shipping-date" v-model="shipment.DELIVERYAGENT_SHIPPINGDATE" name="DELIVERYAGENT_SHIPPINGDATE" @save="save('DELIVERYAGENT_SHIPPINGDATE')"/>
+                <base-input-date :inline="true" id="shipping-date" v-model="shipment.DELIVERYAGENT_SHIPPINGDATE" name="DELIVERYAGENT_SHIPPINGDATE" @save="save('DELIVERYAGENT_SHIPPINGDATE')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Airway Bill</span>
-                <sw-text-input :inline="true" v-model="shipment.DELIVERYAGENT_FLIGHTCODE" @save="save('DELIVERYAGENT_FLIGHTCODE')"/>
+                <base-input-text :inline="true" v-model="shipment.DELIVERYAGENT_FLIGHTCODE" @save="save('DELIVERYAGENT_FLIGHTCODE')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Pickup Location</span>
-                <sw-text-input :inline="true" v-model="shipment.PHYSICALLOCATION" @save="save('PHYSICALLOCATION')"/>
+                <base-input-text :inline="true" v-model="shipment.PHYSICALLOCATION" @save="save('PHYSICALLOCATION')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Ready By</span>
-                <sw-time-input :inline="true" id="ready-by" v-model="shipment.READYBYTIME" @save="save('READYBYTIME')"/>
+                <base-input-time :inline="true" id="ready-by" v-model="shipment.READYBYTIME" @save="save('READYBYTIME')"/>
             </li>
 
             <li>
                 <span class="label">Shipping Close Time</span>
-                <sw-time-input :inline="true" id="close-time" v-model="shipment.CLOSETIME" @save="save('CLOSETIME')"/>
+                <base-input-time :inline="true" id="close-time" v-model="shipment.CLOSETIME" @save="save('CLOSETIME')"/>
             </li>
 
             <div v-if="shipment.DELIVERYAGENT_PICKUPCONFIRMATION">
@@ -152,12 +152,12 @@
 
             <li>
                 <span class="label">Estimated Delivery Date</span>
-                <sw-date-input :inline="true" id="delivery-date" v-model="shipment.DELIVERYAGENT_DELIVERYDATE" name="DELIVERYAGENT_DELIVERYDATE" @save="save('DELIVERYAGENT_DELIVERYDATE')"/>
+                <base-input-date :inline="true" id="delivery-date" v-model="shipment.DELIVERYAGENT_DELIVERYDATE" name="DELIVERYAGENT_DELIVERYDATE" @save="save('DELIVERYAGENT_DELIVERYDATE')"/>
             </li>
 
             <li>
                 <span class="label">Comments Area</span>
-                <sw-textarea-input :inline="true" v-model="shipment.COMMENTS" outerClass="tw-w-1/2" @save="save('COMMENTS')"/>
+                <base-input-textarea :inline="true" v-model="shipment.COMMENTS" outerClass="tw-w-1/2" @save="save('COMMENTS')"/>
             </li>
         </ul>
         <div class="clear"></div>
@@ -298,14 +298,14 @@ import MoveContainerView from 'modules/shipment/views/movecontainer'
 import utils from 'utils'
 import Backbone from 'backbone'
 
-import SwTextInput from 'app/components/forms/sw_text_input.vue'
-import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
-import SwDateInput from 'app/components/forms/sw_date_input.vue'
-import SwTimeInput from 'app/components/forms/sw_time_input.vue'
-import SwSelectInput from 'app/components/forms/sw_select_input.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
+import BaseInputTextArea from 'app/components/base-input-textarea.vue'
+import BaseInputDate from 'app/components/base-input-date.vue'
+import BaseInputTime from 'app/components/base-input-time.vue'
+import BaseInputSelect from 'app/components/base-input-select.vue'
 
-import TableComponent from 'app/components/utils/table.vue'
-import PaginationComponent from 'app/components/utils/pagination.vue'
+import TableComponent from 'app/components/table.vue'
+import PaginationComponent from 'app/components/pagination.vue'
 
 const initialDewarState = {
   SHIPPINGID: '',
@@ -317,11 +317,11 @@ const initialDewarState = {
 export default {
   name: 'SaxsShipmentView',
   components: {
-    'sw-text-input': SwTextInput,
-    'sw-textarea-input': SwTextAreaInput,
-    'sw-time-input': SwTimeInput,
-    'sw-date-input': SwDateInput,
-    'sw-select-input': SwSelectInput,
+    'base-input-text': BaseInputText,
+    'base-input-textarea': BaseInputTextArea,
+    'base-input-time': BaseInputTime,
+    'base-input-date': BaseInputDate,
+    'base-input-select': BaseInputSelect,
     'table-component': TableComponent,
     'pagination-component': PaginationComponent,
   },

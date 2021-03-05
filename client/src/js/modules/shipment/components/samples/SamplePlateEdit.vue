@@ -14,13 +14,13 @@
       >
       <template slot="content" slot-scope="{ row }" v-if="editRowLocation && editRowLocation == row['LOCATION']">
         <td>{{row['LOCATION']}}</td>
-        <validation-provider tag="td" :name="'Acronym-'+sample['LOCATION']" :rules="sample['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }"><sw-select-input v-model="sample['PROTEINID']" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <td><sw-select-input v-model="sample['TYPE']" optionValueKey="ID" optionTextKey="TYPE" :options="sampleTypes" /></td>
-        <validation-provider tag="td" :name="'Name-'+sample['LOCATION']" :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><sw-text-input v-model="sample['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <td><sw-select-input v-model="sample['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></td>
-        <td><sw-text-input v-model="sample['VOLUME']"/></td>
-        <validation-provider tag="td" :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><sw-text-input v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><sw-text-input v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" :name="'Acronym-'+sample['LOCATION']" :rules="sample['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }"><base-input-select v-model="sample['PROTEINID']" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <td><base-input-select v-model="sample['TYPE']" optionValueKey="ID" optionTextKey="TYPE" :options="sampleTypes" /></td>
+        <validation-provider tag="td" :name="'Name-'+sample['LOCATION']" :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="sample['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <td><base-input-select v-model="sample['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></td>
+        <td><base-input-text v-model="sample['VOLUME']"/></td>
+        <validation-provider tag="td" :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
       </template>
 
       <template slot="actions" slot-scope="{ row }">
@@ -41,11 +41,11 @@
 <script>
 import EventBus from 'app/components/utils/event-bus.js'
 
-import SwTextInput from 'app/components/forms/sw_text_input.vue'
-import SwSelectInput from 'app/components/forms/sw_select_input.vue'
-import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
-import SwCheckboxInput from 'app/components/forms/sw_checkbox_input.vue'
-import Table from 'app/components/utils/table.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
+import BaseInputSelect from 'app/components/base-input-select.vue'
+import BaseInputTextArea from 'app/components/base-input-textarea.vue'
+import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
+import Table from 'app/components/table.vue'
 
 import PurificationColumns from 'modules/shipment/collections/purificationcolumns'
 
@@ -57,10 +57,10 @@ const EXPERIMENT_TYPE_HPLC = 21
 export default {
   name: 'edit-sample-plate',
   components: {
-    'sw-select-input': SwSelectInput,
-    'sw-text-input': SwTextInput,
-    'sw-textarea-input': SwTextAreaInput,
-    'sw-checkbox-input': SwCheckboxInput,
+    'base-input-select': BaseInputSelect,
+    'base-input-text': BaseInputText,
+    'base-input-textarea': BaseInputTextArea,
+    'base-input-checkbox': BaseInputCheckbox,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
     'table-component': Table,

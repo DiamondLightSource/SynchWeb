@@ -31,14 +31,14 @@ Once container is valid then samples are added
 
           <div>
             <label>Show all container types</label>
-            <sw-checkbox-input
+            <base-input-checkbox
               name="SHOW_ALL_CONTAINER_TYPES"
               v-model="showAllContainerTypes"
             />
           </div>
 
           <div class="tw-mb-2 tw-py-2">
-            <sw-group-select-input
+            <base-input-groupselect
               v-model="containerState.CONTAINERTYPEID"
               label="Container Type"
               :groups="groupedContainerTypes"
@@ -49,7 +49,7 @@ Once container is valid then samples are added
           </div>
 
           <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="name" v-slot="{ errors }">
-            <sw-text-input
+            <base-input-text
               label="Container Name"
               v-model="containerState.NAME"
               :errorMessage="errors[0]"
@@ -57,7 +57,7 @@ Once container is valid then samples are added
           </validation-provider>
 
           <div v-show="puck" class="pck tw-mb-2 tw-py-2">
-            <sw-select-input
+            <base-input-select
               v-model="containerState.CONTAINERREGISTRYID"
               label="Registered Container"
               name="CONTAINERREGISTRYID"
@@ -68,7 +68,7 @@ Once container is valid then samples are added
           </div>
 
           <div v-show="puck" class="autoprocessing_options tw-mb-2 tw-py-2">
-            <sw-select-input
+            <base-input-select
               v-model="containerState.PROCESSINGPIPELINEID"
               label="Priority Processing"
               description="Other data reduction pipelines will run on a lower priority queue"
@@ -81,13 +81,13 @@ Once container is valid then samples are added
 
           <div v-show="puck" class="pck tw-mb-2 tw-py-2">
             <label>Automated Collection</label>
-            <sw-checkbox-input
+            <base-input-checkbox
               name="AUTOMATED"
               v-model="containerState.AUTOMATED"
             />
           </div>
 
-          <validation-provider v-show="!puck" tag="div" class="pcr plate tw-mb-2 tw-py-2" rules="required" name="BARCODE" v-slot="{ errors }">  <sw-text-input
+          <validation-provider v-show="!puck" tag="div" class="pcr plate tw-mb-2 tw-py-2" rules="required" name="BARCODE" v-slot="{ errors }">  <base-input-text
               label="Barcode"
               name="BARCODE"
               v-model="containerState.CODE"
@@ -96,7 +96,7 @@ Once container is valid then samples are added
           </validation-provider>
 
           <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="owner">
-            <sw-select-input
+            <base-input-select
               label="Owner"
                 description="This user will be emailed with container updates. Check your email is up to date!"
                 name="PERSONID"
@@ -111,19 +111,19 @@ Once container is valid then samples are added
               <template v-slot:actions>
                 <a :href="'/contacts/user/'+containerState.PERSONID" class="button edit_user tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
               </template>
-            </sw-select-input>
+            </base-input-select>
           </validation-provider>
 
           <div v-show="containerGroup == 'scm'" class="tw-mb-2 tw-py-2" >
             <label>Show all experiment types</label>
-            <sw-checkbox-input
+            <base-input-checkbox
               name="SHOW_ALL_EXPERIMENT_TYPES"
               v-model="showAllExperimentTypes"
             />
           </div>
 
           <div v-show="containerGroup == 'scm'" class="tw-mb-2 tw-py-2">
-            <sw-group-select-input
+            <base-input-groupselect
               v-model="containerState.EXPERIMENTTYPEID"
               label="Experiment Type"
               :groups="groupedExperimentTypes"
@@ -134,7 +134,7 @@ Once container is valid then samples are added
           </div>
 
           <div v-show="containerGroup == 'scm'" class="pcr tw-mb-2 tw-py-2">
-            <sw-select-input
+            <base-input-select
               v-model="containerState.STORAGETEMPERATURE"
               label="Storage Temperature"
               name="STORAGETEMPERATURE"
@@ -144,7 +144,7 @@ Once container is valid then samples are added
               />
           </div>
 
-          <sw-text-input outerClass="tw-mb-2 tw-py-2" id="comments" v-model="containerState.COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
+          <base-input-text outerClass="tw-mb-2 tw-py-2" id="comments" v-model="containerState.COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
 
           <!-- VMXi Plates... -->
           <div v-show="plate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
@@ -233,11 +233,11 @@ import Samples from 'collections/samples'
 
 import SingleSample from 'modules/shipment/components/samples/SingleSample.vue'
 import SampleEditor from 'modules/shipment/components/samples/SampleEditor.vue'
-import SwSelectInput from 'app/components/forms/sw_select_input.vue'
-import SwGroupSelectInput from 'app/components/forms/sw_group_select_input.vue'
-import SwTextInput from 'app/components/forms/sw_text_input.vue'
-import SwTextAreaInput from 'app/components/forms/sw_textarea_input.vue'
-import SwCheckboxInput from 'app/components/forms/sw_checkbox_input.vue'
+import BaseInputSelect from 'app/components/base-input-select.vue'
+import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
+import BaseInputTextArea from 'app/components/base-input-textarea.vue'
+import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 
 import ProcessingPipelines from 'collections/processingpipelines'
 import PuckControls from 'modules/shipment/components/samples/PuckSampleControls.vue'
@@ -295,11 +295,11 @@ const initialContainerState = {
 export default {
   name: 'SaxsAddContainer',
   components: {
-    'sw-group-select-input': SwGroupSelectInput,
-    'sw-select-input': SwSelectInput,
-    'sw-text-input': SwTextInput,
-    'sw-textarea-input': SwTextAreaInput,
-    'sw-checkbox-input': SwCheckboxInput,
+    'base-input-groupselect-input': BaseInputGroupSelect,
+    'base-input-select-input': BaseInputSelect,
+    'base-input-text-input': BaseInputText,
+    'base-input-textarea-input': BaseInputTextArea,
+    'base-input-checkbox-input': BaseInputCheckbox,
     'container-graphic': ContainerGraphic,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
