@@ -29,7 +29,7 @@
 <script>
 
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import SaxsShipmentForm from 'modules/types/saxs/shipment/views/add-shipment.vue'
+import SaxsShipmentAdd from 'modules/types/saxs/shipment/views/shipment-add.vue'
 import ShipmentAddView from 'modules/shipment/views/shipmentadd'
 
 export default {
@@ -40,7 +40,7 @@ export default {
   },
   components: {
     'marionette-view': MarionetteView,
-    'saxs-shipment': SaxsShipmentForm
+    'saxs-shipment': SaxsShipmentAdd
   },
   data() {
     return {

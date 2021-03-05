@@ -27,7 +27,7 @@
 * Then displays the addcontainer view specific to a proposal type
 */
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import SaxsAddContainer from 'modules/types/saxs/shipment/views/add-container.vue'
+import SaxsContainerAdd from 'modules/types/saxs/shipment/views/container-add.vue'
 
 import { ContainerAddMap } from 'modules/shipment/components/container-map'
 import Dewar from 'models/dewar'
@@ -38,7 +38,7 @@ export default {
     name: 'container-add-wrapper',
     components: {
         'marionette-view': MarionetteView,
-        'saxs-add-container': SaxsAddContainer,
+        'saxs-container-add': SaxsContainerAdd,
     },
     props: {
         'did': Number,
@@ -78,7 +78,7 @@ export default {
             this.mview = ContainerAddMap[this.proposalType] ? ContainerAddMap[this.proposalType].view : ContainerAddMap['default'].view
 
             // USe the legacy components if we have then defined, else use the newer style component
-            if (!this.mview) this.componentType = 'saxs-add-container'
+            if (!this.mview) this.componentType = 'saxs-container-add'
 
             // Update the breadcrumbs
             this.bc.push({ title: this.model.get('SHIPPINGNAME'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
