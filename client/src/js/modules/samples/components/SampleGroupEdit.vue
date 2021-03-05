@@ -172,6 +172,7 @@ export default {
     },
     onSaveSampleGroup() {
       // TODO: Save Sample Group to Database
+      this.$store.dispatch('')
     },
     async onShipmentSelected(item) {
       this.containers = [];
