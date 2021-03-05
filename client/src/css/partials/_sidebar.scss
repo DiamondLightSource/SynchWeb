@@ -6,14 +6,14 @@
     @media (max-width: $breakpoint-large) {
         width: 96%;
     }
-    
+
     // Menu
     ul {
         list-style: none;
         border: 1px solid $sidebar-border;
         background: $sidebar-grad-start;
         background: linear-gradient(to top, $sidebar-grad-start, $sidebar-grad-end);
-    
+
 
         li {
             float: left;
@@ -22,11 +22,11 @@
             font-size: 11px;
             width: 14%;
             position: relative;
-            
+
             transition-property: background;
             transition-duration: 300ms;
             transition-timing-function: ease-in-out;
-        
+
             .message span {
                 font-weight: normal;
                 padding: 15px;
@@ -36,7 +36,7 @@
 
             &:hover {
                 background: $sidebar-hover-background;
-                
+
                 ul {
                     display: block;
                 }
@@ -52,7 +52,7 @@
             &.help.active {
                 background: $sidebar-hover-background;
             }
-            
+
             .current {
                 cursor: pointer;
 
@@ -60,7 +60,7 @@
                     background: $sidebar-hover-dark-background;
                 }
             }
-            
+
             span,
             a {
                 text-decoration: none;
@@ -69,7 +69,7 @@
                 padding: 8% 0;
                 text-align: center;
             }
-            
+
             // Sub menu
             ul {
                 position: absolute;
@@ -78,8 +78,8 @@
                 display: none;
                 border-bottom: 0;
                 z-index: 2;
-                
-                
+
+
                 li {
                     float: none;
                     width: 100%;
@@ -98,51 +98,52 @@
 
 
 // Responsive Sidebar
-@media (max-width: $breakpoint-medium) {    
+@media (max-width: $breakpoint-medium) {
     #sidebar, .cont_wrap {
         transition-property: all;
         transition-duration: 0.2s;
         transition-timing-function: ease;
 
-        width: 100%;        
+        width: 100%;
         margin-top: 56px;
     }
-	
+
 	.cont_wrap {
         margin-left: 0;
         float: left;
     }
-    
+
 	#sidebar {
         margin-left: -100%;
         float: left;
         width: 180px !important;
-        
-    
-    
+
+
+
         input {
             width: 70% !important;
             height: 100% !important;
         }
-        
+
         ul, ul li, ul li ul, ul li ul li, ul li.help, ul li.feedback {
             border: 0;
             background: transparent;
         }
-        
+
         ul {
-            
+
             li {
                 width: 100%;
                 .current:hover {
-                    background: color($sidebar-mobile-hover-background tint(10%));
+                  // background: color($sidebar-mobile-hover-background tint(10%));
+                  background: color(rgb(105,105,105) tint(10%));
                 }
-                
+
                 &.feedback, &.help {
                     float: none;
                 }
-            
-            
+
+
                 span, a {
                     padding: 12px 5%;
                     width: 90%;
@@ -152,44 +153,44 @@
                     color: $sidebar-mobile-color;
                     background: $sidebar-mobile-background;
                 }
-                
+
                 ul li a {
                     width: 85%;
                 }
-                
+
                 &.help.active a {
                     background: $sidebar-mobile-active-background;
                 }
-                
+
                 a:hover {
                     background: $sidebar-mobile-hover-background;
                 }
-                
+
                 ul {
                     display: block;
                     left: 0;
                     position: relative;
                 }
             }
-    
+
         }
     }
-	
+
 
     body.active {
         position: relative;
-        
+
         #sidebar {
             margin-left: 0;
             width: 182px
         }
-        
+
         .cont_wrap {
             margin-right: -100%;
         }
 
     }
-    
+
 }
 
 @media (max-width: $breakpoint-small) {

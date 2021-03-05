@@ -21,7 +21,7 @@ export default {
 <style scoped>
 #footer {
     margin-top: 70px;
-    background: #000 url(/assets/css/stylesheets/images/ispyb_gs_medium.png) center center no-repeat;
+    background: #000 url(~images/ispyb_gs_medium.png) center center no-repeat;
     height: 200px;
     background-position: 50% 85%
 }

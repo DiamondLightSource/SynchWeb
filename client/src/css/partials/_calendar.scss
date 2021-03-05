@@ -1,21 +1,21 @@
 
 .calendar > ul {
     list-style: none;
-    
+
     &.links li {
         display: block;
         @mixin cols 4,1%,0.2%;
         height: 15px;
         text-align: center;
         cursor: pointer;
-        
+
         transition: background .3s ease-out;
 
         &:hover {
             background: $content-cal-hl1-background;
         }
     }
-    
+
     > li {
         float: left;
         display: block;
@@ -24,60 +24,60 @@
         height: 100px;
         //overflow: auto;
         overflow: hidden;
-        
+
         @media (max-width: $breakpoint-small) {
             @mixin cols 1,2%,0.5%;
             height: auto;
         }
-        
+
         .full {
             display: none;
-            
+
             @media (max-width: $breakpoint-small) {
                 display: inline;
             }
-            
+
         }
-        
+
         &.head {
             background: $content-cal-header-background;
             height: 15px;
             font-weight: bold;
             text-align: center;
-            
+
             @media (max-width: $breakpoint-small) {
                 display: none;
             }
         }
-        
+
         &.wend {
             background: $content-cal-hl1-background;
         }
-        
+
         &.noday {
             background: $content-cal-hl2-background;
-            
+
             @media (max-width: $breakpoint-small) {
                 display: none;
             }
         }
-        
+
         &.no_event {
             @media (max-width: $breakpoint-small) {
                 display: none;
             }
         }
-        
+
         &.today {
             background: $content-cal-header-background;
         }
 
-        
+
         @media (min-width: $breakpoint-small) {
             &:hover {
                 position: relative;
                 overflow: visible;
-                
+
                 > ul {
                     background: #dadada;
                     border-radius: 3px;
@@ -86,79 +86,79 @@
             }
         }
 
-        
+
         > ul {
             @media (min-width: $breakpoint-small) {
                 overflow: hidden;
                 transition: max-height 0.5s ease-in-out;
                 max-height: 90px;
             }
-            
+
             padding: 5px;
-            
+
             @media (max-width: $breakpoint-small) {
                 li .time {
                     float: right;
                     margin-left: 5px;
-                    
+
                     &:before {
                         content: "Starts: ";
                     }
                 }
             }
-            
+
             > li > ul {
                 padding: 0 5px;
                 list-style: none;
-            
-                
+
+
                 li .details {
                     display:none;
-                    
+
                     padding: 2%;
                     background: $content-cal-hl2-background;
                     z-index: 4;
                 }
-                
+
                 li:hover .details {
                     display: block;
                 }
-                
+
                 @media (max-width: $breakpoint-small) {
                     border-bottom: 1px solid $content-cal-header-background;
                     margin-bottom: 5px;
                     padding-bottom: 5px;
-                    
+
                     .short {
                         display: none;
                     }
-                    
+
                     li {
                         &.past {
-                            color: color($body-color tint(60%));
-                            
+                            color: $body-color-tint;
+
                             a {
-                                color: color($body-color tint(60%));
+                                color: $body-color-tint;
                             }
                         }
-                        
+
                         .details {
                             display: block;
                             background: none;
                             padding: 0;
-                            color: color($body-color tint(60%));
+                            color: $body-color-tint;
                         }
-                        
+
                         .type {
                             float: right;
                         }
                     }
-                
+
                 }
             }
 
         }
-        
+
     }
 }
 
@@ -180,7 +180,7 @@
     padding: 2px;
     border-bottom: 1px solid $content-cal-hl1-background;
     margin: 0.5%;
-    
+
     @media (max-width: $breakpoint-small) {
         display: block;
         height: 55px;
@@ -188,14 +188,14 @@
         overflow-x: auto;
         overflow-y: hidden;
     }
-    
+
     li {
         width: 30px;
         height: 45px;
         float: none;
         display: inline-block;
         text-align: center;
-        
+
         .day {
             display: block;
         }
@@ -204,17 +204,17 @@
             border-radius: 3px;
             padding: 4px;
         }
-        
+
         &.past {
-            color: color($body-color tint(60%));
+            color: $body-color-tint;
         }
-        
+
         &.event {
             .number {
                 background: $content-cal-hl1-background;
             }
         }
-        
+
     }
 }
 /* Few fixes to work with tailwind preset */

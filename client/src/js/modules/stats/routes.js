@@ -2,7 +2,7 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import Page from 'app/layouts/page.vue'
 
 // Lazy load vue components
-const StatsView = () => import(/* webpackChunkName: "groups-stats" */ 'modules/stats/components/StatsView.vue')
+const StatsView = () => import(/* webpackChunkName: "groups-stats" */ 'modules/stats/components/stats-view.vue')
 
 import Pies from 'modules/stats/collections/pies'
 // Lazy load marionette views that will be rendered
@@ -21,12 +21,12 @@ let piesCollection = {}
 // Wrapping the statistics call in a promise so we can get the data in navigation guard
 function lookupPies(params) {
     return new Promise((resolve, reject) => {
-        piesCollection = new Pies(null, { 
-            state: { pageSize: app.mobile() ? 5 : 15, currentPage: params.page ? parseInt(params.page) : 1 } 
+        piesCollection = new Pies(null, {
+            state: { pageSize: app.mobile() ? 5 : 15, currentPage: params.page ? parseInt(params.page) : 1 }
         })
 
         piesCollection.fetch({
-            // If OK trigger next 
+            // If OK trigger next
             success: function() {
               console.log("Stats pies collection lookup OK")
               resolve(piesCollection)
@@ -35,7 +35,7 @@ function lookupPies(params) {
             error: function() {
                 reject({msg: "Stats pies collection lookup failed"})
             }
-        })    
+        })
     })
 }
 
@@ -59,11 +59,11 @@ const routes = [
 
         // Start the loading animation
         app.loading()
-    
+
         lookupPies(to.params).then((response) => {
             console.log("Lookup Collection OK - " + response)
             next()
-        }, (error) => { 
+        }, (error) => {
             console.log(error.msg)
             app.alert({ title: 'No stats found', message: error.msg })
             next()
@@ -87,7 +87,7 @@ const routes = [
             visit: route.params.visit,
             from: route.params.from || '',
             to: route.params.to || '',
-        })            
+        })
     },
     // BAG Overview stats
     // Page is captured but not passed into the view!
@@ -160,8 +160,8 @@ const routes = [
             mview: BeamlineOverview,
             // Note: here the params are passed an part of the options - not as a separate object ?
             options: {
-                bl: route.params.bl, 
-                params: { 
+                bl: route.params.bl,
+                params: {
                     run: route.params.run || null,
                     from: route.params.from ? parseInt(route.params.from) : null,
                     to: route.params.to ? parseInt(route.params.to) : null
