@@ -1,7 +1,8 @@
 // Body
 $body-background: #000000;
 $body-color: #000000;
-
+// Postcss color and vars workaround
+$body-color-tint: color(#000000 tint(60%));
 
 
 // Default Links
@@ -64,8 +65,10 @@ $content-search-background: #cdcdcd;
 $content-highlight: #ffffff;
 $content-page-background: #ededed;
 $content-page-selected-background: #cdcdcd;
-$content-page-color: $link-color;
+$content-page-color: #666666;
 $content-page-hover-color: $link-hover-color;
+// Workaround for postcss color and vars
+$content-page-color-tint: color(#666666 tint(5%));
 
 $content-main-background: #efefef;
 
@@ -83,9 +86,16 @@ $content-filter-color: #000000;
 $content-active: #82d180;
 $content-inactive: #f26c4f;
 $content-minor: yellow;
+// Post CSS color struggling with unpacking variables.
+// So defined tint/shades here
+$content-active-tint: color(#82d180 tint(10%));
+$content-minor-shade: color(yellow shade(5%));
 
 $content-light-background: #ebebeb;
 $content-dark-background: #dedede;
+// Post CSS color struggling with unpacking variables.
+// So defined tint/shades here
+$content-light-background-shade: color(#ebebeb shade(2%));
 
 $content-cal-header-background: #cecece;
 $content-cal-background: #eeeeee;
