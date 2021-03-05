@@ -35,9 +35,11 @@
               />
           </validation-provider>
 
-          <div class="tw-mb-4">
-            <label>Number of Dewars/Parcels</label>
-            <div class="tw-flex">
+          <div class="tw-mb-8">
+            <label>Number of Dewars/Parcels
+              <span class="small">No facility codes listed? Make sure they are <router-link to="/dewars/registry">Registered</router-link> to this proposal.</span>
+            </label>
+            <div class="tw-flex" v-if="numPieces > 0">
               <base-input-select v-for="(dewar, index) in dewarList" :key="index"
                 v-model="dewar.value"
                 :options="dewars"
@@ -45,7 +47,7 @@
                 optionTextKey="FACILITYCODE"
               />
             </div>
-            <div v-show="numPieces == 0" class="tw-flex"><span>No parcels defined yet</span></div>
+            <div v-else class="tw-flex"><p>No parcels defined yet</p></div>
           </div>
 
           <div class="tw-mb-4">
