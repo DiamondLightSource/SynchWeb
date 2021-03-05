@@ -47,12 +47,12 @@ const RegisteredContainer = import(/* webpackChunkName: "group-shipment" */ 'mod
 
 const MigrateView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/migrate')
 
-const ContainerViewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ContainerViewWrapper.vue')
-const ContainerAddWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ContainerAddWrapper.vue')
-const ContainerPlanWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ContainerPlanWrapper.vue')
-const ContainerQueueWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ContainerQueueWrapper.vue')
+const ContainerViewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-view-wrapper.vue')
+const ContainerAddWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-add-wrapper.vue')
+const ContainerPlanWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-plan-wrapper.vue')
+const ContainerQueueWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-queue-wrapper.vue')
 
-const DewarsOverviewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/DewarsOverviewWrapper.vue')
+const DewarsOverviewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/dewars-overview-wrapper.vue')
 
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
