@@ -19,8 +19,11 @@ export default {
     updateSampleGroupsList({ commit }, payload) {
       commit('setSampleGroups', payload)
     },
-    updateSelectedSampleGroups({ }, payload) {
+    updateSelectedSampleGroups({ commit }, payload) {
       commit('setSelectedSampleGroups', payload)
+    },
+    saveSampleGroupsChanges() {
+      
     }
   },
   namespaced: true
