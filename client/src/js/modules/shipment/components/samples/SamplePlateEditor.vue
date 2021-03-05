@@ -38,7 +38,7 @@ import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
-import Table from 'app/components/utils/table.vue'
+import Table from 'app/components/table.vue'
 
 import PurificationColumns from 'modules/shipment/collections/purificationcolumns'
 
