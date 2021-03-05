@@ -295,11 +295,11 @@ const initialContainerState = {
 export default {
   name: 'SaxsAddContainer',
   components: {
-    'base-input-groupselect-input': BaseInputGroupSelect,
-    'base-input-select-input': BaseInputSelect,
-    'base-input-text-input': BaseInputText,
-    'base-input-textarea-input': BaseInputTextArea,
-    'base-input-checkbox-input': BaseInputCheckbox,
+    'base-input-groupselect': BaseInputGroupSelect,
+    'base-input-select': BaseInputSelect,
+    'base-input-text': BaseInputText,
+    'base-input-textarea': BaseInputTextArea,
+    'base-input-checkbox': BaseInputCheckbox,
     'container-graphic': ContainerGraphic,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
