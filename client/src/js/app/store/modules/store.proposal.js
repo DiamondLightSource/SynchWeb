@@ -81,7 +81,7 @@ const proposalModule = {
               },
 
               error: function() {
-                commit('notifications/addNotification', { title: 'No such proposal', message: 'The selected proposal ' + prop + ' does not exist', level: 'error' })
+                commit('notifications/addNotification', { title: 'No such proposal', message: 'The selected proposal ' + prop + ' does not exist', level: 'error' }, {root: true})
                 commit('setProposal', null)
                 reject()
               },
