@@ -1,11 +1,11 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>
     </section>
@@ -53,7 +53,7 @@ export default {
         'page' : Number,
         'search': String,
         'dcg': String,
-        'pjid': Number, 
+        'pjid': Number,
         'ty': String,
     },
     data: function() {
@@ -77,7 +77,7 @@ export default {
         },
         // Combine with local computed properties, spread operator
         // Allows us to use this.currentProposal mapped to vuex state/getters
-        ...mapGetters(['currentProposal'])
+        ...mapGetters('proposal', ['currentProposal'])
     },
     created: function() {
         console.log("DC View Created")
@@ -109,13 +109,13 @@ export default {
 
                 // Not using lookup to set the proposal type...?
                 let proposalType = this.model.get('TYPE')
-                
+
                 // Determine correct marionette view - defaults to mx
                 this.setView(proposalType)
             }, (error) => {
                 console.log(this.$options.name + " Error getting model " + error.msg)
                 app.alert({ title: 'Error getting model', message: error.msg})
-            }).finally( () => { 
+            }).finally( () => {
                 // Only render when complete and stop loading animation
                 this.$store.commit('loading', false)
                 this.ready = true
@@ -135,11 +135,11 @@ export default {
                         console.log(self.$options.name + " DC Wrapper error getting model ")
                         resolve({msg: self.error})
                     },
-                })   
+                })
 
             })
         },
-        // Set the model to either a visit or proposal 
+        // Set the model to either a visit or proposal
         setModel: function() {
             // We need to fetch a visit or proposal to determine the proposal type
             if (this.visit) {
