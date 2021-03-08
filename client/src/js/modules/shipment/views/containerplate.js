@@ -2,13 +2,13 @@ define(['marionette',
     'backbone',
     'backgrid',
     'modules/shipment/collections/distinctproteins',
-    
+
     'models/sample',
     'collections/samples',
     'collections/subsamples',
 
     'modules/shipment/collections/containerhistory',
-    
+
     'modules/shipment/collections/platetypes',
     'modules/shipment/views/plate',
     'modules/shipment/views/singlesample',
@@ -22,7 +22,7 @@ define(['marionette',
     'modules/imaging/views/addinspection',
     'modules/imaging/views/actualschedule',
     'modules/imaging/views/subtosample',
-    
+
     'modules/imaging/collections/screencomponentgroups',
     'modules/imaging/collections/screencomponents',
     'modules/imaging/views/screencomponentgroup',
@@ -36,6 +36,7 @@ define(['marionette',
 
     'modules/imaging/collections/autoscoreschemas',
     'modules/imaging/collections/autoscores',
+    'collections/users',
 
     'utils/editable',
     'views/table',
@@ -55,7 +56,7 @@ define(['marionette',
     Subsamples,
 
     ContainerHistory,
-        
+
     PlateTypes,
     PlateView,
     SingleSample,
@@ -68,16 +69,18 @@ define(['marionette',
     ScreenGroupView,
 
     InspectionTypes,
-        
+
     DCCol, GetDCView, ReprocessView, DialogView,
 
     AutoScoreSchemas, AutoScores,
 
+    Users,
+
     Editable, TableView, table, XHRImage, utils,
     template, templateimage){
 
-    // $.event.props.push('dataTransfer');    
-            
+    // $.event.props.push('dataTransfer');
+
 
     var ActionCell = Backgrid.Cell.extend({
 
@@ -112,11 +115,11 @@ define(['marionette',
 
         fish: function(e) {
             e.preventDefault()
-            app.dialog.show(new DialogView({ 
+            app.dialog.show(new DialogView({
                 title: 'Add Subsample to Container',
-                className: 'content', 
+                className: 'content',
                 view: new SubToSampleView({ dialog: true, model: this.model }),
-                autoSize: true 
+                autoSize: true
             }))
         },
 
@@ -139,7 +142,7 @@ define(['marionette',
             this.$el.html('<!--<a href="#" class="button button-notext measure" title="Measure"><i class="fa fa-arrows-h"></i> <span>Measure</span></a>-->\
              <a href="#" class="button button-notext fish '+active2+'" title="Fish into puck"><i class="fa fa-crosshairs"></i> <span>Fish</span></a>\
              '+del)
-            
+
             this.delegateEvents()
             return this
         }
@@ -200,10 +203,10 @@ define(['marionette',
             this.listenTo(this.model, 'change:isSelected', this.setSelected, this)
             ClickableRow.__super__.initialize.call(this, options)
         },
-        
+
         onClick: function(e) {
             if ($(e.target).is('i') || $(e.target).is('a')) return
-            
+
             console.log('click row')
             this.model.set({ isSelected: true })
             console.log('model', this.model)
@@ -235,7 +238,7 @@ define(['marionette',
             grp: '.group',
             hist: '.history',
         },
-        
+
         ui: {
             // ext: '.extrainfo',
             ins: 'select[name=inspection]',
@@ -294,6 +297,11 @@ define(['marionette',
             'change:QUEUED': 'updatedQueued',
         },
 
+        templateHelpers: function() {
+            return {
+                IS_STAFF: app.staff,
+            }
+        },
 
         toggleSampleStatus: function(e) {
             this.ui.auto.prop('checked', false)
@@ -352,7 +360,7 @@ define(['marionette',
 
             var self = this
             this.model.set({ REQUESTEDRETURN: '1' })
-            this.model.save(this.model.changedAttributes(), { 
+            this.model.save(this.model.changedAttributes(), {
                 patch: true,
                 success: function() {
                     app.alert({ message: 'Return of this container to the user has been successfully requested' })
@@ -471,7 +479,7 @@ define(['marionette',
                 this.ui.ads.removeClass('button-highlight')
                 this.image.setAddSubsample(false)
                 this.ui.ads.find('span').text('Mark Point')
-                
+
             } else {
                 this.ui.ads.addClass('button-highlight')
                 this.image.setAddSubsample(true)
@@ -491,7 +499,7 @@ define(['marionette',
                 this.ui.adr.removeClass('button-highlight')
                 this.image.setAddSubsampleRegion(false)
                 this.ui.adr.find('span').text('Mark Region')
-                
+
             } else {
                 this.ui.adr.addClass('button-highlight')
                 this.image.setAddSubsampleRegion(true)
@@ -525,7 +533,7 @@ define(['marionette',
 
         preCache: function(n) {
             clearTimeout(this.cachethread)
-            
+
             var self = this
             var i = this.inspectionimages.at(n)
             if (this.caching && i) {
@@ -542,7 +550,7 @@ define(['marionette',
                     }, 200)
                 })
             }
-            
+
         },
 
 
@@ -606,13 +614,13 @@ define(['marionette',
 
             this._ready = []
             this._ready.push(this.samples.fetch({ data: {'sort_by': 'POSITION' } }))
-            
+
             this.proteins = new DistinctProteins()
             this.proteins.fetch()
             this.ctypes = new PlateTypes()
 
             this.gproteins = new DistinctProteins()
-            
+
             this.inspections = new ContainerInspections()
             this.inspections.queryParams.cid = this.model.get('CONTAINERID')
             this.inspections.queryParams.delta = 1
@@ -636,6 +644,13 @@ define(['marionette',
             this.history = new ContainerHistory()
             this.history.queryParams.cid = this.model.get('CONTAINERID')
             this.history.fetch()
+
+            // We need users in case we want to edit the container owner
+            this.users = new Users(null, { state: { pageSize: 9999 }})
+            this.users.queryParams.all = 1
+            // Assumption all plates are for vmxi, so login => users only
+            this.users.queryParams.login = 1
+            this.users.queryParams.pid = app.proposal.get('PROPOSALID')
 
             Backbone.Validation.bind(this)
         },
@@ -696,7 +711,7 @@ define(['marionette',
             if (s) return s.get('BLSAMPLEID')
         },
 
-        
+
         selectSample: function() {
             var s = this.samples.findWhere({ isSelected: true })
             if (s) {
@@ -718,7 +733,7 @@ define(['marionette',
                         this.image.setEmpty()
                     }
                     return
-                } 
+                }
 
                 this.sampledcs.fetch()
                 this.subsamples.fetch()
@@ -754,8 +769,8 @@ define(['marionette',
             this.startendimages.reset(sten)
         },
 
-        
-        onRender: function() {  
+
+        onRender: function() {
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
             edit.create('COMMENTS', 'textarea')
@@ -776,7 +791,7 @@ define(['marionette',
                 ]
 
                 if (!this.model.get('CONTAINERQUEUEID')) columns.push({ label: '', cell: ActionCell, editable: false })
-                        
+
                 this.subtable = new TableView({ collection: this.subsamples, columns: columns, tableClass: 'subsamples', loading: false, pages: false, backgrid: { row: ClickableRow, emptyText: 'No subsamples found', } })
                 this.subs.show(this.subtable)
             }
@@ -788,7 +803,7 @@ define(['marionette',
                 { name: 'LOCATION', label: 'Location', cell: 'string', editable: false },
                 { name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false },
             ]
-                        
+
             this.histtable = new TableView({ collection: this.history, columns: columns, tableClass: 'hist', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
             this.hist.show(this.histtable)
 
@@ -797,8 +812,13 @@ define(['marionette',
 
             this.listenTo(this.inspectiontypes, 'sync', this.updateAdhoc)
             this.updateAdhoc()
+
+            var self = this
+            this.users.fetch().done(function() {
+                edit.create('OWNERID', 'select', { data: self.users.kv() })
+            })
         },
-        
+
 
         resetZoom: function() {
             if (this.image) this.image.resetZoom(100)
@@ -808,7 +828,7 @@ define(['marionette',
         onShow: function() {
             $.when.apply($, this._ready).then(this.doOnShow.bind(this))
         },
-        
+
         doOnShow: function() {
             this.ui.ins.html(this.inspections.opts())
 
@@ -824,10 +844,10 @@ define(['marionette',
                 var w = this.type.getWell(l)
                 var g = this.screencomponentgroups.findWhere({ POSITION: (w+1).toString() })
 
-                this.samples.add(new Sample({ 
-                    LOCATION: l.toString(), 
-                    PROTEINID: -1, 
-                    CONTAINERID: this.model.get('CONTAINERID'), 
+                this.samples.add(new Sample({
+                    LOCATION: l.toString(),
+                    PROTEINID: -1,
+                    CONTAINERID: this.model.get('CONTAINERID'),
                     SCREENCOMPONENTGROUPID: g ? g.get('SCREENCOMPONENTGROUPID') : null,
                     new: true }))
             }, this)
@@ -889,17 +909,17 @@ define(['marionette',
                             if (direction == 'left') {
                                 s = self.getNext()
                             }
-                            
+
                             if (direction == 'right') {
                                 s = self.getNext({ prev: true })
                             }
-                            
+
                             if (direction == 'up') {
-                                
+
                             }
 
                             if (direction == 'down') {
-                                
+
                             }
 
                             if (s) s.set({ isSelected: true })

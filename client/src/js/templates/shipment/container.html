@@ -9,13 +9,13 @@
 
 <div class="form clearfix puck_wrap">
     <div class="puck" title="Click to jump to a position in the puck"></div>
-    
+
     <ul>
         <li>
             <span class="label">Shipment</span>
             <span><a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a></span>
         </li>
-        
+
         <li>
             <span class="label">Dewar</span>
             <span><%-DEWAR%></span>
@@ -24,6 +24,21 @@
             <span class="label">Container Type</span>
             <span><%-CONTAINERTYPE%></span>
         </li>
+
+        <!-- Staff can see the owner and change it -->
+        <% if (IS_STAFF) { %>
+        <li>
+            <span class="label">Owner</span>
+            <span class="OWNERID"><%-OWNER%></span>
+        </li>
+        <!-- Users can see the owner but not change it. No OWNERID class means no editable attached -->
+        <% } else { %>
+        <li>
+            <span class="label">Owner</span>
+            <span><%-OWNER%></span>
+        </li>
+        <% } %>
+
         <li>
             <span class="label">Registered Container</span>
             <span class="CONTAINERREGISTRYID"><%-REGISTRY%></span>
@@ -63,7 +78,7 @@
             <span><a href="/dc/visit/<%-VISIT%>" class="button"><i class="fa fa-search"></i> <span>View</span></a></span>
         </li>
         <% } %>
-        
+
         <li>
             <span class="label">Comments</span>
             <span class="COMMENTS"><%-COMMENTS%></span>
