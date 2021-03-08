@@ -66,12 +66,12 @@ export default {
         // Fetch the model then set the breadcrumbs
         this.$store.commit('loading', true)
 
-        this.getDataCollection().then( () => {
+        this.$store.dispatch('getModel', this.model).then( () => {
             // Set breadcrumbs now we have the model
             this.setBreadcrumbs()
-        }, (error) => {
-            console.log(this.$options.name + " Error getting model " + error.msg)
-            app.alert({ title: 'No such data collection', message: error.msg})
+        }, () => {
+            console.log(this.$options.name + ' Error getting model, the specified data collection doesn\'t exist')
+            app.alert({ title: 'No such data collection', message: 'The specified data collection doesn\'t exist'})
         }).finally( () => {
             // Only render when complete
             this.$store.commit('loading', false)
@@ -88,19 +88,6 @@ export default {
                     console.log(this.$options.name + " Error " + error.msg)
                     app.alert({title: 'Error looking up proposal', msg: error.msg})
                 })
-        },
-        getDataCollection: function() {
-            // Get the data collection model and set the breadcrumbs
-            return new Promise((resolve) => {
-                this.model.fetch({
-                    success: function(model) {
-                        resolve(true)
-                    },
-                    error: function() {
-                        resolve({msg:'The specified data collection doesn\'t exist'})
-                    },
-                })
-            })
         },
         // Breadcrumbs are determined by the model retrieved from backend
         setBreadcrumbs: function() {
