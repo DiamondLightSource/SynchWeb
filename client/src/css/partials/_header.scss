@@ -148,44 +148,34 @@
     background: $footer-background url('./stylesheets/images/ispyb_gs_medium.png') center center no-repeat;
     // background: $footer-background inline-image('ispyb_gs_medium.png') center center no-repeat;
     height: 200px;
-    background-position: 50% 85%;
+    background-position: 50% 60%;
     
     @media (max-width: $breakpoint-medium) {
         clear: both;
     }
 
-    .whatnow {
+    .bottom_bar {
         border-top: 1px solid #bbb;
-        font-size: 16px;
+        font-size: 12px;
         font-family: $page-header-font;
-        text-align: center;
+        display: block;
+        padding: 0.5%;
+        color: #222;
+        background: #eee;
+        transition: 0.3s ease-in-out;
 
         a {
-            display: block;
-            padding: 0.5%;
-            color: #222;
-            background: #eee;
-            transition: 0.3s ease-in-out;
-
-            &:hover {
-                color: #000;
-            };
+            text-decoration: none;
         }
-    }
 
-    a {
-        color: $footer-color;
-        text-decoration: none;
-        
-        &:hover {
-            color: $footer-hover-color;
+        .powered_by {
+            float: left;
+            width: 50%;
         }
-    }
-    
-    p {
-        padding: 1%;
-        text-align: center;
-        color: $footer-color;
-        font-size: 10px;
+
+        .site {
+            margin-left: 50%;
+            text-align: right;
+        }
     }
 }
