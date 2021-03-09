@@ -9,7 +9,8 @@ define(['marionette',
         'templates/shipment/sampletable.html',
         'templates/shipment/sampletablerow.html',
         'templates/shipment/sampletablerowedit.html',
-    
+
+        'collections/spacegroups',
         'utils/forms',
         'utils/sgs',
         'utils/anoms',
@@ -22,7 +23,7 @@ define(['marionette',
     
         'jquery',
         ], function(Marionette, Protein, Proteins, ValidatedRow, DistinctProteins, ComponentsView,
-        sampletable, sampletablerow, sampletablerowedit, 
+        sampletable, sampletablerow, sampletablerowedit, SpaceGroups,
         forms, SG, Anom, CM, EXP, RS, utils, safetyLevel, $) {
 
         
@@ -186,6 +187,9 @@ define(['marionette',
         },
         
         onRender: function() {
+            if (this.getOption('spacegroups').show) {
+                console.log("Sample Table use full spacegroups list")
+            }
             this.$el.find('[name=SPACEGROUP]').html(SG.opts()).val(this.model.get('SPACEGROUP'))
             this.$el.find('[name=ANOMALOUSSCATTERER]').html(Anom.opts()).val(this.model.get('ANOMALOUSSCATTERER'))
             this.$el.find('select[name=PROTEINID]').combobox({ invalid: this.addProtein.bind(this), change: this.selectProtein.bind(this), select: this.selectProtein.bind(this) })
@@ -348,6 +352,8 @@ define(['marionette',
         initialize: function(options) {
             this.proteins = options.proteins
             this.gproteins = options.gproteins
+            this.gspacegroups = new SpaceGroups(null, { state: { pageSize: 9999 }})
+            this.gspacegroups.fetch()
 
             this.in_use = options.in_use
             
@@ -365,8 +371,10 @@ define(['marionette',
 
             this.extra = { show: false }
             this.auto = { show: options.auto == true ? true : false }
+            this.spacegroups = { show: options.spacegroups == true ? true : false }
             this.options.childViewOptions.extra = this.extra
             this.options.childViewOptions.auto = this.auto
+            this.options.childViewOptions.spacegroups = this.spacegroups
             this.options.childViewOptions.type = this.getOption('type')
             
         },
@@ -381,6 +389,9 @@ define(['marionette',
 
             if (this.getOption('auto') == true) {
                 this.toggleAuto(true)
+            }
+            if (this.getOption('spacegroups') == true) {
+                this.toggleSpacegroups(true)
             }
         },
         
@@ -407,6 +418,14 @@ define(['marionette',
             }
         },
 
+        toggleSpaceGroups: function(val) {
+            this.spacegroups.show = val
+            if (val) {
+                this.$el.find('[name=SPACEGROUP]').html(this.gspacegroups.opts()).val('')
+            } else {
+                this.$el.find('[name=SPACEGROUP]').html(SG.opts()).val('')
+            }
+        },
 
         cloneAll: function() {
             this._cloning = true
