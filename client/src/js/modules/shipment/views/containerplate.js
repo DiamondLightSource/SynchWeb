@@ -297,12 +297,6 @@ define(['marionette',
             'change:QUEUED': 'updatedQueued',
         },
 
-        templateHelpers: function() {
-            return {
-                IS_STAFF: app.staff,
-            }
-        },
-
         toggleSampleStatus: function(e) {
             this.ui.auto.prop('checked', false)
             this.plateView.setAutoStatus(false)

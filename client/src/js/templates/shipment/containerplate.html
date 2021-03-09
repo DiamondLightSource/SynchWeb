@@ -26,19 +26,11 @@
                 <span class="CONTAINERTYPE"><%-CONTAINERTYPE%></span>
             </li>
 
-            <!-- Staff can see the owner and change it -->
-            <% if (IS_STAFF) { %>
+            <!-- Users can see the owner and change it -->
             <li>
                 <span class="label">Owner</span>
                 <span class="OWNERID"><%-OWNER%></span>
             </li>
-            <!-- Users can see the owner but not change it. No OWNERID class means no editable attached -->
-            <% } else { %>
-            <li>
-                <span class="label">Owner</span>
-                <span><%-OWNER%></span>
-            </li>
-            <% } %>
 
             <li>
                 <span class="label">Barcode</span>
