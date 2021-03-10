@@ -5,9 +5,11 @@
 define(['backbone',
     'backbone.paginator',
     'models/samplegroup',
+    'underscore'
     ], function(Backbone,
         PageableCollection,
-        SampleGroupMember
+        SampleGroupMember,
+        _
     ) {
 
 
@@ -95,6 +97,27 @@ define(['backbone',
 
         parseState: function(r, q, state, options) {
             return { totalRecords: r.total }
+        },
+
+        save: function(options) {
+            options = _.extend({}, options)
+            
+            var collection = this
+            var success = options.success;
+
+            options.success = function(resp) {
+                collection.reset(resp, { silent: true })
+                if (success) success(col, resp, options)
+            }
+
+            const sampleGroupList = this.pluck('BLSAMPLEGROUPID');
+
+            if (_.uniq(sampleGroupList).length === 1) {
+                this.url = `${this.url}/${sampleGroupList[0]}`
+                return Backbone.sync('update', this, options)
+            }
+            
+            return Backbone.sync('create', this, options)
         },
 
     })

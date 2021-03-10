@@ -111,7 +111,7 @@ const proposalModule = {
       },
   },
   getters: {
-    currentProposal: function(state) {
+    currentProposal: state  => {
       // If we have no proposal set, check if there is one in storage
       // Should not need to do this now.... TODO - simplify this
       if (!state.proposal) {
@@ -126,7 +126,8 @@ const proposalModule = {
       return state.proposal
     },
     currentProposalType: state => state.proposalType,
-    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null
+    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null,
+    currentProposalModel: state => state.proposalModel
   }
 }
 
