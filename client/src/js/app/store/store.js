@@ -171,12 +171,14 @@ const store = new Vuex.Store({
 
       return new Promise((resolve, reject) => {
         model.fetch({
-          success: function(result) {
-            resolve(result)
+          success: function(model, response, options) {
+            // Could extend to return the response/options
+            resolve(model)
           },
 
-          error: function() {
-            reject(false)
+          error: function(model, response, options) {
+            let err = response.responseJSON || {status: 400, message: 'Error getting model'}
+            reject(err)
           },
         })
       })

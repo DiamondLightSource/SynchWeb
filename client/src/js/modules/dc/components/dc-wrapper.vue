@@ -1,11 +1,11 @@
 <template>
     <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
+        <marionette-view
+            v-if="ready"
+            :key="$route.fullPath"
+            :options="options"
+            :fetchOnLoad="true"
+            :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>
     </section>
@@ -53,7 +53,7 @@ export default {
         'page' : Number,
         'search': String,
         'dcg': String,
-        'pjid': Number, 
+        'pjid': Number,
         'ty': String,
     },
     data: function() {
@@ -77,11 +77,10 @@ export default {
         },
         // Combine with local computed properties, spread operator
         // Allows us to use this.currentProposal mapped to vuex state/getters
-        ...mapGetters(['currentProposal'])
+        ...mapGetters('proposal', ['currentProposal'])
     },
     created: function() {
-        console.log("DC View Created")
-
+        // Setup backbone collection and params that will be passed into marionette view
         this.collection = new DCCol(null, {
                         state: { currentPage: this.page ? parseInt(this.page) : 1, pageSize: app.mobile() ? 5 : 15},
                         queryParams: { visit: this.visit, s: this.search, t: this.ty, id: this.id, dcg: this.dcg, PROCESSINGJOBID: this.pjid }
@@ -89,67 +88,54 @@ export default {
         this.params = { visit: this.visit, search: this.search, type: this.ty, id: this.id, dcg: this.dcg, pjid: this.pjid }
     },
     mounted: function() {
-        console.log("DC View Mounted")
         this.initialiseView()
     },
     methods: {
         initialiseView: function() {
             // Determine what our model should be...
+            // The model is either a visit or proposal used to determine proposalType in the mview
             this.setModel()
 
             // Start loading animation
             this.$store.commit('loading', true)
 
             // Fetch the model then set the breadcrumbs
-            this.getModel().then((result) => {
-                console.log(this.$options.name + " DC View has determined View Type: " + result)
+            this.$store.dispatch('getModel', this.model).then( () => {
+                // Stop loading animation.
+                // Note - not cancelled in finally block but in success/error blocks
+                // This avoids premature cancelling of mview loading data collections
+                this.$store.commit('loading', false)
 
                 // Set breadcrumbs now we have the model
                 this.setBreadcrumbs()
 
                 // Not using lookup to set the proposal type...?
+                // This is from original router/controller logic
                 let proposalType = this.model.get('TYPE')
-                
+
                 // Determine correct marionette view - defaults to mx
                 this.setView(proposalType)
-            }, (error) => {
-                console.log(this.$options.name + " Error getting model " + error.msg)
-                app.alert({ title: 'Error getting model', message: error.msg})
-            }).finally( () => { 
-                // Only render when complete and stop loading animation
+            }, () => {
+                // Error getting model
+                // Again cancel the loading animation here
                 this.$store.commit('loading', false)
+                console.log(this.$options.name + " Error getting model " + this.error)
+                app.alert({ title: 'Error getting model', message: this.error})
+            }).finally( () => {
+                // Only render when complete
                 this.ready = true
             })
         },
 
-        getModel: function() {
-            // self so we can use the stored custom error message (as in original controller)
-            let self = this
-
-            return new Promise((resolve) => {
-                this.model.fetch({
-                    success: function(model) {
-                        resolve(true)
-                    },
-                    error: function() {
-                        console.log(self.$options.name + " DC Wrapper error getting model ")
-                        resolve({msg: self.error})
-                    },
-                })   
-
-            })
-        },
-        // Set the model to either a visit or proposal 
+        // Set the model to either a visit or proposal
         setModel: function() {
             // We need to fetch a visit or proposal to determine the proposal type
             if (this.visit) {
                 app.cookie(this.visit.split('-')[0])
-                console.log(this.$options.name + " DC SetModel VISIT")
                 // Sets the proposal based on visit path parameter
                 this.model = new Visit({ VISIT: this.visit })
                 this.error = 'The specified visit does not exist'
             } else {
-                console.log(this.$options.name + " DC SetModel WAS NOT PASSED VISIT")
                 // Lookup the current proposal data
                 this.model = new Proposal({ PROPOSAL: this.currentProposal })
                 this.error = 'The specified proposal does not exist'

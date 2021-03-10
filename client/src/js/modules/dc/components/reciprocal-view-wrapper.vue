@@ -45,7 +45,7 @@ export default {
             }
         },
         // Combine vuex state with local computed properties
-        ...mapGetters(['currentProposal', 'currentProposalType'])
+        ...mapGetters('proposal', ['currentProposal', 'currentProposalType'])
     },
     created: function() {
         this.model = new DataCollection({ ID: this.id })

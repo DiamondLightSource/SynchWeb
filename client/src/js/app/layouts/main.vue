@@ -93,7 +93,7 @@ export default {
       },
       // Combine with local computed properties, spread operator
       // Allows us to use this.proposal and this.isLoading mapped to vuex state
-      ...mapState(['proposal', 'isLoading', 'motd'])
+      ...mapState(['isLoading', 'motd'])
     },
     created: function () {
       console.log(this.$options.name + " created")
