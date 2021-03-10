@@ -90,7 +90,7 @@
         v-if="plateType"
         :sampleComponent="plateType"
         :capacity="container.CAPACITY"
-        :experimentKind="container.EXPERIMENTTYPEID"
+        :experimentKind="container.EXPERIMENTTYPE"
         :samplesCollection="samplesCollection"
         :proteins="proteinsCollection"
         :gproteins="gProteinsCollection"
@@ -106,7 +106,6 @@
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
-import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 import Sample from 'models/sample'
 import Samples from 'collections/samples'
 import SampleEditor from 'modules/shipment/components/samples/SampleEditor.vue'
@@ -117,6 +116,7 @@ import BaseInputSelect from 'app/components/base-input-select.vue'
 import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
 import TableComponent from 'app/components/table.vue'
 import PaginationComponent from 'app/components/pagination.vue'
+
 
 // Use Location as idAttribute for this table
 var LocationSample = Sample.extend({
@@ -206,12 +206,6 @@ export default {
 
     this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
       console.log("Proteins = " + JSON.stringify(result))
-    })
-
-    let experimentTypesCollection = new ExperimentTypes()
-    this.$store.dispatch('getCollection', experimentTypesCollection).then( (result) => {
-      console.log("Experiment Types collection: " + result.toJSON())
-      this.experimentType = result.findWhere({EXPERIMENTTYPE: this.container.EXPERIMENTTYPE})
     })
 
     // Get the geometry for this container type

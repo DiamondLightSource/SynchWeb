@@ -139,8 +139,8 @@ class Sample extends Page
                               // Items added for SCM
                               'EXPERIMENTTYPEID' => '\d+',
                               'PURIFICATIONCOLUMNID' => '\d+',
-                              'ROBOTPLATETEMPERATURE' => '\d+',
-                              'EXPOSURETEMPERATURE' => '\d+',
+                              'ROBOTPLATETEMPERATURE' => '-?(0|[1-9]\d*)?(\.\d+)?', // Allows +ve, -ve numbers and decimals
+                              'EXPOSURETEMPERATURE' => '-?(0|[1-9]\d*)?(\.\d+)?', // Allows +ve, -ve numbers and decimals
                                );
 
 
@@ -1031,8 +1031,8 @@ class Sample extends Page
             if (array_key_exists('PROTEINID', $a)) {
                 $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10", 
                   array($a['SPACEGROUP'], $a['PROTEINID'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['THEORETICALDENSITY'], $samp['CRYSTALID']));
-                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7 WHERE diffractionplanid=:8", 
-                  array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $samp['DIFFRACTIONPLANID']));
+                  $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7, purificationcolumnid=:8, robotplatetemperature=:9, exposuretemperature=:10 WHERE diffractionplanid=:11",
+                  array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['PURIFICATIONCOLUMNID'], $a['ROBOTPLATETEMPERATURE'], $a['EXPOSURETEMPERATURE'], $samp['DIFFRACTIONPLANID']));
             }
 
             $init_comps = explode(',', $samp['COMPONENTIDS']);

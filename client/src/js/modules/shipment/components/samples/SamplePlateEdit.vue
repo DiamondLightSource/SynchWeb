@@ -7,29 +7,84 @@
       <a class="button" @click.prevent="$emit('clear-container')" href="#" title="Clear entire plate"><i class="fa fa-times"></i> Clear Plate</a>
     </div>
 
+    <!-- Using a key to update the table once we have discovered purification columns -->
     <table-component
+      :key="tableKey"
       :headers="sampleHeaders"
       :data="inputValue"
       actions="Actions"
       >
-      <template slot="content" slot-scope="{ row }" v-if="editRowLocation && editRowLocation == row['LOCATION']">
+      <!--
+        This is a bit more markup than we would like
+        Two things at play. One we want to switch on/off editing table row
+        The first commented block would do this.
+        However, also each sample has a purification column id we want to display
+        Hence we override the content block with a filtered view that also shows the column value rather than id
+        An alternative solution would be to process the data and append a column value to the samples array in the parent
+        Then we would need to update the appended value on every change...
+        Swings.
+        Roundabouts.
+       -->
+      <!--
+        First version that displays values from samples but switches while content block on edit
+        <template slot="content" slot-scope="{ row }" v-if="editRowLocation && editRowLocation == row['LOCATION']">
         <td>{{row['LOCATION']}}</td>
         <validation-provider tag="td" :name="'Acronym-'+sample['LOCATION']" :rules="sample['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }"><base-input-select v-model="sample['PROTEINID']" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
         <td><base-input-select v-model="sample['TYPE']" optionValueKey="ID" optionTextKey="TYPE" :options="sampleTypes" /></td>
         <validation-provider tag="td" :name="'Name-'+sample['LOCATION']" :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="sample['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
         <td><base-input-select v-model="sample['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></td>
         <td><base-input-text v-model="sample['VOLUME']"/></td>
-        <validation-provider tag="td" :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotFields" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotFields" v-slot="{ errors }"><base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+      </template> -->
+
+      <!--
+        Second version that is more complex but allow showing filtered/parsed views directly
+        Note use of validation-provider slim to avoid adding any markup
+        Could use tag=span as well within validation-provider
+      -->
+      <template slot="content" slot-scope="{ row }">
+        <td>{{row['LOCATION']}}</td>
+        <td>
+          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'Acronym-'+sample['LOCATION']" :rules="sample['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }"><base-input-select v-model="sample['PROTEINID']" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <span v-else>{{row['ACRONYM']}}</span>
+        </td>
+        <td>
+          <base-input-select v-if="editRowLocation == row['LOCATION']" v-model="sample['TYPE']" optionValueKey="ID" optionTextKey="TYPE" :options="sampleTypes" />
+          <span v-else>{{row['TYPE']}}</span>
+        </td>
+        <td>
+          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'Name-'+sample['LOCATION']" :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="sample['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <span v-else>{{row['NAME']}}</span>
+        </td>
+        <!-- The problematic column id field... -->
+        <td>
+          <base-input-select v-if="editRowLocation == row['LOCATION']" v-model="sample['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/>
+          <span v-else>{{getPurificationColumnName(row['PURIFICATIONCOLUMNID'])}}</span>
+        </td>
+        <td>
+          <base-input-text v-if="editRowLocation == row['LOCATION']" v-model="sample['VOLUME']"/>
+          <span v-else>{{row['VOLUME']}}</span>
+        </td>
+        <td>
+          <validation-provider v-if="editRowLocation == row['LOCATION'] && showInputRobotFields" slim :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION'] && showInputRobotFields" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <span v-else>{{row['ROBOTPLATETEMPERATURE']}}</span>
+        </td>
+        <td>
+          <validation-provider v-if="editRowLocation == row['LOCATION'] && showInputRobotFields" slim :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <span v-else>{{row['EXPOSURETEMPERATURE']}}</span>
+        </td>
       </template>
 
       <template slot="actions" slot-scope="{ row }">
-        <!-- Send event back to parent to clone/clear this item -->
+        <!-- Button to edit this row -->
         <a class="button" href="" v-if="editRowLocation != row['LOCATION']" @click.prevent="onEditSample(row)"><i class="fa fa-edit"></i></a>
+        <!-- If we are editing a row - show the save/cancel buttons -->
         <span v-else>
           <a class="button" href="" @click.prevent="onSaveSample(row)"><i class="fa fa-check"></i></a>
           <a class="button" href="" @click.prevent="onCancelEdit"><i class="fa fa-times"></i></a>
         </span>
+        <!-- Other row actions -->
         <a v-show="row['BLSAMPLEID']" class="button" :href="'/samples/sid/'+row['BLSAMPLEID']"><i class="fa fa-search"></i></a>
         <a v-show="row['BLSAMPLEID']" class="button" href="" @click.prevent="$emit('addto-sample-group', row['LOCATION'])"><i class="fa fa-cubes"></i></a>
       </template>
@@ -39,8 +94,6 @@
 </template>
 
 <script>
-import EventBus from 'app/components/utils/event-bus.js'
-
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
@@ -51,8 +104,8 @@ import PurificationColumns from 'modules/shipment/collections/purificationcolumn
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
-const EXPERIMENT_TYPE_ROBOT = 22
-const EXPERIMENT_TYPE_HPLC = 21
+// Property to compare for extra columns
+const EXPERIMENT_TYPE_ROBOT = 'Robot'
 
 export default {
   name: 'edit-sample-plate',
@@ -88,9 +141,9 @@ export default {
       purificationColumn: '',
 
       commonSampleHeaders: [
-        {key: 'LOCATION', title: 'Location'},
-        {key: 'ACRONYM', title: 'Acronym'},
-        {key: 'TYPE', title: 'Type'},
+        {key: 'LOCATION', title: 'location'},
+        {key: 'ACRONYM', title: 'acronym'},
+        {key: 'TYPE', title: 'type'},
         {key: 'NAME', title: 'Name'},
         {key: 'PURIFICATIONCOLUMNID', title: 'Column'},
         {key: 'VOLUME', title: 'Volume'},
@@ -117,11 +170,10 @@ export default {
 
     this.$store.dispatch('getCollection', this.purificationColumnsCollection).then( (result) => {
       this.purificationColumns = result.toJSON()
+      this.tableKey += 1
     })
 
     this.availableProteins = this.proteins.toJSON()
-
-    console.log("Sample Plate Editor - created with model: " + JSON.stringify(this.value))
   },
   computed: {
     // Trick to allow us to set/get passed model
@@ -134,6 +186,8 @@ export default {
       }
     },
     // Depending on the experiment type, we need a different table structure
+    // Currently the container experiment type is a text string!
+    // In future we could check against a typeid
     sampleHeaders: function() {
       let headers = Object.assign([], this.commonSampleHeaders)
       if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) {
@@ -141,13 +195,9 @@ export default {
       }
       return headers
     },
-    showInputRobotExp: function() {
+    showInputRobotFields: function() {
       if (this.experimentKind && this.experimentKind == EXPERIMENT_TYPE_ROBOT) return true
-      else {
-        // We could clear any temperature values here if needed/required
-        // this.inputValue.forEach( (v) => { v.ROBOTPLATETEMPERATURE = ''; v.EXPOSURETEMPERATURE = ''})
-        return false
-      }
+      else return false
     }
   },
   methods: {
@@ -184,6 +234,13 @@ export default {
       if (protein) return protein.get('ACRONYM')
       else return null
     },
+    getPurificationColumnName: function(value) {
+      console.log("PURIFICATION COL VALUE: " + value)
+      if (!value) return ''
+      let c = this.purificationColumnsCollection.findWhere({PURIFICATIONCOLUMNID: value.toString()})
+      return c ? c.get('NAME') : 'Not found'
+    }
+
   },
 }
 </script>
