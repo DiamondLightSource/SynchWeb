@@ -1,7 +1,8 @@
 export default {
   state: {
     selectedSampleGroups: [],
-    sampleGroups: []
+    sampleGroups: [],
+    sampleGroupsContainers: []
   },
   getters: {
     getSelectedSampleGroups: state => state.selectedSampleGroups,
@@ -21,9 +22,6 @@ export default {
     },
     updateSelectedSampleGroups({ commit }, payload) {
       commit('setSelectedSampleGroups', payload)
-    },
-    saveSampleGroupsChanges() {
-      
     }
   },
   namespaced: true

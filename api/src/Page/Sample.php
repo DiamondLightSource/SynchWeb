@@ -184,6 +184,7 @@ class Sample extends Page
 
                               array('/groups', 'get', '_sample_groups'),
                               array('/groups', 'post', '_add_sample_to_group'),
+                              array('/groups/:BLSAMPLEGROUPID', 'put', '_bulk_update_samples_in_group'),
                               array('/groups/name/:BLSAMPLEGROUPID', 'patch', '_update_sample_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
@@ -1984,24 +1985,45 @@ class Sample extends Page
             }
         }
 
-        function _add_sample_to_group() {
-            if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
+        function _add_sample_to_group () {
+            $sample = array('BLSAMPLEID' => $this->arg('BLSAMPLEID'), 'BLSAMPLEGROUPID' => $this->arg('BLSAMPLEGROUPID'));
+            $sample_group_result = $this->_save_sample_to_group($sample);
+            $this->_output($sample_group_result);
+        }
+
+        function _bulk_update_samples_in_group () {
+            if (!is_array($this->args)) return $this->_error('Samples for group should be a array');
+            
+            $this->db->start_transaction();
+            $collection = array();
+            foreach ($this->arg('collection') as $sample) {
+                $sample_update_result = $this->_save_sample_to_group($sample);
+
+                array_push($collection, $sample_update_result);
+            }
+
+            $this->db->end_transaction();
+            $this->_output($collection);
+        }
+
+        function _save_sample_to_group($sample_data) {
+            if (!isset($sample_data['BLSAMPLEID'])) $this->_error('No sample specified');
 
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
-              WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid,$this->arg('BLSAMPLEID')));
+              WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid, $sample_data['BLSAMPLEID']));
             
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            if (!$this->has_arg('BLSAMPLEGROUPID')) {
+            if (!isset($sample_data['BLSAMPLEGROUPID'])) {
                 $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
                 $sgid = $this->db->id();
             } else {
-                $sgid = $this->arg('BLSAMPLEGROUPID');
+                $sgid = $sample_data['BLSAMPLEGROUPID'];
             }
 
             $chk2 = $this->db->pq("SELECT count(bshg.blsampleid) as samples
@@ -2022,13 +2044,13 @@ class Sample extends Page
 
             if ($chk[0]['SAMPLES'] != $in_proposal) $this->_error('No such sample group');
 
-            $order = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : 1;
-            $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
+            $order = isset($sample_data['GROUPORDER']) ? $sample_data['GROUPORDER'] : 1;
+            $type = isset($sample_data['TYPE']) ? $sample_data['TYPE'] : null;
 
             $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
                 VALUES (:1,:2, :3, :4)", array($this->arg('BLSAMPLEID'), $sgid, $order, $type));
 
-            $this->_output(array('BLSAMPLEGROUPSAMPLEID' => $sgid.'-'.$this->arg('BLSAMPLEID'), 'BLSAMPLEID' => $this->arg('BLSAMPLEID'), 'BLSAMPLEGROUPID' => $sgid));
+            return array('BLSAMPLEID' => $this->arg('BLSAMPLEID'), 'BLSAMPLEGROUPID' => $sgid);
         }
 
 
