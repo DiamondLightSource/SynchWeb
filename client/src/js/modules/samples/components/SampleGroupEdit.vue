@@ -131,21 +131,19 @@ export default {
   methods: {
     async fetchContainers() {
       try {
-        this.$store.dispatch('updateLoadingState', true)
+        this.$store.commit('loading', true)
 
         const containers = await this.$store.dispatch('getCollection', this.containers)
 
         this.containers = containers.toJSON()
-
-        this.$store.dispatch('updateLoadingState', false)
       } catch (error) {
         console.log(error.message)
       } finally {
-        this.$store.dispatch('updateLoadingState', false)
+        this.$store.commit('loading', false)
       }
     },
     async onSaveSampleGroup() {
-      this.$store.dispatch('updateLoadingState', true)
+      this.$store.commit('loading', true)
 
       if (!this.gid) {
         this.sampleGroup.reset(this.selectedSampleGroups)
@@ -156,7 +154,7 @@ export default {
 
       await this.$store.dispatch('saveCollection', { collection: this.sampleGroup })
 
-      this.$store.dispatch('updateLoadingState', false)
+      this.$store.commit('loading', false)
     },
     setContainerType(type) {
       // Returns a backbone model that we need to map to our geometry structure
