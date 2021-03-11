@@ -87,7 +87,15 @@ Once container is valid then samples are added
             />
           </div>
 
-          <validation-provider v-show="!puck" tag="div" class="pcr plate tw-mb-2 tw-py-2" rules="required" name="BARCODE" v-slot="{ errors }">  <base-input-text
+          <validation-provider
+          v-show="!puck"
+          tag="div"
+          class="pcr plate tw-mb-2 tw-py-2"
+          rules="required|unique-barcode"
+          name="BARCODE"
+          debounce="200"
+          v-slot="{ errors }">
+          <base-input-text
               label="Barcode"
               name="BARCODE"
               v-model="containerState.CODE"
@@ -219,6 +227,7 @@ Once container is valid then samples are added
 </template>
 
 <script>
+import Backbone from 'backbone'
 import Container from 'models/container'
 import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
@@ -243,7 +252,7 @@ import ProcessingPipelines from 'collections/processingpipelines'
 import PuckControls from 'modules/shipment/components/samples/PuckSampleControls.vue'
 import Users from 'collections/users'
 
-import { ValidationObserver, ValidationProvider }  from 'vee-validate'
+import { ValidationObserver, ValidationProvider, Validator }  from 'vee-validate'
 
 const STORAGE_TEMP_NEG_80 = -80
 const STORAGE_TEMP_0 = 0
@@ -292,6 +301,49 @@ const initialContainerState = {
   EXPERIMENTTYPEID: "",
 }
 
+// Wrap the ajax call into a promise
+// Move this to the store later?
+const checkBarcode = function(value) {
+  return new Promise((resolve, reject) => {
+    Backbone.ajax({
+        url: app.apiurl+'/shipment/containers/barcode/'+value,
+        success: function(resp) {
+          resolve(resp)
+        },
+        error: function(err) {
+          reject(err)
+        }
+    })
+  })
+}
+
+// A Method used by vee-validate
+const validateBarcode = function(value) {
+  return new Promise((resolve, reject) => {
+    let retVal = {valid: false, data: { message: ''}}
+
+    checkBarcode(value).then( () => {
+      // A 200 response means the barcode is in use
+      retVal.valid = false
+      retVal.data.message ='This barcode is already registered'
+    }, (response) => {
+      // If there is an error (400) response, then no barcode exists with this value, so it's OK!
+      retVal.valid = true
+      retVal.data.message = response.responseText || 'This barcode is available'
+    }).finally(() => {
+      resolve(retVal)
+    })
+  })
+}
+
+// Setup barcode check validation rule
+Validator.extend('unique-barcode', {
+  validate: validateBarcode,
+  getMessage: (field, params, data) => {
+    return data.message;
+  }
+});
+
 export default {
   name: 'SaxsAddContainer',
   components: {
@@ -332,8 +384,6 @@ export default {
         },
         well: -1,
       },
-      // The container owner
-      owner: 0,
 
       // The dewar that this container will belong to
       dewar: null,
@@ -353,7 +403,6 @@ export default {
 
       selectedSample: null,
 
-      storageTemperature: 0,
       storageTemperatures: [
         {ID: '', NAME: '-'},
         {ID: STORAGE_TEMP_NEG_80, NAME: '-80'},
@@ -561,6 +610,9 @@ export default {
     })
   },
 
+  mounted: function() {
+
+  },
   methods: {
     // Called on Add Container
     // Calls the validation method on our observer component
@@ -642,21 +694,6 @@ export default {
       let sample = this.samplesCollection.findWhere({LOCATION: location.toString()})
 
       if (sample) sample.set('isSelected', true)
-    },
-    checkBarcode: function() {
-      console.log("Check Barcode: " + this.barCode)
-      // if (!this.ui.barcode.val()) this.model.set('BARCODECHECK', null)
-      // var self = this
-      // Backbone.ajax({
-      //     url: app.apiurl+'/shipment/containers/barcode/'+this.ui.barcode.val(),
-      //     success: function(resp) {
-      //         self.updateBarcode(resp.PROP)
-      //     },
-
-      //     error: function() {
-      //         self.updateBarcode()
-      //     }
-      // })
     },
 
     // Move this to container graphic
