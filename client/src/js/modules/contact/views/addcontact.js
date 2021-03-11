@@ -40,7 +40,7 @@ define(['views/form',
         success: function(model, response, options) {
             console.log('success from contact add')
             if (this.getOption('dialog')) {
-                app.alert({ message: 'New Lab Contact Registered' })
+                app.message({ message: 'New Lab Contact Registered' })
                 if (app.dialog.currentView) app.dialog.currentView.closeDialog()
             } else app.trigger('contact:show', model.get('LABCONTACTID'))
         },
