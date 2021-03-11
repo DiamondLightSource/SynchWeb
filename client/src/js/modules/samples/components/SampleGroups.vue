@@ -109,7 +109,7 @@ export default {
     // Wrap the method to get collection as promise
     async getSampleGroups() {
       try {
-        this.$store.dispatch('updateLoadingState', true)
+        this.$store.commit('loading', true)
   
         const result = await this.$store.dispatch(
           'getCollection',
@@ -119,9 +119,9 @@ export default {
         let collection = result.groups()
   
         this.groups = collection.toJSON()
-        this.$store.dispatch('updateLoadingState', false)
+        this.$store.commit('loading', false)
       } catch (error) {
-        this.$store.dispatch('updateLoadingState', false)
+        this.$store.commit('loading', false)
       }
     }
   }
