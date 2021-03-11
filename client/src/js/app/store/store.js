@@ -206,9 +206,6 @@ const store = new Vuex.Store({
           },
         })
       })
-    },
-    updateLoadingState({ commit }, payload) {
-      commit('loading', payload)
     }
   },
   getters: {
