@@ -122,7 +122,7 @@ Once container is valid then samples are added
             </base-input-select>
           </validation-provider>
 
-          <div v-show="containerGroup == 'scm'" class="tw-mb-2 tw-py-2" >
+          <div v-show="containerGroup == 'saxs'" class="tw-mb-2 tw-py-2" >
             <label>Show all experiment types</label>
             <base-input-checkbox
               name="SHOW_ALL_EXPERIMENT_TYPES"
@@ -130,7 +130,7 @@ Once container is valid then samples are added
             />
           </div>
 
-          <div v-show="containerGroup == 'scm'" class="tw-mb-2 tw-py-2">
+          <div v-show="containerGroup == 'saxs'" class="tw-mb-2 tw-py-2">
             <base-input-groupselect
               v-model="containerState.EXPERIMENTTYPEID"
               label="Experiment Type"
@@ -141,7 +141,7 @@ Once container is valid then samples are added
             />
           </div>
 
-          <div v-show="containerGroup == 'scm'" class="pcr tw-mb-2 tw-py-2">
+          <div v-show="containerGroup == 'saxs'" class="pcr tw-mb-2 tw-py-2">
             <base-input-select
               v-model="containerState.STORAGETEMPERATURE"
               label="Storage Temperature"
