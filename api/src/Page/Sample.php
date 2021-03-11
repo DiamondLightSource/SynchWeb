@@ -1988,7 +1988,7 @@ class Sample extends Page
         function _add_sample_to_group () {
             $sample_group_result = $this->_save_sample_to_group($this->arg('BLSAMPLEID'), $this->arg('BLSAMPLEGROUPID'), $this->arg('GROUPORDER'), $this-arg('TYPE'));
 
-            if (is_string($sample_group_result)) $this->_error('No sample specified');
+            if (is_string($sample_group_result)) $this->_error($sample_group_result);
 
             $this->_output($sample_group_result);
         }
