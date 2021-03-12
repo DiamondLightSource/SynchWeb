@@ -107,14 +107,14 @@ define(['backbone',
 
             options.success = function(resp) {
                 collection.reset(resp, { silent: true })
-                if (success) success(col, resp, options)
+                if (success) success(collection, resp, options)
             }
 
             const sampleGroupList = this.pluck('BLSAMPLEGROUPID');
 
             if (_.uniq(sampleGroupList).length === 1) {
-                this.url = `${this.url}/${sampleGroupList[0]}`
-                return Backbone.sync('update', this, options)
+                const updateCollection = _.extend(this, { url: `/sample/groups/${sampleGroupList[0]}` })
+                return Backbone.sync('update', updateCollection, options)
             }
             
             return Backbone.sync('create', this, options)

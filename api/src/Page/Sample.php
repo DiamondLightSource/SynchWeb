@@ -1986,7 +1986,12 @@ class Sample extends Page
         }
 
         function _add_sample_to_group () {
-            $sample_group_result = $this->_save_sample_to_group($this->arg('BLSAMPLEID'), $this->arg('BLSAMPLEGROUPID'), $this->arg('GROUPORDER'), $this-arg('TYPE'));
+            $blSampleId = $this->has_arg('BLSAMPLEID') ? $this->arg('BLSAMPLEID') : null;
+            $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : null;
+            $groupOrder = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : null;
+            $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
+            
+            $sample_group_result = $this->_save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type);
 
             if (is_string($sample_group_result)) $this->_error($sample_group_result);
 
@@ -1999,10 +2004,10 @@ class Sample extends Page
             $this->db->start_transaction();
             $collection = array();
             foreach ($this->arg('collection') as $sample) {
-                $blSampleId = $sample['BLSAMPLEID'];
-                $blSampleGroupId = $sample['BLSAMPLEGROUPID'];
-                $groupOrder = $sample['GROUPORDER'];
-                $type = $sample['TYPE'];
+                $blSampleId = isset($sample['BLSAMPLEID']) ? $sample['BLSAMPLEID'] : null;
+                $blSampleGroupId = isset($sample['BLSAMPLEGROUPID']) ? $sample['BLSAMPLEGROUPID'] : null;
+                $groupOrder = isset($sample['GROUPORDER']) ? $sample['GROUPORDER'] : null;
+                $type = isset($sample['TYPE']) ? $sample['TYPE'] : null;
 
                 $sample_group_result = $this->_save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type);
 
@@ -2060,7 +2065,7 @@ class Sample extends Page
             $type = isset($type) ? $type : null;
 
             $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
-                VALUES (:1,:2, :3, :4)", array($this->arg('BLSAMPLEID'), $sgid, $order, $type));
+                VALUES (:1,:2, :3, :4)", array($blSampleId, $sgid, $order, $type));
 
             return array('BLSAMPLEGROUPSAMPLEID' => $sgid.'-'.$blSampleId, 'BLSAMPLEID' => $blSampleId, 'BLSAMPLEGROUPID' => $sgid);
         }
