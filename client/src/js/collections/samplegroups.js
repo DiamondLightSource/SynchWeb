@@ -4,7 +4,7 @@
 
 define(['backbone',
   'backbone.paginator',
-  'js/models/samplegroup',
+  'models/samplegroup',
 ], function(Backbone, PageableCollection, SampleGroup) {
   return PageableCollection.extend({
     blSampleId: null,
