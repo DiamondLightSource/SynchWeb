@@ -19,6 +19,7 @@ import { resolve } from 'promise'
 import { reject } from 'promise'
 
 Vue.use(Vuex)
+Vue.config.devtools = true
 
 const store = new Vuex.Store({
   modules: {

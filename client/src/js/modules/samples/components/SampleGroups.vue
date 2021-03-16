@@ -100,7 +100,8 @@ export default {
       this.sampleGroupId = item.BLSAMPLEGROUPID
     },
     async onEditSampleGroup() {
-      await this.$store.dispatch('sampleGroups/updateSelectedSampleGroups', this.sampleGroupMembers)
+      await this.$store.commit('sampleGroups/setSelectedSampleGroups', this.sampleGroupMembers)
+      await this.$store.commit('sampleGroups/setSelectedSampleGroupName', this.sampleGroupName)
       this.$router.push('/samples/groups/edit/id/' + this.sampleGroupId)
     },
     onAddSampleGroup() {
