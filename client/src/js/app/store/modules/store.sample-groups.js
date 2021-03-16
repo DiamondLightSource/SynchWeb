@@ -2,11 +2,13 @@ export default {
   state: {
     selectedSampleGroups: [],
     sampleGroups: [],
-    sampleGroupsContainers: []
+    sampleGroupsContainers: [],
+    selectedSampleGroupName: ''
   },
   getters: {
     getSelectedSampleGroups: state => state.selectedSampleGroups,
-    getSampleGroups: state => state.sampleGroups
+    getSampleGroups: state => state.sampleGroups,
+    getSelectedSampleGroupName: state => state.selectedSampleGroupName
   },
   mutations: {
     setSampleGroups(state, data) {
@@ -14,15 +16,11 @@ export default {
     },
     setSelectedSampleGroups(state, data) {
       state.selectedSampleGroups = data
-    }
-  },
-  actions: {
-    updateSampleGroupsList({ commit }, payload) {
-      commit('setSampleGroups', payload)
     },
-    updateSelectedSampleGroups({ commit }, payload) {
-      commit('setSelectedSampleGroups', payload)
+    setSelectedSampleGroupName(state, data) {
+      state.selectedSampleGroupName = data
     }
   },
+  actions: {},
   namespaced: true
 }

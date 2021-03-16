@@ -120,5 +120,8 @@ define(['backbone',
             return Backbone.sync('create', this, options)
         },
 
+        sampleGroupNameModel: function() {
+            return new SampleGroup()
+        }
     })
 })
