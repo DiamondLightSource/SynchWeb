@@ -3,10 +3,15 @@
     <h1 v-if="gid">Edit Sample Group</h1>
     <h1 v-else>Add Sample Group</h1>
 
-    <form>
-      <label for="name">Sample Group Name</label>
-      <input v-model="groupName" type="text" placeholder="group name" />
-    </form>
+    <base-input-text
+      outerClass="tw-flex tw-w-full"
+      classObject="tw-mx-3"
+      :value="groupName"
+      id="name"
+      :inline="true"
+      @input="changeGroupName"
+      @save="saveSampleGroupName"
+    />
 
     <div v-if="sampleGroupMembers.length > 0" class="content">
       <h1>Sample Group {{ sampleGroupName }}</h1>
@@ -36,12 +41,12 @@
     />
 
     <div class="tw-relative tw-mt-6">
-      <button-component
+      <base-button
         v-if="selectedSampleGroups.length"
         @perform-button-action="onSaveSampleGroup"
         class="tw-text-white tw-border-green-700 tw-bg-green-500 hover:tw-bg-green-600">
         Save Sample Group
-      </button-component>
+      </base-button>
     </div>
   </div>
 </template>
@@ -53,11 +58,13 @@ import ContainerGraphic from './ContainerGraphic.vue'
 import Table from 'app/components/utils/table.vue'
 import Pagination from 'app/components/utils/pagination.vue'
 import PaginationTable from 'app/components/utils/pagination-table.vue'
-import ButtonComponent from 'app/components/utils/ButtonComponent.vue'
+import BaseButton from 'app/components/base-button.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
 
 import SampleGroupsCollection from 'collections/samplegroups.js'
 import ContainersCollection from 'collections/containers.js'
 import SamplesCollection from 'collections/samples.js'
+
 
 import ContainerTypes from 'modules/shipment/collections/platetypes.js'
 
@@ -71,11 +78,12 @@ export default {
     'pagination-panel': Pagination,
     'container-graphic': ContainerGraphic,
     'pagination-table': PaginationTable,
-    'button-component': ButtonComponent
+    'base-button': BaseButton,
+    'base-input-text': BaseInputText
   },
   data: function () {
     return {
-      groupName: 'New Sample Group',
+      groupName: '',
       lockName: this.gid ? true : false,
       sampleGroupHeaders: [
         { title: 'ID', key: 'BLSAMPLEID' },
@@ -116,7 +124,8 @@ export default {
   computed: {
     ...mapGetters({
       selectedSampleGroups: ['sampleGroups/getSelectedSampleGroups'],
-      proposalModel: ['proposal/currentProposalModel']
+      proposalModel: ['proposal/currentProposalModel'],
+      selectedSampleGroupName: ['sampleGroups/getSelectedSampleGroupName']
     })
   },
   created: function () {
@@ -127,6 +136,7 @@ export default {
   },
   mounted() {
     this.fetchContainers()
+    this.groupName = this.selectedSampleGroupName ? this.selectedSampleGroupName : 'New Sample Group' 
   },
   methods: {
     async fetchContainers() {
@@ -181,11 +191,17 @@ export default {
 
       this.samples = samplesData.toJSON()
       this.setContainerType(type);
+    },
+    saveSampleGroupName() {
+      const sampleGroupModel = this.sampleGroup.sampleGroupNameModel()
+      this.$store.dispatch('saveModel', {
+        model: sampleGroupModel,
+        attributes: { BLSAMPLEGROUPID: this.gid, NAME: this.groupName }
+      })
+    },
+    changeGroupName(value) {
+      this.groupName = value
     }
   }
 };
-
-function getRandomIntegers(max) {
-  return Math.floor(Math.random() * Math.floor(max))
-}
 </script>

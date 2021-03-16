@@ -11,12 +11,12 @@ TODO - move the score colour methods to a utility class
 <template>
   <div class="tw-w-full tw-flex tw-flex-col">
     <div class="tw-flex tw-w-full">
-      <button-component
+      <base-button
         @perform-button-action="toggleSelectionState"
         class="tw-border-gray-500 tw-bg-gray-500 hover:tw-bg-gray-400 tw-bottom-0 tw-right-0 tw-text-gray-900"
       >
         {{ nextFilterState }}
-      </button-component>
+      </base-button>
     </div>
     <div id="plate" class="tw-w-full"></div>
   </div>
@@ -27,13 +27,13 @@ import { select as d3Select, selectAll as d3SelectAll } from 'd3-selection'
 import { scaleSequential as d3ScaleSequential } from 'd3-scale'
 import { scaleOrdinal as d3ScaleOrdinal } from 'd3-scale'
 
-import ButtonComponent from 'app/components/utils/ButtonComponent.vue'
+import BaseButton from 'app/components/base-button.vue'
 
 
 export default {
   name: 'PlateView',
   components: {
-    'button-component': ButtonComponent
+    'base-button': BaseButton
   },
   props: {
     container: {
