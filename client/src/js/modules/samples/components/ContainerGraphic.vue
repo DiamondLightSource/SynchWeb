@@ -87,11 +87,11 @@ export default {
     },
     addSelectedCells: function(cellsLocation) {
       const selectedSamples = uniq(this.selectedSamples.concat(this.getFullSamplesDetails(cellsLocation)))
-      this.$store.dispatch('sampleGroups/updateSelectedSampleGroups', selectedSamples)
+      this.$store.commit('sampleGroups/setSelectedSampleGroups', selectedSamples)
     },
     deselectCells(cellsLocation) {
       const selectedSamples = difference(this.selectedSamples, this.getFullSamplesDetails(cellsLocation))
-      this.$store.dispatch('sampleGroups/updateSelectedSampleGroups', selectedSamples)
+      this.$store.commit('sampleGroups/setSelectedSampleGroups', selectedSamples)
     },
     updateColorRangeForPlate({selectedColorRange, threshold }) {
       this.samplesColorScheme = selectedColorRange

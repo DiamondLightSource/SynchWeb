@@ -4,7 +4,6 @@ Slots include:
 - description = sub title for the label
 - error-msg = place to show error messages
 - actions = place to show action buttons after the form control
-
 Can be used as inline edit - by default acts as normal input
 Set inline = true to initially show as span with button to change the input
 Component will emit a save event when the value changes
