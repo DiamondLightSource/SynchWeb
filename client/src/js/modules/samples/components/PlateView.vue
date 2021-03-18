@@ -52,9 +52,9 @@ export default {
       type: String,
       required: false,
     },
-    colorRange: {
-      type: Array,
-      default: () => ([])
+    sampleColour: {
+      type: String,
+      default: 'green'
     },
     scoreThreshold: {
       type: Number
@@ -157,10 +157,6 @@ export default {
   watch: {
     selectedDrops() {
       this.updateSelectedDrops()
-    },
-    colorRange() {
-      d3SelectAll("#plate > *").remove()
-      this.drawContainer()
     },
     scoreThreshold() {
       d3SelectAll("#plate > *").remove()
@@ -308,8 +304,8 @@ export default {
               .attr('height', self.dropHeight * self.container.drops.h)
               .attr('well-drop-index', (_, i) => i + 1)
               .attr('drop-index', (d) => d.dropIndex)
-              .style('stroke', 'gray')
-              .style('fill', (d) => d.LOCATION ? self.calculateColorFromScheme(d.SCORE) : 'none')
+              .style('stroke', 'black')
+              .style('fill', (d) => d.LOCATION ? self.sampleColour : 'none')
               .style('pointer-events', 'visible')
               .on('click', (event, data) => self.handleDropSelection(event.target, data.dropIndex, null))
 
@@ -342,22 +338,11 @@ export default {
       this.graphic
         .selectAll('.drop')
         .style('stroke', d => {
-          return d.LOCATION && this.selectedDrops.includes(Number(d.LOCATION)) ? 'steelblue' : 'gray'
+          return d.LOCATION && this.selectedDrops.includes(Number(d.LOCATION)) ? 'black' : 'gray'
         })
         .style('stroke-width', d => {
           return d.LOCATION && this.selectedDrops.includes(Number(d.LOCATION)) ? 2 : 1
         })
-    },
-    calculateColorFromScheme(value) {
-      const domainValues = this.scoreThreshold > 0 
-        ? [0, this.scoreThreshold, d3.max(this.samples, d => d.SCORE)]
-        : [0, d3.max(this.samples, d => d.SCORE)]
-
-      const setColor =  d3ScaleSequential()
-        .domain(domainValues)
-        .range(this.colorRange)
-
-      return setColor(value)
     },
     toggleSelectionState() {
       const allSamples = this.samples.map(sample => sample.LOCATION)
@@ -389,7 +374,7 @@ export default {
      * 3. When a column or row is clicked and a drop index exist, we select all the drop with the same matching index for the row or column
      * 4. When the column or row is clicked again with all the drop index for that row or column selected, we select all the drops for that row or column
      */
-    handleDropSelection(target, index, type ) {
+    handleDropSelection(target, index, type) {
       const isFullSelection = target.classList.contains(`all-${type}-selection`)
       const isPartialSelection = target.classList.contains(`partial-${type}-selection`)
 

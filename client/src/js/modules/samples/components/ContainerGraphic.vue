@@ -7,16 +7,14 @@
       </div>
     </div>
 
-    <color-scheme @update-color-range-of-samples="updateColorRangeForPlate" class="tw-my-4"/>
-
-    <div v-if="containerComponent && colorSchemeSelected" class="tw-w-full tw-border tw-border-green-500 tw-m-1 tw-p-3 tw-flex tw-flex-col">
+    <div v-if="containerComponent" class="tw-w-full tw-border tw-border-green-500 tw-m-1 tw-p-3 tw-flex tw-flex-col">
       <h1 class="tw-text-xl">Container: {{ selectedContainerName }}</h1>
       <component v-bind:is="containerComponent"
         :container="geometry"
         :samples="samples"
         :scoreThreshold="scoreThreshold"
-        :selectedDrops="selectedSamples"
-        :colorRange="samplesColorScheme"
+        :selectedDrops="selectedSampleLocations"
+        sampleColour="green"
         @unselect-cell="deselectCells"
         @cell-clicked="addSelectedCells"/>
     </div>
@@ -28,7 +26,6 @@ import PlateView from './PlateView.vue'
 import PuckView from './PuckView.vue'
 import Containers from './Containers.vue'
 import { difference, uniq } from 'lodash-es'
-import ColorScheme from 'app/components/utils/ColorScheme.vue'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -36,8 +33,7 @@ export default {
   components: {
     'plate-view': PlateView,
     'puck-view': PuckView,
-    'containers': Containers,
-    'color-scheme': ColorScheme
+    'containers': Containers
   },
   props: {
     geometry: {
@@ -67,6 +63,9 @@ export default {
     },
     sampleIdsList() {
       return this.selectedSamples.map(sample => sample.BLSAMPLEID)
+    },
+    selectedSampleLocations() {
+      return this.selectedSamples.map(sample => Number(sample.LOCATION))
     }
   },
   methods: {
@@ -76,7 +75,7 @@ export default {
     },
     getFullSamplesDetails(cellsLocation) {
       return cellsLocation.reduce((samples, location) => {
-        const sample = this.samples.find(sample => sample.LOCATION === location)
+        const sample = this.samples.find(sample => Number(sample.LOCATION) === Number(location))
         if (typeof sample !== 'undefined') {
           samples.push(sample)
         }
@@ -96,7 +95,6 @@ export default {
     updateColorRangeForPlate({selectedColorRange, threshold }) {
       this.samplesColorScheme = selectedColorRange
       this.scoreThreshold = threshold / 100
-      this.colorSchemeSelected = true
     }
   },
   watch: {
@@ -109,8 +107,7 @@ export default {
       plateKey: 0,
       puckKey: 0,
       samplesColorScheme: null,
-      colorSchemeSelected: false,
-      scoreThreshold: 0,
+      scoreThreshold: 0
     }
   }
 }
