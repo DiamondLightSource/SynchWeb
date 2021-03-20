@@ -186,6 +186,7 @@ class Sample extends Page
                               array('/groups', 'post', '_add_sample_to_group'),
                               array('/groups/:BLSAMPLEGROUPID', 'put', '_bulk_update_samples_in_group'),
                               array('/groups/name/:BLSAMPLEGROUPID', 'patch', '_update_sample_group'),
+                              array('/groups/name/:BLSAMPLEGROUPID', 'get', '_get_sample_group_name'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
         );
@@ -1985,27 +1986,39 @@ class Sample extends Page
             }
         }
 
+        function _get_sample_group_name() {
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+
+            $sampleGroup = $this->db->pq("SELECT * FROM blsamplegroup WHERE blsamplegroupid = :1", array($this->arg('BLSAMPLEGROUPID')));
+
+            $this->_output($sampleGroup[0]);
+        }
+
         function _add_sample_to_group () {
-            $blSampleId = $this->has_arg('BLSAMPLEID') ? $this->arg('BLSAMPLEID') : null;
-            $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : null;
-            $groupOrder = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : null;
-            $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
-            
-            $sample_group_result = $this->_save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type);
+            if ($this->has_arg('collection')) {
+                $this->_bulk_update_samples_in_group();
+            } else {
+                $blSampleId = $this->has_arg('BLSAMPLEID') ? $this->arg('BLSAMPLEID') : null;
+                $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : $this->_create_new_sample_group();
+                $groupOrder = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : null;
+                $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
 
-            if (is_string($sample_group_result)) $this->_error($sample_group_result);
+                $sample_group_result = $this->_save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type);
+    
+                if (is_string($sample_group_result)) $this->_error($sample_group_result);
 
-            $this->_output($sample_group_result);
+                $this->_output($sample_group_result);
+            }
         }
 
         function _bulk_update_samples_in_group () {
             if (!is_array($this->args)) $this->_error('Samples for group should be a array');
             
+            $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : $this->_create_new_sample_group();
             $this->db->start_transaction();
             $collection = array();
             foreach ($this->arg('collection') as $sample) {
                 $blSampleId = isset($sample['BLSAMPLEID']) ? $sample['BLSAMPLEID'] : null;
-                $blSampleGroupId = isset($sample['BLSAMPLEGROUPID']) ? $sample['BLSAMPLEGROUPID'] : null;
                 $groupOrder = isset($sample['GROUPORDER']) ? $sample['GROUPORDER'] : null;
                 $type = isset($sample['TYPE']) ? $sample['TYPE'] : null;
 
@@ -2021,8 +2034,15 @@ class Sample extends Page
             $this->_output($collection);
         }
 
+        function _create_new_sample_group () {
+            $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
+            return $this->db->id();
+        }
+
         function _save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type) {
             if (!isset($blSampleId)) return 'No sample specified';
+
+            $sgid = $blSampleGroupId;
             
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
@@ -2033,13 +2053,6 @@ class Sample extends Page
             
             if (!sizeof($samp)) return 'No such sample';
             else $samp = $samp[0];
-
-            if (!isset($blSampleGroupId)) {
-                $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
-                $sgid = $this->db->id();
-            } else {
-                $sgid = $blSampleGroupId;
-            }
 
             $chk2 = $this->db->pq("SELECT count(bshg.blsampleid) as samples
                 FROM blsamplegroup_has_blsample bshg
