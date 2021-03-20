@@ -13,7 +13,7 @@ TODO - move the score colour methods to a utility class
     <div class="tw-flex tw-w-full">
       <base-button
         @perform-button-action="toggleSelectionState"
-        class="tw-border-gray-500 tw-bg-gray-500 hover:tw-bg-gray-400 tw-bottom-0 tw-right-0 tw-text-gray-900"
+        class="button"
       >
         {{ nextFilterState }}
       </base-button>
@@ -24,7 +24,6 @@ TODO - move the score colour methods to a utility class
 
 <script>
 import { select as d3Select, selectAll as d3SelectAll } from 'd3-selection'
-import { scaleSequential as d3ScaleSequential } from 'd3-scale'
 import { scaleOrdinal as d3ScaleOrdinal } from 'd3-scale'
 
 import BaseButton from 'app/components/base-button.vue'
@@ -46,7 +45,7 @@ export default {
     },
     selectedDrops: {
       type: Array,
-      required: false
+      default: () => ([])
     },
     sampleKey: {
       type: String,
@@ -54,7 +53,7 @@ export default {
     },
     sampleColour: {
       type: String,
-      default: 'green'
+      default: 'gray'
     },
     scoreThreshold: {
       type: Number
@@ -161,6 +160,13 @@ export default {
     scoreThreshold() {
       d3SelectAll("#plate > *").remove()
       this.drawContainer()
+    },
+    samples() {
+      this.allDropsSelected = false
+      d3SelectAll("#plate > *").remove()
+      this.drawContainer()
+      this.updateSelectedDrops()
+      this.currentSelectedDropIndex = -1
     }
   },
   created() {
@@ -208,12 +214,12 @@ export default {
         .append('text')
         .attr('x',
           (d, i) =>
-            (this.cell.width + 2 * this.cell.padding + this.cell.margin) * i +
-            0.5 * this.cell.width
+            (this.cell.width + 2 * this.cell.padding + this.cell.margin) * i + 0.5 * this.cell.width
         )
         .attr('class', (d, index) => `plate-column-${index + 1}-header pointer`)
         .style('fill', 'black')
         .style('pointer-events', 'visible')
+        .style('font-size', '16px')
         .text((d) => d)
         .on('click', (event, index) => self.handleDropSelection(event.target, index, 'column'))
 
@@ -238,10 +244,11 @@ export default {
         .data(this.preparedData)
         .enter()
         .append('text')
-        .attr('y',(d, i) => (this.cell.height + 2 * this.cell.padding + this.cell.margin) * i + 0.5 * this.cell.height)
+        .attr('y',(d, i) => (this.cell.height + 2 * this.cell.padding + this.cell.margin) * i)
         .attr('class', (d, index) => `plate-row-${index + 1}-header pointer`)
         .style('fill', 'black')
         .style('pointer-events', 'visible')
+        .style('font-size', '16px')
         .text((d, i) => letterScale(i))
 
       row_axis.each(function (item, index) {

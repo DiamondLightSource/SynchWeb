@@ -56,7 +56,6 @@ export default {
     return {
       headers: [
         { title: "Group Name", key: "NAME" },
-        { title: "ID", key: "BLSAMPLEGROUPID" },
         { title: "Number of Samples", key: "NUM_MEMBERS" },
       ],
       sampleGroupHeaders: [
@@ -100,7 +99,6 @@ export default {
       this.sampleGroupId = item.BLSAMPLEGROUPID
     },
     async onEditSampleGroup() {
-      await this.$store.commit('sampleGroups/setSelectedSampleGroups', this.sampleGroupMembers)
       await this.$store.commit('sampleGroups/setSelectedSampleGroupName', this.sampleGroupName)
       this.$router.push('/samples/groups/edit/id/' + this.sampleGroupId)
     },

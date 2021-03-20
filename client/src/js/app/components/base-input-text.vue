@@ -14,7 +14,7 @@ Component will emit a save event when the value changes
   <div :class="outerClass">
 
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id" class="tw-mr-4">{{label}}
+    <label v-if="label" :for="id">{{label}}
       <slot name="description">
         <span v-if="description" class="small">{{description}}</span>
       </slot>

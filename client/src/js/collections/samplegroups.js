@@ -102,8 +102,9 @@ define(['backbone',
             }
 
             const sampleGroupList = this.pluck('BLSAMPLEGROUPID');
+            const uniqSampleGroup = _.uniq(sampleGroupList)
 
-            if (_.uniq(sampleGroupList).length === 1) {
+            if (uniqSampleGroup.length === 1 && typeof  _.first(uniqSampleGroup) !== 'undefined') {
                 const updateCollection = _.extend(this, { url: `/sample/groups/${sampleGroupList[0]}` })
                 return Backbone.sync('update', updateCollection, options)
             }
@@ -111,8 +112,8 @@ define(['backbone',
             return Backbone.sync('create', this, options)
         },
 
-        sampleGroupNameModel: function() {
-            return new SampleGroup()
+        sampleGroupNameModel: function(options) {
+            return new SampleGroup({}, options)
         }
     })
 })
