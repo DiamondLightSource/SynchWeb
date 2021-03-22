@@ -198,7 +198,9 @@ export default {
       this.$store.commit('loading', false)
 
       const savedSamples = result.toJSON()
-      this.$router.push(`/samples/groups/edit/id/${savedSamples[0].BLSAMPLEGROUPID}`)
+      if (!this.gid) {
+        this.$router.push(`/samples/groups/edit/id/${savedSamples[0].BLSAMPLEGROUPID}`)
+      }
     },
     setContainerType(type) {
       // Returns a backbone model that we need to map to our geometry structure
