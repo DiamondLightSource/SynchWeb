@@ -24,8 +24,6 @@ class Image extends Page
 
         public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
-                              array('/dimp/id/:id(/n/:n)', 'get', '_dimple_images'),
-                              array('/bigep/aid/:aid/ppl/:ppl', 'get', '_bigep_images'),
                               array('/di/id/:id(/thresh/:thresh)(/n/:n)', 'get', '_diffraction_viewer'),
                               array('/cam/bl/:bl(/n/:n)', 'get', '_forward_webcam'),
                               array('/oav/bl/:bl(/n/:n)', 'get', '_forward_oav'),
@@ -245,59 +243,6 @@ class Image extends Page
                 $this->_error('Not found', 'That image is not available');
             }
             
-        }
-        
-        
-        # Dimple blob images
-        function _dimple_images() {
-            $n = $this->has_arg('n') ? $this->arg('n') : 1;
-            
-            list($info) = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
-                FROM datacollection dc 
-                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
-                WHERE dc.datacollectionid=:1", array($this->arg('id')));
-            
-            $this->db->close();
-            
-            $this->ads($info['DIR']);
-            
-            $root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_/fast_dp/dimple';
-            $im = $root . '/blob'.$n.'v1.png';
-            
-            if (file_exists($im)) {
-                $this->_browser_cache();
-                $this->app->contentType('image/png');
-                readfile($im);
-            }
-        }
-        
-
-        # BigEP model images
-        function _bigep_images() {
-            
-            $img_names = array('autoSHARP' => 'autoSHARP_model.png',
-                'AutoSol' => 'AutoBuild_model.png',
-                'crank2' => 'crank2_model.png',
-                'AutoBuild' => 'AutoBuild_model.png',
-                'Crank2' => 'crank2_model.png'
-            );
-            $rows = $this->db->pq("SELECT appa.fileName, appa.filePath FROM AutoProcProgramAttachment appa
-                                         WHERE appa.autoProcProgramId = :1
-                                         AND appa.fileName = :2", array($this->arg('aid'), $img_names[$this->arg('ppl')]));
-            
-            if (!sizeof($rows)) return;
-            else $row = $rows[0];
-            $this->db->close();
-            
-            $im = $row['FILEPATH'] . '/' . $row['FILENAME'];
-            
-            if (file_exists($im)) {
-                $this->_browser_cache();
-                $this->app->contentType('image/png');
-                readfile($im);
-            }
         }
         
         
