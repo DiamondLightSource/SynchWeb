@@ -38,7 +38,7 @@ define(['backbone'], function(Backbone){
                 }
             })
 
-            console.log('type icon', this.get('TYPE')+icon)
+            // console.log('type icon', this.get('TYPE')+icon)
             this.set({
                 ICON: icon,
                 'TYPEICON': this.get('TYPE')+icon

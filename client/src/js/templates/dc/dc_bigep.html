@@ -1,66 +1,51 @@
-<% _.each(AID, function(data, aid) { %>
-    <h2><%-data.TAG%></h2>
-    <% if (_.isEmpty(data.PROC)) { %>
-    <p>This processing task has failed</p>
-    <% } %>
-    <% if (!_.isEmpty(data.SETTINGS)) { %>
-    <section class="bigep-settings">
-        <table class="bepm_sets reflow">
+<% if (!_.isEmpty(SETTINGS)) { %>
+<section class="bigep-settings">
+    <table class="bepm_sets reflow">
+        <thead>
+            <tr>
+                <th>Anom. scatterer</th>
+                <th>Space group</th>
+                <th>Num. scatterers</th>
+                <th>Dataset type</th>
+                <th>Compound</th>
+                <th>Sequence</th>
+            </tr>
+        </thead>
+        <tr>
+            <td><%-SETTINGS.atom%></td>
+            <td><%-SETTINGS.spacegroup%></td>
+            <td><%-SETTINGS.nsites%></td>
+            <td><%-SETTINGS.dataset%></td>
+            <td><%-SETTINGS.compound%></td>
+            <td><div class="bepm-seq seq"><%-SETTINGS.sequence%></div></td>
+        </tr>
+    </table>
+</section>
+<% } %>
+
+<section class="bigep-stats clearfix">
+    <section class="bigep-models clearfix">
+        <table class="bepm_stats bepm_stats2 reflow">
             <thead>
                 <tr>
-                    <th>Anom. scatterer</th>
-                    <th>Space group</th>
-                    <th>Num. scatterers</th>
-                    <th>Dataset type</th>
-                    <th>Compound</th>
-                    <th>Sequence</th>
+                    <th>Resid. / Frag / Max. Frag.</th>
+                    <th>Best MapCC (Resol.)</th>
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
             <tr>
-                <td><%-data.SETTINGS.atom%></td>
-                <td><%-data.SETTINGS.spacegroup%></td>
-                <td><%-data.SETTINGS.nsites%></td>
-                <td><%-data.SETTINGS.dataset%></td>
-                <td><%-data.SETTINGS.compound%></td>
-                <td><div class="bepm-seq seq"><%-data.SETTINGS.sequence%></div></td>
+                <td><%-RESID%> / <%-FRAGM%> / <%-MAXLEN%></td>
+                <td><%-MAPCC%> (<%-MAPRESOL%>)</td>
             </tr>
         </table>
     </section>
-    <% } %>
-    <% if (!_.isEmpty(data.PROC)) { %>
-    <section class="bigep-stats clearfix">
-        <section class="bigep-models clearfix">
-                <p class="r downloads">
-                <a id="<%-aid%>-bigep-files>" class="apattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>
-                </p>
-            <table class="bepm_stats bepm_stats2 reflow">
-                <thead>
-                    <tr>
-                        <th>Pipeline</th>
-                        <th>Resid. / Frag / Max. Frag.</th>
-                        <th>Best MapCC (Resol.)</th>
-                        <th>&nbsp;</th>
-                    </tr>
-                </thead>
-                <% _.each(data.PROC, function(val, prop) { %>
-                <tr>
-                    <td><%-prop%></td>
-                    <td><%-val.RESID%> / <%-val.FRAGM%> / <%-val.MAXLEN%></td>
-                    <td><%-val.MAPCC%> (<%-val.MAPRESOL%>)</td>
-                </tr>
-                <% }) %>
-            </table>
-        </section>
-        <section class="bigep-images">
-            <% _.each(data.PROC, function(val, prop) { %>
-                <figure>
-                <a href="/dc/map/id/<%-DCID%>/aid/<%-aid%>/ty/bigep/ppl/<%-prop%>" title="<%-prop%> model">
-                <img id="<%-aid%><%-prop%>-thumb" class="bigep-thumb" alt="<%-prop%> model" />
-                </a>
-                <figcaption><%-prop%></figcaption>
-                </figure>
-            <% }) %>
-        </section>
+    <section class="bigep-images">
+        <figure>
+            <% if (IMAGE) { %>
+            <a href="/dc/map/aid/<%-AID%>" title="<%-TYPE%> model">
+            <img class="thumb" class="bigep-thumb" alt="<%-TYPE%> model" />
+            </a>
+            <% } %>
+        </figure>
     </section>
-    <% } %>
-<% }) %>
+</section>

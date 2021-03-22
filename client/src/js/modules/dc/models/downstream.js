@@ -1,7 +1,18 @@
 define(['backbone'], function(Backbone){
        
   return Backbone.Model.extend({
-    idAttribute: 'TYPE',
+    idAttribute: 'AID',
+
+    initialize: function(options) {
+      this.addTitle()
+    },
+
+    addTitle: function() {
+      this.set({
+        'TITLE': this.get('TYPE') 
+          + (this.get('PARENTAUTOPROCPROGRAM') ? (' (' + this.get('PARENTAUTOPROCPROGRAM') + ')') : '')
+      })
+    },
   })
 
 })
