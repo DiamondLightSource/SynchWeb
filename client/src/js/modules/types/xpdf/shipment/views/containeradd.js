@@ -12,6 +12,7 @@ define([
     'modules/types/xpdf/shipment/views/sampletable',
 
     'modules/types/xpdf/shipment/collections/containertypes',
+    'modules/shipment/collections/containerregistry',
 
     'templates/types/xpdf/shipment/containeradd.html',
     'templates/types/xpdf/shipment/sampletable.html',
@@ -27,6 +28,7 @@ define([
         SampleTableView,
 
         XpdfStageTypes,
+        ContainerRegistry,
         template,
         table,
         row
@@ -45,6 +47,12 @@ define([
             this.blSamples.queryParams.seq = 1
             this.blSamples.queryParams.dcp = 1
             this.blSamples.fetch()
+
+            let self = this
+            this.containerregistry = new ContainerRegistry(null, { state: { pageSize: 9999 }})
+            this.containerregistry.fetch().done(function() {
+                self.ui.registry.html('<option value="!">Please select one</option>'+self.containerregistry.opts({ empty: true }))
+            })
         },
         
         // Override the setType function with XPDF specific gubbins
@@ -74,7 +82,9 @@ define([
             e.preventDefault()
 
             this.model.set({
-                NAME: this.ui.name[0].value
+                NAME: this.ui.name[0].value,
+                BARCODE: this.ui.registry[0].options[this.ui.registry[0].options.selectedIndex].innerText,
+                CONTAINERREGISTRYID: this.ui.registry[0].value
             })
 
             this.model.validate()
