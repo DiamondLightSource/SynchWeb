@@ -29,13 +29,17 @@ define([
         createSamples: function() {
             this.samples = new Instances(null, { state: { pageSize: 9999, addPrimary: true } })
             this.samples.queryParams.seq = 1
+            this.samples.queryParams.dcp = 1
         },
 
         initialize: function(options) {
             ContainerView.__super__.initialize.call(this, options)
 
-            this.crystals = new Crystals()
-            this.crystals.fetch()
+            // Get existing BLSamples
+            this.blSamples = new Instances(null, {state: {pageSize: 9999}})
+            this.blSamples.queryParams.seq = 1
+            this.blSamples.queryParams.dcp = 1
+            this.blSamples.fetch()
         },
         
         onShow: function() {
@@ -52,7 +56,7 @@ define([
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
             } 
 
-            this.table.show(new SampleTableView({ collection: this.samples, crystals: this.crystals, proteins: this.proteins }))
+            this.table.show(new SampleTableView({ collection: this.samples, blSamples: this.blSamples, proteins: this.proteins, containerId: this.model.get('CONTAINERID') }))
         }
     
     })

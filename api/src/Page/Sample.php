@@ -43,6 +43,7 @@ class Sample extends Page
                               'capillary' => '',
                               'capillaryPhase' => '',
                               'json' => '',
+                              'dcp' => '\d',
 
                               'DEWARID' => '\d+',
                               'PROTEINID' => '\d+',
@@ -968,6 +969,12 @@ class Sample extends Page
                       if ($r[$k]) $r[$k] = explode(',', $r[$k]);
                     }
                 }
+
+                // display DCP count for each sample
+                if($this->has_arg('dcp')){
+                    $dcpCount = $this->db->pq("SELECT COUNT(*) AS DCPCOUNT FROM BLSample_has_DataCollectionPlan WHERE blSampleId =:1", array($r['BLSAMPLEID']));
+                    $r['DCPCOUNT'] = $dcpCount[0]['DCPCOUNT'];
+                }
             }
 
 
@@ -1342,6 +1349,7 @@ class Sample extends Page
         # ------------------------------------------------------------------------
         # Update a particular field for a sample
         function _update_sample() {
+
             if (!$this->has_arg('sid')) $this->_error('No sampleid specified');
             
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
@@ -1354,7 +1362,13 @@ class Sample extends Page
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE');
+            if($this->has_arg('CONTAINERID') && $this->arg('CONTAINERID') == 0) {
+                $defaultContainerLocation = $this->_get_default_sample_container();
+                $this->args['CONTAINERID'] = $defaultContainerLocation['CONTAINERID'];
+                $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
+            }
+
+            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
             foreach ($sfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE blsample SET $f=:1 WHERE blsampleid=:2", array($this->arg($f), $samp['BLSAMPLEID']));
@@ -1384,6 +1398,50 @@ class Sample extends Page
                 }
             }
 
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Look up the default container for proposal and the next available location
+        function _get_default_sample_container() {
+
+            $containers = $this->db->pq("SELECT DISTINCT c.containerId, c.code, b.location
+              FROM Container c
+              INNER JOIN BLSample b ON b.containerId = c.containerId
+              INNER JOIN Crystal cr ON cr.crystalId = b.crystalId
+              INNER JOIN Protein pr ON pr.proteinId = cr.proteinId
+              WHERE pr.proposalId =:1 AND c.code LIKE :2", array($this->proposalid, "%_samples"));
+
+            $free = null;
+
+            if(sizeof($containers)){
+                $locations = array();
+                foreach($containers as $c) {
+                    array_push($locations, $c['LOCATION']);
+                }
+
+                $free = max($locations)+1;
+
+                for($i=1; $i<max($locations); $i++){
+                    if(!in_array($i, $locations)){
+                        $free = $i;
+                        break;
+                    }
+                }
+            } else {
+                // It's possible the default container is empty so we would fail to find it above
+                // Find it via dewars and shipping instead
+                $containers = $this->db->pq("SELECT c.containerId, c.code
+                  FROM Container c
+                  INNER JOIN Dewar d ON c.dewarId = d.dewarId
+                  INNER JOIN Shipping s ON d.shippingId = s.shippingId
+                  INNER JOIN Proposal p on s.proposalId = p.proposalId
+                  WHERE p.proposalId = :1 AND c.code LIKE :2", array($this->proposalid, "%_samples"));
+
+                $free = 1;
+            }
+
+            return array('CONTAINERID'=>$containers[0]['CONTAINERID'], 'LOCATION'=>$free);
         }
         
         
