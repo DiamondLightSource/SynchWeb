@@ -45,6 +45,12 @@ define([
             ContainerAdd.__super__.initialize.call(this, options)
             this.ctypes = new XpdfStageTypes()
 
+            for(var i = this.ctypes.length-1; i >=0; i--){
+                var c = this.ctypes.models[i]
+                if(c.get('deprecated'))
+                    c.destroy()
+            }
+
             this.blSamples = new Instances(null, {state: {pageSize: 9999}})
             this.blSamples.queryParams.seq = 1
             this.blSamples.queryParams.dcp = 1
