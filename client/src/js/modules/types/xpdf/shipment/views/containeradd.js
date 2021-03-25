@@ -8,6 +8,7 @@ define([
     'modules/shipment/views/containeradd',
     'modules/types/xpdf/shipment/views/instancetable',
     'modules/shipment/views/plate',
+    'modules/types/xpdf/shipment/views/puck',
     'modules/types/xpdf/collections/instances',
     'modules/types/xpdf/shipment/views/sampletable',
 
@@ -23,6 +24,7 @@ define([
         GenericContainerAdd,
         InstanceTableView,
         PlateView,
+        PuckView,
 
         Instances,
         SampleTableView,
@@ -66,7 +68,10 @@ define([
             
             // Show type-specific elements
             this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
-            this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
+            if(this.type.get('name') == 'Puck')
+                this.puck.show(new PuckView({ collection: this.samples}))
+            else
+                this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
             this.buildCollection()
             this.stable = new SampleTableView({ blSamples: this.blSamples, proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table })
             this.table.show(this.stable)
@@ -144,8 +149,9 @@ define([
                         check()
                     },
                     error: function(response){
-                        console.log('Failed to add container ' + response)
-                        app.alert({ message: 'Failed to add container! ' + response})
+                        console.log('Failed to add container!')
+                        app.alert({ message: 'Failed to add container!'})
+                        self.$el.find('form').removeClass('loading')
                     }
                 })
             }

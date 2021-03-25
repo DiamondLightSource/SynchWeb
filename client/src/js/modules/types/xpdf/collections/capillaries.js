@@ -3,7 +3,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
     var capillaries = [
         {
             name: "Borosilicate 1mm OD",
-            short_name: "Boro 1mm",
+            short_name: "Boro_1mm",
             outer_diameter: 1.0,
             inner_diameter: 0.78,
             wall_thickness: 0.11,
@@ -13,7 +13,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Borosilicate 1.5mm OD",
-            short_name: "Boro 1.5mm",
+            short_name: "Boro_1.5mm",
             outer_diameter: 1.5,
             inner_diameter: 1.17,
             wall_thickness: 0.165,
@@ -23,7 +23,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Borosilicate 2.0mm OD",
-            short_name: "Boro 2.0mm",
+            short_name: "Boro_2.0mm",
             outer_diameter: 2.0,
             inner_diameter: 1.56,
             wall_thickness: 0.22,
@@ -33,7 +33,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Fused Silica 0.4mm OD",
-            short_name: "SiO2 0.4mm",
+            short_name: "SiO2_0.4mm",
             outer_diameter: 0.4,
             inner_diameter: 0.3,
             wall_thickness: 0.05,
@@ -43,7 +43,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Fused Silica 1.0mm OD",
-            short_name: "SiO2 1.0mm",
+            short_name: "SiO2_1.0mm",
             outer_diameter: 1.0,
             inner_diameter: 0.8,
             wall_thickness: 0.1,
@@ -53,7 +53,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Fused Silica 1.5mm OD",
-            short_name: "SiO2 1.5mm",
+            short_name: "SiO2_1.5mm",
             outer_diameter: 1.5,
             inner_diameter: 1.3,
             wall_thickness: 0.1,
@@ -63,7 +63,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Fused Silica 2.5mm OD",
-            short_name: "SiO2 2.5mm",
+            short_name: "SiO2_2.5mm",
             outer_diameter: 2.5,
             inner_diameter: 2.3,
             wall_thickness: 0.1,
@@ -73,7 +73,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Fused Silica 1/8\" OD",
-            short_name: "SiO2 1/8\"",
+            short_name: "SiO2_1/8\"",
             outer_diameter: 3.175,
             inner_diameter: 2.95,
             wall_thickness: 0.11,
@@ -83,7 +83,7 @@ define(['backbone', 'utils/kvcollection'], function(Backbone, KVCollection) {
         },
         {
             name: "Fused Silica 1/16\" OD",
-            short_name: "SiO2 1/16\"",
+            short_name: "SiO2_1/16\"",
             outer_diameter: 1.59,
             inner_diameter: 1.39,
             wall_thickness: 0.11,

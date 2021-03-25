@@ -5,6 +5,8 @@ define(['modules/shipment/collections/platetypes'], function(GenericPlateTypes) 
     
 
     var xpdfPlateTypes = [
+        { name: 'Puck', capacity: 22 },
+
         { name: 'Box', well_per_row: 5,
             drop_per_well_x: 1, drop_per_well_y: 1,
             drop_height:1, drop_width: 1,

@@ -8,6 +8,7 @@ define([
     'modules/types/xpdf/collections/instances',
     'modules/shipment/views/container',
     'modules/shipment/views/plate',
+    'modules/types/xpdf/shipment/views/puck',
     'modules/types/xpdf/shipment/views/sampletable',
     'modules/types/xpdf/shipment/collections/containertypes',
     'templates/types/xpdf/shipment/containerview.html'
@@ -17,6 +18,7 @@ define([
         Instances,
         GenericContainerView,
         PlateView,
+        PuckView,
         SampleTableView,
         PlateTypes,
         template
@@ -52,8 +54,14 @@ define([
             this.type = this.types.findWhere({ name: this.model.get('CONTAINERTYPE') })
 
             if (this.type.get('capacity') > 1) {
-                this.$el.find('.puck').css('width', '50%')
-                this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
+                if(this.type.get('name') == 'Puck') {
+                    this.$el.find('.puck').css('margin-left', '25%')
+                    this.puck.show(new PuckView({ collection: this.samples}))
+                }
+                else {
+                    this.$el.find('.puck').css('width', '50%')
+                    this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
+                }
             } 
 
             this.table.show(new SampleTableView({ collection: this.samples, blSamples: this.blSamples, proteins: this.proteins, containerId: this.model.get('CONTAINERID') }))
