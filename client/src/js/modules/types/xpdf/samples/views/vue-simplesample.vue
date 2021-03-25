@@ -88,13 +88,13 @@
 
                     <li>
                         <span>
-                            <label>Containerless?</label>
+                            <label>Not in Capillary?</label>
                             <input type="checkbox" v-model="containerless" /><br />
                         </span>
                     </li>
 
                     <li>
-                        <label>Container
+                        <label>Capillary
                                 <span class="small">The capillary or container that should be associated with this sample</span>
                         </label>
                         <select id="containerSelect" name="type" style="width: 400px" v-model="type" v-on:change="getCapillaryInfo('density')" v-validate="'required'" :disabled="containerless">
