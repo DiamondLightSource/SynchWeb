@@ -9,7 +9,22 @@ Once container is valid then samples are added
     <h1>Add Container Saxs style</h1>
 
       <div class="tw-flex tw-flex-col">
-
+        <!-- <div class="pcr tw-mb-2 tw-py-2">
+          <base-input-combobox
+            v-model="proteinCombo"
+            :inline="true"
+            label="Protein Combobox"
+            id="PROTEINID-COMBO"
+            name="PROTEINID"
+            :options="proteins"
+            optionValueKey="PROTEINID"
+            optionTextKey="ACRONYM"
+            optionClassKey="SAFETYLEVEL"
+            :classList="['active', 'minor']"
+            @get-option-class="safetyLevel"
+            @save-me="onSaveMe"
+            />
+        </div> -->
       <!-- Wrap the form in an observer component so we can check validation state on submission -->
       <validation-observer ref="observer" v-slot="{ invalid }">
 
@@ -87,20 +102,15 @@ Once container is valid then samples are added
             />
           </div>
 
-          <validation-provider
-          v-show="!puck"
-          tag="div"
-          class="pcr plate tw-mb-2 tw-py-2"
-          rules="required|unique-barcode"
-          name="BARCODE"
-          debounce="200"
-          v-slot="{ errors }">
-          <base-input-text
-              label="Barcode"
-              name="BARCODE"
-              v-model="containerState.CODE"
-              :errorMessage="errors[0]"
-              />
+          <validation-provider tag="div" v-show="containerGroup == 'saxs'" class="tw-mb-2 tw-py-2" rules="required" name="container-registry">
+            <base-input-select
+              v-model="containerState.CONTAINERREGISTRYID"
+              label="Registered Container"
+              name="CONTAINERREGISTRYID"
+              :options="containerRegistry"
+              optionValueKey="CONTAINERREGISTRYID"
+              optionTextKey="BARCODE"
+            />
           </validation-provider>
 
           <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="owner">
@@ -177,6 +187,7 @@ Once container is valid then samples are added
           </div>
         </div>
 
+
         <!-- Right hand side is container graphic -->
         <div class="tw-w-1/2">
           <div class="tw-justify-end">
@@ -190,8 +201,6 @@ Once container is valid then samples are added
         </div>
 
       </form>
-
-     <!-- </validation-observer> -->
 
       <div>
         <!-- Sample specific fields -->
@@ -247,6 +256,7 @@ import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
+// import BaseInputCombobox from 'app/components/base-input-combobox.vue'
 
 import ProcessingPipelines from 'collections/processingpipelines'
 import PuckControls from 'modules/shipment/components/samples/PuckSampleControls.vue'
@@ -352,6 +362,7 @@ export default {
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
     'base-input-checkbox': BaseInputCheckbox,
+    // 'base-input-combobox': BaseInputCombobox,
     'container-graphic': ContainerGraphic,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
@@ -419,7 +430,8 @@ export default {
       processingPipeline: '',
       processingPipelines: [],
 
-
+      proteinCombo: '123540',
+      pReady: false,
       proteinsCollection: null,
       gProteinsCollection: null,
       proteins: [],
@@ -599,6 +611,7 @@ export default {
     })
     this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
       this.proteins = result.toJSON()
+      this.pReady = true
     })
     this.$store.dispatch('getCollection', processingPipelinesCollection).then( (result) => {
       this.processingPipelines = result.toJSON()
@@ -731,6 +744,9 @@ export default {
     autofillPuck: function() {
       console.log('auto-puck')
       app.trigger('samples:autofill-puck')
+    },
+    onSaveMe: function() {
+      console.log("Save combobox")
     },
   },
 }

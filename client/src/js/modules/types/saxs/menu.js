@@ -8,6 +8,8 @@ define([], function() {
             shipments: 'Shipments',
             containers: 'Containers',
             samples: 'Samples',
+            'dewars/registry': 'Registered Parcels',
+            'containers/registry': 'Registered Containers',
             proteins: 'Proteins',
             contacts: 'Lab Contacts',
             // stats: 'Statistics',
