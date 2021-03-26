@@ -425,7 +425,7 @@ class Sample extends Page
                         }
 
                         $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
-                        VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLECAPILLARYID'], $ids[$model]['SAMPLEGROUPID'], 2, 'capillary'));
+                        VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLECAPILLARYID'], $ids[$model]['SAMPLEGROUPID'], 2, 'container'));
                 
                         $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
                         VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLEID'], $ids[$model]['SAMPLEGROUPID'], 1, 'sample'));
