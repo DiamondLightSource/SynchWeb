@@ -1,19 +1,15 @@
 <template>
   <div class="content">
-    <h1>Add Shipment</h1>
-    <p class="tw-text-red-500 tw-mb-2">Default type for this proposal is: {{ proposalType }} </p>
-
-  <saxs-shipment v-if="scmView" />
-  <marionette-view
-    v-else
-    :key="$route.fullPath"
-    :options="options"
-    :fetchOnLoad="true"
-    :mview="mview"
-    :breadcrumbs="breadcrumbs">
-  </marionette-view>
-
-
+    <!-- Saxs uses new vue component, if not saxs use mx style -->
+    <saxs-shipment v-if="scmView" />
+    <marionette-view
+      v-else
+      :key="$route.fullPath"
+      :options="options"
+      :fetchOnLoad="true"
+      :mview="mview"
+      :breadcrumbs="breadcrumbs">
+    </marionette-view>
   </div>
 </template>
 

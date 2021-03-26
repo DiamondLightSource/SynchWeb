@@ -73,17 +73,15 @@
       </div> <!-- End Container Form Elements -->
 
       <div class="puck tw-w-1/3" title="Click to jump to a position in the puck">
-        <!-- <container-graphic
+        <container-graphic
           :geometry="containerGeometry"
           :containerType="container.CONTAINERTYPE"
           :samples="samples"
           :key="plateKey"
-          @cell-clicked="onContainerCellClicked"/> -->
+          @cell-clicked="onContainerCellClicked"/>
       </div>
 
     </div> <!-- End flex puck wrap-->
-
-    <a class="button extrainfo r" href="#" title="Show extra fields"><i class="extra-state fa fa-plus"></i> Extra Fields</a>
 
     <div class="table sample">
       <sample-editor
