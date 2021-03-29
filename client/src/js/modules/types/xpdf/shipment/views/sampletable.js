@@ -52,6 +52,7 @@ define(['backgrid',
             this.updateBLSamples()
 
             if (this.model.get('BLSAMPLEID') > -1) this.$el.find('select[name=CRYSTALID]').combobox('value', this.model.get('BLSAMPLEID'))
+            this.$el.find('div[class=ui-combobox]').css('width', '100%')
         },
 
         invalidBLSample: function(ui, val) {
