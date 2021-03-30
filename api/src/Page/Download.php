@@ -500,13 +500,15 @@ class Download extends Page
             $this->db->close();
 
             if (is_string($subdir)) {
-                return preg_replace('/'.$info['VIS'].'/', $info['VIS'].$subdir, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                // return preg_replace('/'.$info['VIS'].'/', $info['VIS'].$subdir, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                return $this->get_visit_processed_dir($info, $subdir).$root;
 
             } elseif (is_array($subdir)) {
                 $paths = array();
                 foreach ($subdir as $sbd) {
                     if (is_string($sbd)) {
-                        $pth = preg_replace('/'.$info['VIS'].'/', $info['VIS'].$sbd, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                        // $pth = preg_replace('/'.$info['VIS'].'/', $info['VIS'].$sbd, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                        $pth = $this->get_visit_processed_dir($info, $sbd).$root;
                         array_push($paths, $pth);
                     } else {
                         $this->_error('Invalid parameter type in downstream directory function call', 500);
