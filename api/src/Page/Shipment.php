@@ -845,13 +845,19 @@ class Shipment extends Page
 
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
 
+            // LDAP email search does not always provide a match
+            // So look at the ISPyB person record for a matching staff user
+            if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT']) {
+              $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
+            }
+
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
-            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
+            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
 
             $email->send($recpts);
 
