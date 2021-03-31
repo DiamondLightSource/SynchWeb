@@ -1,13 +1,13 @@
 <template>
   <section class="tw-mx-auto">
     <div v-if="containerComponent" class="tw-w-full tw-flex tw-flex-col">
-      <h1 class="tw-text-xl">Container: {{ selectedContainerName }}</h1>
+      <h1 class="tw-text-xl tw-mb-4">Container: {{ selectedContainerName }}</h1>
       <component v-bind:is="containerComponent"
         :container="geometry"
         :samples="samples"
         :scoreThreshold="scoreThreshold"
         :selectedDrops="selectedSampleLocations"
-        sampleColour="gray"
+        sampleColour="#dfdfdf"
         v-on="$listeners"
         />
     </div>

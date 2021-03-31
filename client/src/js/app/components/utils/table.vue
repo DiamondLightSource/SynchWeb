@@ -7,16 +7,18 @@
                     <th
                         v-for="(header,index) in headers" :key="index"
                         class=""
-                        @click="$emit('sort-by', header.key)">{{header.title}}</th>
+                        @click="$emit('sort-by', header.key)">{{header.title}}
+                    </th>
                 </thead>
                 <!-- Change row[header.key] to row.get(header.key) if using Backbone models -->
                 <tbody v-if="data && data.length > 0">
-                    <tr v-for="(row, index) in data" :key="index"
-                        v-on:click="$emit('row-clicked', row)">
-                        <td
-                            v-for="(header, index) in headers" :key="index"
-                            class="">{{row[header.key]}}</td>
-                    </tr>
+                    <slot :data="data" :headers="headers">
+                        <tr v-for="(row, index) in data" :key="index" v-on:click="$emit('row-clicked', row)">
+                            <td v-for="(header, headerIndex) in headers" :key="headerIndex" class="">
+                                {{row[header.key]}}
+                            </td>
+                        </tr>
+                    </slot> 
                 </tbody>
                 <tbody v-else>
                     <tr>

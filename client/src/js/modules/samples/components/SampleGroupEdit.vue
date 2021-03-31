@@ -25,15 +25,25 @@
       ></table-panel>
     </div>
 
-    <div v-if="containers.length > 0" class="content">
+    <div class="content">
       <h1>Containers</h1>
-      <table-panel
-        :headers="containerHeaders"
-        :data="containers"
-        @row-clicked="onContainerSelected"
-      ></table-panel>
-
-      <pagination-panel />
+      <containers-list
+        :showImaging="false"
+        :tableHeaders="containerHeaders"
+      >
+        <template slot-scope="{ data }">
+          <tr v-for="(row, index) in data" :key="index" @click="onContainerSelected(row)">
+            <td v-for="(column, columnIndex) in containersBodyColumns" :key="columnIndex" class="">
+              {{row[column]}}
+            </td>
+            <td>
+              <router-link class="button button-notext atp" :to="`/containers/cid/${row.CONTAINERID}`">
+                <i class="fa fa-info"></i> <span>See Details</span>
+              </router-link>
+            </td>
+          </tr>
+        </template>
+      </containers-list>
     </div>
 
     <container-graphic
@@ -77,17 +87,17 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { difference, uniq, get as lodashGet, values, flatten } from 'lodash-es'
+import { difference, uniq, get as lodashGet } from 'lodash-es'
 import ContainerGraphic from './ContainerGraphic.vue'
 
 import Table from 'app/components/utils/table.vue'
 import Pagination from 'app/components/utils/pagination.vue'
 import PaginationTable from 'app/components/utils/pagination-table.vue'
 import BaseButton from 'app/components/base-button.vue'
-import BaseInputText from 'app/components/base-input-text.vue'
+import BaseInputText from 'app/components/inputs/base-input-text.vue'
+import ContainersList from 'modules/shipment/components/containers-list.vue'
 
 import SampleGroupsCollection from 'collections/samplegroups.js'
-import ContainersCollection from 'collections/containers.js'
 import SamplesCollection from 'collections/samples.js'
 
 
@@ -104,7 +114,8 @@ export default {
     'container-graphic': ContainerGraphic,
     'pagination-table': PaginationTable,
     'base-button': BaseButton,
-    'base-input-text': BaseInputText
+    'base-input-text': BaseInputText,
+    'containers-list': ContainersList
   },
   data: function () {
     return {
@@ -116,13 +127,12 @@ export default {
         { title: 'Container', key: 'CONTAINER' },
         { title: 'Protein', key: 'PROTEIN' },
       ],
+      containersBodyColumns: ['NAME', 'CONTAINERTYPE', 'BARCODE'],
       containerHeaders: [
-        { title: 'ID', key: 'CONTAINERID' },
         { title: 'Name', key: 'NAME' },
         { title: 'Container Type', key: 'CONTAINERTYPE' },
         { title: 'BarCode', key: 'BARCODE' },
-        { title: 'Dewar', key: 'DEWAR' },
-        { title: 'Shipment', key: 'SHIPMENT' },
+        { title: 'Action', key: '' }
       ],
       containers: [],
       containerTypes: null,
@@ -144,7 +154,17 @@ export default {
       selectedContainerName: '',
       samples: [],
       sampleGroup: null,
-      selectedContainerList: {}
+      selectedContainerList: {},
+      containersListState: {},
+      containerFilters: [
+        { id: 'plate', name: 'Plates'},
+        { id: 'puck', name: 'Pucks'},
+        { id: 'imager', name: 'In Imager'},
+        { id: 'queued', name: 'Queued'},
+        { id: 'completed', name: 'Completed'},
+        { id: 'processing', name: 'Processing'},
+        { id: 'subsamples', name: 'Has Subsamples'},
+      ],
     };
   },
   computed: {
@@ -156,12 +176,10 @@ export default {
   },
   created: function () {
     this.containerTypes = new ContainerTypes()
-    this.containers = new ContainersCollection()
     this.sampleGroup = new SampleGroupsCollection()
     this.containerSamples = new SamplesCollection()
   },
   mounted() {
-    this.fetchContainers()
     if (this.gid) {
       this.getSampleGroupModel()
     }
@@ -175,6 +193,7 @@ export default {
         const containers = await this.$store.dispatch('getCollection', this.containers)
 
         this.containers = containers.toJSON()
+        this.containersListState = containers.state
       } catch (error) {
         console.log(error.message)
       } finally {
@@ -224,6 +243,7 @@ export default {
       let type = item.CONTAINERTYPE
       this.selectedContainerName = `${item.CONTAINERID} - ${item.BARCODE}`
       this.containerSamples.queryParams.cid = item.CONTAINERID
+      this.containerSamples.setPageSize(999)
 
       const samplesData = await this.$store.dispatch('getCollection', this.containerSamples)
 
