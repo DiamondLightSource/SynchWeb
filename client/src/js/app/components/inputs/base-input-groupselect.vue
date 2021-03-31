@@ -57,7 +57,7 @@ Slots include:
 
 <script>
 export default {
-  name: "BaseInputSelect",
+  name: "BaseInputGroupSelect",
   props: {
     value: { // Passed in automatically if v-model used
       type: String,
