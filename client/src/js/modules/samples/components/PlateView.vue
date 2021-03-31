@@ -10,13 +10,17 @@ TODO - move the score colour methods to a utility class
 -->
 <template>
   <div class="tw-w-full tw-flex tw-flex-col">
-    <div class="tw-flex tw-w-full">
+    <div class="tw-flex tw-w-full tw-items-center">
       <base-button
         @perform-button-action="toggleSelectionState"
-        class="button"
+        class="button tw-mr-2"
       >
         {{ nextFilterState }}
       </base-button>
+
+      <p class="tw-ml-1">
+        Click on Row/Column to select {{ getSelectedDropPosition(currentSelectedDropIndex) }} drops for the Row/Column
+      </p>
     </div>
     <div id="plate" class="tw-w-full"></div>
   </div>
@@ -236,7 +240,7 @@ export default {
         .append('g')
         .attr(
           'transform',
-          `translate(${margin.left - margin.left / 2}, ${
+          `translate(${0}, ${
             margin.top + margin.top / 2
           })`
         )
@@ -322,10 +326,11 @@ export default {
             .enter()
             .append('text')
             .attr('x', (d, i) => (self.dropCoords[i].x + self.dropWidth * 0.5 * self.container.drops.w))
-            .attr('y', (d, i) => (self.dropCoords[i].y + self.dropHeight * 0.5 * self.container.drops.h))
+            .attr('y', (d, i) => (self.dropCoords[i].y + (self.dropHeight  * self.container.drops.h) + self.cell.margin))
+            .html((_, i) => { return i + 1 })
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
-            .style('font-size', '10px')
+            .style('font-size', '12px')
             .style('fill', 'darkgray')
             .style('pointer-events', 'none') // Required to capture mouse events on non-fill shapes
         })
@@ -454,6 +459,23 @@ export default {
           this.$emit('cell-clicked', itemsWithSample)
         }
       }
+    },
+    getSelectedDropPosition(number) {
+      if (number < 0) return 'All'
+
+      const tenthRemainder = number % 10
+      const hundredthRemainder = number % 100
+
+      if (tenthRemainder == 1 && hundredthRemainder != 11) {
+        return `${number}st`
+      }
+      else if (tenthRemainder == 2 && hundredthRemainder != 12) {
+        return `${number}nd`
+      }
+      else if (tenthRemainder == 3 && hundredthRemainder != 13) {
+        return `${number}rd`
+      }
+      return `${number}th`
     }
   }
 }
