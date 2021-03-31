@@ -78,7 +78,6 @@ define(['backbone',
         },
 
         generateGroups: function(e) {
-            console.log('generating groups', e)
             var groups = []
 
             var groupids = _.unique(this.pluck('BLSAMPLEGROUPID'))
