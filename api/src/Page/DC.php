@@ -707,7 +707,7 @@ class DC extends Page
             $dct = $this->db->pq("SELECT dc.overlap, dc.blsampleid, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number, xrc.status as xrcstatus
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                LEFT OUTER JOIN gridinfo gr ON gr.datacollectionid = dc.datacollectionid
+                LEFT OUTER JOIN gridinfo gr ON (gr.datacollectionid = dc.datacollectionid) OR (gr.datacollectiongroupid = dc.datacollectiongroupid)
                 LEFT OUTER JOIN xraycentringresult xrc ON xrc.gridinfoid = gr.gridinfoid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
