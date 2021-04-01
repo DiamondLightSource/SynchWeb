@@ -133,6 +133,7 @@ class Sample extends Page
                               'GROUPORDER' => '\d+',
                               'TYPE' => '\w+',
                               'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
+                              'PLANORDER' => '\d',
 
                                );
         
@@ -391,9 +392,12 @@ class Sample extends Page
 
                         $expTime = $attrs->EXPOSURETIME ? $attrs->EXPOSURETIME : 600;
 
+                        // Need to know the highest current DCP plan order so we can add new ones after it
+                        $maxLocation = $this->_get_current_max_dcp_plan_order($ids[$model]['CONTAINERID']);
+
                         $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid, planorder) 
-                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0));
-                        
+                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $maxLocation+1));
+
                         $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
                             VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $detector1_id, $expTime, $detector1_distance));
 
@@ -1351,14 +1355,14 @@ class Sample extends Page
         function _update_sample() {
 
             if (!$this->has_arg('sid')) $this->_error('No sampleid specified');
-            
+
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
               WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid,$this->arg('sid')));
-            
+
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
@@ -1367,6 +1371,9 @@ class Sample extends Page
                 $this->args['CONTAINERID'] = $defaultContainerLocation['CONTAINERID'];
                 $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
             }
+
+            $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
+            $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
 
             $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
             foreach ($sfields as $f) {
@@ -1398,6 +1405,18 @@ class Sample extends Page
                 }
             }
 
+            if($this->has_arg('PLANORDER')) {
+                // If we're moving a BLSample to a new container we need to adjust the DCP plan order not to clash with existing plans for samples in the new container
+                $dcps = $this->db->pq("SELECT dataCollectionPlanId FROM BLSample_has_DataCollectionPlan
+                                WHERE blSampleId = :1", array($this->arg('sid')));
+
+                if(sizeof($dcps)) {
+                    foreach($dcps as $dcp){
+                        ++$maxLocation;
+                        $this->db->pq("UPDATE BLSample_has_DataCollectionPlan SET planOrder = :1 WHERE dataCollectionPlanId = :2 AND blSampleId = :3", array($maxLocation, $dcp['DATACOLLECTIONPLANID'], $this->arg('sid')));
+                    }
+                }
+            }
         }
 
 
@@ -1442,6 +1461,20 @@ class Sample extends Page
             }
 
             return array('CONTAINERID'=>$containers[0]['CONTAINERID'], 'LOCATION'=>$free);
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Look up highest value DPC plan order to append new ones
+        function _get_current_max_dcp_plan_order($containerId) {
+
+            $maxLocation = $this->db->pq("SELECT MAX(bhd.planOrder) AS LOC
+                                        FROM BLSample_has_DataCollectionPlan bhd
+                                        INNER JOIN BLSample bls ON bls.blSampleId = bhd.blSampleId
+                                        INNER JOIN Container c ON c.containerId = bls.containerId
+                                        WHERE c.containerId = :1", array($containerId));
+
+            return $maxLocation[0]['LOC'];
         }
         
         

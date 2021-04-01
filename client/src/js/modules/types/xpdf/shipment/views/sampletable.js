@@ -90,6 +90,7 @@ define(['backgrid',
                         data: {
                             CONTAINERID: this.containerId,
                             LOCATION: this.$el.find('td[name=LOCATION]')[0].innerHTML,
+                            PLANORDER: 1,
                             _METHOD: 'patch'
                         },
 
@@ -151,6 +152,7 @@ define(['backgrid',
                     data: {
                         CONTAINERID: 0,
                         LOCATION: 0,
+                        PLANORDER: 1,
                         _METHOD: 'patch'
                     },
 

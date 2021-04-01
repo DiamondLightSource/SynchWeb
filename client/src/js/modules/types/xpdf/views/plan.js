@@ -572,9 +572,10 @@ define(['marionette',
                 columns: columns, 
                 tableClass: 'subsamples', 
                 loading: true,
-                backgrid: {
+                // Below overrides the SortableRow in the SortableTableView which breaks drag and drop events
+                /*backgrid: {
                     emptyText: 'No data collection plans found'
-                }
+                }*/
             })
 
             this.listenTo(this.datacollectionplans, 'order:updated', this.saveOrder)
