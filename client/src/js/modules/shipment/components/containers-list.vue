@@ -41,7 +41,7 @@ import Pagination from 'app/components/utils/pagination.vue'
 import Containers from 'collections/containers'
 import MarionetteApplication from 'app/marionette-application.js'
 import CollectionFilters from 'app/components/utils/collection-filters.vue'
-import BaseInputCheckbox from '../../../app/components/inputs/base-input-checkbox.vue'
+import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 
 export default {
     name: 'ContainersList',
