@@ -1609,7 +1609,7 @@ class DC extends Page
         function _grid_info() {
             $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked
                 FROM gridinfo g
-                INNER JOIN datacollection dc on dc.datacollectionid = g.datacollectionid
+                INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
                 WHERE g.datacollectionid = :1 ", array($this->arg('id')));
 
