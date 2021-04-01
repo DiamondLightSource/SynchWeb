@@ -6,6 +6,17 @@
         @toggle-filter-selection="handleFilterSelection"
       ></collection-filters>
 
+    <base-input-checkbox
+        :outerClass="
+            `tw-mx-1 tw-mb-3 tw-rounded-md tw-w-32
+            tw-cursor-pointer tw-p-2 tw-bg-content-filter-background tw-bg-content-filter-background`
+        "
+        :value="showUserContainers"
+        description="My Containers"
+        name="currentUserContainers"
+        @input="setUserContainersState"
+    />
+
       <table-panel
         :headers="tableColumns"
         :data="containers"
@@ -30,13 +41,15 @@ import Pagination from 'app/components/utils/pagination.vue'
 import Containers from 'collections/containers'
 import MarionetteApplication from 'app/marionette-application.js'
 import CollectionFilters from 'app/components/utils/collection-filters.vue'
+import BaseInputCheckbox from '../../../app/components/inputs/base-input-checkbox.vue'
 
 export default {
     name: 'ContainersList',
     components: {
         'table-panel': Table,
         'pagination-panel': Pagination,
-        'collection-filters': CollectionFilters
+        'collection-filters': CollectionFilters,
+        'base-input-checkbox': BaseInputCheckbox
     },
     props: {
         tableHeaders: {
@@ -92,7 +105,8 @@ export default {
             hiddenColumns: [1,2,5,6,9,10,11],
             containers: [],
             containersListState: {},
-            selectedFilterType: ''
+            selectedFilterType: '',
+            showUserContainers: false
         }
     },
     computed: {
@@ -150,6 +164,9 @@ export default {
         handlePageChange(data) {
             this.collection.queryParams = { page: data['current-page'], per_page: data['per-page']}
             this.fetchContainers()
+        },
+        setUserContainersState() {
+            this.showUserContainers = !this.showUserContainers
         }
     },
     watch: {
@@ -158,6 +175,13 @@ export default {
                 ? { page: 1, per_page: 15, ty: this.selectedFilterType }
                 : { page: 1, per_page: 15 }
 
+            this.fetchContainers()
+        },
+        showUserContainers() {
+            this.collection.queryParams = this.showUserContainers
+                ? { page: 1, per_page: 15, currentuser: 1 }
+                : { page: 1, per_page: 15 }
+            
             this.fetchContainers()
         }
     }
