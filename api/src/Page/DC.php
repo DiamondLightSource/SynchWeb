@@ -1611,7 +1611,7 @@ class DC extends Page
                 FROM gridinfo g
                 INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
-                WHERE g.datacollectionid = :1 ", array($this->arg('id')));
+                WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
 
             if (!sizeof($info)) $this->_output(array());
             else {
