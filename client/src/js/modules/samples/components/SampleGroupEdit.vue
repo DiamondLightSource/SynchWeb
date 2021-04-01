@@ -94,7 +94,7 @@ import Table from 'app/components/utils/table.vue'
 import Pagination from 'app/components/utils/pagination.vue'
 import PaginationTable from 'app/components/utils/pagination-table.vue'
 import BaseButton from 'app/components/base-button.vue'
-import BaseInputText from 'app/components/inputs/base-input-text.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
 import ContainersList from 'modules/shipment/components/containers-list.vue'
 
 import SampleGroupsCollection from 'collections/samplegroups.js'
