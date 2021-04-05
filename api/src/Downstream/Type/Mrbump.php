@@ -4,9 +4,8 @@ namespace SynchWeb\Downstream\Type;
 
 use SynchWeb\Downstream\DownstreamPlugin;
 use SynchWeb\Downstream\DownstreamResult;
-use SynchWeb\Downstream\MapModelFeature;
 
-class mrbump extends DownstreamPlugin {
+class Mrbump extends DownstreamPlugin {
     var $friendlyname = "MrBUMP";
     var $has_mapmodel = array(1, 2);
 

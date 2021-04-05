@@ -5,7 +5,7 @@ namespace SynchWeb\Downstream\Type;
 use SynchWeb\Downstream\DownstreamPlugin;
 use SynchWeb\Downstream\DownstreamResult;
 
-class fast_ep extends DownstreamPlugin {
+class FastEp extends DownstreamPlugin {
     var $friendlyname = "Fast EP";
     var $has_mapmodel = array(1, 1);
 

@@ -5,7 +5,7 @@ namespace SynchWeb\Downstream\Type;
 use SynchWeb\Downstream\DownstreamPlugin;
 use SynchWeb\Downstream\DownstreamResult;
 
-class dimple extends DownstreamPlugin {
+class Dimple extends DownstreamPlugin {
     var $has_images = true;
     var $friendlyname = 'Dimple';
     var $has_mapmodel = array(1, 2);

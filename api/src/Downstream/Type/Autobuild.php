@@ -4,6 +4,6 @@ namespace SynchWeb\Downstream\Type;
 
 use SynchWeb\Downstream\BigEPPhasing;
 
-class autobuild extends BigEPPhasing {
+class Autobuild extends BigEPPhasing {
     var $friendlyname = "Autobuild";
 }
