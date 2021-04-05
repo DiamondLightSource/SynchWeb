@@ -131,6 +131,8 @@ class Status extends Page
         # ------------------------------------------------------------------------
         # Return last n lines of gda log file
         function _get_server_log() {
+            if (!$this->staff) return $this->_error('No access');
+            
             session_write_close();
             global $server_log;
             
