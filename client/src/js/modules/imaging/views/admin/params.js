@@ -47,7 +47,8 @@ define(['marionette',
 
             if (this.model.isValid(true)) {
                 var self = this
-                this.model.save({}, {
+                this.model.save(this.model.changedAttributes(), {
+                    patch: true,
                     success: function() {
                         self.render()
                     }
@@ -89,7 +90,8 @@ define(['marionette',
 
             if (this.model.isValid(true)) {
                 var self = this
-                this.model.save({}, {
+                this.model.save(this.model.changedAttributes(), {
+                    patch: true,
                     success: function() {
                         self.render()
                     }
@@ -234,7 +236,9 @@ define(['marionette',
 
         saveModel: function(m, v) {
             console.log('model changed', arguments)
-            if (!m.isNew()) m.save(m.changedAttributes(), { patch: true })
+            // Changed Attributes are not being detected correctly.
+            // Therefore we can crudely set all parameters to enforce a PATCH request
+            if (!m.isNew()) m.save(_.clone(m.attributes), { patch: true })
         },
 
 

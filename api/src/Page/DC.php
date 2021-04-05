@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
+use SynchWeb\TemplateParser;
 
 class DC extends Page
 {
@@ -374,7 +375,7 @@ class DC extends Page
                     d.numberofpixelsx as detectornumberofpixelsx,
                     d.numberofpixelsy as detectornumberofpixelsy,
                     ses.archived,
-                    dc.rotationaxis
+                    IFNULL(dc.rotationaxis, 'Omega') as rotationaxis
                     ";
                 $groupby = 'GROUP BY smp.name,smp.blsampleid,ses.visit_number,dc.kappastart,dc.phistart, dc.startimagenumber, dc.experimenttype, dc.datacollectiongroupid, dc.runstatus, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.overlap, dc.flux, dc.imageprefix, dc.datacollectionnumber, dc.filetemplate, dc.datacollectionid, dc.numberofimages, dc.imagedirectory, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages, TO_CHAR(dc.starttime, \'DD-MM-YYYY HH24:MI:SS\'), dc.transmission, dc.axisrange, dc.wavelength, dc.comments, dc.xtalsnapshotfullpath1, dc.xtalsnapshotfullpath2, dc.xtalsnapshotfullpath3, dc.xtalsnapshotfullpath4, dc.starttime, dc.detectordistance, dc.xbeam, dc.ybeam, dc.chistart';
                 // $this->db->set_debug(True);
@@ -424,7 +425,7 @@ class DC extends Page
                     max(d.numberofpixelsx) as detectornumberofpixelsx,
                     max(d.numberofpixelsy) as detectornumberofpixelsy,
                     max(ses.archived) as archived,
-                    max(dc.rotationaxis) as rotationaxis";
+                    IFNULL(max(dc.rotationaxis), 'Omega') as rotationaxis";
                 $groupby = "GROUP BY dc.datacollectiongroupid";
             }
 
@@ -595,6 +596,7 @@ class DC extends Page
         # ------------------------------------------------------------------------
         # Check whether diffraction and snapshot images exist
         function _chk_image() {
+            global $jpeg_thumb_location;
             if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
             
             $where = array();
@@ -620,14 +622,12 @@ class DC extends Page
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $ids);
             
-            $this->db->close();
             $this->profile('dc query');
             
             $dcs = array();
             foreach ($dct as $d) $dcs[$d['ID']] = $d;
             
             $out = array();
-            
             foreach ($dcs as $dc) {
                 $debug = array();
 
@@ -636,7 +636,8 @@ class DC extends Page
                 foreach (array('X1', 'X2', 'X3', 'X4') as $j => $im) {
                     array_push($images, file_exists($dc[$im]) ? 1 : 0);
                     if ($im == 'X1') {
-                        $thumb = str_replace('.png', 't.png', $dc[$im]);
+                        $ext = pathinfo($dc[$im], PATHINFO_EXTENSION);
+                        $thumb = str_replace('.'.$ext, 't.'.$ext, $dc[$im]);
                         if ($this->staff && $this->has_arg('debug')) $debug['snapshot_thumb'] = array('file' => $thumb, 'exists' => file_exists($thumb) ? 1 : 0);
                         if (file_exists($thumb)) $sn = 1;
                     }
@@ -646,7 +647,8 @@ class DC extends Page
                 $dc['DIR'] = $this->ads($dc['DIR']);
                 $dc['X'] = $images;
                 
-                $di = str_replace($dc['VIS'], $dc['VIS'].'/jpegs', $dc['DIR']).str_replace(pathinfo($dc['FILETEMPLATE'], PATHINFO_EXTENSION), 'jpeg',preg_replace('/#+/', sprintf('%0'.substr_count($dc['FILETEMPLATE'], '#').'d', $dc['STARTIMAGENUMBER']),$dc['FILETEMPLATE']));
+                $tmp = new TemplateParser($this->db);
+                $di = $tmp->interpolate($jpeg_thumb_location, array('DCID' => $dc['ID']));
                 
                 $this->profile('diffraction image');
                 $die = 0;
@@ -754,7 +756,8 @@ class DC extends Page
                         }
 
                         foreach ($ap_statuses['locations'] as $loc) {
-                            $root = preg_replace('/'.$dc['VIS'].'/', $dc['VIS'].$loc, $dc['DIR'], 1).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
+                            #$root = preg_replace('/'.$dc['VIS'].'/', $dc['VIS'].$loc, $dc['DIR'], 1).$dc['IMP'].'_'.$dc['RUN'].'_'.'/';
+                            $root = $this->get_visit_processed_dir($dc, $loc);
                             if (file_exists($root.$ap[0])) {
                                 $val = 1;
                                 $logs = glob($root.$ap[0].'*'.$ap[1]);
@@ -1152,7 +1155,7 @@ class DC extends Page
         # Auto processing for a data collection
         function _dc_auto_processing($id) {
             $rows = $this->db->pq('SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingprograms as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga, 
-                    (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as nswps, app.processingstatus, app.processingmessage, count(distinct pjis.datacollectionid) as imagesweepcount, max(pjis.processingjobid) as processingjobid
+                    (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as imagesweepcount, app.processingstatus, app.processingmessage, count(distinct pjis.datacollectionid) as dccount, max(pjis.processingjobid) as processingjobid
                 FROM autoprocintegration api 
                 LEFT OUTER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
                 LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
@@ -1188,8 +1191,9 @@ class DC extends Page
                     $shell = array();
                     foreach ($r as $k => &$v) {
                         if ($k == 'TYPE') {
-                            if ($r['NSWPS'] > 1) {
-                                $v = $r['NSWPS'].'xMulti'.$v;
+                            if ($r['DCCOUNT'] > 1) {
+                                $prefix = preg_match('/multi/', $v) ? '' : 'multi-';
+                                $v = $r['DCCOUNT'].'x '.$prefix.$v;
                             }
                         }
 
@@ -1204,7 +1208,9 @@ class DC extends Page
                         if ($k == 'CCANOMALOUS') $v = number_format($v, 1);
 
                         $beam = array('XBEAM', 'YBEAM', 'REFINEDXBEAM', 'REFINEDYBEAM');
-                        if (in_array($k, $beam)) $v = number_format($v, 2);
+                        
+                        // We need to discriminate between NULL values from the database and when the value is a zero
+                        if (in_array($k, $beam) && is_numeric($v)) $v = number_format($v, 2);
                         
                         if ($k == 'AUTOPROCPROGRAMID' || $k == 'SHELL' || $k == 'PROCESSINGJOBID' || $k == 'IMAGESWEEPCOUNT') {
                             continue;
@@ -1231,6 +1237,7 @@ class DC extends Page
 
                 $output[$r['AUTOPROCPROGRAMID']]['PROCESSINGJOBID'] = $r['PROCESSINGJOBID'];
                 $output[$r['AUTOPROCPROGRAMID']]['IMAGESWEEPCOUNT'] = $r['IMAGESWEEPCOUNT'];
+                $output[$r['AUTOPROCPROGRAMID']]['DCCOUNT'] = $r['DCCOUNT'];
 
                 $output[$r['AUTOPROCPROGRAMID']]['TYPE'] = $r['TYPE'];
                 $output[$r['AUTOPROCPROGRAMID']]['AID'] = $r['AUTOPROCPROGRAMID'];
@@ -1268,8 +1275,8 @@ class DC extends Page
                 $dat = array();
                 
                 #$root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_'.'/'.$p[0].'/';
-                $root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_'.'/'.$p[0].'/';
-                
+                #$root = preg_replace('/'.$info['VIS'].'/', $info['VIS'].'/processed', $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_'.'/'.$p[0].'/';
+                $root = $this->get_visit_processed_dir($info, '/processed') . $p[0].'/';
                 $file = $root . $p[1][0];
                 if (file_exists($file)) {
                     $dat['TYPE'] = $n;
@@ -1454,7 +1461,8 @@ class DC extends Page
                         $dtpt = 'big_ep/*'.$sgmatch[0];
                         foreach ( array ('/processed',
                                         '/tmp') as $loc ) {
-                            $settings_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt;
+                            #$settings_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt;
+                            $settings_root = $this->get_visit_processed_dir($info, $loc) . $dtpt;
                             $bigep_settings_glob = glob($settings_root.'/big_ep*/*/big_ep_settings.json');
                             if (sizeof($bigep_settings_glob)) {
                                 preg_match('/\/big_ep\/(?P<tag>\w+)\/xia2\/(3dii|dials)\-run\w*/', $bigep_settings_glob[0], $tagmatch);
@@ -1467,7 +1475,8 @@ class DC extends Page
                         }
                         foreach ( $bigep_patterns as $ppl => $pplpt ) {
                             foreach ( array ('/processed', '/tmp' ) as $loc ) {
-                                $bigep_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt . $pplpt;
+                                #$bigep_root = preg_replace ( '/' . $info ['VIS'] . '/', $info ['VIS'] . $loc, $info ['DIR'], 1 ) . $info ['IMP'] . '_' . $info ['RUN'] . '_' . '/' . $dtpt . $pplpt;
+                                $bigep_root = $this->get_visit_processed_dir($info, $loc) . $dtpt . $pplpt;
                                 $bigep_mdl_glob = glob($bigep_root.'big_ep_model_ispyb.json');
                                 if (sizeof($bigep_mdl_glob)) {
                                     $bigep_mdl_json = $bigep_mdl_glob[0];

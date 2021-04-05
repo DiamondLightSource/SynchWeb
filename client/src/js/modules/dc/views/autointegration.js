@@ -94,6 +94,7 @@ define(['marionette',
                 templateHelpers: {
                     DCID: dcId,
                     APIURL: app.apiurl,
+                    PROPOSAL_TYPE: app.type,
                 }
             }
         },

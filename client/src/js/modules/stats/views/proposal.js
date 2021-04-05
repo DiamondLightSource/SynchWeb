@@ -33,6 +33,12 @@ define(['marionette',
             wrap: '.wrapper', 
         },
 
+        templateHelpers: function() {
+            return {
+                PROPOSAL: app.prop,
+            }
+        },
+
         initialize: function(options) {
             this.collection = new BAGOverview(null, { queryParams: { group_by: 'visit', prop: app.prop } })
             this.collection.fetch()

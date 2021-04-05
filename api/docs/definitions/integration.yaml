@@ -1,0 +1,204 @@
+type: object
+properties:
+  0:
+    type: number
+    description: Number of integrations
+  1:
+    type: object
+    title: Integrations by auto processing integration id
+    properties:
+      1233456:
+        type: object
+        title: Integration Program
+        properties:
+          SG:
+            type: string
+            description: Spacegroup
+            example: P 4 2 2
+          PROCESSINGJOBID:
+            type: string
+            description: Processing job id
+            example: 3461325
+          IMAGESWEEPCOUNT:
+            type: string
+            description: Number of sweeps making up this integration
+            example: 1
+          TYPE:
+            type: string
+            description: Integration program
+            example: fast_dp
+          AID:
+            type: string
+            description: Auto processing integration id
+            example: 80027370
+          PROCESSINGSTATUS:
+            type: string
+            description: Processing status (1=success, 0=failed, null=running)
+            example: 1
+          PROCESSINGMESSAGE:
+            type: string
+            description: Message from pipeline
+            example: processing successful
+          MESSAGES:
+            type: array
+            description: Array of tntegration warnings / checks
+            items:
+              type: object
+              title: Message
+              properties: 
+                AUTOPROCPROGRAMID:
+                  type: string
+                  description: Auto processing integration id
+                  example: 81953629
+                RECORDTIMESTAMP:
+                  type: string
+                  description: Timestamp for message
+                  example: 2020-09-16 03:20:38
+                SEVERITY:
+                  type: string
+                  description: Severity of message (error, warning, infp)
+                  example: INFO
+                MESSAGE:
+                  type: string
+                  description: Message
+                  example: Translational NCS does not appear to be present.
+                DESCRIPTION:
+                  type: string
+                  description: Description
+                  example:  'Largest Patterson peak with length larger than 15 Angstrom:\n Frac. coord.              :    0.441   -0.444   -0.000\n Distance to origin        :   27.367\n Height relative to origin :    7.342 %\n p_value(height)           :    4.382e-01\n\nExplanation\n The p-value, the probability that a peak of the specified height or larger\n is found in a Patterson function of a macromolecule that does not have any\n translational pseudo-symmetry, is equal to 4.382e-01.  p_values smaller than\n 0.05 might indicate weak translational pseudo symmetry, or the self vector of\n a large anomalous scatterer such as Hg, whereas values smaller than 1e-3 are\n a very strong indication for the presence of translational pseudo symmetry.\n\n'
+
+          CELL:
+            type: object
+            title: Cell information
+            properties:
+              CELL_A:
+                type: string
+                description: Cell a dimension
+                example: 57.69
+              CELL_B:
+                type: string
+                description: Cell b dimension
+                example: 57.69
+              CELL_C:
+                type: string
+                description: Cell c dimension
+                example: 149.83
+              CELL_AL:
+                type: string
+                description: Cell alpha angle
+                example: 90.00
+              CELL_BE:
+                type: string
+                description: Cell beta angle
+                example: 90.00
+              CELL_GA:
+                type: string
+                description: Cell gamma angle
+                example: 90.00
+
+          BEAM:
+            type: object
+            title: Beam information
+            properties:
+              XBEAM:
+                type: string
+                description: Initial beam x position
+                example: 166.26
+              YBEAM:
+                type: string
+                description: Initial beam y position
+                example: 172.87
+              REFINEDXBEAM:
+                type: string
+                description: Refined beam x position
+                example: 172.92
+              REFINEDYBEAM:
+                type: string
+                description: Refined beam y position
+                example: 166.24
+
+          SHELLS:
+            type: object
+            title: Integration shell details
+            properties:
+              outerShell:
+                type: object
+                properties:
+                  CCHALF:
+                    type: string
+                    description: CC half
+                    example: 0.7
+                  CCANOMALOUS:
+                    type: string
+                    description: CC anomalous
+                    example: 0.2
+                  ANOMALOUS:
+                    type: string
+                    description: Has anomalous data (1=yes, 0=no)
+                    example: null
+                  TYPE:
+                    type: string
+                    description: Integration program
+                    example: fast_dp
+                  NTOBS:
+                    type: string
+                    description: Total observations
+                    example: 9964
+                  NUOBS:
+                    type: string
+                    description: Total unique observations
+                    example: 1548
+                  RLOW:
+                    type: string
+                    description: Low resolution limit
+                    example: 1.90
+                  RHIGH:
+                    type: string
+                    description: High resolution limit
+                    example: 1.85
+                  RMEAS:
+                    type: string
+                    description: R meas
+                    example: 1.005
+                  RMERGE:
+                    type: string
+                    description: R merge
+                    example: 0.719
+                  COMPLETENESS:
+                    type: string
+                    description: Completeness
+                    example: 96.8
+                  ANOMCOMPLETENESS:
+                    type: string
+                    description: Anomalous completeness
+                    example: 91.6
+                  ANOMMULTIPLICITY:
+                    type: string
+                    description: Anomalous multiplicity
+                    example: 3.4
+                  MULTIPLICITY:
+                    type: string
+                    description: Multiplicity 
+                    example: 6.4
+                  ISIGI:
+                    type: string
+                    description: I/sig(I)
+                    example: 1.6
+                  NSWPS:
+                    type: string
+                    description: Number of sweeps
+                    example: 1
+                  PROCESSINGSTATUS:
+                    type: string
+                    description: Processing status (1=success, 0=failed, null=running)
+                    example: 1
+                  PROCESSINGMESSAGE:
+                    type: string
+                    description: Processing message
+                    example: processing successful
+              innerShell:
+                type: object
+              overall:
+                type: object
+example: 
+  $ref: ../examples/integration.yaml

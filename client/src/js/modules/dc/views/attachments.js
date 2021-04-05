@@ -2,26 +2,48 @@ define(['marionette',
     'backgrid',
     'views/table', 
     'collections/attachments', 
+    'views/log',
     'utils'], 
-    function(Marionette, Backgrid, TableView, attachments, utils) {
+    function(Marionette, Backgrid, TableView, attachments, LogView, utils) {
 
     
     var OptionsCell = Backgrid.Cell.extend({
         events: {
             'click a.dl': utils.signHandler,
             'click a.rsv': 'closeDialog',
+            'click a.vatlog': 'showLog',
         },
 
         closeDialog: function() {
             this.model.set('clicked', true)
         },
 
-        render: function() {
+        showLog: function(e) {
+            e.preventDefault()
+            var url = $(e.target).attr('href')
+            var self = this
+            utils.sign({
+                url: url,
+                callback: function(resp) {
+                    app.dialog.show(new LogView({ title: self.model.get('FILENAME') + ' Log File', url: url+'?token='+resp.token }))
+                }
+            })
+        },
 
-            this.$el.append('<a href="'+app.apiurl+'/download/attachment/id/'+this.column.escape('id')+'/aid/'+this.model.escape('DATACOLLECTIONFILEATTACHMENTID')+'" class="button dl"><i class="fa fa-download"></i> Download</a>')
+        render: function() {
+            // This was using an 'id' passed into the column as the dcid (getOption('id')).
+            // However, this is not present when loading attachments from a data collection group
+            // Use the value from the queried collection instead
+            var dcid = this.model.escape('DATACOLLECTIONID')
+
+            this.$el.append('<a href="'+app.apiurl+'/download/attachment/id/'+dcid+'/aid/'+this.model.escape('DATACOLLECTIONFILEATTACHMENTID')+'" class="button dl"><i class="fa fa-download"></i> Download</a>')
+
+            if (this.model.get('FILETYPE') == 'log') {
+                this.$el.append('<a href="'+app.apiurl+'/download/attachment/id/'+dcid+'/aid/'+this.model.escape('DATACOLLECTIONFILEATTACHMENTID')+'" class="button vatlog"><i class="fa fa-search"></i> View</a>')
+            }
 
             if (this.model.get('FILETYPE') == 'recip') {
-                this.$el.append('<a href="/dc/rsv/id/'+this.column.escape('id')+'" class="button rsv"><i class="fa fa-search"></i> Reciprocal Space Viewer</a>')
+                this.$el.append('<a href="/dc/rsv/id/'+dcid+'" class="button rsv"><i class="fa fa-search"></i> Reciprocal Space Viewer</a>')
             }
 
             return this
@@ -45,7 +67,7 @@ define(['marionette',
             var columns = [
                 { name: 'FILEFULLPATH', label: 'File', cell: 'string', editable: false },
                 { name: 'FILETYPE', label: 'Type', cell: 'string', editable: false },
-                { label: '', cell: OptionsCell, editable: false, id: this.getOption('id') },
+                { label: '', cell: OptionsCell, editable: false },
             ]
                         
             this.table = new TableView({ 

@@ -18,7 +18,7 @@ define(['marionette',
     'views/table',
 
     'utils',
-    'moment',
+    'formatDate',
     'utils/editable',
     'templates/shipment/container.html'], function(Marionette,
     Backbone,
@@ -38,7 +38,7 @@ define(['marionette',
     
     TableView,    
 
-    utils, moment,
+    utils, formatDate,
     Editable, template){
             
     return Marionette.LayoutView.extend({
@@ -123,14 +123,9 @@ define(['marionette',
             edit.create('EXPERIMENTTYPE', 'select', { data: { '':'-', 'robot':'robot', 'HPLC':'HPLC'} })
             edit.create('STORAGETEMPERATURE', 'select', { data: { '-80':'-80', '4':'4', '25':'25' } })
             edit.create('BARCODE', 'text')
+            this.edit = edit
 
             var self = this
-            this.containerregistry.fetch().done(function() {
-                var opts = self.containerregistry.kv()
-                opts[''] = '-'
-                edit.create('CONTAINERREGISTRYID', 'select', { data: opts })
-            })
-
             this.processing_pipelines.queryParams.pipelinestatus = 'optional'
             this.processing_pipelines.queryParams.category = 'processing'
             this.processing_pipelines.fetch().done(function() {
@@ -183,7 +178,7 @@ define(['marionette',
                     app.alert({ message: 'Container Successfully Queued' })
                     self.model.set({
                         CONTAINERQUEUEID: resp.CONTAINERQUEUEID,
-                        QUEUEDTIMESTAMP: moment().format('DD-MM-YYYY HH:mm')
+                        QUEUEDTIMESTAMP: formatDate.default(new Date(), 'dd-MM-yyyy HH:mm')
                     })
                     self.updateAutoCollection()
                     self.sampletable.toggleAuto(true)
@@ -229,7 +224,15 @@ define(['marionette',
         },
         
         doOnShow: function() {
-            console.log(self.samples)
+            var self = this
+            var noData = _.reduce(this.samples.pluck('HASDATA'), function(a, b) { return a + b ? 1 : 0 }, 0) == 0
+            if (this.model.get('CONTAINERSTATUS') != 'processing' && (noData || !this.model.get('CONTAINERREGISTRYID'))) {
+                this.containerregistry.fetch().done(function() {
+                    var opts = self.containerregistry.kv()
+                    opts[''] = '-'
+                    self.edit.create('CONTAINERREGISTRYID', 'select', { data: opts })
+                })
+            }
 
             var type = this.model.get('CONTAINERTYPE') == 'PCRStrip' ? 'non-xtal' : ''
             

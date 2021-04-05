@@ -1,12 +1,12 @@
 define(['marionette', 'templates/stats/breakdown.html',
     'utils',
-    'moment',
+    'formatDate',
     'jquery',
     'jquery.flot',
     'jquery.flot.time',
     'jquery.flot.selection',
     'jquery.flot.tooltip',
-    ], function(Marionette, template, utils, moment, $) {
+    ], function(Marionette, template, utils, formatDate, $) {
 
     return Marionette.ItemView.extend({
         template: template,
@@ -101,8 +101,8 @@ define(['marionette', 'templates/stats/breakdown.html',
             if (this.hideOverview) return
             var opts = this.main.getOptions()
 
-            var from = moment(opts.xaxes[0].min).format('MMMM Do YYYY')
-            var to = moment(opts.xaxes[0].max).format('MMMM Do YYYY')
+            var from = formatDate.default(opts.xaxes[0].min, 'MMMM do yyyy')
+            var to = formatDate.default(opts.xaxes[0].max, 'MMMM do yyyy')
 
             if (from != to) this.ui.span.text(from+' - '+to)
             else this.ui.span.text(from)

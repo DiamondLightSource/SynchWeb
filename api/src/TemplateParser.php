@@ -4,9 +4,12 @@ namespace SynchWeb;
 
 class TemplateParser
 {
+        # WARNING: Template parser caches VISITDIR so make sure to instantiate a new instance if you need a
+        #          a parser across multiple visits  
 
         # YEAR         from visit
         # BEAMLINENAME from visit
+        # PILOGIN      from visit
 
         # VISITDIR     interpolated from config $visit_directory, requires DCID, SESSIONID, or VISIT
         
@@ -32,7 +35,6 @@ class TemplateParser
                 $more_args = $this->filetemplate($args);
                 $args = array_merge($args, $more_args);
             }
-
 
             # Use underscore.js style template to be consistent with the front end
             return preg_replace_callback('/<%=(\w+)%>/', 
@@ -67,32 +69,30 @@ class TemplateParser
             }
 
             if (array_key_exists('DCID', $options)) {
+                $where = "WHERE dc.datacollectionid = :1";
                 array_push($args, $options['DCID']);
-
-                $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, dc.imagedirectory
-                    FROM blsession s 
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
-                    INNER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
-                    INNER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid 
-                    
-                    WHERE dc.datacollectionid=:1", $args);
-
-                if (sizeof($visit)) $visit = $visit[0];
-                else return;
-
-                $this->params['VISITDIR'] = preg_replace('/'.$visit['VISIT'].'\/.*/', $visit['VISIT'], $visit['IMAGEDIRECTORY']);
-
-            } else {
-                $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
-                    FROM blsession s 
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
-                    $where", $args);
-
-                if (sizeof($visit)) $visit = $visit[0];
-                else return;
-
-                $this->params['VISITDIR'] = $this->interpolate($visit_directory, $visit);
             }
+
+            $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, pe.login as pilogin, dc.imagedirectory
+                FROM blsession s 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN person pe ON pe.personid = p.personid
+                INNER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
+                INNER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid 
+                $where
+                LIMIT 1", $args);
+
+            if (sizeof($visit)) $visit = $visit[0];
+            else return;
+
+            $this->params['VISITDIR'] = $this->interpolate($visit_directory, $visit);
+
+            # Fallback for sites with multiple path types (not adhering to a single VISITDIR structure)
+            #   (!) Must have the visit in the path for this to work
+            if (!file_exists($this->params['VISITDIR']) && array_key_exists('DCID', $options)) {
+                $this->params['VISITDIR'] = preg_replace('/'.$visit['VISIT'].'\/.*/', $visit['VISIT'], $visit['IMAGEDIRECTORY']);
+            }
+
             return $this->params['VISITDIR'];
         }
 
@@ -126,6 +126,6 @@ class TemplateParser
                 $temp = str_replace('.'.$dc['IMAGESUFFIX'], '', $temp);
             }
 
-            return array('IMFILE' =>$temp, 'IMDIRECTORY' => $this->relative($dc['IMAGEDIRECTORY'], array('SESSIONID' => $dc['SESSIONID'])), 'IMPREFIX' => $dc['IMAGEPREFIX'], 'DCNUMBER' => $dc['DATACOLLECTIONNUMBER']);
+            return array('IMFILE' =>$temp, 'IMDIRECTORY' => $this->relative($dc['IMAGEDIRECTORY'], array('DCID' => $options['DCID'])), 'IMPREFIX' => $dc['IMAGEPREFIX'], 'DCNUMBER' => $dc['DATACOLLECTIONNUMBER']);
         }
 }

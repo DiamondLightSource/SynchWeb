@@ -6,7 +6,7 @@ define(['marionette',
         'modules/proposal/views/dewars', 
         'modules/proposal/models/time', 
         'templates/calendar/current.html'], 
-        function(Marionette, Visit, Visits, Beamlines, UserView, DewarsView, Time, template) {
+        function(Marionette, Visit, Visits, Beamlines, UserView, DewarsView, Time, Template) {
 
 
     var VisitItem = Marionette.ItemView.extend({
@@ -70,7 +70,7 @@ define(['marionette',
     })
     
     return Marionette.LayoutView.extend({
-        template: template,
+        template: Template,
         className: 'content',
 
         regions: {
@@ -83,6 +83,12 @@ define(['marionette',
             time: 'span.time'
         },
 
+        templateHelpers: function() {
+            return {
+                SITE_NAME: app.config.site_name || 'Diamond House',
+                IS_STAFF: app.staff
+            }
+        },
 
         initialize: function() {
             this.deferreds = []

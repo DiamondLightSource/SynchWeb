@@ -44,7 +44,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
                 dcs.state.currentPage = page
                 dcs.fetch().done(function() {
                     console.log('DC TYPE', model.get('TYPE'))
-                    app.content.show(GetView.DCView.get(model.get('TYPE'), { collection: dcs,  params: { visit: visit, search: search, type: type, id: id, dcg: dcg }, model: model }))
+                    app.content.show(GetView.DCView.get(model.get('TYPE'), { collection: dcs,  params: { visit: visit, search: search, type: type, id: id, dcg: dcg, pjid: pjid }, model: model }))
                 })
             },
             

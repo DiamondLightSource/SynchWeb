@@ -59,11 +59,17 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         initialize: function(options) {
-            var hours = _.uniq(_.map(this.model.get('visits'), function(m) { return m.get('STISO').getUTCHours() }))
+            var hours = _.uniq(_.map(this.model.get('visits'), function(m) {
+                var sessionStartISO = m.get('STISO')
+                return sessionStartISO.hour 
+            }))
             
             hc = []
             _.each(hours, function(h) {
-                hc.push({ hour: h, visits: _.filter(this.model.get('visits'), function(m) { return m.get('STISO').getUTCHours() == h }) })
+                hc.push({ hour: h, visits: _.filter(this.model.get('visits'), function(m) {
+                    var sessionStartISO = m.get('STISO')
+                    return sessionStartISO.hour  == h
+                }) })
             }, this)
             
             hc = _.sortBy(hc, function(h) { return h.hour })

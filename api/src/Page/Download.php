@@ -421,26 +421,8 @@ class Download extends Page
 
                 $response = new BinaryFileResponse($filename);
 
-                $path_ext = pathinfo($file['FILENAME'], PATHINFO_EXTENSION);
-
-                if ($path_ext == 'html') {
-                    $response->headers->set("Content-Type", "text/html");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
-                } elseif ($path_ext == 'pdf') {
-                    $f = $file['FILENAME'];
-                    $response->headers->set("Content-Type", "application/pdf");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $f);
-                } elseif ($path_ext == 'png') {
-                    $f = $file['FILENAME'];
-                    $response->headers->set("Content-Type", "image/png");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$f);
-                } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json'))) {
-                    $response->headers->set("Content-Type", "text/plain");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
-                } else {
-                    $response->headers->set("Content-Type", "application/octet-stream");
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,$id.'_'.$file['FILENAME']);
-                }
+                # Set mime / content type
+                $this->set_mime_content($response, $file['FILENAME'], $id);
 
                 // All OK - send it
                 // We were getting out of memory errors - switch off output buffer to fix
@@ -518,13 +500,15 @@ class Download extends Page
             $this->db->close();
 
             if (is_string($subdir)) {
-                return preg_replace('/'.$info['VIS'].'/', $info['VIS'].$subdir, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                // return preg_replace('/'.$info['VIS'].'/', $info['VIS'].$subdir, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                return $this->get_visit_processed_dir($info, $subdir).$root;
 
             } elseif (is_array($subdir)) {
                 $paths = array();
                 foreach ($subdir as $sbd) {
                     if (is_string($sbd)) {
-                        $pth = preg_replace('/'.$info['VIS'].'/', $info['VIS'].$sbd, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                        // $pth = preg_replace('/'.$info['VIS'].'/', $info['VIS'].$sbd, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
+                        $pth = $this->get_visit_processed_dir($info, $sbd).$root;
                         array_push($paths, $pth);
                     } else {
                         $this->_error('Invalid parameter type in downstream directory function call', 500);
@@ -871,11 +855,8 @@ class Download extends Page
 
             if ($filesystem->exists($filename)) {
                 $response = new BinaryFileResponse($filename);
-                $response->headers->set("Content-Type", "application/octet-stream");
-                $response->setContentDisposition(
-                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                    basename($filename)
-                );
+
+                $this->set_mime_content($response, $filename);
                 $response->headers->set("Content-Length", filesize($filename));
                 $response->send();
             } else {
@@ -885,6 +866,45 @@ class Download extends Page
         }
 
 
+        # ------------------------------------------------------------------------
+        # Set mime and content type for a file
+        /** 
+         * Set mime and content type headers for the provided response.
+         * Determines the mime type from the filename extension.
+         * 
+         * @param BinaryFileResponse $response Symfony Response Object
+         * @param string $filename Filename to be downloaded (will use basename in case file path is provided)
+         * @param string $prefix Add this string to the filename "prefix_filename"
+         * @return void
+         */
+        function set_mime_content($response, $filename, $prefix=null) {
+            $path_ext = pathinfo($filename, PATHINFO_EXTENSION);
+            // If we are downloading the file (not inline) then set a sensible name
+            $saved_filename = $prefix ? implode('_', array($prefix, basename($filename))) : basename($filename);
+
+            if (in_array($path_ext, array('html', 'htm'))) {
+                $response->headers->set("Content-Type", "text/html");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+            } elseif ($path_ext == 'pdf') {
+                $response->headers->set("Content-Type", "application/pdf");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            } elseif ($path_ext == 'png') {
+                $response->headers->set("Content-Type", "image/png");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
+                $response->headers->set("Content-Type", "image/jpeg");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json'))) {
+                $response->headers->set("Content-Type", "text/plain");
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+            } else {
+                $response->headers->set("Content-Type", "application/octet-stream");
+                $response->setContentDisposition(
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                    $saved_filename
+                );    
+            }
+        }
 
         # ------------------------------------------------------------------------
         # Download Data

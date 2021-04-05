@@ -16,6 +16,14 @@ define(['backbone', 'collections/components',
 
             this.listenTo(this, 'change:RADIATIONSENSITIVITY', this.updateRadSen)
             this.updateRadSen()
+
+            this.listenTo(this, 'change', this.updateHasData)
+            this.updateHasData()
+        },
+
+        updateHasData: function() {
+            var hasData = this.get('DC') > 0 || this.get('GR') > 0 || this.get('SC') > 0
+            if (hasData != this.get('HASDATA')) this.set('HASDATA', hasData)
         },
 
         updateExpKind: function() {
@@ -155,6 +163,7 @@ define(['backbone', 'collections/components',
             USERPATH: {
                 required: false,
                 pattern: 'twopath',
+                maxLength: 40,
             },
 
             AIMEDRESOLUTION: {

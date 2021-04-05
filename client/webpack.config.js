@@ -28,7 +28,7 @@ module.exports = (env) => ({
       index: '/dist/'+gitHash+'/index.html',
     },
     proxy: [{
-        context: ['/api', '/assets'],
+        context: ['/api'],
         // Change this target to where SynchWeb server is running
         target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
         // Intercept the request and add auth header
@@ -106,6 +106,8 @@ module.exports = (env) => ({
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate/dist/vee-validate.min',
+      luxon: 'luxon',
+      formatDate: 'date-fns/format'
     },
     modules: [
       path.resolve(__dirname, 'src/js'),
@@ -254,8 +256,6 @@ module.exports = (env) => ({
         from: 'files/**',
         to: path.resolve(__dirname, 'assets') }
     ]),
-    // Ignore all locale files of moment.js
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
       filename: '[name].css',

@@ -343,6 +343,7 @@ class Shipment extends Page
 
         function _add_history() {
             global $in_contacts, $transfer_email;
+            global $dewar_complete_email; // Email list to cc if dewar back from beamline
             # Flag to indicate we should e-mail users their dewar has returned from BL
             $from_beamline = False;
 
@@ -463,12 +464,13 @@ class Shipment extends Page
 
                 if (sizeof($rows)) $dew['DC'] = $rows;
 
+                $cc = $dewar_complete_email ? $dewar_complete_email : null;
                 // Log the event if debugging
                 if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
 
                 $email = new Email('storage-rack', '*** Visit finished, dewar awaiting instructions ***');
                 $email->data = $dew;
-                $email->send($dew['LCRETEMAIL']);
+                $email->send($dew['LCRETEMAIL'], $cc);
             }
 
             $this->_output(array('DEWARHISTORYID' => $dhid));
@@ -844,13 +846,19 @@ class Shipment extends Page
 
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
 
+            // LDAP email search does not always provide a match
+            // So look at the ISPyB person record for a matching staff user
+            if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT']) {
+              $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
+            }
+
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
-            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
+            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
 
             $email->send($recpts);
 
