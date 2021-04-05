@@ -636,7 +636,7 @@ class Processing extends Page {
                     $head = 'image/' . $ext;
                 }
 
-                // $this->_browser_cache();
+                $this->_browser_cache();
                 $this->app->contentType($head);
                 readfile($im);
             } else {

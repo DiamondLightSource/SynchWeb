@@ -9,8 +9,6 @@ class BigEp extends DownstreamPlugin {
     var $friendlyname = "BigEP";
 
     function results() {
-        // $files = $this->_get_attachments();
-        // print_r(array($this->type, $files));
         $settings = $this->_get_attachments('big_ep_settings.json');
         if ($settings) {
             if (file_exists($settings['FILE'])) {

@@ -16,7 +16,6 @@ define(['marionette',
         },
 
         showAttachments: function(e) {
-            console.log('downstream base showattachments')
             e.preventDefault()
 
             this.attachments = new AutoProcAttachments()
