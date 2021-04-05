@@ -11,6 +11,7 @@ define(['backbone'], function(Backbone){
       this.set({
         'TITLE': this.get('TYPE') 
           + (this.get('PARENTAUTOPROCPROGRAM') ? (' (' + this.get('PARENTAUTOPROCPROGRAM') + ')') : '')
+          + (!this.get('AUTOMATIC') ? ' <i class="fa fa-refresh" title="Reprocessed"></i>': '')
       })
     },
   })

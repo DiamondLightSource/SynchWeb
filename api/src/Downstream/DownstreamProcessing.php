@@ -268,6 +268,7 @@ class DownstreamResult {
 
         $this->processingstatus = $plugin->process['PROCESSINGSTATUS'];
         $this->processingmessage = $plugin->process['PROCESSINGMESSAGE'];
+        $this->automatic = $plugin->process['AUTOMATIC'] != 0;
         $this->process = $plugin->process;
     }
 
@@ -277,6 +278,7 @@ class DownstreamResult {
     function legacy() {
         $resp = $this->data;
         $resp['AID'] = $this->autoprocprogramid;
+        $resp['AUTOMATIC'] = $this->automatic;
         $resp['TYPE'] = $this->friendlyname;
         $resp['PROCESS'] = $this->process;
         $resp['FEATURES'] = array(
