@@ -33,10 +33,11 @@ class DownstreamProcessing {
     }
 
     function load_plugin($plugin, $autoprocprogramid, $process) {
-        $plugin_camel = lcfirst(
-            implode('', array_map('ucfirst', explode('_', $plugin)))
+        $plugin_pascal = implode(
+            '',
+            array_map('ucfirst', explode('_', $plugin))
         );
-        $plugin_class = 'SynchWeb\\Downstream\\Type\\' . $plugin_camel;
+        $plugin_class = 'SynchWeb\\Downstream\\Type\\' . $plugin_pascal;
         if (class_exists($plugin_class)) {
             return new $plugin_class(
                 $this->db,
