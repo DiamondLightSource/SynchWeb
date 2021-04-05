@@ -33,7 +33,10 @@ class DownstreamProcessing {
     }
 
     function load_plugin($plugin, $autoprocprogramid, $process) {
-        $plugin_class = 'SynchWeb\\Downstream\\Type\\' . $plugin;
+        $plugin_camel = lcfirst(
+            implode('', array_map('ucfirst', explode('_', $plugin)))
+        );
+        $plugin_class = 'SynchWeb\\Downstream\\Type\\' . $plugin_camel;
         if (class_exists($plugin_class)) {
             return new $plugin_class(
                 $this->db,
@@ -225,20 +228,6 @@ abstract class DownstreamPlugin implements DownstreamPluginInterface {
             $output,
             $res
         );
-
-        print_r(array(
-            $res,
-            $output,
-            $mtz,
-            $aid,
-            $program,
-            $pdb,
-            $map,
-            'exists mtz',
-            file_exists($mtz),
-            'exists pdb',
-            file_exists($pdb),
-        ));
 
         if (in_array($program, array('dimple', 'mrbump'))) {
             $map = $map == 1 ? '2fofc' : 'fofc';
