@@ -492,7 +492,11 @@ ol.rounded {
     
     // Sub contents
     .holder {
-        
+        .separator {
+            margin: 0 5px;
+            color: #ccc
+        }
+                        
         /*
         > span {
             float: right;

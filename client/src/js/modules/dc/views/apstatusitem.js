@@ -58,10 +58,18 @@ define(['marionette', 'jquery'], function(Marionette, $) {
             } else {
                 _.each({ap: 'autoproc',dp: 'downstream'}, function(ty, id) {
                     this.ui[id].empty()
+                    var allResults = []
                     if (res[ty]) {
                         _.each(res[ty], function(ap, n) {
-                            this.ui[id].append(n+': '+_.map(ap, function(a) { return val[a] }).join('')+' ')
+                            var ress = {}
+                            _.each(ap, function(a) {
+                                if (!(a in ress)) ress[a] = 0
+                                ress[a]++
+                            })
+                            allResults.push(n+': '+_.map(ress, function(c, st) { return c > 1 ? c+'x '+val[st] : val[st]}))
                         }, this)
+
+                        this.ui[id].append(allResults.join('<span class="separator">|</span>'))
                     } else {
                         this.ui[id].append('No processing results')
                     }
