@@ -66,7 +66,7 @@ define(['marionette', 'jquery'], function(Marionette, $) {
                                 if (!(a in ress)) ress[a] = 0
                                 ress[a]++
                             })
-                            allResults.push(n+': '+_.map(ress, function(c, st) { return c > 1 ? c+'x '+val[st] : val[st]}))
+                            allResults.push(n+': '+_.map(ress, function(c, st) { return c > 1 ? '<span class="count">'+c+'x</span> '+val[st] : val[st]}))
                         }, this)
 
                         this.ui[id].append(allResults.join('<span class="separator">|</span>'))
