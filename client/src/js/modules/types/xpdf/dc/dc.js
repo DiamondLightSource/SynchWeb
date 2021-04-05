@@ -1,18 +1,19 @@
 define([
     'modules/types/gen/dc/dc',
     'modules/types/gen/dc/datplot',
-    'modules/types/xpdf/dc/views/autointegration',
+    'modules/dc/views/apstatusitem',
+    'modules/dc/views/downstream',
     'utils',
-    'templates/types/xpdf/dc/dc.html'], function(DCItemView, DatPlot, DCAutoIntegrationView, utils, template) {
+    'templates/types/xpdf/dc/dc.html'], function(DCItemView, DatPlot, APStatusItem, DCDownstreamView, utils, template) {
 
 
     return DCItemView.extend({
         template: template,
         plotView: DatPlot,
-        // imageStatusItem: DCImageStatusItem,
+        apStatusItem: APStatusItem,
         
         events: {
-            'click .holder h1.ap': 'loadAP',
+            'click .holder h1.dp': 'loadAP',
             'click .distl': 'showPlot',
             'click .diffraction': 'showDiff',
             'click .atp': 'addToProject',
@@ -28,9 +29,9 @@ define([
             this.$el.find('.diffraction a').eq(0).trigger('click')
         },
 
-        loadAP: function(e) {
+        loadAP: function() {
             if (!this.ap) {
-              this.ap = new DCAutoIntegrationView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc') })
+              this.ap = new DCDownstreamView({ id: this.model.get('ID'), el: this.$el.find('div.downstream') })
             } else this.ap.$el.slideToggle()
         },
     })
