@@ -17,12 +17,19 @@
 
     <div v-else><p class="tw-text">Create a sample group first before creating a name</p></div>
 
-    <div v-if="sampleGroupMembers.length > 0" class="content">
+    <div v-if="objectKeys(selectedSamplesInGroups).length > 0" class="content">
       <h1>Sample Group {{ sampleGroupName }}</h1>
       <table-panel
         :headers="sampleGroupHeaders"
-        :data="sampleGroupMembers"
-      ></table-panel>
+        :data="objectValues(selectedSamplesInGroups)"
+      >
+        <template slot-scope="{ data }">
+          <tr v-for="(row, index) in data" :key="index">
+            <td>{{ objectKeys(selectedSamplesInGroups)[index] }}</td>
+            <td>{{ extractSampleNamesFromList(row, 'SAMPLE') }}</td>
+          </tr>
+        </template>
+      </table-panel>
     </div>
 
     <div class="content">
@@ -49,29 +56,12 @@
     <container-graphic
       v-if="containerSelected"
       :selectedContainerName="selectedContainerName"
-      :geometry="containerGeometry"
-      :containerType="containerType"
+      :selectedContainerType="selectedContainer.CONTAINERTYPE"
       :samples=samples
       :selectedSamples="selectedSamplesInGroups[selectedContainerName]"
       @unselect-cell="deselectCells"
       @cell-clicked="addSelectedCells"
     />
-
-    <div class="tw-w-full tw-m-1 tw-p-2" v-if="Object.keys(selectedSamplesInGroups).length > 0">
-      <h1 class="tw-text-xl tw-my-3">Selected Samples</h1>
-      <div class="tw-w-full tw-flex">
-        <p class="tw-text tw-mr-4 tw-w-1/4">Container Name</p>
-        <p class="tw-text">Samples</p>
-      </div>
-      <div
-        v-for="(containerSelectedSamples, containerNames) in selectedSamplesInGroups"
-        :key="containerNames"
-        class="tw-flex tw-my-3"
-      >
-        <p class="tw-text tw-mr-4 tw-w-1/4">{{ containerNames }}</p>
-        <p class="tw-text">{{ extractSampleNamesFromList(containerSelectedSamples) }} ...</p>
-      </div>
-    </div>
 
     <div class="tw-relative tw-mt-6">
       <base-button
@@ -87,7 +77,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { difference, uniq, get as lodashGet } from 'lodash-es'
+import { differenceBy, uniqBy, get as lodashGet, values, keys, has, pick, each, map } from 'lodash-es'
 import ContainerGraphic from './ContainerGraphic.vue'
 
 import Table from 'app/components/utils/table.vue'
@@ -99,9 +89,7 @@ import ContainersList from 'modules/shipment/components/containers-list.vue'
 
 import SampleGroupsCollection from 'collections/samplegroups.js'
 import SamplesCollection from 'collections/samples.js'
-
-
-import ContainerTypes from 'modules/shipment/collections/platetypes.js'
+import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
 
 export default {
   name: 'sample-group-edit',
@@ -122,10 +110,8 @@ export default {
       groupName: '',
       lockName: this.gid ? true : false,
       sampleGroupHeaders: [
-        { title: 'ID', key: 'BLSAMPLEID' },
-        { title: 'Name', key: 'SAMPLE' },
-        { title: 'Container', key: 'CONTAINER' },
-        { title: 'Protein', key: 'PROTEIN' },
+        { title: 'Container', key: 'name' },
+        { title: 'Samples', key: 'samples' },
       ],
       containersBodyColumns: ['NAME', 'CONTAINERTYPE', 'BARCODE'],
       containerHeaders: [
@@ -134,37 +120,30 @@ export default {
         { title: 'BarCode', key: 'BARCODE' },
         { title: 'Action', key: '' }
       ],
-      containers: [],
-      containerTypes: null,
-      containerGeometry: {
-        capacity: 0,
-        columns: 0,
-        drops: {
-          x: 0,
-          y: 0,
-          w: 0,
-          h: 0,
-        },
-        well: null,
-      },
-      containerType: null, // Can be plate or puck
-      sampleGroupMembers: [],
       sampleGroupName: null,
       containerSelected: false,
       selectedContainerName: '',
       samples: [],
       sampleGroup: null,
-      selectedContainerList: {},
-      containersListState: {},
-      containerFilters: [
-        { id: 'plate', name: 'Plates'},
-        { id: 'puck', name: 'Pucks'},
-        { id: 'imager', name: 'In Imager'},
-        { id: 'queued', name: 'Queued'},
-        { id: 'completed', name: 'Completed'},
-        { id: 'processing', name: 'Processing'},
-        { id: 'subsamples', name: 'Has Subsamples'},
+      selectedContainer: {},
+      objectValues: values,
+      objectKeys: keys,
+      sampleKeys: [
+        'BLSAMPLEID',
+        'CONTAINER',
+        'CRYSTAL',
+        'CRYSTALID',
+        'DIMENSION1',
+        'DIMENSION2',
+        'DIMENSION3',
+        'LOCATION',
+        'PROTEIN',
+        'SAMPLE'
       ],
+      initialSamplesInGroup: [],
+      initialSampleInGroupModels: [],
+      sampleGroupId: null,
+      sampleGroupSamples: null
     };
   },
   computed: {
@@ -175,72 +154,62 @@ export default {
     })
   },
   created: function () {
-    this.containerTypes = new ContainerTypes()
     this.sampleGroup = new SampleGroupsCollection()
     this.containerSamples = new SamplesCollection()
+    this.sampleGroupSamples = new SampleGroupSamplesCollection()
   },
   mounted() {
-    if (this.gid) {
-      this.getSampleGroupModel()
+    this.sampleGroupId = this.gid
+    if (this.sampleGroupId) {
+      this.getSampleGroupInformation()
     }
     this.groupName = this.selectedSampleGroupName ? this.selectedSampleGroupName : 'New Sample Group'
   },
   methods: {
-    async fetchContainers() {
-      try {
-        this.$store.commit('loading', true)
-
-        const containers = await this.$store.dispatch('getCollection', this.containers)
-
-        this.containers = containers.toJSON()
-        this.containersListState = containers.state
-      } catch (error) {
-        console.log(error.message)
-      } finally {
-        this.$store.commit('loading', false)
-      }
-    },
     async onSaveSampleGroup() {
       this.$store.commit('loading', true)
+      let result
 
-      const samples = Object.values(this.selectedSamplesInGroups).flat()
+      const totalSamples = Object.values(this.selectedSamplesInGroups).flat()
+      const samples = totalSamples.reduce((acc, sample) => {
+        if (typeof sample.BLSAMPLEID === 'undefined') return acc
 
-      if (!this.gid) {
-        this.sampleGroup.reset(samples)
-      } else {
-        const samplesWithSampleGroupId = samples.map(sample => ({ ...sample, BLSAMPLEGROUPID: this.gid }))
-        this.sampleGroup.reset(samplesWithSampleGroupId)
+        if (!this.sampleGroupId) {
+          acc.push(sample)
+        }
+        
+        if (this.gid && typeof sample.BLSAMPLEGROUPID === 'undefined') {
+          acc.push({ ...sample, BLSAMPLEGROUPID: this.gid })
+        }
+
+        return acc
+      }, [])
+
+      const deletedSamples = differenceBy(this.initialSamplesInGroup, totalSamples, 'BLSAMPLEID')
+      await this.deleteUnselectedSamplesFromGroup(deletedSamples)
+      
+      if (samples.length > 0) {
+        this.sampleGroupSamples.reset(samples)
+        result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroupSamples })
       }
 
-      const result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroup })
-      this.$store.commit('sampleGroups/resetSelectedSampleGroups')
       this.$store.commit('loading', false)
 
-      const savedSamples = result.toJSON()
-      if (!this.gid) {
-        this.$router.push(`/samples/groups/edit/id/${savedSamples[0].BLSAMPLEGROUPID}`)
+      if (result) {
+        const savedSamples = result.toJSON()
+        this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
       }
-    },
-    setContainerType(type) {
-      // Returns a backbone model that we need to map to our geometry structure
-      let container = this.containerTypes.findWhere({ name: type });
 
-      this.containerGeometry.capacity = container.get('capacity');
-      this.containerGeometry.columns = container.get('well_per_row');
-      this.containerGeometry.drops.x = container.get('drop_per_well_x');
-      this.containerGeometry.drops.y = container.get('drop_per_well_y');
-      this.containerGeometry.drops.h = container.get('drop_height');
-      this.containerGeometry.drops.w = container.get('drop_width');
-      this.containerGeometry.well = container.get('well_drop') > 0 ? container.get('well_drop') : null;
+      await this.getSampleGroupInformation()
 
-      this.containerType = container.get('well_per_row') ? 'plate' : 'puck';
-
-      this.containerSelected = true;
+      if (!this.sampleGroupId) {
+        this.$router.push(`/samples/groups/edit/id/${this.sampleGroupId}`)
+      }
     },
     async onContainerSelected(item) {
       this.$store.commit('loading', true)
 
-      let type = item.CONTAINERTYPE
+      this.selectedContainer = item
       this.selectedContainerName = `${item.CONTAINERID} - ${item.BARCODE}`
       this.containerSamples.queryParams.cid = item.CONTAINERID
       this.containerSamples.setPageSize(999)
@@ -248,8 +217,7 @@ export default {
       const samplesData = await this.$store.dispatch('getCollection', this.containerSamples)
 
       this.samples = samplesData.toJSON()
-      this.setContainerType(type);
-
+      this.containerSelected = true
       this.$store.commit('loading', false)
     },
     saveSampleGroupName() {
@@ -265,14 +233,14 @@ export default {
     addSelectedCells(cellsLocation) {
       const fullSampleDetails = this.getFullSamplesDetails(cellsLocation)
       const selectedContainerSamples = lodashGet(this.selectedSamplesInGroups, this.selectedContainerName, [])
-      const updatedSelectedContainerSamples = uniq(selectedContainerSamples.concat(fullSampleDetails))
+      const updatedSelectedContainerSamples = uniqBy(selectedContainerSamples.concat(fullSampleDetails), 'BLSAMPLEID')
 
       this.$store.commit('sampleGroups/setSelectedSampleGroups', { [this.selectedContainerName]: updatedSelectedContainerSamples })
     },
     deselectCells(cellsLocation) {
       const fullSampleDetails = this.getFullSamplesDetails(cellsLocation)
       const selectedContainerSamples = lodashGet(this.selectedSamplesInGroups, this.selectedContainerName)
-      const updatedSelectedContainerSamples = difference(selectedContainerSamples, fullSampleDetails)
+      const updatedSelectedContainerSamples = differenceBy(selectedContainerSamples, fullSampleDetails, 'BLSAMPLEID')
 
       this.$store.commit('sampleGroups/setSelectedSampleGroups', { [this.selectedContainerName]: updatedSelectedContainerSamples })
     },
@@ -280,7 +248,10 @@ export default {
       return cellsLocation.reduce((samples, location) => {
         const sample = this.samples.find(sample => Number(sample.LOCATION) === Number(location))
         if (typeof sample !== 'undefined') {
-          samples.push(sample)
+          samples.push({
+            ...pick(sample, this.sampleKeys),
+            SAMPLE: sample.NAME
+          })
         }
 
         return samples
@@ -288,25 +259,64 @@ export default {
       }, [])
     },
     // Remove when we start persisting the vuex store
-    async getSampleGroupModel() {
-      try {
-        this.$store.commit('loading', true)
-  
-        const sampleGroupModel = this.sampleGroup.sampleGroupNameModel({ BLSAMPLEGROUPID: this.gid })
-        const result = await this.$store.dispatch(
-          'getModel',
-          sampleGroupModel
-        )
-  
-        let model = result.toJSON()
-        this.groupName = model.NAME
-        this.$store.commit('loading', false)
-      } catch (error) {
-        this.$store.commit('loading', false)
-      }
+    async getSampleGroupInformation() {
+      this.sampleGroupSamples.groupId = this.sampleGroupId
+      this.sampleGroupSamples.url = '/sample/groups'
+      this.sampleGroupSamples.queryParams = { BLSAMPLEGROUPID: this.sampleGroupId, page: 1, per_page: 9999, total_pages: 0 }
+      const groupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamples)
+      const sampleGroupNameModel = this.sampleGroup.sampleGroupNameModel({ BLSAMPLEGROUPID: this.gid })
+      const groupNameResult = await this.$store.dispatch(
+        'getModel',
+        sampleGroupNameModel
+      )
+
+      this.initialSampleInGroupModels = groupSamples
+      const { samplesByContainer, initialSamples }  = groupSamples.toJSON().reduce((acc, curr) => {
+        if (typeof curr.CONTAINER === 'undefined') {
+          return acc
+        }
+
+        acc.initialSamples.push({
+          ...pick(curr, this.sampleKeys),
+          BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID
+        })
+
+        const containerName = `${curr.CONTAINERID} - ${curr.BARCODE}`
+        if (has(acc.samplesByContainer, containerName)) {
+          acc.samplesByContainer[containerName].push({
+            ...pick(curr, this.sampleKeys),
+            BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID
+          })
+        } 
+        else {
+          acc.samplesByContainer[containerName] = {}
+          acc.samplesByContainer[containerName] = [{ ...pick(curr, this.sampleKeys), BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID }]
+        }
+
+        return acc
+      }, {
+        initialSamples: [],
+        samplesByContainer: {}
+      })
+      this.initialSamplesInGroup = initialSamples
+      this.$store.commit('sampleGroups/setSelectedSampleGroups', samplesByContainer)
+      this.groupName = groupNameResult.toJSON().NAME
     },
-    extractSampleNamesFromList(list) {
-      return list.slice(0, 3).map(item => item.NAME).join(', ')
+    extractSampleNamesFromList(list, property) {
+      const names = list.slice(0, 3).map(item => item[property]).join(', ')
+      return list.length > 3 ? `${names} ...` : names
+    },
+    async deleteUnselectedSamplesFromGroup(deletedSamples) {
+      const deletedSampleIds = map(deletedSamples, 'BLSAMPLEID')
+      const deletedModels = []
+
+      this.initialSampleInGroupModels.each((model) => {
+        if (model && deletedSampleIds.includes(model.get('BLSAMPLEID'))) {
+          deletedModels.push(this.$store.dispatch('deleteModel', model))
+        }
+      })
+
+      await Promise.allSettled(deletedModels)
     }
   }
 };

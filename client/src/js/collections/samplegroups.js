@@ -118,28 +118,6 @@ define(['backbone',
             return { totalRecords: r.total }
         },
 
-        save: function(options) {
-            options = _.extend({}, options)
-            
-            var collection = this
-            var success = options.success;
-
-            options.success = function(resp) {
-                collection.reset(resp, { silent: true })
-                if (success) success(collection, resp, options)
-            }
-
-            const sampleGroupList = this.pluck('BLSAMPLEGROUPID');
-            const uniqSampleGroup = _.uniq(sampleGroupList)
-
-            if (uniqSampleGroup.length === 1 && typeof  _.first(uniqSampleGroup) !== 'undefined') {
-                const updateCollection = _.extend(this, { url: `/sample/groups/${sampleGroupList[0]}` })
-                return Backbone.sync('update', updateCollection, options)
-            }
-            
-            return Backbone.sync('create', this, options)
-        },
-
         sampleGroupNameModel: function(options) {
             return new SampleGroup({}, options)
         }
