@@ -59,10 +59,8 @@ export default {
         { title: "Number of Samples", key: "NUM_MEMBERS" },
       ],
       sampleGroupHeaders: [
-        { title: "ID", key: "BLSAMPLEID" },
         { title: "Name", key: "SAMPLE" },
-        { title: "Container", key: "CONTAINER" },
-        { title: "Protein", key: "PROTEIN" },
+        { title: "Protein", key: "PROTEIN" }
       ],
       sampleGroups: null, // backbone collection
       groups: [],
