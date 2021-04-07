@@ -10,17 +10,17 @@ TODO - move the score colour methods to a utility class
 -->
 <template>
   <div class="tw-w-full tw-flex tw-flex-col">
-    <div class="tw-flex tw-w-full tw-items-center">
+    <div class="tw-flex tw-w-full tw-items-center tw-justify-between">
+      <p class="tw-text-lg">
+        Click on Row/Column to select {{ getSelectedDropPosition(currentSelectedDropIndex) }} drops for the Row/Column
+      </p>
+
       <base-button
         @perform-button-action="toggleSelectionState"
         class="button tw-mr-2"
       >
         {{ nextFilterState }}
       </base-button>
-
-      <p class="tw-ml-1">
-        Click on Row/Column to select {{ getSelectedDropPosition(currentSelectedDropIndex) }} drops for the Row/Column
-      </p>
     </div>
     <div id="plate" class="tw-w-full"></div>
   </div>
@@ -171,6 +171,9 @@ export default {
       this.drawContainer()
       this.updateSelectedDrops()
       this.currentSelectedDropIndex = -1
+    },
+    currentSelectedDropIndex(newVal, oldVal) {
+      this.getSelectedDropPosition(newVal)
     }
   },
   created() {
@@ -179,6 +182,7 @@ export default {
   mounted () {
     this.drawContainer()
     this.updateLabels()
+    this.updateSelectedDrops()
   },
   methods: {
     drawContainer () {
@@ -319,20 +323,6 @@ export default {
               .style('fill', (d) => d.LOCATION ? self.sampleColour : 'none')
               .style('pointer-events', 'visible')
               .on('click', (event, data) => self.handleDropSelection(event.target, data.dropIndex, null))
-
-          d3Select(this)
-            .selectAll('text')
-            .data(d)
-            .enter()
-            .append('text')
-            .attr('x', (d, i) => (self.dropCoords[i].x + self.dropWidth * 0.5 * self.container.drops.w))
-            .attr('y', (d, i) => (self.dropCoords[i].y + (self.dropHeight  * self.container.drops.h) + self.cell.margin))
-            .html((_, i) => { return i + 1 })
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'middle')
-            .style('font-size', '12px')
-            .style('fill', 'darkgray')
-            .style('pointer-events', 'none') // Required to capture mouse events on non-fill shapes
         })
     },
     updateLabels: function () {
