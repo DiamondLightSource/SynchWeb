@@ -2089,7 +2089,11 @@ class Shipment extends Page
                 if (!$this->has_arg('PRODUCTCODE')) $this->_error('No product code specified');
                 $product = $this->arg('PRODUCTCODE');
             }
-
+            // Catch programmatic use of awb - suspend international shipments
+            // facility_courier_countries is an array containing United Kingdom
+            if (!in_array($cont['COUNTRY'], $facility_courier_countries)) {
+                $this->_error('International shipment bookings currently suspended. Please see MX manual for instructions');
+            }
             if ($this->has_arg('RETURN')) {
                 $accno = $ship['DELIVERYAGENT_AGENTCODE'];
                 $payee = 'R';
@@ -2364,6 +2368,12 @@ class Shipment extends Page
                 'postcode' => $cont['POSTCODE'],
                 'country' => $cont['COUNTRY'],
             );
+
+            // Catch programmatic use of awb - suspend international shipments
+            // facility_courier_countries is an array containing United Kingdom
+            if (!in_array($cont['COUNTRY'], $facility_courier_countries)) {
+                $this->_error('International shipment bookings currently suspended. Please see MX manual for instructions');
+            }
 
             global $facility_city, $facility_postcode, $facility_country;
             $facility = array(
