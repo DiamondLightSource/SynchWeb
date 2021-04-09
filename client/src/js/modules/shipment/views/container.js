@@ -1,7 +1,7 @@
 define(['marionette',
     'backbone',
     'modules/shipment/collections/distinctproteins',
-    
+
     'models/sample',
     'collections/samples',
     'modules/shipment/views/puck',
@@ -14,6 +14,7 @@ define(['marionette',
     'modules/shipment/views/plate',
 
     'collections/processingpipelines',
+    'collections/users',
 
     'views/table',
 
@@ -35,12 +36,13 @@ define(['marionette',
     PlateView,
 
     ProcessingPipelines,
-    
-    TableView,    
+    Users,
+
+    TableView,
 
     utils, formatDate,
     Editable, template){
-            
+
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
@@ -51,7 +53,7 @@ define(['marionette',
             puck: '.puck',
             hist: '.history'
         },
-        
+
         ui: {
             ext: '.extrainfo',
             auto: '.auto',
@@ -64,6 +66,11 @@ define(['marionette',
             'click a.unqueue': 'confirmUnqueueContainer',
         },
 
+        templateHelpers: function() {
+            return {
+                IS_STAFF: app.staff,
+            }
+        },
 
         toggleExtra: function (e) {
             e.preventDefault()
@@ -88,7 +95,7 @@ define(['marionette',
                     self.samples.add(new Sample({ LOCATION: l.toString(), CRYSTALID: -1, PROTEINID: -1, CONTAINERID: options.model.get('CONTAINERID'), new: true }))
                 })
             })
-            
+
             this.proteins = new DistinctProteins()
             if (app.options.get('valid_components') && !app.staff) {
                 this.proteins.queryParams.external = 1
@@ -103,11 +110,16 @@ define(['marionette',
 
             this.processing_pipelines = new ProcessingPipelines()
 
+            // We need users in case we want to edit the container owner
+            this.users = new Users(null, { state: { pageSize: 9999 }})
+            this.users.queryParams.all = 1
+            this.users.queryParams.pid = app.proposal.get('PROPOSALID')
+
             Backbone.Validation.bind(this)
         },
 
-        
-        onRender: function() {  
+
+        onRender: function() {
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
             edit.create('COMMENTS', 'text')
@@ -131,9 +143,16 @@ define(['marionette',
                 { name: 'LOCATION', label: 'Location', cell: 'string', editable: false },
                 { name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false },
             ]
-                        
+
             this.histtable = new TableView({ collection: this.history, columns: columns, tableClass: 'history', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
             this.hist.show(this.histtable)
+
+            // Enable editing of the container owner
+            // The template restricts this to staff only
+            var self = this
+            this.users.fetch().done(function() {
+                edit.create('OWNERID', 'select', { data: self.users.kv() })
+            })
 
             this.updateAutoCollection()
         },
@@ -209,11 +228,11 @@ define(['marionette',
             })
         },
 
-        
+
         onShow: function() {
             this._ready.done(this.doOnShow.bind(this))
         },
-        
+
         doOnShow: function() {
             var self = this
             var noData = _.reduce(this.samples.pluck('HASDATA'), function(a, b) { return a + b ? 1 : 0 }, 0) == 0
@@ -226,7 +245,7 @@ define(['marionette',
             }
 
             var type = this.model.get('CONTAINERTYPE') == 'PCRStrip' ? 'non-xtal' : ''
-            
+
             if (this.model.get('CONTAINERTYPE') == 'PCRStrip') {
                 this.$el.find('.puck').css('width', '50%')
                 // this.puck.$el.width(this.puck.$el.parent().width()/2)
