@@ -159,7 +159,7 @@ class Status extends Page
                 fseek($file, -2, SEEK_CUR);
             }
 
-            if($line < $num_lines)
+            if($line < $num_lines && sizeof($lines) != 0)
                 $lines[$line] = implode('', array_reverse($lines[$line]));
             
             if ($this->has_arg('p')) $lines = array_slice($lines,$pp*($this->arg('p')-1),$pp);
