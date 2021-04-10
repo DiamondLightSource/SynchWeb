@@ -130,7 +130,6 @@ define(['marionette',
                     var id = group+program
                     var col = this.table.grid.columns.where({ pid: id });
                     var title = program.replace('+', '+ ').replace('.', '. ')
-                    console.log(group, program, col)
                     if (!col.length) {
                         this.table.grid.insertColumn(
                             { label: title , cell: APItemCell, editable: false, group: group, program: program, pid: id }
