@@ -7,7 +7,7 @@ use SynchWeb\Page;
 class Assign extends Page
 {
         
-        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+', 'bl' => '[\w-]+');
+        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+', 'bl' => '[\w-]+', 'nodup' => '\d');
 
         public static $dispatch = array(array('/visits(/:visit)', 'get', '_blsr_visits'),
                               array('/assign', 'get', '_assign'),
@@ -54,6 +54,21 @@ class Assign extends Page
                         $bl = $this->arg('bl');
                     }
                 }
+
+                if ($this->has_arg(('nodup'))) {
+                    $existing = $this->db->pq("SELECT c.containerid, c.name, CONCAT(p.proposalcode, p.proposalnumber) as prop
+                        FROM container c
+                        INNER JOIN dewar d ON d.dewarid = c.dewarid
+                        INNER JOIN shipping s ON s.shippingid = d.shippingid
+                        INNER JOIN proposal p ON s.proposalid = s.proposalid
+                        WHERE beamlinelocation=1 AND samplechangerlocation:2", array($bl, $this->arg('pos')));
+
+                    if (sizeof($existing)) {
+                        $ex = $existing[0];
+                        return $this->_error('A container is already a assigned that position: '+$ex[0]['NAME'] + '('+$ex['PROP']+')');
+                    }
+                }
+
 
                 $this->db->pq("UPDATE dewar SET dewarstatus='processing' WHERE dewarid=:1", array($c['DEWARID']));
                                

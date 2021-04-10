@@ -5,7 +5,7 @@ define([], function() {
         headers: ['Puck',      'Pin',      'Project', 'Priority', 'Mode',           'Notes to Staff', 'Collection strategy', 'Contact person', 'Expected space group', 'Expected Cell Dimensions', 'Expected Resolution', 'Minimum Resolution Required to Collect', 'Recipe', 'Exposure time', 'Image Width', 'Phi',          'Attenuation',  'Aperture',           'Detector Distance', 'Prefix for frames', 'Observed Resolution', 'Comments From Staff', 'Status'],
         
         // ... and their ISPyB table mapping
-        mapping: ['CONTAINER', 'LOCATION', 'ACRONYM', 'PRIORITY', 'COLLECTIONMODE', 'COMMENTS',       'COMMENTS',            'OWNER',          'SPACEGROUP',           'CELL',                     'AIMEDRESOLUTION',     'REQUIREDRESOLUTION',                     'RECIPE', 'EXPOSURETIME',  'AXISRANGE',   'AXISROTATION', 'TRANSMISSION', 'PREFERREDBEAMSIZEX', 'DETECTORDISTANCE',  'PREFIX',            'DCRESOLUTION',        'DCCOMMENTS',          'STATUS'],
+        mapping: ['CONTAINER', 'LOCATION', 'ACRONYM', 'PRIORITY', 'COLLECTIONMODE', 'COMMENTS',       'COMMENTS',            'OWNER',          'SPACEGROUP',           'CELL',                     'AIMEDRESOLUTION',     'REQUIREDRESOLUTION',                     'RECIPE', 'EXPOSURETIME',  'AXISRANGE',   'AXISROTATION', 'TRANSMISSION', 'PREFERREDBEAMSIZEX', 'DETECTORDISTANCE',  'PREFIX',            'DCRESOLUTION',        'STAFFCOMMENTS',       'STATUS'],
 
         // Columns to show on the import page
         columns: {

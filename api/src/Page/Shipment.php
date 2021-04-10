@@ -1433,7 +1433,7 @@ class Shipment extends Page
             array_push($args, $start);
             array_push($args, $end);
             
-            $order = 'c.bltimestamp DESC';
+            $order = 'c.containerid DESC';
 
             if ($this->has_arg('ty')) {
                 if ($this->arg('ty') == 'todispose') {

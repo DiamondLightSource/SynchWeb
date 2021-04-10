@@ -41,7 +41,10 @@ define(['marionette', 'backbone',
         doUnAssign: function() {
             Backbone.ajax({
                 url: app.apiurl+'/assign/unassign',
-                data: { prop: this.model.get('PROP'), cid: this.model.get('CONTAINERID'), bl: this.getOption('bl') },
+                data: { 
+                    nodup: 1,
+                    prop: this.model.get('PROP'), cid: this.model.get('CONTAINERID'), bl: this.getOption('bl') 
+                },
                 success: this.unassignUpdateGUI.bind(this),
                 error: function() {
                     app.alert({ message: 'Something went wrong unassigning this container' })
