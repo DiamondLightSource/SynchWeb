@@ -24,8 +24,6 @@ class BigEPPhasing extends DownstreamPlugin {
             }
         }
 
-        $dat['SETTINGS'] = array();
-
         $image = $this->_get_image();
         $dat['IMAGE'] = file_exists($image);
 
