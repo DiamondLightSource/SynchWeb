@@ -62,6 +62,7 @@ class Sample extends Page
 
                               'NAME' => '[\w\s-()]+',
                               'COMMENTS' => '.*',
+                              'STAFFCOMMENTS' => '.*',
                               'SPACEGROUP' => '(\w+)|^$', // Any word character or empty string
                               'CELL_A' => '\d+(.\d+)?',
                               'CELL_B' => '\d+(.\d+)?',
@@ -942,11 +943,11 @@ class Sample extends Page
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
+            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments, b.staffcomments, b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath,
                                     dp.aimedresolution, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.collectionmode, dp.priority,
-                                    GROUP_CONCAT(dcc.comments, ', ') as dccomments
+                                    GROUP_CONCAT(distinct a.spacegroup) as dcspacegroup
                                   
                                   FROM blsample b
 
@@ -967,7 +968,6 @@ class Sample extends Page
                                   
                                   LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = b.diffractionplanid 
                                   LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
-                                  LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
                                   LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
                                   LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
                                   
@@ -979,6 +979,8 @@ class Sample extends Page
                                   LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
                                   LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
                                   LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid AND app.processingstatus = 1
+                                  LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+                                  LEFT OUTER JOIN autoproc a ON aps.autoprocid = a.autoprocid 
 
                                   LEFT OUTER JOIN blsampleimage si ON b.blsampleid = si.blsampleid
 
@@ -1033,8 +1035,8 @@ class Sample extends Page
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10 WHERE blsampleid=:11", 
-              array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$a['PACKINGFRACTION'],$a['DIMENSION1'],$a['DIMENSION2'],$a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE'],$this->arg('sid'))); 
+            $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10,staffcomments=:11 WHERE blsampleid=:12", 
+              array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$a['PACKINGFRACTION'],$a['DIMENSION1'],$a['DIMENSION2'],$a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE'],$a['STAFFCOMMENTS'],$this->arg('sid'))); 
 
             if (array_key_exists('PROTEINID', $a)) {
                 $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10", 
@@ -1126,7 +1128,7 @@ class Sample extends Page
             if (!$haskey) $this->_error('One or more fields is missing');
 
 
-            foreach (array('COMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER', 'COLLECTIONMODE') as $f) {
+            foreach (array('COMMENTS', 'STAFFCOMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER', 'COLLECTIONMODE') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : '';
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
             }
@@ -1408,7 +1410,7 @@ class Sample extends Page
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE');
+            $sfields = array('CODE', 'NAME', 'COMMENTS', 'STAFFCOMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE');
             foreach ($sfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE blsample SET $f=:1 WHERE blsampleid=:2", array($this->arg($f), $samp['BLSAMPLEID']));

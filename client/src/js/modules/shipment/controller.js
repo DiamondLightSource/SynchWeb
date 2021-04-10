@@ -16,6 +16,7 @@ define(['backbone',
         // 'modules/shipment/views/containeradd',
         'modules/shipment/views/containers',
         'modules/imaging/views/queuecontainer',
+        'modules/shipment/views/containerreview',
 
         'modules/shipment/models/containerregistry',
         'modules/shipment/collections/containerregistry',
@@ -49,7 +50,8 @@ define(['backbone',
     GetView,
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView, ImportFromCSV,
-    Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
+    Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView, 
+    MailinContainers, ReviewContainer,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView, DewarRegistryView,
     DispatchView, TransferView, Dewars, DewarOverview, ManifestView, DewarStats, CreateAWBView, RebookPickupView,
@@ -354,6 +356,30 @@ define(['backbone',
                 app.bc.reset([bc, { title: 'Error' }])
                 app.message({ title: 'No such container', message: 'The specified container could not be found'})
             },
+        })
+    },
+
+    container_review: function(cid) {
+        var lookup = new ProposalLookup({ field: 'CONTAINERID', value: cid })
+        lookup.find({
+            success: function() {
+                var container = new Container({ CONTAINERID: cid })
+                container.fetch({
+                    success: function() {
+                        app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Review' }, { title: container.get('NAME') }])
+                        app.content.show(new ReviewContainer({ model: container }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'No such container' }])
+                        app.message({ title: 'No such container', message: 'The specified container could not be found'})
+                    },
+                })
+            },
+
+            error: function() {
+                app.bc.reset([bc, { title: 'No such container' }])
+                app.message({ title: 'No such container', message: 'The specified container could not be found'})
+            }
         })
     },
 
