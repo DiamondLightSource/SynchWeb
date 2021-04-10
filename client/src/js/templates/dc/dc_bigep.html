@@ -1,29 +1,37 @@
-<% if (!_.isEmpty(SETTINGS)) { %>
-<section class="bigep-settings">
-    <table class="bepm_sets reflow">
-        <thead>
-            <tr>
-                <th>Anom. scatterer</th>
-                <th>Space group</th>
-                <th>Num. scatterers</th>
-                <th>Dataset type</th>
-                <th>Compound</th>
-                <th>Sequence</th>
-            </tr>
-        </thead>
-        <tr>
-            <td><%-SETTINGS.atom%></td>
-            <td><%-SETTINGS.spacegroup%></td>
-            <td><%-SETTINGS.nsites%></td>
-            <td><%-SETTINGS.dataset%></td>
-            <td><%-SETTINGS.compound%></td>
-            <td><div class="bepm-seq seq"><%-SETTINGS.sequence%></div></td>
-        </tr>
-    </table>
-</section>
-<% } %>
+<section class="bigep-stats clearfix">    
+    <section class="bigep-images">
+        <figure>
+            <% if (IMAGE) { %>
+            <a href="/dc/map/aid/<%-AID%>" title="<%-TYPE%> model">
+            <img class="thumb" class="bigep-thumb" alt="<%-TYPE%> model" />
+            </a>
+            <% } %>
+        </figure>
+    </section>
 
-<section class="bigep-stats clearfix">
+    <section class="bigep-settings r">
+        <table class="bepm_sets reflow">
+            <thead>
+                <tr>
+                    <th>Anom. scatterer</th>
+                    <th>Space group</th>
+                    <th>Num. scatterers</th>
+                    <th>Dataset type</th>
+                    <th>Compound</th>
+                    <th>Sequence</th>
+                </tr>
+            </thead>
+            <tr>
+                <td><%-PROCESS.PARAMETERS.atom%></td>
+                <td><%-PROCESS.PARAMETERS.spacegroup%></td>
+                <td><%-PROCESS.PARAMETERS.nsites%></td>
+                <td><%-PROCESS.PARAMETERS.dataset%></td>
+                <td><%-PROCESS.PARAMETERS.compound%></td>
+                <td><div class="bepm-seq seq"><%-PROCESS.PARAMETERS.sequence%></div></td>
+            </tr>
+        </table>
+    </section>
+
     <section class="bigep-models clearfix">
         <table class="bepm_stats bepm_stats2 reflow">
             <thead>
@@ -38,14 +46,5 @@
                 <td><%-MAPCC%> (<%-MAPRESOL%>)</td>
             </tr>
         </table>
-    </section>
-    <section class="bigep-images">
-        <figure>
-            <% if (IMAGE) { %>
-            <a href="/dc/map/aid/<%-AID%>" title="<%-TYPE%> model">
-            <img class="thumb" class="bigep-thumb" alt="<%-TYPE%> model" />
-            </a>
-            <% } %>
-        </figure>
     </section>
 </section>
