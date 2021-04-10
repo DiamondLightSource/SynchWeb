@@ -4,8 +4,8 @@ namespace SynchWeb\Downstream\Type;
 
 use SynchWeb\Downstream\DownstreamPlugin;
 
-class BigEp extends DownstreamPlugin {
-    var $friendlyname = "Big EP";
+class EpPredict extends DownstreamPlugin {
+    var $friendlyname = "EP Predict";
 
     function results() {
     }
