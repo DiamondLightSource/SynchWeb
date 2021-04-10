@@ -8,7 +8,6 @@ define(['backbone', 'marionette',
         APMessagesView,
         LogView, utils) {
     
-
     return Marionette.LayoutView.extend({
         links: true,
         mapLink: true,
@@ -67,6 +66,10 @@ define(['backbone', 'marionette',
             })
             this.wrapper.show(this.wrappedView)
 
+            if (!this.model.get('AUTOMATIC')) {
+                this.ui.links.html('<i class="fa fa-refresh" title="Reprocessed"></i> ')
+            }
+
             if (this.getOption('links')) {
                 var links = [
                     '<a class="view button" href="/dc/map/id/'+this.getOption('DCID')+'/aid/'+this.model.get('AID')+'"><i class="fa fa-search"></i> Map / Model Viewer</a>',
@@ -78,7 +81,7 @@ define(['backbone', 'marionette',
                     links = links.slice(1)
                 }
 
-                this.ui.links.html(links.join(' '))
+                this.ui.links.append(links.join(' '))
             }
         },
 
