@@ -62,7 +62,7 @@ class BigEPPhasing extends DownstreamPlugin {
     function _get_image() {
         $images = $this->_get_attachments('.png');
         if (sizeof($images)) {
-            return $images[0]['FILEPATH'] . $images[0]['FILENAME'];
+            return $images[0]['FILEPATH'] . '/' . $images[0]['FILENAME'];
         }
     }
 
