@@ -434,7 +434,7 @@ class Download extends Page
             $response->headers->set("Content-Type", "application/octet-stream");
             $response->setContentDisposition(
                 ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $this->arg('AUTOPROCPROGRAMID') . '_' . $ap['PROCESSINGPROGRAMS'] . '.tar.gz'
+                $this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.tar.gz'
             );
             $response->deleteFileAfterSend(true);
             $response->send();
