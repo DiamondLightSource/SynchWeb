@@ -10,16 +10,25 @@
         
     </div>
 
+    <div class="plot_dimple r"></div>
+
     <table class="rstats">
-        <% _.each(STATS[0], function(r, i) { %>
-        <tr>
-            <% _.each(_.range(STATS.length), function(j) { %>
-            <td><%-STATS[j][i]%></td>
+        <% if (STATS.length) { %>
+            <% _.each(STATS, function(r, i) { %>
+            <tr>
+                <% _.each(r, function(j) { %>
+                <td><%-j%></td>
+                <% }) %>
+            </tr>
             <% }) %>
-        </tr>
-        <% }) %>
+        <% } else { %>
+            <tr>
+                <td>Refinement Stats</td>
+            </tr>
+            <tr>
+                <td>No Stats Available</td>
+            </tr>
+        <% } %>
     </table>
-    
-    <div class="plot_dimple"></div>
     
 </div>

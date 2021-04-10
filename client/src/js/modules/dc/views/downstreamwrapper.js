@@ -12,7 +12,7 @@ define(['backbone', 'marionette',
     return Marionette.LayoutView.extend({
         links: true,
         mapLink: true,
-        template: _.template('<div class="dpmessages"></div><div class="ra dplinks"></div><div class="dpwrapper"></div>'),
+        template: _.template('<div class="dpmessages"></div><% if(PARENT) { %><div class="r dplinks"></div><h2><%-PARENT%></h2><% } else { %><div class="ra dplinks"></div><% } %><div class="dpwrapper"></div>'),
         regions: {
             messages: '.dpmessages',
             wrapper: '.dpwrapper',

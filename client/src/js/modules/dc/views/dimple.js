@@ -8,6 +8,7 @@ define([
     
         ui: {
             plot: '.plot_dimple',
+            rstats: '.rstats',
         },
         
         showBlob: function() {
@@ -29,9 +30,11 @@ define([
                 this.blob.load(app.apiurl+'/processing/downstream/images/'+this.model.get('AID'))
             }
 
-            if (app.mobile()) this.ui.plot.width(0.93*(this.options.holderWidth-14))
-            else {
-                this.ui.plot.width(0.67*(this.options.holderWidth-14))
+            if (app.mobile()) {
+                this.ui.plot.width(0.93*(this.options.holderWidth-14))
+            } else {
+                this.ui.rstats.width(0.20*(this.options.holderWidth-14))
+                this.ui.plot.width(0.47*(this.options.holderWidth-14))
                 this.ui.plot.height(this.ui.plot.width()*0.41-80)
             }
 

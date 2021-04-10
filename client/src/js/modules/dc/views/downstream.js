@@ -13,8 +13,14 @@ define(['backbone', 'marionette',
         TableView, 
         FastEP, DIMPLE, MrBUMP, BigEP, downstreamerror) {
 
+    var DownstreamsCollection = Backbone.Collection.extend()
+
     var DownStreamError = Marionette.ItemView.extend({
         template: downstreamerror
+    })
+
+    var DownStreamRunning = Marionette.ItemView.extend({
+        template: _.template('<p>This job is currently running</p>')
     })
         
     var EmptyAP = Marionette.ItemView.extend({ template: '<p>No downstream processing available for this data collection</p>', tagName: 'p' })
@@ -46,13 +52,8 @@ define(['backbone', 'marionette',
         }
     })
 
-
-    
-    var DCDSTabView = TabView.extend({
-        tabTitle: 'TITLE',
-        tabID: 'AID',
-
-        tabContentItem: function() {
+    var DownstreamView = Marionette.CollectionView.extend({
+        getChildView: function(model) {
             var types = {
                 'Fast EP': FastEP,
                 'Dimple': DIMPLE,
@@ -62,14 +63,15 @@ define(['backbone', 'marionette',
                 'AutoSHARP': BigEP,
             }
             
-            if (this.model.get('PROCESS').PROCESSINGSTATUS != 1) {
+            if (model.get('PROCESS').PROCESSINGSTATUS != 1) {
                 return DownstreamWrapper.extend({
                     links: false,
-                    childView: DownStreamError
+                    childView: model.get('PROCESS').PROCESSINGSTATUS == null
+                        ?  DownStreamRunning : DownStreamError
                 })
             }
 
-            tabType = this.model.get('TYPE')
+            tabType = model.get('TYPE')
             for (var key in types) {
                 if (tabType.indexOf(key) > -1) {
                     return DownstreamWrapper.extend({
@@ -83,22 +85,55 @@ define(['backbone', 'marionette',
                 mapLink: false
             })
         },
-        
+
         childViewOptions: function() {
-            var dcId = this.getOption('id')
             return {
                 holderWidth: this.getOption('holderWidth'),
                 templateHelpers: function() {
                     return {
-                        DCID: dcId,
-                        APIURL: app.apiurl
+                        DCID: this.getOption('DCID'),
+                        APIURL: app.apiurl,
+                        PARENT: this.model.get('PARENTAUTOPROCPROGRAM')
                     }
                 },
-                DCID: dcId,
             }
         },
+
+        initialize: function(options) {
+            this.collection = new DownStreams(
+                this.getOption('downstreams').where({ TYPE: this.model.get('TYPE') }), 
+                { id: this.getOption('dcid') }
+            )
+        }
     })
-        
+
+    var DownstreamsViewTab = TabView.extend({
+        tabTitle: 'TYPE',
+        tabID: 'TYPE',
+        tabContentItem: function() { return DownstreamView },
+        childViewOptions: function() {
+            return {
+                holderWidth: this.getOption('holderWidth'),
+                downstreams: this.getOption('downstreams'),
+                DCID: this.getOption('id'),
+            }
+        },
+
+        createGroups: function() {
+            var downstreams = _.map(_.unique(this.getOption('downstreams').pluck('TYPE')), function(s) {
+                return { TYPE: s }
+            })
+            this.collection.reset(downstreams)
+        },
+
+        initialize: function(options) {
+            this.collection = options.collection = new DownstreamsCollection()
+            this.createGroups()
+
+            DownstreamsViewTab.__super__.initialize.call(this, options)
+        },
+    })
+
 
     return Marionette.LayoutView.extend({
         template: _.template('<div class="sw"></div><div class="res"></div>'),
@@ -123,8 +158,8 @@ define(['backbone', 'marionette',
         update: function() {
             if (this.collection.length) {
                 this.$el.removeClass('ui-tabs')
-                this.wrap.show(new DCDSTabView({
-                    collection: this.collection,
+                this.wrap.show(new DownstreamsViewTab({
+                    downstreams: this.collection,
                     id: this.getOption('id'),
                     el: this.$el.find('.res'),
                     holderWidth: this.$el.parent().width()
