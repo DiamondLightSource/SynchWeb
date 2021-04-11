@@ -15,6 +15,7 @@ define(['jquery', 'marionette',
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
         padMax: true,
+        blurRadius: 1.5,
         snapshotId: 2,
         template: template,
         className: 'content',
@@ -44,7 +45,7 @@ define(['jquery', 'marionette',
 
         setHM: function() {
             this.heatmapToggle = this.ui.hmt.is(':checked')
-            console.log('htm', this.heatmapToggle)
+            // console.log('htm', this.heatmapToggle)
             this.draw()
         },
 
@@ -73,7 +74,6 @@ define(['jquery', 'marionette',
             this.grid = new GridInfo({ id: this.getOption('ID') })
             this.listenTo(this.grid, 'sync', this.afterFetchGrid)
 
-            var self = this
             this.gridFetched = false
             this.onGridFetch = options.onGridFetch
             this._gridPromise = this.grid.fetch()
@@ -106,7 +106,7 @@ define(['jquery', 'marionette',
                 this.gridFetched = true
                 if (this.grid.get('ORIENTATION')) this.vertical = this.grid.get('ORIENTATION') == 'vertical'
                 else this.vertical = (this.grid.get('STEPS_Y') > this.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
-                console.log('grid', this.grid.get('DATACOLLECTIONID'), this.grid.get('ORIENTATION'), 'vertical', this.vertical)
+                // console.log('grid', this.grid.get('DATACOLLECTIONID'), this.grid.get('ORIENTATION'), 'vertical', this.vertical)
 
             } else {
                 var self = this
@@ -189,7 +189,7 @@ define(['jquery', 'marionette',
             if (!this.snapshotLoading && this.statusesLoaded && utils.inView(this.$el) && !this.inView) {
                 this._ready.push(this.distl.fetch())
                 this._ready.push(this.attachments.fetch())
-                console.log('in view')
+                // console.log('in view')
                 this.getModel()
 
                 $.when.apply($, this._ready).done(this.populatePIA.bind(this))
@@ -226,7 +226,7 @@ define(['jquery', 'marionette',
         },
 
         snapshotLoaded: function() {
-            console.log('snapshot loaded')
+            // console.log('snapshot loaded')
             this.hasSnapshot = true
             this.$el.removeClass('loading')
             this.draw()
@@ -272,13 +272,11 @@ define(['jquery', 'marionette',
 
 
         draw: function() {
-            console.log('draw', this.ctx, this.hasSnapshot)
+            // console.log('draw', this.ctx, this.hasSnapshot)
             if (!this.ctx || !this.gridFetched) return
 
             var bw = 1000*this.grid.get('DX_MM')/Math.abs(this.grid.get('PIXELSPERMICRONX'))
             var bh = 1000*this.grid.get('DY_MM')/Math.abs(this.grid.get('PIXELSPERMICRONY'))
-
-            var radius = bh < bw ? (bh * 1.1) : (bw * 1.1)
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -347,7 +345,8 @@ define(['jquery', 'marionette',
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
 
-                radius = (sw > sh ? sw : sh)
+                // Only use width if steps in x > 1
+                var radius = (sw > sh && this.grid.get('STEPS_X') > 1 ? sw : sh) * this.getOption('blurRadius')
 
                 var data = []
                 _.each(d, function(v,i) {
@@ -376,9 +375,9 @@ define(['jquery', 'marionette',
                         var x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
                         var y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
                     }
-                    var r = ((v[1] < 1 ? 0 : v[1]) / (max == 0 ? 1 : max)) * sw / 2
 
-                    data.push({ x: x, y: y, value: v[1] < 1 ? 0 : v[1], 
+                    // Dont zero values < 1 if data is scaled to max==1
+                    data.push({ x: x, y: y, value: v[1] < 1 && max > 1 ? 0 : v[1], 
                         radius: radius
                     })
 
