@@ -10,7 +10,7 @@ define(['marionette',
             thumb: '.thumb',
             image: '.bigep-images figure'
         },
-                
+
         showThumbnail: function() {
             this.ui.thumb.attr('src', this.thumb.src)
         },

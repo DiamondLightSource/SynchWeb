@@ -195,7 +195,7 @@ class Users extends Page
             $where .= ' AND p.personid=:'.(sizeof($args)+1);
             array_push($args, $this->arg('PERSONID'));
 
-            if (!$this->user->can('manage_users')) {
+            if (!$this->user->has('manage_users')) {
                 $where .= ' AND (prhp.proposalid=:'.(sizeof($args)+1).' OR lc.proposalid=:'.(sizeof($args)+2).' OR p.personid=:'.(sizeof($args)+3).')';
                 array_push($args, $this->proposalid);
                 array_push($args, $this->proposalid);

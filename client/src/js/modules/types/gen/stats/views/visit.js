@@ -7,9 +7,13 @@ define(['marionette',
         'modules/stats/views/hourlies',
         'modules/stats/views/ehc',
         'modules/stats/views/callout',
+
+        'modules/blstats/collections/errorlog',
+        'modules/stats/views/errorlog',
     
         'templates/types/gen/stats/visit.html'], function(Marionette, Faults, FaultListView,
         BreakdownView, DetailsView, PieView, HourliesView, EHCLogView, CalloutView,
+        ErrorLog, ErrorLogView,
         template) {
 
     return Marionette.LayoutView.extend({
@@ -23,6 +27,7 @@ define(['marionette',
             ehc: '.ehclogs',
             hrs: '.hrs',
             flt: '.faults',
+            errlog: '.errlog'
         },
         
         
@@ -39,6 +44,12 @@ define(['marionette',
             this.faults.fetch()
             
             this.flt.show(new FaultListView({ collection: this.faults, filters: false, search: false }))
+
+            this.errorlog = new ErrorLog()
+            this.errorlog.queryParams.visit = this.model.get('VISIT')
+            this.errorlog.fetch()
+
+            this.errlog.show(new ErrorLogView({ collection: this.errorlog }))
         },
     })
 

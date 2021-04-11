@@ -12,11 +12,12 @@ define(['marionette',
     'modules/stats/views/overview',
     'modules/stats/views/overview2',
     'modules/stats/views/bloverview',
-    'modules/stats/views/beamline'
+    'modules/stats/views/beamline',
+    'modules/stats/views/runs_overview'
     
     ], function(Marionette, Visit, BreakDown, Pies, VisitView, ProposalView, 
         GenericVisitView, EMVisitView,
-        BAGOverviewView, BLSOverviewView, BeamlineHLOverview, BeamlineOverview) {
+        BAGOverviewView, BLSOverviewView, BeamlineHLOverview, BeamlineOverview, RunsOverview) {
     
     var bc = { title: 'Visit Statistics', url: '/stats' }
     
@@ -110,7 +111,19 @@ define(['marionette',
             }
             app.bc.reset([bc, { title: 'Beamline Run Overview' }, { title: bl }]),
             app.content.show(new BeamlineOverview({ bl: bl, params: { run: run, from: parseInt(from), to: parseInt(to) } }))  
-        } 
+        },
+
+        runs_overview: function(bl) {
+            app.loading()
+
+            if (!app.user_can('all_breakdown')) {
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                return
+            }
+
+            app.bc.reset([bc, { title: 'Runs Overview For Beamlines', url: '' }])
+            app.content.show(new RunsOverview({ params: { bl } }))
+        }
     }
         
        

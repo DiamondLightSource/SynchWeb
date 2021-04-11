@@ -3,6 +3,7 @@ define([
     'modules/dc/views/apstatusitem',
     'modules/dc/views/downstream',
     'modules/types/saxs/dc/datplot',
+    'modules/types/saxs/dc/views/autointegration',
     'utils',
     'templates/types/saxs/dc/dc.html'], function(DCItemView, APStatusItem, DCDownstreamView, DatPlot, utils, template) {
 
@@ -13,6 +14,7 @@ define([
         apStatusItem: APStatusItem,
         
         events: {
+            'click .holder h1.ap': 'loadAP',
             'click .diffraction': 'showDiff',
             'click a.dd': utils.signHandler,
             'click .holder h1.dp': 'loadAP',

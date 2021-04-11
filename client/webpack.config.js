@@ -106,7 +106,7 @@ module.exports = (env) => ({
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate/dist/vee-validate.min',
-      zonedTimeToUtc: 'date-fns-tz/zonedTimeToUtc',
+      luxon: 'luxon',
       formatDate: 'date-fns/format'
     },
     modules: [
@@ -153,7 +153,7 @@ module.exports = (env) => ({
       },
       // SVG could be images or fonts so use more explicit test here...
       {
-        test: /font-awesome\/.+\.(svg)$/,
+        test: /font-awesome[\\\/].+\.(svg)$/,
         use: {
           loader: 'file-loader',
           options: {
@@ -172,7 +172,7 @@ module.exports = (env) => ({
         ]
       },
       {
-        test: /vue\/.+\.html$/,
+        test: /vue[\\\/].+\.html$/,
         use: ['html-loader']
       },
       // We need to help Caman load properly
