@@ -31,17 +31,26 @@
             </li>
             
             <li>
+                <!-- Small tweaks to the styling here using tailwind flexbox -->
                 <label>First Experiment / Scheduling
                     <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>
                 </label>
-                <select name="FIRSTEXPERIMENTID"></select> <label class="secondary"><input type="checkbox" name="noexp"> Automated / Imager</label><label class="secondary"><input type="checkbox" name="dynamic"> Responsive Remote / Mail-in</label>
+                <div class="tw-flex">
+                    <select class="tw-h-6 tw-mr-2" name="FIRSTEXPERIMENTID"></select>
+                    <label class="secondary tw-mr-2">
+                        <input type="checkbox" name="noexp"> Automated / Imager
+                    </label>
+                    <label class="secondary tw-mr-2">
+                        <input type="checkbox" name="dynamic"> Responsive Remote / Mail-in
+                    </label>
+                </div>
             </li>
 
             <li>
                 <label>Safety Level
                     <span class="small">The safety level of the shipment</span>
                 </label>
-                <select name="SAFETYLEVEL" required>
+                <select class="tw-h-6" name="SAFETYLEVEL" required>
                     <option value="Green">Green</option>
                     <option value="Yellow">Yellow</option>
                     <option value="Red">Red</option>

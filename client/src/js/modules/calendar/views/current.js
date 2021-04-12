@@ -48,7 +48,8 @@ define(['marionette',
         },
         
         showVisit: function(e) {
-            //if ($(e.target).is('a') || $(e.target).is('i')) return
+            // Handle all links the same - prevent default anchor event to avoid double navigation
+            e.preventDefault()
             app.trigger('dclist:show', this.model.get('VISIT'))
         },
         
