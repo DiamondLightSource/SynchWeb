@@ -1,6 +1,6 @@
 <template>
     <div id="vue-login" class="content">
-        <hero-title />
+        <hero-title v-show="!skipHome"/>
 
         <h1>Login</h1>
         <p v-if="sso">Redirect to Single Sign On</p>
@@ -59,6 +59,9 @@ export default {
         },
         sso_url: function() {
             return this.$store.getters.sso_url
+        },
+        skipHome: function() {
+          return this.$store.state.skipHomePage
         }
     },
 

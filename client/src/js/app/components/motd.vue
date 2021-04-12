@@ -3,6 +3,8 @@
         <p class="tw-text-md">{{message}}</p>
         <i @click="closed = true" class="fa fa-times"/>
     </div>
+    <!-- Spacer for cases we have no message of the day -->
+    <div v-else class="tw-mb-4"/>
 </template>
 
 <script>

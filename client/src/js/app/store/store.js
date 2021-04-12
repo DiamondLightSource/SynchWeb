@@ -37,6 +37,7 @@ const store = new Vuex.Store({
     isLoading: false,
     motd: '',
     help: false, // Global help flag used to denote if we should display inline help on pages
+    skipHomePage: config.skipHome || false,
     models: {}
   },
   mutations: {
