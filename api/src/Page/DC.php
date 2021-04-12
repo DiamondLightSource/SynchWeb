@@ -49,7 +49,7 @@ class DC extends Page
                               array('/rd/aid/:aid/:id', 'get', '_rd'),
                               array('/single/t/:t/:id', 'patch', '_set_comment'),
                               array('/sym', 'get', '_get_symmetry'),
-                              array('/xfm/:id', 'get', '_fluo_map'),
+                              array('/xfm(/:id)', 'get', '_fluo_map'),
 
                               array('/comments(/:dcid)', 'get', '_get_comments'),
                               array('/comments', 'post', '_add_comment'),
@@ -1665,12 +1665,37 @@ class DC extends Page
         # ------------------------------------------------------------------------
         # Fluorescence Map Info
         function _fluo_map() {
-            $info = $this->db->pq("SELECT xfm.imagenumber, xfm.counts, xfroi.element, xfroi.r, xfroi.g, xfroi.b
-                FROM xrffluorescencemapping xfm
-                INNER JOIN xrffluorescencemappingroi xfroi
-                WHERE xfm.datacollectionid=:1", array($this->arg('id')));
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            $this->_output($info);
+            $where = 'ses.proposalid=:1';
+            $args = array($this->proposalid);
+
+            if ($this->has_arg('id')) {
+                $where .= ' AND g.datacollectionid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('id'));
+            }
+
+            if ($this->has_arg('sid')) {
+                $where .= ' AND s.blsampleid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('sid'));
+            }
+
+            $maps = $this->db->pq("SELECT xfm.xrffluorescencemappingid, IF(xfroi.scalar IS NOT NULL, xfroi.scalar, CONCAT(xfroi.element, '-', xfroi.edge)) as title, xfm.data, xfm.opacity, xfm.min, xfm.max, xfroi.element, xfroi.scalar, xfroi.edge, xfroi.startenergy, xfroi.endenergy, dc.blsubsampleid, dc.blsampleid, dc.datacollectionid, g.steps_x, g.steps_y, g.snaked, g.orientation
+                FROM xrffluorescencemapping xfm
+                INNER JOIN gridinfo g ON g.gridinfoid = xfm.gridinfoid
+                INNER JOIN datacollection dc ON dc.datacollectionid = g.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+                INNER JOIN xrffluorescencemappingroi xfroi ON xfm.xrffluorescencemappingroiid = xfroi.xrffluorescencemappingroiid
+                LEFT OUTER JOIN blsample s ON dc.blsampleid = s.blsampleid
+
+                WHERE $where", $args);
+
+            foreach ($maps as &$m) {
+                $m["DATA"] = json_decode(gzdecode($m["DATA"]));
+            }
+
+            $this->_output($maps);
         }
 
         
