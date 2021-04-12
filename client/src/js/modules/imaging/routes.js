@@ -135,7 +135,7 @@ const routes = [
                 }
             },
             {
-                path: 'params',
+                path: 'param',
                 component: MarionetteView,
                 props: { 
                     mview: ParamAdmin, 
