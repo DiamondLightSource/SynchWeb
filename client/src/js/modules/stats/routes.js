@@ -174,7 +174,7 @@ const routes = [
 // Runs Overview route. 
 // Original route: 'runs/overview(/bl)(/:bl)(/run)(/:id)' but run :id never used in view
 {
-    path: '/runs/overview/(/bl/)?:bl([a-zA-Z0-9_-]+)?',
+    path: '/runs/overview(/bl/)?:bl([a-zA-Z0-9_-]+)?',
     name: 'runs-overview',
     meta: {
         permission: 'all_breakdown'
