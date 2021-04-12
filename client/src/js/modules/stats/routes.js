@@ -11,6 +11,7 @@ const BAGOverviewView = import(/* webpackChunkName: "groups-stats" */ 'modules/s
 const BLSOverviewView = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/overview2')
 const BeamlineHLOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/bloverview')
 const BeamlineOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/beamline')
+const RunsOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/runs_overview')
 
 // Main breadcrumb link
 let bc = { title: 'Visit Statistics', url: '/stats' }
@@ -169,6 +170,26 @@ const routes = [
             breadcrumbs: [bc, { title: 'Beamline Run Overview' }, { title: route.params.bl }],
         }),
     }]
+},
+// Runs Overview route. 
+// Original route: 'runs/overview(/bl)(/:bl)(/run)(/:id)' but run :id never used in view
+{
+    path: '/runs/overview/(/bl/)?:bl([a-zA-Z0-9_-]+)?',
+    name: 'runs-overview',
+    meta: {
+        permission: 'all_breakdown'
+    },
+    component: MarionetteView,
+    props: route => ({
+        mview: RunsOverview,
+        // Note: here the params are passed an part of the options - not as a separate object ?
+        options: {
+            params: {
+                bl: route.params.bl,
+            }
+        },
+        breadcrumbs: [bc, { title: 'Runs Overview For Beamlines', url: '' }],
+    }),
 }]
 
 
