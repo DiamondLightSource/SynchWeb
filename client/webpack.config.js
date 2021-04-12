@@ -234,20 +234,20 @@ module.exports = (env, argv) => ({
     // }),
     // This builds an index.php file from the src template
     new HtmlWebpackPlugin({
-      title: 'SynchWeb Webpack',
+      title: 'ISPyB',
       filename: path.resolve(__dirname, 'index.php'),
       template: 'src/index.php',
       jsonConfig: config,
     }),
     new HtmlWebpackPlugin({
-      title: 'SynchWeb Webpack',
+      title: 'ISPyB',
       filename: path.resolve(__dirname, 'dist/', gitHash, 'index.html'),
       template: 'src/index.html',
       jsonConfig: config,
     }),
     // Generate main html file in root client dir
     new HtmlWebpackPlugin({
-      title: 'SynchWeb Webpack',
+      title: 'ISPyB',
       filename: path.resolve(__dirname, 'index.html'),
       template: 'src/index.html',
       jsonConfig: config,
