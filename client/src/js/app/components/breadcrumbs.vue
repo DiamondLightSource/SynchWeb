@@ -14,6 +14,14 @@ export default {
     name: 'Breadcrumbs',
     props: {
         'bc': Array // Should be list of objects {'title': ..., 'url': ...}
+    },
+    watch: {
+        // Copy behaviour of original SynchWeb
+        // Page title reflects breadcrumbs
+        bc: function() {
+            var title = this.bc.map( (item) => { return item.title} )
+            document.title = 'ISPyB » ' + title.join(' » ')
+        }
     }
 }
 </script>
