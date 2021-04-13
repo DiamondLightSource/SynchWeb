@@ -161,9 +161,9 @@ export default {
                 }
             })
         },
-        handlePageChange(data) {
-            this.collection.queryParams = { page: data['current-page'], per_page: data['per-page']}
-            this.fetchContainers()
+        async handlePageChange(data) {
+            this.collection.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
+            await this.fetchContainers()
         },
         setUserContainersState() {
             this.showUserContainers = !this.showUserContainers
