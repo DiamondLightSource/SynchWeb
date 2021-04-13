@@ -24,7 +24,7 @@
         :data="objectValues(selectedSamplesInGroups)"
       >
         <template slot-scope="{ data }">
-          <tr v-for="(row, index) in data" :key="index">
+          <tr v-for="(row, index) in data" :key="index" @click="getContainerFromSample(row)">
             <td>{{ objectKeys(selectedSamplesInGroups)[index] }}</td>
             <td>{{ extractSampleNamesFromList(row, 'SAMPLE') }}</td>
           </tr>
@@ -90,6 +90,7 @@ import ContainersList from 'modules/shipment/components/containers-list.vue'
 import SampleGroupsCollection from 'collections/samplegroups.js'
 import SamplesCollection from 'collections/samples.js'
 import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
+import ContainerModel from 'models/container.js'
 
 export default {
   name: 'sample-group-edit',
@@ -138,32 +139,38 @@ export default {
         'DIMENSION3',
         'LOCATION',
         'PROTEIN',
-        'SAMPLE'
+        'SAMPLE',
+        'BARCODE',
+        'CONTAINERID'
       ],
       initialSamplesInGroup: [],
-      initialSampleInGroupModels: [],
+      initialSampleInGroupModels: null,
       sampleGroupId: null,
-      sampleGroupSamples: null
+      sampleGroupSamples: null,
+      containerModel: null
     };
   },
   computed: {
     ...mapGetters({
       selectedSamplesInGroups: ['sampleGroups/getSelectedSampleGroups'],
-      proposalModel: ['proposal/currentProposalModel'],
-      selectedSampleGroupName: ['sampleGroups/getSelectedSampleGroupName']
+      proposal: ['proposal/currentProposal']
     })
   },
   created: function () {
     this.sampleGroup = new SampleGroupsCollection()
     this.containerSamples = new SamplesCollection()
     this.sampleGroupSamples = new SampleGroupSamplesCollection()
+    this.containerModel = new ContainerModel()
   },
   mounted() {
     this.sampleGroupId = this.gid
     if (this.sampleGroupId) {
       this.getSampleGroupInformation()
+    } else {
+      this.initialSampleInGroupModels = this.sampleGroupSamples
+      // The database does not allow some characters like ':' and '.' so we replace them with '-'
+      this.groupName = `${this.proposal} Sample Group (${new Date().toISOString().replace(/:|\./g, '-')})`
     }
-    this.groupName = this.selectedSampleGroupName ? this.selectedSampleGroupName : 'New Sample Group'
   },
   methods: {
     async onSaveSampleGroup() {
@@ -186,45 +193,49 @@ export default {
       }, [])
 
       const deletedSamples = differenceBy(this.initialSamplesInGroup, totalSamples, 'BLSAMPLEID')
-      await this.deleteUnselectedSamplesFromGroup(deletedSamples)
+      if (deletedSamples.length > 0) await this.deleteUnselectedSamplesFromGroup(deletedSamples)
       
       if (samples.length > 0) {
         this.sampleGroupSamples.reset(samples)
         result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroupSamples })
       }
 
-      this.$store.commit('loading', false)
-
       if (result) {
         const savedSamples = result.toJSON()
         this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
+        await this.saveSampleGroupName()
       }
 
       await this.getSampleGroupInformation()
+      this.$store.commit('loading', false)
 
-      if (!this.sampleGroupId) {
-        this.$router.push(`/samples/groups/edit/id/${this.sampleGroupId}`)
+      if (!this.gid) {
+        this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
       }
     },
     async onContainerSelected(item) {
-      this.$store.commit('loading', true)
-
-      this.selectedContainer = item
-      this.selectedContainerName = `${item.CONTAINERID} - ${item.BARCODE}`
-      this.containerSamples.queryParams.cid = item.CONTAINERID
-      this.containerSamples.setPageSize(999)
-
-      const samplesData = await this.$store.dispatch('getCollection', this.containerSamples)
-
-      this.samples = samplesData.toJSON()
-      this.containerSelected = true
-      this.$store.commit('loading', false)
+      try {
+        this.$store.commit('loading', true)
+  
+        this.selectedContainer = item
+        this.selectedContainerName = `${item.CONTAINERID} - ${item.BARCODE}`
+        this.containerSamples.queryParams.cid = item.CONTAINERID
+        this.containerSamples.queryParams.per_page = 999
+  
+        const samplesData = await this.$store.dispatch('getCollection', this.containerSamples)
+  
+        this.samples = samplesData.toJSON()
+        this.containerSelected = true
+        this.$store.commit('loading', false)
+      } catch (error) {
+        this.$store.commit('loading', false)
+      }
     },
-    saveSampleGroupName() {
+    async saveSampleGroupName() {
       const sampleGroupModel = this.sampleGroup.sampleGroupNameModel()
-      this.$store.dispatch('saveModel', {
+      await this.$store.dispatch('saveModel', {
         model: sampleGroupModel,
-        attributes: { BLSAMPLEGROUPID: this.gid, NAME: this.groupName }
+        attributes: { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
       })
     },
     changeGroupName(value) {
@@ -264,7 +275,7 @@ export default {
       this.sampleGroupSamples.url = '/sample/groups'
       this.sampleGroupSamples.queryParams = { BLSAMPLEGROUPID: this.sampleGroupId, page: 1, per_page: 9999, total_pages: 0 }
       const groupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamples)
-      const sampleGroupNameModel = this.sampleGroup.sampleGroupNameModel({ BLSAMPLEGROUPID: this.gid })
+      const sampleGroupNameModel = this.sampleGroup.sampleGroupNameModel({ BLSAMPLEGROUPID: this.sampleGroupId })
       const groupNameResult = await this.$store.dispatch(
         'getModel',
         sampleGroupNameModel
@@ -289,7 +300,6 @@ export default {
           })
         } 
         else {
-          acc.samplesByContainer[containerName] = {}
           acc.samplesByContainer[containerName] = [{ ...pick(curr, this.sampleKeys), BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID }]
         }
 
@@ -317,6 +327,20 @@ export default {
       })
 
       await Promise.allSettled(deletedModels)
+    },
+    async getContainerFromSample(row) {
+      const { CONTAINERID } = row[0]
+      if (CONTAINERID) {
+        try {
+          this.$store.commit('loading', true)
+          this.containerModel = new ContainerModel({ CONTAINERID })
+          const container = await this.$store.dispatch('getModel', this.containerModel)
+          this.onContainerSelected(container.toJSON())
+          this.$store.commit('loading', false)
+        } catch (error) {
+          this.$store.commit('loading', false)
+        }
+      }
     }
   }
 };
