@@ -49,7 +49,8 @@ define(['marionette',
         templateHelpers: function() {
             return {
                 BL: this.getOption('bl'),
-                APIURL: app.apiurl
+                APIURL: app.apiurl,
+                IS_STAFF: app.staff
             }
         },
         
@@ -58,7 +59,10 @@ define(['marionette',
         
         onRender: function() {
             this.ep.show(new EpicsPagesView({ bl: this.getOption('bl') }))
-            this.gda.show(new GDALog({ bl: this.getOption('bl') }))
+
+            if (app.staff) {
+                this.gda.show(new GDALog({ bl: this.getOption('bl') }))
+            }
             
             this.$el.find('div.status.pv, div.status.webcams').show()
             this.pvs.show(new PVView({ bl: this.getOption('bl') }))
