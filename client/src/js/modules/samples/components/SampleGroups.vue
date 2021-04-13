@@ -97,10 +97,11 @@ export default {
       this.sampleGroupId = item.BLSAMPLEGROUPID
     },
     async onEditSampleGroup() {
-      await this.$store.commit('sampleGroups/setSelectedSampleGroupName', this.sampleGroupName)
+      await this.$store.commit('sampleGroups/resetSelectedSampleGroups')
       this.$router.push('/samples/groups/edit/id/' + this.sampleGroupId)
     },
-    onAddSampleGroup() {
+    async onAddSampleGroup() {
+      await this.$store.commit('sampleGroups/resetSelectedSampleGroups')
       this.$router.push({ name: 'samples-group-edit' })
     },
     // Wrap the method to get collection as promise
