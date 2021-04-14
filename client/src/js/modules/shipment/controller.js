@@ -384,7 +384,17 @@ define(['backbone',
                 dewar.fetch({
                     success: function() {
                         app.bc.reset([bc, { title: 'Dispatch Dewar' }, { title: dewar.get('CODE') }])
-                        app.content.show(new DispatchView({ dewar: dewar }))
+                        var shipping = new Shipment({ SHIPPINGID: dewar.get('SHIPPINGID') })
+                        shipping.fetch({
+                            success: function() {
+                                app.bc.reset([bc, { title: 'Dispatch Dewar' }, { title: dewar.get('CODE') }])
+                                app.content.show(new DispatchView({ dewar, shipping }))
+                            },
+                            error: function() {
+                                app.bc.reset([bc, { title: 'Error' }])
+                                app.message({ title: 'No such shipment', message: 'The specified dewar does not have a corresponding shipment'})
+                            }
+                        })
                     },
                     error: function() {
                         app.bc.reset([bc, { title: 'Error' }])
