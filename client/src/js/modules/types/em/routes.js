@@ -32,9 +32,9 @@ const routes = [
         props: route => ({
             mview: ScipionView,
             options: {
-                visit_str: visit_str
+                visit_str: route.params.visit_str
             },
-            breadcrumbs: [{ title: 'Scipion Processing' }, { title: visit_str }]
+            breadcrumbs: [{ title: 'Scipion Processing' }, { title: route.params.visit_str }]
         }),
         beforeEnter: (to, from, next) => {
             // Copying the logic from types/em/scipion/controller.js
