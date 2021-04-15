@@ -167,7 +167,19 @@ define(['marionette',
             if (options && options.gproteins) this.gproteins = options.gproteins
             else this.gproteins = new DistinctProteins()
 
+            if (options && options.spacegroups) this.spacegroups = options.spacegroups
+            else {
+                this.spacegroups = new SpaceGroups()
+                this.spacegroups.fetch()
+            }
+
             this.listenTo(this.proteins, 'reset add change', this.updateProteins, this)
+
+            // This works in tandem with the method getSpaceGroups below.
+            // getSpaceGroups triggers a reset event after the fetch.
+            // This way we only update the spacegroup ui element once per sample.
+            // Instead of on every sample + every time an item is added to the samplegroup collection ('add', 'change' events)
+            this.listenTo(this.spacegroups, 'reset', this.updateSpacegroups, this)
             
             var st = ''
             _.each(['R', 'SC', 'AI', 'DC', 'AP'], function(t) {
@@ -187,10 +199,7 @@ define(['marionette',
         },
         
         onRender: function() {
-            if (this.getOption('spacegroups').show) {
-                console.log("Sample Table use full spacegroups list")
-            }
-            this.$el.find('[name=SPACEGROUP]').html(SG.opts()).val(this.model.get('SPACEGROUP'))
+            this.$el.find('[name=SPACEGROUP]').html(this.spacegroups.opts()).val(this.model.get('SPACEGROUP'))
             this.$el.find('[name=ANOMALOUSSCATTERER]').html(Anom.opts()).val(this.model.get('ANOMALOUSSCATTERER'))
             this.$el.find('select[name=PROTEINID]').combobox({ invalid: this.addProtein.bind(this), change: this.selectProtein.bind(this), select: this.selectProtein.bind(this) })
             this.updateProteins()
@@ -318,7 +327,10 @@ define(['marionette',
         // Not sure if this will stay due to conflicts with validation colours.
         handleSafetyLevel: function(m) {
             return safetyLevel(m)
-        }    
+        },
+        updateSpacegroups: function () {
+            this.$el.find('[name=SPACEGROUP]').html(this.spacegroups.opts()).val('')
+        },
     }))
     
            
@@ -352,8 +364,9 @@ define(['marionette',
         initialize: function(options) {
             this.proteins = options.proteins
             this.gproteins = options.gproteins
-            this.gspacegroups = new SpaceGroups(null, { state: { pageSize: 9999 }})
-            this.gspacegroups.fetch()
+
+            this.spacegroups = new SpaceGroups(null, { state: { pageSize: 9999 } })
+            this.getSpaceGroups(false)
 
             this.in_use = options.in_use
             
@@ -365,16 +378,18 @@ define(['marionette',
                 },
                 proteins: this.proteins,
                 gproteins: this.gproteins,
+                spacegroups: this.spacegroups
             }
             if (options.childTemplate) this.options.childViewOptions.rowTemplate = options.childTemplate
             if (options.childEditTemplate) this.options.childViewOptions.editTemplate = options.childEditTemplate
 
             this.extra = { show: false }
             this.auto = { show: options.auto == true ? true : false }
-            this.spacegroups = { show: options.spacegroups == true ? true : false }
+            this.all_spacegroups = { show: options.spacegroups == true ? true : false }
+
             this.options.childViewOptions.extra = this.extra
             this.options.childViewOptions.auto = this.auto
-            this.options.childViewOptions.spacegroups = this.spacegroups
+            this.options.childViewOptions.all_spacegroups = this.all_spacegroups
             this.options.childViewOptions.type = this.getOption('type')
             
         },
@@ -390,8 +405,8 @@ define(['marionette',
             if (this.getOption('auto') == true) {
                 this.toggleAuto(true)
             }
-            if (this.getOption('spacegroups') == true) {
-                this.toggleSpacegroups(true)
+            if (this.getOption('allSpacegroups') == true) {
+                this.toggleSpaceGroups(true)
             }
         },
         
@@ -419,12 +434,7 @@ define(['marionette',
         },
 
         toggleSpaceGroups: function(val) {
-            this.spacegroups.show = val
-            if (val) {
-                this.$el.find('[name=SPACEGROUP]').html(this.gspacegroups.opts()).val('')
-            } else {
-                this.$el.find('[name=SPACEGROUP]').html(SG.opts()).val('')
-            }
+            this.getSpaceGroups(val)
         },
 
         cloneAll: function() {
@@ -452,6 +462,15 @@ define(['marionette',
             }
             this.children.findByIndex(this._clone_count).cloneSample()
         },
+        // Update the SpaceGroups collection
+        // Passing reset:true to fetch will trigger the reset event after collection
+        // That way we can listed just for the reset event (not add or change) for more 
+        // efficient update of the spacegroup ui control for each sample
+        getSpaceGroups: function (all) {
+            if (all) this.spacegroups.queryParams.ty = null
+            else this.spacegroups.queryParams.ty = 'mx'
+            this.spacegroups.fetch({reset: true})
+        }
 
 
         // This magically works, which is worrying...
