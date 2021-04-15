@@ -41,6 +41,7 @@ define([
 
                     // Session
                     session: {},
+                    sessionEndDateAsString: '',
 
                     // Form fields
                     projectAcquisitionSoftware: null,
