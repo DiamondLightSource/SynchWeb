@@ -5,6 +5,7 @@ define([
     'promise',
     'utils/vuewrapper',
     'formatDate',
+    'parseISODate',
     'modules/types/em/relion/models/relion',
     'models/visit',
     'templates/vue/types/em/process/relion.html',
@@ -15,6 +16,7 @@ define([
     Promise,
     VueWrapper,
     formatDate,
+    parseISODate,
     RelionModel,
     SessionModel,
     template
@@ -92,7 +94,7 @@ define([
                         if (self.isSessionActive) {
                             self.resetForm();
                         } else {
-                            self.sessionEndDateAsString = formatDate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
+                            self.sessionEndDateAsString = parseISODate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
                         }
 
                         app.bc.reset([
