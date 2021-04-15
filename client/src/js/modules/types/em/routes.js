@@ -10,9 +10,9 @@ const routes = [
         props: route => ({
             mview: RelionView,
             options: {
-                session_str: session_str
+                session_str: route.params.session_str
             },
-            breadcrumbs: [{ title: 'Relion Processing' }, { title: session_str }]
+            breadcrumbs: [{ title: 'Relion Processing' }, { title: route.params.session_str }]
         }),
         beforeEnter: (to, from, next) => {
             // Copying the logic from types/em/relion/controller.js
