@@ -27,7 +27,8 @@ class Queue
                 $queue,
                 json_encode($message, JSON_UNESCAPED_SLASHES),
                 array(
-                    'persistent' => ($persistent === true)
+                    'persistent' => ($persistent === true),
+                    'source' => 'synchweb'
                 )
             );
 
