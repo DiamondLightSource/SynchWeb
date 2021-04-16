@@ -163,7 +163,6 @@ div.log {
     margin-left: 5px;
     background: $content-search-background;
     margin-top: 4px;
-    //width: 20%;
     border-radius: 5px;
     box-shadow: 0 1px 1px rgba(100,100,100,.4) inset, 0 1px 0 rgba(255,255,255,.2);
     white-space: nowrap;
@@ -299,38 +298,17 @@ div.log {
         position: relative;
         z-index: 1;
         text-shadow: 0 1px 0 rgba(255,255,255,.5);
-        //border-radius: .4em 0 0 .4em;
         border-radius: .4em;
-        //padding: .5em 0.2em .5em 0.6em;
         padding: .5em 0.6em .5em 0.6em;
-        //margin: 0 2em 0 0;
         margin: 0 0.5em 0 0;
         transition: background .3s ease-out;
 
         &:hover, &:hover:after, &.current, &.current:after {
             background: $content-filter-current-background;
         }
-
-        /*&:after{
-            background: $content-filter-background;
-            content: "";
-            height: 2.5em;
-            margin-top: -1.25em;
-            position: absolute;
-            right: -1em;
-            top: 50%;
-            width: 2.5em;
-            z-index: -1;
-            @include rotate;
-            border-radius: .4em;
-            transition: background .3s ease-out;
-        }*/
-
-
     }
 
     .fixed li {
-        /*width: 4.5%;*/
         @mixin cols 12,2% 3%, 0.2%;
         margin-bottom: 0.5%;
     }
@@ -454,7 +432,6 @@ ol.rounded {
         background: $content-light-background-shade;
         margin-left: 15px;
         position: relative;
-        //white-space: nowrap;
         transition: background .3s ease-out;
 
         &.active {
@@ -523,7 +500,6 @@ ol.rounded {
         width: 100%;
 
         > li {
-            //@mixin cols 5,1.25% 1%;
             margin: 0.5%;
             padding: 1%;
             width: 16%;
@@ -531,7 +507,6 @@ ol.rounded {
             margin-left: 15px;
 
             @media (max-width: $breakpoint-small) {
-                //@mixin cols 2,1.25% 1%;
                 margin: 0.5%;
                 padding: 1%;
                 width: 45%;
@@ -580,7 +555,6 @@ ul.comments {
 
 
 ul.status {
-    //text-align: left;
     font-size: 10px;
     white-space: nowrap;
     margin-bottom: 0;
@@ -1118,13 +1092,9 @@ li:last-child .visit_users {
     .snapshots img {
         width: 100%;
         height: auto;
-        //display: none;
         opacity: 0;
 
         transition: opacity 0.25s ease-in-out;
-        //-webkit-transition: opacity 0.25s ease-in-out;
-        //-moz-transition: opacity 0.25s ease-in-out;
-        //transition: opacity 0.25s ease-in-out;
 
         &.show {
             opacity: 1;
