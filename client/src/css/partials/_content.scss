@@ -422,7 +422,7 @@ ol.rounded {
 
         > li {
             width: 93%;
-            width: calc("95.5% - 15px");
+            width: calc(95.5% - 15px);
             padding: 2.5% 2%;
         }
 
@@ -431,9 +431,8 @@ ol.rounded {
 
             > li {
                 width: 43%;
-                width: calc("47.5% - 15px");
+                width: calc(47.5% - 15px);
                 padding: 1.5% 1%;
-                color: red;
             }
         }
     }
@@ -449,7 +448,7 @@ ol.rounded {
     > li {
         float: left;
         width: 43%;
-        width: calc("47.5% - 15px");
+        width: calc(47.5% - 15px);
         padding: 1.5% 1%;
         margin: 0.5%;
         background: $content-light-background-shade;
@@ -457,8 +456,6 @@ ol.rounded {
         position: relative;
         //white-space: nowrap;
         transition: background .3s ease-out;
-
-        //@mixin cols 2,1.25% 1%;
 
         &.active {
             box-shadow: 0 0 2px #82d180 inset;
@@ -497,10 +494,8 @@ ol.rounded {
         &.comment {
             margin: 0.5%;
             width: 95%;
-            width: calc("97.5% - 15px");
+            width: calc(97.5% - 15px);
             margin-left: 15px;
-
-            //@mixin cols 1,1.25% 1%;
         }
 
         &.sample {
@@ -532,7 +527,7 @@ ol.rounded {
             margin: 0.5%;
             padding: 1%;
             width: 16%;
-            width: calc("17.5% - 15px");
+            width: calc(17.5% - 15px);
             margin-left: 15px;
 
             @media (max-width: $breakpoint-small) {
@@ -540,7 +535,7 @@ ol.rounded {
                 margin: 0.5%;
                 padding: 1%;
                 width: 45%;
-                width: calc("47.5% - 15px");
+                width: calc(47.5% - 15px);
                 margin-left: 15px;
             }
         }
