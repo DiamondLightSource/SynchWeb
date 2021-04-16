@@ -17,14 +17,14 @@
       Main panel to store proposal menu, messages and content
       Sets the main width of the content area on screen
     -->
-    <div class="tw-w-10/12 tw-mx-auto">
+    <div class="tw-w-full tw-px-2 lg:tw-w-10/12 lg:tw-mx-auto">
         <navbar-menu :proposalMenu="proposalMenu" :extrasMenu="extraMenu"/>
         <motd-display :message="motd"/>
         <notification-persist-panel></notification-persist-panel>
         <div v-if="isLoading" ><div class="loading">&nbsp;</div></div>
 
         <!-- Main content section -->
-        <div id="content-wrapper" class="tw-w-full tw-mx-2">
+        <div id="content-wrapper" class="tw-w-full tw-mx-auto">
           <!-- Using the full route as key forces refresh when sharing the same component -->
           <router-view :key="$route.fullPath"></router-view>
         </div>

@@ -4,7 +4,7 @@ It is designed to work with transient notifications and for a persistent notific
 It uses slots for title and header so it can be overridded by a parent component
 -->
 <template>
-    <div class="tw-hidden md:tw-flex tw-mx-4 tw-p-4 tw-rounded tw-justify-between tw-border-2" :class="notificationClass(notification.level)">
+    <div class="tw-hidden md:tw-flex tw-p-4 tw-rounded tw-justify-between tw-border-2" :class="notificationClass(notification.level)">
         <div class="tw-flex">
             <slot name="title">
                 <p class="tw-font-bold">{{notification.title}}</p>

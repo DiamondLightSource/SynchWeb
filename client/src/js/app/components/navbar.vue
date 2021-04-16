@@ -3,7 +3,7 @@
         Navigation bar which holds proposal menu, extras and feedback/help menu
         Was combined with mobile side bar menu but we have split it up so handle login and styles separately
     -->
-    <div v-show="isLoggedIn" data-cy="navbar" class="tw-hidden tw-z-20 md:tw-flex md:flex-row tw-bg-sidebar-grad-end tw-justify-center tw-my-4 md:tw-mx-4">
+    <div v-show="isLoggedIn" data-cy="navbar" class="tw-hidden tw-z-20 md:tw-flex md:flex-row tw-bg-sidebar-grad-end tw-justify-center tw-my-4 md:tw-mx-auto">
         <!-- List proposals item -->
         <router-link to="/proposals" class="md:tw-w-48 tw-py-4 tw-bg-sidebar-grad-end hover:tw-bg-gray-100 tw-border tw-border-gray-400 tw-text-gray-900 tw-text-center tw-text-xs">
             Proposals

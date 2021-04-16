@@ -1,5 +1,6 @@
 // Responsive breakpoints
-$breakpoint-vsmall: 640px;
-$breakpoint-small: 768px;
-$breakpoint-medium: 1024px;
-$breakpoint-large: 1280px;
+// With Tailwind these should match those in tailwind.config.js
+$breakpoint-vsmall: 400px; // Matches tailwind xs
+$breakpoint-small: 800px; // Matches tailwind md
+$breakpoint-medium: 1024px; // Matches tailwind lg
+$breakpoint-large: 1280px; // Matches tailwind xl
