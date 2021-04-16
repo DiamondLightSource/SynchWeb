@@ -565,6 +565,7 @@ define(['marionette',
                 { label: 'Axes', cell: AxesCell, editable: false, scanservices: this.scanservices, scanmodels: this.scanmodels },
                 { label: 'Detectors', cell: DetectorsCell, editable: false, detectors: this.detectors, dpdetectors: this.datacollectionplandetectors, beamlinesetups: this.beamlinesetups },
                 { label: 'Parameters', cell: DCPlanCell, editable: false },
+                { label: 'Delete', cell: table.TemplateCell, editable: false, template: '<a href="#" class="button button-notext clear"><i class="fa fa-times"></i></a>' },
             ]
 
             this.table2 = new SortableTableView({ 
