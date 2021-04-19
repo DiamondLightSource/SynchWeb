@@ -129,8 +129,7 @@ define(['marionette', 'templates/stats/breakdown.html',
             }
         },
         
-        onDomRefresh: function(e) {
-            if (!e) return
+        onDomRefresh: function() {
             if (this.model.get('data')) {
                 this.options = {
                   grid: {

@@ -1,3 +1,4 @@
+import MarionetteApplication from 'app/marionette-application.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import Page from 'app/layouts/page.vue'
 
@@ -12,6 +13,24 @@ const BLSOverviewView = import(/* webpackChunkName: "groups-stats" */ 'modules/s
 const BeamlineHLOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/bloverview')
 const BeamlineOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/beamline')
 const RunsOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/runs_overview')
+
+
+// Initialize MarionetteApplication if not already existing
+let application = MarionetteApplication.getInstance()
+
+application.addInitializer(function() {
+    application.on('stats:show', function(visit) {
+        application.navigate('/stats/visit/'+visit)
+    })
+
+    application.on('pstats:show', function() {
+        application.navigate('/stats')
+    })
+
+    application.on('bloverview:show', function(bl) {
+        application.navigate('/stats/overview/bl/'+bl)
+    })
+})
 
 // Main breadcrumb link
 let bc = { title: 'Visit Statistics', url: '/stats' }
