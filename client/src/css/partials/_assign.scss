@@ -12,7 +12,8 @@
     height: 55px;
     background: $content-sub-header-background;
     float: left;
-    
+    /* Fix to work with tailwind preset */
+    box-sizing: content-box;
 }
 
 @media (max-width: $breakpoint-small) {
