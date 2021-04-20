@@ -355,7 +355,7 @@ class Stats extends Page
             foreach ($dcs as $d) {
                 if (!in_array($d[$type_col], $tys)) array_push($tys, $d[$type_col]);
             }
-            $w = (1/sizeof($tys))* 0.85;
+            $w = (1/max(1, sizeof($tys)))* 0.85;
             
             $data = array();
             $avgs = array();
@@ -393,8 +393,10 @@ class Stats extends Page
                     $data[$n] = array(array('data' => array(), 'series' => $pt));
                 }
                                  
-                foreach($avgs[$n] as $tick => $vals) {
-                    if (sizeof($vals)) array_push($data[$n][0]['data'], array(array_search($tick, $ticks), array_sum($vals)/count($vals)));
+                if (array_key_exists($n, $avgs)) {
+                    foreach($avgs[$n] as $tick => $vals) {
+                        if (sizeof($vals)) array_push($data[$n][0]['data'], array(array_search($tick, $ticks), array_sum($vals)/count($vals)));
+                    }
                 }
             }
             

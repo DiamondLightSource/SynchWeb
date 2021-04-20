@@ -49,7 +49,7 @@ class DC extends Page
                               array('/rd/aid/:aid/:id', 'get', '_rd'),
                               array('/single/t/:t/:id', 'patch', '_set_comment'),
                               array('/sym', 'get', '_get_symmetry'),
-                              array('/xfm/:id', 'get', '_fluo_map'),
+                              array('/xfm(/:id)', 'get', '_fluo_map'),
 
                               array('/comments(/:dcid)', 'get', '_get_comments'),
                               array('/comments', 'post', '_add_comment'),
@@ -341,7 +341,7 @@ class DC extends Page
             # Data collection group
             if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
                 $count_field = 'dc.datacollectionid';
-                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dc.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam, dc.chistart, 
+                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dcg.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam, dc.chistart, 
                     dc.voltage,
                     dc.c2aperture,
                     dc.c2lens,
@@ -709,7 +709,7 @@ class DC extends Page
             $dct = $this->db->pq("SELECT dc.overlap, dc.blsampleid, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number, xrc.status as xrcstatus
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                LEFT OUTER JOIN gridinfo gr ON gr.datacollectiongroupid = dc.datacollectiongroupid
+                LEFT OUTER JOIN gridinfo gr ON (gr.datacollectionid = dc.datacollectionid) OR (gr.datacollectiongroupid = dc.datacollectiongroupid)
                 LEFT OUTER JOIN xraycentringresult xrc ON xrc.gridinfoid = gr.gridinfoid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -1618,7 +1618,7 @@ class DC extends Page
         function _grid_info() {
             $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked
                 FROM gridinfo g
-                INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
+                INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
                 WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
 
@@ -1665,12 +1665,37 @@ class DC extends Page
         # ------------------------------------------------------------------------
         # Fluorescence Map Info
         function _fluo_map() {
-            $info = $this->db->pq("SELECT xfm.imagenumber, xfm.counts, xfroi.element, xfroi.r, xfroi.g, xfroi.b
-                FROM xrffluorescencemapping xfm
-                INNER JOIN xrffluorescencemappingroi xfroi
-                WHERE xfm.datacollectionid=:1", array($this->arg('id')));
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            $this->_output($info);
+            $where = 'ses.proposalid=:1';
+            $args = array($this->proposalid);
+
+            if ($this->has_arg('id')) {
+                $where .= ' AND g.datacollectionid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('id'));
+            }
+
+            if ($this->has_arg('sid')) {
+                $where .= ' AND s.blsampleid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('sid'));
+            }
+
+            $maps = $this->db->pq("SELECT xfm.xrffluorescencemappingid, IF(xfroi.scalar IS NOT NULL, xfroi.scalar, CONCAT(xfroi.element, '-', xfroi.edge)) as title, xfm.data, xfm.opacity, xfm.min, xfm.max, xfroi.element, xfroi.scalar, xfroi.edge, xfroi.startenergy, xfroi.endenergy, dc.blsubsampleid, dc.blsampleid, dc.datacollectionid, g.steps_x, g.steps_y, g.snaked, g.orientation
+                FROM xrffluorescencemapping xfm
+                INNER JOIN gridinfo g ON g.gridinfoid = xfm.gridinfoid
+                INNER JOIN datacollection dc ON dc.datacollectionid = g.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+                INNER JOIN xrffluorescencemappingroi xfroi ON xfm.xrffluorescencemappingroiid = xfroi.xrffluorescencemappingroiid
+                LEFT OUTER JOIN blsample s ON dc.blsampleid = s.blsampleid
+
+                WHERE $where", $args);
+
+            foreach ($maps as &$m) {
+                $m["DATA"] = json_decode(gzdecode($m["DATA"]));
+            }
+
+            $this->_output($maps);
         }
 
         

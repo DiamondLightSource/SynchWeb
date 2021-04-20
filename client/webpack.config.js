@@ -153,7 +153,7 @@ module.exports = (env) => ({
       },
       // SVG could be images or fonts so use more explicit test here...
       {
-        test: /font-awesome\/.+\.(svg)$/,
+        test: /font-awesome[\\\/].+\.(svg)$/,
         use: {
           loader: 'file-loader',
           options: {
@@ -172,7 +172,7 @@ module.exports = (env) => ({
         ]
       },
       {
-        test: /vue\/.+\.html$/,
+        test: /vue[\\\/].+\.html$/,
         use: ['html-loader']
       },
       // We need to help Caman load properly

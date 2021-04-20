@@ -1,17 +1,22 @@
-define(['jquery', 'marionette',
+define(['jquery', 'marionette', 
         'backbone',
         'modules/dc/models/distl',
         'modules/dc/models/grid',
         'modules/dc/models/xfm',
         'collections/attachments',
         'utils/canvas',
+        'modules/dc/views/viridis',
         'templates/dc/gridplot.html',
         'heatmap',
         'utils',
-        'utils/xhrimage'
-    ], function($, Marionette, Backbone, DISTL, GridInfo, XFMap, Attachments, canvas, template, HeatMap, utils, XHRImage) {
+        'utils/xhrimage',
+        'jquery-ui',
+    ], function($, Marionette, Backbone, DISTL, GridInfo, XFMap, Attachments, canvas, viridis, template, HeatMap, utils, XHRImage) {
     
     return Marionette.ItemView.extend(_.extend({}, canvas, {
+        padMax: true,
+        blurRadius: 1.5,
+        snapshotId: 2,
         template: template,
         className: 'content',
         
@@ -40,7 +45,7 @@ define(['jquery', 'marionette',
 
         setHM: function() {
             this.heatmapToggle = this.ui.hmt.is(':checked')
-            console.log('htm', this.heatmapToggle)
+            // console.log('htm', this.heatmapToggle)
             this.draw()
         },
 
@@ -67,18 +72,15 @@ define(['jquery', 'marionette',
             this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.distl, 'change', this.draw, this)
             this.grid = new GridInfo({ id: this.getOption('ID') })
+            this.listenTo(this.grid, 'sync', this.afterFetchGrid)
 
-            var self = this
             this.gridFetched = false
-            this._gridPromise = this.grid.fetch().done(function() {
-                self.gridFetched = true
-                if (self.grid.get('ORIENTATION')) self.vertical = self.grid.get('ORIENTATION') == 'vertical'
-                else self.vertical = (self.grid.get('STEPS_Y') > self.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
-                console.log('grid', self.grid.get('DATACOLLECTIONID'), self.grid.get('ORIENTATION'), 'vertical', self.vertical)
-            })
+            this.onGridFetch = options.onGridFetch
+            this._gridPromise = this.grid.fetch()
 
-            this.xfm = new XFMap({ id: this.getOption('ID') })
-            this.xfm.fetch().done(this.populateXFM.bind(this))
+            this.xfm = new XFMap({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
+            this.listenTo(this.xfm, 'change', this.draw, this)
+            this.listenTo(this.xfm, 'sync', this.populateXFM, this)
 
             this.attachments = new Attachments()
             this.attachments.queryParams.id = this.getOption('ID')
@@ -97,6 +99,23 @@ define(['jquery', 'marionette',
 
             this.snapshotLoading = false
             this.listenTo(app, 'window:scroll', this.lazyLoad, this)
+        },
+
+        afterFetchGrid: function() {
+            if (this.grid.get('STEPS_Y') > 0) {
+                this.gridFetched = true
+                if (this.grid.get('ORIENTATION')) this.vertical = this.grid.get('ORIENTATION') == 'vertical'
+                else this.vertical = (this.grid.get('STEPS_Y') > this.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
+                // console.log('grid', this.grid.get('DATACOLLECTIONID'), this.grid.get('ORIENTATION'), 'vertical', this.vertical)
+
+            } else {
+                var self = this
+                setTimeout(function() {
+                    self._gridPromise = self.grid.fetch()
+                }, 5000)
+            }
+
+            if (this.onGridFetch) this.onGridFetch()
         },
 
         loadAttachment: function() {
@@ -122,8 +141,15 @@ define(['jquery', 'marionette',
             if (this.ui.flu.is(':checked')) {
                 this.ui.ty.prop('disabled', true)
 
-                var tmp = _.where(this.xfm.get('data'), { ELEMENT: this.ui.el.val() })
-                this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: 'rgb('+tmp[0]['R']+','+tmp[0]['G']+','+tmp[0]['B']+')' } })
+                var tmp = _.where(this.xfm.get('data'), { TITLE: this.ui.el.val() })
+                if (tmp[0]['R'] && tmp[0]['G'] && tmp[0]['B']) {
+                    this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: 'rgb('+tmp[0]['R']+','+tmp[0]['G']+','+tmp[0]['B']+')' } })
+                } else if (this.getOption('colormap') == 'viridis') {
+                    var vgrad = _.object(_.map(viridis, function(row, i) { return [i/255, 'rgb('+row[0]*255+','+row[1]*255+','+row[2]*255+')'] }))
+                    this.heatmap.configure({ maxOpacity: .4, gradient: vgrad })
+                } else {
+                    this.heatmap.configure({ maxOpacity: .4, gradient: { 0.25: 'rgb(0,0,255)', 0.55: 'rgb(0,255,0)', 0.85: 'yellow', 1.0: 'rgb(255,0,0)'} })
+                }
                 this.draw()
             } else {
                 this.ui.ty.prop('disabled', false)
@@ -138,13 +164,19 @@ define(['jquery', 'marionette',
         },
 
         populateXFM: function() {
+            this.xfmLoaded = true
             if (!this.xfm.get('data').length) return
-            this.ui.xfm.show()
 
-            var opts = _.map(_.unique(_.pluck(this.xfm.get('data'), 'ELEMENT')), function(e) {
-                return '<option value="'+e+'">'+e+'</option>'
+            var opts = _.map(this.xfm.get('data'), function(m) {
+                return '<option value="'+m.TITLE+'">'+m.TITLE+'</option>'
             })
             this.ui.el.html(opts.join())
+
+            this.ui.xfm.show()
+            if (this.getOption('xfm')) {
+                this.ui.flu.prop('checked', true).trigger('change').hide()
+                this.ui.xfm.find('label').hide()
+            }
         },
 
         setStatues: function() {
@@ -154,13 +186,19 @@ define(['jquery', 'marionette',
 
         lazyLoad: function() {
             // console.log('lazy loadjg')
-            if (!this.snapshotLoading && this.statusesLoaded && utils.inView(this.$el)) {
+            if (!this.snapshotLoading && this.statusesLoaded && utils.inView(this.$el) && !this.inView) {
                 this._ready.push(this.distl.fetch())
                 this._ready.push(this.attachments.fetch())
-                console.log('in view')
+                // console.log('in view')
                 this.getModel()
 
                 $.when.apply($, this._ready).done(this.populatePIA.bind(this))
+                this.inView = true
+            }
+
+            if (utils.inView(this.$el) && !this.xfmLoading) {
+                this.xfmLoading = true
+                this.xfm.fetch()
             }
         },
 
@@ -168,8 +206,10 @@ define(['jquery', 'marionette',
             var d = this.distl.get('data')
             if (!d[0].length) {
                 this.ui.ty.hide()
-                this.ui.ty2.html(this.attachments.opts()).show()
-                this.loadAttachment()
+                if (this.attachments.length) {
+                    this.ui.ty2.html(this.attachments.opts()).show()
+                    this.loadAttachment()
+                }
             }
         },
 
@@ -177,7 +217,7 @@ define(['jquery', 'marionette',
         getModel: function() {
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
             if (m.get('SNS').length) {
-                if (m.get('SNS')[2] && this.hasSnapshot == false) {
+                if (m.get('SNS')[this.getOption('snapshotId')] && this.hasSnapshot == false) {
                     this.snapshotLoading = true
                     this.$el.addClass('loading')
                     this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')   
@@ -186,7 +226,7 @@ define(['jquery', 'marionette',
         },
 
         snapshotLoaded: function() {
-            console.log('snapshot loaded')
+            // console.log('snapshot loaded')
             this.hasSnapshot = true
             this.$el.removeClass('loading')
             this.draw()
@@ -232,13 +272,11 @@ define(['jquery', 'marionette',
 
 
         draw: function() {
-            console.log('draw', this.ctx, this.hasSnapshot)
+            // console.log('draw', this.ctx, this.hasSnapshot)
             if (!this.ctx || !this.gridFetched) return
 
-            var bw = 1000*this.grid.get('DX_MM')/this.grid.get('PIXELSPERMICRONX')
-            var bh = 1000*this.grid.get('DY_MM')/this.grid.get('PIXELSPERMICRONY')
-
-            var radius = bh < bw ? (bh * 1.1) : (bw * 1.1)
+            var bw = 1000*this.grid.get('DX_MM')/Math.abs(this.grid.get('PIXELSPERMICRONX'))
+            var bh = 1000*this.grid.get('DY_MM')/Math.abs(this.grid.get('PIXELSPERMICRONY'))
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -279,10 +317,13 @@ define(['jquery', 'marionette',
 
             var d = []
             if (this.ui.flu.is(':checked')) {
-                var tmp = _.where(this.xfm.get('data'), { ELEMENT: this.ui.el.val() })
-                _.each(tmp, function(r) {
-                    d.push([r.IMAGENUMBER, r.COUNTS])
-                })
+                var tmp = _.findWhere(this.xfm.get('data'), { TITLE: this.ui.el.val() })
+                _.each(tmp.DATA, function(r, i) {
+                    var val = r
+                    if (tmp.MAX && r > tmp.MAX) val = tmp.MAX
+                    if (tmp.MAX && r < tmp.MIN) val = tmp.MIN
+                    d.push([i+1, val])
+                }, this)
             } else if (this.distl.get('data') && this.distl.get('data')[0].length) {
                 if (this.distl.get('data')) d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
             } else {
@@ -299,10 +340,13 @@ define(['jquery', 'marionette',
                     if (v[1] > max) max = v[1]
                 })
 
-                if (max < 10) max = max * 50
+                if (this.getOption('padMax') && max < 10) max = max * 50
 
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
+
+                // Only use width if steps in x > 1
+                var radius = (sw > sh && this.grid.get('STEPS_X') > 1 ? sw : sh) * this.getOption('blurRadius')
 
                 var data = []
                 _.each(d, function(v,i) {
@@ -331,9 +375,9 @@ define(['jquery', 'marionette',
                         var x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
                         var y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
                     }
-                    var r = ((v[1] < 1 ? 0 : v[1]) / (max == 0 ? 1 : max)) * sw / 2
 
-                    data.push({ x: x, y: y, value: v[1] < 1 ? 0 : v[1], 
+                    // Dont zero values < 1 if data is scaled to max==1
+                    data.push({ x: x, y: y, value: v[1] < 1 && max > 1 ? 0 : v[1], 
                         radius: radius
                     })
 
@@ -436,6 +480,7 @@ define(['jquery', 'marionette',
 
         onDestroy: function() {
             this.distl.stop()
+            this.xfm.stop()
         },
 
     }))
