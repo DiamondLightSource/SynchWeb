@@ -18,6 +18,7 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import { SampleViewMap } from 'modules/samples/components/samples-map'
 import Sample from 'models/sample'
 
+import store from 'app/store/store'
 
 export default {
     name: 'sample-view-wrapper',

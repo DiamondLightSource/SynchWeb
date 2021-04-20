@@ -25,6 +25,7 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import { CrystalViewMap } from 'modules/samples/components/samples-map'
 import Crystal from 'models/crystal'
 
+import store from 'app/store/store'
 
 export default {
     name: 'crystal-view-wrapper',

@@ -20,6 +20,7 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import ImageViewer from 'modules/dc/views/reciprocalview'
 import DataCollection from 'models/datacollection'
 
+import store from 'app/store/store'
 
 export default {
     name: 'dc-reciprocalview-wrapper',

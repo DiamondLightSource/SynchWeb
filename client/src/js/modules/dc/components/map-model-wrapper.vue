@@ -21,6 +21,7 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import MapModelViewer from 'modules/dc/views/mapmodelview'
 import DataCollection from 'models/datacollection'
 
+import store from 'app/store/store'
 
 export default {
     name: 'dc-mapmodelview-wrapper',

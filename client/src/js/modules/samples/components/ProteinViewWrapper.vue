@@ -18,6 +18,8 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import { ProteinViewMap } from 'modules/samples/components/samples-map'
 import Protein from 'models/protein'
 
+import store from 'app/store/store'
+
 export default {
     name: 'protein-view-wrapper',
     components: {
