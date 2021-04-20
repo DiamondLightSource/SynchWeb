@@ -59,9 +59,6 @@ export default {
         }
     },
     created: function() {
-        // Set the proposal type if different to our current proposal
-        // this.setProposalType()
-
         console.log("Container View Created for proposal Type = " + this.proposalType)
 
         // Determine the marionette view constructor we need based on the type
@@ -91,16 +88,6 @@ export default {
         }).finally( () => { this.ready = true }) // Only render when complete
     },
     methods: {
-        // This method performs a lookup via the store and sets the proposal type based on sample id
-        setProposalType: function() {
-            this.$store.dispatch('proposal/proposalLookup', {field: 'CONTAINERID', value: this.cid})
-                .then((val) => {
-                    console.log("Proposal Lookup OK - type = " + this.$store.state.proposal.proposalType)
-                }, (error) => {
-                    console.log("Error " + error.msg)
-                    app.alert({title: 'Error looking up proposal', msg: error.msg})
-                })
-        },
         // We get the model here because the view we render depends on the container details
         getContainer: function() {
             let self = this
@@ -142,7 +129,7 @@ export default {
     beforeRouteEnter: function(to, from, next) {
       // Lookup the proposal first to make sure we can still add to it
       store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
-      .then((response) => {
+      .then(() => {
           console.log("Proposal Lookup OK - type = " + store.state.proposalType)
           next()
       }, (error) => {

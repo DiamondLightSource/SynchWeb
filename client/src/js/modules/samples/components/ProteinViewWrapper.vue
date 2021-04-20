@@ -47,9 +47,6 @@ export default {
         }
     },
     created: function() {
-        // Set the proposal type if different to our current proposal
-        this.setProposalType()
-
         // Set the marionette view constructor we need based on the type
         this.mview = ProteinViewMap[this.proposalType].view || ProteinViewMap['default'].view
 
@@ -63,17 +60,15 @@ export default {
 
         this.ready = true
     },
-    methods: {
-        // This method performs a lookup via the store and sets the proposal type based on sample id
-        setProposalType: function() {
-            this.$store.dispatch('proposal/proposalLookup', {field: 'PROTEINID', value: this.pid})
-                .then((val) => {
-                    console.log("Proposal Lookup OK - type = " + this.$store.state.proposalType)
-                }, (error) => {
-                    console.log("Error " + error.msg)
-                    app.alert({title: 'Error looking up proposal', msg: error.msg})
-                })
-        }
+    beforeRouteEnter: function(to, from, next) {
+        // Lookup the proposal first to make sure its a valid id
+        store.dispatch('proposal/proposalLookup',  {field: 'PROTEINID', value: to.params.pid})
+        .then(() => {
+            next()
+        }, (error) => {
+            store.commit('notifications/addNotification', {title: 'Error looking up proposal from protein id', msg: error.msg, level: 'error'})
+            next('/404')
+        })
     }
 }
 </script>
