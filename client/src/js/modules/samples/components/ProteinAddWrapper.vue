@@ -100,7 +100,7 @@ export default {
                     console.log("Proposal Lookup OK - type = " + this.$store.state.proposal.proposalType)
                 }, (error) => {
                     console.log("Error " + error.msg)
-                    app.alert({title: 'Error looking up proposal from protein id', msg: error.msg})
+                    this.$store.commit('notifications/addNotification', {title: 'Error looking up proposal from protein id', msg: error.msg, level: 'error'})
                 })
         }
     }

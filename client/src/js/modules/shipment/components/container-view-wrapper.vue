@@ -133,8 +133,7 @@ export default {
           console.log("Proposal Lookup OK - type = " + store.state.proposalType)
           next()
       }, (error) => {
-          console.log("Error " + error.msg)
-          app.alert({title: 'No such container', msg: error.msg})
+          store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
           next('/404')
       })
     }
