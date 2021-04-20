@@ -20,6 +20,7 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import ImageViewer from 'modules/dc/views/reciprocalview'
 import DataCollection from 'models/datacollection'
 
+import store from 'app/store/store'
 
 export default {
     name: 'dc-reciprocalview-wrapper',
@@ -53,9 +54,6 @@ export default {
         // Set the marionette view constructor we need based on the type
         this.mview = ImageViewer
 
-        // Lookup proposal from id
-        this.setProposal()
-
         // Fetch the model then set the breadcrumbs
         this.$store.commit('loading', true)
 
@@ -73,16 +71,6 @@ export default {
     },
 
     methods: {
-        // This method performs a lookup via the store and sets the proposal type based on sample id
-        setProposal: function() {
-            this.$store.dispatch('proposal/proposalLookup', { field: 'DATACOLLECTIONID', value: this.id } )
-                .then((val) => {
-                    console.log(this.$options.name + " Proposal Lookup OK - type = " + this.currentProposalType)
-                }, (error) => {
-                    console.log(this.$options.name + " Error " + error.msg)
-                    app.alert({title: 'Error looking up proposal', msg: error.msg})
-                })
-        },
         getDataCollection: function() {
             // Get the data collection model and set the breadcrumbs
             return new Promise((resolve) => {
@@ -103,5 +91,15 @@ export default {
             this.bc.push({ title: this.model.get('FILETEMPLATE') })
         }
     },
+    beforeRouteEnter: function(to, from, next) {
+        // Lookup the proposal first to make sure its a valid id
+        store.dispatch('proposal/proposalLookup',  { field: 'DATACOLLECTIONID', value: to.params.id } )
+        .then(() => {
+            next()
+        }, (error) => {
+            store.commit('notifications/addNotification', {title: 'Error looking up proposal from datacollection id', msg: error.msg, level: 'error'})
+            next('/404')
+        })
+    }
 }
 </script>
