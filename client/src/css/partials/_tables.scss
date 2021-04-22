@@ -33,7 +33,10 @@ They can be overriden by specific classes below
 .table table td input:focus {
     @apply tw-outline-none tw-border-blue-500;
 }
-
+/* Having overriden table input styles, make sure we show error state */
+.table table td input.ferror {
+    @apply tw-bg-content-inactive;
+}
 /* Tailwind: Fix form input */
 .table table.dewars td input {
     padding: 0.2rem;
