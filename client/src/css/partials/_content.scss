@@ -1239,6 +1239,8 @@ li:last-child .visit_users {
 
 // Sample status
 .sample_status {
+    /* Default with tailwind preset is box-border, so reset to content-box to maintain legacy style */
+    box-sizing: content-box;
     padding: 5px;
     border-radius: 6px 0 0 6px;
     background: #efefef;
