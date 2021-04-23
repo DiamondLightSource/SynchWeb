@@ -43,6 +43,14 @@ module.exports = {
         'header-site-logo': "url('~images/diamond_gs_small.png')",
         'footer-site-logo': "url('~images/ispyb_gs_medium.png')",
       },
+      screens: {
+        'xs': '400px',  // Old style $breakpoint-vsmall
+        'sm': '640px',
+        'md': '800px',  // Old style $breakpoint-small
+        'lg': '1024px', // Old style $breakpoint-medium
+        'xl': '1280px', // Old style $breakpoint-large
+        '2xl': '1536px',
+      },
       /*
       Define colors here to use tailwind bg, text variants.
       Currently using sass variables via postcss-simple-vars plugin as well.
