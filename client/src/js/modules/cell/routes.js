@@ -24,10 +24,8 @@ function getProps(route) {
         breadcrumbs: [bc]
     }
 }
-// 'cell(/page/:page)': 'search',
-// 'cell(/a/:a/b/:b/c/:c/al/:al/be/:be/ga/:ga)(/pdb/:pdb)(/page/:page)': 'search_cell',
-// From code, unit cell search only links to a,b,c,al,be,ga search criteria (no per page or pdb)
-// Unit cell parameters in path can't have decimals so check for numbers to stop greedy capture and allow pagination
+// From code, unit cell search cell/a/b/c etc. only links to a,b,c,al,be,ga search criteria (no simultaneous pdb option)
+// Unit cell parameters in path can include decimals, so check for numbers to stop greedy capture and allow pagination
 const routes = [
     {
         path: '/cell',
@@ -52,7 +50,7 @@ const routes = [
                 props: route => getProps(route),
             },
             {
-                path: 'a/:a/b/:b/c/:c/al/:al/be/:be/ga/:ga([0-9]+)(/page/)?:page([0-9]+)?',
+                path: 'a/:a([0-9\.]+)/b/:b([0-9\.]+)/c/:c([0-9\.]+)/al/:al([0-9\.]+)/be/:be([0-9\.]+)/ga/:ga([0-9\.]+)(/page/)?:page([0-9]+)?',
                 name: 'cell-unit-search',
                 component: MarionetteView,
                 props: route => getProps(route),

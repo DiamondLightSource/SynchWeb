@@ -26,6 +26,8 @@ module.exports = (env, argv) => ({
     https: true,
     historyApiFallback: {
       index: '/dist/'+gitHash+'/index.html',
+      // Allow parsing urls with dots in parameters (e.g. unit cell search)
+      disableDotRule: true
     },
     proxy: [{
         context: ['/api'],
