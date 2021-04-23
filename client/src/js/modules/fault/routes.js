@@ -20,7 +20,7 @@ let application = MarionetteApplication.getInstance()
 
 application.addInitializer(function() {
     application.on('fault:show', function(fid) {
-        application.navigate('faults/fid/'+fid)
+        application.navigate('/faults/fid/'+fid)
     })
 })
    
