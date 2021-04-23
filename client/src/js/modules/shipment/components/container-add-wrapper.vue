@@ -100,14 +100,14 @@ export default {
         console.log("Proposal lookup response: " + JSON.stringify(response))
           // Make sure we can still add items to this proposal
           if (app.proposal && app.proposal.get('ACTIVE') != 1) {
-            app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new containers cannot be added'} )
+            store.commit('notifications/addNotification', { title: 'Proposal Not Active', message: 'This proposal is not active so new containers cannot be added'} )
             next('/403?url='+to.fullPath)
           } else {
             next()
           }
       }, (error) => {
           console.log("Error " + error.msg)
-          app.alert({title: 'No such container', msg: error.msg})
+          store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
           next('/404')
       })
     }

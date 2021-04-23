@@ -89,6 +89,7 @@ export default {
             }
             return true
         },
+        // This case we are not performing the lookup in the route enter method
         // This method performs a lookup via the store and sets the proposal type based on protein id
         setProposalType: function() {
             // If we have no protein id then we are adding to current proposal and can ignore this step
@@ -99,7 +100,7 @@ export default {
                     console.log("Proposal Lookup OK - type = " + this.$store.state.proposal.proposalType)
                 }, (error) => {
                     console.log("Error " + error.msg)
-                    app.alert({title: 'Error looking up proposal', msg: error.msg})
+                    this.$store.commit('notifications/addNotification', {title: 'Error looking up proposal from protein id', msg: error.msg, level: 'error'})
                 })
         }
     }

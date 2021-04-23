@@ -100,8 +100,7 @@ export default {
           console.log("Proposal lookup response: " + JSON.stringify(response))
           next()
       }, (error) => {
-          console.log("Error " + error.msg)
-          app.alert({title: 'No such container', msg: error.msg})
+          store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
           next('/404')
       })
     }

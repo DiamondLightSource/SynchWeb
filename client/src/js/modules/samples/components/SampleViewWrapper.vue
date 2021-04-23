@@ -18,6 +18,7 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import { SampleViewMap } from 'modules/samples/components/samples-map'
 import Sample from 'models/sample'
 
+import store from 'app/store/store'
 
 export default {
     name: 'sample-view-wrapper',
@@ -53,9 +54,6 @@ export default {
         }
     },
     created: function() {
-        // Set the proposal type if different to our current proposal
-        this.setProposalType()
-
         // Set the marionette view constructor we need based on the type
         this.mview = SampleViewMap[this.proposalType].view || SampleView['default'].view
 
@@ -80,17 +78,15 @@ export default {
 
         this.ready = true
     },
-    methods: {
-        // This method performs a lookup via the store and sets the proposal type based on sample id
-        setProposalType: function() {
-            this.$store.dispatch('proposal/proposalLookup', {field: 'BLSAMPLEID', value: this.sid})
-                .then((val) => {
-                    console.log("Proposal Lookup OK - type = " + this.$store.state.proposalType)
-                }, (error) => {
-                    console.log("Error " + error.msg)
-                    app.alert({title: 'Error looking up proposal', msg: error.msg})
-                })
-        }
+    beforeRouteEnter: function(to, from, next) {
+        // Lookup the proposal first to make sure we have a valid id
+        store.dispatch('proposal/proposalLookup', {field: 'BLSAMPLEID', value: to.params.sid})
+        .then(() => {
+            next()
+        }, (error) => {
+            store.commit('notifications/addNotification', {title: 'Error looking up proposal from sample id', msg: error.msg, level: 'error'})
+            next('/404')
+        })
     }
 }
 </script>
