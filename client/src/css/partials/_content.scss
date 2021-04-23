@@ -118,6 +118,10 @@ Seems bit arbitrary what works and what doesn't when using with nested
     @extend .block;
 }
 
+div.container {
+    /* fix for tailwind - assign containers page*/
+    box-sizing: content-box;
+}
 
 // Log Panel
 .status,
