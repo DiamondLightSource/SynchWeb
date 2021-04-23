@@ -202,12 +202,10 @@ var MarionetteApplication = (function () {
             application.login = function(xhr) {
                 // We have experienced an error and need to login again
                 // If we were on a dc page we may get a set of these so important to only redirect on first error
-                // We can update store every time to ensure we are logged out
-                store.commit('auth/logout')
-
                 var route = window.location.pathname
 
                 if (route.startsWith('/login') === false) {
+                    store.commit('auth/logout')
                     store.commit('notifications/addNotification', { message: 'Authentication session has expired, please login again', level: 'error' })
                     // Calling mapped function as we don't have a handle to the router in this method
                     application.navigate('/login?redirect=' + route)
