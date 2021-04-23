@@ -62,7 +62,9 @@ export default {
         }
     },
     mounted: function() {
-        console.log("MarionetteViewWrapper::mounted" )
+        // Intercept any 'a' tag links from within marionette views and delegate relative links to vue-router
+        this.handleHTMLAnchorEvents()
+
         if (this.prefetch === false) {
             // No prefetching, initialise now
             this.initialiseView()
@@ -93,28 +95,23 @@ export default {
             // Now merge in any passed parameters
             if (this.options) options = Object.assign(options, this.options)
 
-            console.log("MarionetteViewWrapper Props: " + JSON.stringify(this.options))
-            console.log("MarionetteViewWrapper Options: " + JSON.stringify(options))
             // Deal with the passed marionette view.
             // This might be a promise to resolve or a static constructor.
             // Most Marionette views will be lazy loaded from their AMD module definitions until we convert to es2015 exports
             if (this.mview instanceof Promise) {
-                console.log("Marionette View handle lazy loading view...")
                 this.mview.then((module) => {
                     this.marionetteView = new module.default(options)
                     this.renderView()
                 })
             } else {
-                console.log("Marionette View handle normal view...")
                 this.marionetteView = new this.mview(options)
                 this.renderView()
             }
         },
         // Trigger render of the Marionette view itself
         renderView: function() {
-            // Some views use an onShow method triggered when the view is attached to a region
-            // We are not using a region in this template so trigger the event instead
-            console.log("Marionette View attach view to region")
+            // Switched to mounting the marionette view in a region of this component
+            // This triggers the onShow method for marionette views
             this.marionetteRegion.show(this.marionetteView)
         },
 
@@ -172,7 +169,7 @@ export default {
                     },
                     error: function() {
                         self.$store.commit('loading', false)
-                        app.alert({ title: 'No such collection', message: 'The specified collection could not be found'})
+                        self.$store.commit('notifications/addNotification', { title: 'No such collection', message: 'The specified collection could not be found', level: 'error'})
                         reject()
                     }
                 })
@@ -204,12 +201,44 @@ export default {
                     },
                     error: function() {
                         self.$store.commit('loading', false)
-                        app.alert({ title: 'No such model', message: 'The specified model could not be found'})
+                        self.$store.commit('notifications/addNotification', { title: 'No such model', message: 'The specified model could not be found', level: 'error'})
                         reject()
                     }
                 })
             })
         },
+        handleHTMLAnchorEvents: function() {
+            window.addEventListener('click', event => {
+            // ensure we use the link, in case the click has been received by a subelement
+            let { target } = event
+            while (target && target.tagName !== 'A') target = target.parentNode
+                // handle only links that do not reference external resources
+                if (target && target.matches("a:not([href*='://'])") && target.href) {
+                    // some sanity checks taken from vue-router:
+                    // https://github.com/vuejs/vue-router/blob/dev/src/components/link.js#L106
+                    const { altKey, ctrlKey, metaKey, shiftKey, button, defaultPrevented } = event
+                    // don't handle with control keys
+                    if (metaKey || altKey || ctrlKey || shiftKey) return
+                    // don't handle when preventDefault called
+                    if (defaultPrevented) return
+                    // don't handle right clicks
+                    if (button !== undefined && button !== 0) return
+                    // don't handle if `target="_blank"`
+                    if (target && target.getAttribute) {
+                        const linkTarget = target.getAttribute('target')
+                        if (/\b_blank\b/i.test(linkTarget)) return
+                    }
+                    // don't handle same page links/anchors
+                    const url = new URL(target.href)
+                    const to = url.pathname
+                    if (window.location.pathname !== to && event.preventDefault) {
+                        event.preventDefault()
+                        this.$router.push(to)
+                    }
+                }
+            })
+        }
+
     },
     // When MarionetteWrapper is the main route component, prefetchData as required
     // If this component is used directly from another vue component this will not be called
