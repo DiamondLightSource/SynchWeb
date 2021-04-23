@@ -5,6 +5,7 @@ define([
     'promise',
     'utils/vuewrapper',
     'formatDate',
+    'parseISODate',
     'modules/types/em/relion/models/relion',
     'models/visit',
     'templates/vue/types/em/process/relion.html',
@@ -15,6 +16,7 @@ define([
     Promise,
     VueWrapper,
     formatDate,
+    parseISODate,
     RelionModel,
     SessionModel,
     template
@@ -41,6 +43,7 @@ define([
 
                     // Session
                     session: {},
+                    sessionEndDateAsString: '',
 
                     // Form fields
                     projectAcquisitionSoftware: null,
@@ -91,15 +94,15 @@ define([
                         if (self.isSessionActive) {
                             self.resetForm();
                         } else {
-                            self.sessionEndDateAsString = formatDate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
+                            self.sessionEndDateAsString = parseISODate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
                         }
-
-                        app.bc.reset([
-                            {title: 'Data Collections', url: '/dc'},
-                            {title: self.session['BL']},
-                            {title: self.session['VISIT'], url: '/dc/visit/' + self.session['VISIT']},
-                            {title: 'Relion Processing'}
-                        ]);
+                        // Breadcrumbs are set in router rather than within the views themselves
+                        // app.bc.reset([
+                        //     {title: 'Data Collections', url: '/dc'},
+                        //     {title: self.session['BL']},
+                        //     {title: self.session['VISIT'], url: '/dc/visit/' + self.session['VISIT']},
+                        //     {title: 'Relion Processing'}
+                        // ]);
 
                         self.sessionEvents = [];
 
@@ -108,7 +111,8 @@ define([
                     error: function (model, response, options) {
                         self.showSpinner = false;
 
-                        app.bc.reset([{title: 'Error'}]);
+                        // Breadcrumbs are set in router rather than within the views themselves
+                        // app.bc.reset([{title: 'Error'}]);
                         app.message({title: 'No such session', message: 'The specified session does not exist'})
                     }
                 });
