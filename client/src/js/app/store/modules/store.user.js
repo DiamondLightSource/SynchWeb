@@ -30,9 +30,7 @@ const user = {
         app.givenname = state.givenName
         app.staff = state.isStaff
 
-        if (!app.type) {
-          app.type = user.ty
-        }
+        app.type = user.ty
       },
   },
   actions: {
