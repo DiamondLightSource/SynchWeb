@@ -437,7 +437,8 @@ const routes = [
       breadcrumbs: [bc, { title: 'Dispatch Dewar' }],
       breadcrumb_tags: ['CODE'],
       options: {
-        dewar: dewarModel
+        dewar: dewarModel,
+        shipping: shipmentModel
       }
     }),
     beforeEnter: (to, from, next) => {
@@ -448,10 +449,14 @@ const routes = [
       const lookupDewarModel = lookupDewar(to.params.did)
 
       Promise.all([lookupProposal, lookupDewarModel]).then( (values) => {
-        console.log("Proposal and Dewar lookup ok : " + JSON.stringify(values))
-        next()
+        lookupShipment(values[1].get('SHIPPINGID')).then(() => {
+          next()
+        }, () => {
+          store.commit('notifications/addNotification', {title: 'Error', message: 'Shipment not found from dewar id', level: 'error'})
+          next('/404')
+        })
       }, (error) => {
-        console.log("Error getting proposal or dewar")
+        store.commit('notifications/addNotification', {title: 'Error', message: 'Proposal or dewar not found', level: 'error'})
         next('/404')
       }).finally( () => {
           // In either case we can stop the loading animation
