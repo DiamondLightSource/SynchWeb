@@ -95,6 +95,7 @@ define(['backbone',
                 SHIPPINGID: this.dewar.get('SHIPPINGID'),
                 SHIPMENT: this.dewar.get('SHIPPINGNAME'),
                 DEWAR: this.dewar.get('CODE'),
+                ENABLE_EXP_PLAN: app.config.enable_exp_plan
             }
         },
         

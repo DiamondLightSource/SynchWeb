@@ -71,6 +71,7 @@ define(['marionette',
         templateHelpers: function() {
             return {
                 IS_STAFF: app.staff,
+                ENABLE_EXP_PLAN: app.config.enable_exp_plan
             }
         },
 
