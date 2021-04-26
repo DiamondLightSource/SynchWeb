@@ -90,11 +90,9 @@ define(['marionette', 'views/form',
                 self.updateLC()
             })
 
-            var shipping = this.getOption('shipping').toJSON()
-
-            if (shipping.DELIVERYAGENT_AGENTCODE) {
-                this.ui.courier.val(shipping.DELIVERYAGENT_AGENTNAME)
-                this.ui.accountNumber.val(shipping.DELIVERYAGENT_AGENTCODE)
+            if (this.shipping.get('DELIVERYAGENT_AGENTCODE')) {
+                this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
+                this.ui.accountNumber.val(this.shipping.get('DELIVERYAGENT_AGENTCODE'))
                 this.ui.courier.attr('disabled', true)
                 this.ui.accountNumber.attr('disabled', true)
                 this.model.shipmentHasAgentCode = true
@@ -116,6 +114,8 @@ define(['marionette', 'views/form',
                 var h = self.history.at(0)
                 if (h) self.ui.loc.val(h.get('STORAGELOCATION'))
             })
+            // Shipping option should be a backbone model
+            this.shipping = this.getOption('shipping')
         },
 
         updateLC: function() {
