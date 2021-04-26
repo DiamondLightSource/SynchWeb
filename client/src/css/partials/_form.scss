@@ -464,7 +464,11 @@ input,
     @apply tw-outline-none tw-border-blue-400;
 }
 
-/* Some forms are forms, others are div.forms */
+input[type="text"]:disabled, textarea:disabled {
+  @apply tw-bg-content-page-background;
+}
+
+/* Some forms are forms, others are div.forms (todo make consistent) */
 div.form > ul > li,
 form > ul > li {
     @apply tw-flex tw-mb-4;
