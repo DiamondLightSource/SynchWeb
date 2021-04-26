@@ -1,8 +1,6 @@
 define(['marionette', 'views/form',
     'collections/visits',
     'collections/labcontacts',
-    'collections/shipments',
-    'collections/dewars',
     'modules/shipment/collections/dewarhistory',
 
     'modules/shipment/models/dispatch',
@@ -13,7 +11,7 @@ define(['marionette', 'views/form',
     'backbone-validation',
     
     ], function(Marionette, FormView,
-        Visits, LabContacts, Shipments, Dewars, DewarHistory,
+        Visits, LabContacts, DewarHistory,
         DispatchModel,
         template, $_, Backbone) {
 
@@ -28,7 +26,8 @@ define(['marionette', 'views/form',
         
         events: {
             'change @ui.lc': 'getlcdetails',    
-            'change @ui.exp': 'updateLC',    
+            'change @ui.exp': 'updateLC',
+            'click @ui.useAnotherCourierAccount': 'toggleCourierAccountEditing'  
         },
         
         ui: {
@@ -45,14 +44,17 @@ define(['marionette', 'views/form',
             ph: 'input[name=PHONENUMBER]',
             lab: 'input[name=LABNAME]',
 
-            courier: 'span.courier',
+            accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
+            courier: 'input[name=DELIVERYAGENT_AGENTNAME]',
+            useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]'
         },
 
 
 
         templateHelpers: function() {
             return {
-                DEWAR: this.getOption('dewar').toJSON()
+                DEWAR: this.getOption('dewar').toJSON(),
+                SHIPPING: this.getOption('shipping').toJSON()
             }
         },
         
@@ -82,20 +84,23 @@ define(['marionette', 'views/form',
             var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
 
-            // if (this.model.get('FACILITYCODE')) {
-                // this.ui.courier.html('<select name="DELIVERYAGENT_AGENTNAME"><option value="Diamond DHL">Diamond DHL (UK ONLY)</option><option value="Diamond Fedex">Diamond Fedex (International ONLY)</option></select>')
-            // } else {
-                this.ui.courier.html('<input type="text" name="DELIVERYAGENT_AGENTNAME" />')
-            // }
-            
             var self = this
             this.ready.done(function() {
                 self.ui.exp.html(self.visits.opts()).val(self.model.get('VISIT'))
                 self.updateLC()
             })
+
+            if (this.shipping.get('DELIVERYAGENT_AGENTCODE')) {
+                this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
+                this.ui.accountNumber.val(this.shipping.get('DELIVERYAGENT_AGENTCODE'))
+                this.ui.courier.attr('disabled', true)
+                this.ui.accountNumber.attr('disabled', true)
+                this.model.shipmentHasAgentCode = true
+            }
         },
 
-        initialize: function() {
+        initialize: function(options) {
+            this.dewar = options.dewar
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
             this.listenTo(this.contacts, 'sync', this.updateContacts)
             this.refreshContacts()
@@ -109,6 +114,8 @@ define(['marionette', 'views/form',
                 var h = self.history.at(0)
                 if (h) self.ui.loc.val(h.get('STORAGELOCATION'))
             })
+            // Shipping option should be a backbone model
+            this.shipping = this.getOption('shipping')
         },
 
         updateLC: function() {
@@ -144,9 +151,18 @@ define(['marionette', 'views/form',
             }
         },
         
+        toggleCourierAccountEditing: function(event) {
+            if (event.target.checked) {
+                this.ui.courier.attr('disabled', false)
+                this.ui.accountNumber.attr('disabled', false)
+            } else {
+                this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
+                this.ui.accountNumber.val(this.shipping.get('DELIVERYAGENT_AGENTCODE'))
 
-        
-        
+                this.ui.courier.attr('disabled', true)
+                this.ui.accountNumber.attr('disabled', true)
+            }
+        }
     })
 
 })
