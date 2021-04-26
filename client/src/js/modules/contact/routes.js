@@ -3,11 +3,11 @@
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import Page from 'app/layouts/page.vue'
 
-const ContactList = import(/* webpackChunkName: "group-contacts" */  'modules/contact/views/contacts.js')
-const ContactView = import(/* webpackChunkName: "group-contacts" */ 'modules/contact/views/viewcontact.js')
-const AddContact = import(/* webpackChunkName: "group-contacts" */ 'modules/contact/views/addcontact.js')
-const ViewContact = import(/* webpackChunkName: "group-contacts" */ 'modules/contact/views/viewcontact.js')
-const ViewUser = import(/* webpackChunkName: "group-contacts" */ 'modules/contact/views/viewuser')
+const ContactList = import(/* webpackChunkName: "contacts" */  'modules/contact/views/contacts.js')
+const ContactView = import(/* webpackChunkName: "contacts" */ 'modules/contact/views/viewcontact.js')
+const AddContact = import(/* webpackChunkName: "contacts" */ 'modules/contact/views/addcontact.js')
+const ViewContact = import(/* webpackChunkName: "contacts" */ 'modules/contact/views/viewcontact.js')
+const ViewUser = import(/* webpackChunkName: "contacts" */ 'modules/contact/views/viewuser')
 
 import Contacts from 'collections/labcontacts.js'
 import Contact from 'models/labcontact.js'

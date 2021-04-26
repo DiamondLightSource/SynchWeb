@@ -20,39 +20,39 @@ import DewarRegistry from 'modules/shipment/collections/dewarregistry'
 import Dewar from 'models/dewar.js'
 
 // Marionette View can deal with being passed a promise or a function
-const DewarRegView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/dewarreg')
-const RegDewarView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/regdewar')
+const DewarRegView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/dewarreg')
+const RegDewarView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/regdewar')
 // RegDewarAddView was referenced in controller but not in old router?!
-// const RegDewarAddView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/regdewaradd')
-const DewarRegistryView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/dewarregistry')
+// const RegDewarAddView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/regdewaradd')
+const DewarRegistryView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/dewarregistry')
 
-const ShipmentsView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/shipments')
-const ShipmentView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/shipment')
-const ShipmentAddView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/shipmentadd')
-const CreateAWBView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/createawb')
-const RebookPickupView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/rebookpickup')
-const ManifestView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/manifest')
-const DewarStats = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/dewarstats')
-const DispatchView = import(/*webpackChunkName: "group-shipment" */ 'modules/shipment/views/dispatch')
-const TransferView = import(/*webpackChunkName: "group-shipment" */ 'modules/shipment/views/transfer')
+const ShipmentsView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/shipments')
+const ShipmentView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/shipment')
+const ShipmentAddView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/shipmentadd')
+const CreateAWBView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/createawb')
+const RebookPickupView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/rebookpickup')
+const ManifestView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/manifest')
+const DewarStats = import(/* webpackChunkName: "shipment-stats" */ 'modules/shipment/views/dewarstats')
+const DispatchView = import(/*webpackChunkName: "shipment" */ 'modules/shipment/views/dispatch')
+const TransferView = import(/*webpackChunkName: "shipment" */ 'modules/shipment/views/transfer')
 
 // In future may want to move these into wrapper components
 // Similar approach was used for samples with a samples-map to determine the correct view
 // For now there are only two types 'normal' and 'xpdf'
-const ContainersView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/containers')
-const XpdfContainersView = import(/* webpackChunkName: "group-shipment" */ 'modules/types/xpdf/shipment/views/containers')
+const ContainersView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/containers')
+const XpdfContainersView = import(/* webpackChunkName: "shipment" */ 'modules/types/xpdf/shipment/views/containers')
 
-const ContainerRegistryView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/containerregistry')
-const RegisteredContainer = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/registeredcontainer')
+const ContainerRegistryView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/containerregistry')
+const RegisteredContainer = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/registeredcontainer')
 
-const MigrateView = import(/* webpackChunkName: "group-shipment" */ 'modules/shipment/views/migrate')
+const MigrateView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/migrate')
 
-const ContainerViewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-view-wrapper.vue')
-const ContainerAddWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-add-wrapper.vue')
-const ContainerPlanWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-plan-wrapper.vue')
-const ContainerQueueWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-queue-wrapper.vue')
+const ContainerViewWrapper = () => import(/* webpackChunkName: "shipment" */ 'modules/shipment/components/container-view-wrapper.vue')
+const ContainerAddWrapper = () => import(/* webpackChunkName: "shipment" */ 'modules/shipment/components/container-add-wrapper.vue')
+const ContainerPlanWrapper = () => import(/* webpackChunkName: "shipment" */ 'modules/shipment/components/container-plan-wrapper.vue')
+const ContainerQueueWrapper = () => import(/* webpackChunkName: "shipment" */ 'modules/shipment/components/container-queue-wrapper.vue')
 
-const DewarsOverviewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/dewars-overview-wrapper.vue')
+const DewarsOverviewWrapper = () => import(/* webpackChunkName: "shipment" */ 'modules/shipment/components/dewars-overview-wrapper.vue')
 
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()

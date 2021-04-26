@@ -10,8 +10,8 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import Project from 'models/project'
 import Projects from 'collections/projects'
-import ProjectList from 'modules/projects/views/list'
-import ProjectView from 'modules/projects/views/view'
+const ProjectList = import(/* webpackChunkName: "projects" */ 'modules/projects/views/list')
+const ProjectView = import(/* webpackChunkName: "projects" */ 'modules/projects/views/view')
 
 let bc = { title: 'Projects', url: '/projects' }
 

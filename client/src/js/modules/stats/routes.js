@@ -3,16 +3,16 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import Page from 'app/layouts/page.vue'
 
 // Lazy load vue components
-const StatsView = () => import(/* webpackChunkName: "groups-stats" */ 'modules/stats/components/stats-view.vue')
+const StatsView = () => import(/* webpackChunkName: "stats" */ 'modules/stats/components/stats-view.vue')
 
 import Pies from 'modules/stats/collections/pies'
 // Lazy load marionette views that will be rendered
-const ProposalView = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/proposal')
-const BAGOverviewView = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/overview')
-const BLSOverviewView = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/overview2')
-const BeamlineHLOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/bloverview')
-const BeamlineOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/beamline')
-const RunsOverview = import(/* webpackChunkName: "groups-stats" */ 'modules/stats/views/runs_overview')
+const ProposalView = import(/* webpackChunkName: "stats" */ 'modules/stats/views/proposal')
+const BAGOverviewView = import(/* webpackChunkName: "stats" */ 'modules/stats/views/overview')
+const BLSOverviewView = import(/* webpackChunkName: "stats" */ 'modules/stats/views/overview2')
+const BeamlineHLOverview = import(/* webpackChunkName: "stats" */ 'modules/stats/views/bloverview')
+const BeamlineOverview = import(/* webpackChunkName: "stats" */ 'modules/stats/views/beamline')
+const RunsOverview = import(/* webpackChunkName: "stats" */ 'modules/stats/views/runs_overview')
 
 
 // Initialize MarionetteApplication if not already existing
