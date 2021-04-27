@@ -214,8 +214,12 @@ class Processing extends Page {
         $statuses = array_replace_recursive($screenings, $xrcs, $autoprocs);
 
         $out = array();
-        foreach ($statuses as $dcid => $status) {
-            array_push($out, array(strval($dcid), $status));
+        foreach ($ids as $id) {
+            if (array_key_exists($id, $statuses)) {
+                array_push($out, array(strval($id), $statuses[$id]));
+            } else {
+                array_push($out, array(strval($id), new \stdClass));
+            }
         }
 
         $this->_output($out);
