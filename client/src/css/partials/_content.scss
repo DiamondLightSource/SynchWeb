@@ -492,6 +492,20 @@ ol.rounded {
     
     // Sub contents
     .holder {
+        .downstream-item {
+            .downloads {
+                padding: 0;
+            }
+
+            .dpmessages .content {
+                padding-bottom: 0;
+            }
+
+            &:not(:last-child) {
+                margin-bottom: 5px;
+            }
+        }
+
         .separator {
             margin: 0 5px;
             color: #ccc

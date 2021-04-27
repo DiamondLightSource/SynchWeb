@@ -9,6 +9,7 @@ define(['backbone', 'marionette',
         LogView, utils) {
     
     return Marionette.LayoutView.extend({
+        className: 'downstream-item',
         links: true,
         mapLink: true,
         template: _.template('<div class="dpmessages"></div><% if(PARENT) { %><div class="r dplinks"></div><h2><%-PARENT%></h2><% } else { %><div class="ra dplinks"></div><% } %><div class="dpwrapper"></div>'),
