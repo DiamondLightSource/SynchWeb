@@ -446,21 +446,25 @@ const routes = [
       app.loading()
 
       const lookupProposal = store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: +to.params.did } )
-      const lookupDewarModel = lookupDewar(to.params.did)
 
-      Promise.all([lookupProposal, lookupDewarModel]).then( (values) => {
-        lookupShipment(values[1].get('SHIPPINGID')).then(() => {
-          next()
-        }, () => {
-          store.commit('notifications/addNotification', {title: 'Error', message: 'Shipment not found from dewar id', level: 'error'})
+      lookupProposal.then( () => {
+        lookupDewar(to.params.did).then( (model) => {
+          lookupShipment(model.get('SHIPPINGID')).then( () => { 
+            next()
+          }, () => { 
+            store.commit('notifications/addNotification', {title: 'Error', message: 'Shipment not found from dewar id', level: 'error'}) 
+            next('/404')
+          })
+        }, (err) => {
+          store.commit('notifications/addNotification', {title: 'Error', message: 'Dewar not found', level: 'error'})
           next('/404')
         })
-      }, (error) => {
-        store.commit('notifications/addNotification', {title: 'Error', message: 'Proposal or dewar not found', level: 'error'})
+      }, (err) => {
+        store.commit('notifications/addNotification', {title: 'Error', message: 'Proposal not found', level: 'error'})
         next('/404')
       }).finally( () => {
-          // In either case we can stop the loading animation
-          app.loading(false)
+        // In either case we can stop the loading animation
+        app.loading(false)
       })
     }
   },
@@ -481,17 +485,19 @@ const routes = [
 
       const lookupProposal = store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: +to.params.did } )
 
-      const lookupDewarModel = lookupDewar(to.params.did)
-
-      Promise.all([lookupProposal, lookupDewarModel]).then( (values) => {
-        console.log("Proposal and Dewar lookup ok : " + JSON.stringify(values))
-        next()
-      }, (error) => {
-        console.log("Error getting proposal or dewar")
+      lookupProposal.then( () => {
+        lookupDewar(to.params.did).then( (model) => {
+          next()
+        }, (err) => {
+          store.commit('notifications/addNotification', {title: 'Error', message: 'Dewar not found', level: 'error'})
+          next('/404')
+        })
+      }, (err) => {
+        store.commit('notifications/addNotification', {title: 'Error', message: 'Proposal not found', level: 'error'})
         next('/404')
       }).finally( () => {
-          // In either case we can stop the loading animation
-          app.loading(false)
+        // In either case we can stop the loading animation
+        app.loading(false)
       })
     }
   },
