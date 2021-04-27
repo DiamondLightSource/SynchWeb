@@ -3,7 +3,6 @@ define([
     'modules/dc/views/apstatusitem',
     'modules/dc/views/downstream',
     'modules/types/saxs/dc/datplot',
-    'modules/types/saxs/dc/views/autointegration',
     'utils',
     'templates/types/saxs/dc/dc.html'], function(DCItemView, APStatusItem, DCDownstreamView, DatPlot, utils, template) {
 
