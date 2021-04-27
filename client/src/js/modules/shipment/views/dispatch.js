@@ -63,7 +63,9 @@ define(['marionette', 'views/form',
                 FACILITYCODE: this.getOption('dewar').get('FACILITYCODE'), 
                 DEWARID: this.getOption('dewar').get('DEWARID'), 
                 LABCONTACTID: this.getOption('dewar').get('LABCONTACTID'),
-                VISIT: this.getOption('dewar').get('FIRSTEXPERIMENT')
+                VISIT: this.getOption('dewar').get('FIRSTEXPERIMENT'),
+                // If no agent specified on inbound, default to diamond dhl
+                DELIVERYAGENT_AGENTNAME: this.getOption('shipping').get('DELIVERYAGENT_AGENTNAME') || 'DHL'
             })
         },
         
@@ -115,7 +117,7 @@ define(['marionette', 'views/form',
                 if (h) self.ui.loc.val(h.get('STORAGELOCATION'))
             })
             // Shipping option should be a backbone model
-            this.shipping = this.getOption('shipping')
+            this.shipping = options.shipping
         },
 
         updateLC: function() {
