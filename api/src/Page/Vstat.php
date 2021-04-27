@@ -317,7 +317,7 @@ class Vstat extends Page
             //$bs = $this->_get_archive('SR-DI-DCCT-01:SIGNAL', strtotime($info['ST']), strtotime($info['EN']), 200);
             $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']), 2000);
                                     
-            if (!sizeof($bs)) $bs = array();
+            if (!$bs) $bs = array();
                                     
             $lastv = 0;
             $ex = 3600*1000;
