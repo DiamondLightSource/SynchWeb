@@ -572,7 +572,7 @@ class Processing extends Page {
         $downstreams = $this->_get_downstreams($id);
 
         $msg_tmp = $this->db->pq(
-            "SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
+            "SELECT app.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
                 FROM autoprocprogrammessage appm
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
                 INNER JOIN processingjob pj ON app.processingjobid = pj.processingjobid
