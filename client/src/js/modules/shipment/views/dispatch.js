@@ -99,8 +99,6 @@ define(['marionette', 'views/form',
                 this.ui.accountNumber.attr('disabled', true)
                 this.model.shipmentHasAgentCode = true
             }
-            console.log("DISPATCH DATA Shipping: " + JSON.stringify(this.shipping.attributes))
-            console.log("DISPATCH DATA Dispatch model attributes: " + JSON.stringify(this.model.attributes))
         },
 
         initialize: function(options) {
