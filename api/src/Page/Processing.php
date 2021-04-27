@@ -531,7 +531,7 @@ class Processing extends Page {
                 LEFT OUTER JOIN processingjobparameter pjp ON pj.processingjobid = pjp.processingjobid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE api.autoprocintegrationid IS NULL AND p.proposalid=:1 $where
                 GROUP BY pj.processingjobid",
