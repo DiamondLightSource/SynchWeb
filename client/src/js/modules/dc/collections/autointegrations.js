@@ -3,7 +3,7 @@ define(['underscore', 'backbone', 'modules/dc/models/autointegration'], function
   return Backbone.Collection.extend({
     model: AutoIntegration,
                                     
-    url: function() { return '/dc/ap/' + this.id },
+    url: function() { return '/processing/' + this.id },
 
     initialize: function(models, options) {
       this.id = options.id

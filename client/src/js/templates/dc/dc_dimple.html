@@ -1,8 +1,7 @@
 <div>
-
     <div class="blobs">
         <% _.each(_.range(BLOBS), function(i) { %>
-        <a href="<%-APIURL%>/image/dimp/id/<%-DCID%>/n/<% print(i+1) %>" title="Dimple Blob <% print(i+1) %>">
+        <a href="<%-APIURL%>/processing/downstream/images/<%-AID%>?n=<% print(i+1) %>" title="Dimple Blob <% print(i+1) %>">
             <% if (i == 0) { %>
                 <img alt="Dimple Blob 1" />
             <% } %>
@@ -10,22 +9,26 @@
         <% }) %>
         
     </div>
-    <p class="r">
-        <a class="view button" href="/dc/map/id/<%-DCID%>"><i class="fa fa-search"></i> Map / Model Viewer</a>
-        <a class="dll button" href="<%-APIURL%>/download/dimple/id/<%-DCID%>"><i class="fa fa-download"></i> PDB/MTZ file</a>
-        <a class="view button logf" href="<%-APIURL%>/download/dimple/id/<%-DCID%>/log/1"><i class="fa fa-search"></i> Log file</a>
-    </p>
-    
+
+    <div class="plot_dimple r"></div>
+
     <table class="rstats">
-        <% _.each(STATS[0], function(r, i) { %>
-        <tr>
-            <% _.each(_.range(STATS.length), function(j) { %>
-            <td><%-STATS[j][i]%></td>
+        <% if (STATS.length) { %>
+            <% _.each(STATS, function(r, i) { %>
+            <tr>
+                <% _.each(r, function(j) { %>
+                <td><%-j%></td>
+                <% }) %>
+            </tr>
             <% }) %>
-        </tr>
-        <% }) %>
+        <% } else { %>
+            <tr>
+                <td>Refinement Stats</td>
+            </tr>
+            <tr>
+                <td>No Stats Available</td>
+            </tr>
+        <% } %>
     </table>
-    
-    <div class="plot_dimple"></div>
     
 </div>
