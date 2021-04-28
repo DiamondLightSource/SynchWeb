@@ -30,9 +30,7 @@ export default {
     },
     props: {
         'id': Number,
-        'ty': String,
-        'dt': String,
-        'ppl': String,
+        'aid': Number,
     },
     data: function() {
         return {
@@ -47,9 +45,7 @@ export default {
         options: function() {
             return {
                 model: this.model,
-                ty: this.ty,
-                dt: this.dt,
-                ppl: this.ppl,
+                aid: this.aid,
             }
         },
         // Combine vuex state with local computed properties
