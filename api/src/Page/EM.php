@@ -16,6 +16,8 @@ class EM extends Page
         't' => '\d+',
         'IMAGENUMBER' => '\d+',
 
+        'processingJobId' => '\d+',
+
         // EM PROCESSING
         // Parameters with user specified values
         // Note boolean value true in JSON POST request is cast to to 1, false to nothing.
@@ -75,9 +77,9 @@ class EM extends Page
         array('/ctf/histogram', 'get', '_ctf_histogram'),
 
         array('/process/relion/session/:session', 'post', '_relion_start'),
-        array('/process/relion/session/:session', 'patch', '_relion_stop'),
         array('/process/relion/session/:session', 'get', '_relion_status'),
-        array('/process/relion/session/:session', 'delete', '_relion_reset'),
+        array('/process/relion/jobs/:session', 'get', '_relion_jobs'),
+        array('/process/relion/job/:processingJobId', 'patch', '_relion_stop'),
 
         array('/process/scipion/session/:session', 'post', '_scipion_start')
     );
@@ -85,21 +87,16 @@ class EM extends Page
     function _relion_start()
     {
         global $visit_directory,
-               $zocalo_relion_start_queue;
+               $zocalo_mx_reprocess_queue;
 
-        $this->checkElectronMicroscopesAreConfigured();
+        $this->exitIfElectronMicroscopesAreNotConfigured();
         $session = $this->determineSession($this->arg('session'));
-        $this->checkSessionIsActive($session);
 
-        if ($session['processingIsActive']) {
-            $message = 'Relion is already processing this session! Processing started at ' . date('H:i:s \o\n jS F Y', $session['processingTimestamp']) . '.';
-
-            error_log($message);
-            $this->_error($message, 400);
-        }
+        // TODO Remove comment to prevent processing after session has ended following initial test
+//        $this->exitIfSessionIsNotActive($session);
+        $this->exitIfUnfinishedProcessingJobsExist($session);
 
         $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
-        $workflow_path = $this->substituteSessionValuesInPath($session, $visit_directory . '/.ispyb/processed');
 
         // Validate form parameters
 
@@ -181,6 +178,7 @@ class EM extends Page
         list($invalid_parameters, $valid_parameters) = $this->validateParameters($validation_rules);
 
         // TODO Better to return an array of invalid parameters for front end to display. (JPH)
+
         if (sizeof($invalid_parameters) > 0) {
             $message = 'Invalid parameters: ' . implode('; ', $invalid_parameters) . '.';
 
@@ -188,79 +186,81 @@ class EM extends Page
             $this->_error($message, 400);
         }
 
-        $workflow_json_array = array();
+        $workflow_parameters = array();
 
-        // TODO Remove projectAcquisitionSoftware from form. Relion start script to determine acquisition software from directory structure. (JPH + JL)
-
-        $workflow_json_array['acquisition_software'] = $valid_parameters['projectAcquisitionSoftware'];
+        $workflow_parameters['acquisition_software'] = $valid_parameters['projectAcquisitionSoftware'];
 
         if ($valid_parameters['projectAcquisitionSoftware'] == 'EPU') {
-            $workflow_json_array['import_images'] = "{$session_path}/raw/GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
+            $workflow_parameters['import_images'] = "{$session_path}/raw/GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
         } else if ($valid_parameters['projectAcquisitionSoftware'] == 'SerialEM') {
-            $workflow_json_array['import_images'] = "{$session_path}/raw/Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
+            $workflow_parameters['import_images'] = "{$session_path}/raw/Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
         }
-
-        // TODO Remove projectGainReferenceFileName from form, file name gain.mrc now specified in standard operating procedure. (JPH)
 
         if ($valid_parameters['projectGainReferenceFile'] && $valid_parameters['projectGainReferenceFileName']) {
-            $workflow_json_array['motioncor_gainreference'] = "{$session_path}/processing/{$valid_parameters['projectGainReferenceFileName']}";
+            $workflow_parameters['motioncor_gainreference'] = "{$session_path}/processing/{$valid_parameters['projectGainReferenceFileName']}";
         }
 
-        $workflow_json_array['voltage'] = $valid_parameters['voltage'];
-        $workflow_json_array['Cs'] = $valid_parameters['sphericalAberration'];
-        $workflow_json_array['ctffind_do_phaseshift'] = $valid_parameters['findPhaseShift'];
-        $workflow_json_array['angpix'] = $valid_parameters['pixelSize'];
-        $workflow_json_array['motioncor_binning'] = $valid_parameters['motionCorrectionBinning'];
-        $workflow_json_array['motioncor_doseperframe'] = $valid_parameters['dosePerFrame'];
+        $workflow_parameters['voltage'] = $valid_parameters['voltage'];
+        $workflow_parameters['Cs'] = $valid_parameters['sphericalAberration'];
+        $workflow_parameters['ctffind_do_phaseshift'] = $valid_parameters['findPhaseShift'];
+        $workflow_parameters['angpix'] = $valid_parameters['pixelSize'];
+        $workflow_parameters['motioncor_binning'] = $valid_parameters['motionCorrectionBinning'];
+        $workflow_parameters['motioncor_doseperframe'] = $valid_parameters['dosePerFrame'];
 
-        $workflow_json_array['stop_after_ctf_estimation'] = !$valid_parameters['pipelineDo1stPass'];
+        $workflow_parameters['stop_after_ctf_estimation'] = !$valid_parameters['pipelineDo1stPass'];
 
         if ($valid_parameters['pipelineDo1stPass']) {
-            $workflow_json_array['do_class2d'] = $valid_parameters['pipelineDo1stPassClassification2d'];
-            $workflow_json_array['do_class3d'] = $valid_parameters['pipelineDo1stPassClassification3d'];
+            $workflow_parameters['do_class2d'] = $valid_parameters['pipelineDo1stPassClassification2d'];
+            $workflow_parameters['do_class3d'] = $valid_parameters['pipelineDo1stPassClassification3d'];
 
-            $workflow_json_array['autopick_do_cryolo'] = $valid_parameters['particleUseCryolo'];
+            $workflow_parameters['autopick_do_cryolo'] = $valid_parameters['particleUseCryolo'];
             // TODO In new validator, ensure particleDiameterMin < particleDiameterMax. (JPH)
-            $workflow_json_array['autopick_LoG_diam_min'] = $valid_parameters['particleDiameterMin'];
-            $workflow_json_array['autopick_LoG_diam_max'] = $valid_parameters['particleDiameterMax'];
-            $workflow_json_array['mask_diameter'] = $valid_parameters['particleMaskDiameter'];
-            $workflow_json_array['extract_downscale'] = true;
-            $workflow_json_array['extract_boxsize'] = $valid_parameters['particleBoxSize'];
-            $workflow_json_array['extract_small_boxsize'] = $valid_parameters['particleBoxSizeSmall'];
+            $workflow_parameters['autopick_LoG_diam_min'] = $valid_parameters['particleDiameterMin'];
+            $workflow_parameters['autopick_LoG_diam_max'] = $valid_parameters['particleDiameterMax'];
+            $workflow_parameters['mask_diameter'] = $valid_parameters['particleMaskDiameter'];
+            $workflow_parameters['extract_downscale'] = true;
+            $workflow_parameters['extract_boxsize'] = $valid_parameters['particleBoxSize'];
+            $workflow_parameters['extract_small_boxsize'] = $valid_parameters['particleBoxSizeSmall'];
 
             if ($valid_parameters['pipelineDo2ndPass']) {
-                $workflow_json_array['do_class2d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification2d'];
-                $workflow_json_array['do_class3d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification3d'];
+                $workflow_parameters['do_class2d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification2d'];
+                $workflow_parameters['do_class3d_pass2'] = $valid_parameters['pipelineDo2ndPassClassification3d'];
             }
         }
 
-        // json_encode does not preserve zero fractions e.g. “1.0” is encoded as “1”.
-        // The json_encode option JSON_PRESERVE_ZERO_FRACTION was not introduced until PHP 5.6.6.
-        $workflow_json_string = json_encode($workflow_json_array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        // Create a ProcessingJob with ProcessingJobParameters for Zocalo to trigger RELION processing.
+        // This requires a DataCollection which in turn requires a DataCollectionGroup.
 
-        // Write workflow file
+        $dataCollectionId = $this->findExistingDataCollection($session);
 
-        $timestamp = time();
+        if (!$dataCollectionId) {
+            $dataCollectionId = $this->addDataCollectionForEM($session, "{$session_path}/raw/", $valid_parameters['projectMovieFileNameExtension'], "Frames/*.{$valid_parameters['projectMovieFileNameExtension']}");
+        }
 
-        $workflow_file = 'relion_msg_' . gmdate('ymd.His', $timestamp) . '.json';
+        $processingJobId = null;
 
-        try {
-            file_put_contents("{$workflow_path}/{$workflow_file}", $workflow_json_string);
-        } catch (Exception $e) {
-            error_log("Failed to write workflow file: {$workflow_path}/{$workflow_file}");
-            $this->_error('Failed to write workflow file.', 500);
+        if ($dataCollectionId) {
+            $processingJobId = $this->addProcessingJobForRelion($dataCollectionId, $workflow_parameters);
         }
 
         // Send job to processing queue
 
+        // TODO Add provenance
+
         $message = array(
-            'relion_workflow' => "{$workflow_path}/{$workflow_file}"
+            'parameters' => array(
+                'ispyb_process' => $processingJobId
+            )
         );
 
-        $this->enqueue($zocalo_relion_start_queue, $message);
+        // TODO Remove comment, enqueue disabled for initial test
+
+        // $this->enqueue($zocalo_mx_reprocess_queue, $message);
+
+        // TODO Remove message, only returned to review initial test
 
         $output = array(
-            'timestamp' => gmdate('c', $timestamp),
+            'timestamp' => gmdate('c', time()),
             'message' => $message
         );
 
@@ -269,67 +269,9 @@ class EM extends Page
 
     function _relion_stop()
     {
-        global $visit_directory,
-               $zocalo_relion_stop_queue;
-
-        $this->checkElectronMicroscopesAreConfigured();
-        $session = $this->determineSession($this->arg('session'));
-        $this->checkSessionIsActive($session);
-
-        // TODO When Zocalo and Relion use ISPyB, return error if Relion is not processing this session. (JPH)
-
-//        if (!$session['processingIsActive']) {
-//            $message = 'Relion is not processing this session!';
-//
-//            error_log($message);
-//            $this->_error($message, 400);
-//        }
-
-        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
-
-        $message = array(
-            'session_path' => $session_path
-        );
-
-        $this->enqueue($zocalo_relion_stop_queue, $message);
-
         $output = array(
             'timestamp' => gmdate('c', time()),
-            'message' => $message
-        );
-
-        $this->_output($output);
-    }
-
-    function _relion_reset()
-    {
-        global $visit_directory,
-               $zocalo_relion_reset_queue;
-
-        $this->checkElectronMicroscopesAreConfigured();
-        $session = $this->determineSession($this->arg('session'));
-        $this->checkSessionIsActive($session);
-
-        // TODO When Zocalo and Relion use ISPyB, return error if Relion is still processing this session. (JPH)
-
-//        if ($session['processingIsActive']) {
-//            $message = 'Relion is still processing this session!';
-//
-//            error_log($message);
-//            $this->_error($message, 400);
-//        }
-
-        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
-
-        $message = array(
-            'session_path' => $session_path
-        );
-
-        $this->enqueue($zocalo_relion_reset_queue, $message);
-
-        $output = array(
-            'timestamp' => gmdate('c', time()),
-            'message' => $message
+            'function' => 'relion_stop'
         );
 
         $this->_output($output);
@@ -337,19 +279,9 @@ class EM extends Page
 
     function _relion_status()
     {
-        global $visit_directory;
-
-        $this->checkElectronMicroscopesAreConfigured();
-        $session = $this->determineSession($this->arg('session'));
-        $this->checkSessionIsActive($session);
-
-        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
-
         $output = array(
             'timestamp' => gmdate('c', time()),
-            'session_path' => $session_path,
-            'processingIsActive' => $session['processingIsActive'],
-            'processingTimestamp' => ($session['processingTimestamp'] ? gmdate('c', $session['processingTimestamp']) : null)
+            'function' => 'relion_status'
         );
 
         $this->_output($output);
@@ -365,9 +297,9 @@ class EM extends Page
                $zocalo_scipion_workflow_path,
                $zocalo_scipion_start_queue;
 
-        $this->checkElectronMicroscopesAreConfigured();
+        $this->exitIfElectronMicroscopesAreNotConfigured();
         $session = $this->determineSession($this->arg('session'));
-        $this->checkSessionIsActive($session);
+        $this->exitIfSessionIsNotActive($session);
 
         $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
         $template_path = $this->substituteSessionValuesInPath($session, $zocalo_scipion_template_path);
@@ -943,10 +875,11 @@ class EM extends Page
         readfile($file);
     }
 
-    private function checkElectronMicroscopesAreConfigured()
+    private function exitIfElectronMicroscopesAreNotConfigured()
     {
         // Check electron microscopes are listed in global variables - see $bl_types in config.php.
         $bls = $this->_get_beamlines_from_type('em');
+
         if (empty($bls)) {
             $message = 'Electron microscopes are not specified';
 
@@ -1111,31 +1044,168 @@ class EM extends Page
 
     private function determineProcessingStatus($session)
     {
-        // Temporary fudge until Zocalo and Relion can update ISPyB
-        // RUNNING_RELION_IT file indicates Relion is processing
+        // Temporary
 
-        global $visit_directory;
+        return array(false, null);
+    }
 
-        $filename = $this->substituteSessionValuesInPath($session, $visit_directory . '/.ispyb/processed/RUNNING_RELION_IT');
+    public function _relion_jobs()
+    {
+        // Finds queued and running ProcessingJobs associated with session
+        // Returns null otherwise
 
-        $isActive = false;
-        $timestamp = null;
+        $session = $this->determineSession($this->arg('session'));
 
-        clearstatcache();
+        $processingJobs = null;
 
-        try {
-            $isActive = file_exists($filename);
-
-            if ($isActive) {
-                $stat = stat($filename);
-
-                if ($stat) $timestamp = $stat['mtime'];
-            }
-        } catch (Exception $e) {
-            error_log("Failed to check status file: {$filename}");
-            $this->_error('Failed to check status file.', 500);
+        if ($session['SESSIONID']) {
+            $processingJobs = $this->db->pq("
+                SELECT PJ.processingJobId,
+                       PJ.dataCollectionId,
+                       PJ.recordTimestamp,
+                       APP.processingStatus,
+                       APP.processingStartTime,
+                       APP.processingEndTime,
+                       CASE
+                           WHEN (APP.processingJobId IS NULL) THEN 'submitted'
+                           WHEN (APP.processingStartTime IS NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
+                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'running'
+                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
+                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
+                           END AS processingStatusDescription
+                FROM ProcessingJob PJ
+                         JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
+                         JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+                         LEFT JOIN AutoProcProgram APP ON DC.dataCollectionId = APP.dataCollectionId
+                WHERE BLS.sessionId = :1", array($session['SESSIONID']));
         }
 
-        return array($isActive, $timestamp);
+        $this->_output(array_values($processingJobs));
+    }
+
+    private function exitIfUnfinishedProcessingJobsExist($session)
+    {
+        // Finds queued and running ProcessingJobs associated with session
+        // Returns null otherwise
+
+        if ($session['SESSIONID']) {
+            $result = $this->db->pq("
+                SELECT APP.autoProcProgramId,
+                       APP.processingStartTime,
+                       APP.processingJobId,
+                       CASE
+                           WHEN (processingStartTime IS NULL AND processingEndTime IS NULL AND processingStatus IS NULL) THEN 'queued'
+                           WHEN (processingStartTime IS NOT NULL AND processingEndTime IS NULL AND processingStatus IS NULL) THEN 'running'
+                           END AS processingStatusDescription
+                FROM AutoProcProgram APP
+                         JOIN ProcessingJob PJ ON PJ.processingJobId = APP.processingJobId
+                         JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
+                         JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+                WHERE processingStatus IS NULL
+                  AND BLS.sessionId = :1", array($session['SESSIONID']));
+
+            if (count($result)) {
+                $message = 'Relion processing job already exists for this session!';
+
+                error_log($message);
+                $this->_error($message, 400);
+
+                return $result;
+            }
+        }
+
+        return null;
+    }
+
+    private function findExistingDataCollection($session)
+    {
+        // Returns dataCollectionId of first DataCollection associated with session
+        // Returns null otherwise
+
+        if ($session['SESSIONID']) {
+            $result = $this->db->pq("
+            SELECT dataCollectionId
+            FROM DataCollection
+            WHERE SESSIONID = :1
+            LIMIT 1", array($session['SESSIONID']));
+
+            if (count($result)) {
+                return $result[0]['DATACOLLECTIONID'];
+            }
+        }
+
+        return null;
+    }
+
+    private function addDataCollectionForEM($session, $imageDirectory, $imageSuffix, $fileTemplate)
+    {
+        $dataCollectionId = null;
+
+        try {
+            $this->db->start_transaction();
+
+            // Add DataCollectionGroup
+
+            $this->db->pq("
+                INSERT INTO DataCollectionGroup (sessionId, comments, experimentType)
+                VALUES (:1, :2, :3) RETURNING dataCollectionGroupId INTO :id",
+                array($session['SESSIONID'], 'Created by SynchWeb', 'EM')
+            );
+
+            $dataCollectionGroupId = $this->db->id();
+
+            // Add DataCollection
+
+            $this->db->pq("
+                    INSERT INTO DataCollection (sessionId, dataCollectionGroupId, dataCollectionNumber, startTime, endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
+                    VALUES (:1, :2, :3, NOW(), NOW(), :4, :5, :6, :7, :8) RETURNING dataCollectionId INTO :id",
+                array($session['SESSIONID'], $dataCollectionGroupId, 1, 'DataCollection Simulated', $imageDirectory, $imageSuffix, $fileTemplate, 'Created by SynchWeb')
+            );
+
+            $dataCollectionId = $this->db->id();
+
+            $this->db->end_transaction();
+        } catch (Exception $e) {
+            error_log("Failed to add DataCollection to database.");
+            $this->_error("Failed to add DataCollection to database.", 500);
+        }
+
+        return $dataCollectionId;
+    }
+
+    private function addProcessingJobForRelion($dataCollectionId, $workflowParameters)
+    {
+        $processingJobId = null;
+
+        try {
+            $this->db->start_transaction();
+
+            // Add ProcessingJob
+
+            $this->db->pq("
+                INSERT INTO ProcessingJob (dataCollectionId, displayName, comments, recipe, automatic)
+                VALUES (:1, :2, :3, :4, :5) RETURNING processingJobId INTO :id",
+                array($dataCollectionId, 'RELION', 'Submitted via SynchWeb', 'relion', 0)
+            );
+
+            $processingJobId = $this->db->id();
+
+            // Add ProcessingJobParameters
+
+            foreach ($workflowParameters as $key => $value) {
+                $this->db->pq("
+                    INSERT INTO ProcessingJobParameter (processingJobId, parameterKey, parameterValue)
+                    VALUES (:1, :2, :3)",
+                    array($processingJobId, $key, (is_bool($value) ? var_export($value, true) : $value))
+                );
+            }
+
+            $this->db->end_transaction();
+        } catch (Exception $e) {
+            error_log("Failed to add ProcessingJob to database.");
+            $this->_error("Failed to add ProcessingJob to database.", 500);
+        }
+
+        return $processingJobId;
     }
 }
