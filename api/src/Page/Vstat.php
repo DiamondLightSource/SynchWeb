@@ -317,7 +317,7 @@ class Vstat extends Page
             //$bs = $this->_get_archive('SR-DI-DCCT-01:SIGNAL', strtotime($info['ST']), strtotime($info['EN']), 200);
             $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']), 2000);
                                     
-            if (!sizeof($bs)) $bs = array();
+            if (!$bs) $bs = array();
                                     
             $lastv = 0;
             $ex = 3600*1000;
@@ -440,7 +440,7 @@ class Vstat extends Page
                                     
                 // Beam status
                 $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']), 2000);
-                if (!sizeof($bs)) $bs = array();
+                if (!$bs) $bs = array();
                 
                 $lastv = 0;
                 $ex = 3600*1000;
@@ -576,7 +576,8 @@ class Vstat extends Page
                 } else {
                     $dc_types[$dc['EXPERIMENTTYPE']]['failed']++; 
                     if ($dc['LOGFILE']) {
-                        $last = rtrim(end(file($dc['LOGFILE'])));
+                        $lines = file($dc['LOGFILE']);
+                        $last = rtrim(end($lines));
 
                         if (!array_key_exists($last, $dc_types[$dc['EXPERIMENTTYPE']]['messages'])) {
                             $dc_types[$dc['EXPERIMENTTYPE']]['messages'][$last] = array(
