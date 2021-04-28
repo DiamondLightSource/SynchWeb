@@ -1,5 +1,5 @@
 define([
-    'modules/types/gen/dc/dc',
+    'modules/types/spec/dc/dc',
     'modules/dc/views/distl', 
     'modules/types/spec/dc/attplot.js',
     'modules/nexus/views/scalars.js',

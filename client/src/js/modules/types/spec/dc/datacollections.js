@@ -13,6 +13,8 @@ define([
 function(DataCollections, DCList, DCItemView, XRFMapItemView, EnergyScanItemView, MosaicItemView, Filter, template) {
     
     var SpecDCList = DCList.extend({
+        apStatus: true,
+        
         getChildView: function(item) {
             var ty = item.get('DCT')
             var sty = item.get('TYPE')

@@ -1,6 +1,6 @@
 define([
     'utils/editable',
-    'modules/types/gen/dc/dc',
+    'modules/types/spec/dc/dc',
     'modules/nexus/views/spectra',
     'modules/dc/views/gridplot',
     'templates/types/spec/dc/xrfmap.html'], function(
@@ -61,6 +61,8 @@ define([
         },
 
         onShow: function() {
+            DCItemView.__super__.onShow.call(this)
+            
             this.ui.im.append(this.gridplot.render().$el)
 
             var edit = new Editable({ model: this.model, el: this.$el })

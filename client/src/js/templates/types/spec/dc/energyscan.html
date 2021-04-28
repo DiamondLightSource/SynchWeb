@@ -22,4 +22,9 @@
         <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (RUNSTATUS && !RUNSTATUS.match(/success/i)) { %><li>Status: <b><%-RUNSTATUS%></b></li><% } %>
     </ul>
+
+    <div class="holder">
+        <h1 title="Click to show auto processing results" class="dp">Auto Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
+        <div class="downstream"></div>
+    </div>
 </div>
