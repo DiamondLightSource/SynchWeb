@@ -576,7 +576,8 @@ class Vstat extends Page
                 } else {
                     $dc_types[$dc['EXPERIMENTTYPE']]['failed']++; 
                     if ($dc['LOGFILE']) {
-                        $last = rtrim(end(file($dc['LOGFILE'])));
+                        $lines = file($dc['LOGFILE']);
+                        $last = rtrim(end($lines));
 
                         if (!array_key_exists($last, $dc_types[$dc['EXPERIMENTTYPE']]['messages'])) {
                             $dc_types[$dc['EXPERIMENTTYPE']]['messages'][$last] = array(
