@@ -1,0 +1,20 @@
+<div class="data_collection" dcid="<%-ID%>" type="data">
+    <h1 class="title"></h1>
+
+    <div class="snapshots" title="View sample snapshots for the current data collection">
+        <a href="<%-APIURL%>/image/id/<%-ID%>/f/1" title="Sample Snapshot"><img dsrc="" alt="Sample Snapshot" /></a>
+    </div>
+    
+    <div class="links">
+        <a class="sn" href="#snapshots"><i class="fa fa-camera fa-2x"></i> Snapshots</a> 
+    </div>
+    
+    <ul class="clearfix">
+        <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
+        <li>Exposure: <%-EXPOSURETIME%>s</li>
+        <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
+        
+        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
+        <% if (RUNSTATUS == 'aborted') { %><li>Status: <b>Stopped</b></li><% } %>
+    </ul>
+</div>

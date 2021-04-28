@@ -24,6 +24,8 @@ define(['views/getview',
         'modules/types/xpdf/samples/views/instancelist',
         'modules/types/xpdf/samples/views/instanceview',
 
+        'modules/types/spec/samples/views/view',
+
 ], function(GetView,
     SampleList, SampleView,
     GenSampleList, GenSampleView,
@@ -33,7 +35,9 @@ define(['views/getview',
 
     XPDFPhaseList, XPDFPhaseView, XPDFPhaseAdd,
     XPDFSampleList, XPDFSampleView, XPDFAddSampleView,
-    XPDFInstanceList, XPDFInstanceView
+    XPDFInstanceList, XPDFInstanceView,
+
+    SpecSampleView
     ){
 
 
@@ -81,6 +85,7 @@ define(['views/getview',
                 saxs: SampleView,
                 gen: GenSampleView,
                 xpdf: XPDFInstanceView,
+                spec: SpecSampleView,
             },
             default: GenSampleView,
 

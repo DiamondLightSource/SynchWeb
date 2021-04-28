@@ -514,7 +514,7 @@ class Imaging extends Page
             }
 
 
-            $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour
+            $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour, si.offsetx, si.offsety
               FROM blsampleimage si
               LEFT OUTER JOIN blsampleimagescore sc ON sc.blsampleimagescoreid = si.blsampleimagescoreid
               INNER JOIN containerinspection i ON i.containerinspectionid = si.containerinspectionid

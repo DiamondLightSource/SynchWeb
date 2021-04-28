@@ -1,0 +1,30 @@
+<div class="data_collection" dcid="<%-ID%>" type="data">
+    <h1 class="title"></h1>
+
+    <div class="distl" title="Per Point Analysis plot"></div>
+    <div class="diffraction spectrum-small"></div>
+    <div class="snapshots" title="View sample snapshots for the current data collection">
+        <a href="<%-APIURL%>/image/id/<%-ID%>/f/1" title="Sample Snapshot"><img dsrc="" alt="Sample Snapshot" /></a>
+    </div>
+
+    <div class="links">
+        <a class="sn" href="#snapshots"><i class="fa fa-camera fa-2x"></i> Snapshots</a> 
+        <a class="dl" href="#distl"><i class="fa fa-bar-chart-o fa-2x"></i> Data Plot</a>
+    </div>
+    
+    <ul class="clearfix single">
+        <li>Energy Ref: <span class="WAVELENGTH"></span>keV</li>
+        <li>Dwell: <span class="EXPOSURETIME"><%-EXPOSURETIME%></span>s</li>
+        <li>Beamsize: <span class="BSX"><%-BSX%></span>x<span class="BSY"><%-BSY%></span>&mu;m</li>
+        <li>No. Points: <span class="NUMIMG"><%-NUMIMG%></span></li>
+        <li>No. Repeats: <span class="NUMBEROFPASSES"><%-NUMBEROFPASSES%></span></li>
+        
+        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
+        <% if (RUNSTATUS && !RUNSTATUS.match(/success/i)) { %><li>Status: <b><%-RUNSTATUS%></b></li><% } %>
+    </ul>
+
+    <div class="holder">
+        <h1 title="Click to show auto processing results" class="dp">Auto Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
+        <div class="downstream"></div>
+    </div>
+</div>

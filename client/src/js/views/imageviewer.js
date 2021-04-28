@@ -7,6 +7,7 @@ define(['marionette',
     
     var ImageViewer = Marionette.LayoutView.extend({
         className: 'image_large',
+        zoomStep: 5,
 
         _baseUI: function() {
             return {
@@ -64,7 +65,7 @@ define(['marionette',
             this.canvas.width = this.$el.width()
             this.canvas.height = this.$el.parent().height()//this.canvas.width * (app.mobile() ? 0.75 : 0.85)
             
-            this.ui.zoom.slider({ min: 0, max: 200, step: 5 })
+            this.ui.zoom.slider({ min: 0, max: 200, step: this.getOption('zoomStep') })
 
             this.rendered = true
         },
@@ -124,7 +125,7 @@ define(['marionette',
         
         onZoomChange: function(e) {
             this.scalef = this.ui.zoom.slider('value')/100.0
-            this.ui.zval.text((this.scalef*100).toFixed(0))
+            this.ui.zval.text((this.scalef*100).toFixed(1))
             if (e && e.originalEvent) {
                 this.clampOffsets()
                 this.draw()
@@ -157,7 +158,7 @@ define(['marionette',
         zoom: function(xy, delta) {
             var last_scale = this.scalef
 
-            this.scalef += delta > 0 ? 0.1 : -0.1
+            this.scalef += delta > 0 ? this.getOption('zoomStep')/100 : -this.getOption('zoomStep')/100
             if (this.scalef < (this.ui.canvas.width()/this.width)) this.scalef = this.ui.canvas.width()/this.width
             if (this.scalef < (this.ui.canvas.height()/this.height)) this.scalef = this.ui.canvas.height()/this.height
               
@@ -171,7 +172,7 @@ define(['marionette',
                          
             this.clampOffsets()
             if (this.scalef < 2) this.ui.zoom.slider('value', this.scalef*100)
-            this.ui.zval.text((this.scalef*100).toFixed(0))
+            this.ui.zval.text((this.scalef*100).toFixed(1))
                          
             this.draw()
         },
