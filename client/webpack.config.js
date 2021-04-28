@@ -18,7 +18,7 @@ module.exports = (env) => ({
   output: {
     filename: '[name]-bundle.js',
     path: path.resolve(__dirname, 'dist', gitHash),
-    publicPath: path.join('/dist', gitHash, '/'),
+    publicPath: path.join(config.appurl, '/dist', gitHash, '/'),
   },
   devServer: {
     host: (env && env.host) || 'localhost',
@@ -147,7 +147,7 @@ module.exports = (env) => ({
           options: {
             name: '[name].[ext]',
             outputPath: '../../assets/fonts', // output path is relative to main module outputPath
-            publicPath: '/assets/fonts'
+            publicPath: config.appurl+'/assets/fonts'
           }
         }
       },
@@ -159,7 +159,7 @@ module.exports = (env) => ({
           options: {
             name: '[name].[ext]',
             outputPath: '../../assets/fonts',
-            publicPath: '/assets/fonts'
+            publicPath: config.appurl+'/assets/fonts'
           }
         }
       },
@@ -204,7 +204,7 @@ module.exports = (env) => ({
               limit: 4096, // Anything less than this limit is inlined
               name: '[path][name].[ext]',
               outputPath: '../../assets',
-              publicPath: '/assets',
+              publicPath: config.appurl+'/assets',
               context: 'src',
             }
           }
@@ -227,13 +227,13 @@ module.exports = (env) => ({
     // }),
     // This builds an index.php file from the src template
     new HtmlWebpackPlugin({
-      title: 'SynchWeb Webpack',
+      title: 'SynchWeb',
       filename: path.resolve(__dirname, 'index.php'),
       template: 'src/index.php',
       jsonConfig: config,
     }),
     new HtmlWebpackPlugin({
-      title: 'SynchWeb Webpack',
+      title: 'SynchWeb',
       filename: path.resolve(__dirname, 'dist/', gitHash, 'index.html'),
       template: 'src/index.php',
       jsonConfig: config,
