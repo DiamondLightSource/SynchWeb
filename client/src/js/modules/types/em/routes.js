@@ -1,18 +1,16 @@
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
-const RelionView = import(/* webpackChunkName: "group-em" */ 'modules/types/em/relion/views/relion')
-const ScipionView = import(/* webpackChunkName: "group-em" */ 'modules/types/em/scipion/views/scipion')
+// Import style for lazy loading of Vue Single File Component
+const RelionView = () => import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/relion.vue')
+// const RelionView = import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/relion')
+const ScipionView = import(/* webpackChunkName: "em" */ 'modules/types/em/scipion/views/scipion')
 
 const routes = [
     {
         path: '/em/process/relion/session/:session_str',
-        component: MarionetteView,
+        component: RelionView,
         props: route => ({
-            mview: RelionView,
-            options: {
-                session_str: route.params.session_str
-            },
-            breadcrumbs: [{ title: 'Relion Processing' }, { title: route.params.session_str }]
+            session_str: route.params.session_str,
         }),
         beforeEnter: (to, from, next) => {
             // Copying the logic from types/em/relion/controller.js
