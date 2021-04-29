@@ -5,7 +5,6 @@ define([
     'promise',
     'utils/vuewrapper',
     'formatDate',
-    'parseISODate',
     'modules/types/em/relion/models/relion',
     'models/visit',
     'templates/vue/types/em/process/relion.html',
@@ -16,7 +15,6 @@ define([
     Promise,
     VueWrapper,
     formatDate,
-    parseISODate,
     RelionModel,
     SessionModel,
     template
@@ -94,7 +92,8 @@ define([
                         if (self.isSessionActive) {
                             self.resetForm();
                         } else {
-                            self.sessionEndDateAsString = parseISODate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
+                            // Session ENISO and STISO are luxon DateTime format objects
+                            self.sessionEndDateAsString = self.session['ENISO'].toFormat("HH:mm 'on' d MMMM yyyy");
                         }
                         // Breadcrumbs are set in router rather than within the views themselves
                         // app.bc.reset([
