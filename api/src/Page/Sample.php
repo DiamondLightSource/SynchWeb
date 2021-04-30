@@ -947,7 +947,7 @@ class Sample extends Page
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath,
                                     dp.aimedresolution, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.collectionmode, dp.priority,
-                                    GROUP_CONCAT(distinct a.spacegroup) as dcspacegroup
+                                    GROUP_CONCAT(distinct a.spacegroup SEPARATOR ', ') as dcspacegroup
                                   
                                   FROM blsample b
 
