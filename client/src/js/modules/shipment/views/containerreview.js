@@ -3,11 +3,13 @@ define(['marionette',
     'views/table',
     'utils/table',
     'collections/samples',
+    'templates/shipment/containerreview.html'
 ], function(Marionette,
     Backgrid,
     TableView,
     table,
-    Samples) {
+    Samples,
+    template) {
 
     var UCTemplate = '\
         <table class="reflow unitcell">\
@@ -34,6 +36,8 @@ define(['marionette',
         </table>'
 
     var ActionCell = Backgrid.Cell.extend({
+        className: 'nowrap',
+
         events: {
             'click a.reinspect': 'markInspect',
             'click a.skip': 'markSkip'
@@ -41,9 +45,11 @@ define(['marionette',
 
         render: function() {
             if (app.staff) {
-                this.$el.html('<a href="#" class="button reinspect"><i class="fa fa-eye"></i></a>')
-                this.$el.append(' <a href="#" class="button skip"><i class="fa fa-step-forward"></i></a>')
+                this.$el.html('<a href="#" class="button reinspect" title="Mark sample for reinspection"><i class="fa fa-eye"></i></a>')
+                this.$el.append(' <a href="#" class="button skip" title="Mark sample as skipped"><i class="fa fa-step-forward"></i></a>')
             }
+            
+            this.$el.append(' &nbsp; <a href="/samples/sid/'+this.model.get('BLSAMPLEID')+'" class="view button button-notext" title="View sample details"><i class="fa fa-search"></i> <span>View Sample</span></a>')
                 
             return this
         }
@@ -51,7 +57,7 @@ define(['marionette',
 
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: _.template('<h1>Review: <%-NAME%></h1><div class="rsamples"></div>'),
+        template: template,
 
         regions: {
             rsamples: '.rsamples'
@@ -74,6 +80,7 @@ define(['marionette',
                 { name: 'REQUIREDRESOLUTION', label: 'Required Res', cell: 'string', editable: false },
                 { name: 'AIMEDRESOLUTION', label: 'Aimed Res', cell: 'string', editable: false },
                 { name: 'COLLECTIONMODE', label: 'Mode', cell: 'string', editable: false },
+                { name: 'PRIORITY', label: 'Priority', cell: 'string', editable: false },
                 { name: 'EXPOSURETIME', label: 'Exposure (s)', cell: 'string', editable: false },
                 { name: 'AXISRANGE', label: 'Axis Range', cell: 'string', editable: false },
                 { name: 'AXISSTART', label: 'No Images', cell: 'string', editable: false },
