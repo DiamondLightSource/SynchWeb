@@ -43,12 +43,14 @@ define(['marionette',
                 APIURL: app.apiurl,
                 PROP: app.prop,
                 DHL_ENABLE: app.options.get('dhl_enable'),
+                IS_STAFF: app.staff
             }
         },
 
         events: {
             'click #add_dewar': 'addDewar',
             'click a.send': 'sendShipment',
+            'click a.return': 'returnShipment',
             'click a.pdf': utils.signHandler,
             'click a.cancel_pickup': 'cancelPickup',
         },
@@ -101,7 +103,7 @@ define(['marionette',
             Backbone.ajax({
                 url: app.apiurl+'/shipment/send/'+this.model.get('SHIPPINGID'),
                 success: function() {
-                    self.model.set({ SHIPPINGSTATUS: 'send to DLS' })
+                    self.model.set({ SHIPPINGSTATUS: 'sent to facility' })
                     app.alert({ className: 'message notify', message: 'Shipment successfully marked as sent' })
                     self.render()
                 },
@@ -111,7 +113,26 @@ define(['marionette',
                 
             })
         },
-        
+
+        returnShipment: function(e) {
+            e.preventDefault()
+            var self = this
+            Backbone.ajax({
+                url: app.apiurl+'/shipment/return/'+this.model.get('SHIPPINGID'),
+                success: function() {
+                    self.model.set({ SHIPPINGSTATUS: 'returned' })
+                    self.render()
+                    setTimeout(function() {
+                        app.alert({ className: 'message notify', message: 'Shipment successfully marked as returned to user' })    
+                    }, 500)
+                    
+                },
+                error: function() {
+                    app.alert({ message: 'Something went wrong marking this shipment returned, please try again' })
+                },
+                
+            })
+        },
         
         addDewar: function(e) {
             e.preventDefault()

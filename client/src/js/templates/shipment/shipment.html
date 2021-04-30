@@ -17,6 +17,10 @@
             <a class="button send" href="#"><i class="fa fa-plane"></i> Mark as Sent</a>
         <% } %>
 
+        <% if (SHIPPINGSTATUS != 'returned' && IS_STAFF) { %>
+            <a class="button return" href="#"><i class="fa fa-plane"></i> Mark as Returned</a>
+        <% } %>
+
         <% if (DHL_ENABLE) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
             <a class="button pdf" href="<%-APIURL%>/pdf/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-print"></i> Print Airway Bill</a>

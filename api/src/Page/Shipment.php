@@ -125,6 +125,8 @@ class Shipment extends Page
                               'manifest' => '\d',
                               'currentuser' => '\d',
 
+                              'PROPOSALCODE' => '\w+',
+                              'CONTAINERQUEUEID' => '\d+'
                               );
         
 
@@ -132,6 +134,7 @@ class Shipment extends Page
                               array('/shipments', 'post', '_add_shipment'),
                               array('/shipments/:sid', 'patch', '_update_shipment'),
                               array('/send/:sid', 'get', '_send_shipment'),
+                              array('/return/:sid', 'get', '_return_shipment'),
                               array('/countries', 'get', '_get_countries'),
 
 
@@ -168,6 +171,7 @@ class Shipment extends Page
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
                               array('/containers/queue', 'get', '_queue_container'),
+                              array('/containers/queue/:CONTAINERQUEUEID', 'post', '_update_container_queue'),
                               array('/containers/barcode/:BARCODE', 'get', '_check_container'),
 
 
@@ -1233,6 +1237,34 @@ class Shipment extends Page
             $this->_output(1);
             
         }
+
+        function _return_shipment() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
+            
+            $ship = $this->db->pq("SELECT s.shippingid 
+                FROM shipping s 
+                INNER JOIN proposal p ON s.proposalid = p.proposalid 
+                WHERE p.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
+            
+            if (!sizeof($ship)) $this->_error('No such shipment');
+            $ship = $ship[0];
+            
+            $this->db->pq("UPDATE shipping SET shippingstatus='returned' where shippingid=:1", array($ship['SHIPPINGID']));
+            $this->db->pq("UPDATE dewar SET dewarstatus='returned' where shippingid=:1", array($ship['SHIPPINGID']));
+            
+            $dewars = $this->db->pq("SELECT d.dewarid, s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
+              FROM dewar d 
+              LEFT OUTER JOIN blsession s ON s.sessionid = d.firstexperimentid 
+              WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
+            foreach ($dewars as $d) {
+                $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
+                  VALUES (s_dewartransporthistory.nextval,:1,'returned',CURRENT_TIMESTAMP)", 
+                  array($d['DEWARID']));
+            }
+
+            $this->_output(1);
+        }
         
         
         # Show and accept terms to use diamonds shipping account
@@ -1328,6 +1360,10 @@ class Shipment extends Page
                 } 
             }
 
+            if ($this->has_arg('PROPOSALCODE')) {
+                $where .= " AND p.proposalcode LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('PROPOSALCODE'));
+            }
 
             if ($this->has_arg('PUCK')) {
                 $where .= " AND c.containertype LIKE '%puck'";
@@ -1459,7 +1495,10 @@ class Shipment extends Page
                 count(distinct ss.blsubsampleid) as subsamples, 
                 ses3.beamlinename as firstexperimentbeamline,
                 pp.name as pipeline,
-                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell, c.ownerid, concat_ws(' ', pe.givenname, pe.familyname) as owner
+                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell,
+                c.ownerid, concat_ws(' ', pe.givenname, pe.familyname) as owner,
+                CONCAT(SUM(IF(dp.collectionmode = 'auto', 1, 0)), 'A, ', SUM(IF(dp.collectionmode = 'manual', 1, 0)), 'M') as modes,
+                lc.cardname
                                   FROM container c 
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   LEFT OUTER JOIN blsession ses3 ON d.firstexperimentid = ses3.sessionid
@@ -1482,6 +1521,9 @@ class Shipment extends Page
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
                                   LEFT OUTER JOIN processingpipeline pp ON c.prioritypipelineid = pp.processingpipelineid
                                   LEFT OUTER JOIN person pe ON c.ownerid = pe.personid
+                                  LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = s.diffractionplanid 
+
+                                  LEFT OUTER JOIN labcontact lc ON sh.sendinglabcontactid = lc.labcontactid
 
                                   $join
                                   WHERE $where
@@ -1560,6 +1602,21 @@ class Shipment extends Page
             }
         }
 
+        # Manually update a container queue status to completed
+        function _update_container_queue() {
+            if (!$this->staff) $this->_error("No access");
+
+            $cq = $this->db->pq("SELECT containerqueueid 
+                FROM containerqueue WHERE containerqueueid=:1", 
+                array($this->arg('CONTAINERQUEUEID')));
+
+            if (!sizeof($cq)) $this->_error("No such container queue");
+
+            $this->db->pq("UPDATE containerqueue SET completedtimestamp=CURRENT_TIMESTAMP WHERE containerqueueid=:1",
+                array($this->arg('CONTAINERQUEUEID')));
+
+            $this->_output(1);
+        }
         
         # Move Container
         function _move_container() {
