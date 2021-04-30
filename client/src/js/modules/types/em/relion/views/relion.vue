@@ -12,19 +12,38 @@
 
     <form novalidate v-bind:class="{loading: showSpinner}">
         <div class="form">
-<!--            <div class="log" style="margin-top: 20px" v-if="processingJobs.length">-->
-<!--                <ul>-->
-<!--                    <li v-for="processingJob in processingJobs">-->
-<!--                        {{ processingJob.PROCESSINGJOBID }} : {{ processingJob.DATACOLLECTIONID }} : {{ processingJob.PROCESSINGSTATUSDESCRIPTION }}-->
+            <!-- <div class="log" style="margin-top: 20px" v-if="processingJobs.length">
+                <ul>
+                    <li v-for="processingJob in processingJobs" :key="processingJob.PROCESSINGJOBID">
+                        {{ processingJob.PROCESSINGJOBID }} : {{ processingJob.DATACOLLECTIONID }} : {{ processingJob.PROCESSINGSTATUSDESCRIPTION }}
 
-<!--                        <button type="submit" class="submit"-->
-<!--                                v-on:click.prevent="onStop"-->
-<!--                                v-if="isJobStarted && !isJobStopped">-->
-<!--                            Stop Processing-->
-<!--                        </button>-->
-<!--                    </li>-->
-<!--                </ul>-->
-<!--            </div>-->
+                        <button type="submit" class="submit"
+                                v-on:click.prevent="onStop"
+                                v-if="isJobStarted && !isJobStopped">
+                            Stop Processing
+                        </button>
+                    </li>
+                </ul>
+            </div> -->
+
+            <table-component
+                :headers="processingJobHeaders"
+                :data="processingJobs"
+                actions="Actions"
+            >
+                <template slot="actions" slot-scope="{ row }">
+                    <!-- Action to stop processing. Could use v-if to conditonally render action if required -->
+                    <a v-if="row.PROCESSINGSTATUSDESCRIPTION=='Running'" class="button" href="" @click.prevent="onStopProcessing(row['PROCESSINGJOBID'])"><i class="fa fa-times"></i></a>
+                    <a v-else class="button" href="" @click.prevent="onShowProcessingJob(row['PROCESSINGJOBID'])"><i class="fa fa-info"></i></a>
+                </template>
+            </table-component>
+            <pagination-component
+                @page-changed="onUpdateProcessingJobs"
+                :totalRecords="totalProcessingJobs"
+                :initialPage="1"
+                :pageLinks="5"
+                :pageSizes="[5,10,20]"
+            />
 
             <ul>
                 <li class="head">Project</li>
@@ -280,15 +299,21 @@
 <script>
 import Backbone from 'backbone'
 import formatDate from 'formatDate'
+import ProcessingJobs from 'modules/types/em/collections/processingjobs'
 import RelionModel from 'modules/types/em/relion/models/relion'
 import SessionModel from 'models/visit'
-
+import Table from 'app/components/table.vue'
+import Pagination from 'app/components/pagination.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 
 export default {
     name: 'relion-processing-form',
     props: {
         session_str: String,
+    },
+    components: {
+        'table-component': Table,
+        'pagination-component': Pagination,
     },
     data: function () {
         return {
@@ -335,6 +360,12 @@ export default {
             pipelineDo2ndPass: null,
             pipelineDo2ndPassClassification2d: null,
             pipelineDo2ndPassClassification3d: null,
+
+            processingJobHeaders: [ 
+                {title: 'Processing Job ID', key: 'PROCESSINGJOBID'},
+                {title: 'DataCollection ID', key: 'DATACOLLECTIONID'},
+                {title: 'Processing Job Status', key: 'PROCESSINGSTATUSDESCRIPTION'},
+            ]
         }
     },
     created: function () {
@@ -344,21 +375,19 @@ export default {
             VISIT: this.session_str
         });
 
-        let self = this;
-
         this.$store.dispatch('getModel', sessionModel).then( (model) => {
-            self.session = sessionModel.attributes;
+            this.session = sessionModel.attributes;
 
-            self.isSessionLoaded = true;
-            self.isSessionActive = !!+self.session['ACTIVE']; // ACTIVE represented by string value "0" or "1" in JSON
+            this.isSessionLoaded = true;
+            this.isSessionActive = !!+this.session['ACTIVE']; // ACTIVE represented by string value "0" or "1" in JSON
 
             // TODO Temporary override to make session active for testing after session has ended (JPH)
-            self.isSessionActive = 1;
+            this.isSessionActive = 1;
 
-            if (self.isSessionActive) {
-                self.resetForm();
+            if (this.isSessionActive) {
+                this.resetForm();
             } else {
-                self.sessionEndDateAsString = self.session['ENISO'].toFormat("HH:mm 'on' d MMMM yyyy");
+                this.sessionEndDateAsString = this.session['ENISO'].toFormat("HH:mm 'on' d MMMM yyyy");
             }
             let breadcrumbs = [
                 {title: 'Data Collections', url: '/dc'},
@@ -367,6 +396,12 @@ export default {
                 {title: 'Relion Processing'}
             ]
             this.setBreadcrumbs(breadcrumbs)
+            // Probably don't need to wait until sessionModel is returned? 
+            // If not can run this in parallel (outside this 'then' clause)
+            let page = 1
+            let numRecords = 15
+            this.getProcessingJobs(page, numRecords)
+
         }, (error) => {
             this.setBreadcrumbs([{title: 'Error'}]);
             this.$store.commit('notifications/addNotification', {title: 'No such session', message: 'The specified session does not exist'})
@@ -375,6 +410,28 @@ export default {
         })
     },
     methods: {
+        getProcessingJobs: function(page, numRecords) {
+            let processingJobsCollection = new ProcessingJobs(null, { state: { currentPage: page, pageSize: numRecords }, queryParams: { session: this.session['VISIT']} })
+
+            this.$store.dispatch('getCollection', processingJobsCollection).then( (collection) => {
+                console.log("Total Records: " + collection.totalRecords)
+                console.log("Processing Jobs: " + JSON.stringify(collection))
+                // Uncomment these to use the actual values
+                // this.totalProcessingJobs = collection.totalRecords
+                // this.processingJobs = processingJobsCollection.toJSON()
+            }, () => {
+                this.$store.commit('notifications/addNotification', {title: 'Error', message: 'Could not retrieve processing jobs', level: 'error'})
+            })
+
+            // TEST ONLY - replace with this.processingJobs above when ready
+            this.processingJobs.push({PROCESSINGJOBID: 1, DATACOLLECTIONID: 10, PROCESSINGSTATUSDESCRIPTION: 'Running'})
+            this.processingJobs.push({PROCESSINGJOBID: 2, DATACOLLECTIONID: 11, PROCESSINGSTATUSDESCRIPTION: 'Stopped'})
+            this.processingJobs.push({PROCESSINGJOBID: 3, DATACOLLECTIONID: 12, PROCESSINGSTATUSDESCRIPTION: 'Running'})
+            this.processingJobs.push({PROCESSINGJOBID: 4, DATACOLLECTIONID: 13, PROCESSINGSTATUSDESCRIPTION: 'Running'})
+            this.processingJobs.push({PROCESSINGJOBID: 5, DATACOLLECTIONID: 14, PROCESSINGSTATUSDESCRIPTION: 'Running'})
+
+            this.totalRecords = this.processingJobs.length
+        },
         setBreadcrumbs: function(breadcrumbs) {
             if (breadcrumbs) EventBus.$emit('bcChange', breadcrumbs)
         },
@@ -642,6 +699,23 @@ export default {
             })
         },
 
+        onStopProcessing: function(id) {
+            // Send stop processing message if needed
+            console.log("onStopProcessing for id: " + id)
+            this.$store.commit('notifications/addNotification', {title: 'Debug', message: 'Simulating stop processing JOBID ' + id})
+        },
+        onShowProcessingJob: function(id) {
+            console.log("onShowProcessingJob for id: " + id)
+            this.$store.commit('notifications/addNotification', {title: 'Debug', message: 'Simulating show processing JOBID ' + id})
+        },
+        onUpdateProcessingJobs: function(payload) {
+            console.log("payload: " + JSON.stringify(payload))
+            // Now call Processing jobs with the correct page size and start location
+            let page = payload.currentPage
+            let numRecords = payload.pageSize
+            // At the moment this would add another 5 records onto the list - but you get the idea...
+            // this.getProcessingJobs(page, numRecords)
+        },
         onContinue: function() {
             // What action is supposed to be taken here?
             console.log("onContinue")

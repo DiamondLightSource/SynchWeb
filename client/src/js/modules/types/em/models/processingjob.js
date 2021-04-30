@@ -4,6 +4,7 @@ define([
     Backbone
 ) {
     return Backbone.Model.extend({
-        urlRoot: '/em/process/relion/jobs'
+        urlRoot: '/em/process/relion/jobs',
+        idAttribute: 'PROCESSINGJOBID',
     })
 });
