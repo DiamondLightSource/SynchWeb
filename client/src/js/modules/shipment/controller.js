@@ -16,6 +16,8 @@ define(['backbone',
         // 'modules/shipment/views/containeradd',
         'modules/shipment/views/containers',
         'modules/imaging/views/queuecontainer',
+
+        'modules/shipment/views/queuedcontainers',
         'modules/shipment/views/containerreview',
 
         'modules/shipment/models/containerregistry',
@@ -51,7 +53,7 @@ define(['backbone',
     Dewar, Shipment, Shipments, 
     ShipmentsView, ShipmentView, ShipmentAddView, ImportFromCSV,
     Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView, 
-    MailinContainers, ReviewContainer,
+    QueuedContainers, ReviewContainer,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView, DewarRegistryView,
     DispatchView, TransferView, Dewars, DewarOverview, ManifestView, DewarStats, CreateAWBView, RebookPickupView,
@@ -359,6 +361,16 @@ define(['backbone',
         })
     },
 
+    queued_containers: function(s, ty, pt, page) {
+        if (!app.staff) {
+            app.message({ title: 'No access', message: 'You do not have access to that page'})
+            return
+        }
+
+        app.bc.reset([bc, { title: 'Queued Containers' }])
+        app.content.show(new QueuedContainers({ params: { s: s, ty: ty, pt: pt, page: page }}))
+    },
+
     container_review: function(cid) {
         var lookup = new ProposalLookup({ field: 'CONTAINERID', value: cid })
         lookup.find({
@@ -545,6 +557,11 @@ define(['backbone',
       app.navigate('containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
       controller.view_container(cid, iid, sid)
     })
+
+    app.on('container:review', function(cid) {
+        app.navigate('containers/review/'+cid)
+        controller.container_review(cid)
+      })
 
     app.on('rdewar:show', function(fc) {
       app.navigate('dewars/registry/'+fc)
