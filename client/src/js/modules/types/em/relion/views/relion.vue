@@ -12,6 +12,20 @@
 
     <form novalidate v-bind:class="{loading: showSpinner}">
         <div class="form">
+<!--            <div class="log" style="margin-top: 20px" v-if="processingJobs.length">-->
+<!--                <ul>-->
+<!--                    <li v-for="processingJob in processingJobs">-->
+<!--                        {{ processingJob.PROCESSINGJOBID }} : {{ processingJob.DATACOLLECTIONID }} : {{ processingJob.PROCESSINGSTATUSDESCRIPTION }}-->
+
+<!--                        <button type="submit" class="submit"-->
+<!--                                v-on:click.prevent="onStop"-->
+<!--                                v-if="isJobStarted && !isJobStopped">-->
+<!--                            Stop Processing-->
+<!--                        </button>-->
+<!--                    </li>-->
+<!--                </ul>-->
+<!--            </div>-->
+
             <ul>
                 <li class="head">Project</li>
 
@@ -257,31 +271,6 @@
                 Start Processing
             </button>
 
-            <button type="submit" class="button submit"
-                    v-on:click.prevent="onStop"
-                    v-if="isJobStarted && !isJobStopped">
-                Stop Processing
-            </button>
-
-            <button type="submit" class="button submit"
-                    v-on:click.prevent="onStart"
-                    v-if="isJobStarted && isJobStopped">
-                Resume
-            </button>
-
-            <button type="submit" class="button submit"
-                    v-on:click.prevent="onReset"
-                    v-if="isJobStarted && isJobStopped">
-                Reset
-            </button>
-
-            <div class="log" style="margin-top: 20px" v-if="isLogVisible && sessionEvents.length">
-                <ul>
-                    <li v-for="sessionEvent in sessionEvents">
-                        {{ sessionEvent.timestamp_str }} : {{ sessionEvent.message }}
-                    </li>
-                </ul>
-            </div>
         </div>
     </form>
 </section>
@@ -312,7 +301,7 @@ export default {
             isJobStarted: false,
             isJobStopped: false,
             isLogVisible: false,
-            sessionEvents: [],
+            processingJobs: [],
 
             // Session
             session: {},
@@ -351,40 +340,39 @@ export default {
     created: function () {
         this.showSpinner = true;
 
-        this.setBreadcrumbs([{ title: 'Relion Processing' }, { title: this.session_str }])
-
         let sessionModel = new SessionModel({
             VISIT: this.session_str
         });
 
         let self = this;
 
-        sessionModel.fetch({
-            success: function (model, response, options) {
-                self.session = sessionModel.attributes;
+        this.$store.dispatch('getModel', sessionModel).then( (model) => {
+            self.session = sessionModel.attributes;
 
-                self.isSessionLoaded = true;
-                self.isSessionActive = !!+self.session['ACTIVE']; // ACTIVE represented by string value "0" or "1" in JSON
+            self.isSessionLoaded = true;
+            self.isSessionActive = !!+self.session['ACTIVE']; // ACTIVE represented by string value "0" or "1" in JSON
 
-                if (self.isSessionActive) {
-                    self.resetForm();
-                } else {
-                    // Session ENISO and STISO are luxon DateTime format objects
-                    self.sessionEndDateAsString = self.session['ENISO'].toFormat("HH:mm 'on' d MMMM yyyy");
-                }
+            // TODO Temporary override to make session active for testing after session has ended (JPH)
+            self.isSessionActive = 1;
 
-                self.sessionEvents = [];
-
-                self.showSpinner = false;
-            },
-            error: function (model, response, options) {
-                self.showSpinner = false;
-
-                // Breadcrumbs are set in router rather than within the views themselves
-                // app.bc.reset([{title: 'Error'}]);
-                app.message({title: 'No such session', message: 'The specified session does not exist'})
+            if (self.isSessionActive) {
+                self.resetForm();
+            } else {
+                self.sessionEndDateAsString = self.session['ENISO'].toFormat("HH:mm 'on' d MMMM yyyy");
             }
-        });
+            let breadcrumbs = [
+                {title: 'Data Collections', url: '/dc'},
+                {title: this.session['BL']},
+                {title: this.session['VISIT'], url: '/dc/visit/' + this.session['VISIT']},
+                {title: 'Relion Processing'}
+            ]
+            this.setBreadcrumbs(breadcrumbs)
+        }, (error) => {
+            this.setBreadcrumbs([{title: 'Error'}]);
+            this.$store.commit('notifications/addNotification', {title: 'No such session', message: 'The specified session does not exist'})
+        }).finally( () => {
+            this.showSpinner = false
+        })
     },
     methods: {
         setBreadcrumbs: function(breadcrumbs) {
@@ -396,7 +384,6 @@ export default {
         // allows us to clear form data after submission
         resetForm: function () {
             this.isJobStarted = false;
-            this.isJobStopped = false;
             this.processingIsActive = false;
             this.processingTimestamp = false;
 
@@ -429,7 +416,6 @@ export default {
             this.pipelineDo2ndPassClassification3d = false;
 
             this.isLogVisible = false;
-            this.sessionEvents = [];
 
             this.checkStatus();
 
@@ -489,7 +475,7 @@ export default {
 
             this.$validator.validateAll().then(function (result) {
                 if (result) {
-                    this.showSpinner = true;
+                    self.showSpinner = true;
 
                     // Convert form inputs from string to float, integer, or boolean data type.
                     // Ensures values are correctly encoded in JSON, not as strings of text.
@@ -497,31 +483,31 @@ export default {
                     // parseInt() removes fractional-part of numeric input.
                     // Updates form inputs with converted values.
 
-                    this.voltage = parseInt(this.voltage);
-                    this.sphericalAberration = parseFloat(this.sphericalAberration);
-                    this.findPhaseShift = this.findPhaseShift === true;
-                    this.pixelSize = parseFloat(this.pixelSize);
-                    this.motionCorrectionBinning = parseInt(this.motionCorrectionBinning);
-                    this.dosePerFrame = parseFloat(this.dosePerFrame);
+                    self.voltage = parseInt(self.voltage);
+                    self.sphericalAberration = parseFloat(self.sphericalAberration);
+                    self.findPhaseShift = self.findPhaseShift === true;
+                    self.pixelSize = parseFloat(self.pixelSize);
+                    self.motionCorrectionBinning = parseInt(self.motionCorrectionBinning);
+                    self.dosePerFrame = parseFloat(self.dosePerFrame);
 
-                    this.pipelineDo1stPass = this.pipelineDo1stPass === true;
-                    this.pipelineDo1stPassClassification2d = this.pipelineDo1stPassClassification2d === true;
-                    this.pipelineDo1stPassClassification3d = this.pipelineDo1stPassClassification3d === true;
+                    self.pipelineDo1stPass = self.pipelineDo1stPass === true;
+                    self.pipelineDo1stPassClassification2d = self.pipelineDo1stPassClassification2d === true;
+                    self.pipelineDo1stPassClassification3d = self.pipelineDo1stPassClassification3d === true;
 
-                    if (this.pipelineDo1stPass) {
-                        this.particleUseCryolo = this.particleUseCryolo === true;
+                    if (self.pipelineDo1stPass) {
+                        self.particleUseCryolo = self.particleUseCryolo === true;
                         // TODO Ensure particleDiameterMin < particleDiameterMax. (JPH)
-                        this.particleDiameterMin = parseFloat(this.particleDiameterMin);
-                        this.particleDiameterMax = parseFloat(this.particleDiameterMax);
-                        this.particleMaskDiameter = parseInt(this.particleMaskDiameter);
-                        this.particleBoxSize = parseInt(this.particleBoxSize);
-                        this.particleBoxSizeSmall = parseInt(this.particleBoxSizeSmall);
-                        this.particleCalculateForMe = this.particleCalculateForMe === true;
+                        self.particleDiameterMin = parseFloat(self.particleDiameterMin);
+                        self.particleDiameterMax = parseFloat(self.particleDiameterMax);
+                        self.particleMaskDiameter = parseInt(self.particleMaskDiameter);
+                        self.particleBoxSize = parseInt(self.particleBoxSize);
+                        self.particleBoxSizeSmall = parseInt(self.particleBoxSizeSmall);
+                        self.particleCalculateForMe = self.particleCalculateForMe === true;
                     }
 
-                    this.pipelineDo2ndPass = this.pipelineDo2ndPass === true;
-                    this.pipelineDo2ndPassClassification2d = this.pipelineDo2ndPassClassification2d === true;
-                    this.pipelineDo2ndPassClassification3d = this.pipelineDo2ndPassClassification3d === true;
+                    self.pipelineDo2ndPass = self.pipelineDo2ndPass === true;
+                    self.pipelineDo2ndPassClassification2d = self.pipelineDo2ndPassClassification2d === true;
+                    self.pipelineDo2ndPassClassification3d = self.pipelineDo2ndPassClassification3d === true;
 
                     let model = new RelionModel({
                         id: self.session['VISIT'],
@@ -562,14 +548,13 @@ export default {
                         success: function (model, response, options) {
                             self.isFormReadOnly = true;
                             self.isJobStarted = true;
-                            self.isJobStopped = false;
                             self.showSpinner = false;
 
                             if ('timestamp' in response) {
-                                self.sessionEvents.unshift({
-                                    timestamp_str: formatDate(response.timestamp, 'HH:mm:ss'),
-                                    message: 'Start processing.'
-                                });
+                                // self.sessionEvents.unshift({
+                                //     timestamp_str: formatDate.default(response.timestamp, 'HH:mm:ss'),
+                                //     message: 'Start processing.'
+                                // });
                             }
                         },
                         error: function (model, response, options) {
@@ -601,7 +586,7 @@ export default {
 
                     if ('timestamp' in xhr) {
                         self.sessionEvents.unshift({
-                            timestamp_str: formatDate(xhr.timestamp, 'HH:mm:ss'),
+                            timestamp_str: formatDate.default(xhr.timestamp, 'HH:mm:ss'),
                             message: 'Stop processing.'
                         });
                     }
@@ -647,29 +632,6 @@ export default {
                     self.showSpinner = false;
 
                     let alertMessage = 'There was a problem checking this job.';
-
-                    if ('message' in response.responseJSON) {
-                        alertMessage = response.responseJSON.message;
-                    }
-
-                    app.alert({message: alertMessage});
-                }
-            })
-        },
-
-        onReset: function () {
-            let self = this;
-
-            Backbone.ajax({
-                type: 'DELETE',
-                url: app.apiurl + '/em/process/relion/session/' + this.session['VISIT'],
-                success: function (xhr) {
-                    self.resetForm();
-                },
-                error: function (model, response, options) {
-                    self.showSpinner = false;
-
-                    let alertMessage = 'There was a problem resetting this job.';
 
                     if ('message' in response.responseJSON) {
                         alertMessage = response.responseJSON.message;
