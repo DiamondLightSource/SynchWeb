@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
+use SynchWeb\TemplateParser;
 
 class DC extends Page
 {
@@ -333,7 +334,7 @@ class DC extends Page
             # Data collection group
             if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
                 $count_field = 'dc.datacollectionid';
-                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dc.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam, dc.chistart, 
+                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dcg.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam, dc.chistart, 
                     dc.voltage,
                     dc.c2aperture,
                     dc.c2lens,
@@ -588,6 +589,7 @@ class DC extends Page
         # ------------------------------------------------------------------------
         # Check whether diffraction and snapshot images exist
         function _chk_image() {
+            global $jpeg_thumb_location;
             if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
             
             $where = array();
@@ -613,14 +615,12 @@ class DC extends Page
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $ids);
             
-            $this->db->close();
             $this->profile('dc query');
             
             $dcs = array();
             foreach ($dct as $d) $dcs[$d['ID']] = $d;
             
             $out = array();
-            
             foreach ($dcs as $dc) {
                 $debug = array();
 
@@ -629,7 +629,8 @@ class DC extends Page
                 foreach (array('X1', 'X2', 'X3', 'X4') as $j => $im) {
                     array_push($images, file_exists($dc[$im]) ? 1 : 0);
                     if ($im == 'X1') {
-                        $thumb = str_replace('.png', 't.png', $dc[$im]);
+                        $ext = pathinfo($dc[$im], PATHINFO_EXTENSION);
+                        $thumb = str_replace('.'.$ext, 't.'.$ext, $dc[$im]);
                         if ($this->staff && $this->has_arg('debug')) $debug['snapshot_thumb'] = array('file' => $thumb, 'exists' => file_exists($thumb) ? 1 : 0);
                         if (file_exists($thumb)) $sn = 1;
                     }
@@ -639,7 +640,8 @@ class DC extends Page
                 $dc['DIR'] = $this->ads($dc['DIR']);
                 $dc['X'] = $images;
                 
-                $di = str_replace($dc['VIS'], $dc['VIS'].'/jpegs', $dc['DIR']).str_replace(pathinfo($dc['FILETEMPLATE'], PATHINFO_EXTENSION), 'jpeg',preg_replace('/#+/', sprintf('%0'.substr_count($dc['FILETEMPLATE'], '#').'d', $dc['STARTIMAGENUMBER']),$dc['FILETEMPLATE']));
+                $tmp = new TemplateParser($this->db);
+                $di = $tmp->interpolate($jpeg_thumb_location, array('DCID' => $dc['ID']));
                 
                 $this->profile('diffraction image');
                 $die = 0;
@@ -963,7 +965,7 @@ class DC extends Page
         function _grid_info() {
             $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked
                 FROM gridinfo g
-                INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
+                INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
                 WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
 

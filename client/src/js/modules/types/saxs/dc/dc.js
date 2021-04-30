@@ -13,6 +13,7 @@ define([
         apStatusItem: APStatusItem,
         
         events: {
+            'click .holder h1.ap': 'loadAP',
             'click .diffraction': 'showDiff',
             'click a.dd': utils.signHandler,
             'click .holder h1.dp': 'loadAP',

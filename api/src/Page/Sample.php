@@ -44,6 +44,8 @@ class Sample extends Page
                               'capillaryPhase' => '',
                               'json' => '',
 
+                              'collected_during' => '\w+\d+-\d+',
+
                               'DEWARID' => '\d+',
                               'PROTEINID' => '\d+',
                               'CRYSTALID' => '\d+',
@@ -851,6 +853,22 @@ class Sample extends Page
                 $sseq = 'pr.sequence,';
             }
             
+            # Collected during visit
+            if ($this->has_arg('collected_during')) {
+              $visit = $this->db->pq("SELECT s.sessionid
+                FROM blsession s
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1 AND p.proposalid=:2",
+                array($this->arg('collected_during'), $this->proposalid));
+
+              if (!sizeof($visit)) $this->_error("No such visit");
+              $sessionid = $visit[0]["SESSIONID"];
+
+              $join .= " LEFT OUTER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid";
+              $where .= " AND (r.blsessionid=:".(sizeof($args)+1)." OR dcg.sessionid=:".(sizeof($args)+2).")";
+              array_push($args, $sessionid);
+              array_push($args, $sessionid);
+            }
             
             // Search
             if ($this->has_arg('s')) {
@@ -881,7 +899,10 @@ class Sample extends Page
               LEFT OUTER JOIN blsampletype_has_component chc ON b.crystalid = chc.blsampletypeid
               INNER JOIN proposal p ON p.proposalid = pr.proposalid 
               INNER JOIN container c ON c.containerid = b.containerid 
-              INNER JOIN dewar d ON d.dewarid = c.dewarid $join WHERE $where", $args);
+              INNER JOIN dewar d ON d.dewarid = c.dewarid 
+              LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
+              LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
+              $join WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
 
             
@@ -928,7 +949,6 @@ class Sample extends Page
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid
                                   INNER JOIN shipping s ON s.shippingid = d.shippingid
                                   INNER JOIN proposal p ON p.proposalid = pr.proposalid
-                                  $join
 
                                   LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
                                   
@@ -953,6 +973,8 @@ class Sample extends Page
                                   
                                   
                                   LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
+                                  
+                                  $join
                                   
                                   WHERE $where
                                   

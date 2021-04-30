@@ -680,6 +680,39 @@ class Page
 
             if (sizeof($ret)) return $ret[0];
         }
+        /**
+         * Search ISPyB Person record for 'emailAddress' property
+         * This limits the search to staff users i.e. those with at least one usergroup association
+         * Its used when an LDAP lookup fails for a local contact
+         *
+         * @param string $name "Firstname Surname" or "Title Firstname Surname"
+         * @return string Returns email address if found
+         */
+        function _get_ispyb_email_fn($name) {
+            $email = '';
+            $fn = '';
+            $ln = '';
+            
+            $parts = explode(' ', $name);
+            if (sizeof($parts) == 2) {
+              $fn = $parts[0];
+              $ln = $parts[1];
+            } else if (sizeof($parts) == 3) {
+              $fn = $parts[1];
+              $ln = $parts[2];
+            }
+            if ($fn && $ln) {
+                // Try finding an email address from within ISPyB
+                // We are only interested in staff users so join with usergroup table
+                $lc_emails = $this->db->pq("SELECT pe.emailaddress
+                  FROM person pe
+                  INNER JOIN usergroup_has_person ugp ON ugp.personid = pe.personid
+                  WHERE pe.givenname =:1 AND pe.familyname =:2 AND pe.emailaddress IS NOT NULL", array($fn, $ln));
+
+                if (sizeof($lc_emails)) $email = $lc_emails[0]['EMAILADDRESS'];
+            }
+            return $email;
+        }
               
 
         # Run an ldap search
@@ -826,6 +859,23 @@ class Page
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) return $cols[$this->arg('sort_by')].' '.$dir;
             } else return $default;
+        }
+
+
+        /** 
+         * Determine processed dir path based on data collection results
+         * This function needs to find the samples and investigators for this container
+         * 
+         * @param array $dc Array of data collection variables, must container VIS, DIR, IMP and RUN 
+         * @param string $location directory nane to append to visit directory that holds processed results
+         * @return string Returns processed directory path (falls back to legacy dir with extra underscore)
+         */
+        function get_visit_processed_dir($dc, $location) {
+            $root = preg_replace( '/' . $dc['VIS']   . '/', $dc['VIS'] . $location, $dc['DIR'], 1) . $dc['IMP'] . '_' . $dc['RUN'] . '/';
+            if (!is_dir($root)) {
+                $root = preg_replace( '/' . $dc['VIS']   . '/', $dc['VIS'] . $location, $dc['DIR'], 1) . $dc['IMP'] . '_' . $dc['RUN'] . '_' . '/';
+            }
+            return $root;
         }
 
     }

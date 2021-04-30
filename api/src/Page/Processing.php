@@ -214,8 +214,12 @@ class Processing extends Page {
         $statuses = array_replace_recursive($screenings, $xrcs, $autoprocs);
 
         $out = array();
-        foreach ($statuses as $dcid => $status) {
-            array_push($out, array(strval($dcid), $status));
+        foreach ($ids as $id) {
+            if (array_key_exists($id, $statuses)) {
+                array_push($out, array(strval($id), $statuses[$id]));
+            } else {
+                array_push($out, array(strval($id), new \stdClass));
+            }
         }
 
         $this->_output($out);
@@ -531,7 +535,7 @@ class Processing extends Page {
                 LEFT OUTER JOIN processingjobparameter pjp ON pj.processingjobid = pjp.processingjobid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE api.autoprocintegrationid IS NULL AND p.proposalid=:1 $where
                 GROUP BY pj.processingjobid",
@@ -568,7 +572,7 @@ class Processing extends Page {
         $downstreams = $this->_get_downstreams($id);
 
         $msg_tmp = $this->db->pq(
-            "SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
+            "SELECT app.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
                 FROM autoprocprogrammessage appm
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
                 INNER JOIN processingjob pj ON app.processingjobid = pj.processingjobid

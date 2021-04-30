@@ -103,6 +103,7 @@ class Shipment extends Page
                               'AUTOMATED' => '\d+',
                               'PUCK' => '\d',
                               'PROCESSINGPIPELINEID' => '\d+',
+                              'OWNERID' => '\d+',
 
                               'CONTAINERREGISTRYID' => '\d+',
                               'PROPOSALID' => '\d+',
@@ -342,6 +343,7 @@ class Shipment extends Page
 
         function _add_history() {
             global $in_contacts, $transfer_email;
+            global $dewar_complete_email; // Email list to cc if dewar back from beamline
             # Flag to indicate we should e-mail users their dewar has returned from BL
             $from_beamline = False;
 
@@ -462,12 +464,13 @@ class Shipment extends Page
 
                 if (sizeof($rows)) $dew['DC'] = $rows;
 
+                $cc = $dewar_complete_email ? $dewar_complete_email : null;
                 // Log the event if debugging
                 if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
 
                 $email = new Email('storage-rack', '*** Visit finished, dewar awaiting instructions ***');
                 $email->data = $dew;
-                $email->send($dew['LCRETEMAIL']);
+                $email->send($dew['LCRETEMAIL'], $cc);
             }
 
             $this->_output(array('DEWARHISTORYID' => $dhid));
@@ -843,13 +846,19 @@ class Shipment extends Page
 
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
 
+            // LDAP email search does not always provide a match
+            // So look at the ISPyB person record for a matching staff user
+            if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT']) {
+              $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
+            }
+
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
-            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
+            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
 
             $email->send($recpts);
 
@@ -1351,9 +1360,6 @@ class Shipment extends Page
                 $where .= ' AND c.ownerid = :'.(sizeof($args)+1);
                 array_push($args, $this->user->personid);
             }
-            error_log("CONTAINER TOTAL QUERY for Proposal " . $this->proposalid);
-            error_log($where);
-            error_log(print_r($args, true));
 
             $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
                 FROM container c 
@@ -1372,8 +1378,6 @@ class Shipment extends Page
                 $having", $args);
             $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
             
-            error_log('TOTAL NUMBER OF CONTAINERS = ' . $tot);
-
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
                 $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
@@ -1412,15 +1416,13 @@ class Shipment extends Page
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-            error_log("CONTAINER QUERY");
-            error_log($where);
-            error_log(print_r($args, true));
             // $this->db->set_debug(True);
             $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, 
                 count(distinct ss.blsubsampleid) as subsamples, 
                 ses3.beamlinename as firstexperimentbeamline,
                 pp.name as pipeline,
-                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell
+                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell,
+                c.ownerid, CONCAT(pe.givenname, ' ', pe.familyname) as owner
                                   FROM container c 
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   LEFT OUTER JOIN blsession ses3 ON d.firstexperimentid = ses3.sessionid
@@ -1442,6 +1444,7 @@ class Shipment extends Page
 
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
                                   LEFT OUTER JOIN processingpipeline pp ON c.prioritypipelineid = pp.processingpipelineid
+                                  LEFT OUTER JOIN person pe ON c.ownerid = pe.personid
 
                                   $join
                                   WHERE $where
@@ -1553,10 +1556,9 @@ class Shipment extends Page
             
             if (!sizeof($chkc)) $this->_error('No such container');
 
-            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID');
+            $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID', 'OWNERID' => 'OWNERID');
             foreach ($fields as $k => $f) {
                 if ($this->has_arg($k)) {
-                    error_log("PROCESSING patch update " . $k);
                     $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($this->arg($k), $this->arg('cid')));
                     $this->_output(array($k => $this->arg($k)));
                 }

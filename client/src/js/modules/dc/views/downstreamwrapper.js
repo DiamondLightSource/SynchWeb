@@ -9,6 +9,7 @@ define(['backbone', 'marionette',
         LogView, utils) {
     
     return Marionette.LayoutView.extend({
+        className: 'downstream-item',
         links: true,
         mapLink: true,
         template: _.template('<div class="dpmessages"></div><% if(PARENT) { %><div class="r dplinks"></div><h2><%-PARENT%></h2><% } else { %><div class="ra dplinks"></div><% } %><div class="dpwrapper"></div>'),
@@ -73,8 +74,8 @@ define(['backbone', 'marionette',
             if (this.getOption('links')) {
                 var links = [
                     '<a class="view button" href="/dc/map/id/'+this.getOption('DCID')+'/aid/'+this.model.get('AID')+'"><i class="fa fa-search"></i> Map / Model Viewer</a>',
-                    '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-download"></i> Archive</a>',
-                    '<a class="pattach button" href="#"><i class="fa fa-files-o"></i> Files</a>'
+                    '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-archive"></i> Archive</a>',
+                    '<a class="pattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>'
                 ]
 
                 if (!this.getOption('mapLink')) {
