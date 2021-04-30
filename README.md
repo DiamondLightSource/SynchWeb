@@ -39,6 +39,7 @@ This file should be copied to create a client/src/js/config.json file and edited
 | site_link | URL to site home page |
 | site_image | PNG image of site logo to display in header|
 | csv_profile | The csv profile for importing shipments, currently only imca, see src/js/csv/imca.js |
+| enable_exp_plan | Whether to enable editing of experimental plan fields when creating samples |
 
 ### Build front end
 See package.json for the full list of commands that can be run.
