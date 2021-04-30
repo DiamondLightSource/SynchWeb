@@ -96,6 +96,7 @@ define(['backbone', 'marionette',
                         PARENT: this.model.get('PARENTAUTOPROCPROGRAM')
                     }
                 },
+                DCID: this.getOption('DCID'),
             }
         },
 
