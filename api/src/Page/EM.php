@@ -87,13 +87,14 @@ class EM extends Page
     function _relion_start()
     {
         global $visit_directory,
-               $zocalo_mx_reprocess_queue;
+               $zocalo_mx_reprocess_queue; // Find $zocalo_relion_start_queue...
+
+//        $this->db->set_debug(True);
+//$message = 'Relion is already processing this session! Processing started at ' . date('H:i:s \o\n jS F Y', $session['processingTimestamp']) . '.';
 
         $this->exitIfElectronMicroscopesAreNotConfigured();
         $session = $this->determineSession($this->arg('session'));
-
-        // TODO Remove comment to prevent processing after session has ended following initial test
-//        $this->exitIfSessionIsNotActive($session);
+//        $this->exitIfSessionIsNotActive($session); // TODO Temporary override to make session available for testing after session has ended (JPH)
         $this->exitIfUnfinishedProcessingJobsExist($session);
 
         $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
@@ -196,6 +197,8 @@ class EM extends Page
             $workflow_parameters['import_images'] = "{$session_path}/raw/Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
         }
 
+        // TODO Remove projectGainReferenceFileName from form? File name gain.mrc specified in standard operating procedure. (JPH)
+
         if ($valid_parameters['projectGainReferenceFile'] && $valid_parameters['projectGainReferenceFileName']) {
             $workflow_parameters['motioncor_gainreference'] = "{$session_path}/processing/{$valid_parameters['projectGainReferenceFileName']}";
         }
@@ -237,6 +240,8 @@ class EM extends Page
             $dataCollectionId = $this->addDataCollectionForEM($session, "{$session_path}/raw/", $valid_parameters['projectMovieFileNameExtension'], "Frames/*.{$valid_parameters['projectMovieFileNameExtension']}");
         }
 
+        // TODO PREVENT ADDITION OF PROCESSING JOB WHERE NONE PROCESSING...
+
         $processingJobId = null;
 
         if ($dataCollectionId) {
@@ -253,11 +258,11 @@ class EM extends Page
             )
         );
 
-        // TODO Remove comment, enqueue disabled for initial test
+        // TODO Enable write to queue
 
-        // $this->enqueue($zocalo_mx_reprocess_queue, $message);
+         $this->enqueue($zocalo_mx_reprocess_queue, $message);
 
-        // TODO Remove message, only returned to review initial test
+        // TODO Remove temporary output of message and workflow_parameters
 
         $output = array(
             'timestamp' => gmdate('c', time()),
@@ -267,27 +272,414 @@ class EM extends Page
         $this->_output($output);
     }
 
+    private function exitIfElectronMicroscopesAreNotConfigured()
+    {
+        // Check electron microscopes are listed in global variables - see $bl_types in config.php.
+        $bls = $this->_get_beamlines_from_type('em');
+
+        if (empty($bls)) {
+            $message = 'Electron microscopes are not specified';
+
+            error_log($message);
+            $this->_error($message, 500);
+        }
+    }
+
+    private function determineSession($session_reference)
+    {
+        if (!$this->has_arg('session')) {
+            $message = 'Session not specified!';
+
+            error_log($message);
+            $this->_error($message, 400);
+        }
+
+        // Lookup session in ISPyB
+        $session = $this->db->pq("
+            SELECT b.SESSIONID,
+                b.beamlinename AS beamlinename,
+                YEAR(b.startDate) AS year,
+                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS session,
+                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS visit,
+                b.startdate AS startdate,
+                b.enddate AS enddate,
+                CURRENT_TIMESTAMP BETWEEN b.startdate AND b.enddate AS active
+            FROM proposal AS p
+                JOIN blsession AS b ON p.proposalid = b.proposalid
+            WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) LIKE :1", array($session_reference));
+
+        if (!sizeof($session)) $this->_error('Session not found');
+
+        $session = $session[0];
+
+        // Temporary fudge until Zocalo and Relion use ISPyB
+
+//        list($processingIsActive, $processingTimestamp) = $this->determineProcessingStatus($session);
+//
+//        $session['processingIsActive'] = $processingIsActive;
+//        $session['processingTimestamp'] = $processingTimestamp;
+
+//        list($processingIsActive, $processingTimestamp) = $this->determineProcessingStatus($session);
+
+        $session['processingIsActive'] = false;
+        $session['processingTimestamp'] = null;
+
+        return $session;
+    }
+
+    // TODO Review Scipion code following Relion implementation e.g. changes to Stomp queue, globals from config.php, etc. (JPH)
+
+    private function determineProcessingStatus($session)
+    {
+//        // Temporary fudge until Zocalo and Relion can update ISPyB
+//        // RUNNING_RELION_IT file indicates Relion is processing
+//
+//        global $visit_directory;
+//
+//        $filename = $this->substituteSessionValuesInPath($session, $visit_directory . '/.ispyb/processed/RUNNING_RELION_IT');
+//
+//        $isActive = false;
+//        $timestamp = null;
+//
+//        clearstatcache();
+//
+//        try {
+//            $isActive = file_exists($filename);
+//
+//            if ($isActive) {
+//                $stat = stat($filename);
+//
+//                if ($stat) $timestamp = $stat['mtime'];
+//            }
+//        } catch (Exception $e) {
+//            error_log("Failed to check status file: {$filename}");
+//            $this->_error('Failed to check status file.', 500);
+//        }
+//
+//        return array($isActive, $timestamp);
+
+        return array(false, null);
+    }
+
+    private function substituteSessionValuesInPath($session, $path)
+    {
+        // Substitute session values in file or directory path i.e. BEAMLINENAME, YEAR, and SESSION / VISIT.
+
+        foreach ($session as $key => $value) {
+            $path = str_replace("<%={$key}%>", $value, $path);
+        }
+
+        return $path;
+    }
+
+    public function _relion_jobs()
+    {
+        // Finds queued and running ProcessingJobs associated with session
+        // Returns null otherwise
+
+        $session = $this->determineSession($this->arg('session'));
+
+        $processingJobs = null;
+
+        if ($session['SESSIONID']) {
+            $processingJobs = $this->db->pq("
+                SELECT PJ.processingJobId,
+                       PJ.dataCollectionId,
+                       PJ.recordTimestamp,
+                       APP.processingStatus,
+                       APP.processingStartTime,
+                       APP.processingEndTime,
+                       CASE
+                           WHEN (APP.processingJobId IS NULL) THEN 'submitted'
+                           WHEN (APP.processingStartTime IS NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
+                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'running'
+                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
+                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
+                           END AS processingStatusDescription
+                FROM ProcessingJob PJ
+                         JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
+                         JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+                         LEFT JOIN AutoProcProgram APP ON DC.dataCollectionId = APP.dataCollectionId
+                WHERE BLS.sessionId = :1", array($session['SESSIONID']));
+        }
+
+        $this->_output(array_values($processingJobs));
+    }
+
+    private function exitIfUnfinishedProcessingJobsExist($session)
+    {
+        // Finds queued and running ProcessingJobs associated with session
+        // Returns null otherwise
+
+        if ($session['SESSIONID']) {
+            $result = $this->db->pq("
+                SELECT APP.autoProcProgramId,
+                       APP.processingStartTime,
+                       APP.processingJobId,
+                       CASE
+                           WHEN (processingStartTime IS NULL AND processingEndTime IS NULL AND processingStatus IS NULL) THEN 'queued'
+                           WHEN (processingStartTime IS NOT NULL AND processingEndTime IS NULL AND processingStatus IS NULL) THEN 'running'
+                           END AS processingStatusDescription
+                FROM AutoProcProgram APP
+                         JOIN ProcessingJob PJ ON PJ.processingJobId = APP.processingJobId
+                         JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
+                         JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+                WHERE processingStatus IS NULL
+                  AND BLS.sessionId = :1", array($session['SESSIONID']));
+
+            if (count($result)) {
+                $message = 'Relion processing job already exists for this session!';
+
+                error_log($message);
+                $this->_error($message, 400);
+
+                return $result;
+            }
+        }
+
+        return null;
+    }
+
+    private function updateRequiredParameters(array &$validation_rules, array $required_parameters)
+    {
+        // Iterate over validation rules
+        foreach ($validation_rules as $parameter => $validations) {
+
+            // Determine whether parameter is in array of required parameters
+            if (in_array($parameter, $required_parameters)) {
+
+                // Update validation rule
+                $validation_rules[$parameter]['isRequired'] = true;
+            }
+        }
+    }
+
+    private function validateParameters(array $validation_rules)
+    {
+        $valid_parameters = array();
+        $invalid_parameters = array();
+
+        foreach ($validation_rules as $parameter => $validations) {
+            // Determine whether request includes parameter
+            if ($this->has_arg($parameter)) {
+                if ($this->arg($parameter) === '') {
+                    array_push($invalid_parameters, "{$parameter} is not specified");
+                    continue;
+                }
+
+                // Check parameter is more than minimum value
+                if (array_key_exists('minValue', $validations)) {
+                    if ($this->arg($parameter) < $validations['minValue']) {
+                        array_push($invalid_parameters, "{$parameter} is too small");
+                        continue;
+                    }
+                }
+
+                // Check parameter is less than maximum value
+                if (array_key_exists('maxValue', $validations)) {
+                    if ($this->arg($parameter) > $validations['maxValue']) {
+                        array_push($invalid_parameters, "{$parameter} is too large");
+                        continue;
+                    }
+                }
+
+                // Check parameter is in array of expected inputs
+                if (array_key_exists('inArray', $validations)) {
+                    if (is_array($validations['inArray'])) {
+                        if (!in_array($this->arg($parameter), $validations['inArray'])) {
+                            array_push($invalid_parameters, "{$parameter} is not known");
+                            continue;
+                        }
+                    }
+                }
+
+                // Parameter has passed validation checks so add to list of valid parameters.
+                $valid_parameters[$parameter] = $this->arg($parameter);
+
+                // Set type if outputType is specified, otherwise default to string. Note json_encode quotes value of type string.
+
+                $outputType = array_key_exists('outputType', $validations) ? $validations['outputType'] : 'string';
+
+                settype($valid_parameters[$parameter], $outputType);
+            } else {
+                // Check whether a missing parameter is required.
+                if (array_key_exists('isRequired', $validations)) {
+                    if ($validations['isRequired']) {
+                        array_push($invalid_parameters, "{$parameter} is required");
+                    }
+                }
+            }
+        }
+
+        return array($invalid_parameters, $valid_parameters);
+    }
+
+    private function findExistingDataCollection($session)
+    {
+        // Returns dataCollectionId of first DataCollection associated with session
+        // Returns null otherwise
+
+        if ($session['SESSIONID']) {
+            $result = $this->db->pq("
+            SELECT dataCollectionId
+            FROM DataCollection
+            WHERE SESSIONID = :1
+            LIMIT 1", array($session['SESSIONID']));
+
+            if (count($result)) {
+                return $result[0]['DATACOLLECTIONID'];
+            }
+        }
+
+        return null;
+    }
+
+    private function addDataCollectionForEM($session, $imageDirectory, $imageSuffix, $fileTemplate)
+    {
+        $dataCollectionId = null;
+
+        try {
+            $this->db->start_transaction();
+
+            // Add DataCollectionGroup
+
+            $this->db->pq("
+                INSERT INTO DataCollectionGroup (sessionId, comments, experimentType)
+                VALUES (:1, :2, :3) RETURNING dataCollectionGroupId INTO :id",
+                array($session['SESSIONID'], 'Created by SynchWeb', 'EM')
+            );
+
+            $dataCollectionGroupId = $this->db->id();
+
+            // Add DataCollection
+
+            $this->db->pq("
+                    INSERT INTO DataCollection (sessionId, dataCollectionGroupId, dataCollectionNumber, startTime, endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
+                    VALUES (:1, :2, :3, NOW(), NOW(), :4, :5, :6, :7, :8) RETURNING dataCollectionId INTO :id",
+                array($session['SESSIONID'], $dataCollectionGroupId, 1, 'DataCollection Simulated', $imageDirectory, $imageSuffix, $fileTemplate, 'Created by SynchWeb')
+            );
+
+            $dataCollectionId = $this->db->id();
+
+            $this->db->end_transaction();
+        } catch (Exception $e) {
+            error_log("Failed to add DataCollection to database.");
+            $this->_error("Failed to add DataCollection to database.", 500);
+        }
+
+        return $dataCollectionId;
+    }
+
+    private function addProcessingJobForRelion($dataCollectionId, $workflowParameters)
+    {
+        $processingJobId = null;
+
+        try {
+            $this->db->start_transaction();
+
+            // Add ProcessingJob
+
+            $this->db->pq("
+                INSERT INTO ProcessingJob (dataCollectionId, displayName, comments, recipe, automatic)
+                VALUES (:1, :2, :3, :4, :5) RETURNING processingJobId INTO :id",
+                array($dataCollectionId, 'RELION', 'Submitted via SynchWeb', 'relion', 0)
+            );
+
+            $processingJobId = $this->db->id();
+
+            // Add ProcessingJobParameters
+
+            foreach ($workflowParameters as $key => $value) {
+                $this->db->pq("
+                    INSERT INTO ProcessingJobParameter (processingJobId, parameterKey, parameterValue)
+                    VALUES (:1, :2, :3)",
+                    array($processingJobId, $key, (is_bool($value) ? var_export($value, true) : $value)) // TODO REMOVE QUOTES FROM STRINGS
+                );
+            }
+
+//            array($processingJobId, $key, var_export($value, true)) // TODO REMOVE QUOTES FROM STRINGS
+
+            $this->db->end_transaction();
+        } catch (Exception $e) {
+            error_log("Failed to add ProcessingJob to database.");
+            $this->_error("Failed to add ProcessingJob to database.", 500);
+        }
+
+        return $processingJobId;
+    }
+
     function _relion_stop()
     {
+        global $zocalo_mx_reprocess_queue;
+
+//        $session = $this->determineSession($this->arg('session'));
+//        $this->exitIfSessionIsNotActive($session);
+
+        // Finds queued and running ProcessingJobs associated with session
+        // Returns null otherwise
+
+        if ($this->arg('processingJobId')) {
+            $result = $this->db->pq("
+                SELECT processingJobId, dataCollectionId
+                FROM ProcessingJob
+                WHERE processingJobId = :1", array($this->arg('processingJobId')));
+
+            if (count($result)) {
+                $message = array(
+                    'parameters' => array(
+                        'processing_id_to_stop' => $result[0]['PROCESSINGJOBID'],
+                        'ispyb_process' => $result[0]['DATACOLLECTIONID']
+                    ),
+                    'recipes' => ['relion-stop']
+                );
+
+                // TODO Enable write to queue
+
+                 $this->enqueue($zocalo_mx_reprocess_queue, $message);
+            } else {
+                $message = 'Processing job not found!';
+
+                error_log($message);
+                $this->_error($message, 400);
+            }
+        }
+
         $output = array(
             'timestamp' => gmdate('c', time()),
-            'function' => 'relion_stop'
+            'message' => $message
         );
 
         $this->_output($output);
+    }
+
+    private function exitIfSessionIsNotActive($session)
+    {
+        // Do not permit processing before session has started or after session has ended
+
+        if (!$session['ACTIVE']) {
+            $message = 'This session ended at ' . date('H:i:s \o\n jS F Y', strtotime($session['ENDDATE'])) . '.';
+
+            error_log($message);
+            $this->_error($message, 400);
+        }
     }
 
     function _relion_status()
     {
+        global $visit_directory;
+
+        $this->exitIfElectronMicroscopesAreNotConfigured();
+        $session = $this->determineSession($this->arg('session'));
+//        $this->exitIfSessionIsNotActive($session); // TODO RESTORE FOR PRODUCTION
+
         $output = array(
             'timestamp' => gmdate('c', time()),
-            'function' => 'relion_status'
+            'processingIsActive' => false, // $session['processingIsActive'],
+            'processingTimestamp' => ($session['processingTimestamp'] ? gmdate('c', $session['processingTimestamp']) : null)
         );
 
         $this->_output($output);
     }
-
-    // TODO Review Scipion code following Relion implementation e.g. changes to Stomp queue, globals from config.php, etc. (JPH)
 
     function _scipion_start()
     {
@@ -423,6 +815,27 @@ class EM extends Page
         $this->_output($output);
     }
 
+    private function enqueue($zocalo_queue, $zocalo_message)
+    {
+        global $zocalo_server,
+               $zocalo_username,
+               $zocalo_password;
+
+        if (empty($zocalo_server) || empty($zocalo_queue)) {
+            $message = 'Zocalo server not specified.';
+
+            error_log($message);
+            $this->_error($message, 500);
+        }
+
+        try {
+            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
+            $queue->send($zocalo_queue, $zocalo_message, true);
+        } catch (Exception $e) {
+            $this->_error($e->getMessage(), 500);
+        }
+    }
+
     function _ap_status()
     {
         if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
@@ -491,7 +904,6 @@ class EM extends Page
         $this->_output(array_values($statuses));
     }
 
-
     function _mc_result()
     {
         $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
@@ -517,7 +929,6 @@ class EM extends Page
         $this->_output($row);
     }
 
-
     function _mc_image()
     {
         $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
@@ -541,6 +952,22 @@ class EM extends Page
         }
     }
 
+    function _send_image($file)
+    {
+        $this->_browser_cache();
+        $size = filesize($file);
+        $this->app->response->headers->set("Content-length", $size);
+        $this->app->contentType('image/' . pathinfo($file, PATHINFO_EXTENSION));
+        readfile($file);
+    }
+
+    function _browser_cache()
+    {
+        $expires = 60 * 60 * 24 * 14;
+        $this->app->response->headers->set('Pragma', 'public');
+        $this->app->response->headers->set('Cache-Control', 'maxage=' . $expires);
+        $this->app->response->headers->set('Expires', gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
+    }
 
     function _mc_fft()
     {
@@ -567,7 +994,6 @@ class EM extends Page
         }
     }
 
-
     function _mc_plot()
     {
         $im = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
@@ -587,7 +1013,6 @@ class EM extends Page
 
         $this->_output($data);
     }
-
 
     function _mc_drift_histogram()
     {
@@ -671,7 +1096,6 @@ class EM extends Page
         $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
     }
 
-
     function _ctf_result()
     {
         $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
@@ -695,7 +1119,6 @@ class EM extends Page
 
         $this->_output($row);
     }
-
 
     function _ctf_image()
     {
@@ -725,7 +1148,6 @@ class EM extends Page
     {
 
     }
-
 
     function _ctf_histogram()
     {
@@ -854,358 +1276,5 @@ class EM extends Page
         }
 
         $this->_output(array('histograms' => $data));
-    }
-
-
-    function _browser_cache()
-    {
-        $expires = 60 * 60 * 24 * 14;
-        $this->app->response->headers->set('Pragma', 'public');
-        $this->app->response->headers->set('Cache-Control', 'maxage=' . $expires);
-        $this->app->response->headers->set('Expires', gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
-    }
-
-
-    function _send_image($file)
-    {
-        $this->_browser_cache();
-        $size = filesize($file);
-        $this->app->response->headers->set("Content-length", $size);
-        $this->app->contentType('image/' . pathinfo($file, PATHINFO_EXTENSION));
-        readfile($file);
-    }
-
-    private function exitIfElectronMicroscopesAreNotConfigured()
-    {
-        // Check electron microscopes are listed in global variables - see $bl_types in config.php.
-        $bls = $this->_get_beamlines_from_type('em');
-
-        if (empty($bls)) {
-            $message = 'Electron microscopes are not specified';
-
-            error_log($message);
-            $this->_error($message, 500);
-        }
-    }
-
-    private function determineSession($session_reference)
-    {
-        if (!$this->has_arg('session')) {
-            $message = 'Session not specified!';
-
-            error_log($message);
-            $this->_error($message, 400);
-        }
-
-        // Lookup session in ISPyB
-        $session = $this->db->pq("
-            SELECT b.beamlinename AS beamlinename,
-                YEAR(b.startDate) AS year,
-                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS session,
-                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS visit,
-                b.startdate AS startdate,
-                b.enddate AS enddate,
-                CURRENT_TIMESTAMP BETWEEN b.startdate AND b.enddate AS active
-            FROM proposal AS p
-                JOIN blsession AS b ON p.proposalid = b.proposalid
-            WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) LIKE :1", array($session_reference));
-
-        if (!sizeof($session)) $this->_error('Session not found');
-
-        $session = $session[0];
-
-        // Temporary fudge until Zocalo and Relion use ISPyB
-
-        list($processingIsActive, $processingTimestamp) = $this->determineProcessingStatus($session);
-
-        $session['processingIsActive'] = $processingIsActive;
-        $session['processingTimestamp'] = $processingTimestamp;
-
-        return $session;
-    }
-
-    private function checkSessionIsActive($session)
-    {
-        // Do not permit processing after session has ended
-        // TODO Do not permit processing before session has started. (JPH)
-        if (!$session['ACTIVE']) {
-            $message = 'This session ended at ' . date('H:i:s \o\n jS F Y', strtotime($session['ENDDATE'])) . '.';
-
-            error_log($message);
-            $this->_error($message, 400);
-        }
-    }
-
-    private function validateParameters(array $validation_rules)
-    {
-        $valid_parameters = array();
-        $invalid_parameters = array();
-
-        foreach ($validation_rules as $parameter => $validations) {
-            // Determine whether request includes parameter
-            if ($this->has_arg($parameter)) {
-                if ($this->arg($parameter) === '') {
-                    array_push($invalid_parameters, "{$parameter} is not specified");
-                    continue;
-                }
-
-                // Check parameter is more than minimum value
-                if (array_key_exists('minValue', $validations)) {
-                    if ($this->arg($parameter) < $validations['minValue']) {
-                        array_push($invalid_parameters, "{$parameter} is too small");
-                        continue;
-                    }
-                }
-
-                // Check parameter is less than maximum value
-                if (array_key_exists('maxValue', $validations)) {
-                    if ($this->arg($parameter) > $validations['maxValue']) {
-                        array_push($invalid_parameters, "{$parameter} is too large");
-                        continue;
-                    }
-                }
-
-                // Check parameter is in array of expected inputs
-                if (array_key_exists('inArray', $validations)) {
-                    if (is_array($validations['inArray'])) {
-                        if (!in_array($this->arg($parameter), $validations['inArray'])) {
-                            array_push($invalid_parameters, "{$parameter} is not known");
-                            continue;
-                        }
-                    }
-                }
-
-                // Parameter has passed validation checks so add to list of valid parameters.
-                $valid_parameters[$parameter] = $this->arg($parameter);
-
-                // Set type if outputType is specified, otherwise default to string. Note json_encode quotes value of type string.
-
-                $outputType = array_key_exists('outputType', $validations) ? $validations['outputType'] : 'string';
-
-                settype($valid_parameters[$parameter], $outputType);
-            } else {
-                // Check whether a missing parameter is required.
-                if (array_key_exists('isRequired', $validations)) {
-                    if ($validations['isRequired']) {
-                        array_push($invalid_parameters, "{$parameter} is required");
-                    }
-                }
-            }
-        }
-
-        return array($invalid_parameters, $valid_parameters);
-    }
-
-    private function enqueue($zocalo_queue, $zocalo_message)
-    {
-        global $zocalo_server,
-               $zocalo_username,
-               $zocalo_password;
-
-        if (empty($zocalo_server) || empty($zocalo_queue)) {
-            $message = 'Zocalo server not specified.';
-
-            error_log($message);
-            $this->_error($message, 500);
-        }
-
-        try {
-            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_queue, $zocalo_message, true);
-        } catch (Exception $e) {
-            $this->_error($e->getMessage(), 500);
-        }
-    }
-
-    private function substituteSessionValuesInPath($session, $path)
-    {
-        // Substitute session values in file or directory path i.e. BEAMLINENAME, YEAR, and SESSION / VISIT.
-
-        foreach ($session as $key => $value) {
-            $path = str_replace("<%={$key}%>", $value, $path);
-        }
-
-        return $path;
-    }
-
-    private function updateRequiredParameters(array &$validation_rules, array $required_parameters)
-    {
-        // Iterate over validation rules
-        foreach ($validation_rules as $parameter => $validations) {
-
-            // Determine whether parameter is in array of required parameters
-            if (in_array($parameter, $required_parameters)) {
-
-                // Update validation rule
-                $validation_rules[$parameter]['isRequired'] = true;
-            }
-        }
-    }
-
-    private function determineProcessingStatus($session)
-    {
-        // Temporary
-
-        return array(false, null);
-    }
-
-    public function _relion_jobs()
-    {
-        // Finds queued and running ProcessingJobs associated with session
-        // Returns null otherwise
-
-        $session = $this->determineSession($this->arg('session'));
-
-        $processingJobs = null;
-
-        if ($session['SESSIONID']) {
-            $processingJobs = $this->db->pq("
-                SELECT PJ.processingJobId,
-                       PJ.dataCollectionId,
-                       PJ.recordTimestamp,
-                       APP.processingStatus,
-                       APP.processingStartTime,
-                       APP.processingEndTime,
-                       CASE
-                           WHEN (APP.processingJobId IS NULL) THEN 'submitted'
-                           WHEN (APP.processingStartTime IS NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
-                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'running'
-                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
-                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
-                           END AS processingStatusDescription
-                FROM ProcessingJob PJ
-                         JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-                         JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-                         LEFT JOIN AutoProcProgram APP ON DC.dataCollectionId = APP.dataCollectionId
-                WHERE BLS.sessionId = :1", array($session['SESSIONID']));
-        }
-
-        $this->_output(array_values($processingJobs));
-    }
-
-    private function exitIfUnfinishedProcessingJobsExist($session)
-    {
-        // Finds queued and running ProcessingJobs associated with session
-        // Returns null otherwise
-
-        if ($session['SESSIONID']) {
-            $result = $this->db->pq("
-                SELECT APP.autoProcProgramId,
-                       APP.processingStartTime,
-                       APP.processingJobId,
-                       CASE
-                           WHEN (processingStartTime IS NULL AND processingEndTime IS NULL AND processingStatus IS NULL) THEN 'queued'
-                           WHEN (processingStartTime IS NOT NULL AND processingEndTime IS NULL AND processingStatus IS NULL) THEN 'running'
-                           END AS processingStatusDescription
-                FROM AutoProcProgram APP
-                         JOIN ProcessingJob PJ ON PJ.processingJobId = APP.processingJobId
-                         JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-                         JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-                WHERE processingStatus IS NULL
-                  AND BLS.sessionId = :1", array($session['SESSIONID']));
-
-            if (count($result)) {
-                $message = 'Relion processing job already exists for this session!';
-
-                error_log($message);
-                $this->_error($message, 400);
-
-                return $result;
-            }
-        }
-
-        return null;
-    }
-
-    private function findExistingDataCollection($session)
-    {
-        // Returns dataCollectionId of first DataCollection associated with session
-        // Returns null otherwise
-
-        if ($session['SESSIONID']) {
-            $result = $this->db->pq("
-            SELECT dataCollectionId
-            FROM DataCollection
-            WHERE SESSIONID = :1
-            LIMIT 1", array($session['SESSIONID']));
-
-            if (count($result)) {
-                return $result[0]['DATACOLLECTIONID'];
-            }
-        }
-
-        return null;
-    }
-
-    private function addDataCollectionForEM($session, $imageDirectory, $imageSuffix, $fileTemplate)
-    {
-        $dataCollectionId = null;
-
-        try {
-            $this->db->start_transaction();
-
-            // Add DataCollectionGroup
-
-            $this->db->pq("
-                INSERT INTO DataCollectionGroup (sessionId, comments, experimentType)
-                VALUES (:1, :2, :3) RETURNING dataCollectionGroupId INTO :id",
-                array($session['SESSIONID'], 'Created by SynchWeb', 'EM')
-            );
-
-            $dataCollectionGroupId = $this->db->id();
-
-            // Add DataCollection
-
-            $this->db->pq("
-                    INSERT INTO DataCollection (sessionId, dataCollectionGroupId, dataCollectionNumber, startTime, endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
-                    VALUES (:1, :2, :3, NOW(), NOW(), :4, :5, :6, :7, :8) RETURNING dataCollectionId INTO :id",
-                array($session['SESSIONID'], $dataCollectionGroupId, 1, 'DataCollection Simulated', $imageDirectory, $imageSuffix, $fileTemplate, 'Created by SynchWeb')
-            );
-
-            $dataCollectionId = $this->db->id();
-
-            $this->db->end_transaction();
-        } catch (Exception $e) {
-            error_log("Failed to add DataCollection to database.");
-            $this->_error("Failed to add DataCollection to database.", 500);
-        }
-
-        return $dataCollectionId;
-    }
-
-    private function addProcessingJobForRelion($dataCollectionId, $workflowParameters)
-    {
-        $processingJobId = null;
-
-        try {
-            $this->db->start_transaction();
-
-            // Add ProcessingJob
-
-            $this->db->pq("
-                INSERT INTO ProcessingJob (dataCollectionId, displayName, comments, recipe, automatic)
-                VALUES (:1, :2, :3, :4, :5) RETURNING processingJobId INTO :id",
-                array($dataCollectionId, 'RELION', 'Submitted via SynchWeb', 'relion', 0)
-            );
-
-            $processingJobId = $this->db->id();
-
-            // Add ProcessingJobParameters
-
-            foreach ($workflowParameters as $key => $value) {
-                $this->db->pq("
-                    INSERT INTO ProcessingJobParameter (processingJobId, parameterKey, parameterValue)
-                    VALUES (:1, :2, :3)",
-                    array($processingJobId, $key, (is_bool($value) ? var_export($value, true) : $value))
-                );
-            }
-
-            $this->db->end_transaction();
-        } catch (Exception $e) {
-            error_log("Failed to add ProcessingJob to database.");
-            $this->_error("Failed to add ProcessingJob to database.", 500);
-        }
-
-        return $processingJobId;
     }
 }

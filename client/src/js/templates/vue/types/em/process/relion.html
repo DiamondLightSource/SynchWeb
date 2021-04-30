@@ -10,6 +10,20 @@
 
     <form novalidate v-bind:class="{loading: showSpinner}">
         <div class="form">
+<!--            <div class="log" style="margin-top: 20px" v-if="processingJobs.length">-->
+<!--                <ul>-->
+<!--                    <li v-for="processingJob in processingJobs">-->
+<!--                        {{ processingJob.PROCESSINGJOBID }} : {{ processingJob.DATACOLLECTIONID }} : {{ processingJob.PROCESSINGSTATUSDESCRIPTION }}-->
+
+<!--                        <button type="submit" class="submit"-->
+<!--                                v-on:click.prevent="onStop"-->
+<!--                                v-if="isJobStarted && !isJobStopped">-->
+<!--                            Stop Processing-->
+<!--                        </button>-->
+<!--                    </li>-->
+<!--                </ul>-->
+<!--            </div>-->
+
             <ul>
                 <li class="head">Project</li>
 
@@ -248,38 +262,14 @@
                 </li>
             </ul>
 
-            <button type="submit" class="button submit"
+            <button type="submit" class="submit"
                     v-on:click.prevent="onStart"
                     v-if="!isJobStarted && !isJobStopped"
                     v-bind:disabled="errors.any()">
                 Start Processing
             </button>
 
-            <button type="submit" class="button submit"
-                    v-on:click.prevent="onStop"
-                    v-if="isJobStarted && !isJobStopped">
-                Stop Processing
-            </button>
 
-            <button type="submit" class="button submit"
-                    v-on:click.prevent="onStart"
-                    v-if="isJobStarted && isJobStopped">
-                Resume
-            </button>
-
-            <button type="submit" class="button submit"
-                    v-on:click.prevent="onReset"
-                    v-if="isJobStarted && isJobStopped">
-                Reset
-            </button>
-
-            <div class="log" style="margin-top: 20px" v-if="isLogVisible && sessionEvents.length">
-                <ul>
-                    <li v-for="sessionEvent in sessionEvents">
-                        {{ sessionEvent.timestamp_str }} : {{ sessionEvent.message }}
-                    </li>
-                </ul>
-            </div>
         </div>
     </form>
 </section>
