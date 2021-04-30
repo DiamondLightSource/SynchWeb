@@ -13,6 +13,7 @@ define(['marionette',
                 
         showThumbnail: function() {
             this.ui.thumb.attr('src', this.thumb.src)
+            this.ui.image.removeClass('pending').addClass('loaded')
         },
 
         onDomRefresh: function() {
@@ -20,7 +21,7 @@ define(['marionette',
             this.thumb.onload = this.showThumbnail.bind(this)
             this.thumb.load(app.apiurl+'/processing/downstream/images/' + this.model.get('AID'))
                 
-            if (!this.model.get('IMAGE')) this.ui.image.height(120)
+            if (!this.model.get('IMAGE')) this.ui.image.height(170)
         }
     })
 })

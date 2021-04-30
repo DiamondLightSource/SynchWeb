@@ -712,7 +712,7 @@ ol.rounded {
             float: left;
             margin: 0.5em;
 
-            &:before {
+            &.pending:before {
                 color: #ccc;
                 position: absolute;
                 top: 40%;
@@ -720,6 +720,11 @@ ol.rounded {
                 transform: translate(-50%);
                 font-size: 20px;
                 content: 'No Image';
+            }
+
+            &.loaded {
+                border: 1px solid #ccc;
+                background: #fff;
             }
 
             @media (max-width: $breakpoint-vsmall) {
