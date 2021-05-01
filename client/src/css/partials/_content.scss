@@ -679,6 +679,19 @@ ol.rounded {
             }
         }
 
+        .plot_bigep {
+            margin: 0 1%;
+            width: 30%;
+            margin-left: 190px;
+            height: 170px;
+
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+
         .bigep-settings {
             padding: 0.5%;
 

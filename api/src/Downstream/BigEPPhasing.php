@@ -52,6 +52,54 @@ class BigEPPhasing extends DownstreamPlugin {
             }
         }
 
+        # Read SHELXC logs
+        $shx_log = $this->_get_attachments(null, null, "shelxc.log");
+        if (sizeof($shx_log)) {
+            $shx_log = $shx_log[0]['FILE'];
+            $graph_patterns = array(
+                'CHISQ' => array('Chi-sq', 2),
+                'ISIGI' => array('<I/sig>', 2),
+                'DSIG' => array('<d"/sig>', 2),
+                'CC12' => array('CC(1/2)', 2),
+                'RESO' => array('Resl.', 3),
+            );
+
+            
+            if (file_exists($shx_log)) {
+                $lst = explode("\n", file_get_contents($shx_log));
+                $graphs = array();
+                foreach ($lst as $l) {
+                    foreach ($graph_patterns as $k => $gr) {
+                        if (strpos($l, $gr[0]) == 1) {
+                            $graphs[$k] = array_map(
+                                'floatval',
+                                array_slice(preg_split('/\s+/', $l), $gr[1])
+                            );
+                        }
+                    }
+                }
+            
+                $dat['SHELXC'] = array();
+                foreach (array_keys($graph_patterns) as $k) {
+                    if ($k != 'RESO' and array_key_exists($k, $graphs)) {
+                        $dat['SHELXC'][$k] = array();
+                    }
+                }
+                if (array_key_exists('RESO', $graphs)) {
+                    foreach ($graphs['RESO'] as $i => $r) {
+                        foreach (array_keys($dat['SHELXC']) as $k) {
+                            if (array_key_exists($i, $graphs[$k])) {
+                                array_push($dat['SHELXC'][$k], array(
+                                    1.0 / pow($r, 2),
+                                    $graphs[$k][$i],
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         $results = new DownstreamResult($this);
         $results->data = $dat;
 

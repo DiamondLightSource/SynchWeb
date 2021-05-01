@@ -103,6 +103,7 @@ define(['backbone', 'marionette',
         initialize: function(options) {
             this.collection = new DownStreams(
                 this.getOption('downstreams').where({ TYPE: this.model.get('TYPE') }), 
+                // legacy property for collection
                 { id: this.getOption('dcid') }
             )
         }
