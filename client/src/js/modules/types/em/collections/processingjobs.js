@@ -3,10 +3,12 @@ define(['backbone.paginator', 'modules/types/em/models/processingjob'], function
     return PageableCollection.extend(_.extend({}, {
         model: ProcessingJob,
         mode: 'server',
-        url: '/em/process/relion/jobs',
+        url: function() { return '/em/process/relion/jobs'+(this.state.session ? '/'+this.state.session : '') },
+
                 
         state: {
             pageSize: 15,
+            session: null,
         },      
 
         parseState: function(r, q, state, options) {
