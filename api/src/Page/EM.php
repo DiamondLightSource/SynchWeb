@@ -80,6 +80,7 @@ class EM extends Page
         array('/process/relion/session/:session', 'get', '_relion_status'),
         array('/process/relion/jobs/:session', 'get', '_relion_jobs'),
         array('/process/relion/job/:processingJobId', 'patch', '_relion_stop'),
+        array('/process/relion/job/parameters', 'get', '_relion_parameters'),
 
         array('/process/scipion/session/:session', 'post', '_scipion_start')
     );
@@ -376,34 +377,49 @@ class EM extends Page
     {
         // Finds queued and running ProcessingJobs associated with session
         // Returns null otherwise
-
         $session = $this->determineSession($this->arg('session'));
+
+        if (!$session['SESSIONID']) $this->_error('No session provided');
 
         $processingJobs = null;
 
-        if ($session['SESSIONID']) {
-            $processingJobs = $this->db->pq("
-                SELECT PJ.processingJobId,
-                       PJ.dataCollectionId,
-                       PJ.recordTimestamp,
-                       APP.processingStatus,
-                       APP.processingStartTime,
-                       APP.processingEndTime,
-                       CASE
-                           WHEN (APP.processingJobId IS NULL) THEN 'submitted'
-                           WHEN (APP.processingStartTime IS NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
-                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'running'
-                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
-                           WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
-                           END AS processingStatusDescription
-                FROM ProcessingJob PJ
-                         JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-                         JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-                         LEFT JOIN AutoProcProgram APP ON DC.dataCollectionId = APP.dataCollectionId
-                WHERE BLS.sessionId = :1", array($session['SESSIONID']));
-        }
+        $where = "WHERE BLS.sessionId = :1";
+        $args = array($session['SESSIONID']);
 
-        $this->_output(array_values($processingJobs));
+        $total = $this->db->pq("
+            SELECT count(PJ.processingJobId) as total
+            FROM ProcessingJob PJ
+            JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
+            JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+            $where", $args);
+        $total = intval($total[0]['TOTAL']);
+
+        $args = $this->handlePaginationArguments($args);
+
+        $processingJobs = $this->db->paginate("
+            SELECT PJ.processingJobId,
+                    PJ.dataCollectionId,
+                    PJ.recordTimestamp,
+                    APP.processingStatus,
+                    APP.processingStartTime,
+                    APP.processingEndTime,
+                    CASE
+                        WHEN (APP.processingJobId IS NULL) THEN 'submitted'
+                        WHEN (APP.processingStartTime IS NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
+                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NULL AND APP.processingStatus IS NULL) THEN 'running'
+                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
+                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
+                        END AS processingStatusDescription
+            FROM ProcessingJob PJ
+                        JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
+                        JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+                        LEFT JOIN AutoProcProgram APP ON PJ.processingJobId = APP.processingJobId
+            $where", $args);
+
+        $this->_output(array(
+            'total'=> $total,
+            'data'=> $processingJobs
+        ));
     }
 
     private function exitIfUnfinishedProcessingJobsExist($session)
@@ -1276,5 +1292,38 @@ class EM extends Page
         }
 
         $this->_output(array('histograms' => $data));
+    }
+
+    function _relion_parameters() {
+        if (!$this->has_arg('processingJobId')) $this->_error('Processing Job ID not provided');
+
+        $parameters = $this->db->pq("
+            SELECT pj.processingjobparameterid,
+                pj.processingjobid,
+                pj.parameterkey,
+                pj.parametervalue
+            FROM ProcessingJobParameter pj
+            WHERE pj.processingjobid = :1", array($this->arg('processingJobId')));
+
+        if (!sizeof($parameters)) $this->_error('No parameters for processing job');
+
+        $this->_output( array('data'=>$parameters, 'total'=>sizeof($parameters)));
+    }
+
+    function handlePaginationArguments($args) {
+        $perPage = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+        $start = 0;
+        $end = $perPage;
+            
+        if ($this->has_arg('page') && $this->arg('page') > 0) {
+            $page = $this->arg('page') - 1;
+            $start = $page*$perPage;
+            $end = $page*$perPage+$perPage;
+        }
+            
+        array_push($args, $start);
+        array_push($args, $end);
+
+        return $args;
     }
 }
