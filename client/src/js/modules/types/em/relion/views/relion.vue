@@ -12,19 +12,15 @@
 
     <form novalidate v-bind:class="{loading: showSpinner}">
         <div class="form">
-            <!-- <div class="log" style="margin-top: 20px" v-if="processingJobs.length">
-                <ul>
-                    <li v-for="processingJob in processingJobs" :key="processingJob.PROCESSINGJOBID">
-                        {{ processingJob.PROCESSINGJOBID }} : {{ processingJob.DATACOLLECTIONID }} : {{ processingJob.PROCESSINGSTATUSDESCRIPTION }}
 
-                        <button type="submit" class="submit"
-                                v-on:click.prevent="onStop"
-                                v-if="isJobStarted && !isJobStopped">
-                            Stop Processing
-                        </button>
-                    </li>
-                </ul>
-            </div> -->
+            <!--
+                Propose adding a link here to add new processing jobs
+                Then move all the form content into a new add-relion-processing page
+
+            <div class="tw-flex tw-justify-end">
+                <router-link :to="'/process/relion/job/'+session_str+'/add'" class="button submit"><i class="fa fa-plus"></i> Add Processing</router-link>
+            </div> 
+            -->
 
             <table-component
                 :headers="processingJobHeaders"
@@ -32,9 +28,9 @@
                 actions="Actions"
             >
                 <template slot="actions" slot-scope="{ row }">
-                    <!-- Action to stop processing. Could use v-if to conditonally render action if required -->
-                    <a v-if="row.PROCESSINGSTATUSDESCRIPTION=='Running'" class="button" href="" @click.prevent="onStopProcessing(row['PROCESSINGJOBID'])"><i class="fa fa-times"></i></a>
-                    <a v-else class="button" href="" @click.prevent="onShowProcessingJob(row['PROCESSINGJOBID'])"><i class="fa fa-info"></i></a>
+                    <!-- Action to stop processing. TODO - add confirmation dialog or panel below? -->
+                    <a v-if="row.PROCESSINGSTATUSDESCRIPTION=='running'" class="button" href="" @click.prevent="onStopProcessing(row['PROCESSINGJOBID'])"><i class="fa fa-times"></i></a>
+                    <a class="button" href="" @click.prevent="onShowProcessingJob(row['PROCESSINGJOBID'])"><i class="fa fa-info"></i></a>
                 </template>
             </table-component>
             <pagination-component
@@ -42,8 +38,10 @@
                 :totalRecords="totalProcessingJobs"
                 :initialPage="1"
                 :pageLinks="5"
-                :pageSizes="[5,10,20]"
+                :pageSizes="[15,25,50]"
             />
+
+            <job-parameters :id="processingJobId"/>
 
             <ul>
                 <li class="head">Project</li>
@@ -305,6 +303,7 @@ import SessionModel from 'models/visit'
 import Table from 'app/components/table.vue'
 import Pagination from 'app/components/pagination.vue'
 import EventBus from 'app/components/utils/event-bus.js'
+import JobParameters from 'modules/types/em/relion/components/job-parameters.vue'
 
 export default {
     name: 'relion-processing-form',
@@ -314,6 +313,7 @@ export default {
     components: {
         'table-component': Table,
         'pagination-component': Pagination,
+        'job-parameters': JobParameters,
     },
     data: function () {
         return {
@@ -364,8 +364,15 @@ export default {
             processingJobHeaders: [ 
                 {title: 'Processing Job ID', key: 'PROCESSINGJOBID'},
                 {title: 'DataCollection ID', key: 'DATACOLLECTIONID'},
-                {title: 'Processing Job Status', key: 'PROCESSINGSTATUSDESCRIPTION'},
-            ]
+                {title: 'Time stamp', key: 'RECORDTIMESTAMP'},
+                {title: 'Job Status', key: 'PROCESSINGSTATUSDESCRIPTION'},
+                {title: 'Start Time', key: 'PROCESSINGSTARTTIME'},
+                {title: 'End Time', key: 'PROCESSINGENDTIME'},
+            ],
+
+            processingJobId: null,
+
+            initialProcessingJobPageSize: 15,
         }
     },
     created: function () {
@@ -399,9 +406,8 @@ export default {
             // Probably don't need to wait until sessionModel is returned? 
             // If not can run this in parallel (outside this 'then' clause)
             let page = 1
-            let numRecords = 15
+            let numRecords = this.initialProcessingJobPageSize
             this.getProcessingJobs(page, numRecords)
-
         }, (error) => {
             this.setBreadcrumbs([{title: 'Error'}]);
             this.$store.commit('notifications/addNotification', {title: 'No such session', message: 'The specified session does not exist'})
@@ -411,26 +417,14 @@ export default {
     },
     methods: {
         getProcessingJobs: function(page, numRecords) {
-            let processingJobsCollection = new ProcessingJobs(null, { state: { currentPage: page, pageSize: numRecords }, queryParams: { session: this.session['VISIT']} })
+            let processingJobsCollection = new ProcessingJobs(null, { state: { currentPage: page, pageSize: numRecords, session: this.session['VISIT'] } })
 
             this.$store.dispatch('getCollection', processingJobsCollection).then( (collection) => {
-                console.log("Total Records: " + collection.totalRecords)
-                console.log("Processing Jobs: " + JSON.stringify(collection))
-                // Uncomment these to use the actual values
-                // this.totalProcessingJobs = collection.totalRecords
-                // this.processingJobs = processingJobsCollection.toJSON()
+                this.totalProcessingJobs = collection.state.totalRecords
+                this.processingJobs = processingJobsCollection.toJSON()
             }, () => {
                 this.$store.commit('notifications/addNotification', {title: 'Error', message: 'Could not retrieve processing jobs', level: 'error'})
             })
-
-            // TEST ONLY - replace with this.processingJobs above when ready
-            this.processingJobs.push({PROCESSINGJOBID: 1, DATACOLLECTIONID: 10, PROCESSINGSTATUSDESCRIPTION: 'Running'})
-            this.processingJobs.push({PROCESSINGJOBID: 2, DATACOLLECTIONID: 11, PROCESSINGSTATUSDESCRIPTION: 'Stopped'})
-            this.processingJobs.push({PROCESSINGJOBID: 3, DATACOLLECTIONID: 12, PROCESSINGSTATUSDESCRIPTION: 'Running'})
-            this.processingJobs.push({PROCESSINGJOBID: 4, DATACOLLECTIONID: 13, PROCESSINGSTATUSDESCRIPTION: 'Running'})
-            this.processingJobs.push({PROCESSINGJOBID: 5, DATACOLLECTIONID: 14, PROCESSINGSTATUSDESCRIPTION: 'Running'})
-
-            this.totalRecords = this.processingJobs.length
         },
         setBreadcrumbs: function(breadcrumbs) {
             if (breadcrumbs) EventBus.$emit('bcChange', breadcrumbs)
@@ -632,20 +626,20 @@ export default {
             });
         },
 
-        onStop: function () {
+        onStop: function (id) {
             let self = this;
 
             Backbone.ajax({
                 type: 'PATCH',
-                url: app.apiurl + '/em/process/relion/session/' + this.session['VISIT'],
+                url: app.apiurl + '/em/process/relion/job/' + id,
                 success: function (xhr) {
                     self.isJobStopped = true;
 
                     if ('timestamp' in xhr) {
-                        self.sessionEvents.unshift({
-                            timestamp_str: formatDate.default(xhr.timestamp, 'HH:mm:ss'),
-                            message: 'Stop processing.'
-                        });
+                        // self.sessionEvents.unshift({
+                        //     timestamp_str: formatDate.default(xhr.timestamp, 'HH:mm:ss'),
+                        //     message: 'Stop processing.'
+                        // });
                     }
                 },
                 error: function (model, response, options) {
@@ -701,20 +695,21 @@ export default {
 
         onStopProcessing: function(id) {
             // Send stop processing message if needed
-            console.log("onStopProcessing for id: " + id)
-            this.$store.commit('notifications/addNotification', {title: 'Debug', message: 'Simulating stop processing JOBID ' + id})
+            this.$store.commit('notifications/addNotification', {title: 'Debug', message: 'Requesting stop processing JOBID - processing jobs will refresh in 5 seconds ' + id})
+            this.onStop(id)
+            // Could refresh processing jobs to catch status of cancelled job...
+            let self = this
+            setTimeout( function() { console.log("refreshing processing jobs"); self.getProcessingJobs(1, self.initialProcessingJobPageSize)}, 5000)
         },
         onShowProcessingJob: function(id) {
-            console.log("onShowProcessingJob for id: " + id)
+            this.processingJobId = id
             this.$store.commit('notifications/addNotification', {title: 'Debug', message: 'Simulating show processing JOBID ' + id})
         },
         onUpdateProcessingJobs: function(payload) {
-            console.log("payload: " + JSON.stringify(payload))
             // Now call Processing jobs with the correct page size and start location
             let page = payload.currentPage
             let numRecords = payload.pageSize
-            // At the moment this would add another 5 records onto the list - but you get the idea...
-            // this.getProcessingJobs(page, numRecords)
+            this.getProcessingJobs(page, numRecords)
         },
         onContinue: function() {
             // What action is supposed to be taken here?
