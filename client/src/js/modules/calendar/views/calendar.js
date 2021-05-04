@@ -389,7 +389,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             _.each(_.range(daysinmonth), function(d) {
                 var date = new Date(this.year, this.month, d+1)
                 var visits = this.visits.filter(function(v) {
-                    return v.get('STISO') > date && v.get('STISO') < new Date(date.getTime()+(24*3600*1000))
+                    return v.get('STISO') >= date && v.get('STISO') < new Date(date.getTime()+(24*3600*1000))
                 })
                 
                 days.push({ type: 'day', date: date, visits: visits })
