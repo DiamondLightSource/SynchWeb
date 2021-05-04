@@ -391,6 +391,7 @@ class EM extends Page
             FROM ProcessingJob PJ
             JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
             JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+            LEFT JOIN AutoProcProgram app ON PJ.processingJobId = app.processingJobId
             $where", $args);
         $total = intval($total[0]['TOTAL']);
 
