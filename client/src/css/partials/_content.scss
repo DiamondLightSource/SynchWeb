@@ -913,8 +913,22 @@ li:last-child .visit_users {
             }
         }
 
+        .plot_bigep {
+            margin: 0 1%;
+            width: 30%;
+            margin-left: 190px;
+            height: 170px;
+
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+
         .bigep-settings {
             padding: 0.5%;
+            max-width: 50%;
 
             td {
                 text-align: center;
@@ -960,7 +974,7 @@ li:last-child .visit_users {
             float: left;
             margin: 0.5em;
 
-            &:before {
+            &.pending:before {
                 color: #ccc;
                 position: absolute;
                 top: 40%;
@@ -968,6 +982,11 @@ li:last-child .visit_users {
                 transform: translate(-50%);
                 font-size: 20px;
                 content: 'No Image';
+            }
+
+            &.loaded {
+                border: 1px solid #ccc;
+                background: #fff;
             }
 
             @media (max-width: $breakpoint-vsmall) {

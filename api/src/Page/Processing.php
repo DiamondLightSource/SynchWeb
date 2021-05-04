@@ -601,7 +601,7 @@ class Processing extends Page {
                 : array();
 
             $result = $ds->generate(
-                $downstream["PROCESSINGPROGRAMS"],
+                strtolower($downstream["PROCESSINGPROGRAMS"]),
                 $downstream["AUTOPROCPROGRAMID"],
                 $downstream
             );
@@ -625,10 +625,14 @@ class Processing extends Page {
 
         $ds = new DownstreamProcessing($this->db, $this);
         $plugin = $ds->load_plugin(
-            $downstream["PROCESSINGPROGRAMS"],
+            strtolower($downstream["PROCESSINGPROGRAMS"]),
             $downstream["AUTOPROCPROGRAMID"],
             $downstream
         );
+
+        if (!$plugin) {
+            return $this->_error("This plugin does not provide images");
+        }
 
         if (!$plugin->has_images) {
             return $this->_error("This plugin does not provide images");
@@ -676,10 +680,14 @@ class Processing extends Page {
 
         $ds = new DownstreamProcessing($this->db, $this);
         $plugin = $ds->load_plugin(
-            $downstream["PROCESSINGPROGRAMS"],
+            strtolower($downstream["PROCESSINGPROGRAMS"]),
             $downstream["AUTOPROCPROGRAMID"],
             $downstream
         );
+
+        if (!$plugin) {
+            return $this->_error("This plugin does not provide map / models");
+        }
 
         if (!$plugin->has_mapmodel) {
             return $this->_error("This plugin does not provide map / models");

@@ -116,7 +116,7 @@ abstract class DownstreamPlugin implements DownstreamPluginInterface {
             "SELECT appa.filename, appa.filepath, appa.filetype, CONCAT(appa.filepath, '/', appa.filename) as file
             FROM autoprocprogramattachment appa
             WHERE appa.autoprocprogramid = :1 $where
-            ORDER BY appa.importancerank",
+            ORDER BY appa.importancerank,appa.filename",
             $args
         );
 

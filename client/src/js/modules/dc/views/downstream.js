@@ -96,12 +96,14 @@ define(['backbone', 'marionette',
                         PARENT: this.model.get('PARENTAUTOPROCPROGRAM')
                     }
                 },
+                DCID: this.getOption('DCID'),
             }
         },
 
         initialize: function(options) {
             this.collection = new DownStreams(
                 this.getOption('downstreams').where({ TYPE: this.model.get('TYPE') }), 
+                // legacy property for collection
                 { id: this.getOption('dcid') }
             )
         }
