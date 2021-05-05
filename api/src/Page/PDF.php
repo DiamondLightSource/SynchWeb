@@ -146,7 +146,7 @@ class PDF extends Page
 
             $this->ship = $ship;
             
-            $this->dewars = $this->db->pq("SELECT bl.beamlinename, bl.beamlineoperator, TO_CHAR(bl.startdate, 'DD-MM-YYYY') as st, d.transportvalue, d.customsvalue, d.code, d.barcode, count(cq.containerqueueid) as auto, count(c.containerid) as containers, GROUP_CONCAT(COALESCE(cr.barCode, c.code) LIMIT 10) as containersBarCode
+            $dewars = $this->db->pq("SELECT bl.beamlinename, bl.beamlineoperator, TO_CHAR(bl.startdate, 'DD-MM-YYYY') as st, d.transportvalue, d.customsvalue, d.code, d.barcode, d.type, count(cq.containerqueueid) as auto, count(c.containerid) as containers, GROUP_CONCAT(COALESCE(cr.barCode, c.code) LIMIT 10) as containersBarCode
                 FROM dewar d 
                 LEFT OUTER JOIN blsession bl ON d.firstexperimentid = bl.sessionid 
                 LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
@@ -154,7 +154,14 @@ class PDF extends Page
                 LEFT OUTER JOIN containerqueue cq ON c.containerid = cq.containerid
                 WHERE d.shippingid=:1
                 GROUP BY d.dewarid", array($ship['SHIPPINGID']));
-            
+
+            // Determine shipping declarations for each dewar type
+            foreach ($dewars as &$dewar) {
+                $dewar['DESCRIPTION'] = $this->_get_package_description($dewar['TYPE']);
+                $dewar['DECLARATION'] = $this->_get_package_declaration($dewar['TYPE']);
+            }
+            $this->dewars = $dewars;
+
             $this->_render('shipment_label');
         }
 
@@ -435,5 +442,21 @@ class PDF extends Page
         
         function __set($name, $value) {
             $this->vars[$name] = $value;
+        }
+
+        function _get_package_description($dewarType) {
+            global $package_descriptions;
+            $default_description = 'Frozen samples in Dry-Shipper for experiments at DLS';
+
+            if (array_key_exists($dewarType, $package_descriptions)) return $package_descriptions[$dewarType];
+            else return $default_description;
+        }
+
+        function _get_package_declaration($dewarType) {
+            global $package_declarations;
+            $default_declaration = 'Not restricted, As per IATA special provision A152';
+
+            if (array_key_exists($dewarType, $package_declarations)) return $package_declarations[$dewarType];
+            else return $default_declaration;
         }
 }
