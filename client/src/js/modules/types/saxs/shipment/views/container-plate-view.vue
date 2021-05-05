@@ -72,10 +72,11 @@
         </ul>
       </div> <!-- End Container Form Elements -->
 
-      <div class="puck tw-w-1/3" title="Click to jump to a position in the puck">
+      <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
         <container-graphic
+          v-if="plateKey>0"
           :geometry="containerGeometry"
-          :containerType="container.CONTAINERTYPE"
+          :containerType="containerGraphicType"
           :samples="samples"
           :key="plateKey"
           @cell-clicked="onContainerCellClicked"/>
@@ -169,6 +170,8 @@ export default {
 
       containerTypes: [],
       plateType: null, // Stores if a puck or plate type
+      containerGraphicType: '',
+      plateKey: 0,
 
       proteinsCollection: [],
       gProteinsCollection: [],
@@ -260,7 +263,9 @@ export default {
         console.log("Number of plate = " + geometry.get('NAME'))
         console.log("Number of columns = " + this.containerGeometry.columns)
         this.plateType = this.containerGeometry.capacity > 25 ? 'single-sample-plate' : 'sample-plate-edit'
+        this.containerGraphicType = 'plate'
       } else {
+        this.containerGraphicType = 'puck'
         this.plateType = 'puck'
       }
       this.plateKey += 1
