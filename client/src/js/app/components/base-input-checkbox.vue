@@ -21,7 +21,7 @@ Slots include:
       @blur="onBlur"
       @focus="$emit('focus')"
     >
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ value }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditable = true" @mouseleave="showEditable = false">{{ value }} <span v-show="showEditable"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
 
     <label class="secondary" :for="id">{{label}}
       <slot name="description">
@@ -72,7 +72,8 @@ export default {
   },
   data() {
     return {
-      editable: true
+      editable: true,
+      showEditable: false,
     }
   },
 
@@ -103,6 +104,7 @@ export default {
     },
     onSave() {
       this.editable = false
+      this.showEditable = false
       // In this case we are in inline edit mode so need to explicitly save the input value
       this.$emit("input", this.$refs.inputRef.checked);
       this.$emit("change", this.$refs.inputRef.checked);

@@ -32,7 +32,7 @@ Slots include:
       @blur="onBlur"
       @focus="$emit('focus')"
     >
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ value }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditable = true" @mouseleave="showEditable = false">{{ value }} <span v-show="showEditable"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -105,6 +105,7 @@ export default {
   data() {
     return {
       editable: true,
+      showEditable: false,
       // Flag to tell us if dialog has been used
       // In inline mode we use this to cancel the change if user clicks away
       // They have to save by clicking OK to avoid surprising changes
@@ -151,6 +152,7 @@ export default {
       this.$emit("input", this.$refs.inputRef.value);
       this.$emit("save", this.$refs.inputRef.value);
       this.editable = false
+      this.showEditable = false
     },
   }
 };
