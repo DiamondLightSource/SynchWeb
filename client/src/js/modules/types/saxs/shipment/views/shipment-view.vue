@@ -459,6 +459,7 @@ export default {
       this.newDewar.new = true
 
       let dewar = new Dewar(this.newDewar)
+      dewar.set('DEWAR_TYPE', 'Parcel')
       this.$store.dispatch('saveModel', { model: dewar }).then( (result) => {
         console.log("Saved new dewar: " + JSON.stringify(result))
         this.addingNewDewar = false

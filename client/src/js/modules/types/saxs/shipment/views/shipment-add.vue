@@ -262,7 +262,8 @@ export default {
         COMMENTS: this.comments,
         PHYSICALLOCATION: this.pickupLocation,
         SENDINGLABCONTACTID: this.sendingLabContact,
-        RETURNLABCONTACTID: this.returnLabContact
+        RETURNLABCONTACTID: this.returnLabContact,
+        DEWAR_TYPE: 'Parcel',
       })
       console.log(JSON.stringify(shipmentModel))
 
