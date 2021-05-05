@@ -1,11 +1,11 @@
 <template>
   <div class="content">
-    <h1>Samples to edit</h1>
+    <h1>Samples</h1>
 
-    <div class="la puck_controls">
+    <!-- <div class="la puck_controls">
       <a class="button" @click.prevent="$emit('clone-container')" href="#" title="Clone entire plate from first sample"><i class="fa fa-plus"></i> Clone from First Sample</a>
       <a class="button" @click.prevent="$emit('clear-container')" href="#" title="Clear entire plate"><i class="fa fa-times"></i> Clear Plate</a>
-    </div>
+    </div> -->
 
     <!-- Using a key to update the table once we have discovered purification columns -->
     <table-component
@@ -63,15 +63,15 @@
           <span v-else>{{getPurificationColumnName(row['PURIFICATIONCOLUMNID'])}}</span>
         </td>
         <td>
-          <base-input-text v-if="editRowLocation == row['LOCATION']" v-model="sample['VOLUME']"/>
+          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'VOLUME-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
           <span v-else>{{row['VOLUME']}}</span>
         </td>
-        <td>
-          <validation-provider v-if="editRowLocation == row['LOCATION'] && showInputRobotFields" slim :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION'] && showInputRobotFields" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <td v-if="showInputRobotFields">
+          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
           <span v-else>{{row['ROBOTPLATETEMPERATURE']}}</span>
         </td>
-        <td>
-          <validation-provider v-if="editRowLocation == row['LOCATION'] && showInputRobotFields" slim :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <td v-if="showInputRobotFields">
+          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
           <span v-else>{{row['EXPOSURETEMPERATURE']}}</span>
         </td>
       </template>
@@ -146,7 +146,7 @@ export default {
         {key: 'TYPE', title: 'type'},
         {key: 'NAME', title: 'Name'},
         {key: 'PURIFICATIONCOLUMNID', title: 'Column'},
-        {key: 'VOLUME', title: 'Volume'},
+        {key: 'VOLUME', title: 'Volume (uL)'},
       ],
       robotExperimentHeaders: [
         {key: 'ROBOTPLATETEMPERATURE', title: 'Robot Temperature'},

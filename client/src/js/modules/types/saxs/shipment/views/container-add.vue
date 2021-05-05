@@ -211,6 +211,7 @@ Once container is valid then samples are added
           @extra-puck="extraPuck" />
 
         <sample-editor
+          v-if="proteinsLoaded"
           :sampleComponent="plateType"
           :capacity="containerGeometry.capacity"
           :selectedSample="selectedSample"
@@ -269,19 +270,18 @@ const STORAGE_TEMP_0 = 0
 const STORAGE_TEMP_25 = 25
 
 const INITIAL_SAMPLE_STATE = {
-  BLSAMPLEID: null,
-  PROTEINID: '-1',
-  CRYSTALID: '-1',
-  TYPE: '',
-  NAME: '',
-  VOLUME: '',
-  PURIFICATIONCOLUMNID: '',
-  BUFFER: '',
   LOCATION: '',
-  ROBOTPLATETEMPERATURE: '',
-  EXPOSURETEMPERATURE: '',
-  EXPERIMENTTYPEID: '',
-  valid: false,
+  PROTEINID: -1,
+  CRYSTALID: -1,
+  NAME: '',
+  TYPE: '',
+  VOLUME: '',
+  PURIFICATIONCOLUMNID: null,
+  ROBOTPLATETEMPERATURE: null,
+  EXPOSURETEMPERATURE: null,
+  EXPERIMENTTYPEID: null,
+  CODE: '',
+  COMMENTS: '',
 }
 
 // Use Location as idAttribute for this table
@@ -431,7 +431,7 @@ export default {
       processingPipelines: [],
 
       proteinCombo: '123540',
-      pReady: false,
+      proteinsLoaded: false,
       proteinsCollection: null,
       gProteinsCollection: null,
       proteins: [],
@@ -559,74 +559,93 @@ export default {
 
   created: function() {
     this.dewar = this.options.dewar.toJSON()
+    this.containerState.DEWARID = this.dewar.DEWARID
 
     // Used to help show/hide fields
     this.containerGroup = this.$store.state.proposalType
 
-    this.containerState.DEWARID = this.dewar.DEWARID
-
     this.samplesCollection = new Samples(null, {model: LocationSample})
 
-    this.containerFilter = [this.$store.state.proposal.proposalType]
-    this.experimentFilter = [this.$store.state.proposal.proposalType]
-
-    this.containerTypesCollection = new ContainerTypes()
-    let containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
-
-    this.experimentTypesCollection = new ExperimentTypes()
-
-    this.proteinsCollection = new DistinctProteins()
-    // If we want to only allow valid samples
-    if (app.options.get('valid_components') && !app.staff) {
-        this.proteinsCollection.queryParams.external = 1
-    }
-
-    this.gProteinsCollection = new DistinctProteins()
-    // For now assume Green only
-    // this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
-
-    let processingPipelinesCollection = new ProcessingPipelines()
-    processingPipelinesCollection.queryParams.pipelinestatus = 'optional'
-    processingPipelinesCollection.queryParams.category = 'processing'
-
-    this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
-    this.usersCollection.queryParams.all = 1
-    this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
-
-    this.$store.dispatch('getCollection', this.containerTypesCollection).then( (result) => {
-      this.containerTypes = result.toJSON()
-      // Do we have valid start state?
-      if (this.containerTypes.length) {
-        let first = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
-        if (first) this.containerState.CONTAINERTYPEID =  first.get('CONTAINERTYPEID')
-      }
-    })
-    this.$store.dispatch('getCollection', this.experimentTypesCollection).then( (result) => {
-      this.experimentTypes = result.toJSON()
-      this.containerState.EXPERIMENTTYPEID = this.experimentTypes.length ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
-    })
-    this.$store.dispatch('getCollection', containerRegistryCollection).then( (result) => {
-      this.containerRegistry = result.toJSON()
-      this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
-    })
-    this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
-      this.proteins = result.toJSON()
-      this.pReady = true
-    })
-    this.$store.dispatch('getCollection', processingPipelinesCollection).then( (result) => {
-      this.processingPipelines = result.toJSON()
-    })
-    this.$store.dispatch('getCollection', this.usersCollection).then( (result) => {
-      this.users = result.toJSON()
-      // Set plate owner to current user
-      this.containerState.PERSONID = this.$store.state.user.personId
-    })
+    this.getProteins()
+    this.getExperimentTypes()
+    this.getContainerTypes()
+    this.getContainerRegistry()
+    this.getUsers()
+    this.getProcessingPipelines()
   },
 
-  mounted: function() {
-
-  },
   methods: {
+    getProteins: function() {
+      this.proteinsCollection = new DistinctProteins()
+      // If we want to only allow valid samples
+      if (app.options.get('valid_components') && !app.staff) {
+          this.proteinsCollection.queryParams.external = 1
+      }
+
+      this.gProteinsCollection = new DistinctProteins()
+      // For now assume Green only
+      // this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
+
+      this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
+        this.proteins = result.toJSON()
+        this.proteinsLoaded = true
+      })
+    },
+    getExperimentTypes: function() {
+      this.experimentTypesCollection = new ExperimentTypes()
+
+      this.experimentFilter = [this.$store.state.proposal.proposalType]
+
+      this.$store.dispatch('getCollection', this.experimentTypesCollection).then( (result) => {
+        this.experimentTypes = result.toJSON()
+        // We need to find the first experiment type that matches our proposal type
+        let initialExperimentType = result.findWhere({PROPOSALTYPE: this.$store.state.proposal.proposalType})
+        this.containerState.EXPERIMENTTYPEID = initialExperimentType ? initialExperimentType.get('EXPERIMENTTYPEID') : ''
+      })
+    },
+    getContainerRegistry: function() {
+      let containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
+
+      this.$store.dispatch('getCollection', containerRegistryCollection).then( (result) => {
+        this.containerRegistry = result.toJSON()
+        this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
+      })
+    },
+    getContainerTypes: function() {
+      this.containerTypesCollection = new ContainerTypes()
+
+      this.containerFilter = [this.$store.state.proposal.proposalType]
+
+      this.$store.dispatch('getCollection', this.containerTypesCollection).then( (result) => {
+        this.containerTypes = result.toJSON()
+        // Do we have valid start state?
+        if (this.containerTypes.length) {
+          let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
+          this.containerState.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
+        }
+      })
+    },
+    getUsers: function() {
+      this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
+      this.usersCollection.queryParams.all = 1
+      this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
+
+      this.$store.dispatch('getCollection', this.usersCollection).then( (result) => {
+        this.users = result.toJSON()
+        // Set plate owner to current user
+        this.containerState.PERSONID = this.$store.state.user.personId
+      })
+    },
+    getProcessingPipelines: function() {
+      let processingPipelinesCollection = new ProcessingPipelines()
+
+      processingPipelinesCollection.queryParams.pipelinestatus = 'optional'
+      processingPipelinesCollection.queryParams.category = 'processing'
+      
+      this.$store.dispatch('getCollection', processingPipelinesCollection).then( (result) => {
+        this.processingPipelines = result.toJSON()
+      })
+    },
     // Called on Add Container
     // Calls the validation method on our observer component
     onSubmit: function() {
@@ -665,8 +684,6 @@ export default {
       // this.$store.commit('loading', true)
       this.$store.dispatch('saveModel', {model: model}).then( (result) => {
         let cid = model.get('CONTAINERID')
-        console.log("Container Saved: " + JSON.stringify(result))
-        console.log("Container ID = " + cid)
         this.$store.commit('notifications/addNotification', { message: 'New Container created, click <a href=/containers/cid/'+cid+'>here</a> to view it', level: 'info', persist: true})
 
         EventBus.$emit('save-samples', cid)

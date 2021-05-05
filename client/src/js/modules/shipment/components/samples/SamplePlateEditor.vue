@@ -18,7 +18,7 @@
         <td><base-input-select v-model="row['TYPE']" optionValueKey="ID" optionTextKey="TYPE" :options="sampleTypes"/></td>
         <validation-provider tag="td" :name="'Name-'+row['LOCATION']" :rules="row['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="row['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
         <td><base-input-select v-model="row['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></td>
-        <td><base-input-text v-model="row['VOLUME']"/></td>
+        <validation-provider tag="td" :name="'VOLUME-'+row['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="row['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
         <validation-provider tag="td" :name="'ROBOTPLATETEMPERATURE-'+row['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
         <validation-provider tag="td" :name="'EXPOSURETEMPERATURE-'+row['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
       </template>
@@ -82,7 +82,7 @@ export default {
         {key: 'TYPE', title: 'Type'},
         {key: 'NAME', title: 'Name'},
         {key: 'COLUMN', title: 'Column'},
-        {key: 'VOLUME', title: 'Volume'},
+        {key: 'VOLUME', title: 'Volume (uL)'},
       ],
       robotExperimentHeaders: [
         {key: 'ROBOTPLATETEMPERATURE', title: 'Robot Temperature'},
@@ -91,7 +91,8 @@ export default {
       sampleTypes: [
         {ID: 'Sample', TYPE: 'Sample'},
         {ID: 'Buffer', TYPE: 'Buffer'},
-      ]
+      ],
+      availableProteins: [],
     }
   },
   watch: {
