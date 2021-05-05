@@ -1125,9 +1125,13 @@ class Sample extends Page
             foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID',
                             'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA',
                             'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY', 'USERPATH',
-                            'ROBOTPLATETEMPERATURE', 'EXPOSURETEMPERATURE', 'EXPERIMENTTYPEID', 'PURIFICATIONCOLUMNID') as $f) {
+                            'EXPERIMENTTYPEID', 'PURIFICATIONCOLUMNID') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
+            }
+            foreach (array('ROBOTPLATETEMPERATURE', 'EXPOSURETEMPERATURE') as $f) {
+                if ($s) $a[$f] = array_key_exists($f, $s) && $s[$f] ? $s[$f] : null;
+                else $a[$f] = $this->has_arg($f) && $this->arg($f) ? $this->arg($f) : null;
             }
 
             return $a;
