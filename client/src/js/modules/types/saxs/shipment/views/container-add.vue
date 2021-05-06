@@ -665,7 +665,7 @@ export default {
         PROCESSINGPIPELINEID: this.containerState.PROCESSINGPIPELINEID,
         NAME: this.containerState.NAME,
         CONTAINERREGISTRYID: this.containerState.CONTAINERREGISTRYID,
-        AUTOMATED: this.containerState.AUTOMATED,
+        AUTOMATED: this.containerState.AUTOMATED > 0 ? this.containerState.AUTOMATED : null,
         BARCODE: this.containerState.CODE,
         PERSONID: this.containerState.PERSONID,
         EXPERIMENTTYPE: experimentType.get('NAME') || '',
