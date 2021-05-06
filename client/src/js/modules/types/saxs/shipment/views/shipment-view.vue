@@ -193,13 +193,9 @@
         <label>FacilityCode</label>
         <input type="text" placeholder="fc" v-model="newDewar.FACILITYCODE"/>
         <label>Weight</label>
-        <input type="text" placeholder="weight"/>
+        <input type="text" placeholder="weight" v-model="newDewar.WEIGHT"/>
         <label>First Exp</label>
         <input type="text" placeholder="experiment"/>
-        <label>Tracking # To</label>
-        <input type="text" placeholder="to"/>
-        <label>Tracking # From</label>
-        <input type="text" placeholder="from"/>
         <button class="button" @click.prevent="onSaveDewar"><i class="fa fa-check"></i></button>
         <button class="button" @click.prevent="addingNewDewar = false"><i class="fa fa-times"></i></button>
       </form>
@@ -311,6 +307,7 @@ const initialDewarState = {
   SHIPPINGID: '',
   CODE: '',
   FACILITYCODE: '',
+  WEIGHT: '',
   new: false
 }
 
