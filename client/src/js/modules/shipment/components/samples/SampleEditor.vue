@@ -6,7 +6,7 @@
       <marionette-view
         :key="$route.fullPath"
         :options="options"
-        :skipLoad="true"
+        :preloaded="true"
         :mview="mview">
       </marionette-view>
     </div>
