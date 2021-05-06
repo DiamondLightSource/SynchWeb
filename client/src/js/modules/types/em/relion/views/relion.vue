@@ -3,7 +3,7 @@
 <section class="content">
     <h1>Relion Processing</h1>
 
-    <p class="help">This page is for submitting processing jobs to Relion.</p>
+    <p class="help">This page is for reviewing processing jobs from Relion.</p>
     <p class="help">Click on the 'i' icon to see processing parameters for a processing job.</p>
     <p class="help">Click on the 'x' icon to request cancellation of a running processing job.</p>
 
