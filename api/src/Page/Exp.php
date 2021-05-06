@@ -114,9 +114,12 @@ class Exp extends Page
             'MONOBANDWIDTHMAX' => '\d+(.\d+)?',
             'ACTIVE' => '\d',
 
+            'EXPERIMENTTYPEID' => '\d+',
+            'PURIFICATIONCOLUMNID' => '\d+',
+
         );
-        
-        
+
+
         public static $dispatch = array(
             array('/plans(/:DIFFRACTIONPLANID)', 'get', '_get_diffraction_plans'),
             array('/plans', 'post', '_add_diffraction_plan'),
@@ -144,6 +147,9 @@ class Exp extends Page
             array('/setup', 'get', '_get_beamline_setups'),
             array('/setup', 'post', '_add_beamline_setup'),
             array('/setup/:BEAMLINESETUPID', 'patch', '_update_beamline_setup'),
+
+            array('/experiment/types(/:EXPERIMENTTYPEID)', 'get', '_get_experiment_types'),
+            array('/purification/columns(/:PURIFICATIONCOLUMNID)', 'get', '_get_purification_columns'),
         );
 
 
@@ -794,5 +800,44 @@ class Exp extends Page
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) return $cols[$this->arg('sort_by')].' '.$dir;
             } else return $default;
+        }
+
+        // Get active experiment types from database
+        function _get_experiment_types() {
+          $where = 'active = 1';
+          $args = array();
+
+          if ($this->has_arg('EXPERIMENTTYPEID')) {
+            $where .= ' AND experimenttypeid = :'.(sizeof($args)+1);
+            array_push($args, $this->arg('EXPERIMENTTYPEID'));
+          }
+
+          $rows = $this->db->pq("SELECT experimenttypeid, name, proposaltype
+                                  FROM experimenttype
+                                  WHERE $where", $args);
+
+          if (!sizeof($rows)) $this->_error('No experiment types found');
+
+          $this->_output(array('total' => count($rows), 'data' => $rows));
+        }
+
+
+        // Get active experiment types from database
+        function _get_purification_columns() {
+          $where = 'active = 1';
+          $args = array();
+
+          if ($this->has_arg('PURIFICATIONCOLUMNID')) {
+            $where .= ' AND purificationcolumnid = :'.(sizeof($args)+1);
+            array_push($args, $this->arg('PURIFICATIONCOLUMNID'));
+          }
+
+          $rows = $this->db->pq("SELECT purificationcolumnid, name
+                                  FROM purificationcolumn
+                                  WHERE $where", $args);
+
+          if (!sizeof($rows)) $this->_error('No purification columns found');
+
+          $this->_output(array('total' => count($rows), 'data' => $rows));
         }
 }

@@ -114,7 +114,6 @@ module.exports = (env, argv) => ({
 
       js: path.resolve(__dirname, 'src/js'),
       css: path.resolve(__dirname, 'src/css'),
-      // vuejs: path.resolve(__dirname, 'src/js/vuejs'),
 
     },
     modules: [

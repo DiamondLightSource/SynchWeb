@@ -203,11 +203,11 @@ const routes = [
         mview: RunsOverview,
         // Note: here the params are passed an part of the options - not as a separate object ?
         options: {
-            params: {
-                bl: route.params.bl,
+            params: { 
+                bl: route.params.bl || null,
             }
         },
-        breadcrumbs: [bc, { title: 'Runs Overview For Beamlines', url: '' }],
+        breadcrumbs: [bc, { title: 'Runs Overview For Beamlines'}],
     }),
 }]
 

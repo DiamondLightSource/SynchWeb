@@ -40,7 +40,7 @@ Slots include:
       <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
     </select>
 
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ inlineText }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditable = true" @mouseleave="showEditable = false">{{ inlineText }} <span v-show="showEditable"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -121,6 +121,7 @@ export default {
   data() {
     return {
       editable: true,
+      showEditable: false,
       localValue: this.value
     }
   },
@@ -164,6 +165,7 @@ export default {
     },
     onSave() {
       this.editable = false
+      this.showEditable = false
       // In this case we are in inline edit mode so need to explicitly save the input value
       this.$emit("input", this.localValue);
       this.$emit("save", this.localValue);

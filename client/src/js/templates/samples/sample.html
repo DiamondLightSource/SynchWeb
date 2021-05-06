@@ -154,7 +154,19 @@
             <span class="RADIATIONSENSITIVITY"><%-RADIATIONSENSITIVITYNAME%></span>
         </li>
         <% } %>
-        
+        <!-- Parameters for SAXS samples - from Diffraction Plan -->
+        <% if (ROBOTPLATETEMPERATURE > 0) { %>
+        <li>
+            <span class="label">Robot Plate Temperature</span>
+            <span class="robotplatetemperature"><%-ROBOTPLATETEMPERATURE%></span>
+        </li>
+        <% } %>
+        <% if (EXPOSURETEMPERATURE > 0) { %>
+        <li>
+            <span class="label">Exposure Temperature</span>
+            <span class="exposuretemperature"><%-EXPOSURETEMPERATURE%></span>
+        </li>
+        <% } %>
     </ul>
 </div>
 

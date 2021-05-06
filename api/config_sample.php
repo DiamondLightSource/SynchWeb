@@ -219,6 +219,15 @@
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
+    # Description and declarations used for shipment labels
+    $package_descriptions = array(
+        'Dewar'=>'Dry shipper containing frozen crystals for experiment at DLS',
+        'Parcel'=>'Frozen samples in cryogenic dry shipper',
+    );
+    $package_declarations = array(
+        'Dewar'=>'Not restricted, as per ADR A346, IATA A152',
+        'Parcel'=>'Not restricted, as per IATA A152.<br />UN1845 DRY ICE, Net Weight 7KG',
+    );
 
     # DHL API Details
     $dhl_enable = true;

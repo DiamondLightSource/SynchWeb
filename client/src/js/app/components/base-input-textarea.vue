@@ -29,7 +29,7 @@ Slots include:
       @focus="$emit('focus')"
     ></textarea>
 
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ value }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditable = true" @mouseleave="showEditable = false">{{ value }} <span v-show="showEditable"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -99,7 +99,8 @@ export default {
   },
   data() {
     return {
-      editable: true
+      editable: true,
+      showEditable: false,
     }
   },
   computed: {
@@ -130,6 +131,7 @@ export default {
     },
     onSave() {
       this.editable = false
+      this.showEditable = false
       // In this case we are in inline edit mode so need to explicitly save the input value
       this.$emit("input", this.$refs.inputRef.value);
       // Also emit a save event so we can catch this change easily in the parent

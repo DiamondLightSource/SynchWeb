@@ -12,6 +12,9 @@ import MarionetteApp from 'app/marionette-application.js'
 
 import config from 'config.json'
 
+import VeeValidate from 'vee-validate'
+Vue.use(VeeValidate)
+
 Vue.config.productionTip = false
 
 
@@ -27,7 +30,7 @@ const vm = new Vue({
 
     // Start the Marionette application
     let application = MarionetteApp.getInstance()
-  
+
     application.start()
   },
 }).$mount('#synchweb-app')

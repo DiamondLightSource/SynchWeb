@@ -269,6 +269,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'ContainerRegistry',
             'ContainerRegistry_has_Proposal',
             'ContainerReport',
+            'ContainerType',
 
 
             'ComponentLattice',
@@ -321,6 +322,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'XrayCentringResult',
 
             'BeamCalendar',
+            'ExperimentType',
+            'PurificationColumn',
         );
 
         foreach ($tables as $table) {

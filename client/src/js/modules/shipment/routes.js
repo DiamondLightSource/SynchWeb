@@ -52,6 +52,8 @@ const ContainerAddWrapper = () => import(/* webpackChunkName: "groups-shipment" 
 const ContainerPlanWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-plan-wrapper.vue')
 const ContainerQueueWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-queue-wrapper.vue')
 
+const ShipmentAddWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ShipmentAddWrapper.vue')
+const ShipmentViewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ShipmentViewWrapper.vue')
 const DewarsOverviewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/dewars-overview-wrapper.vue')
 
 // Initialize MarionetteApplication if not already existing
@@ -164,11 +166,44 @@ const routes = [
     component: Page,
     children: [
       // Note that we need props to be a function so we pass in shippingComments correctly
+      // {
+      //   path: 'add',
+      //   component: MarionetteView,
+      //   props: route => ({
+      //     mview: ShipmentAddView,
+      //     breadcrumbs: [bc, { title: 'Add New Shipment' }],
+      //     options: {
+      //       comments: shipmentComments
+      //     }
+      //   }),
+      //   beforeEnter: (to, from, next) => {
+      //     // Is this proposal still open?
+      //     if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+      //       app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new shipments cannot be added'} )
+      //       next('/403?url='+to.fullPath)
+      //     } else {
+      //       app.log('ship add view')
+
+      //       // Get any comments to prefill from the server
+      //       Backbone.ajax({
+      //           url: app.appurl+'/assets/js/shipment_comments.json',
+      //           dataType: 'json',
+      //           success: function(comments) {
+      //             shipmentComments = comments
+      //             next()
+      //           },
+      //           error: function() {
+      //             console.log("Warning no comments found")
+      //             next()
+      //           }
+      //       })
+      //     }
+      //   }
+      // },
       {
         path: 'add',
-        component: MarionetteView,
+        component: ShipmentAddWrapper,
         props: route => ({
-          mview: ShipmentAddView,
           breadcrumbs: [bc, { title: 'Add New Shipment' }],
           options: {
             comments: shipmentComments
@@ -198,18 +233,28 @@ const routes = [
           }
         }
       },
-      {
-        path: 'sid/:sid',
-        component: MarionetteView,
-        props: route => ({
-          mview: ShipmentView,
-          breadcrumbs: [bc],
-          breadcrumb_tags: ['SHIPPINGNAME'], // If we find a model append to the bc
-          options: {
-            model: new Shipment({ SHIPPINGID: route.params.sid })
-          }
-        }),
-        beforeEnter: (to, from, next) => {
+
+      // {
+      //   path: 'sid/:sid',
+      //   name: 'shipment-view',
+      //   component: MarionetteView,
+      //   props: route => ({
+      //     mview: ShipmentView,
+      //     breadcrumbs: [bc],
+      //     breadcrumb_tags: ['SHIPPINGNAME'], // If we find a model append to the bc
+      //     options: {
+      //       model: new Shipment({ SHIPPINGID: route.params.sid })
+      //     }
+      //   }),
+        {
+          path: 'sid/:sid',
+          name: 'shipment-view',
+          component: ShipmentViewWrapper,
+          props: route => ({
+            breadcrumbs: [bc],
+            sid: +route.params.sid
+          }),
+          beforeEnter: (to, from, next) => {
           // Call the loading state here because we are finding the proposal based on this contact id
           // Prop lookup sets the proposal and type via set application.cookie method which we mapped to the store
           // TODO - change this for a store method

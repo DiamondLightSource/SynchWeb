@@ -1,12 +1,12 @@
     <?php foreach($dewars as $i => $d): ?>
 
-        <h1 class="ca">ISPyB Dewar Tracking</h1>
+        <h1 class="ca">ISPyB <?php echo $d['TYPE'] ?> Tracking</h1>
 
         <div class="border center eighty">
             <h2>LABEL INSTRUCTIONS</h2>
             <p>Please print the following three labels and use as follows:</p>
             <ol>
-                <li><span class="bold">Dewar Label:</span> affix this label to your dewar which ensures it can be identified at all times at the facility</li>
+                <li><span class="bold"><?php echo $d['TYPE'] ?> Label:</span> affix this label to your dewar (or parcel) which ensures it can be identified at all times at the facility</li>
                 <li><span class="bold">Outbound Address label:</span> To be attached to the outside of your transport container for shipment to facility</li>
                 <li><span class="bold">Return Address Label:</span> The return address for your shipment (Please include this in your shipment, e.g. put it behind the outward bound address or in the transport container)</li>
             </ol>
@@ -16,7 +16,7 @@
         <br />
         <br />
 
-        <p class="ca bold red">1. Dewar Tracking Label</p>
+        <p class="ca bold red">1. <?php echo $d['TYPE'] ?> Tracking Label</p>
         <div class="border center eighty">
             <div class="ca">
                 <img src="assets/images/dls_logo.jpg" width="250px" />
@@ -29,7 +29,7 @@
             <?php if ($d['AUTO'] > 0): ?>
                 <div class="notification notification-inline">
                     <h1>Auto Collect</h1>
-                    <p>This dewar contains <?php echo $d['AUTO'] ?> container(s) for automated data collection</p>
+                    <p>This parcel contains <?php echo $d['AUTO'] ?> container(s) for automated data collection</p>
                 </div>
             <?php else: ?>
                 <br />
@@ -95,10 +95,9 @@
 
                 <br />
                 <br />
-
-                <p class="bold">Frozen samples in Dry-Shipper for experiments at facility</p>
+                <p class="bold"><?php echo $d['DESCRIPTION'] ?></p>
                 <br />
-                <p class="bold">Not restricted,<br />As per IATA special provision A152</p>
+                <p class="bold"><?php echo $d['DECLARATION'] ?></p>
 
                 <img src="assets/images/arrow.png"  width="250px" />
 
@@ -108,7 +107,7 @@
                 <?php if ($d['AUTO'] > 0): ?>
                     <div class="notification">
                         <h1>Auto Collect</h1>
-                        <p>This dewar contains <?php echo $d['AUTO'] ?> container(s) for automated data collection</p>
+                        <p>This parcel contains <?php echo $d['AUTO'] ?> container(s) for automated data collection</p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -191,9 +190,9 @@
                 <br />
                 <br />
 
-                <p class="bold">Frozen samples in Dry-Shipper for experiments at DLS</p>
+                <p class="bold"><?php echo $d['DESCRIPTION'] ?></p>
                 <br />
-                <p class="bold">Not restricted,<br />As per IATA special provision A152</p>
+                <p class="bold"><?php echo $d['DECLARATION'] ?></p>
 
                 <img src="assets/images/arrow.png"  width="250px" />
 
