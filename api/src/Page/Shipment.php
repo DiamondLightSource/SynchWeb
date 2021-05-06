@@ -1988,7 +1988,7 @@ class Shipment extends Page
                         $fc = $i < sizeof($this->arg('FCODES')) ? $fcs[$i] : ''; 
                         $n = $fc ? $fc : ('Dewar'.($i+1));
                         
-                        $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight) 
+                        $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight,type) 
                           VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'opened',:3,:4,:5,:6) RETURNING dewarid INTO :id", 
                           array($n, $sid, $exp, $fc,$dewar_weight,$dewar_type));
                         
