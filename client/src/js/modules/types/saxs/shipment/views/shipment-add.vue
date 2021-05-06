@@ -207,12 +207,12 @@ export default {
   },
 
   watch: {
-    sessionType: function(newVal) {
-      if (newVal == SCHEDULED_SESSION) this.comments = "Scheduled session selected"
-      else if (newVal == RESPONSIVE_SESSION) this.comments = "Responsive session selected"
-      else if (newVal == AUTOMATED_SESSION) this.comments = "Automated session selected"
-      else this.comments = ""
-    },
+    // sessionType: function(newVal) {
+    //   if (newVal == SCHEDULED_SESSION) this.comments = "Scheduled session selected"
+    //   else if (newVal == RESPONSIVE_SESSION) this.comments = "Responsive session selected"
+    //   else if (newVal == AUTOMATED_SESSION) this.comments = "Automated session selected"
+    //   else this.comments = ""
+    // },
     dewarList: function(newVal) {
       console.log("Dewar list updated: " + JSON.stringify(newVal))
     }
