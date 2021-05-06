@@ -1,5 +1,7 @@
 // postcss.config.js
 const path = require('path');
+const colsMixinFunction = require(path.join(__dirname, 'src', 'css', 'mixins', 'cols.js'))
+
 // Disabling purgecss for now because it strips too many styles.
 // TODO - figure out the correct extractor to parse backbone templates (inline and html)
 // const purgecss = require('@fullhuman/postcss-purgecss')({
