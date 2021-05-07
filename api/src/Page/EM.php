@@ -644,8 +644,7 @@ class EM extends Page
             if (count($result)) {
                 $message = array(
                     'parameters' => array(
-                        'processing_id_to_stop' => $result[0]['PROCESSINGJOBID'],
-                        'ispyb_process' => $result[0]['DATACOLLECTIONID']
+                        'ispyb_process' => $result[0]['PROCESSINGJOBID']
                     ),
                     'recipes' => ['relion-stop']
                 );
