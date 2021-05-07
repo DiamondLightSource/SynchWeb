@@ -563,36 +563,6 @@ export default {
             });
         },
 
-        onStop: function (id) {
-            let self = this;
-
-            Backbone.ajax({
-                type: 'PATCH',
-                url: app.apiurl + '/em/process/relion/job/' + id,
-                success: function (xhr) {
-                    self.isJobStopped = true;
-
-                    if ('timestamp' in xhr) {
-                        // self.sessionEvents.unshift({
-                        //     timestamp_str: formatDate.default(xhr.timestamp, 'HH:mm:ss'),
-                        //     message: 'Stop processing.'
-                        // });
-                    }
-                },
-                error: function (model, response, options) {
-                    self.showSpinner = false;
-
-                    let alertMessage = 'There was a problem stopping this job.';
-
-                    if ('message' in response.responseJSON) {
-                        alertMessage = response.responseJSON.message;
-                    }
-
-                    app.alert({message: alertMessage});
-                }
-            })
-        },
-
         checkStatus: function () {
             let self = this;
 
