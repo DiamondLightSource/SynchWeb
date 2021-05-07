@@ -24,6 +24,7 @@
         :headers="processingJobHeaders"
         :data="processingJobs"
         actions="Actions"
+        @row-clicked="onProcessingJobSelected"
     >
         <template slot="actions" slot-scope="{ row }">
             <!-- Action to stop processing. TODO - add confirmation dialog or panel below? -->
@@ -154,6 +155,10 @@ export default {
             // Could refresh processing jobs to catch status of cancelled job...
             let self = this
             setTimeout( function() { console.log("refreshing processing jobs"); self.getProcessingJobs(1, self.initialProcessingJobPageSize)}, 5000)
+        },
+        onProcessingJobSelected: function(row) {
+            let jobId = row['PROCESSINGJOBID']
+            this.onShowProcessingJob(jobId)
         },
         onShowProcessingJob: function(id) {
             this.processingJobId = id
