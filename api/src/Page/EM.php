@@ -406,10 +406,10 @@ class EM extends Page
                     APP.processingEndTime,
                     CASE
                         WHEN (APP.processingJobId IS NULL) THEN 'submitted'
-                        WHEN (APP.processingStartTime IS NULL AND APP.processingStartTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
-                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStartTime IS NOT NULL AND APP.processingStatus IS NULL) THEN 'running'
-                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
-                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingEndTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
+                        WHEN (APP.processingStartTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
+                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus IS NULL) THEN 'running'
+                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
+                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
                         END AS processingStatusDescription
             FROM ProcessingJob PJ
                         JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
