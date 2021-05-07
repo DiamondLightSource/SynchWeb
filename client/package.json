@@ -71,7 +71,7 @@
     "promise": "^8.0.3",
     "three": "^0.83.0",
     "uglymol": "^0.5.7",
-    "underscore": "1.6.0",
+    "underscore": "1.12.1",
     "vee-validate": "^2.2.13",
     "vue": "^2.6.10",
     "zlibjs": "^0.1.7"
