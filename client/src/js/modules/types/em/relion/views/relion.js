@@ -5,8 +5,8 @@ define([
     'promise',
     'utils/vuewrapper',
     'formatDate',
-    'parseISODate',
     'modules/types/em/relion/models/relion',
+    'modules/types/em/relion/models/jobs',
     'models/visit',
     'templates/vue/types/em/process/relion.html',
 ], function (
@@ -16,8 +16,8 @@ define([
     Promise,
     VueWrapper,
     formatDate,
-    parseISODate,
     RelionModel,
+    ProcessingJobsModel,
     SessionModel,
     template
 ) {
@@ -39,11 +39,10 @@ define([
                     isJobStarted: false,
                     isJobStopped: false,
                     isLogVisible: false,
-                    sessionEvents: [],
+                    processingJobs: [],
 
                     // Session
                     session: {},
-                    sessionEndDateAsString: '',
 
                     // Form fields
                     projectAcquisitionSoftware: null,
@@ -91,31 +90,46 @@ define([
                         self.isSessionLoaded = true;
                         self.isSessionActive = !!+self.session['ACTIVE']; // ACTIVE represented by string value "0" or "1" in JSON
 
+                        // TODO Temporary override to make session active for testing after session has ended (JPH)
+
+                        self.isSessionActive = 1;
+
                         if (self.isSessionActive) {
                             self.resetForm();
                         } else {
-                            self.sessionEndDateAsString = parseISODate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
+                            self.sessionEndDateAsString = formatDate.default(self.session['ENISO'], "HH:mm 'on' do MMMM");
                         }
-                        // Breadcrumbs are set in router rather than within the views themselves
-                        // app.bc.reset([
-                        //     {title: 'Data Collections', url: '/dc'},
-                        //     {title: self.session['BL']},
-                        //     {title: self.session['VISIT'], url: '/dc/visit/' + self.session['VISIT']},
-                        //     {title: 'Relion Processing'}
-                        // ]);
 
-                        self.sessionEvents = [];
+                        app.bc.reset([
+                            {title: 'Data Collections', url: '/dc'},
+                            {title: self.session['BL']},
+                            {title: self.session['VISIT'], url: '/dc/visit/' + self.session['VISIT']},
+                            {title: 'Relion Processing'}
+                        ]);
 
                         self.showSpinner = false;
                     },
                     error: function (model, response, options) {
                         self.showSpinner = false;
 
-                        // Breadcrumbs are set in router rather than within the views themselves
-                        // app.bc.reset([{title: 'Error'}]);
+                        app.bc.reset([{title: 'Error'}]);
                         app.message({title: 'No such session', message: 'The specified session does not exist'})
                     }
                 });
+
+                // let processingJobsModel = new ProcessingJobsModel({
+                //     VISIT: this.$getOption('session_str')
+                // });
+                //
+                // processingJobsModel.fetch({
+                //     success: function (model, response, options) {
+                //         self.processingJobs = processingJobsModel.attributes;
+                //     },
+                //     error: function (model, response, options) {
+                //         app.message({title: 'No such session', message: 'The specified session does not exist'})
+                //     }
+                // });
+
             },
             methods: {
                 // With new build and (IE polyfill) we could use
@@ -124,7 +138,6 @@ define([
                 // allows us to clear form data after submission
                 resetForm: function () {
                     this.isJobStarted = false;
-                    this.isJobStopped = false;
                     this.processingIsActive = false;
                     this.processingTimestamp = false;
 
@@ -157,7 +170,6 @@ define([
                     this.pipelineDo2ndPassClassification3d = false;
 
                     this.isLogVisible = false;
-                    this.sessionEvents = [];
 
                     this.checkStatus();
 
@@ -290,14 +302,13 @@ define([
                                 success: function (model, response, options) {
                                     self.isFormReadOnly = true;
                                     self.isJobStarted = true;
-                                    self.isJobStopped = false;
                                     self.showSpinner = false;
 
                                     if ('timestamp' in response) {
-                                        self.sessionEvents.unshift({
-                                            timestamp_str: formatDate.default(response.timestamp, 'HH:mm:ss'),
-                                            message: 'Start processing.'
-                                        });
+                                        // self.sessionEvents.unshift({
+                                        //     timestamp_str: formatDate.default(response.timestamp, 'HH:mm:ss'),
+                                        //     message: 'Start processing.'
+                                        // });
                                     }
                                 },
                                 error: function (model, response, options) {
@@ -375,29 +386,6 @@ define([
                             self.showSpinner = false;
 
                             let alertMessage = 'There was a problem checking this job.';
-
-                            if ('message' in response.responseJSON) {
-                                alertMessage = response.responseJSON.message;
-                            }
-
-                            app.alert({message: alertMessage});
-                        }
-                    })
-                },
-
-                onReset: function () {
-                    let self = this;
-
-                    Backbone.ajax({
-                        type: 'DELETE',
-                        url: app.apiurl + '/em/process/relion/session/' + this.session['VISIT'],
-                        success: function (xhr) {
-                            self.resetForm();
-                        },
-                        error: function (model, response, options) {
-                            self.showSpinner = false;
-
-                            let alertMessage = 'There was a problem resetting this job.';
 
                             if ('message' in response.responseJSON) {
                                 alertMessage = response.responseJSON.message;
