@@ -544,6 +544,8 @@ export default {
                                 //     message: 'Start processing.'
                                 // });
                             }
+
+                            app.message({message: 'Processing Job submitted OK. Go back to see the current processing jobs.'});
                         },
                         error: function (model, response, options) {
                             self.showSpinner = false;
