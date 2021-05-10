@@ -166,7 +166,7 @@
                 <li class="head" v-if="pipelineDo1stPass">Particle Picking</li>
 
                 <li v-if="pipelineDo1stPass">
-                    <label>Use crYOLO</label>
+                        <label>Use crYOLO<br>Academic users only.<br>Not licensed for industry users.</label>
                     <input type="checkbox" name="particleUseCryolo"
                            v-model="particleUseCryolo"
                            v-bind:disabled="isFormReadOnly">
@@ -387,9 +387,9 @@ export default {
             this.motionCorrectionBinning = 1;
             this.dosePerFrame = 0.5;
 
-            this.pipelineDo1stPass = false;
+            this.pipelineDo1stPass = true;
             this.pipelineDo1stPassClassification2d = true;
-            this.pipelineDo1stPassClassification3d = false;
+            this.pipelineDo1stPassClassification3d = true;
 
             this.particleUseCryolo = false;
             this.particleDiameterMin = null;
@@ -400,7 +400,7 @@ export default {
             this.particleCalculateForMe = true;
 
             this.pipelineDo2ndPass = false;
-            this.pipelineDo2ndPassClassification2d = false;
+            this.pipelineDo2ndPassClassification2d = true;
             this.pipelineDo2ndPassClassification3d = false;
 
             this.isLogVisible = false;
