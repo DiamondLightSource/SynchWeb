@@ -57,11 +57,11 @@
 
                 <li v-if="projectGainReferenceFile">
                     <label>Gain Reference File Name</label>
-                    <input type="text" name="projectGainReferenceFileName"
+                    <input type="text" name="projectGainReferenceFileName" :class="[errors.has('projectGainReferenceFileName') ? 'ferror' : '']"
                            v-validate="{ required: true, regex: /^[\w-]+\.[\w]{3,4}$/ }"
                            v-model="projectGainReferenceFileName"
                            v-bind:readonly="isFormReadOnly">
-                    <span v-if="errors.has('projectGainReferenceFileName')" class="errormessage ferror">{{ errors.first('projectGainReferenceFileName') }}</span>
+                    <span v-if="errors.has('projectGainReferenceFileName')" class="errormessage ferror tw-h-8">{{ errors.first('projectGainReferenceFileName') }}</span>
                 </li>
 
                 <li class="head">Experiment</li>
@@ -106,13 +106,13 @@
 
                 <li>
                     <label>Pixel Size (Å/pixel)</label>
-                    <input type="text" name="pixelSize"
+                    <input type="text" name="pixelSize" :class="[errors.has('pixelSize') ? 'ferror' : '']"
                            v-validate="'required|min_value:0.02|max_value:100'"
                            v-model="pixelSize"
                            v-on:keyup="onCalculateForMe"
                            v-bind:readonly="isFormReadOnly">
                     <span v-if="errors.has('pixelSize')"
-                          class="errormessage ferror">{{ errors.first('pixelSize') }}</span>
+                          class="errormessage ferror tw-h-8">{{ errors.first('pixelSize') }}</span>
                 </li>
 
                 <li>
@@ -133,11 +133,11 @@
 
                 <li>
                     <label>Dose per frame (e<span class="super">-</span>/Å<span class="super">2</span>)</label>
-                    <input type="text" name="dosePerFrame"
+                    <input type="text" name="dosePerFrame" :class="[errors.has('dosePerFrame') ? 'ferror' : '']"
                            v-validate="'required|min_value:0.02|max_value:10'"
                            v-model="dosePerFrame"
                            v-bind:readonly="isFormReadOnly">
-                    <span v-if="errors.has('dosePerFrame')" class="errormessage ferror">{{ errors.first('dosePerFrame') }}</span>
+                    <span v-if="errors.has('dosePerFrame')" class="errormessage ferror tw-h-8">{{ errors.first('dosePerFrame') }}</span>
                 </li>
 
                 <li>
@@ -166,7 +166,7 @@
                 <li class="head" v-if="pipelineDo1stPass">Particle Picking</li>
 
                 <li v-if="pipelineDo1stPass">
-                        <label>Use crYOLO<br>Academic users only.<br>Not licensed for industry users.</label>
+                    <label>Use crYOLO<span class="small">Academic users only.<br>Not licensed for industry users.</span></label>
                     <input type="checkbox" name="particleUseCryolo"
                            v-model="particleUseCryolo"
                            v-bind:disabled="isFormReadOnly">
@@ -174,48 +174,48 @@
 
                 <li v-if="pipelineDo1stPass">
                     <label>Minimum Diameter (Å)</label>
-                    <input type="text" name="particleDiameterMin"
+                    <input type="text" name="particleDiameterMin" :class="[errors.has('particleDiameterMin') ? 'ferror' : '']"
                            v-validate="'required|min_value:0.02|max_value:1024'"
                            v-model="particleDiameterMin"
                            v-bind:readonly="isFormReadOnly">
-                    <span v-if="errors.has('particleDiameterMin')" class="errormessage ferror">{{ errors.first('particleDiameterMin') }}</span>
+                    <span v-if="errors.has('particleDiameterMin')" class="errormessage ferror tw-h-8">{{ errors.first('particleDiameterMin') }}</span>
                 </li>
 
                 <li v-if="pipelineDo1stPass">
                     <label>Maximum Diameter (Å)</label>
-                    <input type="text" name="particleDiameterMax"
+                    <input type="text" name="particleDiameterMax" :class="[errors.has('particleDiameterMax') ? 'ferror' : '']"
                            v-validate="'required|min_value:0.02|max_value:4000'"
                            v-model="particleDiameterMax"
                            v-on:keyup="onCalculateForMe"
                            v-bind:readonly="isFormReadOnly">
-                    <span v-if="errors.has('particleDiameterMax')" class="errormessage ferror">{{ errors.first('particleDiameterMax') }}</span>
+                    <span v-if="errors.has('particleDiameterMax')" class="errormessage ferror tw-h-8">{{ errors.first('particleDiameterMax') }}</span>
                 </li>
 
                 <li v-if="pipelineDo1stPass">
                     <label>Mask Diameter (Å)</label>
-                    <input type="text" name="particleMaskDiameter"
+                    <input type="text" name="particleMaskDiameter" :class="[errors.has('particleMaskDiameter') ? 'ferror' : '']"
                            v-validate="'required|min_value:0.1|max_value:1024'"
                            v-model="particleMaskDiameter"
                            v-bind:readonly="isFormReadOnly || particleCalculateForMe">
-                    <span v-if="errors.has('particleMaskDiameter')" class="errormessage ferror">{{ errors.first('particleMaskDiameter') }}</span>
+                    <span v-if="errors.has('particleMaskDiameter')" class="errormessage ferror tw-h-8">{{ errors.first('particleMaskDiameter') }}</span>
                 </li>
 
                 <li v-if="pipelineDo1stPass">
                     <label>Box Size (px)</label>
-                    <input type="text" name="particleBoxSize"
+                    <input type="text" name="particleBoxSize" :class="[errors.has('particleBoxSize') ? 'ferror' : '']"
                            v-validate="'required|min_value:0.1|max_value:1024'"
                            v-model="particleBoxSize"
                            v-bind:readonly="isFormReadOnly || particleCalculateForMe">
-                    <span v-if="errors.has('particleBoxSize')" class="errormessage ferror">{{ errors.first('particleBoxSize') }}</span>
+                    <span v-if="errors.has('particleBoxSize')" class="errormessage ferror tw-h-8">{{ errors.first('particleBoxSize') }}</span>
                 </li>
 
                 <li v-if="pipelineDo1stPass">
                     <label>Downsample Box Size (px)</label>
-                    <input type="text" name="particleBoxSizeSmall"
+                    <input type="text" name="particleBoxSizeSmall" :class="[errors.has('particleBoxSizeSmall') ? 'ferror' : '']"
                            v-validate="'required|min_value:0.1|max_value:1024'"
                            v-model="particleBoxSizeSmall"
                            v-bind:readonly="isFormReadOnly || particleCalculateForMe">
-                    <span v-if="errors.has('particleBoxSizeSmall')" class="errormessage ferror">{{ errors.first('particleBoxSizeSmall') }}</span>
+                    <span v-if="errors.has('particleBoxSizeSmall')" class="errormessage ferror tw-h-8">{{ errors.first('particleBoxSizeSmall') }}</span>
                 </li>
 
                 <li v-if="pipelineDo1stPass">
