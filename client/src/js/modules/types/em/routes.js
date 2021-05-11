@@ -1,7 +1,7 @@
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
-const RelionView = import(/* webpackChunkName: "group-em" */ 'modules/types/em/relion/views/relion')
-const ScipionView = import(/* webpackChunkName: "group-em" */ 'modules/types/em/scipion/views/scipion')
+const RelionView = import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/relion')
+const ScipionView = import(/* webpackChunkName: "em" */ 'modules/types/em/scipion/views/scipion')
 
 const routes = [
     {

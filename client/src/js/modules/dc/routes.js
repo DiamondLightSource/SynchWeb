@@ -4,16 +4,16 @@ import Debug from 'app/views/debug.vue'
 
 // Lazy load Vue wrapper components
 // Group these to isolate loading Three.js in dc vendor module
-const DCWrapper = () => import(/* webpackChunkName: "group-dc" */ 'modules/dc/components/dc-wrapper.vue')
-const MapModelWrapper = () => import(/* webpackChunkName: "group-dc" */ 'modules/dc/components/map-model-wrapper.vue')
-const ImageViewWrapper = () => import(/* webpackChunkName: "group-dc" */ 'modules/dc/components/image-view-wrapper.vue')
-const ReciprocalViewWrapper = () => import(/* webpackChunkName: "group-dc" */ 'modules/dc/components/reciprocal-view-wrapper.vue')
+const DCWrapper = () => import(/* webpackChunkName: "dc" */ 'modules/dc/components/dc-wrapper.vue')
+const MapModelWrapper = () => import(/* webpackChunkName: "dc-3d" */ 'modules/dc/components/map-model-wrapper.vue')
+const ImageViewWrapper = () => import(/* webpackChunkName: "dc-3d" */ 'modules/dc/components/image-view-wrapper.vue')
+const ReciprocalViewWrapper = () => import(/* webpackChunkName: "dc-3d" */ 'modules/dc/components/reciprocal-view-wrapper.vue')
 
 // Data Collection Marionette Views
-const Summary = import(/* webpackChunkName: "group-dc1" */ 'modules/dc/views/summary')
-const APStatusSummary = import(/* webpackChunkName: "group-dc1" */ 'modules/dc/views/apstatussummary')
-const SampleChangerView = import(/* webpackChunkName: "group-dc1" */ 'modules/dc/views/samplechangerfull')
-const QueueBuilder = import(/* webpackChunkName: "group-dc1" */ 'modules/dc/views/queuebuilder')
+const Summary = import(/* webpackChunkName: "dc" */ 'modules/dc/views/summary')
+const APStatusSummary = import(/* webpackChunkName: "dc" */ 'modules/dc/views/apstatussummary')
+const SampleChangerView = import(/* webpackChunkName: "dc" */ 'modules/dc/views/samplechangerfull')
+const QueueBuilder = import(/* webpackChunkName: "dc" */ 'modules/dc/views/queuebuilder')
 
 // import DataCollection from 'models/datacollection'
 import DCCol from 'collections/datacollections'
