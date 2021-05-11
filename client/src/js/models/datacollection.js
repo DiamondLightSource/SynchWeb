@@ -1,9 +1,7 @@
 define(['backbone'], function(Backbone) {
   var dc = Backbone.Model.extend({
     idAttribute: 'ID',
-    // There is no endpoint that takes a /dc/single/t/:type!
-    // urlRoot: function() { return '/dc/single'+(this.get('TYPE') ? '/t/'+this.get('TYPE') : '') },
-    urlRoot: '/dc/single',
+    urlRoot: function() { return '/dc/single'+(this.get('TYPE') ? '/t/'+this.get('TYPE') : '') },
       
     /*parse: function(resp, options) {
         console.log(options)
