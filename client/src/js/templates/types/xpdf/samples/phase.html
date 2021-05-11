@@ -1,11 +1,22 @@
 <h1>View Phase</h1>
 <p class="help">This page shows the details of a phase</p>
 
+<!-- Only allow cloning for valid/approved proteins -->
+<% if (EXTERNAL == 1) { %>
+    <a class="button" href="/phases/pid/<%-PROTEINID%>/clone">Clone Phase</a>
+    <a class="button" href="/xsamples/simple/add/<%-PROTEINID%>"><i class="fa fa-plus"></i> New Simple Sample</a>
+<% } %>
+
 <div class="form">
     <ul>
         <li>
             <span class="label">Name</span>
             <span class="NAME"><%-NAME%></span>
+        </li>
+
+        <li>
+            <span class="label">Acronym</span>
+            <span class="ACRONYM"><%-ACRONYM%></span>
         </li>
 
         <li>

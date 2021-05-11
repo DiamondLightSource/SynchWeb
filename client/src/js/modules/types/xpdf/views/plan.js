@@ -542,6 +542,7 @@ define(['marionette',
             var columns = [
                 { label: '#', cell: table.TemplateCell, editable: false, template: '<%-LOCATION%>' },
                 { name: 'NAME', label: 'Name', cell: 'string', editable: false },
+                { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false, template: '<%-ACRONYM%>' },
                 { name: 'CRYSTAL', label: 'Instance of', cell: 'string', editable: false },
                 { label: '', cell: AddCell, editable: false, datacollectionplans: this.datacollectionplans, scanmodels: this.scanmodels, dpdetectors: this.datacollectionplandetectors },
             ]
@@ -564,6 +565,7 @@ define(['marionette',
                 { label: 'Axes', cell: AxesCell, editable: false, scanservices: this.scanservices, scanmodels: this.scanmodels },
                 { label: 'Detectors', cell: DetectorsCell, editable: false, detectors: this.detectors, dpdetectors: this.datacollectionplandetectors, beamlinesetups: this.beamlinesetups },
                 { label: 'Parameters', cell: DCPlanCell, editable: false },
+                { label: 'Delete', cell: table.TemplateCell, editable: false, template: '<a href="#" class="button button-notext clear"><i class="fa fa-times"></i></a>' },
             ]
 
             this.table2 = new SortableTableView({ 
@@ -571,9 +573,10 @@ define(['marionette',
                 columns: columns, 
                 tableClass: 'subsamples', 
                 loading: true,
-                backgrid: {
+                // Below overrides the SortableRow in the SortableTableView which breaks drag and drop events
+                /*backgrid: {
                     emptyText: 'No data collection plans found'
-                }
+                }*/
             })
 
             this.listenTo(this.datacollectionplans, 'order:updated', this.saveOrder)
