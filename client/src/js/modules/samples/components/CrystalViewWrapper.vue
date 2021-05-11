@@ -68,7 +68,7 @@ export default {
 
         let title = CrystalViewMap[this.proposalType].title || 'Crystal'
 
-        this.bc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+        this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }]
 
         this.model = new Crystal({ CRYSTALID: this.cid }, { addPrimary: this.proposalType == 'xpdf' })
         // For xpdf there is data.seq = 1 used in the fetch request!
