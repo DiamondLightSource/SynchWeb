@@ -4,7 +4,7 @@
             v-if="ready"
             :key="$route.fullPath"
             :options="options"
-            :fetchOnLoad="true"
+            :preloaded="true"
             :mview="mview"
             :breadcrumbs="bc">
         </marionette-view>

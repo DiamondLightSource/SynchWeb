@@ -24,26 +24,33 @@ export default {
         'fetchOnLoad': { 
             type: Boolean,
             default: false,
+        },
+        // Rare case where model or collection has already been loaded
+        // Used when router guard does not need to prefetch the data
+        // For example where we are using a wrapper component and we've already loaded the model or collection
+        'preloaded' : {
+            type: Boolean,
+            default: false,
         }
     },
     data: function() {
         return {
             marionetteRegion: null,
             marionetteView: null,
-            loaded: false,
+            modelsLoaded: false,
         }
     },
     computed: {
         // If we have a model or collection passed in, we need to fetch the data before rendering the view
-        prefetch: function() {
+        hasModelOrCollection: function() {
             if ( this.options && (this.options.model || this.options.collection) ) return true
             else return false
         }
     },
     watch: {
         // If we are prefetching data, wait for loaded state (boolean) before rendering
-        loaded: function(val) {
-            if (val && this.prefetch) {
+        modelsLoaded: function(loaded) {
+            if (loaded) {
                 this.initialiseView()
             }
         },
@@ -56,23 +63,20 @@ export default {
         });
         // If we have been passed breadcrumbs, send the update event
         // We will update the breadcrumbs again if the model loads and tags are present
-        if (this.breadcrumbs) {
-            console.log("Marionette View bc: " + JSON.stringify(this.breadcrumbs))
-            EventBus.$emit('bcChange', this.breadcrumbs)
-        }
+        if (this.breadcrumbs) EventBus.$emit('bcChange', this.breadcrumbs)
     },
     mounted: function() {
         // Intercept any 'a' tag links from within marionette views and delegate relative links to vue-router
         this.handleHTMLAnchorEvents()
 
-        if (this.prefetch === false) {
-            // No prefetching, initialise now
-            this.initialiseView()
-        } else {
-            // If we have been loaded by Vue Router then prefetchData will already have been called.
-            // It not and we are a child of another component, check if we have model or collection to fetch
-            if (this.fetchOnLoad) this.prefetchData()
-        }
+        if (this.hasModelOrCollection === false) { this.initialiseView(); return }
+
+        // If we have been loaded by Vue Router then prefetchData will already have been called.
+        // It not and we are a child of another component, check if we have model or collection to fetch
+        if (this.fetchOnLoad) { this.prefetchData(); return }
+
+        // We have a model or collection but we have already loaded the data (i.e. a wrapper component), show the view
+        if (this.preloaded)  { this.initialiseView() }
     },
     // Vue Router lifecycle method - we are navigating somewhere else
     beforeDestroy: function() {
@@ -120,10 +124,9 @@ export default {
         // In reality we will only have a collection or a model, this handles either case
         //
         prefetchData: function() {
-            if (!this.options) { this.loaded = true; return }
-            if (!this.options.model && !this.options.collection) { this.loaded = true; return }
+            if (!this.options) { return }
+            if (!this.options.model && !this.options.collection) { return }
             
-            if (this.options.queryParams) console.log("MV Prefetch QUERY PARAMS= " + this.options.queryParams)
             const promiseCollection = this.fetchCollection(this.options.collection, this.options.queryParams)
             const promiseModel = this.fetchModel(this.options.model, this.options.queryParams)
 
@@ -134,19 +137,13 @@ export default {
                     // Crude but ensures the collection passed into the marionette view is up to date
                     // Need to check memory leaks, if so use the blunt approach below
                     this.options.collection = Object.assign(this.options.collection, values[0])
-                    // Avoid memory leak by reassigning the actual returned collection
-                    // delete this.options.collection
-                    // this.options.collection = values[0]
                 }
                 if (values[1]) {
                     // Model was not reliably updated automatically so force update
                     // They can be different depending on the scope of the model when it was created
                     this.options.model = Object.assign(this.options.model, values[1])
-                    // Avoid memory leak by reassigning the actual returned model
-                    // delete this.options.model
-                    // this.options.model = values[1]
                 }
-                this.loaded = true
+                this.modelsLoaded = true
             })
         },
         fetchCollection: function(collection, queryParams) {
