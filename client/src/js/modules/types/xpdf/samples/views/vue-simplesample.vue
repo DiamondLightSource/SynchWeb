@@ -87,10 +87,8 @@
                     </li>
 
                     <li>
-                        <span>
-                            <label>Not in Capillary?</label>
-                            <input type="checkbox" v-model="containerless" /><br />
-                        </span>
+                        <label>Not in Capillary?</label>
+                        <span><input type="checkbox" v-model="containerless" /></span><br />
                     </li>
 
                     <li>
