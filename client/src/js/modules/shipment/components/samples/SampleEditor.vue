@@ -12,7 +12,6 @@
     </div>
     <div v-else>
       <!-- Use plate table, single or table depending on capacity -->
-      <!-- Hardcoding experiment type for testing -->
       <component
         :is="sampleComponent"
         :proteins="proteins"
@@ -54,7 +53,6 @@ const INITIAL_SAMPLE_STATE = {
   PROTEINID: -1,
   CRYSTALID: -1,
   NAME: '',
-  TYPE: '',
   VOLUME: '',
   PURIFICATIONCOLUMNID: null,
   ROBOTPLATETEMPERATURE: null,

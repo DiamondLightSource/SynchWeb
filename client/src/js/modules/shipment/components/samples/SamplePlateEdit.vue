@@ -50,21 +50,21 @@
           <span v-else>{{row['ACRONYM']}}</span>
         </td>
         <td>
-          <base-input-select v-if="editRowLocation == row['LOCATION']" v-model="sample['TYPE']" optionValueKey="ID" optionTextKey="TYPE" :options="sampleTypes" />
-          <span v-else>{{row['TYPE']}}</span>
-        </td>
-        <td>
           <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'Name-'+sample['LOCATION']" :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="sample['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
           <span v-else>{{row['NAME']}}</span>
         </td>
-        <!-- The problematic column id field... -->
         <td>
+          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'VOLUME-'+sample['LOCATION']" rules="decimal|min_value:10|max_value:100" v-slot="{ errors }"><base-input-text v-model="sample['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <span v-else>{{row['VOLUME']}}</span>
+        </td>
+        <td v-if="showInputHplcFields">
+          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'COMMENTS-'+sample['LOCATION']" rules="alpha_dash|max:1000" v-slot="{ errors }"><base-input-text v-model="sample['COMMENTS']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <span v-else>{{row['COMMENTS']}}</span>
+        </td>
+        <!-- The problematic column id field... -->
+        <td v-if="showInputHplcFields">
           <base-input-select v-if="editRowLocation == row['LOCATION']" v-model="sample['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/>
           <span v-else>{{getPurificationColumnName(row['PURIFICATIONCOLUMNID'])}}</span>
-        </td>
-        <td>
-          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'VOLUME-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-          <span v-else>{{row['VOLUME']}}</span>
         </td>
         <td v-if="showInputRobotFields">
           <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
@@ -86,7 +86,6 @@
         </span>
         <!-- Other row actions -->
         <a v-show="row['BLSAMPLEID']" class="button" :href="'/samples/sid/'+row['BLSAMPLEID']"><i class="fa fa-search"></i></a>
-        <a v-show="row['BLSAMPLEID']" class="button" href="" @click.prevent="$emit('addto-sample-group', row['LOCATION'])"><i class="fa fa-cubes"></i></a>
       </template>
     </table-component>
 
@@ -106,6 +105,7 @@ import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 // Property to compare for extra columns
 const EXPERIMENT_TYPE_ROBOT = 'Robot'
+const EXPERIMENT_TYPE_HPLC = 'HPLC'
 
 export default {
   name: 'edit-sample-plate',
@@ -128,7 +128,7 @@ export default {
       required: true
     },
     experimentKind: {
-      type: Number,
+      type: Number
     },
     containerId: {
       type: Number
@@ -143,19 +143,18 @@ export default {
       commonSampleHeaders: [
         {key: 'LOCATION', title: 'location'},
         {key: 'ACRONYM', title: 'acronym'},
-        {key: 'TYPE', title: 'type'},
         {key: 'NAME', title: 'Name'},
-        {key: 'PURIFICATIONCOLUMNID', title: 'Column'},
         {key: 'VOLUME', title: 'Volume (uL)'},
       ],
       robotExperimentHeaders: [
         {key: 'ROBOTPLATETEMPERATURE', title: 'Robot Temperature'},
         {key: 'EXPOSURETEMPERATURE', title: 'Exposure Temperature'},
       ],
-      sampleTypes: [
-        {ID: 'Sample', TYPE: 'Sample'},
-        {ID: 'Buffer', TYPE: 'Buffer'},
+      hplcExperimentHeaders: [
+        {key: 'COMMENTS', title: 'Comment: Buffer Location'},
+        {key: 'PURIFICATIONCOLUMNID', title: 'Column'},
       ],
+
       editRowLocation: '',
       // When editing a row we use a temporary sample object as the model
       // Then if we cancel the edit, the original row data is not changed
@@ -172,8 +171,8 @@ export default {
       this.purificationColumns = result.toJSON()
       this.tableKey += 1
     })
-
     this.availableProteins = this.proteins.toJSON()
+    console.log("Sample Plate Edit - created with proteins: " + JSON.stringify(this.availableProteins))
   },
   computed: {
     // Trick to allow us to set/get passed model
@@ -193,10 +192,17 @@ export default {
       if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) {
         for (var i=0; i<this.robotExperimentHeaders.length; i++) headers.push(this.robotExperimentHeaders[i])
       }
+      if (this.experimentKind == EXPERIMENT_TYPE_HPLC) {
+        for (var i=0; i<this.hplcExperimentHeaders.length; i++) headers.push(this.hplcExperimentHeaders[i])
+      }
       return headers
     },
     showInputRobotFields: function() {
-      if (this.experimentKind && this.experimentKind == EXPERIMENT_TYPE_ROBOT) return true
+      if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) return true
+      else return false
+    },
+    showInputHplcFields: function() {
+      if (this.experimentKind == EXPERIMENT_TYPE_HPLC) return true
       else return false
     }
   },

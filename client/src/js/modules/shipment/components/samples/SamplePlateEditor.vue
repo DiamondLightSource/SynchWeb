@@ -15,10 +15,10 @@
       <template slot="content" slot-scope="{ row }">
         <td>{{row['LOCATION']}}</td>
         <validation-provider tag="td" :name="'Acronym-'+row['LOCATION']" :rules="row['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }"><base-input-select v-model="row['PROTEINID']" name="proteins" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <td><base-input-select v-model="row['TYPE']" optionValueKey="ID" optionTextKey="TYPE" :options="sampleTypes"/></td>
         <validation-provider tag="td" :name="'Name-'+row['LOCATION']" :rules="row['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="row['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <td><base-input-select v-model="row['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></td>
-        <validation-provider tag="td" :name="'VOLUME-'+row['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="row['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" :name="'VOLUME-'+row['LOCATION']" rules="decimal|min_value:10|max_value:100" v-slot="{ errors }"><base-input-text v-model="row['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" :name="'PURIFICATIONCOLUMNID'+row['LOCATION']" v-if="showInputHplcExp" v-slot="{ errors }"><base-input-select v-model="row['PURIFICATIONCOLUMNID']" name="purification" :quiet="true" :errorMessage="errors[0]" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></validation-provider>
+        <validation-provider tag="td" :name="'COMMENTS-'+row['LOCATION']" rules="alpha_dash|max:1000" v-if="showInputHplcExp" v-slot="{ errors }"><base-input-text v-model="row['COMMENTS']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
         <validation-provider tag="td" :name="'ROBOTPLATETEMPERATURE-'+row['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
         <validation-provider tag="td" :name="'EXPOSURETEMPERATURE-'+row['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
       </template>
@@ -69,6 +69,7 @@ export default {
     },
     experimentKind: {
       type: Number,
+      default: 0
     }
   },
   data: function() {
@@ -79,25 +80,18 @@ export default {
       commonSampleHeaders: [
         {key: 'LOCATION', title: 'Location'},
         {key: 'PROTEINID', title: 'Acronym'},
-        {key: 'TYPE', title: 'Type'},
         {key: 'NAME', title: 'Name'},
-        {key: 'COLUMN', title: 'Column'},
         {key: 'VOLUME', title: 'Volume (uL)'},
       ],
       robotExperimentHeaders: [
         {key: 'ROBOTPLATETEMPERATURE', title: 'Robot Temperature'},
         {key: 'EXPOSURETEMPERATURE', title: 'Exposure Temperature'},
       ],
-      sampleTypes: [
-        {ID: 'Sample', TYPE: 'Sample'},
-        {ID: 'Buffer', TYPE: 'Buffer'},
+      hplcExperimentHeaders: [
+        {key: 'PURIFICATIONCOLUMNID', title: 'Column'},
+        {key: 'COMMENTS', title: 'Comment: Buffer Location'},
       ],
       availableProteins: [],
-    }
-  },
-  watch: {
-    experimentKind: function(newVal) {
-      console.log("Sample Plate Editor, Experiment Kind has changed: " + newVal)
     }
   },
   created: function() {
@@ -110,8 +104,6 @@ export default {
     })
 
     this.availableProteins = this.proteins.toJSON()
-
-    console.log("Sample Plate Editor - created with model: " + JSON.stringify(this.value))
   },
   computed: {
     // Trick to allow us to set/get passed model
@@ -129,13 +121,25 @@ export default {
       if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) {
         for (var i=0; i<this.robotExperimentHeaders.length; i++) headers.push(this.robotExperimentHeaders[i])
       }
+      if (this.experimentKind == EXPERIMENT_TYPE_HPLC) {
+        for (var i=0; i<this.hplcExperimentHeaders.length; i++) headers.push(this.hplcExperimentHeaders[i])
+      }
+      
       return headers
     },
     showInputRobotExp: function() {
-      if (this.experimentKind && this.experimentKind == EXPERIMENT_TYPE_ROBOT) return true
+      if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) return true
       else {
         // We could clear any temperature values here if needed/required
         this.inputValue.forEach( (v) => { v.ROBOTPLATETEMPERATURE = ''; v.EXPOSURETEMPERATURE = ''})
+        return false
+      }
+    },
+    showInputHplcExp: function() {
+      if (this.experimentKind == EXPERIMENT_TYPE_HPLC) return true
+      else {
+        // We could clear any values here if needed/required
+        this.inputValue.forEach( (v) => { v.PURIFICATIONCOLUMNID = '', v.COMMENTS = '' })
         return false
       }
     }
