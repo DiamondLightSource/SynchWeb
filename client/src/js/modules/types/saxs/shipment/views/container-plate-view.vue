@@ -86,7 +86,7 @@
 
     <div class="table sample">
       <sample-editor
-        v-if="plateType"
+        v-if="plateType && proteinsLoaded"
         :sampleComponent="plateType"
         :capacity="container.CAPACITY"
         :experimentKind="container.EXPERIMENTTYPE"
@@ -199,16 +199,7 @@ export default {
     let collection = new ContainerHistory()
     this.getHistory(collection)
 
-    this.proteinsCollection = new DistinctProteins()
-    // If we want to only allow valid samples
-    if (app.options.get('valid_components') && !app.staff) {
-        this.proteinsCollection.queryParams.external = 1
-    }
-
-    this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
-      console.log("Proteins = " + JSON.stringify(result))
-    })
-
+    this.getProteins()
     // Get the geometry for this container type
     // When backend can get container type by name or id we can make this more efficient
     let containerTypesCollection = new ContainerTypes()
@@ -219,6 +210,19 @@ export default {
     })
   },
   methods: {
+    getProteins: function() {
+      this.proteinsCollection = new DistinctProteins()
+      this.gProteinsCollection = new DistinctProteins()
+      // If we want to only allow valid samples
+      if (app.options.get('valid_components') && !app.staff) {
+          this.proteinsCollection.queryParams.external = 1
+      }
+      
+      this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
+        this.proteins = result.toJSON()
+        this.proteinsLoaded = true
+      })
+    },
     // Callback from pagination
     onUpdateHistory: function(payload) {
       let collection = new ContainerHistory( null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
