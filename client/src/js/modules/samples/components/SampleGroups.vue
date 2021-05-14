@@ -2,8 +2,6 @@
   <div class="content">
     <h1>Sample Group Management</h1>
 
-    <!-- <pagination-table /> -->
-
     <div class="r tw-mb-2">
       <button @click="onAddSampleGroup" class="button">
         <i class="fa fa-plus"></i> Add Sample Group
@@ -37,9 +35,8 @@
 <script>
 import ContainerGraphic from "./ContainerGraphic.vue";
 
-import Table from 'app/components/utils/table.vue'
-import Pagination from 'app/components/utils/pagination.vue'
-import PaginationTable from 'app/components/utils/pagination-table.vue'
+import Table from 'app/components/table.vue'
+import Pagination from 'app/components/pagination.vue'
 
 import SampleGroupsCollection from 'collections/samplegroups.js'
 
@@ -48,8 +45,7 @@ export default {
   components: {
     'table-panel': Table,
     'pagination-panel': Pagination,
-    'container-graphic': ContainerGraphic,
-    'pagination-table': PaginationTable,
+    'container-graphic': ContainerGraphic
   },
 
   data: function () {

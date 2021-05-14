@@ -36,8 +36,8 @@
 </template>
 
 <script>
-import Table from 'app/components/utils/table.vue'
-import Pagination from 'app/components/utils/pagination.vue'
+import Table from 'app/components/table.vue'
+import Pagination from 'app/components/pagination.vue'
 import Containers from 'collections/containers'
 import MarionetteApplication from 'app/marionette-application.js'
 import CollectionFilters from 'app/components/utils/collection-filters.vue'

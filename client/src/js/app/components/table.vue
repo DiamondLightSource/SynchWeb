@@ -27,18 +27,20 @@ TODO - move relevant styles to this component style section
 
         <!-- Change row[header.key] to row.get(header.key) if using Backbone models -->
         <tbody v-if="data && data.length > 0">
-          <tr
-            v-for="(row, index) in data"
-            :key="index"
-            v-on:click="$emit('row-clicked', row)">
+          <slot :data="data" :headers="headers">
+            <tr
+              v-for="(row, index) in data"
+              :key="index"
+              v-on:click="$emit('row-clicked', row)">
 
-            <!-- Default row layout override with the content slot if you need items like form inputs-->
-            <slot name="content" v-bind:row="row">
-              <td v-for="(header, index) in headers" :key="index">{{row[header.key]}}</td>
-            </slot>
+              <!-- Default row layout override with the content slot if you need items like form inputs-->
+              <slot name="content" v-bind:row="row">
+                <td v-for="(header, index) in headers" :key="index">{{row[header.key]}}</td>
+              </slot>
 
-            <td v-if="actions"><slot name="actions" v-bind:row="row"></slot></td>
-          </tr>
+              <td v-if="actions"><slot name="actions" v-bind:row="row"></slot></td>
+            </tr>
+          </slot>
         </tbody>
 
         <tbody v-else>

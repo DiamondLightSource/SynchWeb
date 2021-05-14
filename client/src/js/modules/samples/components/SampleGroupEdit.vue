@@ -80,9 +80,7 @@ import { mapGetters } from 'vuex'
 import { differenceBy, uniqBy, get as lodashGet, values, keys, has, pick, each, map } from 'lodash-es'
 import ContainerGraphic from './ContainerGraphic.vue'
 
-import Table from 'app/components/utils/table.vue'
-import Pagination from 'app/components/utils/pagination.vue'
-import PaginationTable from 'app/components/utils/pagination-table.vue'
+import Table from 'app/components/table.vue'
 import BaseButton from 'app/components/base-button.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import ContainersList from 'modules/shipment/components/containers-list.vue'
@@ -99,9 +97,7 @@ export default {
   },
   components: {
     'table-panel': Table,
-    'pagination-panel': Pagination,
     'container-graphic': ContainerGraphic,
-    'pagination-table': PaginationTable,
     'base-button': BaseButton,
     'base-input-text': BaseInputText,
     'containers-list': ContainersList
