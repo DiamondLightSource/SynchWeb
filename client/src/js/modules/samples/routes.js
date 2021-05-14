@@ -17,7 +17,6 @@ const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'module
 
 const SampleGroups = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleGroups.vue')
 const SampleGroupEdit = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleGroupEdit.vue')
-import Debug from 'app/views/debug.vue'
 
 app.addInitializer(function() {
   app.on('samples:show', function() {
