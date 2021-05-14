@@ -22,7 +22,7 @@ sftp-config.json
 client/node_modules
 client/assets
 client/index.php
-client/dist
+/client/dist
 
 api/config.php
 api/vendor
