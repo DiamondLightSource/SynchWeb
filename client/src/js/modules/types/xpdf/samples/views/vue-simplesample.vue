@@ -230,7 +230,9 @@
     export default {
         name: 'SimpleSample',
         props: {
-
+            protein: {
+                type: Object
+            }
         },
 
         data: function(){
@@ -323,7 +325,7 @@
 
             // We should have arrived with an existing Phase to base the new simple samples on
             // pre-populate fields with useful information
-            var protein = this.$getOption('model')
+            var protein = this.$props.protein
             this.name = protein.get('NAME')
             this.acronym = protein.get('ACRONYM')
             this.seq = protein.get('SEQUENCE')

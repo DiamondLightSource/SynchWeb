@@ -38,6 +38,7 @@ define(['marionette',
         events: {
             'change .uas': 'showOriginalOnly'
         },
+        ui: { toggleUAS: '.uas' },
         
         columns: [
             { name: 'NAME', label: 'Name', cell: 'string', editable: false },
@@ -53,11 +54,11 @@ define(['marionette',
         // Toggle between displaying all phases or only UAS approved originals
         showOriginalOnly: function(){
             if(this.ui.toggleUAS[0].checked == true){
-                this.collection.queryParams['external'] = 1
+                this.collection.queryParams['original'] = 1
                 this.collection.state['currentPage'] = 1
                 this.collection.fetch()
             } else {
-                delete this.collection.queryParams['external']
+                delete this.collection.queryParams['original']
                 this.collection.fetch()
             }
         }
