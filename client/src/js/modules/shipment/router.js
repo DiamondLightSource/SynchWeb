@@ -19,7 +19,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'containers/registry(/ty/:ty)(/s/:s)(/page/:page)': 'container_registry',
       'containers/registry/:crid': 'view_rcontainer',
 
-      'containers/queued(/s/:s)(/ty/:ty)(/pt/:pt)(/page/:page)': 'queued_containers',
+      'containers/queued(/s/:s)(/ty/:ty)(/pt/:pt)(/bl/:bl)(/page/:page)': 'queued_containers',
       'containers/review/:cid': 'container_review',
 
       'dewars(/s/:s)(/page/:page)': 'dewar_list',
