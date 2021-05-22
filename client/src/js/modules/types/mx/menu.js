@@ -23,6 +23,7 @@ define([], function() {
         },
         
         admin: {
+            'containers/queued': { title: 'Queue', icon: 'fa-database', permission: 'auto_dash' },
             'runs/overview': { title: 'Run Overview', icon: 'fa-bar-chart', permission: 'all_breakdown' },
             'stats/overview/beamlines': { title: 'Reporting', icon: 'fa-line-chart', permission: 'all_prop_stats' },
             'admin/imaging': { title: 'Imaging', icon: 'fa-image', permission: 'imaging_dash' },
