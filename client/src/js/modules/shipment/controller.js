@@ -361,14 +361,14 @@ define(['backbone',
         })
     },
 
-    queued_containers: function(s, ty, pt, page) {
+    queued_containers: function(s, ty, pt, bl, page) {
         if (!app.staff) {
             app.message({ title: 'No access', message: 'You do not have access to that page'})
             return
         }
 
         app.bc.reset([bc, { title: 'Queued Containers' }])
-        app.content.show(new QueuedContainers({ params: { s: s, ty: ty, pt: pt, page: page }}))
+        app.content.show(new QueuedContainers({ params: { s: s, ty: ty, pt: pt, bl: bl, page: page }}))
     },
 
     container_review: function(cid) {

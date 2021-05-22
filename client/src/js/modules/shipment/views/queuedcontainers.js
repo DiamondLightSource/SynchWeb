@@ -5,8 +5,10 @@ define(['backbone', 'marionette',
     'utils/table', 
     'utils',
     'collections/proposaltypes',
+    'collections/bls', 
     'collections/containers'], function(Backbone, Marionette, Backgrid, TableView, FilterView, table, utils,
         ProposalTypes,
+        Beamlines,
         Containers) {
 
 
@@ -55,6 +57,16 @@ define(['backbone', 'marionette',
         }
     })
 
+    var LocationCell = Backgrid.Cell.extend({
+        render: function() {
+            this.$el.html(this.model.escape('BEAMLINELOCATION'))
+            if (this.model.get('SAMPLECHANGERLOCATION')) {
+                this.$el.append(' - ' + this.model.escape('SAMPLECHANGERLOCATION'))
+            }
+            return this
+        }
+    })
+
     var FilterWithDefault = FilterView.extend({
         default: null,
 
@@ -70,8 +82,11 @@ define(['backbone', 'marionette',
     
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Queued Containers (<span class="total">-</span>)</h1><div class="filter type"></div><div class="filter type2"></div><div class="wrapper"></div></div>',
-        regions: { wrap: '.wrapper', type: '.type', type2: '.type2' },
+        template: '<div><h1>Queued Containers (<span class="total">-</span>)</h1><div class="filter type"></div><div class="filter type2"></div><div class="filter typeas"></div><div class="filter typebl"></div><div class="wrapper"></div></div>',
+        regions: { 
+            wrap: '.wrapper',
+            type: '.type', type2: '.type2', typeas: '.typeas', typebl: '.typebl'
+        },
 
 
         hiddenColumns: [3,4,5,7,9,10,11],
@@ -89,6 +104,7 @@ define(['backbone', 'marionette',
             { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: false },
             { name: 'QUEUEDTIMESTAMP', label: 'Queued', cell: 'string', editable: false },
             { name: 'LASTQUEUECOMPLETED', label: 'Completed', cell: 'string', editable: false },
+            { label: 'SC', cell: LocationCell, editable: false },
             { label: '', cell: ActionCell, editable: false },
         ],
 
@@ -113,7 +129,11 @@ define(['backbone', 'marionette',
 
         initialize: function(options) {
             this.types = new ProposalTypes()
-            this.ready = this.types.fetch()
+            this.ready = []
+            this.ready.push(this.types.fetch())
+
+            this.beamlines = new Beamlines(null, { ty: app.type })
+            this.ready.push(this.beamlines.fetch())
 
             this.collection = new Containers()
             this.collection.queryParams.all = 1
@@ -144,16 +164,29 @@ define(['backbone', 'marionette',
                 name: 'ty',
                 filters: filters
             })
+
+            this.assigned = new FilterView({
+                collection: this.collection,
+                name: 'assigned',
+                filters: { id: 1, name: 'Assigned'},
+            })
         },
                                
         onRender: function() {
             this.wrap.show(this.table)
             this.type.show(this.ty)
+            this.typeas.show(this.assigned)
 
-            this.ready.done(this.showFilter2.bind(this))
+            $.when.apply($, this.ready).then(this.doOnRender.bind(this))
         },
 
-        showFilter2: function() {
+        doOnRender: function() {
+            this.showProposalFilter()
+            this.showBeamlineFilter()
+            this.refresh()
+        },
+
+        showProposalFilter: function() {
             this.ty2 = new FilterView({
                 collection: this.collection,
                 name: 'PROPOSALCODE',
@@ -162,12 +195,22 @@ define(['backbone', 'marionette',
                 filters: this.types.map(function(b) { return { id: b.get('PROPOSALCODE'), name: b.get('PROPOSALCODE') } }),
             })
             this.type2.show(this.ty2)
-            this.refresh()
         },
 
         updateFilter2: function(selected) {
             this.collection.queryParams.proposalcode = selected
             this.refresh()
+        },
+
+        showBeamlineFilter: function() {
+            this.tybl = new FilterView({
+                collection: this.collection,
+                name: 'bl',
+                urlFragment: 'bl',
+                value: this.getOption('params') && this.getOption('params').bl,
+                filters: this.beamlines.map(function(b) { return { id: b.get('BEAMLINE'), name: b.get('BEAMLINE') } }),
+            })
+            this.typebl.show(this.tybl)
         },
     })
 
