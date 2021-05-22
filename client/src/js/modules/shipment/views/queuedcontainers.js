@@ -123,7 +123,6 @@ define(['backbone', 'marionette',
         },
 
         updateTotal: function() {
-            console.log('updatetotal', this.collection)
             this.ui.total.text(this.collection.state.totalRecords)
         },
 
