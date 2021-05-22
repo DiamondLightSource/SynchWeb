@@ -13,6 +13,10 @@
 
     <% if (LCOUT && LCRET) { %>
     <div class="ra">
+        <% if (IS_STAFF) { %>
+            <a class="button queue" href="#"><i class="fa fa-plus"></i> Queue</a>
+        <% } %>
+
         <% if (SHIPPINGSTATUS == 'opened' || SHIPPINGSTATUS == 'awb created' || SHIPPINGSTATUS == 'pickup booked') { %>
             <a class="button send" href="#"><i class="fa fa-plane"></i> Mark as Sent</a>
         <% } %>
