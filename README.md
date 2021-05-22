@@ -40,6 +40,7 @@ This file should be copied to create a client/src/js/config.json file and edited
 | site_image | PNG image of site logo to display in header|
 | csv_profile | The csv profile for importing shipments, currently only imca, see src/js/csv/imca.js |
 | enable_exp_plan | Whether to enable editing of experimental plan fields when creating samples |
+| auto_collect_label | Customise the auto collect label from the default 'Automated' |
 
 ### Build front end
 See package.json for the full list of commands that can be run.

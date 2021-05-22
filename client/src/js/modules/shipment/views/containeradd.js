@@ -95,7 +95,8 @@ define(['backbone',
                 SHIPPINGID: this.dewar.get('SHIPPINGID'),
                 SHIPMENT: this.dewar.get('SHIPPINGNAME'),
                 DEWAR: this.dewar.get('CODE'),
-                ENABLE_EXP_PLAN: app.config.enable_exp_plan
+                ENABLE_EXP_PLAN: app.config.enable_exp_plan,
+                AUTO_LABEL: this.automated_label
             }
         },
         
@@ -527,6 +528,8 @@ define(['backbone',
         },
         
         initialize: function(options) {
+            this.automated_label = app.config.auto_collect_label || 'Automated'
+
             this.ready = []
             
             this.dewar = options.dewar
