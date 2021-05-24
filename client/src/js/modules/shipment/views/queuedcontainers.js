@@ -138,6 +138,7 @@ define(['backbone', 'marionette',
             this.collection.queryParams.all = 1
             this.collection.queryParams.PUCK = 1
             this.collection.queryParams.ty = 'queued'
+            if (options.params.sid) this.collection.queryParams.SHIPPINGID = options.params.sid
             this.collection.state.currentPage = options.params.page
             this.listenTo(this.collection, 'sync', this.updateTotal)
 

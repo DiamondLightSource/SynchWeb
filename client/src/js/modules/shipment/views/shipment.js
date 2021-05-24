@@ -128,8 +128,21 @@ define(['marionette',
                     }, 500)
                     
                 },
-                error: function() {
-                    app.alert({ message: 'Something went wrong marking this shipment returned, please try again' })
+                error: function(xhr) {
+                    var json = {};
+                    if (xhr.responseText) {
+                        try {
+                            json = JSON.parse(xhr.responseText)
+                        } catch(err) {
+
+                        }
+                    }
+
+                    if (json.message) {
+                        app.alert({ message: json.message })
+                    } else {
+                        app.alert({ message: 'Something went wrong marking this shipment returned, please try again' })
+                    }
                 },
                 
             })
@@ -158,7 +171,7 @@ define(['marionette',
                             var json = {};
                             if (xhr.responseText) {
                                 try {
-                                    json = $.parseJSON(xhr.responseText)
+                                    json = JSON.parse(xhr.responseText)
                                 } catch(err) {
 
                                 }

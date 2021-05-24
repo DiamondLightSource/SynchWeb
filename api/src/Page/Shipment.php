@@ -1224,6 +1224,13 @@ class Shipment extends Page
             
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
+
+            $containers = $this->db->pq("SELECT c.containerid
+                FROM container c
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
+                WHERE d.shippingid = :1", array($ship['SHIPPINGID']));
+            if (sizeof($containers)) $this->_error('Cannot return shipment, there are still uncompleted queued containers: <a href="/containers/queued/sid/'.$ship['SHIPPINGID'].'">View</a>');
             
             $this->db->pq("UPDATE shipping SET shippingstatus='returned' where shippingid=:1", array($ship['SHIPPINGID']));
             $this->db->pq("UPDATE dewar SET dewarstatus='returned' where shippingid=:1", array($ship['SHIPPINGID']));
