@@ -388,17 +388,16 @@ class Imaging extends Page
                 if ($this->arg('ty') == 'MANUAL') $where .= " AND i.manual=1";
             }
 
+            $groupby = "";
             if ($this->has_arg('delta')) {
+                $groupby = "GROUP BY i.containerinspectionid";
                 $join = 'LEFT OUTER JOIN containerinspection i2 ON i.containerid = i2.containerid AND i2.schedulecomponentid IS NOT NULL';
                 $extc = ", ROUND(TIMESTAMPDIFF('MINUTE', min(i2.bltimestamp), i.bltimestamp)/(60*24),1) as delta, CONCAT(CONCAT(CONCAT(CONCAT(TO_CHAR(i.bltimestamp, 'HH24:MI DD-MM-YYYY'), ' (+'), ROUND(TIMESTAMPDIFF('HOUR', case when min(i2.bltimestamp) is not null then min(i2.bltimestamp) else i.bltimestamp end, i.bltimestamp)/24,1)), 'd) '), (case when i.manual=1 then '[Manual]' else (case when i.schedulecomponentid is null then '[Adhoc]' else '' end) end)) as title";
             }
 
-            $inspections = $this->db->paginate("SELECT ROUND(TIMESTAMPDIFF('HOUR', i.bltimestamp, CURRENT_TIMESTAMP)/24,1) as age, ROUND(TIMESTAMPDIFF('MINUTE', i.scheduledtimestamp, i.bltimestamp)/(24*60),2) as dwell, c.code as container, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(min(im.modifiedtimestamp), 'DD-MM-YYYY HH24:MI') as imagesscoredtimestamp, case when count(im.blsampleimageid) > 0 then 1 else 0 end as imagesscored,
-                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.visit_number, TIMESTAMPDIFF('MINUTE', i.bltimestamp, i.completedtimestamp) as duration $extc
+            $inspections = $this->db->paginate("SELECT ROUND(TIMESTAMPDIFF('HOUR', i.bltimestamp, CURRENT_TIMESTAMP)/24,1) as age, ROUND(TIMESTAMPDIFF('MINUTE', i.scheduledtimestamp, i.bltimestamp)/(24*60),2) as dwell, c.code as container, CONCAT(p.proposalcode, p.proposalnumber) as prop, (SELECT DATE_FORMAT(min(modifiedtimestamp), '%d-%m-%Y %H:%i') FROM blsampleimage WHERE containerinspectionid = i.containerinspectionid AND blsampleimagescoreid IS NOT NULL) as imagesscoredtimestamp,
+                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, (SELECT sc.offset_hours FROM schedulecomponent sc WHERE sc.schedulecomponentid = i.schedulecomponentid) as offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, img.name as imager, (SELECT it.name FROM inspectiontype it WHERE it.inspectiontypeid = i.inspectiontypeid) as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.visit_number, TIMESTAMPDIFF('MINUTE', i.bltimestamp, i.completedtimestamp) as duration $extc
                 FROM containerinspection i
-                LEFT OUTER JOIN schedulecomponent sc ON sc.schedulecomponentid = i.schedulecomponentid
-                LEFT OUTER JOIN blsampleimage im ON im.containerinspectionid = i.containerinspectionid AND im.blsampleimagescoreid IS NOT NULL
-                INNER JOIN inspectiontype it ON it.inspectiontypeid = i.inspectiontypeid
                 INNER JOIN container c ON c.containerid = i.containerid
                 LEFT OUTER JOIN imager img ON img.imagerid = i.imagerid
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -407,7 +406,7 @@ class Imaging extends Page
                 LEFT OUTER JOIN blsession ses ON ses.sessionid = c.sessionid
                 $join
                 WHERE $where
-                GROUP BY i.containerinspectionid
+                $groupby
                 ORDER BY $order", $args);
 
 
