@@ -66,7 +66,7 @@
     <div class="tw-relative tw-mt-6">
       <base-button
         class="button"
-        v-if="Object.keys(selectedSamplesInGroups).length > 0"
+        :isDisabled="isDisabled"
         @perform-button-action="onSaveSampleGroup"
       >
         Save Sample Group
@@ -150,7 +150,11 @@ export default {
     ...mapGetters({
       selectedSamplesInGroups: ['sampleGroups/getSelectedSampleGroups'],
       proposal: ['proposal/currentProposal']
-    })
+    }),
+    isDisabled() {
+      return !Boolean(this.selectedSamplesInGroups[this.selectedContainerName]
+        && this.selectedSamplesInGroups[this.selectedContainerName].length > 0)
+    }
   },
   created: function () {
     this.sampleGroup = new SampleGroupsCollection()
@@ -165,10 +169,13 @@ export default {
     } else {
       this.initialSampleInGroupModels = this.sampleGroupSamples
       // The database does not allow some characters like ':' and '.' so we replace them with '-'
-      this.groupName = `${this.proposal} Sample Group (${new Date().toISOString().replace(/:|\./g, '-')})`
+      this.groupName = this.assignDefaultSampleGroupName()
     }
   },
   methods: {
+    assignDefaultSampleGroupName() {
+      return `${this.proposal} Sample Group (${new Date().toISOString().replace(/:|\./g, '-')})`
+    },
     async onSaveSampleGroup() {
       this.$store.commit('loading', true)
       let result
@@ -306,7 +313,7 @@ export default {
       })
       this.initialSamplesInGroup = initialSamples
       this.$store.commit('sampleGroups/setSelectedSampleGroups', samplesByContainer)
-      this.groupName = groupNameResult.toJSON().NAME
+      this.groupName = groupNameResult.toJSON().NAME || this.assignDefaultSampleGroupName()
     },
     extractSampleNamesFromList(list, property) {
       const names = list.slice(0, 3).map(item => item[property]).join(', ')
