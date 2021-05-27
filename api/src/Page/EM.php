@@ -123,7 +123,7 @@ class EM extends Page
             'pipelineDo1stPassClassification3d' => array('isRequired' => false, 'outputType' => 'boolean'),
 
             'particleUseCryolo' => array('isRequired' => false, 'outputType' => 'boolean'),
-            'particleDiameterMin' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 1000, 'outputType' => 'float'),
+            'particleDiameterMin' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 1024, 'outputType' => 'float'),
             'particleDiameterMax' => array('isRequired' => false, 'minValue' => 0.02, 'maxValue' => 4000, 'outputType' => 'float'),
             'particleMaskDiameter' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1024, 'outputType' => 'integer'),
             'particleBoxSize' => array('isRequired' => false, 'minValue' => 1, 'maxValue' => 1024, 'outputType' => 'integer'),
