@@ -1,6 +1,7 @@
 <template>
   <button
     @click.prevent="$emit('perform-button-action')"
+    :disabled="isDisabled"
     class="button-class"
   >
     <slot></slot>
@@ -10,6 +11,12 @@
 <script>
 export default {
   name: 'BaseButton',
+  props: {
+    isDisabled: {
+      type: Boolean,
+      default: false
+    }
+  }
 }
 </script>
 
