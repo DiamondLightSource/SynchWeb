@@ -61,6 +61,10 @@ export default {
     },
     scoreThreshold: {
       type: Number
+    },
+    labelAsButtons: {
+      type: Boolean,
+      default: true
     }
   },
   data: function () {
@@ -74,7 +78,10 @@ export default {
       graphic: null,
       nextFilterState: '',
       allDropsSelected: false,
-      currentSelectedDropIndex: -1
+      currentSelectedDropIndex: -1,
+      plateSvg: null,
+      plateMargin: { top: 40, left: 40, bottom: 20, right: 20 },
+      rowLetters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     }
   },
   computed: {
@@ -156,6 +163,15 @@ export default {
 
       return chunked_rows
     },
+    letterScale () {
+      return d3ScaleOrdinal().domain(this.rowDomain).range(this.rowLabels)
+    },
+    rowLabels() {
+      return Array.from({ length: this.rowLetters.length }, (v, i) => this.rowLetters.charAt(i))
+    },
+    rowDomain() {
+      Array.from({ length: this.rowLetters.length }, (v, i) => i)
+    }
   },
   watch: {
     selectedDrops() {
@@ -197,75 +213,31 @@ export default {
       const viewBoxWidth =
         numColumns *
         (this.cell.width + 2 * this.cell.padding + 2 * this.cell.margin) +
-        margin.left +
-        margin.right
+        this.plateMargin.left +
+        this.plateMargin.right
       const viewBoxHeight =
         numRows *
         (this.cell.height + 2 * this.cell.padding + 2 * this.cell.margin) +
-        margin.top +
-        margin.bottom
+        this.plateMargin.top +
+        this.plateMargin.bottom
 
       const viewBox = [0, 0, viewBoxWidth, viewBoxHeight]
-
-      // Make the svg fit within a viewport
-      const svg = d3Select('#plate')
+      this.plateSvg = d3Select('#plate')
         .append('svg')
         .attr('viewBox', viewBox.join(','))
         .attr('preserveAspectRatio', 'xMaxYMax meet')
 
-      svg
+      if (this.labelAsButtons) {
+        this.drawColumnLabelsAsButton()
+        this.drawRowLabelsAsButton()
+      } else {
+        this.drawColumnLabelsAsText()
+        this.drawRowLabelsAsText()
+      }
+
+      this.graphic = this.plateSvg
         .append('g')
-        .attr('transform', `translate(${margin.left}, ${margin.top - 5})`)
-        .selectAll('text')
-        .data(this.columnLabels)
-        .enter()
-        .append('text')
-        .attr('x',
-          (d, i) =>
-            (this.cell.width + 2 * this.cell.padding + this.cell.margin) * i + 0.5 * this.cell.width
-        )
-        .attr('class', (d, index) => `plate-column-${index + 1}-header pointer`)
-        .style('fill', 'black')
-        .style('pointer-events', 'visible')
-        .style('font-size', '16px')
-        .text((d) => d)
-        .on('click', (event, index) => self.handleDropSelection(event.target, index, 'column'))
-
-      // Row labels scale - maps numbers to letters
-      let letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
-      let rowDomain = Array.from({ length: letters.length }, (v, i) => i)
-      let rowLabels = Array.from({ length: letters.length }, (v, i) => letters.charAt(i))
-
-      let letterScale = d3ScaleOrdinal().domain(rowDomain).range(rowLabels)
-
-      // Row labels e.g. A..H
-      const row_axis = svg
-        .append('g')
-        .attr(
-          'transform',
-          `translate(${0}, ${
-            margin.top + margin.top / 2
-          })`
-        )
-        .selectAll('text')
-        .data(this.preparedData)
-        .enter()
-        .append('text')
-        .attr('y',(d, i) => (this.cell.height + 2 * this.cell.padding + this.cell.margin) * i)
-        .attr('class', (d, index) => `plate-row-${index + 1}-header pointer`)
-        .style('fill', 'black')
-        .style('pointer-events', 'visible')
-        .style('font-size', '16px')
-        .text((d, i) => letterScale(i))
-
-      row_axis.each(function (item, index) {
-        d3Select(this).on('click', (event) => self.handleDropSelection(event.target, index + 1, 'row'))
-      })
-
-      this.graphic = svg
-        .append('g')
-        .attr('transform', `translate(${margin.left}, ${margin.top})`)
+        .attr('transform', `translate(${this.plateMargin.left}, ${this.plateMargin.top})`)
 
       this.drawRowsForPlate(this.graphic)
     },
@@ -466,6 +438,150 @@ export default {
         return `${number}rd`
       }
       return `${number}th`
+    },
+    drawColumnLabelsAsText() {
+      // Draw the columns of the plate
+      this.plateSvg
+        .append('g')
+        .attr('transform', `translate(${this.plateMargin.left}, ${this.plateMargin.top - 5})`)
+        .selectAll('text')
+        .data(this.columnLabels)
+        .enter()
+        .append('text')
+        .attr('x',
+          (d, i) =>
+            (this.cell.width + 2 * this.cell.padding + this.cell.margin) * i + 0.5 * this.cell.width
+        )
+        .attr('class', (d, index) => `plate-column-${index + 1}-header pointer`)
+        .style('fill', 'black')
+        .style('pointer-events', 'visible')
+        .style('font-size', '16px')
+        .text((d) => d)
+        .on('click', (event, index) => self.handleDropSelection(event.target, index, 'column'))
+    },
+    drawRowLabelsAsText() {
+      // Row labels scale - maps numbers to letters
+      let letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+      let rowDomain = Array.from({ length: letters.length }, (v, i) => i)
+      let rowLabels = Array.from({ length: letters.length }, (v, i) => letters.charAt(i))
+
+      let letterScale = d3ScaleOrdinal().domain(rowDomain).range(rowLabels)
+
+      // Row labels e.g. A..H
+      const row_axis = this.plateSvg
+        .append('g')
+        .attr(
+          'transform',
+          `translate(${0}, ${
+            this.plateMargin.top + this.plateMargin.top / 2
+          })`
+        )
+        .selectAll('text')
+        .data(this.preparedData)
+        .enter()
+        .append('text')
+        .attr('y',(d, i) => (this.cell.height + 2 * this.cell.padding + this.cell.margin) * i)
+        .attr('class', (d, index) => `plate-row-${index + 1}-header pointer`)
+        .style('fill', 'black')
+        .style('pointer-events', 'visible')
+        .style('font-size', '16px')
+        .text((d, i) => letterScale(i))
+
+      row_axis.each(function (item, index) {
+        d3Select(this).on('click', (event) => self.handleDropSelection(event.target, index + 1, 'row'))
+      })
+    },
+    drawColumnLabelsAsButton() {
+      // Draw the columns of the plate
+      const self = this
+      this.plateSvg
+        .append('g')
+          .attr('transform', `translate(${this.plateMargin.left}, ${this.plateMargin.top - 5})`)
+          .selectAll('rect')
+          .data(this.columnLabels)
+          .enter()
+          .append('g')
+          .attr('class', (d, index) => `plate-column-${index + 1}-header pointer`)
+          .on('click', (event, index) => self.handleDropSelection(event.target, index, 'column'))
+          .attr('transform', (_, i) => `translate(${(this.cell.width + 2 * this.cell.padding + this.cell.margin) * i}, -30)`)
+          .each(function(d, i) {
+            d3Select(this)
+              .append('foreignObject')
+              .attr('width', (self.cell.width + self.cell.margin))
+              .attr('height', 30)
+              .attr('x', (_, i) =>
+                (self.cell.width + 2 * self.cell.padding + self.cell.margin) * i)
+              .append('xhtml:div')
+              .style('width', '100%')
+              .style('height', '100%')
+              .append('button')
+              .attr('class', 'button pointer')
+              .style('width', '100%')
+              .style('height', '100%')
+              
+            d3Select(this)
+              .append('text')
+              .attr('x', (d, i) => (self.cell.width + 2 * self.cell.padding + self.cell.margin) * i + 0.5 * self.cell.width)
+              .attr('y', self.dropHeight / 3)
+              .attr('width', (self.cell.width + self.cell.margin))
+              .attr('height', self.dropHeight,)
+              .style('font-size', '16px')
+              .style('cursor', 'pointer')
+              .style('fill', 'black')
+              .text((d) => d)
+          })
+        
+    },
+    drawRowLabelsAsButton() {
+      let letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+      let rowDomain = Array.from({ length: letters.length }, (v, i) => i)
+      let rowLabels = Array.from({ length: letters.length }, (v, i) => letters.charAt(i))
+
+      let letterScale = d3ScaleOrdinal().domain(rowDomain).range(rowLabels)
+      const self = this
+
+      // Row labels e.g. A..H
+      const row_axis = this.plateSvg
+        .append('g')
+        .attr(
+          'transform',
+          `translate(${0}, ${
+            this.plateMargin.top
+          })`
+        )
+        .selectAll('rect')
+        .data(this.preparedData)
+        .enter()
+        .append('g')
+        .attr('transform', (_, i) => `translate(${0}, ${(this.cell.height + 2 * this.cell.padding + this.cell.margin) * i})`)
+        .attr('class', (d, index) => `plate-row-${index + 1}-header pointer`)
+
+      row_axis.each(function (item, index) {
+        d3Select(this)
+          .append('foreignObject')
+          .attr('height', (self.cell.height + self.cell.margin))
+          .attr('width', 30)
+          .attr('y',(d, i) => (self.cell.height + 2 * self.cell.padding + self.cell.margin) * i)
+          .append('xhtml:div')
+          .style('width', '100%')
+          .style('height', '100%')
+          .append('button')
+          .attr('class', 'button pointer')
+          .style('width', '100%')
+          .style('height', '100%')
+        d3Select(this)
+          .append('text')
+          .attr('y', (_, i) => (self.cell.height + 2 * self.cell.padding + self.cell.margin) * i + 0.75 * self.cell.height)
+          .attr('x', 10)
+          .style('font-size', '16px')
+          .style('cursor', 'pointer')
+          .style('fill', 'black')
+          .text(() => letterScale(index))
+
+        d3Select(this).on('click', (event) => self.handleDropSelection(event.target, index + 1, 'row'))
+      })
     }
   }
 }

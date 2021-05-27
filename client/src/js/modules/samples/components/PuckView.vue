@@ -33,7 +33,7 @@ export default {
         required: false
       },
       'color-scale': String, // color-scale mapped to colorScale prop
-      'threshold': Number // Threshold used as part of colorScale
+      'threshold': Number, // Threshold used as part of colorScale
     },
     data: function() {
       return {
