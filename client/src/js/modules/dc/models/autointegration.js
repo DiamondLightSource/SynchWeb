@@ -10,13 +10,15 @@ define(['backbone'], function(Backbone){
         
         addClasses: function() {
             if (this.get('PROCESSINGSTATUS') == '0') return
+            var shells = this.get('SHELLS')
+            if (!shells) return
 
             this.attributes.CLASS = { RMERGE: {}, RMEAS: {}, COMPLETENESS: {} }
             _.each(['overall', 'innerShell', 'outerShell'], function(k) {
-                var c = this.get('SHELLS')[k].COMPLETENESS
+                var c = shells[k] ? shells[k].COMPLETENESS : null
                 this.attributes.CLASS.COMPLETENESS[k] = c > 95 ? 'active' : (c > 80 ? 'minor' : 'inactive')
 
-                var r = this.get('SHELLS')[k].RMEAS
+                var r = shells[k] ? shells[k].RMEAS : null
                 this.attributes.CLASS.RMEAS[k] = r < 0.5 ? 'active' : (r < 0.6 ? 'minor' : 'inactive')
             }, this)
         },
