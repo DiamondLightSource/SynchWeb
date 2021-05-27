@@ -42,10 +42,11 @@ export default {
     },
     computed: {
         // Options that will be passed into the marionette view
+        // aid needs to be a string to work with mapmodelview.js, used with findWhere: downstreams.findWhere({AID: self.getOption('aid')})
         options: function() {
             return {
                 model: this.model,
-                aid: this.aid,
+                aid: this.aid.toString(),
             }
         },
         // Combine vuex state with local computed properties
