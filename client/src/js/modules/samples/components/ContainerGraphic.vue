@@ -8,6 +8,7 @@
         :scoreThreshold="scoreThreshold"
         :selectedDrops="selectedSampleLocations"
         sampleColour="#dfdfdf"
+        :labelAsButtons="true"
         v-on="$listeners"
         />
     </div>
