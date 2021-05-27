@@ -1,5 +1,5 @@
-<section class="bigep-stats clearfix">    
-    <section class="bigep-images">
+<section class="bigep-stats clearfix tw-flex">    
+    <section class="bigep-images tw-w-1/4">
         <figure class="pending">
             <% if (IMAGE) { %>
                 <img class="thumb" class="bigep-thumb" alt="<%-TYPE%> model" />
@@ -7,48 +7,53 @@
         </figure>
     </section>
 
-    <section class="bigep-settings r">
-        <table class="bepm_sets reflow">
-            <thead>
-                <tr>
-                    <th>Anom. scatterer</th>
-                    <th>Space group</th>
-                    <th>Num. scatterers</th>
-                    <th>Dataset type</th>
-                    <th>Compound</th>
-                    <th>Sequence</th>
-                </tr>
-            </thead>
-            <tr>
-                <td><%-PROCESS.PARAMETERS.atom%></td>
-                <td><%-PROCESS.PARAMETERS.spacegroup%></td>
-                <td><%-PROCESS.PARAMETERS.nsites%></td>
-                <td><%-PROCESS.PARAMETERS.dataset%></td>
-                <td><%-PROCESS.PARAMETERS.compound%></td>
-                <td><div class="bepm-seq seq"><%-PROCESS.PARAMETERS.sequence%></div></td>
-            </tr>
-        </table>
-    </section>
+    <div class="plot_bigep tw-w-1/4"></div>
 
-    <section class="bigep-models clearfix">
-        <% if (HASMODEL) { %>
-        <table class="bepm_stats bepm_stats2 reflow">
-            <thead>
-                <tr>
-                    <th>Resid. / Frag / Max. Frag.</th>
-                    <th>Best MapCC (Resol.)</th>
-                    <th>&nbsp;</th>
-                </tr>
-            </thead>
-            <tr>
-                <td><%-RESID%> / <%-FRAGM%> / <%-MAXLEN%></td>
-                <td><%-MAPCC%> (<%-MAPRESOL%>)</td>
-            </tr>
-        </table>
-        <% } else { %>
-            <p class="ra">No model available for this job</p>
-        <% } %>
-    </section>
+    <div class="tw-flex tw-flex-col tw-w-2/4">
 
-    <div class="plot_bigep"></div>
+        <section class="bigep-settings">
+            <table class="bepm_sets">
+                <thead>
+                    <tr>
+                        <th>Anom. scatterer</th>
+                        <th>Space group</th>
+                        <th>Num. scatterers</th>
+                        <th>Dataset type</th>
+                        <th>Compound</th>
+                        <th>Sequence</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td><%-PROCESS.PARAMETERS.atom%></td>
+                    <td><%-PROCESS.PARAMETERS.spacegroup%></td>
+                    <td><%-PROCESS.PARAMETERS.nsites%></td>
+                    <td><%-PROCESS.PARAMETERS.dataset%></td>
+                    <td><%-PROCESS.PARAMETERS.compound%></td>
+                    <td><div class="bepm-seq seq"><%-PROCESS.PARAMETERS.sequence%></div></td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="bigep-models clearfix">
+            <% if (HASMODEL) { %>
+            <table class="bepm_stats bepm_stats2">
+                <thead>
+                    <tr>
+                        <th>Resid. / Frag / Max. Frag.</th>
+                        <th>Best MapCC (Resol.)</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td><%-RESID%> / <%-FRAGM%> / <%-MAXLEN%></td>
+                    <td><%-MAPCC%> (<%-MAPRESOL%>)</td>
+                </tr>
+            </table>
+            <% } else { %>
+                <p class="ra">No model available for this job</p>
+            <% } %>
+        </section>
+    </div>
+
+
 </section>

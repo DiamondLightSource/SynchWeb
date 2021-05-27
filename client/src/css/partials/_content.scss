@@ -915,8 +915,6 @@ li:last-child .visit_users {
 
         .plot_bigep {
             margin: 0 1%;
-            width: 30%;
-            margin-left: 190px;
             height: 170px;
 
             .legend {
@@ -928,7 +926,6 @@ li:last-child .visit_users {
 
         .bigep-settings {
             padding: 0.5%;
-            max-width: 50%;
 
             td {
                 text-align: center;
@@ -936,7 +933,7 @@ li:last-child .visit_users {
 
 
             .bepm-seq {
-                white-space: pre-line;
+                white-space: pre;
                 font-family: Courier;
                 font-size: 10px;
                 text-align: left;
@@ -948,8 +945,6 @@ li:last-child .visit_users {
         }
 
         .bigep-models {
-            width: 49%;
-            float: right;
             padding: 0.5%;
 
             @media (max-width: $breakpoint-vsmall) {
@@ -970,8 +965,6 @@ li:last-child .visit_users {
         .bigep-images figure {
             background: rgb(241, 241, 241);
             position: relative;
-            width: 15%;
-            float: left;
             margin: 0.5em;
 
             &.pending:before {
