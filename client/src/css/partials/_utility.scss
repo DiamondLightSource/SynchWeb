@@ -176,6 +176,10 @@
     &.button-highlight {
         background: linear-gradient($content-highlight, $content-page-background);
     }
+
+    &:disabled {
+        cursor: not-allowed;
+    }
 }
 
 .no-close {

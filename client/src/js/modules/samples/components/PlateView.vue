@@ -452,12 +452,11 @@ export default {
           (d, i) =>
             (this.cell.width + 2 * this.cell.padding + this.cell.margin) * i + 0.5 * this.cell.width
         )
-        .attr('class', (d, index) => `plate-column-${index + 1}-header pointer`)
+        .attr('class', (d, index) => `plate-column-${index + 1}-header`)
         .style('fill', 'black')
         .style('pointer-events', 'visible')
         .style('font-size', '16px')
         .text((d) => d)
-        .on('click', (event, index) => self.handleDropSelection(event.target, index, 'column'))
     },
     drawRowLabelsAsText() {
       // Row labels scale - maps numbers to letters
@@ -469,7 +468,7 @@ export default {
       let letterScale = d3ScaleOrdinal().domain(rowDomain).range(rowLabels)
 
       // Row labels e.g. A..H
-      const row_axis = this.plateSvg
+      this.plateSvg
         .append('g')
         .attr(
           'transform',
@@ -482,15 +481,11 @@ export default {
         .enter()
         .append('text')
         .attr('y',(d, i) => (this.cell.height + 2 * this.cell.padding + this.cell.margin) * i)
-        .attr('class', (d, index) => `plate-row-${index + 1}-header pointer`)
+        .attr('class', (d, index) => `plate-row-${index + 1}-header`)
         .style('fill', 'black')
         .style('pointer-events', 'visible')
         .style('font-size', '16px')
         .text((d, i) => letterScale(i))
-
-      row_axis.each(function (item, index) {
-        d3Select(this).on('click', (event) => self.handleDropSelection(event.target, index + 1, 'row'))
-      })
     },
     drawColumnLabelsAsButton() {
       // Draw the columns of the plate
