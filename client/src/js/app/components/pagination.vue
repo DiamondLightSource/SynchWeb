@@ -12,17 +12,17 @@ Set totalRecords(0), initalPage (1), pageSizes([]) and number of page links (0..
         <select v-model="perPage" v-on:change="onPageSizeChange">
             <option v-for="(option, index) in pageSizes" v-bind:key="index" v-bind:value="option">{{option}}</option>
         </select>
-        <button v-on:click="onFirst" class="button">
+        <button v-on:click.prevent="onFirst" class="button">
             <i class="fa fa-angle-double-left"></i>
         </button>
-        <button v-on:click="onPrev" class="button">
+        <button v-on:click.prevent="onPrev" class="button">
             <i class="fa fa-angle-left"></i>
         </button>
-        <button v-for="(page, index) in pages" :key="index" @click="onSetPage(page)" :class="['button tw-w-8 tw-mx-1 tw-px-2', page == currentPage ? 'tw-border tw-border-green-500' : '']">{{page}}</button>
-        <button v-on:click="onNext" class="button">
+        <button v-for="(page, index) in pages" :key="index" @click.prevent="onSetPage(page)" :class="['button tw-w-8 tw-mx-1 tw-px-2', page == currentPage ? 'tw-border tw-border-green-500' : '']">{{page}}</button>
+        <button v-on:click.prevent="onNext" class="button">
             <i class="fa fa-angle-right"></i>
         </button>
-        <button v-on:click="onLast" class="button">
+        <button v-on:click.prevent="onLast" class="button">
             <i class="fa fa-angle-double-right"></i>
         </button>
     </div>

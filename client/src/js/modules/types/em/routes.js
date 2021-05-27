@@ -1,18 +1,34 @@
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
-const RelionView = import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/relion')
+// Import style for lazy loading of Vue Single File Component
+const RelionView = () => import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/relion.vue')
+const RelionAddProcessing = () => import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/add-processing-job.vue')
 const ScipionView = import(/* webpackChunkName: "em" */ 'modules/types/em/scipion/views/scipion')
 
 const routes = [
     {
         path: '/em/process/relion/session/:session_str',
-        component: MarionetteView,
+        component: RelionView,
         props: route => ({
-            mview: RelionView,
-            options: {
-                session_str: route.params.session_str
-            },
-            breadcrumbs: [{ title: 'Relion Processing' }, { title: route.params.session_str }]
+            session_str: route.params.session_str,
+        }),
+        beforeEnter: (to, from, next) => {
+            // Copying the logic from types/em/relion/controller.js
+            if (to.params.session_str) {
+                app.cookie(to.params.session_str.split('-')[0]);
+                next()
+            } else {
+                // This path should never be entered. If there is no session_str then this path will not match
+                app.message({title: 'Visit not specified', message: 'No visit specified'})
+                next('/notfound')
+            }
+        }
+    },
+    {
+        path: '/em/process/relion/session/:session_str/jobs/add',
+        component: RelionAddProcessing,
+        props: route => ({
+            session_str: route.params.session_str,
         }),
         beforeEnter: (to, from, next) => {
             // Copying the logic from types/em/relion/controller.js
