@@ -577,9 +577,9 @@ class EM extends Page
             // Add DataCollection
 
             $this->db->pq("
-                    INSERT INTO DataCollection (sessionId, dataCollectionGroupId, dataCollectionNumber, startTime, endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
-                    VALUES (:1, :2, :3, NOW(), NOW(), :4, :5, :6, :7, :8) RETURNING dataCollectionId INTO :id",
-                array($session['SESSIONID'], $dataCollectionGroupId, 1, 'DataCollection Simulated', $imageDirectory, $imageSuffix, $fileTemplate, 'Created by SynchWeb')
+                    INSERT INTO DataCollection (sessionId, dataCollectionGroupId, startTime, endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
+                    VALUES (:1, :2, NOW(), NOW(), :3, :4, :5, :6, :7) RETURNING dataCollectionId INTO :id",
+                array($session['SESSIONID'], $dataCollectionGroupId, 'DataCollection Simulated', $imageDirectory, $imageSuffix, $fileTemplate, 'Created by SynchWeb')
             );
 
             $dataCollectionId = $this->db->id();
