@@ -88,10 +88,7 @@ class EM extends Page
     function _relion_start()
     {
         global $visit_directory,
-               $zocalo_mx_reprocess_queue; // Find $zocalo_relion_start_queue...
-
-//        $this->db->set_debug(True);
-//$message = 'Relion is already processing this session! Processing started at ' . date('H:i:s \o\n jS F Y', $session['processingTimestamp']) . '.';
+               $zocalo_mx_reprocess_queue;
 
         $this->exitIfElectronMicroscopesAreNotConfigured();
         $session = $this->determineSession($this->arg('session'));
@@ -204,8 +201,6 @@ class EM extends Page
 
         $workflow_parameters['import_images'] = "{$imageDirectory}{$fileTemplate}";
 
-        // TODO Remove projectGainReferenceFileName from form? File name gain.mrc specified in standard operating procedure. (JPH)
-
         if ($valid_parameters['projectGainReferenceFile'] && $valid_parameters['projectGainReferenceFileName']) {
             $workflow_parameters['motioncor_gainreference'] = "{$session_path}/processing/{$valid_parameters['projectGainReferenceFileName']}";
         }
@@ -247,8 +242,6 @@ class EM extends Page
             $dataCollectionId = $this->addDataCollectionForEM($session, $imageDirectory, $valid_parameters['projectMovieFileNameExtension'], $fileTemplate);
         }
 
-        // TODO PREVENT ADDITION OF PROCESSING JOB WHERE NONE PROCESSING...
-
         $processingJobId = null;
 
         if ($dataCollectionId) {
@@ -264,8 +257,6 @@ class EM extends Page
                 'ispyb_process' => $processingJobId
             )
         );
-
-        // TODO Enable write to queue
 
          $this->enqueue($zocalo_mx_reprocess_queue, $message);
 
@@ -654,8 +645,6 @@ class EM extends Page
                     ),
                     'recipes' => ['relion-stop']
                 );
-
-                // TODO Enable write to queue
 
                  $this->enqueue($zocalo_mx_reprocess_queue, $message);
             } else {
