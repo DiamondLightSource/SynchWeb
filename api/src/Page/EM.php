@@ -193,10 +193,16 @@ class EM extends Page
         $workflow_parameters['acquisition_software'] = $valid_parameters['projectAcquisitionSoftware'];
 
         if ($valid_parameters['projectAcquisitionSoftware'] == 'EPU') {
-            $workflow_parameters['import_images'] = "{$session_path}/raw/GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
+            $fileTemplate = "GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
         } else if ($valid_parameters['projectAcquisitionSoftware'] == 'SerialEM') {
-            $workflow_parameters['import_images'] = "{$session_path}/raw/Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
+            $fileTemplate = "Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
+        } else {
+            $fileTemplate = null;
         }
+
+        $imageDirectory = "{$session_path}/raw/";
+
+        $workflow_parameters['import_images'] = "{$imageDirectory}{$fileTemplate}";
 
         // TODO Remove projectGainReferenceFileName from form? File name gain.mrc specified in standard operating procedure. (JPH)
 
@@ -238,7 +244,7 @@ class EM extends Page
         $dataCollectionId = $this->findExistingDataCollection($session);
 
         if (!$dataCollectionId) {
-            $dataCollectionId = $this->addDataCollectionForEM($session, "{$session_path}/raw/", $valid_parameters['projectMovieFileNameExtension'], "Frames/*.{$valid_parameters['projectMovieFileNameExtension']}");
+            $dataCollectionId = $this->addDataCollectionForEM($session, $imageDirectory, $valid_parameters['projectMovieFileNameExtension'], $fileTemplate);
         }
 
         // TODO PREVENT ADDITION OF PROCESSING JOB WHERE NONE PROCESSING...
