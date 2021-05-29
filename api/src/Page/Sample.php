@@ -147,6 +147,7 @@ class Sample extends Page
                               'SHIPPINGID' => '\d+',
 
                               'SAMPLEGROUPID' => '\d+',
+                              'QUEUESTATUS' => '\w+',
                                );
         
         
@@ -159,6 +160,8 @@ class Sample extends Page
                               array('/components', 'post', '_add_sample_component'),
                               array('/components/:scid', 'delete', '_remove_sample_component'),
 
+                              array('/queue/:CONTAINERQUEUESAMPLEID', 'patch', '_update_sample_queue'),
+                                                
                               array('/sub(/:ssid)(/sid/:sid)', 'get', '_sub_samples'),
                               array('/sub/:ssid', 'patch', '_update_sub_sample'),
                               array('/sub/:ssid', 'put', '_update_sub_sample_full'),
@@ -965,7 +968,8 @@ class Sample extends Page
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath,
                                     dp.aimedresolution, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.collectionmode, dp.priority,
-                                    GROUP_CONCAT(distinct a.spacegroup SEPARATOR ', ') as dcspacegroup
+                                    GROUP_CONCAT(distinct a.spacegroup SEPARATOR ', ') as dcspacegroup,
+                                    cqss.status as lastqueuestatus, cq.containerqueueid, cqs.containerqueuesampleid
                                   
                                   FROM blsample b
 
@@ -983,7 +987,12 @@ class Sample extends Page
                                   INNER JOIN proposal p ON p.proposalid = pr.proposalid
 
                                   LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
-                                  
+                                  LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsampleid = b.blsampleid AND cq.containerqueueid = cqs.containerqueueid
+
+                                  LEFT OUTER JOIN containerqueuesample cqss ON cqss.containerqueuesampleid = (
+                                      SELECT MAX(containerqueuesampleid) FROM containerqueuesample _cqs WHERE _cqs.blsampleid = b.blsampleid
+                                  )
+
                                   LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = b.diffractionplanid 
                                   LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
                                   LEFT OUTER JOIN datacollectiongroup dcg ON dc.datacollectiongroupid = dcg.datacollectiongroupid
@@ -1092,6 +1101,35 @@ class Sample extends Page
                     $this->db->pq("UPDATE blsampletype_has_component SET abundance=:1 WHERE blsampletypeid=:2 AND componentid=:3", array($amounts[$i], $crystalid, $f));
                 }
             }
+        }
+
+        // Manually update the status of a sample in the queue
+        function _update_sample_queue() {
+            $statuses = array('completed', 'skipped', 'reinspect', 'failed');
+
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('CONTAINERQUEUESAMPLEID')) $this->_error('No sample container queue id specified');
+            if (!$this->has_arg('QUEUESTATUS') || !in_array($this->arg('QUEUESTATUS'), $statuses)) $this->_error('No status specified');
+
+            $chk = $this->db->pq("SELECT s.blsampleid
+                FROM blsample s
+                INNER JOIN containerqueuesample cqs ON cqs.blsampleid = s.blsampleid
+                INNER JOIN container c ON c.containerid = s.containerid
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                WHERE sh.proposalid=:1 AND cqs.containerqueuesampleid=:2",
+                array($this->proposalid, $this->arg('CONTAINERQUEUESAMPLEID')));
+
+            if (!sizeof($chk)) $this->_error('Sample not queued');
+
+            $this->db->pq('UPDATE containerqueuesample SET endtime=CURRENT_TIMESTAMP, status=:1 WHERE containerqueuesampleid=:2', 
+                array($this->arg('QUEUESTATUS'), $this->arg('CONTAINERQUEUESAMPLEID')));
+
+            $this->_output(array(
+                'CONTAINERQUEUESTATUSID' => $this->arg('CONTAINERQUEUESAMPLEID'),
+                'QUEUESTATUS' => $this->arg('QUEUESTATUS')
+            ));
         }
 
 
