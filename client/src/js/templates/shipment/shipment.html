@@ -13,8 +13,8 @@
 
     <% if (LCOUT && LCRET) { %>
     <div class="ra">
-        <% if (IS_STAFF) { %>
-            <a class="button queue" href="#"><i class="fa fa-plus"></i> Queue</a>
+        <% if (QUEUE_SHIPMENT) { %>
+            <a class="button queue" href="#"><i class="fa fa-plus"></i> Queue for <%-AUTO_LABEL%></a>
         <% } %>
 
         <% if (SHIPPINGSTATUS == 'opened' || SHIPPINGSTATUS == 'awb created' || SHIPPINGSTATUS == 'pickup booked') { %>
