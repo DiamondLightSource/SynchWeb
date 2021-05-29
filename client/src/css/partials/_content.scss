@@ -1176,6 +1176,39 @@ ul.status {
             
             background-color: #87ceeb;
         }
+
+        // Queue statuses
+        &.skipped {
+            &:before {
+                content: 'Skipped'
+            }
+            
+            background-color: #fdfd96;
+        }
+
+        &.reinspect {
+            &:before {
+                content: 'Re-inspect'
+            }
+            
+            background-color: #ffb347;
+        }
+
+        &.completed {
+            &:before {
+                content: 'Completed'
+            }
+            
+            background-color: #77dd77;
+        }
+
+        &.failed {
+            &:before {
+                content: 'Failed'
+            }
+            
+            background-color: #ff6961;
+        }
     }
 }
 
