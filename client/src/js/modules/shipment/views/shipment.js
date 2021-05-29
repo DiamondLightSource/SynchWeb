@@ -43,7 +43,9 @@ define(['marionette',
                 APIURL: app.apiurl,
                 PROP: app.prop,
                 DHL_ENABLE: app.options.get('dhl_enable'),
-                IS_STAFF: app.staff
+                IS_STAFF: app.staff,
+                QUEUE_SHIPMENT: app.options.get('queue_shipment'),
+                AUTO_LABEL: app.config.auto_collect_label || 'Automated'
             }
         },
 
