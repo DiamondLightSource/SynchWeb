@@ -1692,7 +1692,7 @@ class Shipment extends Page
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               WHERE c.containerid =:1 ORDER BY c.containerid DESC", array($this->arg('CONTAINERID')));
 
-            if (!sizeof($cont)) $this->_error('No such container: ' . $this->arg('CONTAINERID'));
+            if (!sizeof($cont)) $this->_error('No such container: ' . $this->arg('CONTAINERID'), 404);
             else $cont = $cont[0];
 
             // We may need to update the dewar and shipping status - for now leave them alone
