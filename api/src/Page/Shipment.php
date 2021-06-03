@@ -118,6 +118,7 @@ class Shipment extends Page
                               'READYBYTIME' => '\d\d:\d\d',
                               'CLOSETIME' => '\d\d:\d\d',
                               'PRODUCTCODE' => '\w',
+                              'BEAMLINENAME' => '[\w-]+',
 
                               'manifest' => '\d',
                               'currentuser' => '\d',
@@ -1673,36 +1674,35 @@ class Shipment extends Page
          * Controller method for add container history endpoint.
          * This is called from another service when the container is scanned into a location.
          * 
-         * The calling application must be in the bcr whitelist group and include the BARCODE and LOCATION in the parameters
-         * On success, a new entry in ContainerHistory is created with the location updated".
+         * The calling application must be in the bcr whitelist group and include the CONTAINERID and LOCATION in the parameters
+         * On success, a new entry in ContainerHistory is created with the location updated.
          * The ContainerHistory.status can be changed with the optional STATUS argument.
-         * It currently does update the Dewar and Shipping status to at facility if not already dispatch-requested
-         * It returns error if BARCODE does not refer to an existing container.
+         * The ContainerHistory.beamlineName can be changed with the optional BEAMLINE argument.
+         * It returns error if CONTAINERID does not refer to an existing container.
          */
         function _add_container_history() {
             if (!$this->bcr()) $this->_error('You need to be on the internal network to add history');
 
-            if (!$this->has_arg('BARCODE')) $this->_error('No barcode specified');
+            if (!$this->has_arg('CONTAINERID')) $this->_error('No container id specified');
             if (!$this->has_arg('LOCATION')) $this->_error('No location specified');
 
             $cont = $this->db->pq("SELECT c.containerid, d.dewarid, s.shippingid, d.dewarstatus
               FROM container c
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping s ON s.shippingid = d.shippingid
-              WHERE lower(c.barcode) LIKE lower(:1) ORDER BY c.containerid DESC", array($this->arg('BARCODE')));
+              WHERE c.containerid =:1 ORDER BY c.containerid DESC", array($this->arg('CONTAINERID')));
 
-            if (!sizeof($cont)) $this->_error('No such container: ' . $this->arg('BARCODE'));
+            if (!sizeof($cont)) $this->_error('No such container: ' . $this->arg('CONTAINERID'));
             else $cont = $cont[0];
 
-            // Need to resolve the rules around dewar status - when we should change it
-            $dewar_status = strtolower($cont['DEWARSTATUS']) == 'dispatch-requested' ? 'dispatch-requested' : 'at facility';
+            // We may need to update the dewar and shipping status - for now leave them alone
 
-            // Update the dewar and shipping status - could only set these if its opened
-            $this->db->pq("UPDATE dewar set dewarstatus=lower(:3), storagelocation=lower(:2) WHERE dewarid=:1", array($cont['DEWARID'], $this->arg('LOCATION'), $dewar_status));
-            $this->db->pq("UPDATE shipping set shippingstatus=lower(:2) WHERE shippingid=:1", array($cont['SHIPPINGID'], $dewar_status));
+            // Optionally we can set the beamlinename
+            $beamline_name = $this->has_arg('BEAMLINENAME') ? $this->arg('BEAMLINENAME') : null;
 
-            // Figure out the most recent status for this container or dewar (if it has no container status)
-            $container_status = $dewar_status;
+            // Figure out the most recent status for this container
+            // Initially use the dewar status unless its been set previously
+            $container_status = strtolower($cont['DEWARSTATUS']);
 
             if ($this->has_arg('STATUS')) $container_status = $this->arg('STATUS');
             else {
@@ -1713,7 +1713,7 @@ class Shipment extends Page
             }
 
             // Insert new record to store container location
-            $this->db->pq("INSERT INTO containerhistory (containerid,status,location) VALUES (:1,:2,:3)", array($cont['CONTAINERID'], $container_status, $this->arg('LOCATION')));
+            $this->db->pq("INSERT INTO containerhistory (containerid,status,location,beamlineName) VALUES (:1,:2,:3,:4)", array($cont['CONTAINERID'], $container_status, $this->arg('LOCATION'), $beamline_name));
             $chid = $this->db->id();
 
             $this->_output(array('CONTAINERHISTORYID' => $chid));
