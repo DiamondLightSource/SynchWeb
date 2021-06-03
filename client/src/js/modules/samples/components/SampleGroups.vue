@@ -10,10 +10,14 @@
     <table-panel
       :headers="headers"
       :data="groups"
-      @row-clicked="onSampleGroupSelected"
+      @row-clicked="selectSampleGroup"
     ></table-panel>
 
-    <pagination-panel class="tw-mb-5" />
+    <pagination-panel
+      :initial-page="sampleGroupsListState.firstPage"
+      :totalRecords="sampleGroupsListState.totalRecords"
+      @page-changed="handlePageChange"
+    />
 
     <div v-if="sampleGroupMembers.length > 0" class="content">
       <h1>Sample Group {{ sampleGroupName }}</h1>
@@ -27,7 +31,11 @@
         :data="sampleGroupMembers"
       ></table-panel>
 
-      <pagination-panel />
+      <pagination-panel
+        :initial-page="sampleGroupSamplesListState.firstPage"
+        :totalRecords="sampleGroupSamplesListState.totalRecords"
+        @page-changed="handleSampleGroupSamplePageChange"
+      />
     </div>
   </div>
 </template>
@@ -38,7 +46,8 @@ import ContainerGraphic from "./ContainerGraphic.vue";
 import Table from 'app/components/table.vue'
 import Pagination from 'app/components/pagination.vue'
 
-import SampleGroupsCollection from 'collections/samplegroups.js'
+import SampleGroupsNamesCollection from 'collections/samplegroupnames.js'
+import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
 
 export default {
   name: 'sample-group-management',
@@ -52,13 +61,14 @@ export default {
     return {
       headers: [
         { title: "Group Name", key: "NAME" },
-        { title: "Number of Samples", key: "NUM_MEMBERS" },
+        { title: "Number of Samples", key: "SAMPLEGROUPSAMPLES" },
       ],
       sampleGroupHeaders: [
         { title: "Name", key: "SAMPLE" },
         { title: "Protein", key: "PROTEIN" }
       ],
       sampleGroups: null, // backbone collection
+      sampleGroupSamples: null,
       groups: [],
 
       containerGeometry: {
@@ -77,20 +87,43 @@ export default {
       sampleGroupMembers: [],
       sampleGroupName: null,
       sampleGroupId: null,
+      sampleGroupsListState: {},
+      sampleGroupSamplesListState: {},
+      selectedSampleGroup: null
     };
   },
   created() {
-    this.sampleGroups = new SampleGroupsCollection()
+    this.sampleGroups = new SampleGroupsNamesCollection()
+    this.sampleGroupSamples = new SampleGroupSamplesCollection()
   },
   mounted() {
     this.getSampleGroups();
   },
 
   methods: {
-    onSampleGroupSelected: function (item) {
-      this.sampleGroupMembers = item.MEMBERS.toJSON()
-      this.sampleGroupName = item.NAME
+    selectSampleGroup(item) {
+      this.selectedSampleGroup = item
       this.sampleGroupId = item.BLSAMPLEGROUPID
+    },
+    async onSampleGroupSelected() {
+      try {
+        this.$store.commit('loading', true)
+        this.selectedSampleGroup
+        this.sampleGroupSamples.queryParams.BLSAMPLEGROUPID = this.sampleGroupId   
+  
+        const collection = await this.$store.dispatch(
+          'getCollection',
+          this.sampleGroupSamples
+        )
+  
+        this.sampleGroupMembers = collection.toJSON()
+
+
+        this.sampleGroupSamplesListState = collection.state
+        this.$store.commit('loading', false)
+      } catch (error) {
+        this.$store.commit('loading', false)
+      }
     },
     async onEditSampleGroup() {
       await this.$store.commit('sampleGroups/resetSelectedSampleGroups')
@@ -105,18 +138,30 @@ export default {
       try {
         this.$store.commit('loading', true)
   
-        const result = await this.$store.dispatch(
+        const collection = await this.$store.dispatch(
           'getCollection',
           this.sampleGroups
         )
   
-        let collection = result.groups()
-  
         this.groups = collection.toJSON()
+        this.sampleGroupsListState = collection.state
         this.$store.commit('loading', false)
       } catch (error) {
         this.$store.commit('loading', false)
       }
+    },
+    async handlePageChange(data) {
+      this.sampleGroups.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
+      await this.getSampleGroups()
+    },
+    async handleSampleGroupSamplePageChange(data) {
+      this.sampleGroupSamples.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
+      await this.onSampleGroupSelected(this.selectedSampleGroup)
+    }
+  },
+  watch: {
+    selectedSampleGroup() {
+      this.onSampleGroupSelected()
     }
   }
 }
