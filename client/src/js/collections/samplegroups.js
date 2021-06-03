@@ -5,20 +5,16 @@
 define(['backbone',
     'backbone.paginator',
     'models/samplegroup',
+    'models/samplegroupname',
     'underscore'
     ], function(Backbone,
         PageableCollection,
         SampleGroupMember,
+        SampleGroupNames,
         _
     ) {
-
-
-    var SampleGroup = Backbone.Model.extend({
-        idAttribute: 'BLSAMPLEGROUPID',
-    })
-
     var SampleGroupCollection = Backbone.Collection.extend({
-        model: SampleGroup,
+        model: SampleGroupNames,
     })
 
 
@@ -90,7 +86,7 @@ define(['backbone',
         },
 
         sampleGroupNameModel: function(options) {
-            return new SampleGroup({}, options)
+            return new SampleGroupNames({}, options)
         }
     })
 })

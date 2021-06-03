@@ -17,16 +17,10 @@ define(['backbone',
 
     mode: 'server',
 
+    newType: false,
+
     state: {
       pageSize: 100,
-    },
-
-    addNew: true,
-
-    initialize: function(models, options) {
-      if (options) {
-        this.groupId = options.id
-      }
     },
 
     parseRecords: function(r, options) {
@@ -46,9 +40,8 @@ define(['backbone',
         if (success) success(collection, resp, options)
       }
 
-      if (this.groupId) {
-        const updateCollection = _.extend(this, { url: `/sample/groups/${this.groupId}` })
-        return Backbone.sync('update', updateCollection, options)
+      if (!this.newType) {
+        return Backbone.sync('update', this, options)
       }
       
       return Backbone.sync('create', this, options)

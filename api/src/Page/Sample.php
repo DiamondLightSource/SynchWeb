@@ -184,7 +184,8 @@ class Sample extends Page
 
                               array('/groups', 'get', '_sample_groups'),
                               array('/groups', 'post', '_add_sample_to_group'),
-                              array('/groups/:BLSAMPLEGROUPID', 'put', '_bulk_update_samples_in_group'),
+                              array('/groups', 'put', '_bulk_update_samples_in_group'),
+                              array('/groups/name/all', 'get', '_get_all_sample_groups'),
                               array('/groups/name/:BLSAMPLEGROUPID', 'patch', '_update_sample_group'),
                               array('/groups/name/:BLSAMPLEGROUPID', 'get', '_get_sample_group_name'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
@@ -2103,6 +2104,58 @@ class Sample extends Page
                 WHERE blsampleid=:1 AND blsamplegroupid=:2", array($sid, $gid));
 
             $this->_output(new \stdClass);
+        }
+
+        function _get_all_sample_groups() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $where = 'p.proposalid = :1';
+                $args = array($this->proposalid);
+
+                $tot = $this->db->pq("SELECT count(*) as total
+                    FROM (
+                        SELECT count(*) as tot
+                        FROM blsamplegroup_has_blsample bshg 
+                        INNER JOIN blsample b ON bshg.blsampleid = b.blsampleid
+                        INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                        INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+                        INNER JOIN proposal p ON p.proposalid = pr.proposalid
+                        WHERE $where
+                        GROUP BY bshg.blsampleGroupId
+                    ) as total", $args);
+
+                $tot = intval($tot[0]['TOTAL']);
+
+                $start = 0;
+                $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+                $end = $pp;
+                
+                if ($this->has_arg('page')) {
+                    $pg = $this->arg('page') - 1;
+                    $start = $pg*$pp;
+                    $end = $pg*$pp+$pp;
+                }
+                
+                $st = sizeof($args)+1;
+                $en = $st + 1;
+                array_push($args, $start);
+                array_push($args, $end);
+
+                $rows = $this->db->paginate("SELECT bshg.blsamplegroupid, bshg.grouporder, bshg.type, bsg.name, count(*) as samplegroupsamples
+                    FROM blsamplegroup_has_blsample bshg 
+                    INNER JOIN blsample b ON bshg.blsampleid = b.blsampleid
+                    INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                    INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                    INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+                    INNER JOIN proposal p ON p.proposalid = pr.proposalid
+                    WHERE $where
+                    GROUP BY bsg.blsamplegroupid
+                ", $args);
+
+                $this->_output(array(
+                    'total' => $tot,
+                    'data' => $rows,
+                ));
         }
 }
 
