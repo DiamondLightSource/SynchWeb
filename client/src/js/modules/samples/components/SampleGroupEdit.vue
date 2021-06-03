@@ -152,8 +152,7 @@ export default {
       proposal: ['proposal/currentProposal']
     }),
     isDisabled() {
-      return !Boolean(this.selectedSamplesInGroups[this.selectedContainerName]
-        && this.selectedSamplesInGroups[this.selectedContainerName].length > 0)
+      return !has(this.selectedSamplesInGroups, this.selectedContainerName)
     }
   },
   created: function () {
@@ -200,6 +199,7 @@ export default {
       
       if (samples.length > 0) {
         this.sampleGroupSamples.reset(samples)
+        this.sampleGroupSamples.newType = !this.sampleGroupId
         result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroupSamples })
       }
 
@@ -274,8 +274,6 @@ export default {
     },
     // Remove when we start persisting the vuex store
     async getSampleGroupInformation() {
-      this.sampleGroupSamples.groupId = this.sampleGroupId
-      this.sampleGroupSamples.url = '/sample/groups'
       this.sampleGroupSamples.queryParams = { BLSAMPLEGROUPID: this.sampleGroupId, page: 1, per_page: 9999, total_pages: 0 }
       const groupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamples)
       const sampleGroupNameModel = this.sampleGroup.sampleGroupNameModel({ BLSAMPLEGROUPID: this.sampleGroupId })
