@@ -154,6 +154,8 @@ define(['marionette',
             e.preventDefault()
 
             var containers = new Containers()
+            // make sure to return all containers in the shipment
+            containers.state.pageSize = 100
             containers.queryParams.SHIPPINGID = this.model.get('SHIPPINGID')
             containers.fetch().done(function () {
                 var promises = []
