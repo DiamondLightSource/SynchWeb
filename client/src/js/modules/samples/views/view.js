@@ -53,8 +53,16 @@ define(['marionette',
         ui: {
             comp: 'input[name=COMPONENTID]',
         },
+
+        templateHelpers: function() {
+            return {
+                AUTO_LABEL: this.automated_label
+            }
+        },
         
         initialize: function(options) {
+            this.automated_label = app.config.auto_collect_label || 'Automated'
+
             Backbone.Validation.bind(this);
           
             this.dcs = new DCCol(null, { queryParams: { sid: this.model.get('BLSAMPLEID'), pp: 5 } })

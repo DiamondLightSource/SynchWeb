@@ -43,14 +43,19 @@ define(['marionette',
                 APIURL: app.apiurl,
                 PROP: app.prop,
                 DHL_ENABLE: app.options.get('dhl_enable'),
+                IS_STAFF: app.staff,
+                QUEUE_SHIPMENT: app.config.queue_shipment,
+                AUTO_LABEL: app.config.auto_collect_label || 'Automated'
             }
         },
 
         events: {
             'click #add_dewar': 'addDewar',
             'click a.send': 'sendShipment',
+            'click a.return': 'returnShipment',
             'click a.pdf': utils.signHandler,
             'click a.cancel_pickup': 'cancelPickup',
+            'click a.queue': 'queueShipment',
         },
 
         ui: {
@@ -101,7 +106,7 @@ define(['marionette',
             Backbone.ajax({
                 url: app.apiurl+'/shipment/send/'+this.model.get('SHIPPINGID'),
                 success: function() {
-                    self.model.set({ SHIPPINGSTATUS: 'send to DLS' })
+                    self.model.set({ SHIPPINGSTATUS: 'sent to facility' })
                     app.alert({ className: 'message notify', message: 'Shipment successfully marked as sent' })
                     self.render()
                 },
@@ -111,7 +116,83 @@ define(['marionette',
                 
             })
         },
-        
+
+        returnShipment: function(e) {
+            e.preventDefault()
+            var self = this
+            Backbone.ajax({
+                url: app.apiurl+'/shipment/return/'+this.model.get('SHIPPINGID'),
+                success: function() {
+                    self.model.set({ SHIPPINGSTATUS: 'returned' })
+                    self.render()
+                    setTimeout(function() {
+                        app.alert({ className: 'message notify', message: 'Shipment successfully marked as returned to user' })    
+                    }, 500)
+                    
+                },
+                error: function(xhr) {
+                    var json = {};
+                    if (xhr.responseText) {
+                        try {
+                            json = JSON.parse(xhr.responseText)
+                        } catch(err) {
+
+                        }
+                    }
+
+                    if (json.message) {
+                        app.alert({ message: json.message })
+                    } else {
+                        app.alert({ message: 'Something went wrong marking this shipment returned, please try again' })
+                    }
+                },
+                
+            })
+        },
+
+        queueShipment: function(e) {
+            e.preventDefault()
+
+            var containers = new Containers()
+            // make sure to return all containers in the shipment
+            containers.state.pageSize = 100
+            containers.queryParams.SHIPPINGID = this.model.get('SHIPPINGID')
+            containers.fetch().done(function () {
+                var promises = []
+                var success = 0
+                var failure = 0
+
+                containers.each(function(c) {
+                    promises.push(Backbone.ajax({
+                        url: app.apiurl+'/shipment/containers/queue',
+                        data: {
+                            CONTAINERID: c.get('CONTAINERID')
+                        },
+                        success: function() {
+                            success++
+                        },
+                        error: function(xhr) {
+                            var json = {};
+                            if (xhr.responseText) {
+                                try {
+                                    json = JSON.parse(xhr.responseText)
+                                } catch(err) {
+
+                                }
+                            }
+                            app.alert({ message: c.get('CONTAINERID') + ': ' + json.message })
+                            failure++
+                        }
+                    }))
+                })
+
+                $.when.apply($, promises).then(function() {
+                    app.alert({ message: success+ ' Container(s) Successfully Queued, ' + failure + ' Failed' })
+                }).fail(function() {
+                    app.alert({ message: success+ ' Container(s) Successfully Queued, ' + failure + ' Failed' })
+                })
+            })
+        },
         
         addDewar: function(e) {
             e.preventDefault()

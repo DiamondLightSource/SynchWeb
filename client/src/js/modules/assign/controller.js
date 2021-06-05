@@ -4,7 +4,8 @@ define(['marionette',
     
     'modules/assign/views/selectvisit',
     'modules/assign/views/assign',
-    ], function(Marionette, Visit, Visits, SelectVisitView, AssignView) {
+    'modules/assign/views/scanassign',
+    ], function(Marionette, Visit, Visits, SelectVisitView, AssignView, ScanAssignView) {
     
     var bc = { title: 'Assign Containers', url: '/assign' }
     
@@ -16,7 +17,7 @@ define(['marionette',
             var visits = new Visits(null, { queryParams: { next: 1 } })
             visits.fetch({
                 success: function() {
-                    app.bc.reset([bc]),
+                    app.bc.reset([bc])
                     app.content.show(new SelectVisitView({ collection: visits }))
                 },
                 error: function() {
@@ -45,7 +46,18 @@ define(['marionette',
                     app.message({ title: 'No such visit', message: 'The specified visit doesnt exist' })
                 }
             })
-        }
+        },
+
+        // A simple assign page by scanning barcodes
+        scanAssign: function(bl) {
+            if (!app.staff) {
+                app.message({ title: 'No access', message: 'You do not have access to that page' })
+                return
+            }
+
+            app.bc.reset([{ title: 'Assign Containers' }, { title: 'Barcode Scan'}, { title: bl }])
+            app.content.show(new ScanAssignView({ bl: bl }))
+        },
     }
        
     app.addInitializer(function() {

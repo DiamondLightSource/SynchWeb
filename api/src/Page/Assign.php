@@ -7,7 +7,7 @@ use SynchWeb\Page;
 class Assign extends Page
 {
         
-        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+', 'bl' => '[\w-]+');
+        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+', 'bl' => '[\w-]+', 'nodup' => '\d');
 
         public static $dispatch = array(array('/visits(/:visit)', 'get', '_blsr_visits'),
                               array('/assign', 'get', '_assign'),
@@ -23,54 +23,107 @@ class Assign extends Page
         # ------------------------------------------------------------------------
         # Assign a container
         function _assign() {
-            if (!$this->has_arg('visit')) $this->_error('No visit specified');
+            if (!$this->has_arg('visit') && !$this->has_arg('prop')) $this->_error('No visit or prop specified');
             if (!$this->has_arg('cid')) $this->_error('No container id specified');
             if (!$this->has_arg('pos')) $this->_error('No position specified');
-                                 
+
+            $where = 'c.containerid=:1';
+            $args = array($this->arg('cid'));
+
+            if ($this->has_arg('visit')) {
+                $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('visit'));
+            } else {
+                $where .= " AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('prop'));
+            }
+
             $cs = $this->db->pq("SELECT d.dewarid,bl.beamlinename,c.containerid,c.code FROM container c
                                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                                 INNER JOIN blsession bl ON bl.proposalid = s.proposalid
                                 INNER JOIN proposal p ON s.proposalid = p.proposalid
-                                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), bl.visit_number) LIKE :1 AND c.containerid=:2", array($this->arg('visit'), $this->arg('cid')));
+                                WHERE $where", $args);
                                
             if (sizeof($cs) > 0) {
                 $c = $cs[0];
+
+                $bl = $c['BEAMLINENAME'];
+                if ($this->staff) {
+                    if ($this->has_arg('bl')) {
+                        $bl = $this->arg('bl');
+                    }
+                }
+
+                if ($this->has_arg(('nodup'))) {
+                    $existing = $this->db->pq("SELECT c.containerid, c.name, CONCAT(p.proposalcode, p.proposalnumber) as prop
+                        FROM container c
+                        INNER JOIN dewar d ON d.dewarid = c.dewarid
+                        INNER JOIN shipping s ON s.shippingid = d.shippingid
+                        INNER JOIN proposal p ON s.proposalid = s.proposalid
+                        WHERE beamlinelocation=1 AND samplechangerlocation:2", array($bl, $this->arg('pos')));
+
+                    if (sizeof($existing)) {
+                        $ex = $existing[0];
+                        return $this->_error('A container is already a assigned that position: '+$ex[0]['NAME'] + '('+$ex['PROP']+')');
+                    }
+                }
+
+
                 $this->db->pq("UPDATE dewar SET dewarstatus='processing' WHERE dewarid=:1", array($c['DEWARID']));
                                
-                $this->db->pq("UPDATE container SET beamlinelocation=:1,samplechangerlocation=:2,containerstatus='processing' WHERE containerid=:3", array($c['BEAMLINENAME'], $this->arg('pos'), $c['CONTAINERID']));
-                $this->db->pq("INSERT INTO containerhistory (containerid,status,location,beamlinename) VALUES (:1,:2,:3,:4)", array($c['CONTAINERID'], 'processing', $this->arg('pos'), $c['BEAMLINENAME']));
-                $this->_update_history($c['DEWARID'], 'processing', $c['BEAMLINENAME'], $c['CODE'].' => '.$this->arg('pos'));
+                $this->db->pq("UPDATE container SET beamlinelocation=:1,samplechangerlocation=:2,containerstatus='processing' WHERE containerid=:3", array($bl, $this->arg('pos'), $c['CONTAINERID']));
+                $this->db->pq("INSERT INTO containerhistory (containerid,status,location,beamlinename) VALUES (:1,:2,:3,:4)", array($c['CONTAINERID'], 'processing', $this->arg('pos'), $bl));
+                $this->_update_history($c['DEWARID'], 'processing', $bl, $c['CODE'].' => '.$this->arg('pos'));
                                 
                 $this->_output(1);
+            } else {
+                $this->_error('No such container');
             }
-                               
-            $this->_output(0);
         }
                                  
         # ------------------------------------------------------------------------
         # Unassign a container
         function _unassign() {
-            if (!$this->has_arg('visit')) $this->_error('No visit specified');
+            if (!$this->has_arg('visit') && !$this->has_arg('prop')) $this->_error('No visit or prop specified');
             if (!$this->has_arg('cid')) $this->_error('No container id specified');
-                               
+
+            $where = 'c.containerid=:1';
+            $args = array($this->arg('cid'));
+
+            if ($this->has_arg('visit')) {
+                $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('visit'));
+            } else {
+                $where .= " AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :".(sizeof($args)+1);
+                array_push($args, $this->arg('prop'));
+            }
+
             $cs = $this->db->pq("SELECT d.dewarid,bl.beamlinename,c.containerid FROM container c
                                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                                 INNER JOIN blsession bl ON bl.proposalid = s.proposalid
                                 INNER JOIN proposal p ON s.proposalid = p.proposalid
-                                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), bl.visit_number) LIKE :1 AND c.containerid=:2", array($this->arg('visit'), $this->arg('cid')));
+                                WHERE $where", $args);
                                
             if (sizeof($cs) > 0) {
                 $c = $cs[0];
+                              
+                $bl = $c['BEAMLINENAME'];
+                if ($this->staff) {
+                    if ($this->has_arg('bl')) {
+                        $bl = $this->arg('bl');
+                    }
+                }
                                
                 $this->db->pq("UPDATE container SET samplechangerlocation='',beamlinelocation='',containerstatus='at facility' WHERE containerid=:1",array($c['CONTAINERID']));
-                $this->db->pq("INSERT INTO containerhistory (containerid,status,beamlinename) VALUES (:1,:2,:3)", array($c['CONTAINERID'], 'at facility', $c['BEAMLINENAME']));                
+                $this->db->pq("INSERT INTO containerhistory (containerid,status,beamlinename) VALUES (:1,:2,:3)", array($c['CONTAINERID'], 'at facility', $bl));
                 //$this->_update_history($c['DEWARID'], 'unprocessing');
                                 
                 $this->_output(1);
+            } else {
+                $this->_error('No such container');
             }
-            $this->_output(0);
         }
               
         
@@ -102,10 +155,10 @@ class Assign extends Page
                     $this->db->pq("UPDATE container SET containerstatus='at facility', samplechangerlocation='', beamlinelocation='' WHERE containerid=:1", array($c['ID']));
                     $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['ID'], 'at facility'));
                 }
-                $this->_output(1);
-                                
+                $this->_output(1);     
+            } else {
+                $this->_error('No such dewar');
             }
-            $this->_output(0);
         }
                                 
                                 
