@@ -1,13 +1,13 @@
 <template>
     <section>
-        <marionette-view
+        <component :is="componentType"
             v-if="ready"
             :key="$route.fullPath"
             :options="options"
-            :preloaded="true"
+            :fetchOnLoad="true"
             :mview="mview"
-            :breadcrumbs="bc">
-        </marionette-view>
+            :breadcrumbs="bc"
+        />
     </section>
 </template>
 
@@ -56,48 +56,37 @@ export default {
         }
     },
     created: function() {
-        console.log("Container Add Created for proposal Type = " + this.proposalType)
-
         this.bc = [{ title: 'Shipments', url: '/shipments' }]
 
         this.model = new Dewar({ DEWARID: this.did })
-
-        this.getDewar().then( (val) => {
-            this.mview = ContainerAddMap[this.proposalType] ? ContainerAddMap[this.proposalType].view : ContainerAddMap['default'].view
-            // Update the breadcrumbs
-            this.bc.push({ title: this.model.get('SHIPPINGNAME'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
-            this.bc.push({ title: 'Containers' })
-            this.bc.push({ title: 'Add Container'})
-        }, (error) => {
-            console.log("Error getting dewar model " + error.msg)
-            app.alert({ title: 'No such dewar', message: error.msg})
-        }).finally( () => { this.ready = true }) // Only render when complete
+        this.getDewar()
     },
     methods: {
         // We get the model here because the view we render depends on the container details
-        getDewar: function() {
-            // Wrap the backbone request into a promise so we can wait for the result
-            return new Promise((resolve) => {
-                this.model.fetch({
-                    success: function(model) {
-                        console.log("Container Add got model " + JSON.stringify(model))
+        async getDewar() {
+            try {
+                await this.$store.dispatch('getModel', this.model)
+                console.log(this.proposalType, 'ieuwqoeiwfhduiuhsjwqifdiyueweefyuewfduiy')
+                this.mview = ContainerAddMap[this.proposalType] ? ContainerAddMap[this.proposalType].view : ContainerAddMap['default'].view
+                // USe the legacy components if we have then defined, else use the newer style component
+                if (!this.mview) this.componentType = 'saxs-container-add'
 
-                        resolve(true)
-                    },
-                    // Original controller had no error condition...
-                    error: function() {
-                        reject({msg: 'The specified dewar could not be found'})
-                    },
-                })
-
-            })
+                // Update the breadcrumbs
+                this.bc.push({ title: this.model.get('SHIPPINGNAME'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
+                this.bc.push({ title: 'Containers' })
+                this.bc.push({ title: 'Add Container'})
+            } catch (error) {
+                console.log("Error getting dewar model " + error.msg)
+                app.alert({ title: 'No such dewar', message: error.msg})
+            } finally {
+                this.ready = true
+            }
         },
     },
     beforeRouteEnter: (to, from, next) => {
       // Lookup the proposal first to make sure we can still add to it
       store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: to.params.did })
       .then((response) => {
-        console.log("Proposal lookup response: " + JSON.stringify(response))
           // Make sure we can still add items to this proposal
           if (app.proposal && app.proposal.get('ACTIVE') != 1) {
             store.commit('notifications/addNotification', { title: 'Proposal Not Active', message: 'This proposal is not active so new containers cannot be added'} )
