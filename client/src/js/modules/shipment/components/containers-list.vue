@@ -21,9 +21,10 @@
         :headers="tableColumns"
         :data="containers"
         v-on="$listeners"
+        :actions="tableActions"
       >
-        <template slot-scope="{ data, headers }" >
-            <slot :data="data" :headers="headers"></slot>
+        <template slot-scope="{ row }" slot="actions">
+            <slot :row="row" name="actions"></slot>
         </template>
       </table-panel>
 
@@ -127,6 +128,9 @@ export default {
             displayExtraFilter ? this.filters.push({ id: 'todispose', name: 'To Dispose'}) : this.filters
 
             return this.filters
+        },
+        tableActions() {
+            return this.$tableActions
         }
     },
     created() {
@@ -139,9 +143,6 @@ export default {
         this.fetchContainers()
     },
     methods: {
-        removeColumnsForMobileView() {
-            this.tableColumns
-        },
         async fetchContainers() {
             this.$store.commit('loading', true)
 
@@ -184,7 +185,8 @@ export default {
             
             this.fetchContainers()
         }
-    }
+    },
+    inject: ['$tableActions']
 }
 </script>
 
