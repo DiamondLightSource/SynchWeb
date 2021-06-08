@@ -341,7 +341,7 @@ class DC extends Page
             # Data collection group
             if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
                 $count_field = 'dc.datacollectionid';
-                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dcg.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam, dc.chistart, 
+                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dcg.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam, dc.chistart, dcg.scanparameters as scanparams,
                     dc.voltage,
                     dc.c2aperture,
                     dc.c2lens,
@@ -392,7 +392,7 @@ class DC extends Page
 
             } else {
                 $count_field = 'distinct dc.datacollectiongroupid';
-                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, count(distinct dc.datacollectionid) as dcc, min(smp.name) as sample, min(smp.blsampleid) as blsampleid, min(ses.visit_number) as vn, min(dc.kappastart) as kappa, min(dc.phistart) as phi, min(dc.startimagenumber) as si, min(dcg.experimenttype) as dct, dc.datacollectiongroupid as dcg, min(dc.runstatus) as runstatus, min(dc.beamsizeatsamplex) as bsx, min(dc.beamsizeatsampley) as bsy, min(dc.overlap) as overlap, max(dc.flux) as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, min(dc.imageprefix) as imp, min(dc.datacollectionnumber) as run, min(dc.filetemplate) as filetemplate, min(dc.datacollectionid) as id, min(dc.numberofimages) as ni, min(dc.imagedirectory) as dir, min(dc.resolution) as resolution, min(dc.exposuretime) as exposuretime, min(dc.axisstart) as axisstart, min(dc.numberofimages) as numimg, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st, min(dc.transmission) as transmission, min(dc.axisrange) as axisrange, min(dc.wavelength) as wavelength, min(dc.comments) as comments, 1 as epk, 1 as ein, min(dc.xtalsnapshotfullpath1) as x1, min(dc.xtalsnapshotfullpath2) as x2, min(dc.xtalsnapshotfullpath3) as x3, min(dc.xtalsnapshotfullpath4) as x4, min(dc.starttime) as sta, min(dc.detectordistance) as det, min(dc.xbeam) as xbeam, min(dc.ybeam) as ybeam, min(dc.chistart) as chistart,
+                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, count(distinct dc.datacollectionid) as dcc, min(smp.name) as sample, min(smp.blsampleid) as blsampleid, min(ses.visit_number) as vn, min(dc.kappastart) as kappa, min(dc.phistart) as phi, min(dc.startimagenumber) as si, min(dcg.experimenttype) as dct, dc.datacollectiongroupid as dcg, min(dc.runstatus) as runstatus, min(dc.beamsizeatsamplex) as bsx, min(dc.beamsizeatsampley) as bsy, min(dc.overlap) as overlap, max(dc.flux) as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, min(dc.imageprefix) as imp, min(dc.datacollectionnumber) as run, min(dc.filetemplate) as filetemplate, min(dc.datacollectionid) as id, min(dc.numberofimages) as ni, min(dc.imagedirectory) as dir, min(dc.resolution) as resolution, min(dc.exposuretime) as exposuretime, min(dc.axisstart) as axisstart, min(dc.numberofimages) as numimg, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st, min(dc.transmission) as transmission, min(dc.axisrange) as axisrange, min(dc.wavelength) as wavelength, min(dc.comments) as comments, 1 as epk, 1 as ein, min(dc.xtalsnapshotfullpath1) as x1, min(dc.xtalsnapshotfullpath2) as x2, min(dc.xtalsnapshotfullpath3) as x3, min(dc.xtalsnapshotfullpath4) as x4, min(dc.starttime) as sta, min(dc.detectordistance) as det, min(dc.xbeam) as xbeam, min(dc.ybeam) as ybeam, min(dc.chistart) as chistart, dcg.scanparameters as scanparams,
                     max(dc.voltage) as voltage,
                     max(dc.c2aperture) as c2aperture,
                     max(dc.c2lens) as c2lens,
@@ -482,7 +482,7 @@ class DC extends Page
              UNION
              SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',es.beamsizehorizontal,es.beamsizevertical,1, 1, 1 as scon, 'A' as spos, 'A' as sn, 'edge' as type, es.jpegchoochfilefullpath, 1, es.scanfilefullpath, es.energyscanid, 1, es.element, es.peakfprime, es.exposuretime, es.axisposition, es.peakfdoubleprime, TO_CHAR(es.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, es.transmissionfactor, es.inflectionfprime, es.inflectionfdoubleprime, es.comments, es.peakenergy, es.inflectionenergy, 'A', 'A', 'A', 'A', es.starttime as sta, 1, 1, 1, 0, 
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', es.starttime, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, es.blsubsampleid, '', '', ses.archived, ''
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, es.blsubsampleid, '', '', ses.archived
             FROM energyscan es
             INNER JOIN blsession ses ON ses.sessionid = es.sessionid
             LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid
@@ -492,7 +492,7 @@ class DC extends Page
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',xrf.beamsizehorizontal,xrf.beamsizevertical,1, 1, 1, 'A', 'A', 'mca' as type, 'A', 1, 'A', xrf.xfefluorescencespectrumid, 1, xrf.filename, 1, xrf.exposuretime, xrf.axisposition, 1, TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, xrf.beamtransmission, 1, xrf.energy, xrf.comments, 1, 1, 'A', 'A', 'A', 'A', xrf.starttime as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', xrf.starttime, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, xrf.blsubsampleid, '', '', ses.archived, ''
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, xrf.blsubsampleid, '', '', ses.archived
             FROM xfefluorescencespectrum xrf
             INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
             LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid     
@@ -502,7 +502,7 @@ class DC extends Page
             UNION
             SELECT $extc 1 as dcac, 1 as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, 1,1,1,'A',1,'A',ROUND(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)), 1),1,1, 1, 1, r.status, r.message, 'load' as type, r.actiontype, 1, smp.code, r.robotactionid, 1,  r.samplebarcode, r.containerlocation, r.dewarlocation, 1, 1, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, 1, 1, 1, 'A', 1, 1, r.xtalsnapshotbefore, r.xtalsnapshotafter, 'A', 'A', r.starttimestamp as sta, 1, 1, 1, 0,
                 1, 1, 1, 1, 1, 1, 1, 1, '', '', TIMESTAMPDIFF('MINUTE', r.starttimestamp, CURRENT_TIMESTAMP) as age,
-                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, 1 as blsubsampleid, '', '', ses.archived, ''
+                0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ses.beamlinename as bl, 1 as blsubsampleid, '', '', ses.archived
             FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
             LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
@@ -587,7 +587,6 @@ class DC extends Page
             
             }
 
-            
             $this->profile('processing');
             if ($single) $this->_output($dcs[0]);
             else $this->_output(array($pgs, $dcs));
