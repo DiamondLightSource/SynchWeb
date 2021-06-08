@@ -68,13 +68,15 @@ define(['backbone'], function(Backbone) {
 
         
         DELIVERYAGENT_AGENTNAME: {
-            required: true,
+            required: function() {
+                return this.shipmentHasAgentCode
+            },
             pattern: 'wwsdash'
         },
 
         DELIVERYAGENT_AGENTCODE: {
             required: function() {
-                return !(this.get('FACILITYCODE'))
+                return this.shipmentHasAgentCode
             }   
         },
 
@@ -84,7 +86,8 @@ define(['backbone'], function(Backbone) {
         }
 
     },
-      
+
+    shipmentHasAgentCode: false, // We want to set this default to false unless 'DELIVERYAGENT_AGENTCODE' has a value in the shipment model
   })
        
 })
