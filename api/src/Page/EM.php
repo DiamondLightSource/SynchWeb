@@ -88,10 +88,7 @@ class EM extends Page
     function _relion_start()
     {
         global $visit_directory,
-               $zocalo_mx_reprocess_queue; // Find $zocalo_relion_start_queue...
-
-//        $this->db->set_debug(True);
-//$message = 'Relion is already processing this session! Processing started at ' . date('H:i:s \o\n jS F Y', $session['processingTimestamp']) . '.';
+               $zocalo_mx_reprocess_queue;
 
         $this->exitIfElectronMicroscopesAreNotConfigured();
         $session = $this->determineSession($this->arg('session'));
@@ -193,12 +190,16 @@ class EM extends Page
         $workflow_parameters['acquisition_software'] = $valid_parameters['projectAcquisitionSoftware'];
 
         if ($valid_parameters['projectAcquisitionSoftware'] == 'EPU') {
-            $workflow_parameters['import_images'] = "{$session_path}/raw/GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
+            $fileTemplate = "GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
         } else if ($valid_parameters['projectAcquisitionSoftware'] == 'SerialEM') {
-            $workflow_parameters['import_images'] = "{$session_path}/raw/Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
+            $fileTemplate = "Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
+        } else {
+            $fileTemplate = null;
         }
 
-        // TODO Remove projectGainReferenceFileName from form? File name gain.mrc specified in standard operating procedure. (JPH)
+        $imageDirectory = "{$session_path}/raw/";
+
+        $workflow_parameters['import_images'] = "{$imageDirectory}{$fileTemplate}";
 
         if ($valid_parameters['projectGainReferenceFile'] && $valid_parameters['projectGainReferenceFileName']) {
             $workflow_parameters['motioncor_gainreference'] = "{$session_path}/processing/{$valid_parameters['projectGainReferenceFileName']}";
@@ -238,10 +239,8 @@ class EM extends Page
         $dataCollectionId = $this->findExistingDataCollection($session);
 
         if (!$dataCollectionId) {
-            $dataCollectionId = $this->addDataCollectionForEM($session, "{$session_path}/raw/", $valid_parameters['projectMovieFileNameExtension'], "Frames/*.{$valid_parameters['projectMovieFileNameExtension']}");
+            $dataCollectionId = $this->addDataCollectionForEM($session, $imageDirectory, $valid_parameters['projectMovieFileNameExtension'], $fileTemplate);
         }
-
-        // TODO PREVENT ADDITION OF PROCESSING JOB WHERE NONE PROCESSING...
 
         $processingJobId = null;
 
@@ -258,8 +257,6 @@ class EM extends Page
                 'ispyb_process' => $processingJobId
             )
         );
-
-        // TODO Enable write to queue
 
          $this->enqueue($zocalo_mx_reprocess_queue, $message);
 
@@ -571,9 +568,9 @@ class EM extends Page
             // Add DataCollection
 
             $this->db->pq("
-                    INSERT INTO DataCollection (sessionId, dataCollectionGroupId, dataCollectionNumber, startTime, endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
-                    VALUES (:1, :2, :3, NOW(), NOW(), :4, :5, :6, :7, :8) RETURNING dataCollectionId INTO :id",
-                array($session['SESSIONID'], $dataCollectionGroupId, 1, 'DataCollection Simulated', $imageDirectory, $imageSuffix, $fileTemplate, 'Created by SynchWeb')
+                    INSERT INTO DataCollection (sessionId, dataCollectionGroupId, startTime, endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
+                    VALUES (:1, :2, NOW(), NOW(), :3, :4, :5, :6, :7) RETURNING dataCollectionId INTO :id",
+                array($session['SESSIONID'], $dataCollectionGroupId, 'DataCollection Simulated', $imageDirectory, $imageSuffix, $fileTemplate, 'Created by SynchWeb')
             );
 
             $dataCollectionId = $this->db->id();
@@ -648,8 +645,6 @@ class EM extends Page
                     ),
                     'recipes' => ['relion-stop']
                 );
-
-                // TODO Enable write to queue
 
                  $this->enqueue($zocalo_mx_reprocess_queue, $message);
             } else {
