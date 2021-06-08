@@ -282,7 +282,7 @@
             var lastCapillaryId = 0
             // Populate existing capillaries added from this visit
             for(var i=0; i<groups.data.length; i++){
-                if(groups.data[i].TYPE == 'container'){
+                if(groups.data[i].TYPE == 'container' || groups.data[i].TYPE == 'capillary'){
                     // Get the latest capillary that had a sample instance added to it (latest BLSampleGroup_has_BLSample entry)
                     if(groups.data[i].BLSAMPLEGROUPID > lastCapillaryId){
                         lastCapillaryId = groups.data[i].CRYSTALID
