@@ -855,6 +855,7 @@ class Shipment extends Page
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
+            if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
