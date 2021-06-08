@@ -21,14 +21,8 @@
       <h1>Sample Group {{ sampleGroupName }}</h1>
       <table-panel
         :headers="sampleGroupHeaders"
-        :data="objectValues(selectedSamplesInGroups)"
+        :data="formatSamplesInGroups()"
       >
-        <template slot-scope="{ data }">
-          <tr v-for="(row, index) in data" :key="index" @click="getContainerFromSample(row)">
-            <td>{{ objectKeys(selectedSamplesInGroups)[index] }}</td>
-            <td>{{ extractSampleNamesFromList(row, 'SAMPLE') }}</td>
-          </tr>
-        </template>
       </table-panel>
     </div>
 
@@ -38,17 +32,10 @@
         :showImaging="false"
         :tableHeaders="containerHeaders"
       >
-        <template slot-scope="{ data }">
-          <tr v-for="(row, index) in data" :key="index" @click="onContainerSelected(row)">
-            <td v-for="(column, columnIndex) in containersBodyColumns" :key="columnIndex" class="">
-              {{row[column]}}
-            </td>
-            <td>
-              <router-link class="button button-notext atp" :to="`/containers/cid/${row.CONTAINERID}`">
-                <i class="fa fa-info"></i> <span>See Details</span>
-              </router-link>
-            </td>
-          </tr>
+        <template slot-scope="{ row }" slot="actions">
+          <router-link class="button button-notext atp" :to="`/containers/cid/${row.CONTAINERID}`">
+            <i class="fa fa-info"></i> <span>See Details</span>
+          </router-link>
         </template>
       </containers-list>
     </div>
@@ -57,7 +44,7 @@
       v-if="containerSelected"
       :selectedContainerName="selectedContainerName"
       :selectedContainerType="selectedContainer.CONTAINERTYPE"
-      :samples=samples
+      :samples="samples"
       :selectedSamples="selectedSamplesInGroups[selectedContainerName]"
       @unselect-cell="deselectCells"
       @cell-clicked="addSelectedCells"
@@ -114,8 +101,7 @@ export default {
       containerHeaders: [
         { title: 'Name', key: 'NAME' },
         { title: 'Container Type', key: 'CONTAINERTYPE' },
-        { title: 'BarCode', key: 'BARCODE' },
-        { title: 'Action', key: '' }
+        { title: 'BarCode', key: 'BARCODE' }
       ],
       sampleGroupName: null,
       containerSelected: false,
@@ -342,6 +328,16 @@ export default {
           this.$store.commit('loading', false)
         }
       }
+    },
+    formatSamplesInGroups() {
+      return keys(this.selectedSamplesInGroups).map(item => ({
+        name: item, samples: this.extractSampleNamesFromList(this.selectedSamplesInGroups[item], 'SAMPLE')
+      }))
+    }
+  },
+  provide() {
+    return {
+      $tableActions: 'Action'
     }
   }
 };
