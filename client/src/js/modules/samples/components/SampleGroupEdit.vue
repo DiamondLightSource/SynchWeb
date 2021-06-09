@@ -28,6 +28,7 @@
       <containers-list
         :showImaging="false"
         :tableHeaders="containerHeaders"
+        @row-clicked="onContainerSelected"
       >
         <template slot-scope="{ row }" slot="actions">
           <router-link class="button button-notext atp" :to="`/containers/cid/${row.CONTAINERID}`">
@@ -273,9 +274,9 @@ export default {
     },
     // Remove when we start persisting the vuex store
     async getSampleGroupInformation() {
+      this.fetchSampleGroupName()
       this.sampleGroupSamples.queryParams = { BLSAMPLEGROUPID: this.sampleGroupId, page: 1, per_page: 9999, total_pages: 0 }
       const groupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamples)
-      this.fetchSampleGroupName()
       this.initialSampleInGroupModels = groupSamples
       const { samplesByContainer, initialSamples }  = groupSamples.toJSON().reduce((acc, curr) => {
         if (typeof curr.CONTAINER === 'undefined') {
@@ -342,7 +343,7 @@ export default {
       }))
     },
     async fetchSampleGroupName() {
-      this.sampleGroupNameModel = new SampleGroupNameModel({ BLSAMPLEGROUPID: this.sampleGroupId })
+      this.sampleGroupNameModel = new SampleGroupNameModel({}, { BLSAMPLEGROUPID: this.sampleGroupId })
       const groupNameResult = await this.$store.dispatch(
         'getModel',
         this.sampleGroupNameModel
