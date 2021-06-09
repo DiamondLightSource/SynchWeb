@@ -89,6 +89,9 @@
         'pipeline=dials ' => 'DIALS',
     );
 
+    # Filtered downstream jobs
+    $downstream_filter = array();
+
     # Crystal alignment programs
     $strat_align = array('XOalign', 'dials.align_crystal');
 

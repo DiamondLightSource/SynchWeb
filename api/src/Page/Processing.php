@@ -111,6 +111,9 @@ class Processing extends Page {
     }
 
     function _autoproc_status($where, $ids) {
+        global $downstream_filter;
+        $filter = $downstream_filter ? implode("','", $downstream_filter) : '';
+
         $processings = $this->db->union(
             array(
                 "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'autoproc' as type
@@ -120,7 +123,7 @@ class Processing extends Page {
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN autoprocintegration api ON api.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where",
+                WHERE $where AND app.processingprograms NOT IN ('$filter')",
                 "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'downstream' as type
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
@@ -129,7 +132,8 @@ class Processing extends Page {
                 INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where AND api.autoprocintegrationid IS NULL AND pj.automatic = 1",
+                WHERE $where AND api.autoprocintegrationid IS NULL AND pj.automatic = 1
+                    AND app.processingprograms NOT IN ('$filter')",
             ),
             $ids
         );
@@ -218,7 +222,7 @@ class Processing extends Page {
             if (array_key_exists($id, $statuses)) {
                 array_push($out, array(strval($id), $statuses[$id]));
             } else {
-                array_push($out, array(strval($id), new \stdClass));
+                array_push($out, array(strval($id), new \stdClass()));
             }
         }
 
@@ -509,6 +513,9 @@ class Processing extends Page {
     }
 
     function _get_downstreams($dcid = null, $aid = null) {
+        global $downstream_filter;
+        $filter = $downstream_filter ? implode("','", $downstream_filter) : '';
+
         $where = '';
         $args = array($this->proposalid);
 
@@ -538,6 +545,7 @@ class Processing extends Page {
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE api.autoprocintegrationid IS NULL AND p.proposalid=:1 $where
+                    AND app.processingprograms NOT IN ('$filter')
                 GROUP BY pj.processingjobid",
             $args
         );
