@@ -41,7 +41,6 @@ Component will emit a save event when the value changes
         <span class="tw-mx-3"><i :class="['fa', 'fa-edit']"></i> Edit</span>
       </span>
       <button v-if="inline && editable" class="button tw-px-2 tw-py-1 tw-mx-1" @mousedown="onSave">OK</button>
-      <button v-if="inline && editable" class="button tw-px-2 tw-py-1 tw-mx-1" @mousedown="onCancel">Cancel</button>
     </div>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -153,9 +152,6 @@ export default {
     onEnter(event) {
       // If we are in inline edit mode - save the model on enter (key = 13)
       if (this.inline && event.keyCode == 13) this.onSave()
-    },
-    onCancel() {
-      this.editable = false
     }
   },
 };

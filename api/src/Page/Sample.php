@@ -185,6 +185,7 @@ class Sample extends Page
                               array('/groups', 'get', '_sample_groups'),
                               array('/groups', 'post', '_add_sample_to_group'),
                               array('/groups', 'put', '_bulk_update_samples_in_group'),
+                              array('/groups/name', 'post', '_create_new_sample_group_name'),
                               array('/groups/name/all', 'get', '_get_all_sample_groups'),
                               array('/groups/name/:BLSAMPLEGROUPID', 'patch', '_update_sample_group'),
                               array('/groups/name/:BLSAMPLEGROUPID', 'get', '_get_sample_group_name'),
@@ -2179,6 +2180,28 @@ class Sample extends Page
                     'total' => $tot,
                     'data' => $rows,
                 ));
+        }
+
+        function _create_new_sample_group_name() {
+            $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : $this->_create_new_sample_group();
+
+            if ($this->has_arg('BLSAMPLEGROUPID')) {
+                $group = $this->db->pq("SELECT blsamplegroupid
+                FROM blsamplegroup 
+                WHERE blsamplegroupid = :1", array($blSampleGroupId));
+
+                if (!sizeof($group)) $this->_error('No such sample group');
+                else $group = $group[0];
+            }
+            
+
+            $fields = array('NAME');
+            foreach ($fields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE blsamplegroup SET $f=:1 WHERE blsamplegroupid=:2", array($this->arg($f), $blSampleGroupId));
+                    $this->_output(array($f => $this->arg($f), 'BLSAMPLEGROUPID' => $blSampleGroupId));
+                }
+            }
         }
 }
 
