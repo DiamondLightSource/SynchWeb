@@ -163,6 +163,7 @@ export default {
     // If created with editable = false then we are in inline-edit mode
     this.editable = !this.inline
   },
+
   methods: {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
