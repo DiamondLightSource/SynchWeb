@@ -62,7 +62,11 @@ class Dimple extends DownstreamPlugin {
         $blobs = $this->_get_blobs();
         $blob_count = 0;
         foreach ($blobs as $blob) {
-            if (file_exists($this->_mrrun['RUNDIRECTORY'] . $blob['VIEW1'])) {
+            if (
+                file_exists(
+                    $this->_mrrun['RUNDIRECTORY'] . '/' . $blob['VIEW1']
+                )
+            ) {
                 $blob_count++;
             }
         }
@@ -126,10 +130,11 @@ class Dimple extends DownstreamPlugin {
 
         $blobs = $this->_get_blobs();
         if (sizeof($blobs)) {
-            if ($n < sizeof($blobs)) {
+            $views = array("VIEW1", "VIEW2", "VIEW3");
+            if ($n < sizeof($views)) {
                 return $this->_mrrun['RUNDIRECTORY'] .
                     '/' .
-                    $blobs[$n]["VIEW1"];
+                    $blobs[0][$views[$n]];
             }
         }
     }

@@ -9,24 +9,30 @@ define([
         ui: {
             plot: '.plot_dimple',
             rstats: '.rstats',
+            blob: '.blobs img',
+            blobs: '.blobs',
         },
         
         showBlob: function() {
-            this.$el.find('.blobs img').attr('src', this.blob.src)
+            this.ui.blob.attr('src', this.blob.src).show()
+            this.ui.blobs.addClass('loaded').removeClass('pending')
         },
 
         onDomRefresh: function() {
-            this.$el.find('.blobs').magnificPopup({
+            this.ui.blobs.magnificPopup({
                 delegate: 'a', type: 'image',
                 gallery: {
                     enabled: true,
                     navigateByImgClick: true,
                 }
             })
+
+            this.ui.blob.hide()
             
             if (this.model.get('BLOBS') > 0) {
                 this.blob = new XHRImage()
                 this.blob.onload = this.showBlob.bind(this)
+                this.ui.blobs.addClass('pending')
                 this.blob.load(app.apiurl+'/processing/downstream/images/'+this.model.get('AID'))
             }
 
@@ -38,7 +44,7 @@ define([
                 this.ui.plot.height(this.ui.plot.width()*0.41-80)
             }
 
-            if (this.model.get('BLOBS') == 0) this.$el.find('.blobs').height(this.ui.plot.width()*0.41-80)
+            this.ui.blobs.css('min-height', this.ui.plot.width()*0.41-80)
             
             var data = [{ data: this.model.get('PLOTS').FVC, label: 'Rfree vs. Cycle' },
                         { data: this.model.get('PLOTS').RVC, label: 'R vs. Cycle' }]
