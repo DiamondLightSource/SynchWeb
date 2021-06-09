@@ -1683,21 +1683,32 @@ class Shipment extends Page
         function _add_container_history() {
             if (!$this->bcr()) $this->_error('You need to be on the internal network to add history');
 
-            if (!$this->has_arg('CONTAINERID')) $this->_error('No container id specified');
+            if (!$this->has_arg('CONTAINERID') && !$this->has_arg('CODE')) $this->_error('No container id or code specified');
             if (!$this->has_arg('LOCATION')) $this->_error('No location specified');
+
+            $where = '1=1';
+            $args = array();
+
+            if ($this->has_arg('CONTAINERID')) {
+                $where .= ' AND c.containerid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('CONTAINERID'));
+            } else if ($this->has_arg('CODE')) {
+                $where .= ' AND c.code=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('CODE'));
+            }
 
             $cont = $this->db->pq("SELECT c.containerid, d.dewarid, s.shippingid, d.dewarstatus
               FROM container c
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping s ON s.shippingid = d.shippingid
-              WHERE c.containerid =:1 ORDER BY c.containerid DESC", array($this->arg('CONTAINERID')));
+              WHERE $where ORDER BY c.containerid DESC", $args);
 
-            if (!sizeof($cont)) $this->_error('No such container: ' . $this->arg('CONTAINERID'), 404);
+            if (!sizeof($cont)) $this->_error('No such container', 404);
             else $cont = $cont[0];
 
             // We may need to update the dewar and shipping status - for now leave them alone
 
-            // Optionally we can set the beamlinename
+            // Optionally we can set the beamlinename in ContainerHistory
             $beamline_name = $this->has_arg('BEAMLINENAME') ? $this->arg('BEAMLINENAME') : null;
 
             // Figure out the most recent status for this container
@@ -1713,11 +1724,15 @@ class Shipment extends Page
             }
 
             // Insert new record to store container location
-            $this->db->pq("INSERT INTO containerhistory (containerid,status,location,beamlineName) VALUES (:1,:2,:3,:4)", array($cont['CONTAINERID'], $container_status, $this->arg('LOCATION'), $beamline_name));
+            $this->db->pq("INSERT INTO containerhistory (containerid,status,location,beamlinename) VALUES (:1,:2,:3,:4)", array($cont['CONTAINERID'], $container_status, $this->arg('LOCATION'), $beamline_name));
             $chid = $this->db->id();
+
+            // Update the container beamlinelocation so we can filter out duplicate container history entries
+            $this->db->pq("UPDATE container SET beamlinelocation=:1 WHERE containerid=:2", array($this->arg('LOCATION'), $cont['CONTAINERID']));
 
             $this->_output(array('CONTAINERHISTORYID' => $chid));
         }
+
 
 
 
