@@ -4,7 +4,6 @@
     <h1 v-else>Add Sample Group</h1>
 
     <base-input-text
-      v-if="gid"
       outerClass="tw-w-full"
       inputClass="tw-mx-3 tw-mb-4"
       :value="groupName"
@@ -12,10 +11,8 @@
       label="Group Name"
       :inline="true"
       @input="changeGroupName"
-      @save="saveSampleGroupName"
+      @save="saveSampleGroupName(true)"
     />
-
-    <div v-else><p class="tw-text">Create a sample group first before creating a name</p></div>
 
     <div v-if="objectKeys(selectedSamplesInGroups).length > 0" class="content">
       <h1>Sample Group {{ sampleGroupName }}</h1>
@@ -76,6 +73,7 @@ import SampleGroupsCollection from 'collections/samplegroups.js'
 import SamplesCollection from 'collections/samples.js'
 import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
 import ContainerModel from 'models/container.js'
+import SampleGroupNameModel from 'models/samplegroupname.js'
 
 export default {
   name: 'sample-group-edit',
@@ -129,7 +127,8 @@ export default {
       initialSampleInGroupModels: null,
       sampleGroupId: null,
       sampleGroupSamples: null,
-      containerModel: null
+      containerModel: null,
+      sampleGroupNameModel: null
     };
   },
   computed: {
@@ -146,6 +145,7 @@ export default {
     this.containerSamples = new SamplesCollection()
     this.sampleGroupSamples = new SampleGroupSamplesCollection()
     this.containerModel = new ContainerModel()
+    this.sampleGroupNameModel = new SampleGroupNameModel({}, {})
   },
   mounted() {
     this.sampleGroupId = this.gid
@@ -192,7 +192,6 @@ export default {
       if (result) {
         const savedSamples = result.toJSON()
         this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
-        await this.saveSampleGroupName()
       }
 
       await this.getSampleGroupInformation()
@@ -220,12 +219,26 @@ export default {
         this.$store.commit('loading', false)
       }
     },
-    async saveSampleGroupName() {
-      const sampleGroupModel = this.sampleGroup.sampleGroupNameModel()
-      await this.$store.dispatch('saveModel', {
-        model: sampleGroupModel,
-        attributes: { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
-      })
+    async saveSampleGroupName(loading = false) {
+      try {
+        if (loading) this.$store.commit('loading', loading)
+
+        await this.$store.dispatch('saveModel', {
+          model: this.sampleGroupNameModel,
+          attributes: { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
+        })
+
+        const { BLSAMPLEGROUPID } = this.sampleGroupNameModel.toJSON()
+
+        this.sampleGroupId = BLSAMPLEGROUPID
+        this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
+
+        if (loading) this.$store.commit('loading', false)
+
+      } catch (error) {
+        console.log(error);
+        this.$store.commit('loading', false)
+      }
     },
     changeGroupName(value) {
       this.groupName = value
@@ -262,12 +275,7 @@ export default {
     async getSampleGroupInformation() {
       this.sampleGroupSamples.queryParams = { BLSAMPLEGROUPID: this.sampleGroupId, page: 1, per_page: 9999, total_pages: 0 }
       const groupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamples)
-      const sampleGroupNameModel = this.sampleGroup.sampleGroupNameModel({ BLSAMPLEGROUPID: this.sampleGroupId })
-      const groupNameResult = await this.$store.dispatch(
-        'getModel',
-        sampleGroupNameModel
-      )
-
+      this.fetchSampleGroupName()
       this.initialSampleInGroupModels = groupSamples
       const { samplesByContainer, initialSamples }  = groupSamples.toJSON().reduce((acc, curr) => {
         if (typeof curr.CONTAINER === 'undefined') {
@@ -297,7 +305,6 @@ export default {
       })
       this.initialSamplesInGroup = initialSamples
       this.$store.commit('sampleGroups/setSelectedSampleGroups', samplesByContainer)
-      this.groupName = groupNameResult.toJSON().NAME || this.assignDefaultSampleGroupName()
     },
     extractSampleNamesFromList(list, property) {
       const names = list.slice(0, 3).map(item => item[property]).join(', ')
@@ -333,6 +340,15 @@ export default {
       return keys(this.selectedSamplesInGroups).map(item => ({
         name: item, samples: this.extractSampleNamesFromList(this.selectedSamplesInGroups[item], 'SAMPLE')
       }))
+    },
+    async fetchSampleGroupName() {
+      this.sampleGroupNameModel = new SampleGroupNameModel({ BLSAMPLEGROUPID: this.sampleGroupId })
+      const groupNameResult = await this.$store.dispatch(
+        'getModel',
+        this.sampleGroupNameModel
+      )
+
+      this.groupName = groupNameResult.toJSON().NAME || this.assignDefaultSampleGroupName()
     }
   },
   provide() {
