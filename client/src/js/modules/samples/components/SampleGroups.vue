@@ -19,8 +19,8 @@
       @page-changed="handlePageChange"
     />
 
-    <div v-if="sampleGroupMembers.length > 0" class="content">
-      <h1>Sample Group {{ sampleGroupName }}</h1>
+    <div v-if="sampleGroupId" class="content">
+      <h1>{{ sampleGroupName || 'Sample Group' }}</h1>
       <div class="tw-flex tw-justify-end">
         <button v-if="sampleGroupId" @click="onEditSampleGroup(sampleGroupId)" class="button">
           <i class="fa fa-plus"></i> Edit Sample Group
@@ -104,6 +104,7 @@ export default {
     selectSampleGroup(item) {
       this.selectedSampleGroup = item
       this.sampleGroupId = item.BLSAMPLEGROUPID
+      this.sampleGroupName = item.NAME
     },
     async onSampleGroupSelected() {
       try {
