@@ -1026,6 +1026,18 @@ li:last-child .visit_users {
                 content: 'No Image';
             }
 
+            &.pending {
+                &:before {
+                    content: 'Loading'
+                }
+            }
+
+            &.loaded {
+                &:before {
+                    display: none
+                }
+            }
+
             @media (max-width: $breakpoint-vsmall) {
                 float: none;
                 width: 100%;
