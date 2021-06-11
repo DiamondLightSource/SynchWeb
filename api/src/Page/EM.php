@@ -924,7 +924,7 @@ class EM extends Page
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
-                WHERE dc.datacollectionid = :1 AND m.movienumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $in));
 
         if (!sizeof($rows)) $this->_error('No such motion correction');
         $row = $rows[0];
