@@ -32,6 +32,29 @@
                 </li>
 
                 <li>
+                    <label>Raw Folder</label>
+                    <select name="projectMovieRawFolder"
+                            v-if="!isFormReadOnly"
+                            v-model="projectMovieRawFolder">
+                        <option value="raw">raw</option>
+                        <option value="raw2">raw2</option>
+                        <option value="raw3">raw3</option>
+                        <option value="raw4">raw4</option>
+                        <option value="raw5">raw5</option>
+                        <option value="raw6">raw6</option>
+                        <option value="raw7">raw7</option>
+                        <option value="raw8">raw8</option>
+                        <option value="raw9">raw9</option>
+                    </select>
+
+                    <input type="text" name="projectMovieRawFolder"
+                           v-if="isFormReadOnly"
+                           v-model="projectMovieRawFolder"
+                           v-bind:readonly="true"
+                           style="margin-bottom: 20px">
+                </li>
+
+                <li>
                     <label>Movie File Name Extension</label>
                     <select name="projectMovieFileNameExtension"
                             v-if="!isFormReadOnly"
@@ -296,6 +319,7 @@ export default {
 
             // Form fields
             projectAcquisitionSoftware: null,
+            projectMovieRawFolder: null,
             projectMovieFileNameExtension: null,
             projectGainReferenceFile: null,
             projectGainReferenceFileName: null,
@@ -376,6 +400,7 @@ export default {
             this.processingTimestamp = false;
 
             this.projectAcquisitionSoftware = 'EPU';
+            this.projectMovieRawFolder = 'raw';
             this.projectMovieFileNameExtension = '.tiff';
             this.projectGainReferenceFile = false;
             this.projectGainReferenceFileName = 'gain.mrc';
@@ -501,6 +526,7 @@ export default {
                         id: self.session['VISIT'],
 
                         projectAcquisitionSoftware: self.projectAcquisitionSoftware,
+                        projectMovieRawFolder: self.projectMovieRawFolder,
                         projectMovieFileNameExtension: self.projectMovieFileNameExtension.substr(1),
                         projectGainReferenceFile: self.projectGainReferenceFile,
                         projectGainReferenceFileName: (self.projectGainReferenceFile ? self.projectGainReferenceFileName : null),
