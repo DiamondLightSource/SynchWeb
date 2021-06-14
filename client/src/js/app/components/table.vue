@@ -43,7 +43,7 @@ TODO - move relevant styles to this component style section
 
         <tbody v-else>
           <tr>
-            <td :colspan="headers.length" class="renderable">{{noDataText}}</td>
+            <td :colspan="actions ? headers.length + 1 : headers.length" class="renderable">{{noDataText}}</td>
           </tr>
         </tbody>
 
