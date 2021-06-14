@@ -244,7 +244,8 @@ export default {
         if (loading) this.$store.commit('loading', false)
 
       } catch (error) {
-        console.log(error);
+        let message = 'An error occurred while saving the sample group name.'
+        this.$store.commit('notifications/addNotification', { title: 'Error', message: message, level: 'error' })
         this.$store.commit('loading', false)
       }
     },
