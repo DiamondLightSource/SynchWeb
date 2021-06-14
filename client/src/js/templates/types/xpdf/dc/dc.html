@@ -16,16 +16,20 @@
     </div>
     
     <ul class="clearfix">
+        <li class="sample"><span class="wrap">Sample: <% if (BLSAMPLEID) { %><a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a><% } else { %> none <%}%></span></li>
+        <li>Group: <a href="/dc/visit/<%-VIS_LINK%>/dcg/<%-DCG%>"><%-DCC%> Data Collections</a></li>
         <li>Beam Centre: <%-parseFloat(XBEAM).toFixed(2)%> x <%-parseFloat(YBEAM).toFixed(2)%></li>
         <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
         <li>Detector Distance: <%-parseFloat(DET).toFixed(1)%>mm</li>
         <li>Exposure: <%-EXPOSURETIME%>s</li>
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
         <li>No. Images: <%-NUMIMG%></li>
-       <li>Detector: <%-DETECTORMANUFACTURER%> <%-DETECTORMODEL%></li>
+        <li>Detector: <%-DETECTORMANUFACTURER%> <%-DETECTORMODEL%></li>
         
         <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (!STATE) { %><li>Status: <b>Stopped</b></li><% } %>
+
+        <li class="params" style="width: calc(97.5% - 15px)">Scan Parameters: </li>
     </ul>
     
     <div class="holder">
