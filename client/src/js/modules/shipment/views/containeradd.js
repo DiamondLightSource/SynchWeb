@@ -114,6 +114,7 @@ define(['backbone',
             autoprocessing_pipeline: 'select[name=PIPELINE]',
             auto: 'input[name=AUTOMATED]',
             extrastate: '.extra-state',
+            spacegroups: 'input[name=SPACEGROUPS]',
         },
         
         
@@ -152,6 +153,7 @@ define(['backbone',
 
             'change @ui.registry': 'updateName',
             'click @ui.auto': 'updateAutomated',
+            'click @ui.spacegroups': 'updateSpaceGroups',
             'change @ui.autoprocessing_pipeline': 'updateProcessing',
         },
 
@@ -169,6 +171,10 @@ define(['backbone',
             if (this.table.currentView) this.table.currentView.toggleAuto(this.ui.auto.is(':checked'))
         },
 
+        updateSpaceGroups: function(e) {
+            // Use full list of spacegroups
+            if (this.table.currentView) this.table.currentView.toggleSpaceGroups(this.ui.spacegroups.is(':checked'))
+        },
         updateName: function(e) {
             var rc = this.containerregistry.findWhere({ CONTAINERREGISTRYID: this.ui.registry.val() })
             if (rc) this.ui.name.val(rc.get('BARCODE'))
@@ -303,7 +309,7 @@ define(['backbone',
                 this.buildCollection()
                 this.puck.$el.css('width', app.mobile() ? '100%' : '25%')
                 this.puck.show(new PuckView({ collection: this.samples }))
-                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, auto: this.ui.auto.is(':checked') })
+                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, auto: this.ui.auto.is(':checked'), allSpacegroups: this.ui.spacegroups.is(':checked') })
                 this.table.show(this.stable)
                 this.single.empty()
                 this.grp.empty()
@@ -317,7 +323,7 @@ define(['backbone',
                 this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.buildCollection()
-                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, type: 'non-xtal' })
+                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, type: 'non-xtal', allSpacegroups: this.ui.spacegroups.is(':checked') })
                 this.table.show(this.stable)
                 this.single.empty()
                 this.grp.empty()

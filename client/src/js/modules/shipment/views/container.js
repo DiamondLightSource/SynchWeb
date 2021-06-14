@@ -253,8 +253,8 @@ define(['marionette',
                 this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
             } else this.puck.show(new PuckView({ collection: this.samples }))
-
-            this.sampletable = new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type, auto: this.model.get('CONTAINERQUEUEID') ? true : false })
+            // For editing a plate show all spacegroups - saves needing another control to filter mx faviourites
+            this.sampletable = new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type, auto: this.model.get('CONTAINERQUEUEID') ? true : false, allSpacegroups: true  })
             this.table.show(this.sampletable)
         }
     })

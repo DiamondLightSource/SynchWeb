@@ -321,6 +321,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'XrayCentringResult',
 
             'BeamCalendar',
+            'SpaceGroup',
         );
 
         foreach ($tables as $table) {

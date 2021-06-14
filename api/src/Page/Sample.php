@@ -62,7 +62,7 @@ class Sample extends Page
 
                               'NAME' => '[\w\s-()]+',
                               'COMMENTS' => '.*',
-                              'SPACEGROUP' => '(\w+)|^$', // Any word character or empty string
+                              'SPACEGROUP' => '(\w|\s|\-|\/)+|^$', // Any word character (inc spaces bars and slashes) or empty string
                               'CELL_A' => '\d+(.\d+)?',
                               'CELL_B' => '\d+(.\d+)?',
                               'CELL_C' => '\d+(.\d+)?',
@@ -136,6 +136,7 @@ class Sample extends Page
                               'TYPE' => '\w+',
                               'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
 
+                              'SAMPLEGROUPID' => '\d+',
                                );
         
         
@@ -186,6 +187,9 @@ class Sample extends Page
                               array('/groups', 'post', '_add_sample_to_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
+
+                              array('/spacegroups(/:SPACEGROUPID)', 'get', '_get_spacegroups'),
+
         );
 
 
@@ -2051,5 +2055,36 @@ class Sample extends Page
 
             $this->_output(new \stdClass);
         }
+        // Get spacegroups from database
+        // Could extend this to filter on spacegroupshortname (also unique)
+        // Also extend to take mx used flag to return a filtered list
+        function _get_spacegroups() {
+            // Store the spacegroup id if we have one
+            $sid = $this->has_arg('SPACEGROUPID') ? $this->arg('SPACEGROUPID') : null;
+            // Reusing ty as a parameter. Set this to mx to only get those items in MX_used column
+            $mx = $this->has_arg('ty') ? $this->arg('ty') == 'mx' : null;
+            $where = "WHERE 1=1";
+            $args = array();
+
+            // Are we looking for a specific id or subset of entries?
+            // Presence of id takes precedence over mx flag
+            if ($sid) {
+                $where .= ' AND spacegroupid = :'.(sizeof($args)+1);
+                array_push($args, $sid);
+            } else if ($mx) {
+                $where .= ' AND mx_used = :'.(sizeof($args)+1);
+                array_push($args, 1);
+            }
+
+            $rows = $this->db->pq("SELECT spacegroupid, spacegroupnumber, spacegroupshortname, spacegroupname, bravaisLattice FROM spacegroup $where", $args);
+
+            if (!sizeof($rows)) {
+                if ($this->has_arg('SPACEGROUPID')) $this->_error('Spacegroup id not found');
+                else $this->_error('No spacegroup types found');
+            }
+
+            if ($this->has_arg('SPACEGROUPID')) $this->_output($rows[0]);
+            else $this->_output(array('total' => count($rows), 'data' => $rows));
+          }
 }
 
