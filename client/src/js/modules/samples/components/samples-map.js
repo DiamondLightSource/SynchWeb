@@ -23,6 +23,8 @@ import XPDFAddSampleView from 'modules/types/xpdf/samples/views/sampleadd'
 import XPDFInstanceList from 'modules/types/xpdf/samples/views/instancelist'
 import XPDFInstanceView from 'modules/types/xpdf/samples/views/instanceview'
 
+import SimpleSampleAdd from 'modules/types/xpdf/samples/views/simplesampleaddpoploader'
+
 export const SampleListMap = {
     mx:     { title: 'Sample', view: SampleList },
     saxs:   { title: 'Sample', view: SampleList },
@@ -37,6 +39,11 @@ export const SampleViewMap = {
     gen:    { title: 'Sample', view: GenSampleView },
     xpdf:   { title: 'Instance', view: XPDFInstanceView },
     default:{ title: 'Sample', view: SampleView }
+}
+
+export const SimpleSampleMap = {
+    xpdf:   { title: 'Simple Sample', view: SimpleSampleAdd },
+    default:{ title: 'Simple Sample', view: SimpleSampleAdd }
 }
 
 export const ProteinListMap = {

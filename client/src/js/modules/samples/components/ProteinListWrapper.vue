@@ -55,7 +55,11 @@ export default {
 
         this.params = {s: this.search }
         // Extra search params needed as a special case
-        if (proposalType == 'xpdf') this.params.seq = 1
+        if (proposalType == 'xpdf') {
+            this.params.seq = 1
+            this.params.external = 1
+            this.params.original = 1
+        }
 
         // page will be passed in as prop in Number format
         this.collection = new Proteins(null, { state: { currentPage: this.page || 1 }, queryParams: this.params })

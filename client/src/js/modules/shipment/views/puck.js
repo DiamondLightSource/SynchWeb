@@ -117,8 +117,8 @@ define(['marionette', 'utils', 'utils/canvas', 'jquery', 'backbone', 'backbone-v
     },
       
         
-    _draw_positions: function() {
-      _.each(_.range(16), function(i) {
+    _draw_positions: function(size) {
+      _.each(_.range(size), function(i) {
         var m = this.collection.findWhere({ LOCATION: (i+1).toString() })
           
         if (m && m.get('PROTEINID') > -1) this.circle(this.centres[i][0]*this.scale, this.centres[i][1]*this.scale, 28*this.scale, m.isValid(true) ? '#82d180' : '#f26c4f')
@@ -136,7 +136,7 @@ define(['marionette', 'utils', 'utils/canvas', 'jquery', 'backbone', 'backbone-v
     _draw: function() {
         console.log('draw puck')
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this._draw_positions()
+        this._draw_positions(this.centres.length)
         this.ctx.drawImage(this.puck, 0, 0, this.canvas.width, this.canvas.height)
     },
       

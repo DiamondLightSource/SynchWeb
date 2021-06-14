@@ -676,6 +676,7 @@ class Exp extends Page
                 WHERE shdp.datacollectionplanid=:1 AND p.proposalid=:2", array($this->arg('DIFFRACTIONPLANID'), $this->proposalid));
             if (!sizeof($chk)) $this->_error('No such data collection plan');
 
+            $this->db->pq("DELETE FROM blsample_has_datacollectionplan WHERE datacollectionplanid=:1", array($this->arg('DIFFRACTIONPLANID')));
             $this->db->pq("DELETE FROM datacollectionplan_has_detector WHERE datacollectionplanid=:1", array($this->arg('DIFFRACTIONPLANID')));
             $this->db->pq("DELETE FROM scanparametersmodel WHERE datacollectionplanid=:1", array($this->arg('DIFFRACTIONPLANID')));
             $this->db->pq("DELETE FROM diffractionplan WHERE diffractionplanid=:1", array($this->arg('DIFFRACTIONPLANID')));
