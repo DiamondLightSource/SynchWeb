@@ -589,7 +589,7 @@ class Sample extends Page
               LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
               LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid AND app.processingstatus = 1
 
-              WHERE p.proposalid=:1 $where
+              WHERE p.proposalid=:1 AND ss.source='manual' $where
               GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx, po.posy, po.posz
               $having
               ORDER BY ss.blsubsampleid", $args);
@@ -968,7 +968,7 @@ class Sample extends Page
 
                                   LEFT OUTER JOIN blsampleimage si ON b.blsampleid = si.blsampleid
 
-                                  LEFT OUTER JOIN blsubsample ss ON b.blsubsampleid = ss.blsubsampleid
+                                  LEFT OUTER JOIN blsubsample ss ON b.blsubsampleid = ss.blsubsampleid AND ss.source='manual'
                                   LEFT OUTER JOIN blsample ssp ON ss.blsampleid = ssp.blsampleid
                                   
                                   
