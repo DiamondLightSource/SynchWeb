@@ -3,9 +3,12 @@
     <h1 v-if="gid">Edit Sample Group</h1>
     <h1 v-else>Add Sample Group</h1>
 
+    <help-banner level='notify' message='To save the sample group, edit the name and click OK. To add samples to the group, select the relevant container and add sample locations to the group, then click "Save Sample Group" at the foot of the page.'/>
+
     <base-input-text
-      outerClass="tw-w-full"
-      inputClass="tw-mx-3 tw-mb-4"
+      outerClass="tw-mb-4 tw-py-4"
+      labelClass="tw-mr-3 tw-py-8 tw-font-bold"
+      inputClass="tw-rounded tw-border tw-w-64 tw-py-1 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-border-blue-500"
       :value="groupName"
       id="name"
       label="Group Name"
@@ -68,6 +71,7 @@ import ContainerGraphic from './ContainerGraphic.vue'
 import Table from 'app/components/table.vue'
 import BaseButton from 'app/components/base-button.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
+import HelpBanner from 'app/components/help-banner.vue'
 import ContainersList from 'modules/shipment/components/containers-list.vue'
 
 import SampleGroupsCollection from 'collections/samplegroups.js'
@@ -86,7 +90,8 @@ export default {
     'container-graphic': ContainerGraphic,
     'base-button': BaseButton,
     'base-input-text': BaseInputText,
-    'containers-list': ContainersList
+    'containers-list': ContainersList,
+    'help-banner': HelpBanner
   },
   data: function () {
     return {
@@ -193,6 +198,8 @@ export default {
       if (result) {
         const savedSamples = result.toJSON()
         this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
+        let message = 'Saved samples to group - ' + this.groupName
+        this.$store.commit('notifications/addNotification', {title: 'Success', message: message, level: 'success'})
       }
 
       await this.getSampleGroupInformation()

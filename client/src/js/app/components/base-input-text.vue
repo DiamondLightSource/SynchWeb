@@ -14,7 +14,7 @@ Component will emit a save event when the value changes
   <div :class="outerClass">
 
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id">{{label}}
+    <label v-if="label" :class="labelClass" :for="id">{{label}}
       <slot name="description">
         <span v-if="description" class="small">{{description}}</span>
       </slot>
@@ -35,13 +35,8 @@ Component will emit a save event when the value changes
       @blur="onBlur"
       @focus="$emit('focus')"
     />
-    <div class="tw-flex tw-w-full">
-      <span v-if="inline && !editable" class="btn-edit" @click="onEdit">
-        {{ value }}
-        <span class="tw-mx-3"><i :class="['fa', 'fa-edit']"></i> Edit</span>
-      </span>
-      <button v-if="inline && editable" class="button tw-px-2 tw-py-1 tw-mx-1" @mousedown="onSave">OK</button>
-    </div>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ value }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <button v-if="inline && editable" class="button tw-px-2 tw-py-1" @mousedown="onSave">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
@@ -97,6 +92,9 @@ export default {
     outerClass: {
       type: String,
     },
+    labelClass: {
+      type: String,
+    },
     // Default behaviour is to act as normal input
     // Set inline to enable edit/save behaviour
     inline: {
@@ -139,8 +137,10 @@ export default {
     },
     onEdit() {
       // May add focus code here
-      this.$refs.inputRef.focus()
       this.editable = true
+      this.$nextTick( () => {
+        this.$refs.inputRef.focus()
+      })
     },
     onSave() {
       this.editable = false
