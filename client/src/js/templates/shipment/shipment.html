@@ -6,6 +6,8 @@
     <% if (DHL_ENABLE) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
             <p class="message notify">You can print your Airway Bill by clicking &quot;Print Airway Bill&quot; below</p>
+        <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
+            <p class="message alert">International shipping is currently disabled from this application. Please see <a href="https://www.diamond.ac.uk/Instruments/Mx/I03/I03-Manual/Shipping-Samples.html">here</a></p>
         <% } else { %>
             <p class="message notify">You can now book your shipment with DHL using &quot;Create Airway Bill&quot; below</p>
         <% } %>
@@ -24,6 +26,8 @@
             <% if (!DELIVERYAGENT_PICKUPCONFIRMATION) { %>
                 <a class="button awb" href="/shipments/pickup/sid/<%-SHIPPINGID%>"><i class="fa fa-truck"></i> Rebook Pickup</a>
             <% } %>
+        <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
+            <a class="button" href="#"><i class="fa fa-credit-card"></i> Create Airway Bill - Disabled</a>
         <% } else { %>
             <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create Airway Bill</a>
         <% } %>
