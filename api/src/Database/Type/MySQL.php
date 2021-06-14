@@ -321,6 +321,10 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             'XrayCentringResult',
 
             'BeamCalendar',
+
+            // MR
+            'MXMRRun',
+            'MXMRRunBlob',
         );
 
         foreach ($tables as $table) {
@@ -419,6 +423,31 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
         return $data;
 
+    }
+
+    // Union multiple queries that take the same arguments and return the same columns
+    // Query can optionally be wrapped, where :QUERY will be replaced with the inner query:
+    //  $wrapper = 'SELECT * FROM (:QUERY) GROUP BY id';
+    function union($queries, $args, $all=false, $wrapper=null) {
+        $nargs = sizeof($args);
+        $all_args = array();
+        $union_kw = $all ? 'UNION ALL' : 'UNION';
+        foreach ($queries as $i => &$query) {
+            $offset = $i * $nargs;
+            $query = preg_replace_callback('/\:(\d+)/', 
+                function($mat) use ($offset) {
+                    return ':'.(intval($mat[1]) + $offset);
+                }, 
+            $query);
+            $all_args = array_merge($all_args, $args);
+        }   
+
+        $union = implode("\n$union_kw\n", $queries);
+        if ($wrapper) {
+            $union = preg_replace('/:QUERY/', $union, $wrapper);
+        }
+
+        return $this->pq($union, $all_args);
     }
 
     function set_explain($exp)

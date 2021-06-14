@@ -6,14 +6,15 @@ define([
         ],
 function(DataCollections, DCList, DCItemView, template) {
     
-    var PowDCList = DCList.extend({
+    var SaxsDCList = DCList.extend({
         dcViews: {
             data: DCItemView,
-        }
+        },
+        apStatus: true,
     })
-    
+
     return DataCollections.extend({
-        dcListView: PowDCList,
+        dcListView: SaxsDCList,
         template: template,
     })
 })

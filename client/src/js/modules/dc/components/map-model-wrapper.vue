@@ -30,9 +30,7 @@ export default {
     },
     props: {
         'id': Number,
-        'ty': String,
-        'dt': String,
-        'ppl': String,
+        'aid': Number,
     },
     data: function() {
         return {
@@ -44,12 +42,11 @@ export default {
     },
     computed: {
         // Options that will be passed into the marionette view
+        // aid needs to be a string to work with mapmodelview.js, used with findWhere: downstreams.findWhere({AID: self.getOption('aid')})
         options: function() {
             return {
                 model: this.model,
-                ty: this.ty,
-                dt: this.dt,
-                ppl: this.ppl,
+                aid: this.aid.toString(),
             }
         },
         // Combine vuex state with local computed properties
