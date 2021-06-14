@@ -61,7 +61,8 @@ define(['marionette',
         
         onRender: function() {
             var edit = new Editable({ model: this.model, el: this.$el })
-            edit.create('NAME', 'text')
+            if (this.model.get('EXTERNAL') == 0) edit.create('NAME', 'text')
+            edit.create('ACRONYM', 'text')
             edit.create('SEQUENCE', 'text')
             edit.create('DENSITY', 'text')
         

@@ -6,6 +6,11 @@
 <% } %>
 
 <div class="ra">
+<% if (app.type == "xpdf") { %>
+    <input type="checkbox" id="uas" class="uas" style="margin-right:3px" checked>
+    <label for="uas" style="margin-right:20px">Show Only UAS Samples</label>
+<% } %>
+
 <% if (CAN_CREATE) { %>
     <a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a>
 <% } %>

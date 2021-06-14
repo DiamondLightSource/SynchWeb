@@ -6,18 +6,12 @@ define([
     'marionette',
     'backgrid',
     'views/table',
-    'views/dialog',
-    'modules/types/xpdf/samples/views/simplesampleaddpoploader',
-    'modules/types/xpdf/samples/views/advancedsampleaddpop',
     'utils/table',
     'modules/types/xpdf/utils/phasecompositor',
     'templates/types/xpdf/samples/samplelist.html'], function(
         Marionette,
         Backgrid,
         TableView,
-        DialogView,
-        AddSimpleSampleLoader,
-        AddAdvancedSample,
         table,
         phaseCompositor,
         template) {
@@ -49,10 +43,6 @@ define([
     return Marionette.LayoutView.extend({
         template: template,
         className: 'content',
-        events: {
-            'click a.addSimpleSample': 'addSimpleSample',
-            'click a.addAdvancedSample': 'addAdvancedSample',
-        },
 
         row: ClickableRow,
 
@@ -78,6 +68,7 @@ define([
                 collection: this.collection,
                 columns: [
                     { name: 'NAME', label: 'Name', cell: table.TemplateCell, editable: false, template: '<% if (NAME) { %><%-NAME.replace(/__/g, " ") %><% } %>' },
+                    { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false },
                     { name: 'COMPOSITION', label: 'Composition', cell: CompositionCell, editable: false },
                     { name: 'THEORETICALDENSITY', label: 'Density', cell: 'string', editable: false },
                     { name: 'NPHASES', label: '# Phases', cell: table.TemplateCell, editable: false, template: '<%-((COMPONENTIDS||[]).length+1)%>' },
@@ -89,34 +80,6 @@ define([
                 }
             }))
         },
-
-        addSimpleSample: function(e) {
-            e.preventDefault()
-
-            var addSimpleSampleView = new AddSimpleSampleLoader({ dialog: true })
-            this.listenTo(app, 'sample:reloadSampleTable', this.refreshSampleTable)
-            app.dialog.show(new DialogView({ title: 'Add New Simple Sample', className: 'content', view: addSimpleSampleView, autoSize: true }))
-        },
-
-        refreshSampleTable: function() {
-            this.collection.fetch()
-        },
-
-        addAdvancedSample: function(e) {
-            e.preventDefault()
-
-            var addAdvancedSampleView = new AddAdvancedSample({ dialog: true })
-            this.listenTo(addAdvancedSampleView, 'phase:added', this.doAddNewSample)
-            app.dialog.show(new DialogView({ title: 'Add New Advanced Sample', className: 'content', view: addAdvancedSampleView, autoSize: true }))
-        },
-
-        doAddNewAdvancedSample: function(phase) {
-            /*this.allphases.add(phase)
-            var np = phase.clone()
-            np.set('ABUNDANCE', Math.max(0, 1-this.collection.totalAbundance()).toFixed(3))
-            this.collection.add(np)*/
-        },
-        
     })
 
 })

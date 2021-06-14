@@ -121,6 +121,28 @@ define(['marionette',
         app.content.show(GetView.CrystalAdd.get(app.type))
     },
 
+    simplesampleadd: function(pid) {
+        var title = GetView.SimpleSampleAdd.title(app.type)
+        var cbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+
+        if (pid) {
+            var protein = new Protein({ PROTEINID: pid })
+            protein.fetch({
+                success: function(){
+                    app.bc.reset([cbc, { title: 'Add '+title }])
+                    app.content.show(GetView.SimpleSampleAdd.get(app.type, { model: protein }))
+                },
+                error: function(){
+                    app.bc.reset([cbc])
+                    app.message({ title: 'Protein not found!', message: 'The specified protein could not be found'})
+                }
+            })
+        } else {
+            app.bc.reset([cbc, { title: 'Add '+title }])
+            app.content.show(GetView.SimpleSampleAdd.get(app.type))
+        }
+    },
+
 
 
     // Proteins
@@ -131,7 +153,10 @@ define(['marionette',
         app.bc.reset([{ title: title+'s', url: '/'+title.toLowerCase()+'s' }])
         page = page ? parseInt(page) : 1
         var params = { s : s }
-        if (app.type == 'xpdf') params.seq = 1
+        if (app.type == 'xpdf') {
+            params.seq = 1
+            params.external = 1
+        }
         var proteins = new Proteins(null, { state: { currentPage: page }, queryParams: params })
         proteins.fetch().done(function() {
             app.content.show(GetView.ProteinList.get(app.type, { collection: proteins, params: { s: s } }))

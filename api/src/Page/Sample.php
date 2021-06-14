@@ -43,6 +43,7 @@ class Sample extends Page
                               'capillary' => '',
                               'capillaryPhase' => '',
                               'json' => '',
+                              'dcp' => '\d',
 
                               'collected_during' => '\w+\d+-\d+',
 
@@ -126,6 +127,8 @@ class Sample extends Page
                                // external is a flag to indicate this protein/sample has a user office system id
                                // whereas externalid is the actual reference
                               'external' => '\d',
+                              // Original refers to the real user office sample - not any clone / copy
+                              'original' => '\d',
                               'EXTERNALID' => '\w+',
                               'SAFETYLEVEL' => '\w+',
 
@@ -135,6 +138,7 @@ class Sample extends Page
                               'GROUPORDER' => '\d+',
                               'TYPE' => '\w+',
                               'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
+                              'PLANORDER' => '\d',
 
                               'SAMPLEGROUPID' => '\d+',
                                );
@@ -249,7 +253,7 @@ class Sample extends Page
                     $capillaryPhase = $attrs->capillaryPhase;
 
                     // Critical sub model validation, we again can't proceed if anything is missing
-                    if (!array_key_exists('ACRONYM', $phase)) $this->_error('No protein acronym');
+                    if (!array_key_exists('PROTEINID', $phase) && !array_key_exists('ACRONYM', $phase)) $this->_error('No protein id or acronym');
                     if (!array_key_exists('ACRONYM', $capillaryPhase)) $this->_error('No protein acronym for capillary material');
                     if (!array_key_exists('NAME', $crystal)) $this->_error('No crystal name specified');
                     if (!array_key_exists('NAME', $capillary) || !array_key_exists('CRYSTALID', $capillary)) $this->_error('No capillary name specified');
@@ -258,7 +262,7 @@ class Sample extends Page
 
                     // Create ID holder for this iteration (this set of sample information)
                     $ids[$model] = array();
-                    
+
                     /**
                      * Insert Proteins
                      * For each iteration there will be an actual protein and usually (not always) a capillary in which the protein is held
@@ -282,14 +286,15 @@ class Sample extends Page
                         $phaseSeq = array_key_exists('SEQUENCE', $protein) ? $protein->SEQUENCE : '';
                         $phaseMass = array_key_exists('MOLECULARMASS', $protein) ? $protein->MOLECULARMASS : null;
                         $phaseDensity = array_key_exists('DENSITY', $protein) ? $protein->DENSITY : null;
+                        $externalid = array_key_exists('EXTERNALID', $protein) ? $protein->EXTERNALID : null;
                         
                         $chk = $this->db->pq("SELECT proteinid FROM protein
                             WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $protein->ACRONYM));
-                            if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
+                            if (sizeof($chk)) $this->_error('Protein acronym ' . $protein->ACRONYM . ' already exists in this proposal');
 
-                        $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density) 
-                            VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6) RETURNING proteinid INTO :id',
-                            array($this->proposalid, $phaseName, $protein->ACRONYM, $phaseSeq, $phaseMass, $phaseDensity));
+                        $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density,externalid)
+                            VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,UNHEX(:7)) RETURNING proteinid INTO :id',
+                            array($this->proposalid, $phaseName, $protein->ACRONYM, $phaseSeq, $phaseMass, $phaseDensity, $externalid));
                             
                         if($isCapillary){
                             $ids[$model]['CAPILLARYPHASEID'] = $this->db->id();
@@ -359,7 +364,7 @@ class Sample extends Page
                     $blSamples = array();
                     // In ISPyB a container can be various things, but for simple sample it is a box that can be imagined to have a grid layout
                     // We need to know which space the next sample needs to be added into. This query looks up the next free space
-                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
+                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids[$model]['CONTAINERID']));
                     $maxLocation = $maxloc_tmp[0]['LOCATION'];
                     
                     // Like Proteins and Crystals, we need to check if we need to add the BLSample related information for the capillary as well as the sample
@@ -396,9 +401,12 @@ class Sample extends Page
 
                         $expTime = $attrs->EXPOSURETIME ? $attrs->EXPOSURETIME : 600;
 
+                        // Need to know the highest current DCP plan order so we can add new ones after it
+                        $maxLocation = $this->_get_current_max_dcp_plan_order($ids[$model]['CONTAINERID']);
+
                         $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid, planorder) 
-                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0));
-                        
+                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $maxLocation+1));
+
                         $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
                             VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $detector1_id, $expTime, $detector1_distance));
 
@@ -430,7 +438,7 @@ class Sample extends Page
                         }
 
                         $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
-                        VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLECAPILLARYID'], $ids[$model]['SAMPLEGROUPID'], 2, 'container'));
+                        VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLECAPILLARYID'], $ids[$model]['SAMPLEGROUPID'], 2, 'capillary'));
                 
                         $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
                         VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLEID'], $ids[$model]['SAMPLEGROUPID'], 1, 'sample'));
@@ -994,6 +1002,12 @@ class Sample extends Page
                       if ($r[$k]) $r[$k] = explode(',', $r[$k]);
                     }
                 }
+
+                // display DCP count for each sample
+                if($this->has_arg('dcp')){
+                    $dcpCount = $this->db->pq("SELECT COUNT(*) AS DCPCOUNT FROM BLSample_has_DataCollectionPlan WHERE blSampleId =:1", array($r['BLSAMPLEID']));
+                    $r['DCPCOUNT'] = $dcpCount[0]['DCPCOUNT'];
+                }
             }
 
 
@@ -1243,8 +1257,15 @@ class Sample extends Page
             array_push($args, $end);
             
             $order = 'pr.proteinid DESC';
-            
-            
+
+            $group = 'pr.proteinId';
+
+            // Only display original UAS approved proteins (not clones which have the same externalId)
+            if($this->has_arg('original') && $this->arg('original') == 1){
+                $group = 'pr.externalId';
+                $order .= ', pr.bltimeStamp DESC';
+            }
+
             if ($this->has_arg('sort_by')) {
                 $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' =>'pr.molecularmass', 'HASSEQ' => "CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END");
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
@@ -1273,8 +1294,7 @@ class Sample extends Page
                                 INNER JOIN proposal p ON p.proposalid = pr.proposalid
                                 $join
                                 WHERE $where
-                                GROUP BY pr.proteinid
-                                /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, CONCAT(p.proposalcode,p.proposalnumber)*/
+                                GROUP BY $group
                                 ORDER BY $order", $args);
             
             $ids = array();
@@ -1385,19 +1405,29 @@ class Sample extends Page
         # ------------------------------------------------------------------------
         # Update a particular field for a sample
         function _update_sample() {
+
             if (!$this->has_arg('sid')) $this->_error('No sampleid specified');
-            
+
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
               WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid,$this->arg('sid')));
-            
+
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE');
+            if($this->has_arg('CONTAINERID') && $this->arg('CONTAINERID') == 0) {
+                $defaultContainerLocation = $this->_get_default_sample_container();
+                $this->args['CONTAINERID'] = $defaultContainerLocation['CONTAINERID'];
+                $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
+            }
+
+            $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
+            $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
+
+            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
             foreach ($sfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE blsample SET $f=:1 WHERE blsampleid=:2", array($this->arg($f), $samp['BLSAMPLEID']));
@@ -1427,6 +1457,76 @@ class Sample extends Page
                 }
             }
 
+            if($this->has_arg('PLANORDER')) {
+                // If we're moving a BLSample to a new container we need to adjust the DCP plan order not to clash with existing plans for samples in the new container
+                $dcps = $this->db->pq("SELECT dataCollectionPlanId FROM BLSample_has_DataCollectionPlan
+                                WHERE blSampleId = :1", array($this->arg('sid')));
+
+                if(sizeof($dcps)) {
+                    foreach($dcps as $dcp){
+                        ++$maxLocation;
+                        $this->db->pq("UPDATE BLSample_has_DataCollectionPlan SET planOrder = :1 WHERE dataCollectionPlanId = :2 AND blSampleId = :3", array($maxLocation, $dcp['DATACOLLECTIONPLANID'], $this->arg('sid')));
+                    }
+                }
+            }
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Look up the default container for proposal and the next available location
+        function _get_default_sample_container() {
+
+            $containers = $this->db->pq("SELECT DISTINCT c.containerId, c.code, b.location
+              FROM Container c
+              INNER JOIN BLSample b ON b.containerId = c.containerId
+              INNER JOIN Crystal cr ON cr.crystalId = b.crystalId
+              INNER JOIN Protein pr ON pr.proteinId = cr.proteinId
+              WHERE pr.proposalId =:1 AND c.code LIKE :2", array($this->proposalid, "%_samples"));
+
+            $free = null;
+
+            if(sizeof($containers)){
+                $locations = array();
+                foreach($containers as $c) {
+                    array_push($locations, $c['LOCATION']);
+                }
+
+                $free = max($locations)+1;
+
+                for($i=1; $i<max($locations); $i++){
+                    if(!in_array($i, $locations)){
+                        $free = $i;
+                        break;
+                    }
+                }
+            } else {
+                // It's possible the default container is empty so we would fail to find it above
+                // Find it via dewars and shipping instead
+                $containers = $this->db->pq("SELECT c.containerId, c.code
+                  FROM Container c
+                  INNER JOIN Dewar d ON c.dewarId = d.dewarId
+                  INNER JOIN Shipping s ON d.shippingId = s.shippingId
+                  INNER JOIN Proposal p on s.proposalId = p.proposalId
+                  WHERE p.proposalId = :1 AND c.code LIKE :2", array($this->proposalid, "%_samples"));
+
+                $free = 1;
+            }
+
+            return array('CONTAINERID'=>$containers[0]['CONTAINERID'], 'LOCATION'=>$free);
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Look up highest value DPC plan order to append new ones
+        function _get_current_max_dcp_plan_order($containerId) {
+
+            $maxLocation = $this->db->pq("SELECT MAX(bhd.planOrder) AS LOC
+                                        FROM BLSample_has_DataCollectionPlan bhd
+                                        INNER JOIN BLSample bls ON bls.blSampleId = bhd.blSampleId
+                                        INNER JOIN Container c ON c.containerId = bls.containerId
+                                        WHERE c.containerId = :1", array($containerId));
+
+            return $maxLocation[0]['LOC'];
         }
         
         
