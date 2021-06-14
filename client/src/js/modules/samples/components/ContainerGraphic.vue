@@ -17,7 +17,7 @@
 
 <script>
 import PlateView from './PlateView.vue'
-import PuckView from './PuckView.vue'
+import PuckView from './MockPuckView.vue'
 import ContainerTypes from 'modules/shipment/collections/platetypes.js'
 
 export default {
