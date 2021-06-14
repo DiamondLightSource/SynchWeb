@@ -727,7 +727,29 @@ li:last-child .visit_users {
 
     // Sub contents
     .holder {
+        .downstream-item {
+            .downloads {
+                padding: 0;
+            }
 
+            .dpmessages .content {
+                padding-bottom: 0;
+            }
+
+            &:not(:last-child) {
+                margin-bottom: 5px;
+            }
+        }
+
+        .separator {
+            margin: 0 5px;
+            color: #ccc
+        }
+
+        .count {
+            color: $body-color-tint35;
+        }
+                        
         /*
         > span {
             float: right;
@@ -891,6 +913,17 @@ li:last-child .visit_users {
             }
         }
 
+        .plot_bigep {
+            margin: 0 1%;
+            height: 170px;
+
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+
         .bigep-settings {
             padding: 0.5%;
 
@@ -900,7 +933,7 @@ li:last-child .visit_users {
 
 
             .bepm-seq {
-                white-space: pre-line;
+                white-space: pre;
                 font-family: Courier;
                 font-size: 10px;
                 text-align: left;
@@ -912,8 +945,6 @@ li:last-child .visit_users {
         }
 
         .bigep-models {
-            width: 49%;
-            float: right;
             padding: 0.5%;
 
             @media (max-width: $breakpoint-vsmall) {
@@ -931,22 +962,35 @@ li:last-child .visit_users {
              }
          }
 
-        .plot_shelx-XDS,
-        .plot_shelx-DIALS {
-            width: 45%;
-            height: 250px;
-            float: inherit;
+        .bigep-images figure {
+            background: rgb(241, 241, 241);
+            position: relative;
+            margin: 0.5em;
+
+            &.pending:before {
+                color: #ccc;
+                position: absolute;
+                top: 40%;
+                left: 50%;
+                transform: translate(-50%);
+                font-size: 20px;
+                content: 'No Image';
+            }
+
+            &.loaded {
+                border: 1px solid #ccc;
+                background: #fff;
+            }
 
             @media (max-width: $breakpoint-vsmall) {
-                height: 100px;
                 float: none;
+                width: auto;
             }
-
-            .legend {
-                > table {
-                    width: auto;
-                }
-            }
+        }
+        
+        .bigep-images img {
+            width: 100%;
+            height: auto;
         }
 
         .plot_dimple {
@@ -966,9 +1010,33 @@ li:last-child .visit_users {
         }
 
         .blobs {
+            position: relative;
+            background: rgb(241, 241, 241);
             float: right;
             padding-left: 10px;
             width: 30%;
+            
+            &:before {
+                color: #ccc;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%);
+                font-size: 24px;
+                content: 'No Image';
+            }
+
+            &.pending {
+                &:before {
+                    content: 'Loading'
+                }
+            }
+
+            &.loaded {
+                &:before {
+                    display: none
+                }
+            }
 
             @media (max-width: $breakpoint-vsmall) {
                 float: none;

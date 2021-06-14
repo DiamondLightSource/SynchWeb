@@ -25,57 +25,54 @@ define(['marionette',
         },
         
         
-        
-        // /*
-        //   Download Maps
-        // */
+        /*
+          Download Maps
+        */
         loadMaps: function() {
-            var xhr = this.xhrWithStatus('Downloading Map 1')
+            this.mapsToLoad = this.downstream.get('FEATURES').MAPMODEL[1];
+            this.mapsLoaded = 0
+            this.doLoadMaps(1, this.onMapsLoaded.bind(this))
+        },
+        
+
+        doLoadMaps: function(id, cb) {
             var self = this
-            
+            var xhr = this.xhrWithStatus('Downloading Map '+id)
             xhr.onload = function() {
-                var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
-                var plain = gunzip.decompress()
-                self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4' })
-          
-                if (self.getOption('ty') == 'dimple' || self.getOption('ty') == 'mrbump') {
-                    var xhr2 = self.xhrWithStatus('Downloading Map 2')
-                    xhr2.onload = function() {
-                        var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
-                        var plain = gunzip.decompress()
-                        self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4', diff_map: true, })
-          
-                        self.onMapsLoaded()
-                    }
-          
-                    xhr2.open('GET', app.apiurl+'/download/map/ty/'+self.getOption('ty')+'/id/'+self.model.get('ID')+'/map/2')
-                    if (app.token) xhr2.setRequestHeader('Authorization','Bearer ' + app.token)
-                    xhr2.responseType = 'arraybuffer'
-                    xhr2.send()
+                if (xhr.status == 0 || xhr.status != 200) {
+                    this.onerror(xhr.status)
+
+                } else {
+                    var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
+                    var plain = gunzip.decompress()
+                    self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4' })
+                }
+                
+                self.mapsLoaded++
+                if (self.mapsLoaded < self.mapsToLoad) {
+                    setTimeout(function() {
+                        self.doLoadMaps(++id, cb)
+                    }, 500)
                     
                 } else {
-                    self.onMapsLoaded()
+                    setTimeout(cb, 500)
                 }
             }
-          
-            if (this.getOption('ty') == 'bigep') {
-                var map_url = app.apiurl+'/download/map/ty/'+this.getOption('ty')+
-                                         '/dt/'+this.getOption('dt')+'/ppl/'+this.getOption('ppl')+
-                                         '/id/'+this.model.get('ID')
-            } else {
-                var map_url = app.apiurl+'/download/map/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID')
+
+            xhr.onerror = function(status) {
+                self.ui.hud.text('Error loading map ' + id + ' Status: ' + status)
             }
+
+            var map_url = app.apiurl+'/processing/downstream/mapmodel/'+this.getOption('aid') + '?map='+id+'&prop='+ app.prop
             xhr.open('GET', map_url)
             xhr.responseType = 'arraybuffer'
             if (app.token) xhr.setRequestHeader('Authorization','Bearer ' + app.token)
             xhr.send();
         },
-        
+
         
         onMapsLoaded: function() {
-            if (this.getOption('ty') == 'dimple') this.loadPeaks()
-            else this.gotoResidue()
-            
+            this.loadPeaks()
             this.ui.hud.text('H shows help.')
         },
         
@@ -86,8 +83,6 @@ define(['marionette',
         */
         generateChains: function() {
             var residues = this.viewer.selected.bag.model.get_residues()
-            console.log('res', residues)
-
             this.ui.res.empty()
             _.each(residues, function(r,k) {
               $('<option value="'+k+'">'+k+' '+r[0].resname+'</option>').appendTo(this.ui.res)
@@ -102,10 +97,7 @@ define(['marionette',
                 var res = residues[this.ui.res.val()]
 
                 this.viewer.select_atom({ bag: this.viewer.selected.bag, atom: res[0] }, { steps: 10 })
-                this.viewer.request_render()
-                
-
-                
+                this.viewer.request_render()    
             }
         },
         
@@ -114,18 +106,17 @@ define(['marionette',
          Get Peak List
         */
         loadPeaks: function() {
-            var ds = new DownStreams(null, { id: this.model.get('ID') })
-            var self = this
-            ds.fetch().done(function() {
-                var dimple = ds.findWhere({ TYPE: 'Dimple' })
-                var peaks = new DIMPLEPeaks(dimple.get('PKLIST'), { parse: true })
-                self.peaktable = new DIMPLEPeakTable({ collection: peaks })
-                self.listenTo(self.peaktable, 'peak:show', self.gotoPeak, self)
-                self.peaks.show(self.peaktable)
+            if (this.downstream.get('PKLIST')) {
+                var peaks = new DIMPLEPeaks(this.downstream.get('PKLIST'), { parse: true })
+                this.peaktable = new DIMPLEPeakTable({ collection: peaks })
+                this.listenTo(this.peaktable, 'peak:show', this.gotoPeak, this)
+                this.peaks.show(this.peaktable)
                 
-                if (peaks.length) self.peaks.$el.show()
-                else self.gotoResidue()
-            })
+                if (peaks.length) this.peaks.$el.show()
+                else this.gotoResidue()
+            } else {
+                this.gotoResidue()
+            }
         },
         
         gotoPeak: function(x,y,z) {
@@ -136,15 +127,17 @@ define(['marionette',
         },
 
 
-        loadMapModel: function() {
-            if (this.getOption('ty') == 'bigep') {
-                var pdb_url = app.apiurl+'/download/map/pdb/1/ty/'+this.getOption('ty')+
-                                         '/dt/'+this.getOption('dt')+'/ppl/'+this.getOption('ppl')+
-                                         '/id/'+this.model.get('ID')
-            } else {
-                var pdb_url = app.apiurl+'/download/map/pdb/1/ty/'+this.getOption('ty')+'/id/'+this.model.get('ID')
-            }
+        loadDownStream: function() {
+            downstreams = new DownStreams(null, { id: this.model.get('ID') })
+            var self = this
+            downstreams.fetch().done(function() {
+                self.downstream = downstreams.findWhere({ AID: self.getOption('aid') })
+                self.loadMapModel()
+            })
+        },
 
+        loadMapModel: function() {
+            var pdb_url = app.apiurl+'/processing/downstream/mapmodel/'+this.getOption('aid')+'?prop='+app.prop
             this.viewer.load_pdb(pdb_url, null, this.generateChains.bind(this))
             this.loadMaps()
         },
@@ -154,7 +147,7 @@ define(['marionette',
             this.$el.find('.peaks').hide()
             this.viewer = new Uglymol.Viewer({viewer: 'viewer', hud: 'hud', help: 'help'})
             this.viewer.xhr_headers = { Authorization: 'Bearer ' + app.token }
-            this.loadMapModel()
+            this.loadDownStream()
         },
                 
 
