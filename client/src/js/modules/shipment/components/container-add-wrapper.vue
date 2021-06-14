@@ -66,7 +66,6 @@ export default {
         async getDewar() {
             try {
                 await this.$store.dispatch('getModel', this.model)
-                console.log(this.proposalType, 'ieuwqoeiwfhduiuhsjwqifdiyueweefyuewfduiy')
                 this.mview = ContainerAddMap[this.proposalType] ? ContainerAddMap[this.proposalType].view : ContainerAddMap['default'].view
                 // USe the legacy components if we have then defined, else use the newer style component
                 if (!this.mview) this.componentType = 'saxs-container-add'
