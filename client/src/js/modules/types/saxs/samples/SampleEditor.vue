@@ -35,9 +35,9 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import Sample from 'models/sample'
 import Samples from 'collections/samples'
 import SampleTableView from 'modules/shipment/views/sampletable'
-import SingleSample from 'modules/shipment/components/samples/SingleSample.vue'
-import SamplePlateEditor from 'modules/shipment/components/samples/SamplePlateEditor.vue'
-import SamplePlateEdit from 'modules/shipment/components/samples/SamplePlateEdit.vue'
+import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
+import SamplePlateEditor from 'modules/types/saxs/samples/SamplePlateEditor.vue'
+import SamplePlateEdit from 'modules/types/saxs/samples/SamplePlateEdit.vue'
 
 // Templates we need to pass to the old MX style sample table
 import table from 'templates/shipment/sampletablenew.html'

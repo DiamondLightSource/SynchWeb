@@ -52,8 +52,8 @@ const ContainerAddWrapper = () => import(/* webpackChunkName: "groups-shipment" 
 const ContainerPlanWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-plan-wrapper.vue')
 const ContainerQueueWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/container-queue-wrapper.vue')
 
-const ShipmentAddWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ShipmentAddWrapper.vue')
-const ShipmentViewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/ShipmentViewWrapper.vue')
+const ShipmentAddWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/shipment-add-wrapper.vue')
+const ShipmentViewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/shipment-view-wrapper.vue')
 const DewarsOverviewWrapper = () => import(/* webpackChunkName: "groups-shipment" */ 'modules/shipment/components/dewars-overview-wrapper.vue')
 
 // Initialize MarionetteApplication if not already existing

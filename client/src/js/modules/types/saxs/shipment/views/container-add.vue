@@ -250,8 +250,8 @@ import EventBus from 'app/components/utils/event-bus.js'
 import Sample from 'models/sample'
 import Samples from 'collections/samples'
 
-import SingleSample from 'modules/shipment/components/samples/SingleSample.vue'
-import SampleEditor from 'modules/shipment/components/samples/SampleEditor.vue'
+import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
+import SampleEditor from 'modules/types/saxs/samples/SampleEditor.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
@@ -260,7 +260,7 @@ import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 // import BaseInputCombobox from 'app/components/base-input-combobox.vue'
 
 import ProcessingPipelines from 'collections/processingpipelines'
-import PuckControls from 'modules/shipment/components/samples/PuckSampleControls.vue'
+import PuckControls from 'modules/types/saxs/samples/PuckSampleControls.vue'
 import Users from 'collections/users'
 
 import { ValidationObserver, ValidationProvider, Validator }  from 'vee-validate'
@@ -383,6 +383,7 @@ export default {
       containerType: '',
       containerTypes: [],
       containerTypesCollection: null,
+      containerRegistryCollection: null,
 
       containerGeometry: {
         capacity: 0,
@@ -444,7 +445,6 @@ export default {
       users: []
     }
   },
-
   computed: {
     // This takes the containerTypes collection and groups the options based on the proposal type
     // It assumes that any proposal type listed in containerFilter should be included
@@ -554,6 +554,11 @@ export default {
           this.proteins = result.toJSON()
         })
         app.trigger('samples:automated', newVal)
+    },
+    'containerState.CONTAINERREGISTRYID': function(newVal) {
+      // When a user selects a registered container we should update the name/barcode
+      let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID == newVal)
+      this.containerState.NAME = entry['BARCODE'] || '-'
     }
   },
 
@@ -604,9 +609,9 @@ export default {
       })
     },
     getContainerRegistry: function() {
-      let containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
+      this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
 
-      this.$store.dispatch('getCollection', containerRegistryCollection).then( (result) => {
+      this.$store.dispatch('getCollection', this.containerRegistryCollection).then( (result) => {
         this.containerRegistry = result.toJSON()
         this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
       })
