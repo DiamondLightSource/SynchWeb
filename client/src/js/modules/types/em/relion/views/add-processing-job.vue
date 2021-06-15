@@ -30,21 +30,21 @@
                            style="margin-bottom: 20px">
                 </li>
 
-          <li>
-            <label>Raw Folder</label>
-            <input
-              v-model="projectMovieRawFolder"
-              v-validate="{ required: true, regex: /^raw([2-9])?$/ }"
-              type="text"
-              name="projectMovieRawFolder"
-              :class="[errors.has('projectMovieRawFolder') ? 'ferror' : '']"
-              :readonly="isFormReadOnly"
-            >
-            <span
-              v-if="errors.has('projectMovieRawFolder')"
-              class="errormessage ferror tw-h-8"
-            >{{ errors.first('projectMovieRawFolder') }}</span>
-          </li>
+                <li>
+                  <label>Raw Folder</label>
+                  <input
+                    v-model="projectMovieRawFolder"
+                    v-validate="{ required: true, regex: /^raw([2-9])?$/ }"
+                    type="text"
+                    name="projectMovieRawFolder"
+                    :class="[errors.has('projectMovieRawFolder') ? 'ferror' : '']"
+                    :readonly="isFormReadOnly"
+                  >
+                  <span
+                    v-if="errors.has('projectMovieRawFolder')"
+                    class="errormessage ferror tw-h-8"
+                  >{{ errors.first('projectMovieRawFolder') }}</span>
+                </li>
 
                 <li>
                     <label>Movie File Name Extension</label>
@@ -458,7 +458,7 @@ export default {
                 let boxSizeExact = particleSizePixels * 1.2;
                 let boxSizeInt = Math.ceil(boxSizeExact);
                 return boxSizeInt + (boxSizeInt % 2);
-            }                    
+            }
 
             function calculateBoxSizeSmall(particleBoxSize, pixelSize, motionCorrectionBinning) {
                 let boxSizes = [48, 64, 96, 128, 160, 192, 256, 288, 300, 320, 360, 384, 400, 420, 450, 480, 512, 640, 768, 896, 1024];
