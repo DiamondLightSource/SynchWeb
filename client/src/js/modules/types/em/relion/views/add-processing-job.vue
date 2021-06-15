@@ -49,20 +49,9 @@
                   </select>
 
                   <input
-                    v-if="isFormReadOnly"
-                    v-model="projectMovieRawFolder"
-                    :readonly="true"
-                    type="text"
-                    name="projectMovieRawFolder"
-                    style="margin-bottom: 20px"
-                  >
-                </li>
-
-                <li v-if="!isFormReadOnly">
-                  <label>&nbsp;</label>
-                  <input
                     v-model="projectMovieRawFolder"
                     v-validate="{ required: true, regex: /^[\w-]+$/ }"
+                    :readonly="isFormReadOnly"
                     type="text"
                     name="projectMovieRawFolder"
                     :class="[errors.has('projectMovieRawFolder') ? 'ferror' : '']"
