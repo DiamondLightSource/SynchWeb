@@ -32,13 +32,40 @@
 
                 <li>
                   <label>Raw Folder</label>
+                  <select
+                    v-if="!isFormReadOnly"
+                    v-model="projectMovieRawFolder"
+                    name="projectMovieRawFolder"
+                  >
+                      <option value="raw">raw</option>
+                      <option value="raw2">raw2</option>
+                      <option value="raw3">raw3</option>
+                      <option value="raw4">raw4</option>
+                      <option value="raw5">raw5</option>
+                      <option value="raw6">raw6</option>
+                      <option value="raw7">raw7</option>
+                      <option value="raw8">raw8</option>
+                      <option value="raw9">raw9</option>
+                  </select>
+
+                  <input
+                    v-if="isFormReadOnly"
+                    v-model="projectMovieRawFolder"
+                    :readonly="true"
+                    type="text"
+                    name="projectMovieRawFolder"
+                    style="margin-bottom: 20px"
+                  >
+                </li>
+
+                <li v-if="!isFormReadOnly">
+                  <label>&nbsp;</label>
                   <input
                     v-model="projectMovieRawFolder"
-                    v-validate="{ required: true, regex: /^raw([2-9])?$/ }"
+                    v-validate="{ required: true, regex: /^[\w-]+$/ }"
                     type="text"
                     name="projectMovieRawFolder"
                     :class="[errors.has('projectMovieRawFolder') ? 'ferror' : '']"
-                    :readonly="isFormReadOnly"
                   >
                   <span
                     v-if="errors.has('projectMovieRawFolder')"

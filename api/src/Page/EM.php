@@ -25,7 +25,7 @@ class EM extends Page
         // RELION
 
         'projectAcquisitionSoftware' => '\w+', // String
-        'projectMovieRawFolder' => 'raw(\d)?', // String "raw" plus an optional digit
+        'projectMovieRawFolder' => '[\w-]+', // String
         'projectMovieFileNameExtension' => '[\w]{3,4}', // String (File name extension)
         'projectGainReferenceFile' => '1?', // Boolean
         'projectGainReferenceFileName' => '[\w-]+\.[\w]{3,4}', // String (File name + extension)
@@ -105,7 +105,7 @@ class EM extends Page
 
         $validation_rules = array(
             'projectAcquisitionSoftware' => array('isRequired' => true, 'inArray' => array('EPU', 'SerialEM'), 'outputType' => 'string'),
-            'projectMovieRawFolder' => array('isRequired' => true, 'inArray' => array('raw', 'raw2', 'raw3', 'raw4', 'raw5', 'raw6', 'raw7', 'raw8', 'raw9'), 'outputType' => 'string'),
+            'projectMovieRawFolder' => array('isRequired' => true, 'outputType' => 'string'),
             'projectMovieFileNameExtension' => array('isRequired' => true, 'inArray' => array('tif', 'tiff', 'mrc'), 'outputType' => 'string'),
             'projectGainReferenceFile' => array('isRequired' => true, 'outputType' => 'boolean'),
             'projectGainReferenceFileName' => array('isRequired' => false, 'outputType' => 'string'),
@@ -238,10 +238,15 @@ class EM extends Page
         // Create a ProcessingJob with ProcessingJobParameters for Zocalo to trigger RELION processing.
         // This requires a DataCollection which in turn requires a DataCollectionGroup.
 
-        $dataCollectionId = $this->findExistingDataCollection($session, $imageDirectory);
+        $dataCollectionId = $this->findExistingDataCollection($session, $imageDirectory, $fileTemplate);
 
         if (!$dataCollectionId) {
-            $dataCollectionId = $this->addDataCollectionForEM($session, $imageDirectory, $valid_parameters['projectMovieFileNameExtension'], $fileTemplate);
+            $dataCollectionId = $this->addDataCollectionForEM(
+                $session,
+                $imageDirectory,
+                $valid_parameters['projectMovieFileNameExtension'],
+                $fileTemplate
+            );
         }
 
         $processingJobId = null;
@@ -530,8 +535,11 @@ class EM extends Page
         return array($invalid_parameters, $valid_parameters);
     }
 
-    private function findExistingDataCollection($session, $imageDirectory)
-    {
+    private function findExistingDataCollection(
+        $session,
+        $imageDirectory,
+        $fileTemplate
+    ) {
         // Returns dataCollectionId of first DataCollection associated with session
         // Also checks for existing imageDirectory
         // Returns null otherwise
@@ -542,10 +550,12 @@ class EM extends Page
             FROM DataCollection
             WHERE SESSIONID = :1
             AND imageDirectory = :2
+            AND fileTemplate = :3
             LIMIT 1",
             array(
                 $session['SESSIONID'],
                 $imageDirectory,
+                $fileTemplate
             ));
 
             if (count($result)) {
