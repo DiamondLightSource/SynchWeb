@@ -1964,6 +1964,24 @@ class Sample extends Page
             ));
         }
 
+        function _update_sample_group() {
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+
+            $group = $this->db->pq("SELECT blsamplegroupid
+                FROM blsamplegroup 
+                WHERE blsamplegroupid = :1", array($this->arg('BLSAMPLEGROUPID')));
+
+            if (!sizeof($group)) $this->_error('No such sample group');
+            else $group = $group[0];
+
+            $fields = array('NAME');
+            foreach ($fields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE blsamplegroup SET $f=:1 WHERE blsamplegroupid=:2", array($this->arg($f), $this->arg('BLSAMPLEGROUPID')));
+                    $this->_output(array($f => $this->arg($f)));
+                }
+            }
+        }
 
         function _get_sample_group_name() {
             if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
@@ -2065,7 +2083,7 @@ class Sample extends Page
         }
 
 
-        function _update_sample_group() {
+        function _update_sample_in_group() {
             if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No sample group sample specified');
             list($gid,$sid) = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
 
