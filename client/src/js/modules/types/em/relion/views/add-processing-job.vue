@@ -1,6 +1,5 @@
 <template>
-    
-<section class="content">
+  <section class="content">
     <h1>Add Relion Processing</h1>
 
     <p class="help">This page is for submitting processing jobs to Relion.</p>
@@ -29,6 +28,38 @@
                            v-model="projectAcquisitionSoftware"
                            v-bind:readonly="true"
                            style="margin-bottom: 20px">
+                </li>
+
+                <li>
+                  <label>Raw Folder</label>
+                  <select
+                    v-if="!isFormReadOnly"
+                    v-model="projectMovieRawFolder"
+                    name="projectMovieRawFolder"
+                  >
+                      <option value="raw">raw</option>
+                      <option value="raw2">raw2</option>
+                      <option value="raw3">raw3</option>
+                      <option value="raw4">raw4</option>
+                      <option value="raw5">raw5</option>
+                      <option value="raw6">raw6</option>
+                      <option value="raw7">raw7</option>
+                      <option value="raw8">raw8</option>
+                      <option value="raw9">raw9</option>
+                  </select>
+
+                  <input
+                    v-model="projectMovieRawFolder"
+                    v-validate="{ required: true, regex: /^[\w-]+$/ }"
+                    :readonly="isFormReadOnly"
+                    type="text"
+                    name="projectMovieRawFolder"
+                    :class="[errors.has('projectMovieRawFolder') ? 'ferror' : '']"
+                  >
+                  <span
+                    v-if="errors.has('projectMovieRawFolder')"
+                    class="errormessage ferror tw-h-8"
+                  >{{ errors.first('projectMovieRawFolder') }}</span>
                 </li>
 
                 <li>
@@ -296,6 +327,7 @@ export default {
 
             // Form fields
             projectAcquisitionSoftware: null,
+            projectMovieRawFolder: null,
             projectMovieFileNameExtension: null,
             projectGainReferenceFile: null,
             projectGainReferenceFileName: null,
@@ -376,6 +408,7 @@ export default {
             this.processingTimestamp = false;
 
             this.projectAcquisitionSoftware = 'EPU';
+            this.projectMovieRawFolder = 'raw';
             this.projectMovieFileNameExtension = '.tiff';
             this.projectGainReferenceFile = false;
             this.projectGainReferenceFileName = 'gain.mrc';
@@ -441,7 +474,7 @@ export default {
                 let boxSizeExact = particleSizePixels * 1.2;
                 let boxSizeInt = Math.ceil(boxSizeExact);
                 return boxSizeInt + (boxSizeInt % 2);
-            }                    
+            }
 
             function calculateBoxSizeSmall(particleBoxSize, pixelSize, motionCorrectionBinning) {
                 let boxSizes = [48, 64, 96, 128, 160, 192, 256, 288, 300, 320, 360, 384, 400, 420, 450, 480, 512, 640, 768, 896, 1024];
@@ -501,6 +534,7 @@ export default {
                         id: self.session['VISIT'],
 
                         projectAcquisitionSoftware: self.projectAcquisitionSoftware,
+                        projectMovieRawFolder: self.projectMovieRawFolder,
                         projectMovieFileNameExtension: self.projectMovieFileNameExtension.substr(1),
                         projectGainReferenceFile: self.projectGainReferenceFile,
                         projectGainReferenceFileName: (self.projectGainReferenceFile ? self.projectGainReferenceFileName : null),
