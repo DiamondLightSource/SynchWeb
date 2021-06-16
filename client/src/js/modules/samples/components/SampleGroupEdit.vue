@@ -168,45 +168,50 @@ export default {
       return `${this.proposal} Sample Group (${new Date().toISOString().replace(/:|\./g, '-')})`
     },
     async onSaveSampleGroup() {
-      this.$store.commit('loading', true)
-      let result
+      try {
+        this.$store.commit('loading', true)
+        let result
 
-      const totalSamples = Object.values(this.selectedSamplesInGroups).flat()
-      const samples = totalSamples.reduce((acc, sample) => {
-        if (typeof sample.BLSAMPLEID === 'undefined') return acc
+        const totalSamples = Object.values(this.selectedSamplesInGroups).flat()
+        const samples = totalSamples.reduce((acc, sample) => {
+          if (typeof sample.BLSAMPLEID === 'undefined') return acc
 
-        if (!this.sampleGroupId) {
-          acc.push(sample)
-        }
+          if (!this.sampleGroupId) {
+            acc.push(sample)
+          }
+          
+          if (this.gid && typeof sample.BLSAMPLEGROUPID === 'undefined') {
+            acc.push({ ...sample, BLSAMPLEGROUPID: this.gid })
+          }
+
+          return acc
+        }, [])
+
+        const deletedSamples = differenceBy(this.initialSamplesInGroup, totalSamples, 'BLSAMPLEID')
+        if (deletedSamples.length > 0) await this.deleteUnselectedSamplesFromGroup(deletedSamples)
         
-        if (this.gid && typeof sample.BLSAMPLEGROUPID === 'undefined') {
-          acc.push({ ...sample, BLSAMPLEGROUPID: this.gid })
+        if (samples.length > 0) {
+          this.sampleGroupSamples.reset(samples)
+          this.sampleGroupSamples.newType = !this.sampleGroupId
+          result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroupSamples })
         }
 
-        return acc
-      }, [])
+        if (result) {
+          const savedSamples = result.toJSON()
+          this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
+          let message = 'Saved samples to group - ' + this.groupName
+          this.$store.commit('notifications/addNotification', {title: 'Success', message: message, level: 'success'})
+        }
 
-      const deletedSamples = differenceBy(this.initialSamplesInGroup, totalSamples, 'BLSAMPLEID')
-      if (deletedSamples.length > 0) await this.deleteUnselectedSamplesFromGroup(deletedSamples)
-      
-      if (samples.length > 0) {
-        this.sampleGroupSamples.reset(samples)
-        this.sampleGroupSamples.newType = !this.sampleGroupId
-        result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroupSamples })
-      }
+        await this.getSampleGroupInformation()
 
-      if (result) {
-        const savedSamples = result.toJSON()
-        this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
-        let message = 'Saved samples to group - ' + this.groupName
-        this.$store.commit('notifications/addNotification', {title: 'Success', message: message, level: 'success'})
-      }
-
-      await this.getSampleGroupInformation()
-      this.$store.commit('loading', false)
-
-      if (!this.gid) {
-        this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
+        if (!this.gid) {
+          this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
+        }
+      } catch (error) {
+        this.$store.commit('notifications/addNotification', { title: 'Error', message: error.message, level: 'error' })
+      } finally {
+        this.$store.commit('loading', false)
       }
     },
     async onContainerSelected(item) {

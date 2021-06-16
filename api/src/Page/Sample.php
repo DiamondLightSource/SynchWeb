@@ -2021,7 +2021,7 @@ class Sample extends Page
         function _save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type) {
             if (!isset($blSampleId)) return 'No sample specified';
 
-            if (!isset($blSampleGroupId)) return 'No sample group specified';
+            if (!isset($blSampleGroupId)) return 'No sample group specified. Create one before adding samples to group.';
 
             $sgid = $blSampleGroupId;
             
