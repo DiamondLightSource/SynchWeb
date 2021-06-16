@@ -1968,14 +1968,10 @@ class Sample extends Page
         function _update_sample_group() {
             if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
 
-            $group = $this->db->pq("SELECT bsg.blsamplegroupid
-              FROM blsamplegroup bsg 
-              INNER JOIN blsamplegroup_has_blsample bshg ON bsg.blsamplegroupid = bshg.blsamplegroupid
-              INNER JOIN blsample b ON b.blsampleid = bshg.blsampleid
-              INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
-              INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
-              WHERE pr.proposalid = :1 AND bsg.blsamplegroupid = :2", array($this->proposalid, $this->arg('BLSAMPLEGROUPID')));
-            
+            $group = $this->db->pq("SELECT blsamplegroupid
+                FROM blsamplegroup 
+                WHERE blsamplegroupid = :1", array($this->arg('BLSAMPLEGROUPID')));
+
             if (!sizeof($group)) $this->_error('No such sample group');
             else $group = $group[0];
 
