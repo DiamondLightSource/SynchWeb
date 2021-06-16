@@ -851,7 +851,7 @@ class EM extends Page
 
         try {
             $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_queue, $zocalo_message, true);
+            $queue->send($zocalo_queue, $zocalo_message, true, $this->user->login);
         } catch (Exception $e) {
             $this->_error($e->getMessage(), 500);
         }
