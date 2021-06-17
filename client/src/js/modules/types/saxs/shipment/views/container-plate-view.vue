@@ -61,7 +61,7 @@
 
           <li class="clearfix">
             <span class="label">Location History</span>
-            <div class="history tw-inline-block tw-w-1/3">
+            <div class="history tw-inline-block tw-w-2/3">
               <table-component
                 :headers="containerHistoryHeaders"
                 :data="containerHistory"
@@ -161,10 +161,9 @@ export default {
 
       containerHistory: [],
       containerHistoryHeaders: [
-        {key: 'DATE', title: 'Date'},
-        {key: 'DEWARSTATUS', title: 'Status'},
-        {key: 'STORAGELOCATION', title: 'Location'},
-        {key: 'BL', title: 'Beamline'},
+        {key: 'BLTIMESTAMP', title: 'Date'},
+        {key: 'STATUS', title: 'Status'},
+        {key: 'LOCATION', title: 'Location'},
       ],
       containerHistoryTotal: 0,
 
@@ -177,17 +176,7 @@ export default {
       gProteinsCollection: [],
     }
   },
-  // computed: {
-  //   plateType: function() {
-  //     // This determines the component used in sample editor
-  //     if (this.container.NAME.indexOf('Puck') > -1) return 'puck'
-
-  //     return this.container.CAPACITY > 25 ? 'single-sample-plate' : 'sample-plate-edit'
-  //   }
-  // },
   created: function() {
-    console.log("Sample Plate Editor created")
-
     // Get samples for this container id
     this.container = Object.assign({}, this.containerModel.toJSON())
     this.containerId = this.containerModel.get('CONTAINERID')
