@@ -1,7 +1,7 @@
 <template>
   <div class="content">
     <marionette-view
-      v-if="ready"
+      v-if="showMarionetteView"
       :key="$route.fullPath"
       :options="options"
       :fetchOnLoad="true"
@@ -9,7 +9,7 @@
       :breadcrumbs="breadcrumbs">
     </marionette-view>
 
-    <saxs-shipment-view v-if="parcels" :model="model"/>
+    <component v-else :is="componentView" :model="model"/>
 
   </div>
 </template>
@@ -33,12 +33,18 @@ export default {
   },
   data() {
     return {
-        ready: false,
+        showMarionetteView: false,
+        showComponent: false,
+        componentView: '',
         mview: null,
         model: null,
-        parcels: false,
         // Initialise breadcrumbs based on the passed props
         bc: this.breadcrumbs,
+        // Store array of shipment views based on proposal type
+        // At some point we may replace the original shipment marionette view in which case this can be removed
+        views: {
+          'saxs': 'saxs-shipment-view'
+        }
     }
   },
   computed: {
@@ -46,42 +52,37 @@ export default {
         return {
             model: this.model,
         }
-    },
+      },
+      proposalType: function() {
+        return this.$store.state.proposal.proposalType
+      }
   },
   created: function() {
-    console.log("Shipment Created - " + JSON.stringify(this.breadcrumbs))
     // What proposal type is this?
-    let propType = this.$store.state.proposal.proposalType
-
     this.model = new ShipmentModel({ SHIPPINGID: this.sid })
 
-    this.$store.dispatch('getModel', this.model).then( (model) => {
-      console.log("Shipment View Wrapper got model " + JSON.stringify(model))
+    this.$store.dispatch('getModel', this.model).then( () => {
       this.setBreadcrumbs()
-
-      if (propType == 'saxs') {
-        EventBus.$emit('bcChange', this.bc)
-        this.showSaxsShipmentView()
-      } else {
-        this.showDewarView()
-      }
+      this.setShipmentView()
+    }, () => {
+      this.$store.commit('notifications/addNotification', {title: 'Error', message: 'Did not get shipment model id: ' + this.sid, level: 'error'})
     })
   },
   methods: {
-    showSaxsShipmentView: function() {
-      console.log("Showing parcels")
-      this.parcels = true
-      this.ready = false
-    },
-    showDewarView: function() {
-      console.log("Showing dewars")
-      this.mview = ShipmentView
-      this.ready = true
-    },
-    // Set Breadcrumbs - depends on if visit provided
     setBreadcrumbs: function() {
         this.bc.push({ title: this.model.get('SHIPPINGNAME') })
     },
+    setShipmentView: function() {
+      // Determine if there is a new vue style component for this proposal type.
+      // If not we will show the original Marionette View page
+      this.componentView = this.views[this.proposalType] || null
+
+      if (this.componentView) EventBus.$emit('bcChange', this.bc)
+      else {
+        this.mview = ShipmentView
+        this.showMarionetteView = true
+      }
+    }
   }
 
 }

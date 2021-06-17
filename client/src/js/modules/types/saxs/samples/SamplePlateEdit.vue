@@ -2,11 +2,6 @@
   <div class="content">
     <h1>Samples</h1>
 
-    <!-- <div class="la puck_controls">
-      <a class="button" @click.prevent="$emit('clone-container')" href="#" title="Clone entire plate from first sample"><i class="fa fa-plus"></i> Clone from First Sample</a>
-      <a class="button" @click.prevent="$emit('clear-container')" href="#" title="Clear entire plate"><i class="fa fa-times"></i> Clear Plate</a>
-    </div> -->
-
     <!-- Using a key to update the table once we have discovered purification columns -->
     <table-component
       :key="tableKey"
@@ -15,30 +10,6 @@
       actions="Actions"
       >
       <!--
-        This is a bit more markup than we would like
-        Two things at play. One we want to switch on/off editing table row
-        The first commented block would do this.
-        However, also each sample has a purification column id we want to display
-        Hence we override the content block with a filtered view that also shows the column value rather than id
-        An alternative solution would be to process the data and append a column value to the samples array in the parent
-        Then we would need to update the appended value on every change...
-        Swings.
-        Roundabouts.
-       -->
-      <!--
-        First version that displays values from samples but switches while content block on edit
-        <template slot="content" slot-scope="{ row }" v-if="editRowLocation && editRowLocation == row['LOCATION']">
-        <td>{{row['LOCATION']}}</td>
-        <validation-provider tag="td" :name="'Acronym-'+sample['LOCATION']" :rules="sample['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }"><base-input-select v-model="sample['PROTEINID']" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <td><base-input-select v-model="sample['TYPE']" optionValueKey="ID" optionTextKey="TYPE" :options="sampleTypes" /></td>
-        <validation-provider tag="td" :name="'Name-'+sample['LOCATION']" :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="sample['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <td><base-input-select v-model="sample['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></td>
-        <td><base-input-text v-model="sample['VOLUME']"/></td>
-        <validation-provider tag="td" :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotFields" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-if="showInputRobotFields" v-slot="{ errors }"><base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-      </template> -->
-
-      <!--
         Second version that is more complex but allow showing filtered/parsed views directly
         Note use of validation-provider slim to avoid adding any markup
         Could use tag=span as well within validation-provider
@@ -46,32 +17,44 @@
       <template slot="content" slot-scope="{ row }">
         <td>{{row['LOCATION']}}</td>
         <td>
-          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'Acronym-'+sample['LOCATION']" :rules="sample['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }"><base-input-select v-model="sample['PROTEINID']" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <validation-provider v-if="isEditRowLocation(row)" slim :rules="sample['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }">
+            <base-input-select v-model="sample['PROTEINID']" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
           <span v-else>{{row['ACRONYM']}}</span>
         </td>
         <td>
-          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'Name-'+sample['LOCATION']" :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="sample['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <validation-provider v-if="isEditRowLocation(row)" slim :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }">
+            <base-input-text v-model="sample['NAME']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
           <span v-else>{{row['NAME']}}</span>
         </td>
         <td>
-          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'VOLUME-'+sample['LOCATION']" rules="decimal|min_value:10|max_value:100" v-slot="{ errors }"><base-input-text v-model="sample['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <validation-provider v-if="isEditRowLocation(row)" slim rules="decimal|min_value:10|max_value:100" v-slot="{ errors }">
+            <base-input-text v-model="sample['VOLUME']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
           <span v-else>{{row['VOLUME']}}</span>
-        </td>
-        <td v-if="showInputHplcFields">
-          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'COMMENTS-'+sample['LOCATION']" rules="alpha_dash|max:1000" v-slot="{ errors }"><base-input-text v-model="sample['COMMENTS']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-          <span v-else>{{row['COMMENTS']}}</span>
         </td>
         <!-- The problematic column id field... -->
         <td v-if="showInputHplcFields">
-          <base-input-select v-if="editRowLocation == row['LOCATION']" v-model="sample['PURIFICATIONCOLUMNID']" name="purification" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/>
+          <base-input-select v-if="isEditRowLocation(row)" v-model="sample['PURIFICATIONCOLUMNID']" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/>
           <span v-else>{{getPurificationColumnName(row['PURIFICATIONCOLUMNID'])}}</span>
         </td>
+        <td v-if="showInputHplcFields">
+          <validation-provider v-if="isEditRowLocation(row)" slim rules="alpha_dash|max:1000" v-slot="{ errors }">
+            <base-input-text v-model="sample['COMMENTS']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
+          <span v-else>{{row['COMMENTS']}}</span>
+        </td>
         <td v-if="showInputRobotFields">
-          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'ROBOTPLATETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <validation-provider v-if="isEditRowLocation(row)" slim rules="decimal" v-slot="{ errors }">
+            <base-input-text v-model="sample['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
           <span v-else>{{row['ROBOTPLATETEMPERATURE']}}</span>
         </td>
         <td v-if="showInputRobotFields">
-          <validation-provider v-if="editRowLocation == row['LOCATION']" slim :name="'EXPOSURETEMPERATURE-'+sample['LOCATION']" rules="decimal" v-slot="{ errors }"><base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+          <validation-provider v-if="isEditRowLocation(row)" slim rules="decimal" v-slot="{ errors }">
+            <base-input-text v-model="sample['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
           <span v-else>{{row['EXPOSURETEMPERATURE']}}</span>
         </td>
       </template>
@@ -151,8 +134,8 @@ export default {
         {key: 'EXPOSURETEMPERATURE', title: 'Exposure Temperature'},
       ],
       hplcExperimentHeaders: [
-        {key: 'COMMENTS', title: 'Comment: Buffer Location'},
         {key: 'PURIFICATIONCOLUMNID', title: 'Column'},
+        {key: 'COMMENTS', title: 'Comment: Buffer Location'},
       ],
 
       editRowLocation: '',
@@ -163,7 +146,6 @@ export default {
     }
   },
   created: function() {
-    console.log("Sample Plate Editor - Experiment kind: " + this.experimentKind)
     this.purificationColumnsCollection = new PurificationColumns()
     this.purificationColumns = []
 
@@ -172,7 +154,6 @@ export default {
       this.tableKey += 1
     })
     this.availableProteins = this.proteins.toJSON()
-    console.log("Sample Plate Edit - created with proteins: " + JSON.stringify(this.availableProteins))
   },
   computed: {
     // Trick to allow us to set/get passed model
@@ -225,13 +206,12 @@ export default {
     },
     onEditSample: function(row) {
       this.sample = Object.assign(this.sample, row)
-      console.log("Edit sample in location " + row['LOCATION'])
       this.editRowLocation = row['LOCATION']
     },
     onCancelEdit: function() {
       this.editRowLocation = ''
       // Reset temporary sample model
-      this.sample = Object.assign(this.sample, {})
+      this.sample = Object.assign({})
     },
     // If a proteinId is updated we need to also update the text ACRONYM because its a plan text value
     // and not linked directly to the protein id value for each sample
@@ -241,10 +221,13 @@ export default {
       else return null
     },
     getPurificationColumnName: function(value) {
-      console.log("PURIFICATION COL VALUE: " + value)
       if (!value) return ''
       let c = this.purificationColumnsCollection.findWhere({PURIFICATIONCOLUMNID: value.toString()})
       return c ? c.get('NAME') : 'Not found'
+    },
+    isEditRowLocation: function(row) {
+      if (!row['LOCATION']) return false
+      return this.editRowLocation == row['LOCATION'] ? true : false
     }
 
   },

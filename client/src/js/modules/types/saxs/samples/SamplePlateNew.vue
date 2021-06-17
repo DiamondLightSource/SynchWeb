@@ -14,13 +14,15 @@
       >
       <template slot="content" slot-scope="{ row }">
         <td>{{row['LOCATION']}}</td>
-        <validation-provider tag="td" :name="'Acronym-'+row['LOCATION']" :rules="row['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }"><base-input-select v-model="row['PROTEINID']" name="proteins" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" :name="'Name-'+row['LOCATION']" :rules="row['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="row['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" :name="'VOLUME-'+row['LOCATION']" rules="decimal|min_value:10|max_value:100" v-slot="{ errors }"><base-input-text v-model="row['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" :name="'PURIFICATIONCOLUMNID'+row['LOCATION']" v-if="showInputHplcExp" v-slot="{ errors }"><base-input-select v-model="row['PURIFICATIONCOLUMNID']" name="purification" :quiet="true" :errorMessage="errors[0]" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></validation-provider>
-        <validation-provider tag="td" :name="'COMMENTS-'+row['LOCATION']" rules="alpha_dash|max:1000" v-if="showInputHplcExp" v-slot="{ errors }"><base-input-text v-model="row['COMMENTS']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" :name="'ROBOTPLATETEMPERATURE-'+row['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" :name="'EXPOSURETEMPERATURE-'+row['LOCATION']" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" :rules="row['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }">
+          <base-input-select v-model="row['PROTEINID']" name="proteins" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/>
+        </validation-provider>
+        <validation-provider tag="td" :rules="row['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="row['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" rules="decimal|min_value:10|max_value:100" v-slot="{ errors }"><base-input-text v-model="row['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" v-if="showInputHplcExp" v-slot="{ errors }"><base-input-select v-model="row['PURIFICATIONCOLUMNID']" name="purification" :quiet="true" :errorMessage="errors[0]" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></validation-provider>
+        <validation-provider tag="td" rules="alpha_dash|max:1000" v-if="showInputHplcExp" v-slot="{ errors }"><base-input-text v-model="row['COMMENTS']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
       </template>
 
       <template slot="actions" slot-scope="{ row }">

@@ -105,7 +105,8 @@
             <base-input-date id="delivery-date" v-model="deliveryDate" name="DELIVERYAGENT_DELIVERYDATE" description="Estimated date of delivery at facility" label="Delivery Date"/>
 
             <base-input-text id="courier-name" v-model.trim="courierName" name="DELIVERYAGENT_AGENTNAME" description="Courier name for the return shipment" label="Courier Name">
-              <template v-slot:actions><span v-if="DHL_ENABLE"><a :href="DHL_LINK" class="dhl button"><i class="fa fa-envelope"></i> Use Facility Account (UK ONLY)</a></span></template>
+              <!-- Use DHL Courier button never shows on original marionette view. This may be a complete red herring, but it re-creates the behaviour of the original page -->
+              <template v-slot:actions><span v-if="!DHL_ENABLE"><a :href="DHL_LINK" class="dhl button"><i class="fa fa-envelope"></i> Use Facility Account (UK ONLY)</a></span></template>
             </base-input-text>
 
             <base-input-text id="courier-account" v-model="courierAccount" name="DELIVERYAGENT_AGENTCODE" description="Courier account number for the return shipment" label="Courier Account Number"/>
@@ -207,12 +208,6 @@ export default {
   },
 
   watch: {
-    // sessionType: function(newVal) {
-    //   if (newVal == SCHEDULED_SESSION) this.comments = "Scheduled session selected"
-    //   else if (newVal == RESPONSIVE_SESSION) this.comments = "Responsive session selected"
-    //   else if (newVal == AUTOMATED_SESSION) this.comments = "Automated session selected"
-    //   else this.comments = ""
-    // },
     dewarList: function(newVal) {
       console.log("Dewar list updated: " + JSON.stringify(newVal))
     }

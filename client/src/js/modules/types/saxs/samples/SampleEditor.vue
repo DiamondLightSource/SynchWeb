@@ -36,7 +36,7 @@ import Sample from 'models/sample'
 import Samples from 'collections/samples'
 import SampleTableView from 'modules/shipment/views/sampletable'
 import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
-import SamplePlateEditor from 'modules/types/saxs/samples/SamplePlateEditor.vue'
+import SamplePlateNew from 'modules/types/saxs/samples/SamplePlateNew.vue'
 import SamplePlateEdit from 'modules/types/saxs/samples/SamplePlateEdit.vue'
 
 // Templates we need to pass to the old MX style sample table
@@ -69,7 +69,7 @@ export default {
   components: {
     'marionette-view': MarionetteView,
     'single-sample-plate': SingleSample,
-    'sample-plate': SamplePlateEditor,
+    'sample-plate-new': SamplePlateNew,
     'sample-plate-edit': SamplePlateEdit
 },
   props: {

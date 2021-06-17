@@ -743,7 +743,7 @@ export default {
         this.containerGeometry.columns = geometry.WELLPERROW
         console.log("Number of plate = " + geometry.NAME)
         console.log("Number of columns = " + this.containerGeometry.columns)
-        this.plateType = this.containerGeometry.capacity > 25 ? 'single-sample-plate' : 'sample-plate'
+        this.plateType = this.containerGeometry.capacity > 25 ? 'single-sample-plate' : 'sample-plate-new'
       } else {
         this.plateType = 'puck'
       }
