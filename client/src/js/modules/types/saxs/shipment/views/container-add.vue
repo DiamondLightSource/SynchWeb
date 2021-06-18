@@ -26,7 +26,7 @@ Once container is valid then samples are added
             />
         </div> -->
       <!-- Wrap the form in an observer component so we can check validation state on submission -->
-      <validation-observer ref="observer" v-slot="{ invalid }">
+      <validation-observer ref="observer" v-slot="{ invalid, errors }">
 
       <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
       <form class="tw-flex" method="post" id="add_container" @submit.prevent="onSubmit">
@@ -63,7 +63,7 @@ Once container is valid then samples are added
             />
           </div>
 
-          <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="name" v-slot="{ errors }">
+          <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="name" vid="container-name" v-slot="{ errors }">
             <base-input-text
               label="Container Name"
               v-model="containerState.NAME"
@@ -216,12 +216,23 @@ Once container is valid then samples are added
           :capacity="containerGeometry.capacity"
           :selectedSample="selectedSample"
           :experimentKind="containerState.EXPERIMENTTYPEID"
-          :samplesCollection="samplesCollection"
+          :sampleLocation="sampleLocation"
           :proteins="proteinsCollection"
           :gproteins="gProteinsCollection"
           :automated="containerState.AUTOMATED"
           @select-sample="onSelectSample"
         />
+      </div>
+      <!--
+        We can show the errors accumulated from the table here.
+        The properties errors and invalid come from the validation observer.
+        Each validation provider should provide a vid to key the error and a name for the error message.
+      -->
+      <div class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4" v-show="invalid">
+        <p class="tw-font-bold">Please fix the errors on the form</p>
+        <div v-for="(error, index) in errors" :key="index">
+          <p v-show="error.length > 0" class="tw-black">{{index}}: {{error[0]}}</p>
+        </div>
       </div>
 
       <div class="">
@@ -283,12 +294,6 @@ const INITIAL_SAMPLE_STATE = {
   CODE: '',
   COMMENTS: '',
 }
-
-// Use Location as idAttribute for this table
-var LocationSample = Sample.extend({
-    idAttribute: 'LOCATION',
-    defaults: INITIAL_SAMPLE_STATE
-})
 
 const initialContainerState = {
   DEWARID: "",
@@ -569,7 +574,7 @@ export default {
     // Used to help show/hide fields
     this.containerGroup = this.$store.state.proposalType
 
-    this.samplesCollection = new Samples(null, {model: LocationSample})
+    this.resetSamples(this.containerGeometry.capacity)
 
     this.getProteins()
     this.getExperimentTypes()
@@ -710,10 +715,12 @@ export default {
 
     // Reset Backbone Samples Collection
     resetSamples: function(capacity) {
-      console.log("Resetting Samples Collection, capacity: " + capacity)
-      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ BLSAMPLEID: null, LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
+      console.log("Container Add - Resetting Samples Collection, capacity: " + capacity)
+      // var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ BLSAMPLEID: null, LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
 
-      this.samplesCollection.reset(samples)
+      // this.samplesCollection.reset(samples)
+
+      this.$store.commit('samples/reset', capacity)
     },
 
     onContainerCellClicked: function(location) {
@@ -741,13 +748,14 @@ export default {
       this.containerGeometry.well = geometry.WELLDROP
       if (geometry.WELLPERROW) {
         this.containerGeometry.columns = geometry.WELLPERROW
-        console.log("Number of plate = " + geometry.NAME)
+        console.log("Name of plate = " + geometry.NAME)
         console.log("Number of columns = " + this.containerGeometry.columns)
         this.plateType = this.containerGeometry.capacity > 25 ? 'single-sample-plate' : 'sample-plate-new'
       } else {
         this.plateType = 'puck'
       }
       this.plateKey += 1
+
     },
     clearPuck: function() {
       console.log('clear-puck')

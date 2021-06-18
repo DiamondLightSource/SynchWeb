@@ -18,11 +18,12 @@
         v-model="samples"
         :experimentKind="experimentKind"
         :containerId="containerId"
+        :sampleLocation="sampleLocation"
+        @save-sample="onSaveSample"
         @clone-sample="onCloneSample"
         @clear-sample="onClearSample"
         @clone-container="onCloneContainer"
         @clear-container="onClearContainer"
-        @save-sample="onSaveSample"
       />
     </div>
   </div>
@@ -43,26 +44,7 @@ import SamplePlateEdit from 'modules/types/saxs/samples/SamplePlateEdit.vue'
 import table from 'templates/shipment/sampletablenew.html'
 import row from 'templates/shipment/sampletablerownew.html'
 
-// Use Location as idAttribute for this table
-var LocationSample = Sample.extend({
-    idAttribute: 'LOCATION',
-})
-
-const INITIAL_SAMPLE_STATE = {
-  LOCATION: '',
-  PROTEINID: -1,
-  CRYSTALID: -1,
-  NAME: '',
-  VOLUME: '',
-  PURIFICATIONCOLUMNID: null,
-  ROBOTPLATETEMPERATURE: null,
-  EXPOSURETEMPERATURE: null,
-  EXPERIMENTTYPEID: null,
-  CODE: '',
-  COMMENTS: '',
-}
-
-
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'sample-editor',
@@ -85,9 +67,6 @@ export default {
     experimentKind: {
       type: Number
     },
-    samplesCollection: {
-      type: Object
-    },
     proteins: {
       type: Array
     },
@@ -100,11 +79,16 @@ export default {
     },
     containerId: {
       type: Number
+    },
+    sampleLocation: {
+      type: Number
     }
   },
   watch: {
     sampleComponent: function(newVal) {
       console.log("Sample Editor sample component = " + newVal)
+      console.log("Sample Editor samples = " + JSON.stringify(this.samples))
+      
     },
   },
   computed: {
@@ -113,7 +97,7 @@ export default {
       return {
         proteins: this.proteins,
         gproteins: this.gproteins,
-        collection: this.samplesCollection,
+        collection: this.$store.samples.samplesCollection,
         childTemplate: row,
         template: table,
         auto: this.automated,
@@ -121,12 +105,12 @@ export default {
     },
     showPuckSampleTable: function() {
       return this.sampleComponent == 'puck' ? true : false
-    }
+    },
+    ...mapGetters('samples', ['samples'])
   },
   data() {
     return {
       mview: SampleTableView,
-      samples: [],
     }
   },
   // We are passing a plain JSON array to the sample plate view
@@ -134,24 +118,17 @@ export default {
   // On reset, update our samples list
   created: function() {
     console.log("Sample Editor created - sampleComponent = " + this.sampleComponent)
-    this.samples = this.samplesCollection.toJSON()
-    console.log("Sample Editor created - samples = " + JSON.stringify(this.samples))
-
-    // Register callback if collection is reset
-    this.samplesCollection.bind('reset', this.updateSamples)
 
     // Parent Add Container component will send a message once it has successfully created the container
     EventBus.$on('save-samples', this.onSaveSamples)
   },
   methods: {
+    myTest: function() {
+      console.log('Test Function triggered by event...')
+    },
     // We will need to pass up the event to select a sample in case graphic needs to change
     onSelectSample: function(location) {
       this.$emit('select-sample', location)
-    },
-    // Callback when parent sample collection is reset
-    updateSamples: function() {
-      // This should trigger an update to the samples table
-      this.samples = Object.assign([], this.samplesCollection.toJSON())
     },
     // Clone the next free row based on the current row
     onCloneSample: function(sampleLocation) {
@@ -175,9 +152,9 @@ export default {
       let nextSampleLocation = nextSampleIndex+1 // LOCATION to be stored in the cloned sample
 
       if (nextSampleIndex > 0) {
-        this.samples[nextSampleIndex] = Object.assign(this.samples[nextSampleIndex], this.samples[sampleIndex])
-        this.samples[nextSampleIndex]['LOCATION'] = nextSampleLocation.toString()
-        this.samples[nextSampleIndex]['NAME'] = this.generateSampleName(this.samples[sampleIndex].NAME, nextSampleLocation)
+        this.$store.commit('samples/setSample', { data:Object.assign(this.samples[nextSampleIndex], this.samples[sampleIndex]), index:nextSampleIndex})
+        this.$store.commit('samples/update', {index: nextSampleIndex, key: 'LOCATION', value: nextSampleLocation.toString()})
+        this.$store.commit('samples/update', {index: nextSampleIndex, key: 'NAME', value: this.generateSampleName(this.samples[sampleIndex].NAME, nextSampleLocation)})
       }
     },
     // Clear row for a single row in the sample table
@@ -186,12 +163,9 @@ export default {
       // Clear the row for this location
       // Locations should be in range 1..samples.length
       if (location < 1 || location > this.samples.length) { console.log("Sample Editor error clearing sample index"); return }
-
-      let emptySample = INITIAL_SAMPLE_STATE
-      emptySample.LOCATION = location.toString()
-
-      let sampleIndex = location - 1
-      this.samples[sampleIndex] = Object.assign(this.samples[sampleIndex], emptySample)
+      // The location is one more than the sample index
+      let index = location -1 
+      this.$store.commit('samples/clearSample', index)
     },
     // Take first entry and clone all rows
     onCloneContainer: function() {
@@ -200,15 +174,13 @@ export default {
       for (var i=1; i<this.samples.length; i++) {
         cloneSample.LOCATION = (i+1).toString()
         cloneSample.NAME = this.generateSampleName(firstName, i+1)
-        this.samples[i] = Object.assign(this.samples[i], cloneSample)
+        this.$store.commit('samples/setSample', {index: i, data: Object.assign(this.samples[i], cloneSample)})
       }
     },
     // Remove all sample information from every row
     onClearContainer: function() {
-      let emptySample = INITIAL_SAMPLE_STATE
       for (var i=0; i<this.samples.length; i++) {
-        emptySample.LOCATION = (i+1).toString()
-        this.samples[i] = Object.assign(this.samples[i], emptySample)
+        this.$store.commit('samples/clearSample', i)
       }
     },
     // When cloning, take the last digits and pad the new samples names
@@ -230,59 +202,34 @@ export default {
     // Better to catch earlier - prevent container add for instance if samples are invalid
     // If we are wrapping this component within a validation observer the submit container step will be prevented
     onSaveSamples: function(containerId) {
-      // Iterate through our JSON representation of the samples list,
-      // for those with a valid (non-zero) protein id set the corresponding collection data
-
       // If no container id we can't correctly add the new samples to the container
       if (!containerId) return
 
-      // New samples added
-      // We actually don't use the return value, merely use the map to iterate through the array, setting the collection sample
-      this.samples.map(s => {
-        s.CONTAINERID = containerId
-        let locationIndex = +(s.LOCATION - 1)
-        let proteinId = +s.PROTEINID
-        if (proteinId > 0 && s.NAME != '') {
-          this.samplesCollection.at(locationIndex).set(s)
-          return s
-        }
-      })
-
-      // Now filter for those with valid protein/crystal ids
-      let samples = new Samples(this.samplesCollection.filter(function(m) { return m.get('PROTEINID') > - 1 || m.get('CRYSTALID') > - 1 }))
-
-      if (samples.length > 0) {
-        this.$store.dispatch('saveCollection', {collection: samples}).then( () => {
+      this.$store.dispatch('samples/save', containerId).then( () => {
           // If we have a container id we are creating all samples
-          this.resetSamples(this.samplesCollection.length)
+          // On success, reset because we will want to start with a clean slate
+          this.$store.commit('samples/reset')
         }, (err) => {
           this.$store.commit('notifications/addNotification', { message: err.message, level: 'error'})
         })
-      } else console.log("SampleEditor: No samples to add...")
     },
+    // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
     onSaveSample: function(location) {
-      console.log("Sample editor save sample: " + location)
+      console.log("SAMPLE EDITOR SAVE SAMPLE " + location)
       let sampleIndex = +location -1
-
       // Create a new Sample so it uses the BLSAMPLEID to check for post, update etc
       let sampleModel = new Sample( this.samples[sampleIndex] )
 
+      console.log("SAMPLE MODEL TO SAVE = " + sampleModel.attributes)
+
       this.$store.dispatch('saveModel', {model: sampleModel}).then( (result) => {
         // Update BLSAMPLEID
-        if (!this.samples[sampleIndex]['BLSAMPLEID']) this.samples[sampleIndex]['BLSAMPLEID'] = result.get('BLSAMPLEID')
+        if (!this.samples[sampleIndex]['BLSAMPLEID']) this.$store.commit('samples/update', {index: sampleIndex, key: 'BLSAMPLEID', value: result.get('BLSAMPLEID')})
 
-        this.samplesCollection.at(sampleIndex).set(this.samples[sampleIndex])
+        // this.samplesCollection.at(sampleIndex).set(this.samples[sampleIndex])
       }, (err) => console.log("Error saving model: " + JSON.stringify(err)))
     },
-    // Reset Backbone Samples Collection
-    resetSamples: function(capacity) {
-      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
-
-      this.samplesCollection.reset(samples)
-    },
-  },
-
-
+  }
 }
 </script>

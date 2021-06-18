@@ -1,8 +1,6 @@
 <template>
   <div class="content">
     <h1>Samples</h1>
-
-    <!-- Using a key to update the table once we have discovered purification columns -->
     <table-component
       :key="tableKey"
       :headers="sampleHeaders"
@@ -115,7 +113,7 @@ export default {
     },
     containerId: {
       type: Number
-    }
+    },
   },
   data: function() {
     return {
@@ -142,9 +140,10 @@ export default {
       // When editing a row we use a temporary sample object as the model
       // Then if we cancel the edit, the original row data is not changed
       sample: {},
-      tableKey: 0
+      tableKey: 0,
     }
   },
+
   created: function() {
     this.purificationColumnsCollection = new PurificationColumns()
     this.purificationColumns = []
@@ -155,15 +154,21 @@ export default {
     })
     this.availableProteins = this.proteins.toJSON()
   },
+  mounted: function() {
+    this.$emit('test-event')
+  },
   computed: {
     // Trick to allow us to set/get passed model
     inputValue: {
       get() {
-        return this.value
+        return this.$store.state.samples.samples
       },
       set(val) {
-        this.$emit('input', val)
+        this.$store.commit('samples/set', val)
       }
+    },
+    locations: function() {
+      return this.inputValue.map( (item) => { return item['LOCATION'] })
     },
     // Depending on the experiment type, we need a different table structure
     // Currently the container experiment type is a text string!
@@ -189,29 +194,29 @@ export default {
   },
   methods: {
     onSaveSample: function(row) {
+      console.log("SamplePlateEdit - OnSaveSample " + row['LOCATION'])
       // Assumption that samples are in location order
       // Convert index, input[0] = location[1]
-      let sampleIndex = +row['LOCATION']-1
+      let location = row['LOCATION']
+      let sampleIndex = +location-1
       this.sample.CONTAINERID = this.containerId
-      this.inputValue[sampleIndex] = Object.assign(this.inputValue[sampleIndex], this.sample)
+
+      this.$store.commit('samples/setSample', {index: sampleIndex, data: this.sample})
 
       // Update sample ACRONYM if valid
       let acronym = this.getProteinAcronym(this.sample.PROTEINID)
-      if (acronym) this.inputValue[sampleIndex]['ACRONYM'] = acronym
+      if (acronym) this.$store.commit('samples/update', {index: sampleIndex, key: 'ACRONYM', value: acronym})
 
-      this.$emit('save-sample', row['LOCATION'])
-      // Reset temporary sample model
-      this.sample = Object.assign({})
-      this.editRowLocation = ''
+      this.sendUpdate(location)
+
+      this.resetSampleToEdit()
     },
     onEditSample: function(row) {
       this.sample = Object.assign(this.sample, row)
       this.editRowLocation = row['LOCATION']
     },
     onCancelEdit: function() {
-      this.editRowLocation = ''
-      // Reset temporary sample model
-      this.sample = Object.assign({})
+      this.resetSampleToEdit()
     },
     // If a proteinId is updated we need to also update the text ACRONYM because its a plan text value
     // and not linked directly to the protein id value for each sample
@@ -228,6 +233,14 @@ export default {
     isEditRowLocation: function(row) {
       if (!row['LOCATION']) return false
       return this.editRowLocation == row['LOCATION'] ? true : false
+    },
+    sendUpdate: function(location) {
+      this.$emit('save-sample', location)
+    },
+    resetSampleToEdit: function() {
+      this.editRowLocation = ''
+      // Reset temporary sample model
+      this.sample = Object.assign({})
     }
 
   },

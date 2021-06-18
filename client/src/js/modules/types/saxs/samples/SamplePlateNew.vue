@@ -7,6 +7,13 @@
       <a class="button clearpuck" @click.prevent="$emit('clear-container')" href="#" title="Clear entire plate"><i class="fa fa-times"></i> Clear Plate</a>
     </div>
 
+    <!-- 
+      Validation providers expose an error slot, v-slot="{errors}".
+      We don't show them here because it's hard to fit them into the table.
+      Instead they can be picked up by the validation-observer that wraps the parent form.
+
+      The rules for sample name and protein id are dependent on each other. So if there is a protein id, there must be a name and vice versa.
+    -->
     <table-component
       :headers="sampleHeaders"
       :data="inputValue"
@@ -14,15 +21,27 @@
       >
       <template slot="content" slot-scope="{ row }">
         <td>{{row['LOCATION']}}</td>
-        <validation-provider tag="td" :rules="row['NAME'] ? 'required|min_value:1' : ''" v-slot="{ errors }">
+        <validation-provider tag="td" :rules="row['NAME'] ? 'required|min_value:1' : ''" name="Protein" :vid="'protein-'+row['LOCATION']" v-slot="{ errors }">
           <base-input-select v-model="row['PROTEINID']" name="proteins" :options="availableProteins" optionValueKey="PROTEINID" optionTextKey="ACRONYM" :quiet="true" :errorMessage="errors[0]"/>
         </validation-provider>
-        <validation-provider tag="td" :rules="row['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }"><base-input-text v-model="row['NAME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" rules="decimal|min_value:10|max_value:100" v-slot="{ errors }"><base-input-text v-model="row['VOLUME']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" v-if="showInputHplcExp" v-slot="{ errors }"><base-input-select v-model="row['PURIFICATIONCOLUMNID']" name="purification" :quiet="true" :errorMessage="errors[0]" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/></validation-provider>
-        <validation-provider tag="td" rules="alpha_dash|max:1000" v-if="showInputHplcExp" v-slot="{ errors }"><base-input-text v-model="row['COMMENTS']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
-        <validation-provider tag="td" rules="decimal" v-if="showInputRobotExp" v-slot="{ errors }"><base-input-text v-model="row['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/></validation-provider>
+        <validation-provider tag="td" :rules="row['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''" name="Sample Name" :vid="'sample-name-'+row['LOCATION']"  v-slot="{ errors }">
+          <base-input-text v-model="row['NAME']" :quiet="true" :errorMessage="errors[0]"/>
+        </validation-provider>
+        <validation-provider tag="td" rules="decimal|min_value:10|max_value:100" name="Volume" :vid="'volume-'+row['LOCATION']" v-slot="{ errors }">
+          <base-input-text v-model="row['VOLUME']" :quiet="true" :errorMessage="errors[0]"/>
+        </validation-provider>
+        <validation-provider tag="td" v-if="showInputHplcExp" v-slot="{ errors }">
+          <base-input-select v-model="row['PURIFICATIONCOLUMNID']" name="purification" :quiet="true" :errorMessage="errors[0]" :options="purificationColumns" optionValueKey="PURIFICATIONCOLUMNID" optionTextKey="NAME"/>
+        </validation-provider>
+        <validation-provider tag="td" v-if="showInputHplcExp" rules="alpha_dash|max:1000" name="Comments" :vid="'comments-'+row['LOCATION']" v-slot="{ errors }">
+          <base-input-text v-model="row['COMMENTS']" :quiet="true" :errorMessage="errors[0]"/>
+        </validation-provider>
+        <validation-provider tag="td" v-if="showInputRobotExp" rules="decimal" name="Plate Temperature" :vid="'plate-temperature-'+row['LOCATION']" v-slot="{ errors }">
+          <base-input-text v-model="row['ROBOTPLATETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/>
+        </validation-provider>
+        <validation-provider tag="td" v-if="showInputRobotExp" rules="decimal" name="Exposure Temperature" :vid="'exposure-temperature-'+row['LOCATION']" v-slot="{ errors }">
+          <base-input-text v-model="row['EXPOSURETEMPERATURE']" :quiet="true" :errorMessage="errors[0]"/>
+        </validation-provider>
       </template>
 
       <template slot="actions" slot-scope="{ row }">
@@ -85,19 +104,20 @@ export default {
         {key: 'NAME', title: 'Name'},
         {key: 'VOLUME', title: 'Volume (uL)'},
       ],
-      robotExperimentHeaders: [
-        {key: 'ROBOTPLATETEMPERATURE', title: 'Robot Temperature'},
-        {key: 'EXPOSURETEMPERATURE', title: 'Exposure Temperature'},
-      ],
-      hplcExperimentHeaders: [
-        {key: 'PURIFICATIONCOLUMNID', title: 'Column'},
-        {key: 'COMMENTS', title: 'Comment: Buffer Location'},
-      ],
+      experimentHeaders: {
+        'robot': [
+          {key: 'ROBOTPLATETEMPERATURE', title: 'Robot Temperature'},
+          {key: 'EXPOSURETEMPERATURE', title: 'Exposure Temperature'},
+        ],
+        'hplc': [
+          {key: 'PURIFICATIONCOLUMNID', title: 'Column'},
+          {key: 'COMMENTS', title: 'Comment: Buffer Location'},
+        ]
+      },
       availableProteins: [],
     }
   },
   created: function() {
-    console.log("Sample Plate Editor - Experiment kind: " + this.experimentKind)
     this.purificationColumnsCollection = new PurificationColumns()
     this.purificationColumns = []
 
@@ -106,25 +126,27 @@ export default {
     })
 
     this.availableProteins = this.proteins.toJSON()
+    this.$emit('test-event')
   },
   computed: {
     // Trick to allow us to set/get passed model
     inputValue: {
       get() {
-        return this.value
+        return this.$store.state.samples.samples
       },
       set(val) {
-        this.$emit('input', val)
+        this.$store.commit('samples/set', val)
       }
     },
+    
     // Depending on the experiment type, we need a different table structure
     sampleHeaders: function() {
       let headers = Object.assign([], this.commonSampleHeaders)
       if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) {
-        for (var i=0; i<this.robotExperimentHeaders.length; i++) headers.push(this.robotExperimentHeaders[i])
+        for (var i=0; i<this.experimentHeaders['robot'].length; i++) headers.push(this.experimentHeaders['robot'][i])
       }
       if (this.experimentKind == EXPERIMENT_TYPE_HPLC) {
-        for (var i=0; i<this.hplcExperimentHeaders.length; i++) headers.push(this.hplcExperimentHeaders[i])
+        for (var i=0; i<this.experimentHeaders['hplc'].length; i++) headers.push(this.experimentHeaders['hplc'][i])
       }
       
       return headers

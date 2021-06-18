@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <h1>Sample</h1>
+    <h1>Sample Location {{sampleLocation}}</h1>
       <div class="ra">
         <a href="#" class="button clone-plate"><i class="fa fa-plus"></i> Plate</a>
         <a href="#" class="button clone-col"><i class="fa fa-plus"></i> Column</a>
@@ -14,62 +14,72 @@
     </div>
 
     <div class="tw-flex tw-flex-row-reverse">
-        <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
+      <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
     </div>
     <div class="form">
-        <base-input-select
-          label="Substance"
-          v-model="inputValue.PROTEINID"
-          optionValueKey="PROTEINID"
-          optionTextKey="ACRONYM"
-          defaultText=" - "
-          :options="proteins"
-          />
-        <base-input-select
-          label="Sample Type"
-          v-model="inputValue.TYPE"
-          optionValueKey="ID"
-          optionTextKey="TYPE"
-          :options="sampleTypes"
+      <base-input-select
+        label="Protein"
+        v-model="inputValue[sampleLocation].PROTEINID"
+        optionValueKey="PROTEINID"
+        optionTextKey="ACRONYM"
+        defaultText=" - "
+        :options="availableProteins"
         />
+      <validation-provider slim :rules="inputValue.PROTEINID > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }">
         <base-input-text
           label="Sample Name"
-          v-model="inputValue.NAME"
-          name="SAMPLE_NAME" />
+          v-model="inputValue[sampleLocation].NAME"
+          name="SAMPLE_NAME" 
+          :quiet="true" 
+          :errorMessage="errors[0]"/>
+      </validation-provider>
 
+      <validation-provider tag="slim" rules="decimal|min_value:10|max_value:100" name="Volume" :vid="volume" v-slot="{ errors }">
         <base-input-text
-          label="Volume"
-          v-model="inputValue.VOLUME"
-          name="VOLUME" />
+        label="Volume"
+        v-model="inputValue[sampleLocation].VOLUME"
+        name="VOLUME" 
+        :quiet="true" 
+        :errorMessage="errors[0]"/>
+      </validation-provider>
 
       <!-- Issues getting this to update -->
-        <base-input-select
-          :key="pkey"
-          v-model="inputValue.COLUMN"
-          :options="purificationColumns"
-          optionValueKey="PURIFICATIONCOLUMNID"
-          optionTextKey="NAME"
-          label="Column"
-          name="COLUMN"
-          defaultText="Optionally set a column" />
+      <base-input-select
+        :key="pkey"
+        v-model="inputValue[sampleLocation].COLUMN"
+        :options="purificationColumns"
+        optionValueKey="PURIFICATIONCOLUMNID"
+        optionTextKey="NAME"
+        label="Column"
+        name="COLUMN"
+        defaultText="Optionally set a column" />
 
+      <validation-provider tag="slime" v-if="showInputHplcExp" rules="alpha_dash|max:1000" name="Comments" :vid="'comments-'+sampleLocation" v-slot="{ errors }">
         <base-input-text
-          label="Buffer"
-          v-model="inputValue.BUFFER"
-          name="BUFFER" />
+          label="Comments"
+          v-model="inputValue[sampleLocation].COMMENTS"
+          :quiet="true"
+          :errorMessage="errors[0]"/>
+      </validation-provider>
 
-        <base-input-text v-if="experimentKind == 'robot'"
-          label="Robot Plate Temperature"
-          v-model="inputValue.ROBOTPLATETEMPERATURE"
-          name="ROBOTPLATETEMPERATURE" />
+      <base-input-text v-if="experimentKind == 'robot'"
+        label="Robot Plate Temperature"
+        v-model="inputValue[sampleLocation].ROBOTPLATETEMPERATURE"
+        name="ROBOTPLATETEMPERATURE" />
 
-        <base-input-text v-if="experimentKind == 'robot'"
-          label="Exposure Temperature"
-          v-model="inputValue.EXPOSURETEMPERATURE"
-          name="EXPOSURETEMPERATURE" />
+      <base-input-text v-if="experimentKind == 'robot'"
+        label="Exposure Temperature"
+        v-model="inputValue[sampleLocation].EXPOSURETEMPERATURE"
+        name="EXPOSURETEMPERATURE" />
 
     </div>
 
+    <button class="button">Next</button>
+    <button class="button">Prev</button>
+
+    <p v-for="sample in inputValue" :key="sample.BLSAMPLEID">
+      {{sample.NAME}}
+    </p>
   </div>
 </template>
 
@@ -83,6 +93,9 @@ import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
+
+const EXPERIMENT_TYPE_ROBOT = 'Robot'
+const EXPERIMENT_TYPE_HPLC = 'HPLC'
 
 export default {
   name: 'single-sample-new',
@@ -105,6 +118,10 @@ export default {
     },
     experimentKind: {
       type: String,
+    },
+    sampleLocation: {
+      type: Number,
+      default: 1
     }
   },
   data: function() {
@@ -119,11 +136,11 @@ export default {
     this.purificationColumns = []
 
     this.$store.dispatch('getCollection', this.purificationColumnsCollection).then( (result) => {
-      console.log("Purification columns collection: " + this.purificationColumnsCollection.toJSON())
-      console.log("Purification columns JSON: " + this.purificationColumns)
       this.purificationColumns = result.toJSON()
       this.pkey += 1
     })
+
+    console.log("Passed value into single sample is " + JSON.stringify(this.value))
   },
   computed: {
     inputValue: {
@@ -134,7 +151,10 @@ export default {
         console.log("Set value checked on inputValue")
         this.$emit('input', val)
       }
-    }
+    },
+    availableProteins: function() {
+      return this.proteins.toJSON()
+    },
   },
 
   data: function() {
@@ -143,6 +163,25 @@ export default {
         {ID: 0, TYPE: 'Sample'},
         {ID: 1, TYPE: 'Buffer'},
       ]
+    }
+  },
+
+  methods: {
+    showInputRobotExp: function() {
+      if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) return true
+      else {
+        // We could clear any temperature values here if needed/required
+        this.inputValue.forEach( (v) => { v.ROBOTPLATETEMPERATURE = ''; v.EXPOSURETEMPERATURE = ''})
+        return false
+      }
+    },
+    showInputHplcExp: function() {
+      if (this.experimentKind == EXPERIMENT_TYPE_HPLC) return true
+      else {
+        // We could clear any values here if needed/required
+        this.inputValue.forEach( (v) => { v.PURIFICATIONCOLUMNID = '', v.COMMENTS = '' })
+        return false
+      }
     }
   }
 

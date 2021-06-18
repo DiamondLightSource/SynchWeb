@@ -90,7 +90,6 @@
         :sampleComponent="plateType"
         :capacity="container.CAPACITY"
         :experimentKind="container.EXPERIMENTTYPE"
-        :samplesCollection="samplesCollection"
         :proteins="proteinsCollection"
         :gproteins="gProteinsCollection"
         :automated="container.AUTOMATED"
@@ -253,8 +252,6 @@ export default {
       this.containerGeometry.well = geometry.get('WELLDROP')
       if (geometry.get('WELLPERROW')) {
         this.containerGeometry.columns = geometry.get('WELLPERROW')
-        console.log("Number of plate = " + geometry.get('NAME'))
-        console.log("Number of columns = " + this.containerGeometry.columns)
         this.plateType = this.containerGeometry.capacity > 25 ? 'single-sample-plate' : 'sample-plate-edit'
         this.containerGraphicType = 'plate'
       } else {
@@ -265,15 +262,12 @@ export default {
     },
     // Reset Backbone Samples Collection
     resetSamples: function(capacity) {
-      console.log("Resetting Samples Collection, capacity: " + capacity)
-      var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ BLSAMPLEID: null, LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
+      this.$store.commit('samples/reset', capacity)
 
       this.samplesCollection.each( s => {
-        console.log("CPV model = " + s.toJSON())
         let i = +(s.get('LOCATION')) - 1
-        samples[i] = Object.assign(samples[i], s)
+        this.$store.commit('samples/setSample', {index: i, data: s.toJSON()})
       })
-      this.samplesCollection.reset(samples)
     },
 
   }

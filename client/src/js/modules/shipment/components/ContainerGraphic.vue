@@ -54,8 +54,8 @@ export default {
   computed: {
     containerComponent: function() {
       if (!this.containerType) return null
-      if (this.containerType.endsWith('plate')) return 'plate-view'
-      if (this.containerType.endsWith('puck')) return 'puck-view'
+      if (this.containerType.indexOf('plate') > -1) return 'plate-view'
+      if (this.containerType.indexOf('puck') > 1) return 'puck-view'
       // If we have an unknown type..
       return null
     },

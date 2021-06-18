@@ -8,6 +8,7 @@ import MenuStore from './modules/store.menus.js'
 import ProposalStore from './modules/store.proposal.js'
 import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
+import SamplesStore from './modules/store.samples.js'
 
 // Configuration
 import Options from 'models/options.js'
@@ -26,6 +27,7 @@ const store = new Vuex.Store({
     proposal: ProposalStore,
     user: UserStore,
     notifications: NotificationStore,
+    samples: SamplesStore,
   },
   state: {
     // Flag we use to check if we have already setup options
@@ -153,6 +155,7 @@ const store = new Vuex.Store({
     // Example: store.dispatch('saveCollection', {collection: myCollection})
     saveCollection(context, {collection}) {
 
+      console.log("Store save Collection = " + JSON.stringify(collection))
       return new Promise((resolve, reject) => {
         collection.save({
           success: function(result) {
