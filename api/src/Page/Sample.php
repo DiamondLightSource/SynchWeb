@@ -135,6 +135,7 @@ class Sample extends Page
                               'GROUPORDER' => '\d+',
                               'TYPE' => '\w+',
                               'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
+                              'ignoreSamples' => '\d',
 
                                );
         
@@ -185,12 +186,12 @@ class Sample extends Page
                               array('/groups', 'get', '_sample_groups'),
                               array('/groups', 'post', '_add_sample_to_group'),
                               array('/groups', 'put', '_bulk_update_samples_in_group'),
-                              array('/groups/name', 'post', '_create_new_sample_group_name'),
-                              array('/groups/name/all', 'get', '_get_all_sample_groups'),
-                              array('/groups/name/:BLSAMPLEGROUPID', 'patch', '_update_sample_group'),
-                              array('/groups/name/:BLSAMPLEGROUPID', 'get', '_get_sample_group_name'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
+                              array('/groups/name', 'post', '_create_new_sample_group_name'),
+                              array('/groups/name', 'get', '_get_all_sample_groups'),
+                              array('/groups/name/:BLSAMPLEGROUPID', 'patch', '_update_sample_group'),
+                              array('/groups/name/:BLSAMPLEGROUPID', 'get', '_get_sample_group_name'),
         );
 
 
@@ -1967,18 +1968,25 @@ class Sample extends Page
         function _update_sample_group() {
             if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
 
-            $group = $this->db->pq("SELECT blsamplegroupid
-                FROM blsamplegroup 
-                WHERE blsamplegroupid = :1", array($this->arg('BLSAMPLEGROUPID')));
+            if (!$this->has_arg('ignoreSamples')) {
+                $group = $this->db->pq("SELECT bsg.blsamplegroupid
+                    FROM blsamplegroup bsg 
+                    INNER JOIN blsamplegroup_has_blsample bshg ON bsg.blsamplegroupid = bshg.blsamplegroupid
+                    INNER JOIN blsample b ON b.blsampleid = bshg.blsampleid
+                    INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
+                    INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
+                    WHERE pr.proposalid = :1 AND bsg.blsamplegroupid = :2", array($this->proposalid, $this->arg('BLSAMPLEGROUPID')));
 
-            if (!sizeof($group)) $this->_error('No such sample group');
-            else $group = $group[0];
+                if (!sizeof($group)) $this->_error('No such sample group');
+                else $group = $group[0];
+            }
+
 
             $fields = array('NAME');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE blsamplegroup SET $f=:1 WHERE blsamplegroupid=:2", array($this->arg($f), $this->arg('BLSAMPLEGROUPID')));
-                    $this->_output(array($f => $this->arg($f)));
+                    $this->_output(array($f => $this->arg($f), 'BLSAMPLEGROUPID' => $this->arg('BLSAMPLEGROUPID')));
                 }
             }
         }
@@ -2176,17 +2184,7 @@ class Sample extends Page
         function _create_new_sample_group_name() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : $this->_create_new_sample_group();
-
-            if ($this->has_arg('BLSAMPLEGROUPID')) {
-                $group = $this->db->pq("SELECT blsamplegroupid
-                FROM blsamplegroup 
-                WHERE blsamplegroupid = :1", array($blSampleGroupId));
-
-                if (!sizeof($group)) $this->_error('No such sample group');
-                else $group = $group[0];
-            }
-            
+            $blSampleGroupId = $this->_create_new_sample_group();
 
             $fields = array('NAME');
             foreach ($fields as $f) {
