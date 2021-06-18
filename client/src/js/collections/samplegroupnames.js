@@ -14,7 +14,7 @@ define([
 
     return PageableCollection.extend({
         model: SampleGroupNames,
-        url: '/sample/groups/name/all',
+        url: '/sample/groups/name',
         mode: 'server',
         state: {
             pageSize: 100,

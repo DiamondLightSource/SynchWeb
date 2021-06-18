@@ -151,7 +151,6 @@ export default {
     this.containerSamples = new SamplesCollection()
     this.sampleGroupSamples = new SampleGroupSamplesCollection()
     this.containerModel = new ContainerModel()
-    this.sampleGroupNameModel = new SampleGroupNameModel({}, {})
   },
   mounted() {
     this.sampleGroupId = this.gid
@@ -235,10 +234,18 @@ export default {
     async saveSampleGroupName(loading = false) {
       try {
         if (loading) this.$store.commit('loading', loading)
+        let attributes = {}
+
+        if (this.sampleGroupId) {
+          attributes = { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
+        } else {
+          this.sampleGroupNameModel = new SampleGroupNameModel({ NAME: this.groupName }, {})
+          this.sampleGroupNameModel.ignoreSamples = true
+        }
 
         await this.$store.dispatch('saveModel', {
           model: this.sampleGroupNameModel,
-          attributes: { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
+          attributes
         })
 
         const { BLSAMPLEGROUPID } = this.sampleGroupNameModel.toJSON()
@@ -356,13 +363,23 @@ export default {
       }))
     },
     async fetchSampleGroupName() {
-      this.sampleGroupNameModel = new SampleGroupNameModel({}, { BLSAMPLEGROUPID: this.sampleGroupId })
-      const groupNameResult = await this.$store.dispatch(
-        'getModel',
-        this.sampleGroupNameModel
-      )
-
-      this.groupName = groupNameResult.toJSON().NAME || this.assignDefaultSampleGroupName()
+      if (!this.sampleGroupId) {
+        this.groupName = this.assignDefaultSampleGroupName()
+      } else {
+        try {
+          this.sampleGroupNameModel = new SampleGroupNameModel({ BLSAMPLEGROUPID: this.sampleGroupId })
+          this.sampleGroupNameModel.ignoreSamples = true
+          const groupNameResult = await this.$store.dispatch(
+            'getModel',
+            this.sampleGroupNameModel
+          )
+          this.groupName = groupNameResult.toJSON().NAME
+        } catch (error) {
+          let message = 'An error occurred while fetching sample group name'
+          this.$store.commit('notifications/addNotification', { title: 'Error', message: message, level: 'error' })
+          this.$store.commit('loading', false)
+        }
+      }
     }
   },
   provide() {
