@@ -234,7 +234,7 @@ export default {
     async saveSampleGroupName(loading = false) {
       try {
         if (loading) this.$store.commit('loading', loading)
-        let attributes = {}
+        let attributes = null
 
         if (this.sampleGroupId) {
           attributes = { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
