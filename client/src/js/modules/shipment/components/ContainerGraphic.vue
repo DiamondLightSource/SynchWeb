@@ -9,6 +9,7 @@
           :selected="selected"
           :threshold="threshold/100"
           :color-scale="colorScale"
+          :color-attr="colorAttr"
           @cell-clicked="onCellClicked"/>
       </div>
     </div>
@@ -41,6 +42,11 @@ export default {
       type: String,
       required: false,
       default: 'rgb'
+    },
+    colorAttr: {
+      type: String,
+      required: false,
+      default: 'SCORE'
     },
     selected: {
       type: Array,
@@ -123,7 +129,6 @@ export default {
         plateKey: 0,
         puckKey: 0,
         threshold: 50, // Above number show as green (x10 for range slider)
-        colorScale: 'rgb', // 'viridis', rgb', 'threshold'
     }
   }
 }

@@ -19,7 +19,7 @@
     <div class="form">
       <base-input-select
         label="Protein"
-        v-model="inputValue[sampleLocation].PROTEINID"
+        v-model="inputValue[sampleIndex].PROTEINID"
         optionValueKey="PROTEINID"
         optionTextKey="ACRONYM"
         defaultText=" - "
@@ -28,7 +28,7 @@
       <validation-provider slim :rules="inputValue.PROTEINID > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }">
         <base-input-text
           label="Sample Name"
-          v-model="inputValue[sampleLocation].NAME"
+          v-model="inputValue[sampleIndex].NAME"
           name="SAMPLE_NAME" 
           :quiet="true" 
           :errorMessage="errors[0]"/>
@@ -37,7 +37,7 @@
       <validation-provider tag="slim" rules="decimal|min_value:10|max_value:100" name="Volume" :vid="volume" v-slot="{ errors }">
         <base-input-text
         label="Volume"
-        v-model="inputValue[sampleLocation].VOLUME"
+        v-model="inputValue[sampleIndex].VOLUME"
         name="VOLUME" 
         :quiet="true" 
         :errorMessage="errors[0]"/>
@@ -46,7 +46,7 @@
       <!-- Issues getting this to update -->
       <base-input-select
         :key="pkey"
-        v-model="inputValue[sampleLocation].COLUMN"
+        v-model="inputValue[sampleIndex].COLUMN"
         :options="purificationColumns"
         optionValueKey="PURIFICATIONCOLUMNID"
         optionTextKey="NAME"
@@ -54,22 +54,22 @@
         name="COLUMN"
         defaultText="Optionally set a column" />
 
-      <validation-provider tag="slime" v-if="showInputHplcExp" rules="alpha_dash|max:1000" name="Comments" :vid="'comments-'+sampleLocation" v-slot="{ errors }">
+      <validation-provider tag="slim" v-if="showInputHplcExp" rules="alpha_dash|max:1000" name="Comments" :vid="'comments-'+sampleIndex" v-slot="{ errors }">
         <base-input-text
           label="Comments"
-          v-model="inputValue[sampleLocation].COMMENTS"
+          v-model="inputValue[sampleIndex].COMMENTS"
           :quiet="true"
           :errorMessage="errors[0]"/>
       </validation-provider>
 
       <base-input-text v-if="experimentKind == 'robot'"
         label="Robot Plate Temperature"
-        v-model="inputValue[sampleLocation].ROBOTPLATETEMPERATURE"
+        v-model="inputValue[sampleIndex].ROBOTPLATETEMPERATURE"
         name="ROBOTPLATETEMPERATURE" />
 
       <base-input-text v-if="experimentKind == 'robot'"
         label="Exposure Temperature"
-        v-model="inputValue[sampleLocation].EXPOSURETEMPERATURE"
+        v-model="inputValue[sampleIndex].EXPOSURETEMPERATURE"
         name="EXPOSURETEMPERATURE" />
 
     </div>
@@ -91,6 +91,8 @@ import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
+
+import EventBus from 'app/components/utils/event-bus.js'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
@@ -152,6 +154,11 @@ export default {
         this.$emit('input', val)
       }
     },
+    sampleIndex: function() {
+      // Sample location is the 1..192 location
+      // Here we want to edit a zero-indexed array
+      return this.sampleLocation - 1
+    },
     availableProteins: function() {
       return this.proteins.toJSON()
     },
@@ -165,7 +172,12 @@ export default {
       ]
     }
   },
-
+  watch: {
+    sampleLocation: function(newVal) {
+      console.log("Single sample now editing different sample - " + newVal)
+      // console.log("Sample[" + newVal + "] = " + JSON.stringify(this.inputVal[sampleIndex]))
+    }
+  },
   methods: {
     showInputRobotExp: function() {
       if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) return true
@@ -182,7 +194,12 @@ export default {
         this.inputValue.forEach( (v) => { v.PURIFICATIONCOLUMNID = '', v.COMMENTS = '' })
         return false
       }
-    }
+    },
+    getPurificationColumnName: function(value) {
+      if (!value) return ''
+      let c = this.purificationColumnsCollection.findWhere({PURIFICATIONCOLUMNID: value.toString()})
+      return c ? c.get('NAME') : 'Not found'
+    },
   }
 
 

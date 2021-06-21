@@ -137,13 +137,11 @@ export default {
         this.updateSelected()
       },
       samples: function() {
-        console.log("Plate detected new samples")
-        console.log("Plate samples: " + JSON.stringify(this.samples))
+        this.updateData(this.samples)
         this.updateScores()
       }
     },
     mounted: function() {
-      console.log("Plate Mounted")
       this.drawContainer()
       this.updateLabels()
       this.updateScores()
@@ -298,6 +296,11 @@ export default {
           .style('stroke', (d,i) => { return this.selected.indexOf(i+1) < 0 ? 'gray' : 'steelblue'} )
           .style('stroke-width', (d,i) => { return this.selected.indexOf(i+1) < 0 ? 1 : 2} )
       },
+      updateData: function(data) {
+        // Find all drops and update their scores if they have them
+        this.graphic.selectAll('.drop')
+          .data(data)
+      },
 
       updateScores: function() {
         // Find all drops and update their scores if they have them
@@ -318,7 +321,7 @@ export default {
 
       scoreColors: function(d) {
         let scale = null
-        let score = (d.NAME && this.colorAttr && d[this.colorAttr]) ? d[this.colorAttr] : null
+        let score = (this.colorAttr && d[this.colorAttr]) ? d[this.colorAttr] : null
 
         switch(this.colorScale) {
           case 'rgb':
@@ -334,6 +337,7 @@ export default {
             scale = this.rgbScale()
             break
         }
+
         if (score) return scale(score)
         else return 'none'
       },

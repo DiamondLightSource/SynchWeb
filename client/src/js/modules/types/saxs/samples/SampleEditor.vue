@@ -34,7 +34,6 @@ import EventBus from 'app/components/utils/event-bus.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import Sample from 'models/sample'
-import Samples from 'collections/samples'
 import SampleTableView from 'modules/shipment/views/sampletable'
 import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
 import SamplePlateNew from 'modules/types/saxs/samples/SamplePlateNew.vue'
@@ -61,9 +60,6 @@ export default {
     capacity: {
       type: Number,
     },
-    selectedSample: {
-      type: Number,
-    },
     experimentKind: {
       type: Number
     },
@@ -79,16 +75,6 @@ export default {
     },
     containerId: {
       type: Number
-    },
-    sampleLocation: {
-      type: Number
-    }
-  },
-  watch: {
-    sampleComponent: function(newVal) {
-      console.log("Sample Editor sample component = " + newVal)
-      console.log("Sample Editor samples = " + JSON.stringify(this.samples))
-      
     },
   },
   computed: {
@@ -111,16 +97,16 @@ export default {
   data() {
     return {
       mview: SampleTableView,
+      sampleLocation: 1,
     }
   },
   // We are passing a plain JSON array to the sample plate view
   // So we need to detect when the parent backbone collection is changed (reset)
   // On reset, update our samples list
   created: function() {
-    console.log("Sample Editor created - sampleComponent = " + this.sampleComponent)
-
     // Parent Add Container component will send a message once it has successfully created the container
     EventBus.$on('save-samples', this.onSaveSamples)
+    EventBus.$on('select-sample', this.onSelectSample)
   },
   methods: {
     myTest: function() {
@@ -128,7 +114,8 @@ export default {
     },
     // We will need to pass up the event to select a sample in case graphic needs to change
     onSelectSample: function(location) {
-      this.$emit('select-sample', location)
+      console.log("Samples Editor - detected select-sample - " + location)
+      this.sampleLocation = +location
     },
     // Clone the next free row based on the current row
     onCloneSample: function(sampleLocation) {

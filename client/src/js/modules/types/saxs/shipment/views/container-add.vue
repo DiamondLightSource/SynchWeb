@@ -194,8 +194,10 @@ Once container is valid then samples are added
           <container-graphic
           :geometry="containerGeometry"
           :containerType="plateType"
-          :samples="samples"
+          :samples="validSamples"
           :key="plateKey"
+          colorAttr="VALID"
+          colorScale="rgb"
           @cell-clicked="onContainerCellClicked"/>
           </div>
         </div>
@@ -214,9 +216,7 @@ Once container is valid then samples are added
           v-if="proteinsLoaded"
           :sampleComponent="plateType"
           :capacity="containerGeometry.capacity"
-          :selectedSample="selectedSample"
           :experimentKind="containerState.EXPERIMENTTYPEID"
-          :sampleLocation="sampleLocation"
           :proteins="proteinsCollection"
           :gproteins="gProteinsCollection"
           :automated="containerState.AUTOMATED"
@@ -258,10 +258,7 @@ import DistinctProteins from 'modules/shipment/collections/distinctproteins'
 import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 
 import EventBus from 'app/components/utils/event-bus.js'
-import Sample from 'models/sample'
-import Samples from 'collections/samples'
 
-import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
 import SampleEditor from 'modules/types/saxs/samples/SampleEditor.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
@@ -274,26 +271,13 @@ import ProcessingPipelines from 'collections/processingpipelines'
 import PuckControls from 'modules/types/saxs/samples/PuckSampleControls.vue'
 import Users from 'collections/users'
 
+import { mapGetters } from 'vuex'
+
 import { ValidationObserver, ValidationProvider, Validator }  from 'vee-validate'
 
 const STORAGE_TEMP_NEG_80 = -80
 const STORAGE_TEMP_0 = 0
 const STORAGE_TEMP_25 = 25
-
-const INITIAL_SAMPLE_STATE = {
-  LOCATION: '',
-  PROTEINID: -1,
-  CRYSTALID: -1,
-  NAME: '',
-  TYPE: '',
-  VOLUME: '',
-  PURIFICATIONCOLUMNID: null,
-  ROBOTPLATETEMPERATURE: null,
-  EXPOSURETEMPERATURE: null,
-  EXPERIMENTTYPEID: null,
-  CODE: '',
-  COMMENTS: '',
-}
 
 const initialContainerState = {
   DEWARID: "",
@@ -371,7 +355,6 @@ export default {
     'container-graphic': ContainerGraphic,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
-    'single-sample': SingleSample,
     'sample-editor': SampleEditor,
     'puck-controls': PuckControls,
   },
@@ -412,11 +395,11 @@ export default {
       containerRegistryId: '',
       containerGroup: '',
 
-      sample: INITIAL_SAMPLE_STATE,
-      samples: [],
-      samplesCollection: null,
+      // sample: INITIAL_SAMPLE_STATE,
+      // samples: [],
+      // samplesCollection: null,
       sampleComponent: '',
-      sampleLocation: 1, // Currently active sample being edited
+      // sampleLocation: 1, // Currently active sample being edited
 
       selectedSample: null,
 
@@ -501,7 +484,20 @@ export default {
 
       if (owner && owner.get('EMAILADDRESS')) return true
       else return false
-    }
+    },
+    ...mapGetters('samples', ['samples']),
+    validSamples: function() {
+      return this.samples.map( (entry) => {
+        let sample = {}
+        sample.LOCATION = entry.LOCATION
+        sample.NAME = entry.NAME
+        sample.VALID = -1
+        if (entry.NAME && entry.PROTEINID > 0) sample.VALID = 1
+        else if ( !entry.NAME && entry.PROTEINID < 0 ) sample.VALID = 0
+
+        return sample
+      })
+    },
   },
 
   watch: {
@@ -509,19 +505,6 @@ export default {
       // Which container id should be selected
       if (newVal) this.containerState.CONTAINERTYPEID = "!"
 
-    },
-    sampleLocation: function(newLocation, oldLocation) {
-      // Take what was saved in sample and store in array
-      // Not currently used for plates...
-
-      if (!this.sample.name) this.sample.SCORE = 0
-      this.samples.splice(oldLocation-1, 1, this.sample)
-      this.samples[oldLocation-1].LOCATION = oldLocation
-      let newState = this.samples[newLocation-1] || INITIAL_SAMPLE_STATE
-      this.sample = Object.assign({}, this.sample, newState)
-
-      // Forces a plate re-render... TODO fix!
-      this.plateKey += 1
     },
     // When the container type changes we need to reset the samples list and redraw the container graphic
     'containerState.CONTAINERTYPEID': function(newVal) {
@@ -564,6 +547,9 @@ export default {
       // When a user selects a registered container we should update the name/barcode
       let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID == newVal)
       this.containerState.NAME = entry['BARCODE'] || '-'
+    },
+    samples: function(newVal) {
+      console.log("CONTAINER ADD UPDATE SAMPLES ARRAY ")
     }
   },
 
@@ -715,27 +701,12 @@ export default {
 
     // Reset Backbone Samples Collection
     resetSamples: function(capacity) {
-      console.log("Container Add - Resetting Samples Collection, capacity: " + capacity)
-      // var samples = Array.from({length: capacity}, (_,i) => new LocationSample({ BLSAMPLEID: null, LOCATION: (i+1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
-
-      // this.samplesCollection.reset(samples)
-
       this.$store.commit('samples/reset', capacity)
     },
 
     onContainerCellClicked: function(location) {
-      console.log("Cell clicked = " + location)
-      // Unset the previous selected sample
-      if (this.sampleLocation) {
-        let previousSample = this.samplesCollection.findWhere({LOCATION: this.sampleLocation.toString()})
-        if (previousSample) previousSample.set('isSelected', false)
-      }
-      // Now set the currently selected sample
-      this.sampleLocation = location
-
-      let sample = this.samplesCollection.findWhere({LOCATION: location.toString()})
-
-      if (sample) sample.set('isSelected', true)
+      console.log("onContainerCell clicked = " + location)
+      EventBus.$emit('select-sample', location)
     },
 
     // Move this to container graphic
@@ -760,7 +731,7 @@ export default {
     clearPuck: function() {
       console.log('clear-puck')
       app.trigger('samples:clear-puck')
-      this.resetSamples(this.samplesCollection.length)
+      this.resetSamples()
       EventBus.$emit('samples-clear')
     },
     clonePuck: function() {
