@@ -5,7 +5,7 @@ define(['backbone',
         urlRoot: '/sample/groups/name',
         idAttribute: 'BLSAMPLEGROUPID',
         idField: null,
-        ignoreSamples: false,
+        ignoreSamples: false, // We are setting this flag here to maintain backward compatibility with updating or creating sample groups with samples
 
         validation: {
             NAME: {

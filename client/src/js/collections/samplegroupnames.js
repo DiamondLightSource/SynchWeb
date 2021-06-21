@@ -17,7 +17,7 @@ define([
         url: '/sample/groups/name',
         mode: 'server',
         state: {
-            pageSize: 100,
+            pageSize: 15,
         },
 
         parseRecords: function(r, options) {
