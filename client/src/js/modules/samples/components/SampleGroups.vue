@@ -16,6 +16,7 @@
     <pagination-panel
       :initial-page="sampleGroupsListState.firstPage"
       :totalRecords="sampleGroupsListState.totalRecords"
+      :pageLinks="5"
       @page-changed="handlePageChange"
     />
 
@@ -34,6 +35,7 @@
       <pagination-panel
         :initial-page="sampleGroupSamplesListState.firstPage"
         :totalRecords="sampleGroupSamplesListState.totalRecords"
+        :pageLinks="5"
         @page-changed="handleSampleGroupSamplePageChange"
       />
     </div>
@@ -93,8 +95,8 @@ export default {
     };
   },
   created() {
-    this.sampleGroups = new SampleGroupsNamesCollection()
-    this.sampleGroupSamples = new SampleGroupSamplesCollection()
+    this.sampleGroups = new SampleGroupsNamesCollection(null, { state: { pageSize: 15 } })
+    this.sampleGroupSamples = new SampleGroupSamplesCollection(null, { state: { pageSize: 15 } })
   },
   mounted() {
     this.getSampleGroups();
