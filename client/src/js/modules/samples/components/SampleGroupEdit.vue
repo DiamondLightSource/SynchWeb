@@ -22,6 +22,7 @@
       <table-panel
         :headers="sampleGroupHeaders"
         :data="formatSamplesInGroups()"
+        @row-clicked="getContainerFromSample"
       >
       </table-panel>
     </div>
@@ -344,7 +345,7 @@ export default {
       await Promise.allSettled(deletedModels)
     },
     async getContainerFromSample(row) {
-      const { CONTAINERID } = row[0]
+      const { CONTAINERID } = this.selectedSamplesInGroups[row.name][0]
       if (CONTAINERID) {
         try {
           this.$store.commit('loading', true)

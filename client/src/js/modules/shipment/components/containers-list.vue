@@ -31,6 +31,7 @@
       <pagination-panel
         :initial-page="containersListState.firstPage"
         :totalRecords="containersListState.totalRecords"
+        :pageLinks="10"
         @page-changed="handlePageChange"
       />
   </div>

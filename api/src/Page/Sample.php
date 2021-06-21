@@ -135,7 +135,7 @@ class Sample extends Page
                               'GROUPORDER' => '\d+',
                               'TYPE' => '\w+',
                               'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
-                              'ignoreSamples' => '\d',
+                              'ignoreSamples' => '\d', // query parameter flag to decide if sample group table should be checked for samples before updating
 
                                );
         
@@ -1968,6 +1968,10 @@ class Sample extends Page
         function _update_sample_group() {
             if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
 
+            // We add the flag to handle checking if sample groups has samples before updating
+            // TODO: This query should be updated because
+            // 1. samples groups can be created without samples now
+            // 2. The proposalId is now added to the sample group table, so we might not need the inner joins
             if (!$this->has_arg('ignoreSamples')) {
                 $group = $this->db->pq("SELECT bsg.blsamplegroupid
                     FROM blsamplegroup bsg 
