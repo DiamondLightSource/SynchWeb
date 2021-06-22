@@ -16,7 +16,7 @@ class Queue
         $this->password = $password;
     }
 
-    function send($queue, array $message, $persistent = false)
+    function send($queue, array $message, $persistent = false, $login = null)
     {
         try {
             $connection = new Stomp($this->server);
@@ -27,7 +27,9 @@ class Queue
                 $queue,
                 json_encode($message, JSON_UNESCAPED_SLASHES),
                 array(
-                    'persistent' => ($persistent === true)
+                    'persistent' => ($persistent === true),
+                    'synchweb.host' => gethostname(),
+                    'synchweb.user' => $login,
                 )
             );
 
