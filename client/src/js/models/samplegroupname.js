@@ -5,6 +5,7 @@ define(['backbone',
         urlRoot: '/sample/groups/name',
         idAttribute: 'BLSAMPLEGROUPID',
         idField: null,
+        ignoreSamples: false, // We are setting this flag here to maintain backward compatibility with updating or creating sample groups with samples
 
         validation: {
             NAME: {
@@ -13,11 +14,7 @@ define(['backbone',
             }
         },
 
-        initialize: function(attribute, option) {
-           this.idField = option[this.idAttribute]
-        },
-
-        fetch(options) {
+        save(attr, options) {
             options = _.extend({}, options)
             
             var model = this
@@ -28,8 +25,22 @@ define(['backbone',
                 if (success) success(model, resp, options)
             }
 
-            const updatedModel = _.extend(this, { url: `/sample/groups/name/${this.idField}` })
-            return Backbone.sync('read', updatedModel, options)
-        },
+            const { patch } = options
+
+            let updatedModel = this
+            let actionType = ''
+
+            if (this.ignoreSamples && patch) {
+                updatedModel = _.extend(this, { url: `${this.url()}?ignoreSamples=1`, attributes: attr })
+                actionType = 'patch'
+            } else if (this.ignoreSamples && !patch) {
+                updatedModel = _.extend(this, { url: `${this.url()}?ignoreSamples=1` })
+                actionType = 'create'
+            }
+
+            console.log({ options, actionType, model: this });
+
+            return Backbone.sync(actionType, updatedModel, options)
+        }
     })
   })

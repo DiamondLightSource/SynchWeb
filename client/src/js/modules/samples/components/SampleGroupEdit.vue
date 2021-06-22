@@ -22,6 +22,7 @@
       <table-panel
         :headers="sampleGroupHeaders"
         :data="formatSamplesInGroups()"
+        @row-clicked="getContainerFromSample"
       >
       </table-panel>
     </div>
@@ -151,7 +152,6 @@ export default {
     this.containerSamples = new SamplesCollection()
     this.sampleGroupSamples = new SampleGroupSamplesCollection()
     this.containerModel = new ContainerModel()
-    this.sampleGroupNameModel = new SampleGroupNameModel({}, {})
   },
   mounted() {
     this.sampleGroupId = this.gid
@@ -168,45 +168,50 @@ export default {
       return `${this.proposal} Sample Group (${new Date().toISOString().replace(/:|\./g, '-')})`
     },
     async onSaveSampleGroup() {
-      this.$store.commit('loading', true)
-      let result
+      try {
+        this.$store.commit('loading', true)
+        let result
 
-      const totalSamples = Object.values(this.selectedSamplesInGroups).flat()
-      const samples = totalSamples.reduce((acc, sample) => {
-        if (typeof sample.BLSAMPLEID === 'undefined') return acc
+        const totalSamples = Object.values(this.selectedSamplesInGroups).flat()
+        const samples = totalSamples.reduce((acc, sample) => {
+          if (typeof sample.BLSAMPLEID === 'undefined') return acc
 
-        if (!this.sampleGroupId) {
-          acc.push(sample)
-        }
+          if (!this.sampleGroupId) {
+            acc.push(sample)
+          }
+          
+          if (this.gid && typeof sample.BLSAMPLEGROUPID === 'undefined') {
+            acc.push({ ...sample, BLSAMPLEGROUPID: this.gid })
+          }
+
+          return acc
+        }, [])
+
+        const deletedSamples = differenceBy(this.initialSamplesInGroup, totalSamples, 'BLSAMPLEID')
+        if (deletedSamples.length > 0) await this.deleteUnselectedSamplesFromGroup(deletedSamples)
         
-        if (this.gid && typeof sample.BLSAMPLEGROUPID === 'undefined') {
-          acc.push({ ...sample, BLSAMPLEGROUPID: this.gid })
+        if (samples.length > 0) {
+          this.sampleGroupSamples.reset(samples)
+          this.sampleGroupSamples.newType = !this.sampleGroupId
+          result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroupSamples })
         }
 
-        return acc
-      }, [])
+        if (result) {
+          const savedSamples = result.toJSON()
+          this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
+          let message = 'Saved samples to group - ' + this.groupName
+          this.$store.commit('notifications/addNotification', {title: 'Success', message: message, level: 'success'})
+        }
 
-      const deletedSamples = differenceBy(this.initialSamplesInGroup, totalSamples, 'BLSAMPLEID')
-      if (deletedSamples.length > 0) await this.deleteUnselectedSamplesFromGroup(deletedSamples)
-      
-      if (samples.length > 0) {
-        this.sampleGroupSamples.reset(samples)
-        this.sampleGroupSamples.newType = !this.sampleGroupId
-        result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroupSamples })
-      }
+        await this.getSampleGroupInformation()
 
-      if (result) {
-        const savedSamples = result.toJSON()
-        this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
-        let message = 'Saved samples to group - ' + this.groupName
-        this.$store.commit('notifications/addNotification', {title: 'Success', message: message, level: 'success'})
-      }
-
-      await this.getSampleGroupInformation()
-      this.$store.commit('loading', false)
-
-      if (!this.gid) {
-        this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
+        if (!this.gid) {
+          this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
+        }
+      } catch (error) {
+        this.$store.commit('notifications/addNotification', { title: 'Error', message: error.message, level: 'error' })
+      } finally {
+        this.$store.commit('loading', false)
       }
     },
     async onContainerSelected(item) {
@@ -230,10 +235,18 @@ export default {
     async saveSampleGroupName(loading = false) {
       try {
         if (loading) this.$store.commit('loading', loading)
+        let attributes = null
+
+        if (this.sampleGroupId) {
+          attributes = { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
+        } else {
+          this.sampleGroupNameModel = new SampleGroupNameModel({ NAME: this.groupName }, {})
+          this.sampleGroupNameModel.ignoreSamples = true
+        }
 
         await this.$store.dispatch('saveModel', {
           model: this.sampleGroupNameModel,
-          attributes: { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
+          attributes
         })
 
         const { BLSAMPLEGROUPID } = this.sampleGroupNameModel.toJSON()
@@ -332,7 +345,7 @@ export default {
       await Promise.allSettled(deletedModels)
     },
     async getContainerFromSample(row) {
-      const { CONTAINERID } = row[0]
+      const { CONTAINERID } = this.selectedSamplesInGroups[row.name][0]
       if (CONTAINERID) {
         try {
           this.$store.commit('loading', true)
@@ -351,13 +364,23 @@ export default {
       }))
     },
     async fetchSampleGroupName() {
-      this.sampleGroupNameModel = new SampleGroupNameModel({}, { BLSAMPLEGROUPID: this.sampleGroupId })
-      const groupNameResult = await this.$store.dispatch(
-        'getModel',
-        this.sampleGroupNameModel
-      )
-
-      this.groupName = groupNameResult.toJSON().NAME || this.assignDefaultSampleGroupName()
+      if (!this.sampleGroupId) {
+        this.groupName = this.assignDefaultSampleGroupName()
+      } else {
+        try {
+          this.sampleGroupNameModel = new SampleGroupNameModel({ BLSAMPLEGROUPID: this.sampleGroupId })
+          this.sampleGroupNameModel.ignoreSamples = true
+          const groupNameResult = await this.$store.dispatch(
+            'getModel',
+            this.sampleGroupNameModel
+          )
+          this.groupName = groupNameResult.toJSON().NAME
+        } catch (error) {
+          let message = 'An error occurred while fetching sample group name'
+          this.$store.commit('notifications/addNotification', { title: 'Error', message: message, level: 'error' })
+          this.$store.commit('loading', false)
+        }
+      }
     }
   },
   provide() {
