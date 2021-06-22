@@ -325,6 +325,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             // MR
             'MXMRRun',
             'MXMRRunBlob',
+            'SpaceGroup',
         );
 
         foreach ($tables as $table) {
