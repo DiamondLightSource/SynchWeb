@@ -1,7 +1,7 @@
 define(['backbone',
     'utils',
     'views/form',
-    'utils/sgs',
+    'collections/spacegroups',
     'utils/editable',
 
     'models/protein',
@@ -14,7 +14,7 @@ define(['backbone',
     'templates/shipment/singlesample.html',
     'templates/shipment/singlesamplee.html',
     ], function(Backbone, utils,
-        FormView, SG, Editable, Protein, Anom,
+        FormView, SpaceGroups, Editable, Protein, Anom,
         ComponentsView,
         safetyLevel,
         templatenew, template) {
@@ -221,8 +221,14 @@ define(['backbone',
             this.ready = []
             this.extra = false
             this.gproteins = options.gproteins
-
+            if (options && options.spacegroups) this.spacegroups = options.spacegroups
+            else {
+                this.spacegroups = new SpaceGroups(null, { state: { pageSize: 9999 } })
+                let all = true
+                this.getSpaceGroups(all)
+            }
             this.listenTo(options.proteins, 'sync', this.updateProteins, this)
+            this.listenTo(this.spacegroups, 'reset', this.updateSpacegroups, this)
         },
         
         onRender: function() {
@@ -246,7 +252,7 @@ define(['backbone',
                     this.ui.prot.combobox({ invalid: this.addProtein.bind(this), change: this.selectProtein.bind(this), select: this.selectProtein.bind(this) })
                     this.updateProteins()
                     
-                    this.ui.sg.html(SG.opts()).val(this.model.get('SPACEGROUP'))
+                    this.ui.sg.html(this.spacegroups.opts()).val(this.model.get('SPACEGROUP'))
                     
                     this.ui.name.val(this.model.get('NAME'))
                     this.ui.com.val(this.model.get('COMMENTS'))
@@ -269,7 +275,7 @@ define(['backbone',
                     
                     edit.create('NAME', 'text')
                     edit.create('COMMENTS', 'textarea')
-                    edit.create('SPACEGROUP', 'select', { data: SG.list })
+                    edit.create('SPACEGROUP', 'select', { data: this.spacegroups.kv() })
 
                     edit.create('REQUIREDRESOLUTION', 'text')
                     edit.create('ANOMALOUSSCATTERER', 'select', { data: Anom.list })
@@ -386,6 +392,16 @@ define(['backbone',
                 callback: this.handleSafetyLevel
             }))
             this.ui.prot.combobox('value', this.model.get('PROTEINID'))
+        },
+
+        updateSpacegroups: function () {
+            this.$el.find('[name=SPACEGROUP]').html(this.spacegroups.opts()).val('')
+        },
+
+        getSpaceGroups: function (all) {
+            if (all) this.spacegroups.queryParams.ty = null
+            else this.spacegroups.queryParams.ty = 'mx'
+            this.spacegroups.fetch({reset: true})
         },
         // Callback to style individual proteins within combobox
         // Not sure if this will stay due to conflicts with validation colours.
