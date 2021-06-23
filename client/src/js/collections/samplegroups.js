@@ -5,18 +5,16 @@
 define(['backbone',
     'backbone.paginator',
     'models/samplegroup',
+    'models/samplegroupname',
+    'underscore'
     ], function(Backbone,
         PageableCollection,
-        SampleGroupMember
+        SampleGroupMember,
+        SampleGroupNames,
+        _
     ) {
-
-
-    var SampleGroup = Backbone.Model.extend({
-        idAttribute: 'BLSAMPLEGROUPID',
-    })
-
     var SampleGroupCollection = Backbone.Collection.extend({
-        model: SampleGroup,
+        model: SampleGroupNames,
     })
 
 
@@ -28,16 +26,18 @@ define(['backbone',
 
 
     return PageableCollection.extend({
-    
         model: SampleGroupMember,
         url: '/sample/groups',
-        
+
         mode: 'server',
-        
+
         state: {
             pageSize: 100,
         },
-        
+
+        addNew: true,
+        newType: 'container',
+
         initialize: function(options) {
             this._groups = new SampleGroupCollection()
             this._groups.parent = this
@@ -46,24 +46,27 @@ define(['backbone',
         },
 
         generateGroups: function(e) {
-            console.log('generating groups', e)
             var groups = []
 
             var groupids = _.unique(this.pluck('BLSAMPLEGROUPID'))
             _.each(groupids, function(g) {
                 var members = this.where({ BLSAMPLEGROUPID: g })
 
-                var nm = new SampleGroupMember({
-                    BLSAMPLEGROUPID: g,
-                    GROUPORDER: members.length+1,
-                    TYPE: 'container',
-                })
-                nm.parent = this
-                members.push(nm)
+                if (this.newType) {
+                    var nm = new SampleGroupMember({
+                        BLSAMPLEGROUPID: g,
+                        GROUPORDER: members.length+1,
+                        TYPE: this.newType,
+                    })
+                    nm.parent = this
+                    members.push(nm)
+                }
 
                 groups.push({
                     BLSAMPLEGROUPID: g,
-                    MEMBERS: new SampleGroupMembers(members)
+                    NAME: members.length && members[0].get('NAME'),
+                    MEMBERS: new SampleGroupMembers(members),
+                    NUM_MEMBERS: members.length
                 })
             }, this)
 
@@ -73,15 +76,18 @@ define(['backbone',
 
         groups: function() {
             return this._groups
-        }, 
+        },
 
         parseRecords: function(r, options) {
             return r.data
         },
-        
+
         parseState: function(r, q, state, options) {
             return { totalRecords: r.total }
         },
 
+        sampleGroupNameModel: function(options) {
+            return new SampleGroupNames({}, options)
+        }
     })
 })

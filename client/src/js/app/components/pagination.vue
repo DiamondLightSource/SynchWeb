@@ -117,8 +117,8 @@ export default {
         },
         sendPageChangeEvent: function() {
             let payload = {
-                currentPage: +this.currentPage,
-                pageSize: +this.perPage
+                'current-page': this.currentPage,
+                'page-size': this.perPage
             }
             this.$emit('page-changed', payload)
         }
