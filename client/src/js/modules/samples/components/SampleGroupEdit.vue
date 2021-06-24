@@ -345,7 +345,7 @@ export default {
       await Promise.allSettled(deletedModels)
     },
     async getContainerFromSample(row) {
-      const { CONTAINERID } = this.selectedSamplesInGroups[row.name][0]
+      const { CONTAINERID } = this.selectedSamplesInGroups[row.NAME][0]
       if (CONTAINERID) {
         try {
           this.$store.commit('loading', true)
