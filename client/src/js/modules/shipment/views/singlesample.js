@@ -8,7 +8,7 @@ define(['backbone',
     'utils/anoms',
 
     'modules/samples/views/componentsview',
-
+    'utils/safetylevel',
     'views/dialog',
     'modules/samples/views/samplegroups',
     
