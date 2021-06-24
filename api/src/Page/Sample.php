@@ -1951,6 +1951,7 @@ class Sample extends Page
             $rows = $this->db->paginate("SELECT b.blsampleid, bshg.blsamplegroupid, bshg.grouporder, bshg.type, CONCAT(bshg.blsamplegroupid, '-', b.blsampleid) as blsamplegroupsampleid, b.name as sample, b.dimension1, b.dimension2, b.dimension3, b.shape, b.packingfraction, cr.theoreticaldensity, b.blsampleid, cr.crystalid, cr.name as crystal, c.code as container, pr.name as protein, bsg.name, b.location, b.containerid, c.barcode
                 FROM blsample b
                 INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
+                INNER JOIN blsamplegroup bsg on bsg.blsamplegroupid = bshg.blsamplegroupid
                 INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                 INNER JOIN protein pr ON pr.proteinid = cr.proteinid
                 INNER JOIN proposal p ON p.proposalid = pr.proposalid
