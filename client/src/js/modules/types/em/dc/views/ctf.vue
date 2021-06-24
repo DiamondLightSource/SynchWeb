@@ -26,11 +26,11 @@
         class="data_collection"
         type="data"
       >
-        <ctf-fft-view
+        <ctf-fft
           :api-url="apiUrl"
           :model="model"
         />
-        <ctf-params-view
+        <ctf-params
           :model="model"
         />
       </div>
@@ -46,15 +46,15 @@ import utils from 'utils'
    keep moving it until the whole page is "vue-ified" */
 import DialogBox from 'app/components/dialogbox.vue'
 import MarionetteApplication from 'app/marionette-application.js'
-import CtfParamsView from 'modules/types/em/dc/views/ctf-params-view.vue'
-import CtfFftView from 'modules/types/em/dc/views/ctf-fft-view.vue'
+import CtfParamsView from 'modules/types/em/dc/views/ctf-params.vue'
+import CtfFftView from 'modules/types/em/dc/views/ctf-fft.vue'
 
 export default {
     'name': "CtfView",
     'components': {
         'dialog-box': DialogBox,
-        'ctf-params-view': CtfParamsView,
-        'ctf-fft-view': CtfFftView,
+        'ctf-params': CtfParamsView,
+        'ctf-fft': CtfFftView,
     },
     'props': {
         'apiUrl': {
