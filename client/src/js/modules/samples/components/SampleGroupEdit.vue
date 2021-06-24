@@ -99,8 +99,8 @@ export default {
       groupName: '',
       lockName: this.gid ? true : false,
       sampleGroupHeaders: [
-        { title: 'Container', key: 'name' },
-        { title: 'Samples', key: 'samples' },
+        { title: 'Container', key: 'NAME' },
+        { title: 'Samples', key: 'SAMPLES' },
       ],
       containersBodyColumns: ['NAME', 'CONTAINERTYPE', 'BARCODE'],
       containerHeaders: [
@@ -360,7 +360,7 @@ export default {
     },
     formatSamplesInGroups() {
       return keys(this.selectedSamplesInGroups).map(item => ({
-        name: item, samples: this.extractSampleNamesFromList(this.selectedSamplesInGroups[item], 'SAMPLE')
+        NAME: item, SAMPLES: this.extractSampleNamesFromList(this.selectedSamplesInGroups[item], 'SAMPLE')
       }))
     },
     async fetchSampleGroupName() {
