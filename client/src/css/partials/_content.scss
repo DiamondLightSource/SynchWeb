@@ -492,7 +492,29 @@ ol.rounded {
     
     // Sub contents
     .holder {
-        
+        .downstream-item {
+            .downloads {
+                padding: 0;
+            }
+
+            .dpmessages .content {
+                padding-bottom: 0;
+            }
+
+            &:not(:last-child) {
+                margin-bottom: 5px;
+            }
+        }
+
+        .separator {
+            margin: 0 5px;
+            color: #ccc
+        }
+
+        .count {
+            color: lighten(#000, 35%);
+        }
+                        
         /*
         > span {
             float: right;
@@ -657,8 +679,22 @@ ol.rounded {
             }
         }
 
+        .plot_bigep {
+            margin: 0 1%;
+            width: 30%;
+            margin-left: 190px;
+            height: 170px;
+
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+
         .bigep-settings {
             padding: 0.5%;
+            max-width: 50%;
 
             td {
                 text-align: center;    
@@ -697,24 +733,39 @@ ol.rounded {
              }
          }
 
-        .plot_shelx-XDS,
-        .plot_shelx-DIALS {
-            width: 45%;
-            height: 250px;
-            float: inherit;
-             
-            @media (max-width: $breakpoint-vsmall) {
-                height: 100px;
-                float: none;
+        .bigep-images figure {
+            background: rgb(241, 241, 241);
+            position: relative;
+            width: 15%;
+            float: left;
+            margin: 0.5em;
+
+            &.pending:before {
+                color: #ccc;
+                position: absolute;
+                top: 40%;
+                left: 50%;
+                transform: translate(-50%);
+                font-size: 20px;
+                content: 'No Image';
             }
-             
-            .legend {
-                > table {
-                    width: auto;
-                }
+
+            &.loaded {
+                border: 1px solid #ccc;
+                background: #fff;
+            }
+
+            @media (max-width: $breakpoint-vsmall) {
+                float: none;
+                width: auto;
             }
         }
         
+        .bigep-images img {
+            width: 100%;
+            height: auto;
+        }
+
         .plot_dimple {
             width: 70%;
             float: right;
@@ -732,10 +783,34 @@ ol.rounded {
         }
         
         .blobs {
+            position: relative;
+            background: rgb(241, 241, 241);
             float: right;
             padding-left: 10px;
             width: 30%;
             
+            &:before {
+                color: #ccc;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%);
+                font-size: 24px;
+                content: 'No Image';
+            }
+
+            &.pending {
+                &:before {
+                    content: 'Loading'
+                }
+            }
+
+            &.loaded {
+                &:before {
+                    display: none
+                }
+            }
+
             @media (max-width: $breakpoint-vsmall) {
                 float: none;
                 width: 100%;

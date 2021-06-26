@@ -2,7 +2,7 @@ define(['backbone', 'modules/dc/models/apmessagestatus'], function(Backbone, DCA
 
     return Backbone.Collection.extend({
         model: DCAPMessageStatusModel,
-        url: '/dc/apms',
+        url: '/processing/messages/status',
     })
        
 })

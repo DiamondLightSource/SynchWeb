@@ -48,9 +48,9 @@ $app->configureMode('development', function () use ($app) {
 });
 
 $app->get('/options', function () use ($app) {
-    global $motd, $authentication_type, $cas_url, $cas_sso, $package_description, $facility_courier_countries, $facility_courier_countries_nde, $dhl_enable, $dhl_link, $scale_grid, $preset_proposal, $ap_statuses, $timezone, $valid_components;
+    global $motd, $authentication_type, $cas_url, $cas_sso, $package_description, $facility_courier_countries, $facility_courier_countries_nde, $dhl_enable, $dhl_link, $scale_grid, $preset_proposal, $timezone, $valid_components;
     $app->contentType('application/json');
-    $app->response()->body(json_encode(array('motd' => $motd, 'authentication_type' => $authentication_type, 'cas_url' => $cas_url, 'cas_sso' => $cas_sso, 'package_description' => $package_description, 'facility_courier_countries' => $facility_courier_countries, 'facility_courier_countries_nde' => $facility_courier_countries_nde, 'dhl_enable' => $dhl_enable, 'dhl_link' => $dhl_link, 'scale_grid' => $scale_grid, 'preset_proposal' => $preset_proposal, 'ap_statuses' => $ap_statuses['types'], 'timezone' => $timezone, 'valid_components' => $valid_components)));
+    $app->response()->body(json_encode(array('motd' => $motd, 'authentication_type' => $authentication_type, 'cas_url' => $cas_url, 'cas_sso' => $cas_sso, 'package_description' => $package_description, 'facility_courier_countries' => $facility_courier_countries, 'facility_courier_countries_nde' => $facility_courier_countries_nde, 'dhl_enable' => $dhl_enable, 'dhl_link' => $dhl_link, 'scale_grid' => $scale_grid, 'preset_proposal' => $preset_proposal, 'timezone' => $timezone, 'valid_components' => $valid_components)));
     // $app->response()->body(json_encode($options->ui()));
 });
 

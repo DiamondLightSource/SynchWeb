@@ -64,10 +64,16 @@ define(['marionette',
                     '<i class="fa icon green fa-check alt="Completed"></i>',
                     '<i class="fa icon red fa-times alt="Failed"></i>']
         
-            var label = this.column.get('label')
+            var label = this.column.get('program')
             this.$el.html(_.template(this.template))
             if (this.model.get('APLOADED') == true) {
-               this.$el.html(val[res[this.column.get('group')][label]])
+                var ap = res[this.column.get('group')][label]
+                var ress = {}
+                _.each(ap, function(a) {
+                    if (!(a in ress)) ress[a] = 0
+                    ress[a]++
+                })
+                this.$el.html(_.map(ress, function(c, st) { return c > 1 ? '<span class="count">'+c+'x</span> '+val[st] : val[st]}))
             }
             this.delegateEvents();
             return this;
@@ -87,55 +93,70 @@ define(['marionette',
         initialize: function(options) {
             this.statuses = new APStatuses()
             this.columns = [
-                    { name: 'FILETEMPLATETRIM', label: 'Prefix', cell: 'string', editable: false },
-                    { label: 'Sample', cell: APCell, template: '<% if (BLSAMPLEID) { %><a href="/samples/sid/<%-BLSAMPLEID%>" class="wrap sample"><%-SAMPLE%></a><% } %>', editable: false },
-                    { name: 'ST', label: 'Date', cell: 'string', editable: false },
-                    
+                { name: 'FILETEMPLATETRIM', label: 'Prefix', cell: 'string', editable: false },
+                { label: 'Sample', cell: APCell, template: '<% if (BLSAMPLEID) { %><a href="/samples/sid/<%-BLSAMPLEID%>" class="wrap sample"><%-SAMPLE%></a><% } %>', editable: false },
+                { name: 'ST', label: 'Date', cell: 'string', editable: false },
             ]
-
-            var aps = app.options.get('ap_statuses')
-            _.each(['autoproc', 'downstream'], function(gr) {
-                _.each(aps[gr], function(tys, ty) {
-                    this.columns.push({ label: ty , cell: APItemCell, editable: false, group: gr })
-                }, this)
-            }, this)
 
             this.columns.push.apply(this.columns, [
                 { label: '', cell: RPCell, template: '<a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>', editable: false },
                 { label: '', cell: APCell, template: '<a href="/dc/visit/'+this.model.escape('VISIT')+'/id/<%-ID%>" class="button button-notext dll" title="Open data collection"><i class="fa fa-arrow-right"></i> <span>Open data collection</span></a>', editable: false },
             ])
 
-            console.log(this.columns)
+            this.table = new TableView({
+                collection: this.collection,
+                columns: this.columns,
+                tableClass: 'break-header',
+                filter: 's',
+                loading: true,
+                backgrid: { 
+                    row: Backgrid.Row,
+                    emptyText: 'No data collections found', 
+                }
+            })
+
+        },
+
+        updateColumns: function() {
+            var states = this.statuses.pluck('STATES')
+            var group_names = _.keys(states[0])
+            var groups = {}
+            _.each(group_names, function(group) {
+                groups[group] = _.unique(_.map(states, function(state) { return _.keys(state[group]) }).flat())
+            })
+            
+            _.each(groups, function(programs, group) {
+                _.each(programs, function(program) {
+                    var id = group+program
+                    var col = this.table.grid.columns.where({ pid: id });
+                    var title = program.replace('+', '+ ').replace('.', '. ')
+                    if (!col.length) {
+                        this.table.grid.insertColumn(
+                            { label: title , cell: APItemCell, editable: false, group: group, program: program, pid: id }
+                        )
+                    }
+                }, this)
+            }, this)
         },
          
         updateStatus: function() {
-            console.log('updating status')
             var self = this
             this.statuses.fetch({ type: 'POST', data: { ids: this.collection.pluck('ID') } }).done(function() {
                 self.collection.each(function(dc) {
                     var s = self.statuses.findWhere({ ID: dc.get('ID') })
                     var st = s.get('STATES')
-                    dc.set({ STATES: st,
-                             APLOADED: true })
+                    dc.set({
+                        STATES: st,
+                        APLOADED: true 
+                    })
                 })
+                self.updateColumns()
             })
         },
         
         onRender: function() {
-            
             this.updateStatus()
-            
-            this.wrap.show(new TableView({
-                collection: this.collection,
-                columns: this.columns,
-                tableClass: '',
-                filter: 's',
-                loading: true,
-                backgrid: { row: Backgrid.Row,
-                            emptyText: 'No data collections found', }
-            
-            }))
-            
+            this.wrap.show(this.table)
         }
     })
 })

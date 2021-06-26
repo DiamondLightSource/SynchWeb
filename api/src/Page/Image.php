@@ -24,7 +24,6 @@ class Image extends Page
 
         public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
-                              array('/dimp/id/:id(/n/:n)', 'get', '_dimple_images'),
                               array('/di/id/:id(/thresh/:thresh)(/n/:n)', 'get', '_diffraction_viewer'),
                               array('/cam/bl/:bl(/n/:n)', 'get', '_forward_webcam'),
                               array('/oav/bl/:bl(/n/:n)', 'get', '_forward_oav'),
@@ -249,32 +248,6 @@ class Image extends Page
         }
         
         
-        # Dimple blob images
-        function _dimple_images() {
-            $n = $this->has_arg('n') ? $this->arg('n') : 1;
-            
-            list($info) = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
-                FROM datacollection dc 
-                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
-                WHERE dc.datacollectionid=:1", array($this->arg('id')));
-            
-            $this->db->close();
-            
-            $this->ads($info['DIR']);
-            
-            $root = str_replace($info['VIS'], $info['VIS'] . '/processed', $info['DIR']).$info['IMP'].'_'.$info['RUN'].'_/fast_dp/dimple';
-            $im = $root . '/blob'.$n.'v1.png';
-            
-            if (file_exists($im)) {
-                $this->_browser_cache();
-                $this->app->contentType('image/png');
-                readfile($im);
-            }
-        }
-        
-
         # ------------------------------------------------------------------------
         # Forward OAV to browser
         function _forward_oav() {

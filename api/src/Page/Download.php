@@ -27,9 +27,9 @@ class Download extends Page
                               'map' => '\d',
                               'validity' => '.*',
 
-                              'dt' => '\w+',
                               'ppl' => '\w+',
-
+                              'aid' => '\w+',
+            
                               'filetype' => '\w+',
                               'blsampleid' => '\d+',
                               'dcg' => '\d+',
@@ -37,29 +37,20 @@ class Download extends Page
                               'download' => '\d',
                               'AUTOPROCPROGRAMID' => '\d+',
                               'AUTOPROCPROGRAMATTACHMENTID' => '\d+',
-
-                              'PHASINGPROGRAMATTACHMENTID' => '\d+',
                               );
 
 
-        public static $dispatch = array(array('/map(/pdb/:pdb)(/ty/:ty)(/dt/:dt)(/ppl/:ppl)(/id/:id)(/map/:map)', 'get', '_map'),
-                              array('/id/:id/aid/:aid(/log/:log)(/1)(/LogFiles/:LogFiles)(/archive/:archive)', 'get', '_auto_processing'),
+        public static $dispatch = array(
                               array('/plots', 'get', '_auto_processing_plots'),
-                              array('/ep/id/:id(/log/:log)', 'get', '_ep_mtz'),
-                              array('/dimple/id/:id(/log/:log)', 'get', '_dimple_mtz'),
-                              array('/mrbump/id/:id(/log/:log)', 'get', '_mrbump_mtz'),
                               array('/csv/visit/:visit', 'get', '_csv_report'),
-                              array('/bl/visit/:visit/run/:run', 'get', '_blend_mtz'),
                               array('/sign', 'post', '_sign_url'),
-                              array('/bigep/id/:id/dt/:dt/ppl/:ppl(/log/:log)', 'get', '_bigep_mtz'),
                               array('/data/visit/:visit', 'get', '_download_visit'),
                               array('/attachments', 'get', '_get_attachments'),
                               array('/attachment/id/:id/aid/:aid', 'get', '_get_attachment'),
                               array('/dc/id/:id', 'get', '_download'),
 
                               array('/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_autoproc_attachments'),
-                              array('/zocalo/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_zocalo_autoproc_attachments'),
-                              array('/ph/attachments(/:PHASINGPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_phasing_attachments'),
+                              array('/ap/archive/:AUTOPROCPROGRAMID', 'get', '_get_autoproc_archive'),
             );
 
 
@@ -170,163 +161,22 @@ class Download extends Page
 
 
         # ------------------------------------------------------------------------
-        # Download mtz/log file for Fast DP / XIA2
-        #   TODO: Delete me
-        function _auto_processing() {
-            ini_set('memory_limit', '512M');
-            $filesystem = new Filesystem();
-
-            if (!$this->has_arg('id')) $this->_error('No data collection', 'No data collection id specified');
-            if (!$this->has_arg('aid')) $this->_error('No auto processing id', 'No auto processing id specified');
-
-            $rows = $this->db->pq('SELECT appa.filename,appa.filepath,appa.filetype 
-                FROM autoprocintegration api 
-                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
-                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
-                WHERE api.datacollectionid = :1 AND api.autoprocprogramid=:2', array($this->arg('id'), $this->arg('aid')));
-
-            $this->db->close();
-
-            // print_r($rows);
-
-            if (!sizeof($rows)) $this->_error('No such auto processing');
-            // else $r = $rows[0];
-
-            foreach ($rows as $r) {
-                if ($this->has_arg('log') || $this->has_arg('archive')) {
-                    if ($r['FILETYPE'] == 'Log') {
-                        if ($this->has_arg('LogFiles')) {
-                            $f = $r['FILEPATH'].'/LogFiles/'.$this->arg('LogFiles');
-                            if (pathinfo($this->arg('LogFiles'), PATHINFO_EXTENSION) == 'html') $this->app->contentType("text/html");
-                            else $this->app->contentType("text/plain");
-
-                        } else {
-
-                            if ($this->has_arg('archive')) {
-                                $tar = '/tmp/'.$this->arg('aid').'.tar';
-                                $f = $tar.'.gz';
-
-                                if (!$filesystem->exists($f)) {
-                                    $a = new \PharData($tar);
-                                    $a->buildFromDirectory($r['FILEPATH'], '/^((?!(HKL|cbf|dimple)).)*$/');
-                                    $a->compress(\Phar::GZ);
-
-                                    unlink($tar);
-                                }
-
-                                // Use Symfony to download
-                                $response = new BinaryFileResponse($f);
-                                $response->headers->set("Content-Type", "application/octet-stream");
-                                $response->setContentDisposition(
-                                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                                    $this->arg('aid').'.tar.gz'
-                                );
-                                $response->deleteFileAfterSend(true);
-                                $response->send();
-                                exit;
-
-                            } else {
-                                $f = $r['FILEPATH'].'/'.$r['FILENAME'];
-                                if ($r['FILENAME'] == 'fast_dp.log') $this->app->contentType("text/plain");
-                                if ($r['FILENAME'] == 'autoPROC.log') $this->app->contentType("text/plain");
-                            }
-                        }
-
-                        if ($filesystem->exists($f)) {
-                            // readfile($f);
-                            $response = new BinaryFileResponse($f);
-                            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
-                            $response->send();
-                        } else {
-                            error_log('Download requested file ' . $f . 'does not exist');
-                        }
-                        exit;
-                    } else {
-                        error_log('Download Log or archive required but filetype = ' . $r['FILETYPE']);
-                    }
-
-                } else {
-                    // XIA2
-                    if ($r['FILETYPE'] == 'Result') {
-                        $f = $r['FILEPATH'].'/'.$r['FILENAME'];
-                        if ($filesystem->exists($f)) {
-                            $response = new BinaryFileResponse($f);
-                            $response->headers->set("Content-Type", "application/octet-stream");
-                            $response->setContentDisposition(
-                                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                                $r['FILENAME']
-                            );
-                            $response->send();
-                            exit;
-
-                        } $this->_error('No such file', 'The specified auto processing file doesnt exist');
-
-                    // FastDP
-                    } else if ($r['FILETYPE'] == 'Log' && ($r['FILENAME'] == 'fast_dp.log' || $r['FILENAME'] == 'fast_dp-report.html')) {
-                        $f = $r['FILEPATH'].'/fast_dp.mtz';
-                        if ($filesystem->exists($f)) {
-                            $response = new BinaryFileResponse($f);
-                            $response->headers->set("Content-Type", "application/octet-stream");
-                            $response->setContentDisposition(
-                                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                                $this->arg('aid').'_fast_dp.mtz'
-                            );
-                            $response->send();
-                            exit;
-
-                        } $this->_error('No such file', 'The specified auto processing file doesnt exist');
-                    }
-                }
-            }
-        }
-
-
-        # ------------------------------------------------------------------------
         # Return list of attachments for an autoproc run
-        function _get_autoproc_attachments() {
+        function __get_autoproc_attachments() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specific', 'No proposal specified');
 
             $args = array($this->proposalid);
             $where = '';
 
-            if ($this->has_arg('AUTOPROCPROGRAMID')) {
-                $where .= ' AND api.autoprocprogramid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('AUTOPROCPROGRAMID'));
+            if ($this->has_arg(('FILENAME'))) {
+                $where .= " AND appa.filename  LIKE CONCAT('%',:".(sizeof($args)+1)."), '%')";
+                array_push($args, $this->arg('FILENAME'));
             }
 
-            if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
-                $where .= ' AND appa.autoprocprogramattachmentid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('AUTOPROCPROGRAMATTACHMENTID'));
+            if ($this->has_arg('FILETYPE')) {
+                $where .= ' AND appa.filetype =:'.(sizeof($args)+1);
+                array_push($args, $this->arg('FILETYPE'));
             }
-
-            $rows = $this->db->pq("SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid
-                FROM autoprocintegration api 
-                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
-                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
-                INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
-                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                WHERE s.proposalid=:1 $where", $args);
-
-            // exit();
-            if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
-                if (!sizeof($rows)) $this->_error('No such attachment');
-                else  {
-                    if ($this->has_arg('download')) {
-                        $this->_get_file($rows[0]['AUTOPROCPROGRAMID'], $rows[0]);
-                    } else $this->_output($rows[0]);
-                }
-            } else $this->_output($rows);
-        }
-
-
-        # ------------------------------------------------------------------------
-        # Return list of attachments for an autoproc run
-        function _get_zocalo_autoproc_attachments() {
-            if (!$this->has_arg('prop')) $this->_error('No proposal specific', 'No proposal specified');
-            
-            $args = array($this->proposalid);
-            $where = '';
 
             if ($this->has_arg('AUTOPROCPROGRAMID')) {
                 $where .= ' AND app.autoprocprogramid=:'.(sizeof($args)+1);
@@ -338,63 +188,38 @@ class Download extends Page
                 array_push($args, $this->arg('AUTOPROCPROGRAMATTACHMENTID'));
             }
 
-            $rows = $this->db->pq("SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid, 'zocalo' as zocalo 
-                FROM processingjob pj 
-                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid 
-                INNER JOIN autoprocprogramattachment appa ON app.autoprocprogramid = appa.autoprocprogramid 
-                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid 
+            $rows = $this->db->union(array(
+                "SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid, appa.importancerank
+                FROM autoprocintegration api 
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                WHERE s.proposalid=:1 $where", $args);
+                WHERE s.proposalid=:1 $where",
+                "SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid, appa.importancerank
+                FROM autoprocprogram app
+                INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
+                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                WHERE s.proposalid=:1 $where
+                ORDER BY importancerank"
+            ), $args);
 
-            // exit();
+            return $rows;
+        }
+
+
+        function _get_autoproc_attachments() {
+            $rows = $this->__get_autoproc_attachments();
             if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
                 if (!sizeof($rows)) $this->_error('No such attachment');
                 else  {
                     if ($this->has_arg('download')) {
                         $this->_get_file($rows[0]['AUTOPROCPROGRAMID'], $rows[0]);
                     } else $this->_output($rows[0]);
-                }
-            } else $this->_output($rows);
-        }
-
-
-        # ------------------------------------------------------------------------
-        # Return list of attachments for a phasing run
-        #   TODO: duplicate of above, consolidate tables
-        function _get_phasing_attachments() {
-            if (!$this->has_arg('prop')) $this->_error('No proposal specific', 'No proposal specified');
-
-            $where = '';
-            $args = array($this->proposalid);
-
-            if ($this->has_arg('id')) {
-                $where .= ' AND dc.datacollectionid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('id'));
-            }
-
-            if ($this->has_arg('PHASINGPROGRAMATTACHMENTID')) {
-                $where .= ' AND ppa.phasingprogramattachmentid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('PHASINGPROGRAMATTACHMENTID'));
-            }
-
-            $rows = $this->db->pq("SELECT ph.phasingprogramrunid, ppa.phasingprogramattachmentid, ppa.filepath, ppa.filename, ppa.filetype
-                        FROM phasingprogramattachment ppa
-                        INNER JOIN phasing ph ON ph.phasingprogramrunid = ppa.phasingprogramrunid
-                        INNER JOIN phasing_has_scaling phs ON phs.phasinganalysisid = ph.phasinganalysisid
-                        INNER JOIN autoprocscaling_has_int aps ON aps.autoprocscalingid = phs.autoprocscalingid
-                        INNER JOIN autoprocintegration api ON api.autoprocintegrationid = aps.autoprocintegrationid
-                        INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
-                        INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                        INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                        WHERE s.proposalid=:1 $where", $args);
-
-            if ($this->has_arg('PHASINGPROGRAMATTACHMENTID')) {
-                if (!sizeof($rows)) $this->_error('No such attachment');
-                else {
-                    if ($this->has_arg('download')) {
-                        $this->_get_file($rows[0]['PHASINGPROGRAMRUNID'], $rows[0]);
-                    } else  $this->_output($rows[0]);
                 }
             } else $this->_output($rows);
         }
@@ -437,316 +262,6 @@ class Download extends Page
             } else {
                 $this->_error("No such file, the specified file " . $filename . " doesn't exist");
             }
-        }
-
-
-        # ------------------------------------------------------------------------
-        # Return a blended mtz file
-        function _blend_mtz() {
-            $filesystem = new Filesystem();
-
-            if (!$this->has_arg('visit')) $this->_error('No visit specified', 'No visit was specified');
-            if (!$this->has_arg('run')) $this->_error('No run specified', 'No blend run number was specified');
-
-            $visit = $this->db->pq("SELECT TO_CHAR(startdate, 'YYYY') as y, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON p.proposalid=s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
-
-            if (!sizeof($visit)) $this->_error('No such visit', 'The specified visit does not exist');
-            else $visit = $visit[0];
-            $this->db->close();
-
-            $u = $this->has_arg('u') ? $this->arg('u') : $this->user->login;
-
-            $root = '/dls/'.$visit['BL'].'/data/'.$visit['Y'].'/'.$this->arg('visit').'/processing/auto_mc/'.$u.'/blend/run_'.$this->arg('run');
-
-            if (file_exists($root)) {
-                $file = $this->has_arg('s') ? 'scaled_001.mtz' : 'merged_001.mtz';
-                $f = $root.'/combined_files/'.$file;
-                if (file_exists($f)) {
-                    $response = new BinaryFileResponse($f);
-                    $response->headers->set("Content-Type", "application/octet-stream");
-                    $response->setContentDisposition(
-                        ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                        'run_'.$this->arg('run').'_'.$file
-                    );
-                    $response->send();
-                    exit;
-                }
-            }
-        }
-
-
-        # ------------------------------------------------------------------------
-        # Return pdb/mtz/log file for fast_ep and dimple
-        function _use_rel_path($pat, $pth, $root_pth) {
-            $regex_pat = str_replace("*", "\w+", $pat);
-            $sp = preg_split('`'.$regex_pat.'`', $pth);
-            $rel_path =  array_pop($sp);
-            $res =  $root_pth . $rel_path;
-            return $res;
-        }
-
-        function _get_downstream_dir($subdir, $root) {
-            $info = $this->db->pq("SELECT dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
-                FROM datacollection dc 
-                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
-                WHERE dc.datacollectionid=:1", array($this->arg('id')));
-
-            if (!sizeof($info)) $this->_error('No such data collection', 'The specified data collection does not exist');
-            else $info = $info[0];
-
-            $info['DIR'] = $this->ads($info['DIR']);
-            $this->db->close();
-
-            if (is_string($subdir)) {
-                // return preg_replace('/'.$info['VIS'].'/', $info['VIS'].$subdir, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
-                return $this->get_visit_processed_dir($info, $subdir).$root;
-
-            } elseif (is_array($subdir)) {
-                $paths = array();
-                foreach ($subdir as $sbd) {
-                    if (is_string($sbd)) {
-                        // $pth = preg_replace('/'.$info['VIS'].'/', $info['VIS'].$sbd, $info['DIR'], 1).$info['IMP'].'_'.$info['RUN'].'_/'.$root;
-                        $pth = $this->get_visit_processed_dir($info, $sbd).$root;
-                        array_push($paths, $pth);
-                    } else {
-                        $this->_error('Invalid parameter type in downstream directory function call', 500);
-                    }
-                }
-                return $paths;
-            } else {
-                $this->_error('Invalid parameter type in downstream directory function call', 500);
-            }
-        }
-
-
-        function _ep_mtz() {
-            $this->_mtzmap('FastEP');
-        }
-
-        function _dimple_mtz() {
-            $this->_mtzmap('Dimple');
-        }
-
-        function _mrbump_mtz() {
-            $this->_mtzmap('MrBUMP');
-        }
-
-        function _bigep_mtz() {
-            $bigep_patterns = array (
-                    'AUTOSHARP' => array( 'path' => 'big_ep*/*/autoSHARP/', 'log' => 'LISTautoSHARP.html'),
-                    'AUTOBUILD' => array( 'path' => 'big_ep*/*/AutoSol/', 'log' => 'phenix_autobuild.log'),
-                    'CRANK2' => array( 'path' => 'big_ep*/*/crank2/', 'log' => 'crank2.log')
-            );
-            $dt = strtoupper($this->arg('dt'));
-            $ppl = strtoupper($this->arg('ppl'));
-
-            $t = array();
-            $root_dirs = $this->_get_downstream_dir(array ('/processed', '/tmp'), 'big_ep/');
-            foreach ( $root_dirs as $loc ) {
-                $root_pattern = $loc . $dt . '/xia2/*/' . $bigep_patterns[$ppl]['path'];
-                $bigep_mdl_glob = glob($root_pattern);
-                if (sizeof($bigep_mdl_glob)) {
-                    $root = $bigep_mdl_glob[0];
-                    $bigep_mdl_json = $root.'big_ep_model_ispyb.json';
-                    if (file_exists($bigep_mdl_json)) {
-                        $json_str = file_get_contents($bigep_mdl_json);
-                        $json_data = json_decode($json_str, true);
-                        $mtz_pth = $this->_use_rel_path($bigep_patterns[$ppl]['path'], $json_data['mtz'], $root);
-                        $pdb_pth = $this->_use_rel_path($bigep_patterns[$ppl]['path'], $json_data['pdb'], $root);
-                        $t = array('files' => array($mtz_pth, $pdb_pth), 'log' => $root.$bigep_patterns[$ppl]['log']);
-                        $type = 'BigEP_'.$dt.'_'.$ppl;
-                        $this->_mtzmap_readfile($type, $t['files'], $t['log']);
-                        return;
-                    }
-                }
-            }
-            $this->_error('Cannot find Big EP model builing results file');
-        }
-
-
-        function _mtzmap($type) {
-            $types = array('MrBUMP' => array('root' => 'auto_mrbump/', 'files' => array('PostMRRefine.pdb', 'PostMRRefine.mtz'), 'log' => 'MRBUMP.log'),
-                           'Dimple' => array('root' => 'fast_dp/dimple/', 'files' => array('final.pdb', 'final.mtz'), 'log' => 'screen.log'),
-                           'FastEP' => array('root' => 'fast_ep/', 'files' => array('sad.mtz', 'sad_fa.pdb'), 'log' => 'fast_ep.log'),
-            );
-
-            if (!array_key_exists($type, $types)) $this->_error('No such downstream type');
-            else $t = $types[$type];
-
-            $root = $this->_get_downstream_dir('/processed', $t['root']);
-            $this->_mtzmap_readfile($type, array($root.$t['files'][0],$root.$t['files'][1]), $root.$t['log']);
-        }
-
-        function _mtzmap_readfile($type, $files, $log_file) {
-            $filesystem = new Filesystem();
-            $file = $files[0];
-
-            if ($filesystem->exists($file)) {
-                if ($this->has_arg('log')) {
-                    if ($filesystem->exists($log_file)) {
-                        $response = new BinaryFileResponse($log_file);
-
-                        if (pathinfo($log_file, PATHINFO_EXTENSION) == 'log') {
-                            $response->headers->set("Content-Type", "text/plain");
-                        }
-                        // readfile($log_file);
-                        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
-                        $response->send();
-
-                    } else $this->_error('Not found, that file could not be found');
-
-                } else {
-                    $filename = '/tmp/'.$this->arg('id').'_'.$type;
-                    $archive_filename = $filename . '.tar.gz';
-
-                    if (!$filesystem->exists($archive_filename)) {
-                        $a = new \PharData($filename.'.tar');
-                        foreach ($files as $f) {
-                            $a->addFile($f, basename($f));
-                        }
-                        $a->addFile($log_file, basename($log_file));
-                        $a->compress(\Phar::GZ);
-
-                        unlink($filename.'.tar');
-                    }
-                    $response = new BinaryFileResponse($archive_filename);
-                    $response->setContentDisposition(
-                        ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                        $this->arg('id').'_'.$type.'.tar.gz'
-                    );
-                    $response->deleteFileAfterSend(true);
-                    $response->send();
-
-                    exit;
-                }
-
-            } else $this->_error('File not found ' .$type.' files were not found');
-
-        }
-
-
-        # ------------------------------------------------------------------------
-        # Return maps and pdbs for big_ep
-        function _big_ep_map() {
-            $bigep_patterns = array (
-                    'AUTOSHARP' => 'big_ep*/*/autoSHARP/',
-                    'AUTOBUILD' => 'big_ep*/*/AutoSol/',
-                    'CRANK2' => 'big_ep*/*/crank2/'
-            );
-            $dt = strtoupper($this->arg('dt'));
-            $ppl = strtoupper($this->arg('ppl'));
-
-            $root_dirs = $this->_get_downstream_dir(array ('/processed', '/tmp'), 'big_ep/');
-            foreach ( $root_dirs as $loc ) {
-                $root_pattern = $loc . $dt . '/xia2/*/' . $bigep_patterns[$ppl];
-                $bigep_mdl_glob = glob($root_pattern);
-                if (sizeof($bigep_mdl_glob)) {
-                    $root = $bigep_mdl_glob[0];
-                    $bigep_mdl_json = $root.'big_ep_model_ispyb.json';
-                    if (file_exists($bigep_mdl_json)) {
-                        $json_str = file_get_contents($bigep_mdl_json);
-                        $json_data = json_decode($json_str, true);
-
-                        if ($this->has_arg('pdb') && array_key_exists('pdb', $json_data)) {
-                            $out = $this->_use_rel_path($bigep_patterns[$ppl], $json_data['pdb'], $root);
-                        } elseif (array_key_exists('map', $json_data)) {
-                            $out = $this->_use_rel_path($bigep_patterns[$ppl], $json_data['map'], $root);
-                        } else {
-                            continue;
-                        }
-                        # Use relative path in case files were moved
-                        if (file_exists($out)) {
-                            break;
-                        } else {
-                            $pth_split = preg_split('`'.$bigep_patterns[$ppl].'`', $out);
-                            if (sizeof($pth_split)) {
-                                $pth_rel = array_pop($pth_split);
-                                $out = $root.$pth_rel;
-                                if (file_exists($out)) {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (file_exists($out)) {
-                if ($this->has_arg('pdb')) {
-                    $this->app->response->headers->set("Content-Length", filesize($out));
-                    readfile($out);
-                } else {
-                    $gz_map = gzencode(file_get_contents($out));
-                    $this->app->response->headers->set("Content-Length", strlen($gz_map));
-                    print $gz_map;
-                }
-            }
-        }
-
-        # ------------------------------------------------------------------------
-        # Return maps and pdbs for dimple / fast ep
-        function _map() {
-            if (!$this->has_arg('id')) $this->_error('No id specified', 'No id was specified');
-            if (!$this->has_arg('ty')) $this->_error('No type specified', 'No type was specified');
-
-            if ($this->arg('ty') == 'ep') {
-                $root = $this->_get_downstream_dir('/processed', 'fast_ep/');
-                $file_name = 'sad';
-
-            } else if ($this->arg('ty') == 'dimple') {
-                $root = $this->_get_downstream_dir('/processed', 'fast_dp/dimple/');
-                $file_name = 'final';
-
-            } else if ($this->arg('ty') == 'mrbump') {
-                $root = $this->_get_downstream_dir('/processed', 'auto_mrbump/');
-                $file_name = 'PostMRRefine';
-
-            } else if ($this->arg('ty') == 'bigep') {
-                $this->_big_ep_map();
-                return;
-
-            } else $this->_error('No file type specified');
-
-            $file = $root . $file_name;
-            $ext = $this->has_arg('pdb') ? 'pdb' : 'mtz';
-
-            if ($this->has_arg('pdb')) {
-                $out = $file.'.'.$ext;
-            } else {
-                if ($this->arg('ty') == 'dimple' || $this->arg('ty') == 'mrbump') {
-                    $map = $this->has_arg('map') ? 'fofc' : '2fofc';
-                    $out = '/tmp/'.$this->arg('id').'_'.$this->arg('ty').'_'.$map.'.map.gz';
-
-                } else $out = '/tmp/'.$this->arg('id').'_'.$this->arg('ty').'.map.gz';
-            }
-
-            if ($ext == 'mtz') {
-                # convert mtz to map
-                if (!file_exists($out)) {
-                    exec('./scripts/mtz2map.sh '.$file.'.'.$ext.' '.$this->arg('id').' '.$this->arg('ty').' '.$file.'.pdb');
-                }
-
-                $ext = 'map';
-            }
-
-            if (file_exists($out)) {
-                if ($this->arg('ty') == 'ep' && $this->has_arg('pdb')) {
-                    $lines = explode("\n", file_get_contents($out));
-
-                    foreach ($lines as $l) {
-                        #$l = str_replace('PDB= PDB  ', ' S   ALA A', $l);
-                        $l = str_replace('ATOM  ', 'HETATM', $l);
-                        print $l."\n";
-                    }
-
-                } else {
-                    $size = filesize($out);
-                    $this->app->response->headers->set("Content-length", $size);
-                    readfile($out);
-                }
-            } //else $this->_error('File not found', 'Fast EP / Dimple files were not found');
         }
 
 
@@ -863,6 +378,68 @@ class Download extends Page
                 error_log("Download file " . $filename . " not found");
                 $this->_error('Attachment not found on filesystem', 404);
             }
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Get an archive of an autoproc
+        function _get_autoproc_archive() {
+            if (!$this->has_arg('prop')) {
+                $this->_error('No proposal specific', 'No proposal specified');
+            }
+
+            $aps = $this->db->union(
+                array(
+                    "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
+                    FROM autoprocintegration api 
+                    INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+                    INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                    WHERE s.proposalid=:1 AND app.autoprocprogramid=:2",
+                    "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
+                    FROM autoprocprogram app
+                    INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
+                    INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                    WHERE s.proposalid=:1 AND app.autoprocprogramid=:2",
+                ),
+                array($this->proposalid, $this->arg('AUTOPROCPROGRAMID'))
+            );
+
+            if (!sizeof($aps)) {
+                return $this->_error('No such auto processing');
+            }
+            $ap = $aps[0];
+
+            $files = $this->__get_autoproc_attachments();
+            if (!sizeof($files)) {
+                return $this->_error('No files to archive');
+            }
+
+            $clean_program = preg_replace('/[^A-Za-z0-9\-]/', '', $ap['PROCESSINGPROGRAMS']);
+            $tar = '/tmp/' . $this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.tar';
+            $gz = $tar . '.gz';
+
+            $a = new \PharData($tar);
+            foreach ($files as $file) {
+                $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
+                $a->addFile($filename, basename($filename));
+            }
+            $a->compress(\Phar::GZ);
+            unlink($tar);
+
+            $response = new BinaryFileResponse($gz);
+            $response->headers->set("Content-Type", "application/octet-stream");
+            $response->setContentDisposition(
+                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                $this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.tar.gz'
+            );
+            $response->deleteFileAfterSend(true);
+            $response->send();
+            exit();
+
         }
 
 

@@ -1,10 +1,16 @@
-<% if (typeof SETTINGS !== 'undefined') { %>
-    <section class="bigep-settings">
-        <h2>Settings</h2>
+<section class="bigep-stats clearfix">    
+    <section class="bigep-images">
+        <figure class="pending">
+            <% if (IMAGE) { %>
+                <img class="thumb" class="bigep-thumb" alt="<%-TYPE%> model" />
+            <% } %>
+        </figure>
+    </section>
+
+    <section class="bigep-settings r">
         <table class="bepm_sets reflow">
             <thead>
                 <tr>
-                    <th>Processed</th>
                     <th>Anom. scatterer</th>
                     <th>Space group</th>
                     <th>Num. scatterers</th>
@@ -13,51 +19,36 @@
                     <th>Sequence</th>
                 </tr>
             </thead>
-            <% _.each(SETTINGS, function(ppl, key) { %>
-                <tr>
-                    <td><%-key%></td>
-                    <td><%-ppl.atom%></td>
-                    <td><%-ppl.spacegroup%></td>
-                    <td><%-ppl.nsites%></td>
-                    <td><%-ppl.dataset%></td>
-                    <td><%-ppl.compound%></td>
-                    <td><div class="bepm-seq seq"><%-ppl.sequence%></div></td>
-                </tr>
-            <% }) %>
+            <tr>
+                <td><%-PROCESS.PARAMETERS.atom%></td>
+                <td><%-PROCESS.PARAMETERS.spacegroup%></td>
+                <td><%-PROCESS.PARAMETERS.nsites%></td>
+                <td><%-PROCESS.PARAMETERS.dataset%></td>
+                <td><%-PROCESS.PARAMETERS.compound%></td>
+                <td><div class="bepm-seq seq"><%-PROCESS.PARAMETERS.sequence%></div></td>
+            </tr>
         </table>
     </section>
-<% } %>
-<% if (typeof SHELXC !== 'undefined') { %>
-    <% _.each(SHELXC.PLOTS, function(ppl, key) { %>
-        <section class="bigep-stats clearfix">
-            <h2><%-key%></h2>
-            <% if (typeof PROC !== 'undefined' && PROC.hasOwnProperty(key)) { %>
-            <section class="bigep-models clearfix">
-                <table class="bepm_stats bepm_stats2 reflow">
-                    <thead>
-                        <tr>
-                            <th>Pipeline</th>
-                            <th>Resid. / Frag / Max. Frag.</th>
-                            <th>Best MapCC (Resol.)</th>
-                            <th>&nbsp;</th>
-                        </tr>
-                    </thead>
-                    <% _.each(PROC[key], function(val, prop) { %>
-                    <tr>
-                        <td><%-prop%></td>
-                        <td><%-val.RESID%> / <%-val.FRAGM%> / <%-val.MAXLEN%></td>
-                        <td><%-val.MAPCC%> (<%-val.MAPRESOL%>)</td>
-                        <td>
-                            <a class="view button" href="/dc/map/id/<%-DCID%>/ty/bigep/dt/<%-TAG%>/ppl/<%-prop%>"><i class="fa fa-search"></i> Map / Model Viewer</a> 
-                            <a class="dll button" href="<%-APIURL%>/download/bigep/id/<%-DCID%>/dt/<%-TAG%>/ppl/<%-prop%>"><i class="fa fa-download"></i> PDB/MTZ file</a> 
-                            <a class="view button logf" href="<%-APIURL%>/download/bigep/id/<%-DCID%>/dt/<%-TAG%>/ppl/<%-prop%>/log/1"><i class="fa fa-search"></i> Log file</a>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </table>
-            </section>
-            <% } %>
-            <div class="plot_shelx-<%-key%>"></div>
-        </section>
-    <% }) %>
-<% } %>
+
+    <section class="bigep-models clearfix">
+        <% if (HASMODEL) { %>
+        <table class="bepm_stats bepm_stats2 reflow">
+            <thead>
+                <tr>
+                    <th>Resid. / Frag / Max. Frag.</th>
+                    <th>Best MapCC (Resol.)</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tr>
+                <td><%-RESID%> / <%-FRAGM%> / <%-MAXLEN%></td>
+                <td><%-MAPCC%> (<%-MAPRESOL%>)</td>
+            </tr>
+        </table>
+        <% } else { %>
+            <p class="ra">No model available for this job</p>
+        <% } %>
+    </section>
+
+    <div class="plot_bigep"></div>
+</section>

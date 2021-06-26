@@ -15,7 +15,8 @@ define([
     var XpdfDCList = DCList.extend({
         dcViews: {
             data: DCItemView,
-        }
+        },
+        apStatus: true,
     })
 
     return DataCollections.extend({
