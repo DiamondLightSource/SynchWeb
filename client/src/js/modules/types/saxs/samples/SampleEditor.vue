@@ -1,64 +1,44 @@
 <template>
   <!-- This component manages creation of samples. It holds the main array of sample info that will be added to a container -->
   <div class="">
-    <div v-if="showPuckSampleTable" class="table">
-      <!-- Currently using old sample table for pucks -->
-      <marionette-view
-        :key="$route.fullPath"
-        :options="options"
-        :preloaded="true"
-        :mview="mview">
-      </marionette-view>
-    </div>
-    <div v-else>
-      <!-- Use plate table, single or table depending on capacity -->
-      <component
-        :is="sampleComponent"
-        :proteins="proteins"
-        v-model="samples"
-        :experimentKind="experimentKind"
-        :containerId="containerId"
-        :sampleLocation="sampleLocation"
-        @save-sample="onSaveSample"
-        @clone-sample="onCloneSample"
-        @clear-sample="onClearSample"
-        @clone-container="onCloneContainer"
-        @clear-container="onClearContainer"
-      />
-    </div>
+    <!-- Use plate table, single or table depending on capacity -->
+    <component
+      :is="sampleComponent"
+      :proteins="proteins"
+      v-model="samples"
+      :experimentKind="experimentKind"
+      :containerId="containerId"
+      :sampleLocation="sampleLocation"
+      @save-sample="onSaveSample"
+      @clone-sample="onCloneSample"
+      @clear-sample="onClearSample"
+      @clone-container="onCloneContainer"
+      @clear-container="onClearContainer"
+    />
   </div>
 </template>
 
 <script>
 import EventBus from 'app/components/utils/event-bus.js'
-import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import Sample from 'models/sample'
-import SampleTableView from 'modules/shipment/views/sampletable'
 import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
 import SamplePlateNew from 'modules/types/saxs/samples/SamplePlateNew.vue'
 import SamplePlateEdit from 'modules/types/saxs/samples/SamplePlateEdit.vue'
-
-// Templates we need to pass to the old MX style sample table
-import table from 'templates/shipment/sampletablenew.html'
-import row from 'templates/shipment/sampletablerownew.html'
 
 import { mapGetters } from 'vuex'
 
 export default {
   name: 'sample-editor',
   components: {
-    'marionette-view': MarionetteView,
     'single-sample-plate': SingleSample,
     'sample-plate-new': SamplePlateNew,
     'sample-plate-edit': SamplePlateEdit
 },
   props: {
-    sampleComponent: {
-      type: String,
-    },
-    capacity: {
-      type: Number,
+    containerType: {
+      type: Object,
+      required: true
     },
     experimentKind: {
       type: Number
@@ -77,28 +57,22 @@ export default {
       type: Number
     },
   },
-  computed: {
-    // These options will be passed into the marionette sample table view
-    options: function() {
-      return {
-        proteins: this.proteins,
-        gproteins: this.gproteins,
-        collection: this.$store.samples.samplesCollection,
-        childTemplate: row,
-        template: table,
-        auto: this.automated,
-      }
-    },
-    showPuckSampleTable: function() {
-      return this.sampleComponent == 'puck' ? true : false
-    },
-    ...mapGetters('samples', ['samples'])
-  },
   data() {
     return {
-      mview: SampleTableView,
       sampleLocation: 1,
     }
+  },
+
+  computed: {
+    sampleComponent: function() {
+      // Use a table editor unless capacity > 25
+      let component = 'sample-plate-new'
+      if (this.containerType.CAPACITY > 25) component = 'single-sample-plate'
+      else if (this.containerId) component = 'sample-plate-edit'
+      return component
+    },
+    // These options will be passed into the marionette sample table view
+    ...mapGetters('samples', ['samples'])
   },
   // We are passing a plain JSON array to the sample plate view
   // So we need to detect when the parent backbone collection is changed (reset)
