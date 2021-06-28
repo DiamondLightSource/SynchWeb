@@ -71,7 +71,7 @@ Once container is valid then samples are added
             />
           </validation-provider>
 
-          <div v-show="puck" class="pck tw-mb-2 tw-py-2">
+          <div v-show="isPuck" class="pck tw-mb-2 tw-py-2">
             <base-input-select
               v-model="containerState.CONTAINERREGISTRYID"
               label="Registered Container"
@@ -82,7 +82,7 @@ Once container is valid then samples are added
             />
           </div>
 
-          <div v-show="puck" class="autoprocessing_options tw-mb-2 tw-py-2">
+          <div v-show="isPuck" class="autoprocessing_options tw-mb-2 tw-py-2">
             <base-input-select
               v-model="containerState.PROCESSINGPIPELINEID"
               label="Priority Processing"
@@ -94,7 +94,7 @@ Once container is valid then samples are added
               />
           </div>
 
-          <div v-show="puck" class="pck tw-mb-2 tw-py-2">
+          <div v-show="isPuck" class="pck tw-mb-2 tw-py-2">
             <label>Automated Collection</label>
             <base-input-checkbox
               name="AUTOMATED"
@@ -165,21 +165,21 @@ Once container is valid then samples are added
           <base-input-text outerClass="tw-mb-2 tw-py-2" id="comments" v-model="containerState.COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
 
           <!-- VMXi Plates... -->
-          <div v-show="plate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
+          <div v-show="isPlate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
               <label>Requested Imager
                   <span class="small">Imager this container should go into</span>
               </label>
               <select name="REQUESTEDIMAGERID"></select>
           </div>
 
-          <div v-show="plate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
+          <div v-show="isPlate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
               <label>Imaging Schedule
                   <span class="small">Requested imaging schedule</span>
               </label>
               <select name="SCHEDULEID" class="tw-h-6"></select> <a href="#" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
           </div>
 
-          <div v-show="plate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
+          <div v-show="isPlate && containerGroup == 'mx'" class="plate tw-mb-2 tw-py-2">
               <label>Crystallisation Screen
                   <span class="small">Crystallisation screen that was used for this container</span>
               </label>
@@ -191,13 +191,9 @@ Once container is valid then samples are added
         <!-- Right hand side is container graphic -->
         <div class="tw-w-1/2">
           <div class="tw-justify-end">
-          <container-graphic
-          :geometry="containerGeometry"
-          :containerType="plateType"
+          <valid-container-graphic
+          :containerType="containerType"
           :samples="validSamples"
-          :key="plateKey"
-          colorAttr="VALID"
-          colorScale="rgb"
           @cell-clicked="onContainerCellClicked"/>
           </div>
         </div>
@@ -206,16 +202,9 @@ Once container is valid then samples are added
 
       <div>
         <!-- Sample specific fields -->
-        <puck-controls v-show="plateType=='puck'"
-          @clone-puck="clonePuck"
-          @clear-puck="clearPuck"
-          @autofill-puck="autofillPuck"
-          @extra-puck="extraPuck" />
-
         <sample-editor
           v-if="proteinsLoaded"
-          :sampleComponent="plateType"
-          :capacity="containerGeometry.capacity"
+          :containerType="containerType"
           :experimentKind="containerState.EXPERIMENTTYPEID"
           :proteins="proteinsCollection"
           :gproteins="gProteinsCollection"
@@ -251,6 +240,7 @@ Once container is valid then samples are added
 import Backbone from 'backbone'
 import Container from 'models/container'
 import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
+import ValidContainerGraphic from 'modules/types/saxs/samples/valid-container-graphic.vue'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import ContainerRegistry from 'modules/shipment/collections/containerregistry'
 
@@ -300,6 +290,16 @@ const initialContainerState = {
   EXPERIMENTTYPEID: "",
 }
 
+const INITIAL_CONTAINER_TYPE = {
+  CONTAINERTYPEID: 0,
+  CAPACITY: 0,
+  DROPPERWELLX: null,
+  DROPPERWELLY: null,
+  DROPHEIGHT: null,
+  DROPWIDTH: null,
+  WELLDROP: -1,
+  WELLPERROW: null,
+}
 // Wrap the ajax call into a promise
 // Move this to the store later?
 const checkBarcode = function(value) {
@@ -353,6 +353,7 @@ export default {
     'base-input-checkbox': BaseInputCheckbox,
     // 'base-input-combobox': BaseInputCombobox,
     'container-graphic': ContainerGraphic,
+    'valid-container-graphic': ValidContainerGraphic,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
     'sample-editor': SampleEditor,
@@ -368,22 +369,10 @@ export default {
     return {
       containerState: initialContainerState,
 
-      containerType: '',
+      containerType: INITIAL_CONTAINER_TYPE,
       containerTypes: [],
       containerTypesCollection: null,
       containerRegistryCollection: null,
-
-      containerGeometry: {
-        capacity: 0,
-        columns: 0,
-        drops: {
-          x: 0,
-          y: 0,
-          h: 0,
-          w: 0,
-        },
-        well: -1,
-      },
 
       // The dewar that this container will belong to
       dewar: null,
@@ -398,7 +387,7 @@ export default {
       // sample: INITIAL_SAMPLE_STATE,
       // samples: [],
       // samplesCollection: null,
-      sampleComponent: '',
+      // sampleComponent: '',
       // sampleLocation: 1, // Currently active sample being edited
 
       selectedSample: null,
@@ -412,9 +401,6 @@ export default {
 
       plateKey: 0,
       plateType: null,
-      // Used to show/hide fields
-      puck: false,
-      plate: false,
 
       processingPipeline: '',
       processingPipelines: [],
@@ -485,8 +471,14 @@ export default {
       if (owner && owner.get('EMAILADDRESS')) return true
       else return false
     },
-    ...mapGetters('samples', ['samples']),
-    validSamples: function() {
+    isPuck: function() {
+      return this.containerType.WELLPERROW == null ? true : false
+    },
+    isPlate: function() {
+      return this.containerType.WELLPERROW > 0 ? true : false
+    },
+
+		validSamples: function() {
       return this.samples.map( (entry) => {
         let sample = {}
         sample.LOCATION = entry.LOCATION
@@ -498,17 +490,17 @@ export default {
         return sample
       })
     },
+
+    ...mapGetters('samples', ['samples']),
   },
 
   watch: {
     showAllContainerTypes: function(newVal) {
       // Which container id should be selected
       if (newVal) this.containerState.CONTAINERTYPEID = "!"
-
     },
     // When the container type changes we need to reset the samples list and redraw the container graphic
     'containerState.CONTAINERTYPEID': function(newVal) {
-      console.log("Container Type ID has changed: " + newVal)
       let type = this.containerTypesCollection.findWhere({CONTAINERTYPEID: newVal})
 
       if (!type) {
@@ -517,17 +509,8 @@ export default {
       }
       this.containerState.CONTAINERTYPE = type.get('NAME')
       this.containerGroup = type.get('PROPOSALTYPE')
+      this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
 
-      // All plates have a well per row value
-      if (type.get('WELLPERROW') > 0) {
-        this.puck = false
-        this.plate = true
-      } else {
-        this.puck = true
-        this.plate = false
-      }
-
-      this.updateContainerGeometry(type.toJSON())
       this.resetSamples(type.get('CAPACITY'))
     },
     'containerState.AUTOMATED': function(newVal) {
@@ -548,9 +531,6 @@ export default {
       let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID == newVal)
       this.containerState.NAME = entry['BARCODE'] || '-'
     },
-    samples: function(newVal) {
-      console.log("CONTAINER ADD UPDATE SAMPLES ARRAY ")
-    }
   },
 
   created: function() {
@@ -560,7 +540,7 @@ export default {
     // Used to help show/hide fields
     this.containerGroup = this.$store.state.proposalType
 
-    this.resetSamples(this.containerGeometry.capacity)
+    this.resetSamples(this.containerType.CAPACITY)
 
     this.getProteins()
     this.getExperimentTypes()
@@ -656,7 +636,7 @@ export default {
       let containerModel = new Container({
         DEWARID: this.containerState.DEWARID,
         BARCODECHECK: null,
-        CAPACITY: this.containerGeometry.capacity,
+        CAPACITY: this.containerType.CAPACITY,
         CONTAINERTYPE: this.containerState.CONTAINERTYPE,
         PROCESSINGPIPELINEID: this.containerState.PROCESSINGPIPELINEID,
         NAME: this.containerState.NAME,
@@ -707,47 +687,6 @@ export default {
     onContainerCellClicked: function(location) {
       console.log("onContainerCell clicked = " + location)
       EventBus.$emit('select-sample', location)
-    },
-
-    // Move this to container graphic
-    updateContainerGeometry: function(geometry) {
-      this.containerGeometry.capacity = geometry.CAPACITY
-      this.containerGeometry.drops.x = geometry.DROPPERWELLX
-      this.containerGeometry.drops.y = geometry.DROPPERWELLY
-      this.containerGeometry.drops.h = geometry.DROPHEIGHT
-      this.containerGeometry.drops.w = geometry.DROPWIDTH
-      this.containerGeometry.well = geometry.WELLDROP
-      if (geometry.WELLPERROW) {
-        this.containerGeometry.columns = geometry.WELLPERROW
-        console.log("Name of plate = " + geometry.NAME)
-        console.log("Number of columns = " + this.containerGeometry.columns)
-        this.plateType = this.containerGeometry.capacity > 25 ? 'single-sample-plate' : 'sample-plate-new'
-      } else {
-        this.plateType = 'puck'
-      }
-      this.plateKey += 1
-
-    },
-    clearPuck: function() {
-      console.log('clear-puck')
-      app.trigger('samples:clear-puck')
-      this.resetSamples()
-      EventBus.$emit('samples-clear')
-    },
-    clonePuck: function() {
-      console.log('clone-puck')
-      app.trigger('samples:clone-puck')
-    },
-    extraPuck: function() {
-      console.log('extra-puck')
-      app.trigger('samples:extra-puck')
-    },
-    autofillPuck: function() {
-      console.log('auto-puck')
-      app.trigger('samples:autofill-puck')
-    },
-    onSaveMe: function() {
-      console.log("Save combobox")
     },
   },
 }

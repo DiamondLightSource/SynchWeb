@@ -73,12 +73,9 @@
       </div> <!-- End Container Form Elements -->
 
       <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
-        <container-graphic
-          v-if="plateKey>0"
-          :geometry="containerGeometry"
-          :containerType="containerGraphicType"
-          :samples="samples"
-          :key="plateKey"
+        <valid-container-graphic
+          :containerType="containerType"
+          :samples="validSamples"
           @cell-clicked="onContainerCellClicked"/>
       </div>
 
@@ -86,9 +83,8 @@
 
     <div class="table sample">
       <sample-editor
-        v-if="plateType && proteinsLoaded"
-        :sampleComponent="plateType"
-        :capacity="container.CAPACITY"
+        v-if="proteinsLoaded"
+        :containerType="containerType"
         :experimentKind="container.EXPERIMENTTYPE"
         :proteins="proteinsCollection"
         :gproteins="gProteinsCollection"
@@ -104,23 +100,28 @@
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
-import Sample from 'models/sample'
 import Samples from 'collections/samples'
 import SampleEditor from 'modules/types/saxs/samples/SampleEditor.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 
-import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
+import ValidContainerGraphic from 'modules/types/saxs/samples/valid-container-graphic.vue'
 import TableComponent from 'app/components/table.vue'
 import PaginationComponent from 'app/components/pagination.vue'
 
+import { mapGetters } from 'vuex'
 
-// Use Location as idAttribute for this table
-var LocationSample = Sample.extend({
-    idAttribute: 'LOCATION',
-})
-
+const INITIAL_CONTAINER_TYPE = {
+  CONTAINERTYPEID: 0,
+  CAPACITY: 0,
+  DROPPERWELLX: null,
+  DROPPERWELLY: null,
+  DROPHEIGHT: null,
+  DROPWIDTH: null,
+  WELLDROP: -1,
+  WELLPERROW: null,
+}
 
 export default {
   name: 'saxs-container-view',
@@ -129,7 +130,7 @@ export default {
     'base-input-textarea': BaseInputTextArea,
     'base-input-select': BaseInputSelect,
     'sample-editor': SampleEditor,
-    'container-graphic': ContainerGraphic,
+    'valid-container-graphic': ValidContainerGraphic,
     'table-component': TableComponent,
     'pagination-component': PaginationComponent
   },
@@ -143,20 +144,7 @@ export default {
     return {
       container: {},
       containerId: 0,
-      samples: [],
       samplesCollection: null,
-
-      containerGeometry: {
-        capacity: 0,
-        columns: 0,
-        drops: {
-          x: 0,
-          y: 0,
-          h: 0,
-          w: 0,
-        },
-        well: -1,
-      },
 
       containerHistory: [],
       containerHistoryHeaders: [
@@ -168,17 +156,35 @@ export default {
 
       containerTypes: [],
       plateType: null, // Stores if a puck or plate type
-      containerGraphicType: '',
+      containerType: '',
       plateKey: 0,
 
       proteinsCollection: [],
       gProteinsCollection: [],
     }
   },
+  computed: {
+
+		validSamples: function() {
+      return this.samples.map( (entry) => {
+        let sample = {}
+        sample.LOCATION = entry.LOCATION
+        sample.NAME = entry.NAME
+        sample.VALID = -1
+        if (entry.NAME && entry.PROTEINID > 0) sample.VALID = 1
+        else if ( !entry.NAME && entry.PROTEINID < 0 ) sample.VALID = 0
+
+        return sample
+      })
+    },
+
+    ...mapGetters('samples', ['samples']),
+  },
   created: function() {
     // Get samples for this container id
     this.container = Object.assign({}, this.containerModel.toJSON())
     this.containerId = this.containerModel.get('CONTAINERID')
+    console.log("CONTAINER PLATE MODEL CAPACITY = " + this.container.CAPACITY)
 
     this.samplesCollection = new Samples()
     this.samplesCollection.queryParams.cid = this.containerId
@@ -193,7 +199,10 @@ export default {
     let containerTypesCollection = new ContainerTypes()
     this.$store.dispatch('getCollection', containerTypesCollection).then( (result) => {
       let containerTypeModel = result.findWhere({NAME: this.container.CONTAINERTYPE})
-      if (containerTypeModel) this.updateContainerGeometry(containerTypeModel)
+
+      if (containerTypeModel) {
+        this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, containerTypeModel.toJSON())
+      }
       else console.log("Container plate view cant find " + this.container.CONTAINERTYPE)
     })
   },
@@ -240,31 +249,12 @@ export default {
         } else console.log("No samples found")
       }, () => console.log("Saxs Plate View - Error getting samples"))
     },
-    // Move this to container graphic
-    // Convert model into geometry
-    updateContainerGeometry: function(geometry) {
-      console.log("Container plate view update geometry: " + geometry.toJSON())
-      this.containerGeometry.capacity = geometry.get('CAPACITY')
-      this.containerGeometry.drops.x = geometry.get('DROPPERWELLX')
-      this.containerGeometry.drops.y = geometry.get('DROPPERWELLY')
-      this.containerGeometry.drops.h = geometry.get('DROPHEIGHT')
-      this.containerGeometry.drops.w = geometry.get('DROPWIDTH')
-      this.containerGeometry.well = geometry.get('WELLDROP')
-      if (geometry.get('WELLPERROW')) {
-        this.containerGeometry.columns = geometry.get('WELLPERROW')
-        this.plateType = this.containerGeometry.capacity > 25 ? 'single-sample-plate' : 'sample-plate-edit'
-        this.containerGraphicType = 'plate'
-      } else {
-        this.containerGraphicType = 'puck'
-        this.plateType = 'puck'
-      }
-      this.plateKey += 1
-    },
     // Reset Backbone Samples Collection
     resetSamples: function(capacity) {
       this.$store.commit('samples/reset', capacity)
 
       this.samplesCollection.each( s => {
+        console.log("Setting sample " + JSON.stringify(s.toJSON()))
         let i = +(s.get('LOCATION')) - 1
         this.$store.commit('samples/setSample', {index: i, data: s.toJSON()})
       })
