@@ -2009,7 +2009,7 @@ class Sample extends Page
                 $this->_bulk_update_samples_in_group();
             } else {
                 $blSampleId = $this->has_arg('BLSAMPLEID') ? $this->arg('BLSAMPLEID') : null;
-                $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : $this->_create_new_sample_group();
+                $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : null;
                 $groupOrder = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : null;
                 $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
 
@@ -2188,6 +2188,8 @@ class Sample extends Page
 
         function _create_new_sample_group_name() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            if ($this->has_arg('BLSAMPLEGROUPID')) $this->_error('Cannot create new sample group with existing sample group id');
 
             $blSampleGroupId = $this->_create_new_sample_group();
 
