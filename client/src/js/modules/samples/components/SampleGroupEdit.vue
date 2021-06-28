@@ -257,7 +257,7 @@ export default {
         if (loading) this.$store.commit('loading', false)
 
       } catch (error) {
-        let message = 'An error occurred while saving the sample group name.'
+        let message = `An error occurred while saving the sample group name. ${error.message}`
         this.$store.commit('notifications/addNotification', { title: 'Error', message: message, level: 'error' })
         this.$store.commit('loading', false)
       }

@@ -2191,15 +2191,12 @@ class Sample extends Page
 
             if ($this->has_arg('BLSAMPLEGROUPID')) $this->_error('Cannot create new sample group with existing sample group id');
 
+            if (!$this->has_arg('NAME')) $this->_error('No NAME specified');
+
             $blSampleGroupId = $this->_create_new_sample_group();
 
-            $fields = array('NAME');
-            foreach ($fields as $f) {
-                if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE blsamplegroup SET $f=:1, proposalid=:2 WHERE blsamplegroupid=:3", array($this->arg($f), $this->proposalid, $blSampleGroupId));
-                    $this->_output(array($f => $this->arg($f), 'BLSAMPLEGROUPID' => $blSampleGroupId));
-                }
-            }
+            $this->db->pq("UPDATE blsamplegroup SET name=:1, proposalid=:2 WHERE blsamplegroupid=:3", array($this->arg('NAME'), $this->proposalid, $blSampleGroupId));
+            $this->_output(array('NAME' => $this->arg('NAME'), 'BLSAMPLEGROUPID' => $blSampleGroupId));
         }
 }
 
