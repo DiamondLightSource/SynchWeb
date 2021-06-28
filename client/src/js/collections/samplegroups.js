@@ -5,18 +5,16 @@
 define(['backbone',
     'backbone.paginator',
     'models/samplegroup',
+    'models/samplegroupname',
+    'underscore'
     ], function(Backbone,
         PageableCollection,
-        SampleGroupMember
+        SampleGroupMember,
+        SampleGroupNames,
+        _
     ) {
-
-
-    var SampleGroup = Backbone.Model.extend({
-        idAttribute: 'BLSAMPLEGROUPID',
-    })
-
     var SampleGroupCollection = Backbone.Collection.extend({
-        model: SampleGroup,
+        model: SampleGroupNames,
     })
 
 
@@ -31,13 +29,16 @@ define(['backbone',
     
         model: SampleGroupMember,
         url: '/sample/groups',
-        
+
         mode: 'server',
-        
+
         state: {
             pageSize: 100,
         },
-        
+
+        addNew: true,
+        newType: 'container',
+
         initialize: function(options) {
             this._groups = new SampleGroupCollection()
             this._groups.parent = this
@@ -46,7 +47,6 @@ define(['backbone',
         },
 
         generateGroups: function(e) {
-            console.log('generating groups', e)
             var groups = []
 
             var groupids = _.unique(this.pluck('BLSAMPLEGROUPID'))
@@ -63,7 +63,9 @@ define(['backbone',
 
                 groups.push({
                     BLSAMPLEGROUPID: g,
-                    MEMBERS: new SampleGroupMembers(members)
+                    NAME: members.length && members[0].get('NAME'),
+                    MEMBERS: new SampleGroupMembers(members),
+                    NUM_MEMBERS: members.length
                 })
             }, this)
 
@@ -73,15 +75,18 @@ define(['backbone',
 
         groups: function() {
             return this._groups
-        }, 
+        },
 
         parseRecords: function(r, options) {
             return r.data
         },
-        
+
         parseState: function(r, q, state, options) {
             return { totalRecords: r.total }
         },
 
+        sampleGroupNameModel: function(options) {
+            return new SampleGroupNames({}, options)
+        }
     })
 })

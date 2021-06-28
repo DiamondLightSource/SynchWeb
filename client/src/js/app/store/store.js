@@ -8,6 +8,7 @@ import MenuStore from './modules/store.menus.js'
 import ProposalStore from './modules/store.proposal.js'
 import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
+import SampleGroups from './modules/store.sample-groups.js'
 
 // Configuration
 import Options from 'models/options.js'
@@ -18,6 +19,7 @@ import { resolve } from 'promise'
 import { reject } from 'promise'
 
 Vue.use(Vuex)
+Vue.config.devtools = true
 
 const store = new Vuex.Store({
   modules: {
@@ -26,6 +28,7 @@ const store = new Vuex.Store({
     proposal: ProposalStore,
     user: UserStore,
     notifications: NotificationStore,
+    sampleGroups: SampleGroups
   },
   state: {
     // Flag we use to check if we have already setup options
@@ -62,9 +65,6 @@ const store = new Vuex.Store({
       state.help = helpFlag ? true : false
       sessionStorage.setItem('ispyb_help', state.help)
     },
-    //
-    // Loading screen
-    //
     loading(state, status) {
       state.isLoading = status ? true : false
     },
@@ -167,7 +167,7 @@ const store = new Vuex.Store({
       })
     },
 
-    // Method that returns a collection promise
+    // Method that returns a Model promise
     getModel(context, model) {
 
       return new Promise((resolve, reject) => {
@@ -209,6 +209,21 @@ const store = new Vuex.Store({
         })
       })
     },
+    // Method that deletes a model from the server
+    deleteModel(context, model) {
+      return new Promise((resolve, reject) => {
+        model.destroy({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || { status: 400, message: 'Error deleting model'}
+            reject(response)
+          },
+        })
+      })
+    }
   },
   getters: {
     sso: state => state.auth.cas_sso,

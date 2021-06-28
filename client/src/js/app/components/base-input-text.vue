@@ -14,7 +14,7 @@ Component will emit a save event when the value changes
   <div :class="outerClass">
 
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id">{{label}}
+    <label v-if="label" :class="labelClass" :for="id">{{label}}
       <slot name="description">
         <span v-if="description" class="small">{{description}}</span>
       </slot>
@@ -34,7 +34,7 @@ Component will emit a save event when the value changes
       @input="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
-    >
+    />
     <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ value }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" class="button tw-px-2 tw-py-1" @mousedown="onSave">OK</button>
 
@@ -92,6 +92,9 @@ export default {
     outerClass: {
       type: String,
     },
+    labelClass: {
+      type: String,
+    },
     // Default behaviour is to act as normal input
     // Set inline to enable edit/save behaviour
     inline: {
@@ -134,8 +137,10 @@ export default {
     },
     onEdit() {
       // May add focus code here
-      this.$refs.inputRef.focus()
       this.editable = true
+      this.$nextTick( () => {
+        this.$refs.inputRef.focus()
+      })
     },
     onSave() {
       this.editable = false
@@ -147,7 +152,7 @@ export default {
     onEnter(event) {
       // If we are in inline edit mode - save the model on enter (key = 13)
       if (this.inline && event.keyCode == 13) this.onSave()
-    },
+    }
   },
 };
 </script>
