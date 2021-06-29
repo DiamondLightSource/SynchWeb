@@ -99,8 +99,8 @@ export default {
       groupName: '',
       lockName: this.gid ? true : false,
       sampleGroupHeaders: [
-        { title: 'Container', key: 'name' },
-        { title: 'Samples', key: 'samples' },
+        { title: 'Container', key: 'NAME' },
+        { title: 'Samples', key: 'SAMPLES' },
       ],
       containersBodyColumns: ['NAME', 'CONTAINERTYPE', 'BARCODE'],
       containerHeaders: [
@@ -257,7 +257,7 @@ export default {
         if (loading) this.$store.commit('loading', false)
 
       } catch (error) {
-        let message = 'An error occurred while saving the sample group name.'
+        let message = `An error occurred while saving the sample group name. ${error.message}`
         this.$store.commit('notifications/addNotification', { title: 'Error', message: message, level: 'error' })
         this.$store.commit('loading', false)
       }
@@ -345,7 +345,7 @@ export default {
       await Promise.allSettled(deletedModels)
     },
     async getContainerFromSample(row) {
-      const { CONTAINERID } = this.selectedSamplesInGroups[row.name][0]
+      const { CONTAINERID } = this.selectedSamplesInGroups[row.NAME][0]
       if (CONTAINERID) {
         try {
           this.$store.commit('loading', true)
@@ -360,7 +360,7 @@ export default {
     },
     formatSamplesInGroups() {
       return keys(this.selectedSamplesInGroups).map(item => ({
-        name: item, samples: this.extractSampleNamesFromList(this.selectedSamplesInGroups[item], 'SAMPLE')
+        NAME: item, SAMPLES: this.extractSampleNamesFromList(this.selectedSamplesInGroups[item], 'SAMPLE')
       }))
     },
     async fetchSampleGroupName() {

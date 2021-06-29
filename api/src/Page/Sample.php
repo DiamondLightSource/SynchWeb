@@ -2115,7 +2115,7 @@ class Sample extends Page
                 $this->_bulk_update_samples_in_group();
             } else {
                 $blSampleId = $this->has_arg('BLSAMPLEID') ? $this->arg('BLSAMPLEID') : null;
-                $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : $this->_create_new_sample_group();
+                $blSampleGroupId = $this->has_arg('BLSAMPLEGROUPID') ? $this->arg('BLSAMPLEGROUPID') : null;
                 $groupOrder = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : null;
                 $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
 
@@ -2326,15 +2326,14 @@ class Sample extends Page
         function _create_new_sample_group_name() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
+            if ($this->has_arg('BLSAMPLEGROUPID')) $this->_error('Cannot create new sample group with existing sample group id');
+
+            if (!$this->has_arg('NAME')) $this->_error('No NAME specified');
+
             $blSampleGroupId = $this->_create_new_sample_group();
 
-            $fields = array('NAME');
-            foreach ($fields as $f) {
-                if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE blsamplegroup SET $f=:1, proposalid=:2 WHERE blsamplegroupid=:3", array($this->arg($f), $this->proposalid, $blSampleGroupId));
-                    $this->_output(array($f => $this->arg($f), 'BLSAMPLEGROUPID' => $blSampleGroupId));
-                }
-            }
+            $this->db->pq("UPDATE blsamplegroup SET name=:1, proposalid=:2 WHERE blsamplegroupid=:3", array($this->arg('NAME'), $this->proposalid, $blSampleGroupId));
+            $this->_output(array('NAME' => $this->arg('NAME'), 'BLSAMPLEGROUPID' => $blSampleGroupId));
         }
 }
 

@@ -38,8 +38,6 @@ define(['backbone',
                 actionType = 'create'
             }
 
-            console.log({ options, actionType, model: this });
-
             return Backbone.sync(actionType, updatedModel, options)
         }
     })
