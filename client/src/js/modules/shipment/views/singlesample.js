@@ -238,7 +238,10 @@ define(['backbone',
             if (options && options.spacegroups) this.spacegroups = options.spacegroups
             else {
                 this.spacegroups = new SpaceGroups(null, { state: { pageSize: 9999 } })
-                let all = true
+                // Currently restricting the space group set to mx only - backwards compatibility
+                // Change this to true to get all spacegroups from database.
+                // Might also want to add checkbox on form to toggle all/subset of spacegroups as with pucks
+                let all = false
                 this.getSpaceGroups(all)
             }
             this.listenTo(options.proteins, 'sync', this.updateProteins, this)
