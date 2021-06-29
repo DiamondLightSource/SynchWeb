@@ -1125,7 +1125,9 @@ li:last-child .visit_users {
         }
     }
 
-
+    .diffraction.spectrum-small {
+        width: 34%;
+    }
 
     .image {
         cursor: pointer;
@@ -1234,6 +1236,29 @@ li:last-child .visit_users {
             white-space: nowrap;
         }
 
+        &.XS {
+            &:before {
+                content: 'XRF Spectrum'
+            }
+            
+            background-color: #d287eb;
+        }
+
+        &.XM {
+            &:before {
+                content: 'XRF Map'
+            }
+            
+            background-color: #d287eb;
+        }
+
+        &.ES {
+            &:before {
+                content: 'Energy Scan'
+            }
+            
+            background-color: #a087eb;
+        }
     }
     /* Postcss - not working here - move to separate declaration below */
     // > ul {
