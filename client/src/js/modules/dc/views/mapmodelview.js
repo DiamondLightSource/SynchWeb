@@ -45,7 +45,7 @@ define(['marionette',
                 } else {
                     var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
                     var plain = gunzip.decompress()
-                    self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4' })
+                    self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4', diff_map: id == 2 })
                 }
                 
                 self.mapsLoaded++
