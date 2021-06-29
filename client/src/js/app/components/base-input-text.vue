@@ -28,6 +28,7 @@ Component will emit a save event when the value changes
       :name="name"
       :type="type"
       :value="value"
+      :placeholder="placeholderText"
       :disabled="disabled"
       :class="classObject"
       @keyup="onEnter"
@@ -104,6 +105,11 @@ export default {
       type: Boolean,
       default: false
     },
+    // For input text that needs a placeholder text
+    placeholderText: {
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {
