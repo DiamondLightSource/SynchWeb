@@ -249,7 +249,8 @@ import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 
 import EventBus from 'app/components/utils/event-bus.js'
 
-import SampleEditor from 'modules/types/saxs/samples/SampleEditor.vue'
+// import SampleEditor from 'modules/types/saxs/samples/SampleEditor.vue'
+import SampleEditor from 'modules/types/saxs/samples/sample-editor.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
@@ -381,12 +382,6 @@ export default {
       containerRegistry: [],
       containerRegistryId: '',
       containerGroup: '',
-
-      // sample: INITIAL_SAMPLE_STATE,
-      // samples: [],
-      // samplesCollection: null,
-      // sampleComponent: '',
-      // sampleLocation: 1, // Currently active sample being edited
 
       selectedSample: null,
 

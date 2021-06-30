@@ -85,7 +85,7 @@
       <sample-editor
         v-if="proteinsLoaded"
         :containerType="containerType"
-        :experimentKind="container.EXPERIMENTTYPE"
+        :experimentKind="experimentKind"
         :proteins="proteinsCollection"
         :gproteins="gProteinsCollection"
         :automated="container.AUTOMATED"
@@ -100,8 +100,9 @@
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
+import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 import Samples from 'collections/samples'
-import SampleEditor from 'modules/types/saxs/samples/SampleEditor.vue'
+import SampleEditor from 'modules/types/saxs/samples/sample-editor.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
@@ -155,6 +156,7 @@ export default {
       containerHistoryTotal: 0,
 
       containerTypes: [],
+      experimentKind: null,
       plateType: null, // Stores if a puck or plate type
       containerType: '',
       plateKey: 0,
@@ -181,6 +183,7 @@ export default {
     ...mapGetters('samples', ['samples']),
   },
   created: function() {
+    console.log("CONTAINER PLATE VIEW")
     // Get samples for this container id
     this.container = Object.assign({}, this.containerModel.toJSON())
     this.containerId = this.containerModel.get('CONTAINERID')
@@ -190,21 +193,14 @@ export default {
     this.samplesCollection.queryParams.cid = this.containerId
     this.getSamples(this.samplesCollection)
 
-    let collection = new ContainerHistory()
-    this.getHistory(collection)
+    this.getHistory()
+
+    this.getExperimentTypes()
 
     this.getProteins()
-    // Get the geometry for this container type
-    // When backend can get container type by name or id we can make this more efficient
-    let containerTypesCollection = new ContainerTypes()
-    this.$store.dispatch('getCollection', containerTypesCollection).then( (result) => {
-      let containerTypeModel = result.findWhere({NAME: this.container.CONTAINERTYPE})
 
-      if (containerTypeModel) {
-        this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, containerTypeModel.toJSON())
-      }
-      else console.log("Container plate view cant find " + this.container.CONTAINERTYPE)
-    })
+    this.getContainerTypes()
+
   },
   methods: {
     getProteins: function() {
@@ -220,6 +216,19 @@ export default {
         this.proteinsLoaded = true
       })
     },
+    getContainerTypes: function() {
+      // Get the geometry for this container type
+      // When backend can get container type by name or id we can make this more efficient
+      let containerTypesCollection = new ContainerTypes()
+      this.$store.dispatch('getCollection', containerTypesCollection).then( (result) => {
+        let containerTypeModel = result.findWhere({NAME: this.container.CONTAINERTYPE})
+
+        if (containerTypeModel) {
+          this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, containerTypeModel.toJSON())
+        }
+        else console.log("Container plate view cant find " + this.container.CONTAINERTYPE)
+      })
+    },
     // Callback from pagination
     onUpdateHistory: function(payload) {
       let collection = new ContainerHistory( null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
@@ -232,7 +241,9 @@ export default {
 
       this.$store.dispatch('saveModel', {model: this.containerModel, attributes: params})
     },
-    getHistory: function(collection) {
+    getHistory: function() {
+      let collection = new ContainerHistory()
+    
       // Make sure we are getting history for this container
       collection.queryParams.cid = this.containerId
       // Fetch the history and content for this container
@@ -243,18 +254,43 @@ export default {
     },
     getSamples: function(collection) {
       this.$store.dispatch('getCollection', collection).then( (result) => {
-        console.log("Container plate view got samples")
         if (result) {
           this.resetSamples(this.container.CAPACITY)
         } else console.log("No samples found")
       }, () => console.log("Saxs Plate View - Error getting samples"))
+    },
+    getExperimentTypes: function() {
+      let experimentTypesCollection = new ExperimentTypes()
+
+      this.$store.dispatch('getCollection', experimentTypesCollection).then( (result) => {
+        let experimentType = this.findExperimentType(result)
+
+        this.experimentKind = experimentType.length > 0 ? experimentType[0].EXPERIMENTTYPEID : 0
+        console.log("Found experiment type for this container " + JSON.stringify(this.experimentKind))
+      })
+
+    },
+    findExperimentType: function(collection) {
+      let proposalType = this.$store.state.proposal.proposalType
+      let experimentTypes = collection.toJSON()
+      let filteredTypes = []
+      // Try to find the experiment Type ID from the group of experiment types
+      filteredTypes = experimentTypes.filter( (type) => {
+        if (type.NAME == this.container.EXPERIMENTTYPE && type.PROPOSALTYPE == proposalType) return true
+      })
+      // Try to find the experiment Type ID from all experiment types
+      if (!filteredTypes) {
+        filteredTypes = experimentTypes.filter( (type) => {
+          if (type.NAME == this.container.EXPERIMENTTYPE) return true
+        })
+      }
+      return filteredTypes
     },
     // Reset Backbone Samples Collection
     resetSamples: function(capacity) {
       this.$store.commit('samples/reset', capacity)
 
       this.samplesCollection.each( s => {
-        console.log("Setting sample " + JSON.stringify(s.toJSON()))
         let i = +(s.get('LOCATION')) - 1
         this.$store.commit('samples/setSample', {index: i, data: s.toJSON()})
       })
