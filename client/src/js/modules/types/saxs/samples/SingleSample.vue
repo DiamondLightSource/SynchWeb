@@ -17,14 +17,18 @@
       <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
     </div>
     <div class="form">
-      <base-input-select
+      <validation-provider slim :rules="inputValue.NAME ? 'required|min_value:1' : ''" v-slot="{ errors }">
+        <base-input-select
         label="Protein"
         v-model="inputValue[sampleIndex].PROTEINID"
         optionValueKey="PROTEINID"
         optionTextKey="ACRONYM"
         defaultText=" - "
         :options="availableProteins"
-        />
+        :quiet="true" 
+        :errorMessage="errors[0]"/>
+      </validation-provider>
+
       <validation-provider slim :rules="inputValue.PROTEINID > -1 ? 'required|alpha_dash|max:12' : ''" v-slot="{ errors }">
         <base-input-text
           label="Sample Name"
@@ -34,7 +38,7 @@
           :errorMessage="errors[0]"/>
       </validation-provider>
 
-      <validation-provider tag="slim" rules="decimal|min_value:10|max_value:100" name="Volume" :vid="volume" v-slot="{ errors }">
+      <validation-provider slim rules="decimal|min_value:10|max_value:100" name="Volume" :vid="volume" v-slot="{ errors }">
         <base-input-text
         label="Volume"
         v-model="inputValue[sampleIndex].VOLUME"
@@ -54,7 +58,7 @@
         name="COLUMN"
         defaultText="Optionally set a column" />
 
-      <validation-provider tag="slim" v-if="showInputHplcExp" rules="alpha_dash|max:1000" name="Comments" :vid="'comments-'+sampleIndex" v-slot="{ errors }">
+      <validation-provider slim v-if="showInputHplcExp" rules="alpha_dash|max:1000" name="Comments" :vid="'comments-'+sampleIndex" v-slot="{ errors }">
         <base-input-text
           label="Comments"
           v-model="inputValue[sampleIndex].COMMENTS"
@@ -74,12 +78,6 @@
 
     </div>
 
-    <button class="button">Next</button>
-    <button class="button">Prev</button>
-
-    <p v-for="sample in inputValue" :key="sample.BLSAMPLEID">
-      {{sample.NAME}}
-    </p>
   </div>
 </template>
 
@@ -91,8 +89,6 @@ import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
-
-import EventBus from 'app/components/utils/event-bus.js'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
@@ -141,8 +137,6 @@ export default {
       this.purificationColumns = result.toJSON()
       this.pkey += 1
     })
-
-    console.log("Passed value into single sample is " + JSON.stringify(this.value))
   },
   computed: {
     inputValue: {
@@ -150,7 +144,6 @@ export default {
         return this.value
       },
       set(val) {
-        console.log("Set value checked on inputValue")
         this.$emit('input', val)
       }
     },
@@ -175,7 +168,6 @@ export default {
   watch: {
     sampleLocation: function(newVal) {
       console.log("Single sample now editing different sample - " + newVal)
-      // console.log("Sample[" + newVal + "] = " + JSON.stringify(this.inputVal[sampleIndex]))
     }
   },
   methods: {

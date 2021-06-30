@@ -258,7 +258,6 @@ import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 // import BaseInputCombobox from 'app/components/base-input-combobox.vue'
 
 import ProcessingPipelines from 'collections/processingpipelines'
-import PuckControls from 'modules/types/saxs/samples/PuckSampleControls.vue'
 import Users from 'collections/users'
 
 import { mapGetters } from 'vuex'
@@ -357,7 +356,6 @@ export default {
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
     'sample-editor': SampleEditor,
-    'puck-controls': PuckControls,
   },
   props: {
     'mview':[Function, Promise], // The marionette view could be lazy loaded or static import

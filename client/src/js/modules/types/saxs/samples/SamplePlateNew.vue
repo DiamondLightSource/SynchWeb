@@ -60,7 +60,7 @@ import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 import Table from 'app/components/table.vue'
-
+import PuckSampleControls from 'modules/types/saxs/samples/puck-sample-controls.vue'
 import PurificationColumns from 'modules/shipment/collections/purificationcolumns'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
@@ -78,6 +78,7 @@ export default {
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
     'table-component': Table,
+    'puck-sample-controls': PuckSampleControls
   },
   props: {
     proteins: {
