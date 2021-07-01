@@ -2,59 +2,61 @@
   <ul class="clearfix">
     <li>
       Movie Number:
-      {{ model.get('IMAGENUMBER') }}
+      {{ get('IMAGENUMBER') }}
     </li>
     <li>
       First Frame:
-      {{ model.get('FIRSTFRAME') }}
+      {{ get('FIRSTFRAME') }}
     </li>
     <li>
       Last Frame:
-      {{ model.get('LASTFRAME') }}
+      {{ get('LASTFRAME') }}
     </li>
     <!-- &#197 = ångström -->
     <li>
       Dose Per Frame:
-      {{ model.get('DOSEPERFRAME') }}
+      {{ get('DOSEPERFRAME') }}
       e<span class="super">-</span>/&#197;<span class="super">2</span>
     </li>
     <li>
       Dose Weight:
-      {{ model.get('DOSEWEIGHT') }}
+      {{ get('DOSEWEIGHT') }}
       ?
     </li>
     <li>
       Total Motion:
-      {{ model.get('TOTALMOTION') }}
+      {{ get('TOTALMOTION') }}
       &#197;
     </li>
     <li>
       Average Motion / Frame:
-      {{ model.get('AVERAGEMOTIONPERFRAME') }}
+      {{ get('AVERAGEMOTIONPERFRAME') }}
       &#197;
     </li>
     <li>
       Patches Used:
-      {{ model.get('PATCHESUSEDX') }} x {{ model.get('PATCHESUSEDY') }}
+      {{ get('PATCHESUSEDX') }} x {{ get('PATCHESUSEDY') }}
     </li>
     <li
       class="comment"
       title="Click to edit the comment for this data collection"
     >
       Comment:
-      <span class="COMMENTS">{{ model.get('COMMENTS') }}</span>
+      <span class="COMMENTS">{{ get('COMMENTS') }}</span>
     </li>
   </ul>
 </template>
 
 <script>
+import store from 'app/store/store'
+
 export default {
     'name': "Params",
-    'props': {
-        'model': {
-            'type': Object,
-            'required': true,
-        },
-    },
+    'methods': {
+        'get': function(name) {
+            const value = store.state.models.emMotionCorrection[name]
+            return value ? value : ''
+        }
+    }
 }
 </script>

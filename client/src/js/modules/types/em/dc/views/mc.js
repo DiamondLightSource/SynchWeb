@@ -18,16 +18,10 @@ define([
             'components': {
                 'motion-correction': MotionCorrectionView.default
             },
-            'props': {
+            'props': { // TODO: not used
                 'ready': Boolean
             },
-            'data': function(){
-                return {
-                    'apiUrl': app.apiurl,
-                    'model': this.$getOption('model'),
-                }
-            },
-            'template': '<motion-correction :api-url="apiUrl" :model="model" :ready="ready" />',
+            'template': '<motion-correction />',
         })
     })
 })

@@ -13,22 +13,13 @@ import $ from 'jquery'
 import 'jquery.flot'
 import 'jquery.flot.resize'
 import 'jquery.flot.selection'
+import store from 'app/store/store'
 import DriftModel from 'modules/types/em/models/drift'
 import driftOptions from 'modules/types/em/dc/views/motion-correction/drift-options'
 import proportionalHeight from 'modules/types/em/dc/views/proportional-height'
 
 export default {
     'name': "Drift",
-    'props': {
-        'collectionId': {
-            'type': Number,
-            'required': true,
-        },
-        'imageNumber': {
-            'type': Number,
-            'required': true,
-        },
-    },
     'data': function() {
         return {
             'model': null,
@@ -37,12 +28,13 @@ export default {
     },
     'computed': {
         'chart': function() {
+            const state = store.state.models.emMotionCorrection
             // this is initially executed before this.$refs is ready
             // defer that first pass until the component is mounted
             if (Object.keys(this.$refs).length > 0) {
                 this.updateAndPlot();
             }
-            return this.collectionId + '-' + this.imageNumber
+            return state.DATACOLLECTIONID + '-' + state.IMAGENUMBER
         },
         'plotDivStyle': function() {
             const height = proportionalHeight() + 'px;'
@@ -52,7 +44,9 @@ export default {
         },
     },
     'mounted': function () {
-        this.model = new DriftModel({ 'id': this.collectionId })
+        this.model = new DriftModel({
+            'id': store.state.models.emMotionCorrection.DATACOLLECTIONID
+        })
         this.plot = $.plot(
             this.$refs.plot,
             this.plotData([]),
@@ -77,7 +71,9 @@ export default {
             }
             redraw([])
             this.model.fetch({
-                'data': { 'IMAGENUMBER': this.imageNumber },
+                'data': {
+                    'IMAGENUMBER': store.state.models.emMotionCorrection.IMAGENUMBER
+                },
                 'success': function (
                     model, // eslint-disable-line no-unused-vars
                     response,

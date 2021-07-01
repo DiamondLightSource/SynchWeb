@@ -1,5 +1,5 @@
 <template>
-  <div class="clearfix">
+  <div class="mc dcap clearfix">
     <p v-if="nothingToShow">
       No Motion Correction for this movie
     </p>
@@ -27,10 +27,7 @@
         class="data_collection"
         type="data"
       >
-        <drift
-          :collection-id="collectionId"
-          :image-number="imageNumber"
-        />
+        <drift />
 
         <!-- FFT of Motion Corrected Image -->
         <dc-image
@@ -48,13 +45,14 @@
           image-title="FFT"
         />
 
-        <params :model="model" />
+        <params />
       </div>
     </template>
   </div>
 </template>
 
 <script>
+import store from 'app/store/store'
 import LogView from 'views/log'
 import utils from 'utils'
 /* TODO: dialogbox.vue belongs on a top level page
@@ -72,49 +70,52 @@ export default {
         'params': Params,
         'drift': Drift,
     },
-    'props': {
-        'apiUrl': {
-            'type': String,
-            'required': true,
-        },
-        'model': {
-            'type': Object,
-            'required': true,
-        },
+    'data': function() {
+        return {
+            'apiUrl': store.state.apiUrl
+        }
     },
     'computed': {
         /*
         'dllUrl': function() {
             return this.apiUrl +
-                '/download/id/' + this.model.get('DATACOLLECTIONID') +
-                '/aid/' + this.model.get('AUTOPROCPROGRAMID')
+                '/download/id/' +
+                store.state.models.emMotionCorrection.DATACOLLECTIONID +
+                '/aid/' +
+                store.state.models.emMotionCorrection.AUTOPROCPROGRAMID
         },
         */
         'logUrl': function() {
             return this.apiUrl +
-                '/download/id/' + this.model.get('DATACOLLECTIONID') +
-                '/aid/' + this.model.get('AUTOPROCPROGRAMID') +
+                '/download/id/' +
+                store.state.models.emMotionCorrection.DATACOLLECTIONID +
+                '/aid/' +
+                store.state.models.emMotionCorrection.AUTOPROCPROGRAMID +
                 '/log/1'
         },
         'fftUrl': function() {
             return this.apiUrl +
-                '/em/mc/fft/image/' + this.model.get('DATACOLLECTIONID') +
-                '/n/' + this.model.get('IMAGENUMBER') +
+                '/em/mc/fft/image/' +
+                store.state.models.emMotionCorrection.DATACOLLECTIONID +
+                '/n/' +
+                store.state.models.emMotionCorrection.IMAGENUMBER +
                 '/t/2'
         },
         'imageUrl': function() {
             return this.apiUrl +
-                '/em/mc/fft/image/' + this.model.get('DATACOLLECTIONID') +
-                '/n/' + this.model.get('IMAGENUMBER')
+                '/em/mc/fft/image/' +
+                store.state.models.emMotionCorrection.DATACOLLECTIONID +
+                '/n/' +
+                store.state.models.emMotionCorrection.IMAGENUMBER
         },
         'nothingToShow': function() {
-            return !this.model.get('MOTIONCORRECTIONID')
+            return !store.state.models.emMotionCorrection.MOTIONCORRECTIONID
         },
         'collectionId': function() {
-            return this.model.get('id')
+            return store.state.models.emMotionCorrection.id
         },
         'imageNumber': function() {
-            return this.model.get('IMAGENUMBER')
+            return store.state.models.emMotionCorrection.IMAGENUMBER
         },
     },
     'methods': {
@@ -131,7 +132,7 @@ export default {
         'showLog': function(event) {
             /* TODO: The Log Button is essentially untested
               All examples I can find give a Blank dialog for this file */
-            const type = this.model.get('TYPE')
+            const type = store.state.models.emMotionCorrection.TYPE
             this.signUrl(event.target.href, function(signedUrl) {
                 // TODO: The dialog doesn't fit nicely on the screen
                 MarionetteApplication.getInstance().dialog.show(new LogView({
