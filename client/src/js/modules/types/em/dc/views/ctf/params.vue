@@ -1,71 +1,73 @@
 <template>
   <ul class="clearfix">
     <li>
-      Movie Number: {{ model.get('IMAGENUMBER') }}
+      Movie Number: {{ get('IMAGENUMBER') }}
     </li>
     <li>
       Box size:
-      {{ model.get('BOXSIZEX') }}x{{ model.get('BOXSIZEY') }}&micro;m
+      {{ get('BOXSIZEX') }}x{{ get('BOXSIZEY') }}&micro;m
     </li>
     <!-- &#197 = ångström -->
     <li>
       Resolution:
-      {{ model.get('MINRESOLUTION') }}
+      {{ get('MINRESOLUTION') }}
       -
-      {{ model.get('MAXRESOLUTION') }}&#197;
+      {{ get('MAXRESOLUTION') }}&#197;
     </li>
     <li>
       Defocus:
-      {{ model.get('MINDEFOCUS') }}
+      {{ get('MINDEFOCUS') }}
       -
-      {{ model.get('MINDEFOCUS') }}&#197;
+      {{ get('MINDEFOCUS') }}&#197;
     </li>
     <li>
       Defocus Step Size:
-      {{ model.get('DEFOCUSSTEPSIZE') }}&#197;
+      {{ get('DEFOCUSSTEPSIZE') }}&#197;
     </li>
     <li>
       Astigmatism:
-      {{ model.get('ASTIGMATISM') }}&#197;
+      {{ get('ASTIGMATISM') }}&#197;
     </li>
     <li>
       Astigmatism Angle:
-      {{ model.get('ASTIGMATISMANGLE') }}&deg;
+      {{ get('ASTIGMATISMANGLE') }}&deg;
     </li>
     <li>
       Estimated Resolution:
-      {{ model.get('ESTIMATEDRESOLUTION') }}&#197;
+      {{ get('ESTIMATEDRESOLUTION') }}&#197;
     </li>
     <li>
       Estimated Defocus:
-      {{ model.get('ESTIMATEDDEFOCUS') }}&#197;
+      {{ get('ESTIMATEDDEFOCUS') }}&#197;
     </li>
     <li>
       Amplitude Contrast:
-      {{ model.get('AMPLITUDECONTRAST') }}
+      {{ get('AMPLITUDECONTRAST') }}
     </li>
     <li>
       CC Value:
-      {{ model.get('CCVALUE') }}
+      {{ get('CCVALUE') }}
     </li>
     <li
       class="comment"
       title="Click to edit the comment for this data collection"
     >
       Comment:
-      <span class="COMMENTS">{{ model.get('COMMENTS') }}</span>
+      <span class="COMMENTS">{{ get('COMMENTS') }}</span>
     </li>
   </ul>
 </template>
 
 <script>
+import store from 'app/store/store'
+
 export default {
     'name': "Params",
-    'props': {
-        'model': {
-            'type': Object,
-            'required': true,
-        },
-    },
+    'methods': {
+        'get': function(name) {
+            const value = store.state.models.emCtf[name]
+            return value ? value : ''
+        }
+    }
 }
 </script>

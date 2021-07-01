@@ -14,16 +14,10 @@ define([
             'components': {
                 'ctf-view': CtfView.default
             },
-            'props': {
+            'props': { // TODO: not used!
                 'ready': Boolean
             },
-            'data': function(){
-                return {
-                    'apiUrl': app.apiurl,
-                    'model': this.$getOption('model'),
-                }
-            },
-            'template': '<ctf-view :api-url="apiUrl" :model="model" :ready="ready" />',
+            'template': '<ctf-view />',
         })
     })
 })

@@ -1,6 +1,6 @@
 <template>
-  <div class="clearfix">
-    <p v-if="!model.get('CTFID')">
+  <div class="ctf dcap clearfix">
+    <p v-if="nothingToShow">
       No CTF Estimation for this movie
     </p>
 
@@ -34,9 +34,7 @@
           :image-url="imageUrl"
         />
 
-        <params
-          :model="model"
-        />
+        <params />
       </div>
     </template>
   </div>
@@ -46,6 +44,7 @@
 
 import LogView from 'views/log'
 import utils from 'utils'
+import store from 'app/store/store'
 /* TODO: dialogbox.vue belongs on a top level page
    keep moving it until the whole page is "vue-ified" */
 import DialogBox from 'app/components/dialogbox.vue'
@@ -60,36 +59,36 @@ export default {
         'dc-image': DcImage,
         'params': Params,
     },
-    'props': {
-        'apiUrl': {
-            'type': String,
-            'required': true,
-        },
-        'model': {
-            'type': Object,
-            'required': true,
-        },
+    'data': function() {
+        return {
+            'apiUrl': store.state.apiUrl
+        }
     },
     'computed': {
+        'nothingToShow': function() {
+            !store.state.models.emCtf.CTFID
+        },
         'dllUrl': function() {
             return this.apiUrl +
                 '/download/id/' +
-                this.model.get('DATACOLLECTIONID') +
+                store.state.models.emCtf.DATACOLLECTIONID +
                 '/aid/' +
-                this.model.get('AUTOPROCPROGRAMID')
+                store.state.models.emCtf.AUTOPROCPROGRAMID
         },
         'logUrl': function() {
             return this.apiUrl +
                 '/download/id/' +
-                this.model.get('DATACOLLECTIONID') +
+                store.state.models.emCtf.DATACOLLECTIONID +
                 '/aid/' +
-                this.model.get('AUTOPROCPROGRAMID') +
+                store.state.models.emCtf.AUTOPROCPROGRAMID +
                 '/log/1'
         },
         'imageUrl': function() {
             return this.apiUrl +
-                '/em/ctf/image/' + this.model.get('DATACOLLECTIONID') +
-                '/n/' + this.model.get('IMAGENUMBER')
+                '/em/ctf/image/' +
+                store.state.models.emCtf.DATACOLLECTIONID +
+                '/n/' +
+                store.state.models.emCtf.IMAGENUMBER
         },
     },
     'methods': {
@@ -106,7 +105,7 @@ export default {
         'showLog': function(event) {
             /* TODO: The Log Button is essentially untested
               All examples I can find give a Blank dialog for this file */
-            const type = this.model.get('TYPE')
+            const type = store.state.models.emCtf.TYPE
             this.signUrl(event.target.href, function(signedUrl) {
                 // TODO: The dialog doesn't fit nicely on the screen
                 MarionetteApplication.getInstance().dialog.show(new LogView({
