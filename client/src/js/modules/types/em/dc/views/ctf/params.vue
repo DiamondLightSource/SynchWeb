@@ -60,7 +60,7 @@
 
 <script>
 export default {
-    'name': "CtfParamsView",
+    'name': "Params",
     'props': {
         'model': {
             'type': Object,

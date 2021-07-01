@@ -1,11 +1,11 @@
 <template>
   <div class="clearfix">
     <p v-if="!model.get('CTFID')">
-      No CTF Correction for this movie
+      No CTF Estimation for this movie
     </p>
 
     <template v-else>
-      <h2>CTF Correction</h2>
+      <h2>CTF Estimation</h2>
 
       <dialog-box />
 
@@ -26,11 +26,15 @@
         class="data_collection"
         type="data"
       >
-        <ctf-fft
-          :api-url="apiUrl"
-          :model="model"
+        <!-- Cont. Trans. Function ????? -->
+        <dc-image
+          container-title="Click to view FFT"
+          container-class="diffraction fft"
+          image-title="FFT Theoretical"
+          :image-url="imageUrl"
         />
-        <ctf-params
+
+        <params
           :model="model"
         />
       </div>
@@ -46,15 +50,15 @@ import utils from 'utils'
    keep moving it until the whole page is "vue-ified" */
 import DialogBox from 'app/components/dialogbox.vue'
 import MarionetteApplication from 'app/marionette-application.js'
-import CtfParamsView from 'modules/types/em/dc/views/ctf-params.vue'
-import CtfFftView from 'modules/types/em/dc/views/ctf-fft.vue'
+import Params from 'modules/types/em/dc/views/ctf/params.vue'
+import DcImage from 'modules/types/em/dc/views/dc-image.vue'
 
 export default {
     'name': "CtfView",
     'components': {
         'dialog-box': DialogBox,
-        'ctf-params': CtfParamsView,
-        'ctf-fft': CtfFftView,
+        'dc-image': DcImage,
+        'params': Params,
     },
     'props': {
         'apiUrl': {
@@ -81,6 +85,11 @@ export default {
                 '/aid/' +
                 this.model.get('AUTOPROCPROGRAMID') +
                 '/log/1'
+        },
+        'imageUrl': function() {
+            return this.apiUrl +
+                '/em/ctf/image/' + this.model.get('DATACOLLECTIONID') +
+                '/n/' + this.model.get('IMAGENUMBER')
         },
     },
     'methods': {

@@ -4,7 +4,7 @@
 define([
     'vue',
     'utils/vuewrapper',
-    'modules/types/em/dc/views/ctf.vue',
+    'modules/types/em/dc/views/ctf/ctf.vue',
 ], function(Vue, VueWrapper, CtfView) {
     return VueWrapper.extend({
         'modelEvents': {
