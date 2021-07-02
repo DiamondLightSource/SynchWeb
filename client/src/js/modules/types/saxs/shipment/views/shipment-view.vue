@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <h1>Shipment: <span class="SHIPPINGNAME">{{shipment.SHIPPINGNAME}}</span></h1>
+    <h1>SCM Shipment: <span class="SHIPPINGNAME">{{shipment.SHIPPINGNAME}}</span></h1>
 
     <p class="help">This page shows details and contents of the selected shipment. Most parameters can be edited by simply clicking on them.</p>
     <p class="help excl">Shipments need to have an outgoing and return home lab contact before shipment labels can be printed</p>
@@ -170,36 +170,76 @@
 
     <div class="ra"><a v-if="PROPOSAL_ACTIVE" href="#" class="button" id="add_dewar" title="Add a package to this shipment" @click.prevent="onAddDewar"><i class="fa fa-plus"></i> Add Item to Shipment</a></div>
 
-    <!-- List of dewars/parcels within this shipment -->
+    <!--
+      List of dewars/parcels within this shipment
+      The user can add a dewar/parcel to this list by clicking on Add Item to shipment.
+      If that happens we add a row to the dewar list and enable the form to edit that dewar
+    -->
     <table-component
       :headers="dewarTableHeaders"
       :data="dewars"
       :actions="'Actions'"
       @row-clicked="onShowDewar"
     >
-      <template slot="actions" slot-scope="{ row }">
-        <a class="button" :href="APIURL+'/pdf/container/did/'+row.DEWARID+'/prop/'+PROPOSAL" @click="onPrintPdf"><i class="fa fa-print "></i></a>
-        <a class="button" :href="'/containers/add/did/'+row.DEWARID"><i class="fa fa-plus"></i></a>
-        <a class="button" :href="'/dewars/dispatch/'+row.DEWARID"><i class="fa fa-home"></i></a>
-        <a class="button" :href="'/dewars/transfer/'+row.DEWARID"><i class="fa fa-arrows-h"></i></a>
+      <template slot="content" slot-scope="{ row, rowIndex }">
+        <td>
+          <validation-provider v-if="isEditingRowIndex(rowIndex)" slim rules="required" v-slot="{ errors }">
+            <base-input-text v-model="newDewar['CODE']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
+          <span v-else>{{row['CODE']}}</span>
+        </td>
+        <td>
+          <span>{{row['BARCODE']}}</span>
+        </td>
+        <td>
+          <validation-provider v-if="isEditingRowIndex(rowIndex)" slim rules="required" v-slot="{ errors }">
+            <base-input-text v-model="newDewar['FACILITYCODE']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
+          <span v-else>{{row['FACILITYCODE']}}</span>
+        </td>
+        <td>
+          <validation-provider v-if="isEditingRowIndex(rowIndex)" slim rules="required|numeric" v-slot="{ errors }">
+            <base-input-text v-model="newDewar['WEIGHT']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
+          <span v-else>{{row['WEIGHT']}}</span>
+        </td>
+        <td>
+          <validation-provider v-if="isEditingRowIndex(rowIndex)" slim rules="required|numeric" v-slot="{ errors }">
+            <base-input-text v-model="newDewar['FIRSTEXPERIMENTID']" :quiet="true" :errorMessage="errors[0]"/>
+          </validation-provider>
+          <span v-else>{{row['FIRSTEXPERIMENTID']}}</span>
+        </td>
+        <td>
+          <span>{{row['TRACKINGNUMBERTOSYNCHROTRON']}}</span>
+        </td>
+        <td>
+          <span>{{row['TRACKINGNUMBERFROMSYNCHROTRON']}}</span>
+        </td>
+        <td>
+          <span>{{row['DEWARSTATUS']}}</span>
+        </td>
+        <td>
+          <span>{{row['STORAGELOCATION']}}</span>
+        </td>
+        <td>
+          <span>{{row['CCOUNT']}}</span>
+        </td>
+      </template>
+
+      <template slot="actions" slot-scope="{ row, rowIndex }">
+        <div v-if="isEditingRowIndex(rowIndex)">
+          <a class="button" href="" @click.prevent="onSaveDewar"><i class="fa fa-check"></i></a>
+          <a class="button" href="" @click.prevent="onCancelAddDewar"><i class="fa fa-times"></i></a>
+        </div>
+        <div v-else>
+          <a class="button" href="#" @click.prevent="onEditDewar(rowIndex)"><i class="fa fa-pencil"></i></a>
+          <a class="button" :href="APIURL+'/pdf/container/did/'+row.DEWARID+'/prop/'+PROPOSAL" @click="onPrintPdf"><i class="fa fa-print "></i></a>
+          <a class="button" :href="'/containers/add/did/'+row.DEWARID"><i class="fa fa-plus"></i></a>
+          <a class="button" :href="'/dewars/dispatch/'+row.DEWARID"><i class="fa fa-home"></i></a>
+          <a class="button" :href="'/dewars/transfer/'+row.DEWARID"><i class="fa fa-arrows-h"></i></a>
+        </div>
       </template>
     </table-component>
-
-    <!-- This allows user to add a new dewar - not quite in same table but just below... -->
-    <div v-show="addingNewDewar">
-      <form>
-        <label>Name</label>
-        <input type="text" placeholder="name" v-model="newDewar.CODE"/>
-        <label>FacilityCode</label>
-        <input type="text" placeholder="fc" v-model="newDewar.FACILITYCODE"/>
-        <label>Weight</label>
-        <input type="text" placeholder="weight" v-model="newDewar.WEIGHT"/>
-        <label>First Exp</label>
-        <input type="text" placeholder="experiment"/>
-        <button class="button" @click.prevent="onSaveDewar"><i class="fa fa-check"></i></button>
-        <button class="button" @click.prevent="addingNewDewar = false"><i class="fa fa-times"></i></button>
-      </form>
-    </div>
 
     <h1>
         Package Details: {{currentDewarName}}
@@ -303,12 +343,13 @@ import BaseInputSelect from 'app/components/base-input-select.vue'
 import TableComponent from 'app/components/table.vue'
 import PaginationComponent from 'app/components/pagination.vue'
 
-const initialDewarState = {
+import { ValidationProvider }  from 'vee-validate'
+
+const INITIAL_DEWAR_STATE = {
   SHIPPINGID: '',
   CODE: '',
   FACILITYCODE: '',
   WEIGHT: '',
-  new: false
 }
 
 export default {
@@ -321,6 +362,7 @@ export default {
     'base-input-select': BaseInputSelect,
     'table-component': TableComponent,
     'pagination-component': PaginationComponent,
+    'validation-provider': ValidationProvider,
   },
   props: {
     // The Shipment model will be passed into this page
@@ -332,7 +374,8 @@ export default {
   data: function() {
     return {
       addingNewDewar: false,
-      newDewar: initialDewarState,
+      newDewar: INITIAL_DEWAR_STATE,
+      editingDewarIndex: null,
 
       labContacts: [],
 
@@ -401,32 +444,18 @@ export default {
     this.shipment = Object.assign({}, this.model.toJSON())
 
     // Backbone models for dewar / parcel contents
-    this.dewarsCollection = new Dewars(null, { id: this.model.get('SHIPPINGID') })
     this.getDewars()
 
     // Get Lab Contacts
-    this.labContactsCollection = new LabContactsCollection(null, { state: { pageSize: 9999 } })
     this.getLocalContacts()
   },
   watch: {
-    currentDewarId: function(newVal, oldVal) {
+    currentDewarId: function() {
       // When the currently selected dewar changes we need to update the history and tracking tables
       // Note inconsistent use of id and dewarID!!!
-      let dewarHistory = new DewarHistory()
-      dewarHistory.id = this.currentDewarId
+      this.getDewarHistory(this.currentDewarId)
 
-      // Fetch the history and content for these dewars
-      this.$store.dispatch('getCollection', dewarHistory).then( (result) => {
-        console.log("DEWAR HISTORY: " + JSON.stringify(result))
-        this.dewarHistory = result.toJSON()
-        this.dewarHistoryTotal = result.state.totalRecords
-      })
-
-      let dewarContent = new Containers(null, {state: { pageSize: 5}})
-      dewarContent.dewarID = this.currentDewarId
-      dewarContent.setSorting('NAME')
-
-      this.updateDewarContent(dewarContent)
+      this.updateDewarContent()
 
       // Grab sort tracking as well
       let dewartracking = new DewarTracking()
@@ -448,26 +477,52 @@ export default {
 
   methods: {
     onAddDewar: function() {
-      this.newDewar = initialDewarState
+      this.newDewar = INITIAL_DEWAR_STATE
       this.addingNewDewar = true
+
+      this.dewars.push(INITIAL_DEWAR_STATE)
+      this.editingDewarIndex = this.dewars.length - 1
+    },
+    // Using cancel add for editing as well
+    onCancelAddDewar: function() {
+      if (this.addingNewDewar) {
+        this.addingNewDewar = false
+        this.dewars.pop()
+      } else {
+        this.editingDewarIndex = null
+      }
+      this.newDewar = Object.assign({}, INITIAL_DEWAR_STATE)
+    },
+    onEditDewar: function(index) {
+      this.newDewar = Object.assign({}, this.dewars[index])
+      this.editingDewarIndex = index
     },
     onSaveDewar: function() {
       this.newDewar.SHIPPINGID = this.model.get('SHIPPINGID')
-      this.newDewar.new = true
 
-      let dewar = new Dewar(this.newDewar)
-      dewar.set('DEWAR_TYPE', 'Parcel')
-      this.$store.dispatch('saveModel', { model: dewar }).then( (result) => {
-        console.log("Saved new dewar: " + JSON.stringify(result))
+      let attributes = {}
+
+      // If we are updating an existing model, set the attributes we are changing
+      if (this.newDewar.DEWARID) {
+        Object.keys(INITIAL_DEWAR_STATE).forEach( (item) => {
+          attributes[item] = this.newDewar[item]
+        })
+      }
+
+      let dewarModel = new Dewar(this.newDewar)
+      // If a new dewar - set the type (Assumes parcel for saxs)
+      if (!this.newDewar.DEWARID) dewarModel.set('DEWAR_TYPE', 'Parcel')
+
+      this.$store.dispatch('saveModel', { model: dewarModel, attributes: attributes }).then( (result) => {
         this.addingNewDewar = false
-        this.newDewar = initialDewarState
+        this.editingDewarIndex = null
+        this.newDewar = INITIAL_DEWAR_STATE
         this.getDewars()
       })
-      // TODO add dewar to shipment...
     },
     // Effetively a patch request to update specific fields
+    // Saves the shipment model
     save: function(parameter) {
-      console.log("Saving " + parameter + " to " + this.shipment[parameter])
       let params = {}
       params[parameter] = this.shipment[parameter]
 
@@ -478,43 +533,46 @@ export default {
       // Had some issues with scope of the passed object.
       // So set the currently selected dewar here and then watch the value for changes
       let dewarId = +dewar['DEWARID']
+      // Don't proceed unless there is a valid DEWARID
+      if (!dewarId) return
+
       // If we have selected the same dewar ignore
       this.currentDewarId = dewarId
       this.currentDewarName = dewar['CODE']
     },
 
     onUpdateContent: function(payload) {
-      let dewarContent = new Containers(null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
-      dewarContent.dewarID = this.currentDewarId
-      dewarContent.setSorting('NAME')
-      // dewarContent.setPageSize(payload.pageSize)
-      // dewarContent.setPage(payload.currentPage)
-
-      this.updateDewarContent(dewarContent)
+      this.updateDewarContent(payload)
     },
 
     onUpdateHistory: function(payload) {
-      let dewarHistory = new DewarHistory( null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
-      dewarHistory.id = this.currentDewarId
+      this.getDewarHistory(this.currentDewarId, payload)
+    },
+
+    getDewarHistory: function(dewarId, paging=null) {
+      let pagingState = paging || {}
+      let dewarHistory = new DewarHistory( null, {state: pagingState})
+      dewarHistory.id = dewarId
 
       this.$store.dispatch('getCollection', dewarHistory).then( (result) => {
+        console.log("Got Dewar History: " + JSON.stringify(result))
         this.dewarHistory = result.toJSON()
         this.dewarHistoryTotal = result.state.totalRecords
       })
     },
 
-    onSaveLC: function(id, lc, value) {
-      // lc should be LCOUT or LCRET for shipment
-      // Its not used to save content but display the correct ID
-      let labcontact = this.labContactsCollection.findWhere({LABCONTACTID: value})
-      this.shipment[lc] = labcontact.get('CARDNAME')
-      this.save(id)
-    },
     onChangeLabContact: function(lc, value) {
       // lc should be LCOUT or LCRET for shipment
-      // Its not used to save content but display the correct ID
+      // Because - reasons - the actual values are RETURNLABCONTACTID and SENDINGLABCONTACTID
+      // This updates the text displayed in the form as well as saving the model
       let labcontact = this.labContactsCollection.findWhere({LABCONTACTID: value})
       this.shipment[lc] = labcontact.get('CARDNAME')
+      if (lc == 'LCRET') {
+        this.save('RETURNLABCONTACTID')
+      }
+      if (lc == 'LCOUT') {
+        this.save('SENDINGLABCONTACTID')
+      }
     },
     onCancelPickup: function(e) {
       e.preventDefault()
@@ -556,7 +614,7 @@ export default {
       Backbone.ajax({
         url: app.apiurl+'/shipment/send/'+this.model.get('SHIPPINGID'),
         success: function() {
-          self.model.set({ SHIPPINGSTATUS: 'send to DLS' })
+          self.model.set({ SHIPPINGSTATUS: 'send to facility' })
           self.$store.commit('notifications/addNotification', { level: 'success', message: 'Shipment successfully marked as sent' })
         },
         error: function() {
@@ -580,24 +638,23 @@ export default {
         app.on('container:moved', function() {
           self.getDewars()
 
-          // Need to refactor this to make better code reuse
-          let dewarContent = new Containers(null, {state: { pageSize: 5}})
-          dewarContent.dewarID = self.currentDewarId
-          dewarContent.setSorting('NAME')
-
-          self.updateDewarContent(dewarContent)
+          self.updateDewarContent()
 
         })
       })
     },
 
     getLocalContacts: function() {
+      if (!this.labContactsCollection) this.labContactsCollection = new LabContactsCollection(null, { state: { pageSize: 9999 } })
+
       this.$store.dispatch('getCollection', this.labContactsCollection).then( (result) => {
         this.labContacts = result.toJSON()
       })
     },
     // Get the dewars/packages from this shipment
     getDewars: function() {
+      if (!this.dewarsCollection) this.dewarsCollection = new Dewars(null, { id: this.model.get('SHIPPINGID') })
+
       this.$store.dispatch('getCollection', this.dewarsCollection).then( (result) => {
         this.dewars = result.toJSON()
         // If this is first time, select the first dewar in the list.
@@ -607,11 +664,20 @@ export default {
         }
       })
     },
-    updateDewarContent: function(collection) {
-      this.$store.dispatch('getCollection', collection).then( (result) => {
+    updateDewarContent: function(paging=null) {
+      let pagingState = paging || { pageSize: 5}
+      
+      let dewarContent = new Containers(null, {state: pagingState})
+      dewarContent.dewarID = this.currentDewarId
+      dewarContent.setSorting('NAME')
+
+      this.$store.dispatch('getCollection', dewarContent).then( (result) => {
         this.containers = result.toJSON()
         this.containersTotal = result.state.totalRecords
       })
+    },
+    isEditingRowIndex: function(index) {
+      return index == this.editingDewarIndex
     }
   },
 }
