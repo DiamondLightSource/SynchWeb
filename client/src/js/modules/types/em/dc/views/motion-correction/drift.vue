@@ -28,8 +28,11 @@ export default {
     },
     'computed': {
         'chart': function() {
+            // This is a "phony" computed property.
+            // It's return value serves no point except to
+            // force the chart to replot on state change
             const state = store.state.models.emMotionCorrection
-            // this is initially executed before this.$refs is ready
+            // This is initially executed before this.$refs is ready
             // defer that first pass until the component is mounted
             if (Object.keys(this.$refs).length > 0) {
                 this.updateAndPlot();

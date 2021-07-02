@@ -58,9 +58,18 @@ define([
 
         loadAP: function(e) {
             if (!this.ap) {
-                this.ap = new EMAutoProcessingView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc') })
-                this.listenTo(this.ap, 'load:movie', this.imagestatus.show.bind(this.imagestatus))
-            } else this.ap.$el.slideToggle()
+                this.ap = new EMAutoProcessingView({
+                    id: this.model.get('ID'),
+                    el: this.$el.find('div.autoproc')
+                })
+                this.listenTo(
+                    this.ap,
+                    'load:movie',
+                    this.imagestatus.show.bind(this.imagestatus)
+                )
+            } else {
+                this.ap.$el.slideToggle()
+            }
         },
 
         // kV to lambda (in A)
