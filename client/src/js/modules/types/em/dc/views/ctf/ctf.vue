@@ -66,7 +66,7 @@ export default {
     },
     'computed': {
         'nothingToShow': function() {
-            !store.state.models.emCtf.CTFID
+            return !store.state.models.emCtf.CTFID
         },
         'dllUrl': function() {
             return this.apiUrl +
