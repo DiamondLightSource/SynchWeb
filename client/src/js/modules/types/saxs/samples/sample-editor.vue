@@ -30,6 +30,13 @@ import { mapGetters } from 'vuex'
 
 const EXPERIMENT_TYPE_ROBOT = 22
 const EXPERIMENT_TYPE_HPLC = 21
+const EXPERIMENT_TYPE_RACK = 23
+
+const EXPERIMENT_TYPES = {
+  EXPERIMENT_TYPE_ROBOT: 'robot',
+  EXPERIMENT_TYPE_HPLC: 'hplc',
+  EXPERIMENT_TYPE_RACK: 'rack',
+}
 
 export default {
   name: 'sample-editor',
@@ -74,6 +81,7 @@ export default {
       // Some experiment kinds have custom sample tables
       if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) experimentType = 'robot'
       if (this.experimentKind == EXPERIMENT_TYPE_HPLC) experimentType = 'hplc'
+      if (this.experimentKind == EXPERIMENT_TYPE_RACK) experimentType = 'rack'
 
       let component = sampleTableMap[experimentType]
 
@@ -188,8 +196,6 @@ export default {
       let sampleIndex = +location -1
       // Create a new Sample so it uses the BLSAMPLEID to check for post, update etc
       let sampleModel = new Sample( this.samples[sampleIndex] )
-
-      console.log("SAMPLE MODEL TO SAVE = " + sampleModel.attributes)
 
       this.$store.dispatch('saveModel', {model: sampleModel}).then( (result) => {
         // Update BLSAMPLEID
