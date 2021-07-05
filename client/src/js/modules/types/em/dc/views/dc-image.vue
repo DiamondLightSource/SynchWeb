@@ -21,6 +21,7 @@
 <script>
 import proportionalHeight from 'modules/types/em/dc/views/proportional-height'
 import XHRImage from 'utils/xhrimage'
+import 'jquery.mp' // TODO: JQuery!!!
 
 export default {
     'name': "DcImage",
@@ -59,8 +60,8 @@ export default {
         const container = this.$refs.container
         this.xhrImage.onload = function() {
             imageTag.setAttribute('src', this.src)
-            // imageTag.addClass('show')
-            container.magnificPopup({ delegate: 'a', type: 'image' })
+            imageTag.classList.add('show')
+            $(container).magnificPopup({ delegate: 'a', type: 'image' })
         }
     },
 }
