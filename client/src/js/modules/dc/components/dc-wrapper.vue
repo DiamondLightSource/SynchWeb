@@ -1,14 +1,20 @@
 <template>
-    <section>
-        <marionette-view
-            v-if="ready"
-            :key="$route.fullPath"
-            :options="options"
-            :fetchOnLoad="true"
-            :mview="mview"
-            :breadcrumbs="bc">
-        </marionette-view>
-    </section>
+  <section>
+    <marionette-view
+      v-if="typeOfView == 'marionette'"
+      :key="$route.fullPath"
+      :options="options"
+      :fetchOnLoad="true"
+      :mview="mview"
+      :breadcrumbs="bc"
+    />
+    <em-dc-list
+      v-if="typeOfView == 'EmDcList'"
+      :key="$route.fullPath"
+      :options="options"
+      :breadcrumbs="bc"
+    />
+  </section>
 </template>
 
 <script>
@@ -21,7 +27,7 @@ import DCList from 'modules/dc/datacollections'
 import GenericDCList from 'modules/types/gen/dc/datacollections'
 import SMDCList from 'modules/types/sm/dc/datacollections'
 import TomoDCList from 'modules/types/tomo/dc/datacollections'
-import EMDCList from 'modules/types/em/dc/datacollections'
+import EmDcList from 'modules/types/em/dc/views/list/em-dc-list.vue'
 import POWDCList from 'modules/types/pow/dc/datacollections'
 import SAXSDCList from 'modules/types/saxs/dc/datacollections'
 import XPDFDCList from 'modules/types/xpdf/dc/datacollections'
@@ -35,17 +41,17 @@ let dc_views = {
   sm: SMDCList,
   gen: GenericDCList,
   tomo: TomoDCList,
-  em: EMDCList,
+  em: EmDcList,
   pow: POWDCList,
   saxs: SAXSDCList,
   xpdf: XPDFDCList,
 }
 
-
 export default {
     name: 'dc',
     components: {
-        'marionette-view': MarionetteView
+        'marionette-view': MarionetteView,
+        'em-dc-list': EmDcList,
     },
     props: {
         'id': Number,
@@ -59,7 +65,7 @@ export default {
     data: function() {
         return {
             ready: false,
-            mview: null,
+            mview: undefined, // don't use `null` it has `typeof` = `object`
             model: null,
             collection: null,
             params: null,
@@ -74,6 +80,19 @@ export default {
                 model: this.model,
                 params: this.params
             }
+        },
+        typeOfView: function() {
+            // Vue components are objects
+            if (typeof this.mview == 'object') {
+                return this.mview.name
+            }
+            // Marionette views are functions (and need the `ready` flag set)
+            if (typeof this.mview == 'function' && this.ready) {
+                return 'marionette'
+            }
+            // Anything else, including the default `undefined`
+            // Don't use `null` as a default: `typeof null === 'object'`
+            return 'not-ready'
         },
         // Combine with local computed properties, spread operator
         // Allows us to use this.currentProposal mapped to vuex state/getters
