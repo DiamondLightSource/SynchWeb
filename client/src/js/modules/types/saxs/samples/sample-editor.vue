@@ -2,6 +2,7 @@
   <!-- This component manages creation of samples. It holds the main array of sample info that will be added to a container -->
   <div class="">
     <!-- Use plate table, single or table depending on capacity -->
+    
     <component
       :is="sampleComponent"
       :proteins="proteins"
@@ -22,7 +23,8 @@
 import EventBus from 'app/components/utils/event-bus.js'
 
 import Sample from 'models/sample'
-import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
+// import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
+import SingleSample from 'modules/types/saxs/samples/experiments/default/single-sample.vue'
 
 import { SampleTableNewMap, SampleTableViewMap } from 'modules/types/saxs/samples/experiments/sample-table-map'
 
@@ -143,11 +145,13 @@ export default {
       let index = location -1 
       this.$store.commit('samples/clearSample', index)
     },
-    // Take first entry and clone all rows
-    onCloneContainer: function() {
-      let cloneSample = Object.assign({}, this.samples[0])
-      let firstName = this.samples[0].NAME
-      for (var i=1; i<this.samples.length; i++) {
+    // Take first entry (or index) and clone all rows
+    onCloneContainer: function(sampleIndex=0) {
+      console.log("Clone Container with sample Index = " + sampleIndex)
+      if (sampleIndex >= this.samples.length) return
+      let cloneSample = Object.assign({}, this.samples[sampleIndex])
+      let firstName = this.samples[sampleIndex].NAME
+      for (var i=0; i<this.samples.length; i++) {
         cloneSample.LOCATION = (i+1).toString()
         cloneSample.NAME = this.generateSampleName(firstName, i+1)
         this.$store.commit('samples/setSample', {index: i, data: Object.assign(this.samples[i], cloneSample)})

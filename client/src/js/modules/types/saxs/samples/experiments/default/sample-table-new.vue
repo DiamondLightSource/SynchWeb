@@ -6,6 +6,13 @@
 
       The rules for sample name and protein id are dependent on each other. So if there is a protein id, there must be a name and vice versa.
     -->
+  <div class="content">
+    <h1>Samples</h1>
+
+    <puck-sample-controls
+      v-on="$listeners"
+    />
+
     <table-component
       :headers="sampleHeaders"
       :data="inputValue"
@@ -30,6 +37,7 @@
         <a class="button" href="" @click.prevent="$emit('clear-sample', row['LOCATION'])"><i class="fa fa-times"></i></a>
       </template>
     </table-component>
+    </div>
 </template>
 
 <script>
@@ -38,6 +46,8 @@ import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 import Table from 'app/components/table.vue'
+
+import PuckSampleControls from 'modules/types/saxs/samples/puck-sample-controls.vue'
 
 import { SampleHeaders } from 'modules/types/saxs/samples/experiments/sample-table-map.js'
 import { SampleTableMixin } from 'modules/types/saxs/samples/experiments/sample-table-mixin.js'
@@ -55,6 +65,7 @@ export default {
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
     'table-component': Table,
+    'puck-sample-controls': PuckSampleControls,
   },
 
   data: function() {

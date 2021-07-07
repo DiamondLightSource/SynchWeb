@@ -9,6 +9,10 @@
   <div class="content">
     <h1>Samples</h1>
 
+    <puck-sample-controls
+      v-on="$listeners"
+    />
+
     <table-component
       :headers="sampleHeaders"
       :data="inputValue"
@@ -51,6 +55,8 @@ import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 import Table from 'app/components/table.vue'
 import PurificationColumns from 'modules/shipment/collections/purificationcolumns'
 
+import PuckSampleControls from 'modules/types/saxs/samples/puck-sample-controls.vue'
+
 import { SampleHeaders } from 'modules/types/saxs/samples/experiments/sample-table-map.js'
 import { SampleTableMixin } from 'modules/types/saxs/samples/experiments/sample-table-mixin.js'
 
@@ -66,6 +72,7 @@ export default {
     'base-input-checkbox': BaseInputCheckbox,
     'validation-provider': ValidationProvider,
     'table-component': Table,
+    'puck-sample-controls': PuckSampleControls,
   },
 
   data: function() {

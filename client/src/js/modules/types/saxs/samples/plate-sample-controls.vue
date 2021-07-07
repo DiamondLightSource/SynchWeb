@@ -8,7 +8,7 @@
         <a href="#" class="button clear-col" @click.prevent="$emit('clear-plate-column')" title="Clear Column"><i class="fa fa-times"></i> Column</a>
         <a href="#" class="button clear-row" @click.prevent="$emit('clear-plate-row')" title="Clear Row"><i class="fa fa-times"></i> Row</a>
 
-        <a href="#" class="button clear" @click.prevent="$emit('clone-plate-sample')" title="Clear Sample"><i class="fa fa-times"></i></a>
+        <a href="#" class="button clear" @click.prevent="$emit('clear-plate-sample')" title="Clear Sample"><i class="fa fa-times"></i></a>
     </div>
 </template>
 
