@@ -36,8 +36,5 @@ export const SingleSampleMixin = {
     availableProteins: function() {
       return this.proteins.toJSON()
 		},
-		isEditContainer: function () {
-			return this.containerId != null
-		}
   },
 }

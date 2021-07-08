@@ -5,9 +5,9 @@
     <!-- Only allow clone operations when creating the puck/plate -->
     <plate-sample-controls
       v-if="!containerId"
-      @clone-plate="onClonePlate"
-      @clear-plate="onClearPlate"
-      @clear-plate-sample="onClearSample"
+      @clone-container="onClonePlate"
+      @clear-container="onClearPlate"
+      @clear-container-sample="onClearSample"
     />
 
     <div class="form">
