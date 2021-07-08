@@ -2,7 +2,6 @@
   <div class="content">
     <h1>Samples</h1>
     <table-component
-      :key="tableKey"
       :headers="sampleHeaders"
       :data="inputValue"
       actions="Actions"
@@ -76,7 +75,7 @@ import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 
 export default {
-  name: 'edit-sample-plate',
+  name: 'sample-table-robot-view',
   mixins: [SampleTableMixin],
   components: {
     'base-input-select': BaseInputSelect,
@@ -99,61 +98,7 @@ export default {
     return {
       commonSampleHeaders: SampleHeaders['common'],
       experimentHeaders: SampleHeaders['robot'],
-
-      editRowLocation: '',
-      // When editing a row we use a temporary sample object as the model
-      // Then if we cancel the edit, the original row data is not changed
-      sample: {},
-      tableKey: 0,
     }
-  },
-
-  methods: {
-    onSaveSample: function(row) {
-      console.log("SamplePlateEdit - OnSaveSample " + row['LOCATION'])
-      // Assumption that samples are in location order
-      // Convert index, input[0] = location[1]
-      let location = row['LOCATION']
-      let sampleIndex = +location-1
-      this.sample.CONTAINERID = this.containerId
-
-      this.$store.commit('samples/setSample', {index: sampleIndex, data: this.sample})
-
-      // Update sample ACRONYM if valid
-      let acronym = this.getProteinAcronym(this.sample.PROTEINID)
-      if (acronym) this.$store.commit('samples/update', {index: sampleIndex, key: 'ACRONYM', value: acronym})
-
-      this.sendUpdate(location)
-
-      this.resetSampleToEdit()
-    },
-    onEditSample: function(row) {
-      this.sample = Object.assign(this.sample, row)
-      this.editRowLocation = row['LOCATION']
-    },
-    onCancelEdit: function() {
-      this.resetSampleToEdit()
-    },
-    // If a proteinId is updated we need to also update the text ACRONYM because its a plan text value
-    // and not linked directly to the protein id value for each sample
-    getProteinAcronym: function(id) {
-      let protein = this.proteins.findWhere({PROTEINID: id})
-      if (protein) return protein.get('ACRONYM')
-      else return null
-    },
-    isEditRowLocation: function(row) {
-      if (!row['LOCATION']) return false
-      return this.editRowLocation == row['LOCATION'] ? true : false
-    },
-    sendUpdate: function(location) {
-      this.$emit('save-sample', location)
-    },
-    resetSampleToEdit: function() {
-      this.editRowLocation = ''
-      // Reset temporary sample model
-      this.sample = Object.assign({})
-    }
-
   },
 }
 </script>

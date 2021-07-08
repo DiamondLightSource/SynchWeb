@@ -63,7 +63,7 @@ import { SampleTableMixin } from 'modules/types/saxs/samples/experiments/sample-
 import { ValidationProvider }  from 'vee-validate'
 
 export default {
-  name: 'new-sample-plate-hplc',
+  name: 'sample-table-hplc-new',
   mixins: [SampleTableMixin],
   components: {
     'base-input-select': BaseInputSelect,

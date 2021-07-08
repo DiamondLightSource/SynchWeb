@@ -62,7 +62,7 @@ import { SingleSampleMixin } from 'modules/types/saxs/samples/experiments/single
 import { ValidationProvider }  from 'vee-validate'
 
 export default {
-  name: 'single-sample-new',
+  name: 'single-sample-default',
 	mixins: [SingleSampleMixin],
   components: {
     'base-input-select': BaseInputSelect,

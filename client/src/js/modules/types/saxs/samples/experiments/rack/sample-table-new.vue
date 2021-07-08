@@ -67,7 +67,7 @@ import { SampleTableMixin } from 'modules/types/saxs/samples/experiments/sample-
 import { ValidationProvider }  from 'vee-validate'
 
 export default {
-  name: 'new-sample-plate-rack',
+  name: 'sample-table-rack-new',
   mixins: [SampleTableMixin],
   components: {
     'base-input-select': BaseInputSelect,
