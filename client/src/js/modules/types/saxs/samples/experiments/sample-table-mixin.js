@@ -6,11 +6,6 @@ export const SampleTableMixin = {
     proteins: {
       type: Array,
     },
-    // Passed v-model
-    value: {
-      type: Object,
-      required: true
-    },
   },
   data: function() {
     return {
@@ -21,7 +16,7 @@ export const SampleTableMixin = {
     }
   },
   computed: {
-    // Trick to allow us to set/get passed model
+    // Trick to allow us to set/get passed model from vuex store
     inputValue: {
       get() {
         return this.$store.state.samples.samples
@@ -40,7 +35,6 @@ export const SampleTableMixin = {
     },
   },
 	created: function () {
-		console.log("Sample Table Mixin")
     this.availableProteins = this.proteins.toJSON()
   },
 }

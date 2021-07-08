@@ -1,12 +1,14 @@
 <template>
   <!-- This component manages creation of samples. It holds the main array of sample info that will be added to a container -->
   <div class="">
-    <!-- Use plate table, single or table depending on capacity -->
     
+    <!-- Wrap the form in an observer component so we can check validation state on submission -->
+    <validation-observer ref="sampleObserver">
+    
+    <!-- Use plate table, single or table depending on capacity -->
     <component
       :is="sampleComponent"
       :proteins="proteins"
-      v-model="samples"
       :experimentKind="experimentKind"
       :containerId="containerId"
       :sampleLocation="sampleLocation"
@@ -16,6 +18,8 @@
       @clone-container="onCloneContainer"
       @clear-container="onClearContainer"
     />
+
+    </validation-observer>
   </div>
 </template>
 
@@ -23,10 +27,11 @@
 import EventBus from 'app/components/utils/event-bus.js'
 
 import Sample from 'models/sample'
-// import SingleSample from 'modules/types/saxs/samples/SingleSample.vue'
 import SingleSample from 'modules/types/saxs/samples/experiments/default/single-sample.vue'
 
 import { SampleTableNewMap, SampleTableViewMap } from 'modules/types/saxs/samples/experiments/sample-table-map'
+
+import { ValidationObserver }  from 'vee-validate'
 
 import { mapGetters } from 'vuex'
 
@@ -44,6 +49,7 @@ export default {
   name: 'sample-editor',
   components: {
     'single-sample-plate': SingleSample,
+    'validation-observer': ValidationObserver,
   },
   props: {
     containerType: {
@@ -58,10 +64,6 @@ export default {
     },
     gproteins: {
       type: Object
-    },
-    automated: {
-      type: Boolean,
-      default: false
     },
     containerId: {
       type: Number
@@ -185,6 +187,13 @@ export default {
       // If no container id we can't correctly add the new samples to the container
       if (!containerId) return
 
+      this.$refs.sampleObserver.validate().then( (result) => {
+        if (result) this.saveSamples(containerId)
+        else console.log("Error saving samples for container " + containerId)
+      })
+    },
+
+    saveSamples: function(containerId) {
       this.$store.dispatch('samples/save', containerId).then( () => {
           // If we have a container id we are creating all samples
           // On success, reset because we will want to start with a clean slate
@@ -193,19 +202,28 @@ export default {
           this.$store.commit('notifications/addNotification', { message: err.message, level: 'error'})
         })
     },
+    
     // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
     onSaveSample: function(location) {
-      console.log("SAMPLE EDITOR SAVE SAMPLE " + location)
+      this.$refs.sampleObserver.validate().then( (result) => {
+        console.log("Sample Editor is Valid was: " + result)
+        if (result) this.saveSample(location)
+        else {
+          this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
+          console.log("Validation failed for sample location: " + location)
+        }
+      })
+    },
+
+    saveSample: function(location) {
       let sampleIndex = +location -1
-      // Create a new Sample so it uses the BLSAMPLEID to check for post, update etc
+      // Create a new Sample Model so it uses the BLSAMPLEID to check for post, update etc
       let sampleModel = new Sample( this.samples[sampleIndex] )
 
       this.$store.dispatch('saveModel', {model: sampleModel}).then( (result) => {
-        // Update BLSAMPLEID
+        // Update BLSAMPLEID for this sample in the vuex store
         if (!this.samples[sampleIndex]['BLSAMPLEID']) this.$store.commit('samples/update', {index: sampleIndex, key: 'BLSAMPLEID', value: result.get('BLSAMPLEID')})
-
-        // this.samplesCollection.at(sampleIndex).set(this.samples[sampleIndex])
       }, (err) => console.log("Error saving model: " + JSON.stringify(err)))
     },
   }

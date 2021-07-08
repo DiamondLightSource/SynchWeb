@@ -101,6 +101,7 @@ import ContainerHistory from 'modules/shipment/collections/containerhistory'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
 import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
+import EventBus from 'app/components/utils/event-bus.js'
 import Samples from 'collections/samples'
 import SampleEditor from 'modules/types/saxs/samples/sample-editor.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
@@ -295,7 +296,9 @@ export default {
         this.$store.commit('samples/setSample', {index: i, data: s.toJSON()})
       })
     },
-
+    onContainerCellClicked: function(location) {
+      EventBus.$emit('select-sample', location)
+    },
   }
 }
 </script>

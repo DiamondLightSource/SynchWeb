@@ -6,11 +6,6 @@ export const SingleSampleMixin = {
     proteins: {
       type: Array,
     },
-    // Passed v-model
-    value: {
-      type: Object,
-      required: true
-		},
 		containerId: {
 			type: Number,
 			default: null
@@ -24,14 +19,15 @@ export const SingleSampleMixin = {
     }
   },
   computed: {
+    // Trick to allow us to set/get passed model from vuex store
     inputValue: {
       get() {
-        return this.value
+        return this.$store.state.samples.samples
       },
       set(val) {
-        this.$emit('input', val)
+        this.$store.commit('samples/set', val)
       }
-    },
+		},
     sampleIndex: function() {
       // Sample location is the 1..192 location
       // Here we want to edit a zero-indexed array
@@ -43,9 +39,5 @@ export const SingleSampleMixin = {
 		isEditContainer: function () {
 			return this.containerId != null
 		}
-  },
-	created: function () {
-		console.log("Single Sample Mixin")
-    // this.availableProteins = this.proteins.toJSON()
   },
 }

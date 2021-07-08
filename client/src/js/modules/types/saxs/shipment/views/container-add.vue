@@ -249,7 +249,6 @@ import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 
 import EventBus from 'app/components/utils/event-bus.js'
 
-// import SampleEditor from 'modules/types/saxs/samples/SampleEditor.vue'
 import SampleEditor from 'modules/types/saxs/samples/sample-editor.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
@@ -678,7 +677,6 @@ export default {
     },
 
     onContainerCellClicked: function(location) {
-      console.log("onContainerCell clicked = " + location)
       EventBus.$emit('select-sample', location)
     },
   },
