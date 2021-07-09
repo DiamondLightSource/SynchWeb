@@ -17,6 +17,8 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import { SampleViewMap } from 'modules/samples/components/samples-map'
 import Sample from 'models/sample'
+import Instance from 'modules/types/xpdf/models/instance'
+import { mapGetters } from 'vuex'
 
 import store from 'app/store/store'
 
@@ -49,15 +51,15 @@ export default {
                 queryParams: this.queryParams
             }
         },
-        proposalType : function() {
-            return this.$store.state.proposal.proposalType
-        }
+        // Combine with local computed properties, spread operator
+        // Allows us to use this.currentProposal mapped to vuex state/getters
+        ...mapGetters('proposal', {
+            proposalType: 'currentProposalType'
+        })
     },
     created: function() {
         // Set the marionette view constructor we need based on the type
-        this.mview = SampleViewMap[this.proposalType].view || SampleView['default'].view
-
-        console.log("Sample View Created for proposal Type = " + this.proposalType)
+        this.mview = SampleViewMap[this.proposalType] ? SampleViewMap[this.proposalType].view : SampleViewMap['default'].view
 
         // As per the original controller this does not use the mapping to determine the title
         // It should probably be consistent and use the following:

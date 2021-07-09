@@ -19,7 +19,8 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import { ProteinAddMap } from 'modules/samples/components/samples-map'
 import Protein from 'models/protein'
-
+// Allow us to map store values to local computed properties
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'protein-add-wrapper',
@@ -45,9 +46,9 @@ export default {
                 model: this.model
             }
         },
-        proposalType: function() {
-            return this.$store.state.proposal.proposalType
-        }
+        ...mapGetters('proposal', {
+            proposalType: 'currentProposalType'
+        })
     },
     created: function() {
         // Make sure we are using an up to date proposalType

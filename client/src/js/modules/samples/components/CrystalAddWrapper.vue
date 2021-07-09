@@ -22,8 +22,8 @@
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import { CrystalAddMap } from 'modules/samples/components/samples-map'
-import Crystals from 'collections/crystals'
-
+// Allow us to map store values to local computed properties
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'crystal-add-wrapper',
@@ -41,18 +41,16 @@ export default {
         // Don't need to pass any options - it's a plain view
         options: function() {
             return {}
-        }
+        },
+        ...mapGetters('proposal', {
+            proposalType: 'currentProposalType'
+        })
     },
     created: function() {
-        let proposalType = this.$store.state.proposal.proposalType
-        console.log("CrystalAddWrapper View Created for proposal Type = " + proposalType)
-
-        let title = CrystalAddMap[proposalType].title || 'Crystal'
+        this.mview = CrystalAddMap[this.proposalType] ? CrystalAddMap[this.proposalType].view : CrystalAddMap['default'].view
+        let title = CrystalAddMap[this.proposalType] ? CrystalAddMap[this.proposalType].title : CrystalAddMap['default'].title
 
         this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }, { title: 'Add '+title } ]
-
-        this.mview = CrystalAddMap[proposalType].view || CrystalAddMap['default'].view
-
         // We have no need to wait for proposal lookups here
         this.ready = true
     },

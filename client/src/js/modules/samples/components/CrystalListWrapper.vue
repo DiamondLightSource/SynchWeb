@@ -23,6 +23,8 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import { CrystalListMap } from 'modules/samples/components/samples-map'
 import Crystals from 'collections/crystals'
+// Allow us to map store values to local computed properties
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'crystal-list-wrapper',
@@ -50,24 +52,24 @@ export default {
                 model: this.model,
                 params: this.params
             }
-        }
+        },
+        ...mapGetters('proposal', {
+            proposalType: 'currentProposalType'
+        })
     },
     created: function() {
-        let proposalType = this.$store.state.proposal.proposalType
-        console.log("CrystalListWrapper View Created for proposal Type = " + proposalType)
-
-        let title = CrystalListMap[proposalType].title || 'Crystal'
+        let title = CrystalListMap[this.proposalType] ? CrystalListMap[this.proposalType].title : CrystalListMap['default'].title
 
         this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }]
 
         this.params = {s: this.search }
         // Extra search params needed as a special case
-        if (proposalType == 'xpdf') this.params.seq = 1
+        if (this.proposalType == 'xpdf') this.params.seq = 1
 
         // page will be passed in as prop in Number format
         this.collection = new Crystals(null, { state: { currentPage: this.page || 1, addPrimary: app.type == 'xpdf' }, queryParams: this.params })
 
-        this.mview = CrystalListMap[proposalType].view || CrystalListMap['default'].view
+        this.mview = CrystalListMap[this.proposalType] ? CrystalListMap[this.proposalType].view : CrystalListMap['default'].view
 
         // We have no need to wait for proposal lookups here
         this.ready = true

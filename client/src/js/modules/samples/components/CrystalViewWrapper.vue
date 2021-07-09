@@ -24,6 +24,8 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import { CrystalViewMap } from 'modules/samples/components/samples-map'
 import Crystal from 'models/crystal'
+// Allow us to map store values to local computed properties
+import { mapGetters } from 'vuex'
 
 import store from 'app/store/store'
 
@@ -56,19 +58,14 @@ export default {
                 queryParams: this.queryParams
             }
         },
-        proposalType : function() {
-            return this.$store.state.proposal.proposalType
-        }
+        ...mapGetters('proposal', {
+            proposalType: 'currentProposalType'
+        })
     },
     created: function() {
-        console.log("Crystal View Created for proposal Type = " + this.proposalType)
+        let title = CrystalViewMap[this.proposalType] ? CrystalViewMap[this.proposalType].title : CrystalViewMap['default'].title
 
-        // Set the marionette view constructor we need based on the type
-        this.mview = CrystalViewMap[this.proposalType].view || CrystalViewMap['default'].view
-
-        let title = CrystalViewMap[this.proposalType].title || 'Crystal'
-
-        this.bc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+        this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }]
 
         this.model = new Crystal({ CRYSTALID: this.cid }, { addPrimary: this.proposalType == 'xpdf' })
         // For xpdf there is data.seq = 1 used in the fetch request!
@@ -79,6 +76,9 @@ export default {
         //      success: function() {
         // For a model we pass the 'data' query parameters in as options.queryParameters
         if (this.proposalType == 'xpdf') this.queryParams = { seq: 1 }
+
+        // Set the marionette view constructor we need based on the type
+        this.mview = CrystalViewMap[this.proposalType] ? CrystalViewMap[this.proposalType].view : CrystalViewMap['default'].view
 
         this.ready = true
     },
