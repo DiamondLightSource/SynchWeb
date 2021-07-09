@@ -42,6 +42,7 @@ module.exports = (env, argv) => ({
         secure: env && env.proxy && env.proxy.secure && JSON.parse(env.proxy.secure)
       },
     ],
+    hot: true
   },
   optimization: {
     splitChunks: {
@@ -196,8 +197,8 @@ module.exports = (env, argv) => ({
           { 
             loader: MiniCssExtractPlugin.loader,
             options: {
-              hmr: argv.mode === 'development',
-              // reloadAll: true,
+              hmr: true,
+              reloadAll: true,
             }
           },
           "css-loader", // translates CSS into CommonJS
@@ -223,6 +224,7 @@ module.exports = (env, argv) => ({
   },
 
   plugins: [
+    new webpack.HotModuleReplacementPlugin(),
     new webpack.ProvidePlugin({
        $: "jquery",
         jQuery: "jquery",
