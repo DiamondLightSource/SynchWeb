@@ -52,8 +52,6 @@ export default {
         })
     },
     created: function() {
-        console.log("ProteinList View Created for proposal Type = " + this.proposalType)
-
         let title = SampleListMap[this.proposalType] ? SampleListMap[this.proposalType].title : SampleListMap['default'].title
 
         this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }]
