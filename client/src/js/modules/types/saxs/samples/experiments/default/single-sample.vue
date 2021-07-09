@@ -8,6 +8,8 @@
       @clone-container="onClonePlate"
       @clear-container="onClearPlate"
       @clear-container-sample="onClearSample"
+      @clone-container-column="onCloneContainerColumn"
+      @clone-container-row="onCloneContainerRow"
     />
 
     <div class="form">
@@ -73,24 +75,32 @@ export default {
 		'plate-sample-controls': PlateSampleControls,
   },
 	methods: {
-		onClonePlate: function() {
-			this.$emit('clone-container', this.sampleIndex)
-		},
-		onClearPlate: function() {
-			this.$emit('clear-container')
-		},
-		onClearSample: function() {
-			let location = this.sampleIndex + 1
+    onClonePlate: function() {
+      this.$emit('clone-container', this.sampleIndex)
+    },
+    onClearPlate: function() {
+      this.$emit('clear-container')
+    },
+    onClearSample: function() {
+      let location = this.sampleIndex + 1
 
-			this.$emit('clear-sample', location)
-		},
-		onSaveSample: function() {
-			let location = this.sampleIndex + 1
-			let containerId = this.inputValue[this.sampleIndex].CONTAINERID
-			if (!containerId) this.inputValue[this.sampleIndex].CONTAINERID = this.containerId
+      this.$emit('clear-sample', location)
+    },
+    onCloneContainerColumn: function() {
+      let location = this.sampleIndex + 1
+      this.$emit('clone-container-column', location)
+    },
+    onCloneContainerRow: function() {
+      let location = this.sampleIndex + 1
+      this.$emit('clone-container-row', location)
+    },
+    onSaveSample: function() {
+      let location = this.sampleIndex + 1
+      let containerId = this.inputValue[this.sampleIndex].CONTAINERID
+      if (!containerId) this.inputValue[this.sampleIndex].CONTAINERID = this.containerId
 
-			this.$emit('save-sample', location)
-		}
+      this.$emit('save-sample', location)
+    }
 	}
 }
 </script>

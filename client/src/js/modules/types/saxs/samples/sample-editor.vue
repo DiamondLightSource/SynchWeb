@@ -17,6 +17,8 @@
       @clear-sample="onClearSample"
       @clone-container="onCloneContainer"
       @clear-container="onClearContainer"
+      @clone-container-column="onCloneColumn"
+      @clone-container-row="onCloneRow"
     />
 
     </validation-observer>
@@ -149,14 +151,10 @@ export default {
     },
     // Take first entry (or index) and clone all rows
     onCloneContainer: function(sampleIndex=0) {
-      console.log("Clone Container with sample Index = " + sampleIndex)
-      if (sampleIndex >= this.samples.length) return
-      let cloneSample = Object.assign({}, this.samples[sampleIndex])
-      let firstName = this.samples[sampleIndex].NAME
+      console.log("Clone Container from sample Index = " + sampleIndex)
+
       for (var i=0; i<this.samples.length; i++) {
-        cloneSample.LOCATION = (i+1).toString()
-        cloneSample.NAME = this.generateSampleName(firstName, i+1)
-        this.$store.commit('samples/setSample', {index: i, data: Object.assign(this.samples[i], cloneSample)})
+        this.cloneSample(sampleIndex, i)
       }
     },
     // Remove all sample information from every row
@@ -226,6 +224,79 @@ export default {
         if (!this.samples[sampleIndex]['BLSAMPLEID']) this.$store.commit('samples/update', {index: sampleIndex, key: 'BLSAMPLEID', value: result.get('BLSAMPLEID')})
       }, (err) => console.log("Error saving model: " + JSON.stringify(err)))
     },
+    getRowColDrop: function(pos) {
+      let well = this.containerType.WELLDROP > -1 ? 1 : 0
+      let dropTotal = (this.containerType.DROPPERWELLX * this.containerType.DROPPERWELLY) - well
+      
+      var wellpos = Math.floor((parseInt(pos)-1) / dropTotal)
+      var drop = ((pos-1) % dropTotal)+1
+      
+      var col = wellpos % this.containerType.WELLPERROW
+      var row = Math.floor(wellpos / this.containerType.WELLPERROW)
+
+      return { row: row, col: col, drop: drop, pos: pos }
+    },
+    onCloneColumn: function(location) {
+      let sampleIndex = +location - 1
+
+      console.log("Current Sample = " + JSON.stringify(this.samples[sampleIndex]))
+
+      let sourceCoordinates = this.getRowColDrop(location)
+
+      console.log("Source coordinates = " + JSON.stringify(sourceCoordinates))
+      for (var i=0; i<this.samples.length; i++) {
+        // We are only cloning samples that come after this one - so skip any with a lower index
+        if (i > sampleIndex) {
+          let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
+          console.log("Target coordinates = " + JSON.stringify(targetCoordinates))
+
+          if (targetCoordinates['drop'] == sourceCoordinates['drop'] && targetCoordinates['col'] == sourceCoordinates['col']) {
+            let result = this.cloneSample(sampleIndex, i)
+            if (!result) console.log("Error cloning sample index: " + sampleIndex + " to: " + i)
+          }
+        }
+      }
+    },
+    onCloneRow: function(location) {
+      let sampleIndex = +location - 1
+
+      let sourceCoordinates = this.getRowColDrop(location)
+
+      for (var i=0; i<this.samples.length; i++) {
+        // We are only cloning samples that come after this one - so skip any with a lower index
+        if (i > sampleIndex) {
+          let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
+          console.log("Target coordinates = " + JSON.stringify(targetCoordinates))
+
+          if (targetCoordinates['drop'] == sourceCoordinates['drop'] && targetCoordinates['row'] == sourceCoordinates['row']) {
+            let result = this.cloneSample(sampleIndex, i)
+            if (!result) console.log("Error cloning sample index: " + sampleIndex + " to: " + i)
+          }
+        }
+      }
+    },
+    cloneSample: function(sourceIndex, targetIndex) {
+      if (targetIndex >= this.samples.length) return false
+      if (sourceIndex >= this.samples.length) return false
+
+      let sourceSample = this.samples[sourceIndex]
+      if (sourceSample.PROTEINID < 0) {
+        console.log("Can't clone non-existant sample")
+        return false
+      }
+
+      let baseName = this.samples[sourceIndex].NAME
+      let sampleClone = Object.assign(this.samples[targetIndex], this.samples[sourceIndex])
+      sampleClone.LOCATION = (targetIndex+1).toString()
+      sampleClone.NAME = this.generateSampleName(baseName, targetIndex+1)
+      this.$store.commit('samples/setSample', {index: targetIndex, data: sampleClone})
+
+      // Alternative option if reactivity is not working as we would like...
+      // this.$store.commit('samples/setSample', { index:targetIndex, data: Object.assign(this.samples[targetIndex], this.samples[sourceIndex])})
+      // this.$store.commit('samples/update', {index: targetIndex, key: 'LOCATION', value: (targetIndex+1).toString()})
+      // this.$store.commit('samples/update', {index: targetIndex, key: 'NAME', value: this.generateSampleName(this.samples[sourceIndex].NAME, targetIndex+1)})
+      return true
+    }
   }
 }
 </script>
