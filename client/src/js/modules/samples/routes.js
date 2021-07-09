@@ -4,17 +4,17 @@
 // The wrapper components use samples-map to figure out which views are required
 
 // Because we are using wrapper vue components we can use the standard lazy loading async method
-const ProteinListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ProteinListWrapper.vue')
-const ProteinAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ProteinAddWrapper.vue')
-const ProteinViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ProteinViewWrapper.vue')
+const ProteinListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-list-wrapper.vue')
+const ProteinAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-add-wrapper.vue')
+const ProteinViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-view-wrapper.vue')
 
-const SampleListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleListWrapper.vue')
-const SampleViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleViewWrapper.vue')
+const SampleListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-list-wrapper.vue')
+const SampleViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-view-wrapper.vue')
 const XpdfSimpleSampleAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/XpdfSimpleSampleAddWrapper.vue')
 
-const CrystalListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/CrystalListWrapper.vue')
-const CrystalViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/CrystalViewWrapper.vue')
-const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/CrystalAddWrapper.vue')
+const CrystalListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-list-wrapper.vue')
+const CrystalViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-view-wrapper.vue')
+const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-add-wrapper.vue')
 
 const SampleGroups = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleGroups.vue')
 const SampleGroupEdit = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleGroupEdit.vue')
