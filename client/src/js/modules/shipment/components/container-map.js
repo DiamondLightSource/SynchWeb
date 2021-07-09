@@ -12,13 +12,19 @@ export const ContainerListMap = {
 }
 
 export const ContainerViewMap = {
-    mx:     { title: 'Container', view: ContainerView },
-    xpdf:   { title: 'Container', view: XpdfContainerView },
-    default:{ title: 'Container', view: ContainerView }
+  mx:     { title: 'Container', view: ContainerView },// Because we want to use new components
+  xpdf:   { title: 'Container', view: XpdfContainerView },
+  default:{ title: 'Container', view: ContainerView }
+}
+
+export const ContainerPlateViewMap = {
+  mx:     { title: 'Container', view: ContainerPlateView },
+  default:{ title: 'Container', view: ContainerPlateView }
 }
 
 export const ContainerAddMap = {
     xpdf:   { title: 'Container', view: XpdfContainerAddView },
-    default:{ title: 'Container', view: ContainerAddView }
+    default:{ title: 'Container', view: ContainerAddView },
+    mx: { title: 'Container', view: null }
 }
 
