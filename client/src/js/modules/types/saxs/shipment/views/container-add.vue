@@ -209,6 +209,7 @@ Once container is valid then samples are added
           :proteins="proteinsCollection"
           :gproteins="gProteinsCollection"
           :automated="containerState.AUTOMATED"
+          :containerGroup="containerGroup"
           @select-sample="onSelectSample"
         />
       </div>

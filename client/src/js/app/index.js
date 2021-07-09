@@ -40,3 +40,6 @@ const vm = new Vue({
 if (window.Cypress) {
   window.vm = vm
 }
+
+Vue.config.devtools = !config.production 
+module.hot.accept()

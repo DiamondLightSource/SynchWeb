@@ -29,6 +29,7 @@ export const ContainerPlateViewMap = {
 export const ContainerAddMap = {
     xpdf:   { title: 'Container', view: XpdfContainerAddView },
     saxs:   { title: 'Container', view: null }, // Because we want to use new components
-    default:{ title: 'Container', view: ContainerAddView }
+    default:{ title: 'Container', view: ContainerAddView },
+    mx: { title: 'Container', view: null }
 }
 
