@@ -8,22 +8,11 @@
       </span>
     </h1>
 
-    <div v-if="isVisit && !isSingle">
-      <p
-        v-if="isInactive"
-        class="message notify"
-      >
-        This visit is inactive and will not auto update | Auto Refresh
-        <input
-          type="checkbox"
-          name="autorefresh"
-          value="1"
-        >
-        <a
-          href="#"
-          class="button refresh"
-        ><i class="fa fa-refresh" /> Refresh</a>
-      </p>
+    <div v-if="isVisit && !isSingleDataCollection">
+      <refresh
+        :collection="options.collection"
+        :model="options.model"
+      />
 
       <toolbar />
 
@@ -60,11 +49,13 @@
 </template>
 
 <script>
+import Refresh from 'modules/types/em/dc/views/list/refresh.vue'
 import Toolbar from 'modules/types/em/dc/views/list/toolbar.vue'
 
 export default {
     'name': 'EmDcList',
     'components': {
+        'refresh': Refresh,
         'toolbar': Toolbar,
     },
     'props': {
@@ -82,7 +73,7 @@ export default {
         'isVisit': function() {
             return this.$store.state.proposal.visit != ''
         },
-        'isSingle': function() {
+        'isSingleDataCollection': function() {
             return !(!this.options.params.id)
         },
         'isDataCollectionGroup': function() {
@@ -90,10 +81,6 @@ export default {
         },
         'isProcessingJob': function() {
             return !(!this.options.params.pjid)
-        },
-        'isInactive': function() {
-            return this.visit.match(/^(cm|nt|nr)/) == null &&
-                this.options.model.get('ACTIVE') != '1'
         },
         'allCollectionsUrl': function() {
             var url = '/dc'
