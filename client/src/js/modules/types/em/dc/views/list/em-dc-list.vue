@@ -45,8 +45,11 @@
       class="st"
       :beamline="beamline"
     />
-    <div class="lg" /><!-- log -->
 
+    <log
+      class="lg"
+      :collection="collection"
+    />
     <div class="srch clearfix" /><!-- search -->
 
     <div class="page_wrap one" />
@@ -56,6 +59,7 @@
 </template>
 
 <script>
+import Log from 'modules/types/em/dc/views/list/log.vue'
 import Refresh from 'modules/types/em/dc/views/list/refresh.vue'
 import Status from 'modules/types/em/dc/views/list/status.vue'
 import Toolbar from 'modules/types/em/dc/views/list/toolbar.vue'
@@ -64,6 +68,7 @@ import Usage from 'modules/types/em/dc/views/list/usage.vue' // TODO: broken!
 export default {
     'name': 'EmDcList',
     'components': {
+        'log': Log,
         'refresh': Refresh,
         'status': Status,
         'toolbar': Toolbar,
