@@ -63,6 +63,7 @@ const proposalModule = {
             commit('setProposal', null)
             commit('setProposalType', rootState.user.defaultType)
             commit('setProposalModel', null)
+            commit('clearVisit')
             resolve()
             return
           }

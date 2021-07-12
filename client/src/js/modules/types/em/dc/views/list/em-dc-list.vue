@@ -3,7 +3,9 @@
     <h1 class="no_mobile">
       <div class="usage r" />
       Data Collections
-      <span v-if="isVisit">for {{ visit }} on {{ beamlineName }}</span>
+      <span v-if="isVisit">
+        for {{ $store.state.proposal.visit }} on {{ beamlineName }}
+      </span>
     </h1>
 
     <div v-if="isVisit && !isSingle">
@@ -23,7 +25,7 @@
         ><i class="fa fa-refresh" /> Refresh</a>
       </p>
 
-      <toolbar :visit="visit" />
+      <toolbar />
 
       <div class="breakdown" />
     </div>
@@ -61,9 +63,9 @@
 import Toolbar from 'modules/types/em/dc/views/list/toolbar.vue'
 
 export default {
-    'name': "EmDcList",
+    'name': 'EmDcList',
     'components': {
-        'toolbar': Toolbar
+        'toolbar': Toolbar,
     },
     'props': {
         key: String,
@@ -74,14 +76,11 @@ export default {
         breadcrumbs: Array,
     },
     'computed' : {
-        'visit': function() {
-            return this.options.model.get('VISIT')
-        },
         'beamlineName': function() {
             return this.options.model.get('BEAMLINENAME')
         },
         'isVisit': function() {
-            return !(!this.options.params.visit)
+            return this.$store.state.proposal.visit != ''
         },
         'isSingle': function() {
             return !(!this.options.params.id)
@@ -99,7 +98,7 @@ export default {
         'allCollectionsUrl': function() {
             var url = '/dc'
             if (this.isVisit) {
-                url = url + '/visit/' + this.visit
+                url = url + '/visit/' + this.$store.state.proposal.visit
             }
             return url
         },

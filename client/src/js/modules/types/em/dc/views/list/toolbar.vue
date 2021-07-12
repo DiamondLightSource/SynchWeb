@@ -67,7 +67,7 @@ export default {
     },
     'data': function () {
         return {
-            'marionetteOptions': { 'visit': this.visit },
+            'marionetteOptions': { 'visit': this.$store.state.proposal.visit },
             'userView': UserView,
             'showUsers': false,
             'dewarsView': DewarsView,
@@ -76,11 +76,10 @@ export default {
     },
     'computed' : {
         'statsUrl': function() {
-            console.log(this.userView)
-            return '/stats/visit/' + this.visit
+            return '/stats/visit/' + this.$store.state.proposal.visit
         },
         'relionUrl': function() {
-            return '/em/process/relion/session/' +  this.visit
+            return '/em/process/relion/session/' + this.$store.state.proposal.visit
         },
     },
 }
