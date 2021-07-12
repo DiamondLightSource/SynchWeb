@@ -50,7 +50,13 @@
       class="lg"
       :collection="collection"
     />
-    <div class="srch clearfix" /><!-- search -->
+
+    <search
+      class="srch clearfix"
+      :collection="collection"
+      :value="searchValue"
+      :url="searchUrl"
+    />
 
     <div class="page_wrap one" />
     <div class="data_collections" />
@@ -61,6 +67,7 @@
 <script>
 import Log from 'modules/types/em/dc/views/list/log.vue'
 import Refresh from 'modules/types/em/dc/views/list/refresh.vue'
+import Search from 'modules/types/em/dc/views/list/search.vue'
 import Status from 'modules/types/em/dc/views/list/status.vue'
 import Toolbar from 'modules/types/em/dc/views/list/toolbar.vue'
 import Usage from 'modules/types/em/dc/views/list/usage.vue' // TODO: broken!
@@ -70,6 +77,7 @@ export default {
     'components': {
         'log': Log,
         'refresh': Refresh,
+        'search': Search,
         'status': Status,
         'toolbar': Toolbar,
         'usage': Usage,
@@ -109,6 +117,15 @@ export default {
         },
         'hasCams': function() {
             return this.model.get('CAMS') == 1
+        },
+        'searchValue': function() {
+            return this.params.search
+        },
+        'searchUrl': function() {
+            // In old Marionette version this was
+            // !options.noSearchUrl
+            // But, as far as I can see, options.noSearchUrl doesn't exist
+            return true
         },
         'allCollectionsUrl': function() {
             var url = '/dc'
