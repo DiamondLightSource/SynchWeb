@@ -1,69 +1,60 @@
 <template>
   <div class="links">
-    <a
-      class="button"
+    <toolbar-link
       :href="statsUrl"
-      title="Visit Statistics"
-    >
-      <i class="fa fa-pie-chart" /> <span>Visit Stats</span>
-    </a>
+      title="Visit Stats"
+      icon="fa-pie-chart"
+    />
 
-    <a
-      href="#"
-      class="button users"
-      @mouseover.prevent="showUsers = true"
+    <toolbar-link
+      extra-class="users"
+      title="Users"
+      icon="fa-users"
+      @mouseover="showUsers = true"
       @mouseleave="showUsers = false"
     >
-      <i class="fa fa-users" /> <span>Users</span>
       <marionette-wrapper
         v-if="showUsers"
         :options="marionetteOptions"
         :mview="userView"
       />
-    </a>
+    </toolbar-link>
 
-    <a
-      href="#"
-      class="button dewars"
-      @mouseover.prevent="showDewars = true"
+    <toolbar-link
+      title="Parcels"
+      extra-class="dewars"
+      icon="fa-truck"
+      @mouseover="showDewars = true"
       @mouseleave="showDewars = false"
     >
-      <i class="fa fa-truck" /> <span>Parcels</span>
       <marionette-wrapper
         v-if="showDewars"
         :options="marionetteOptions"
         :mview="dewarsView"
       />
-    </a>
+    </toolbar-link>
 
     <!-- <a class="button"  href="/em/process/visit/<%-VISIT%>" title="Scipion Processing"><i class="fa fa-cog"></i> <span>Processing</span></a> -->
 
-    <a
-      class="button"
+    <toolbar-link
       :href="relionUrl"
       title="Relion Processing"
-    >
-      <i class="fa fa-cog" /> <span>Relion Processing</span>
-    </a>
+      icon="fa-cog"
+    />
   </div>
 </template>
 
 <script>
-
 import UserView from 'modules/proposal/views/users'
 import DewarsView from 'modules/proposal/views/dewars'
 import MarionetteWrapper from 'app/views/marionette/marionette-wrapper.vue'
+import ToolbarLink from 'modules/types/em/dc/views/list/toolbar-link.vue'
 
 export default {
-    'name': "Toolbar",
+    'name': 'Toolbar',
     'components': {
         'marionette-wrapper': MarionetteWrapper,
-    },
-    'props': {
-        'visit': {
-            'type': String,
-            'required': true,
-        },
+        'toolbar-link': ToolbarLink,
     },
     'data': function () {
         return {
