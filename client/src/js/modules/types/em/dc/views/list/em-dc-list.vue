@@ -19,7 +19,10 @@
 
       <toolbar />
 
-      <div class="breakdown" />
+      <breakdown
+        v-if="showBreakdown"
+        :model="breakdownModel"
+      />
     </div>
 
     <h1
@@ -73,6 +76,8 @@
 </template>
 
 <script>
+import Breakdown from 'modules/types/em/dc/views/list/breakdown.vue'
+import BreakdownModel from 'modules/stats/models/breakdown'
 import Log from 'modules/types/em/dc/views/list/log.vue'
 import Pagination from 'modules/types/em/dc/views/list/pagination.vue'
 import Refresh from 'modules/types/em/dc/views/list/refresh.vue'
@@ -84,6 +89,7 @@ import Usage from 'modules/types/em/dc/views/list/usage.vue' // TODO: broken!
 export default {
     'name': 'EmDcList',
     'components': {
+        'breakdown': Breakdown,
         'log': Log,
         'pagination': Pagination,
         'refresh': Refresh,
@@ -106,6 +112,14 @@ export default {
             'required': true,
         },
     },
+    'data': function() {
+        return {
+            'breakdownModel': new BreakdownModel({
+                'visit': this.$store.state.proposal.visit
+            }),
+            'breakdownLoaded': false,
+        }
+    },
     'computed': {
         'beamline': function() {
             return this.model.get('BL')
@@ -124,6 +138,9 @@ export default {
         },
         'isProcessingJob': function() {
             return this.params.pjid !== null
+        },
+        'isActive': function() {
+            return this.model.get('ACTIVE') == 1
         },
         'hasCams': function() {
             return this.model.get('CAMS') == 1
@@ -144,6 +161,41 @@ export default {
             }
             return url
         },
+        'showBreakdown': function () {
+            return this.breakdownLoaded && !this.isSingleDataCollection
+        },
+    },
+    'mounted': function() {
+        const component = this
+        const fetchBreakdownModel = function() {
+            component.$store.commit('loading', true)
+            component.$store.dispatch('getModel', component.breakdownModel).then(
+                () => {
+                    component.breakdownLoaded = true
+                    component.$store.commit('loading', false)
+                },
+                () => {
+                    component.breakdownLoaded = false
+                    component.$store.commit('loading', false)
+                    console.log(
+                        this.$options.name + ' Error getting model ' + this.error
+                    )
+                    app.alert({
+                        'title': 'Error getting model',
+                        'message': this.error
+                    })
+                }
+            ).finally(
+                () => {
+                    if (component.model.get('ACTIVE') == 1) {
+                        // TODO: this was / should be (???) 10 seconds, not 30!
+                        setTimeout(fetchBreakdownModel, 30 * 1000)
+                    }
+                }
+            )
+        }
+
+        fetchBreakdownModel()
     },
 }
 </script>
