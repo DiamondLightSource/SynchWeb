@@ -1,7 +1,10 @@
 <template>
   <section class="content">
     <h1 class="no_mobile">
-      <div class="usage r" />
+      <usage
+        v-if="isVisit"
+        class="usage r"
+      />
       Data Collections
       <span v-if="isVisit">
         for {{ $store.state.proposal.visit }} on {{ beamlineName }}
@@ -51,12 +54,14 @@
 <script>
 import Refresh from 'modules/types/em/dc/views/list/refresh.vue'
 import Toolbar from 'modules/types/em/dc/views/list/toolbar.vue'
+import Usage from 'modules/types/em/dc/views/list/usage.vue' // TODO: broken!
 
 export default {
     'name': 'EmDcList',
     'components': {
         'refresh': Refresh,
         'toolbar': Toolbar,
+        'usage': Usage,
     },
     'props': {
         key: String,
