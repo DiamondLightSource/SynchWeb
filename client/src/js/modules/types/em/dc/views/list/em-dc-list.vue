@@ -58,14 +58,23 @@
       :url="searchUrl"
     />
 
-    <div class="page_wrap one" />
+    <pagination
+      class="page_wrap one"
+      :collection="collection"
+    />
+
     <div class="data_collections" />
-    <div class="page_wrap two" />
+
+    <pagination
+      class="page_wrap two"
+      :collection="collection"
+    />
   </section>
 </template>
 
 <script>
 import Log from 'modules/types/em/dc/views/list/log.vue'
+import Pagination from 'modules/types/em/dc/views/list/pagination.vue'
 import Refresh from 'modules/types/em/dc/views/list/refresh.vue'
 import Search from 'modules/types/em/dc/views/list/search.vue'
 import Status from 'modules/types/em/dc/views/list/status.vue'
@@ -76,6 +85,7 @@ export default {
     'name': 'EmDcList',
     'components': {
         'log': Log,
+        'pagination': Pagination,
         'refresh': Refresh,
         'search': Search,
         'status': Status,
