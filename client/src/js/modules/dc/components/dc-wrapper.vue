@@ -8,10 +8,15 @@
       :mview="mview"
       :breadcrumbs="bc"
     />
+    <!-- For a MarionetteView - collection, model and params are wrapped in the
+         options property for pure Vue views they are better as individual
+         properties -->
     <em-dc-list
       v-if="typeOfView == 'EmDcList'"
       :key="$route.fullPath"
-      :options="options"
+      :collection="collection"
+      :model="model"
+      :params="params"
       :breadcrumbs="bc"
     />
   </section>

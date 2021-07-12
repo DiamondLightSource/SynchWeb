@@ -13,8 +13,8 @@
 
     <div v-if="isVisit && !isSingleDataCollection">
       <refresh
-        :collection="options.collection"
-        :model="options.model"
+        :collection="collection"
+        :model="model"
       />
 
       <toolbar />
@@ -23,7 +23,7 @@
     </div>
 
     <h1
-      v-if="isSingle || isDataCollectionGroup"
+      v-if="isSingleDataCollection || isDataCollectionGroup"
       class="message nou"
     >
       <a
@@ -64,28 +64,34 @@ export default {
         'usage': Usage,
     },
     'props': {
-        key: String,
-        options: {
-            type: Object,
-            required: true,
+        'collection': {
+            'type': Object,
+            'required': true,
         },
-        breadcrumbs: Array,
+        'model': {
+            'type': Object,
+            'required': true,
+        },
+        'params': {
+            'type': Object,
+            'required': true,
+        },
     },
-    'computed' : {
+    'computed': {
         'beamlineName': function() {
-            return this.options.model.get('BEAMLINENAME')
+            return this.model.get('BEAMLINENAME')
         },
         'isVisit': function() {
             return this.$store.state.proposal.visit != ''
         },
         'isSingleDataCollection': function() {
-            return !(!this.options.params.id)
+            return this.params.id !== null
         },
         'isDataCollectionGroup': function() {
-            return !(!this.options.params.dcg)
+            return this.params.dcg !== null
         },
         'isProcessingJob': function() {
-            return !(!this.options.params.pjid)
+            return this.params.pjid !== null
         },
         'allCollectionsUrl': function() {
             var url = '/dc'
