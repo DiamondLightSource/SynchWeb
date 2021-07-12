@@ -40,7 +40,11 @@
       Processing Job
     </h2>
 
-    <div class="st" /><!-- status -->
+    <status
+      v-if="hasCams"
+      class="st"
+      :beamline="beamline"
+    />
     <div class="lg" /><!-- log -->
 
     <div class="srch clearfix" /><!-- search -->
@@ -53,6 +57,7 @@
 
 <script>
 import Refresh from 'modules/types/em/dc/views/list/refresh.vue'
+import Status from 'modules/types/em/dc/views/list/status.vue'
 import Toolbar from 'modules/types/em/dc/views/list/toolbar.vue'
 import Usage from 'modules/types/em/dc/views/list/usage.vue' // TODO: broken!
 
@@ -60,6 +65,7 @@ export default {
     'name': 'EmDcList',
     'components': {
         'refresh': Refresh,
+        'status': Status,
         'toolbar': Toolbar,
         'usage': Usage,
     },
@@ -78,6 +84,9 @@ export default {
         },
     },
     'computed': {
+        'beamline': function() {
+            return this.model.get('BL')
+        }
         'beamlineName': function() {
             return this.model.get('BEAMLINENAME')
         },
@@ -92,6 +101,9 @@ export default {
         },
         'isProcessingJob': function() {
             return this.params.pjid !== null
+        },
+        'hasCams': function() {
+            return this.model.get('CAMS') == 1
         },
         'allCollectionsUrl': function() {
             var url = '/dc'
