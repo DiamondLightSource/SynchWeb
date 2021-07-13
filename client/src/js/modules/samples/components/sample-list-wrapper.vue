@@ -12,20 +12,14 @@
 </template>
 
 <script>
-/*
-* This component is probably redundant
-* The only proposal types to use this are from within XPDF types
-* There is no default view for crystals route defined getsampleview.js
-* So we could just map /crystals directly to XPDFSampleList
-* For the initial port we are just keeping the structure as is
-*/
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
-import { CrystalListMap } from 'modules/samples/components/samples-map'
-import Crystals from 'collections/crystals'
+import { SampleListMap } from 'modules/samples/components/samples-map'
+import Samples from 'collections/samples'
+import { mapGetters } from 'vuex'
 
 export default {
-    name: 'crystal-list-wrapper',
+    name: 'protein-list-wrapper',
     components: {
         'marionette-view': MarionetteView
     },
@@ -50,24 +44,23 @@ export default {
                 model: this.model,
                 params: this.params
             }
-        }
+        },
+        // Combine with local computed properties, spread operator
+        // Allows us to use this.currentProposal mapped to vuex state/getters
+        ...mapGetters('proposal', {
+            proposalType: 'currentProposalType'
+        })
     },
     created: function() {
-        let proposalType = this.$store.state.proposal.proposalType
-        console.log("CrystalListWrapper View Created for proposal Type = " + proposalType)
-
-        let title = CrystalListMap[proposalType].title || 'Crystal'
+        let title = SampleListMap[this.proposalType] ? SampleListMap[this.proposalType].title : SampleListMap['default'].title
 
         this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }]
 
-        this.params = {s: this.search }
-        // Extra search params needed as a special case
-        if (proposalType == 'xpdf') this.params.seq = 1
+        this.params = { s: this.search }
+        
+        this.collection = new Samples(null, { state: { currentPage: this.page || 1 }, queryParams: this.params })
 
-        // page will be passed in as prop in Number format
-        this.collection = new Crystals(null, { state: { currentPage: this.page || 1, addPrimary: app.type == 'xpdf' }, queryParams: this.params })
-
-        this.mview = CrystalListMap[proposalType].view || CrystalListMap['default'].view
+        this.mview = SampleListMap[this.proposalType] ? SampleListMap[this.proposalType].view : SampleListMap['default'].view
 
         // We have no need to wait for proposal lookups here
         this.ready = true
