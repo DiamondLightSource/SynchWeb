@@ -36,7 +36,7 @@ Slots include:
       @blur="onBlur"
       @focus="$emit('focus')"
     >
-      <option v-show="defaultText" disabled value="">{{defaultText}}</option>
+      <option v-show="defaultText" disabled :value="defaultValue">{{defaultText}}</option>
       <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
     </select>
 
@@ -92,6 +92,10 @@ export default {
     defaultText: {
       type: String,
       required: false
+    },
+    defaultValue: {
+      type: String,
+      default: ""
     },
     // Pass in class styling for input
     inputClass: {
