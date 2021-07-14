@@ -261,7 +261,7 @@
           Add Container Button (1)
           Old style large add container button
         -->
-        <span v-if="PROPOSAL_ACTIVE" class="r padded_button add_container">
+        <span v-if="PROPOSAL_ACTIVE && currentDewarId" class="r padded_button add_container">
           <router-link class="button" :to="'/containers/add/did/'+currentDewarId"><i class="fa fa-plus"></i> Add Container</router-link>
         </span>
     </h1>
