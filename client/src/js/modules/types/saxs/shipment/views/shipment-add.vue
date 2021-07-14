@@ -57,7 +57,17 @@
               </label>
               <div class="tw-flex">
                   <base-input-radio class="tw-mt-2" :options="sessionTypes" v-model="sessionType" />
-                  <base-input-select v-show="sessionType == 0" name="FIRSTEXPERIMENTID" class="tw-mr-2" v-model="selectedVisit" :options="visits" optionValueKey="SESSIONID" optionTextKey="VISITDETAIL" defaultText="Please select a visit"></base-input-select>
+                  <validation-provider slim :rules="sessionType == 0 ? 'required|min_value:1' : ''" name="FIRSTEXPERIMENTID" v-slot="{ errors }">
+                    <base-input-select v-show="sessionType == 0" class="tw-mr-2" 
+                      v-model="selectedVisit" 
+                      :options="visits"
+                      optionValueKey="SESSIONID"
+                      optionTextKey="VISITDETAIL"
+                      defaultText="Please select a visit"
+                      defaultValue="0"
+                      :errorMessage="errors[0]">
+                    </base-input-select>
+                  </validation-provider>
               </div>
           </div>
 
@@ -75,7 +85,7 @@
               :errorMessage="errors[0]"/>
           </validation-provider>
 
-            <base-input-textarea id="comments" v-model="comments" name="COMMENTS" description="Comment for the shipment" label="Comments"/>
+          <base-input-textarea id="comments" v-model="comments" name="COMMENTS" description="Comment for the shipment" label="Comments"/>
 
           <h1 class="tw-text-lg tw-font-bold tw-mb-2">Delivery information</h1>
           <validation-provider rules="required" name="Sending Lab Contact" v-slot="{ errors }">
@@ -141,8 +151,7 @@ import BaseInputRadio from 'app/components/base-input-radio.vue'
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 const SCHEDULED_SESSION = 0
-const AUTOMATED_SESSION = 1
-const RESPONSIVE_SESSION = 2
+const RESPONSIVE_SESSION = 1
 
 
 export default {
@@ -168,11 +177,10 @@ export default {
       visits: [],
       sessionTypes: [
         {id: 0, label: 'Scheduled Session: ', value: SCHEDULED_SESSION},
-        {id: 1, label: 'Automated / Imager', value: AUTOMATED_SESSION},
-        {id: 2, label: 'Responsive Remote / Mail-in', value: RESPONSIVE_SESSION}
+        {id: 1, label: 'Responsive Remote / Mail-in', value: RESPONSIVE_SESSION}
       ],
       sessionType: SCHEDULED_SESSION,
-      selectedVisit: '',
+      selectedVisit: "0",
 
       // Values that will be added to the shipment request
       shipmentName: '',
@@ -207,14 +215,7 @@ export default {
     },
   },
 
-  watch: {
-    dewarList: function(newVal) {
-      console.log("Dewar list updated: " + JSON.stringify(newVal))
-    }
-  },
-
   created: function() {
-
     let visitsCollection = new VisitsCollection(null, { queryParams: { next: 1 }, state: { pageSize: 9999 } })
     let dewarRegistryCollection = new DewarRegistryCollection(null, { state: { pageSize: 9999 } })
 
@@ -260,7 +261,6 @@ export default {
         RETURNLABCONTACTID: this.returnLabContact,
         DEWAR_TYPE: 'Parcel',
       })
-      console.log(JSON.stringify(shipmentModel))
 
       this.saveModel(shipmentModel)
     },
@@ -269,22 +269,15 @@ export default {
     // On success - redirect to view the newly created shipment
     // On error - add a notification and stay where we are
     saveModel: function(model) {
-      let self = this
       this.$store.commit('loading', true)
-
-      model.save({}, {
-        success: function(model, response) {
-          self.$store.commit('loading', false)
-          let sid = model.get('SHIPPINGID')
-          console.log("Shipment Model was saved " + JSON.stringify(response))
-          console.log("Shipment ID = " + sid)
-          self.$router.push({name: 'shipment-view', params: { sid } })
-        },
-        error: function(model, response, options) {
-            console.log('failure from shipadd')
-            self.$store.commit('loading', false)
-            self.$store.commit('notifications/addNotification', { message: 'Something went wrong registering this shipment, please try again', level: 'error'})
-        },
+      this.$store.dispatch('saveModel', {model: model}).then( (result) => {
+          let sid = result.get('SHIPPINGID')
+          this.$router.push({name: 'shipment-view', params: { sid } })
+      }, () => {
+            console.log('failure from saving shipment')
+            this.$store.commit('notifications/addNotification', { title: 'Save Error', message: 'Something went wrong registering this shipment, please try again', level: 'error'})
+      }).finally( () => {
+        this.$store.commit('loading', false)
       })
     },
     onAddLocalContact: function() {

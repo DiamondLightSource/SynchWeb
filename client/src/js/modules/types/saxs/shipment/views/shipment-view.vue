@@ -22,7 +22,10 @@
         <span v-if="DHL_ENABLE">
           <span v-if="DELIVERYAGENT_HAS_LABEL == '1'">
             <a class="button pdf" :href="APIURL+'/pdf/awb/sid/'+shipment.SHIPPINGID" @click="onPrintPdf"><i class="fa fa-print"></i> Print Airway Bill</a>
-            <!-- <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a> -->
+            <!-- 
+              This button was commented out in the original shipment template
+              <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a>
+            -->
             <span v-if="!DELIVERYAGENT_PICKUPCONFIRMATION">
                 <a class="button awb" :href="'/shipments/pickup/sid/'+shipment.SHIPPINGID"><i class="fa fa-truck"></i> Rebook Pickup</a>
             </span>
@@ -170,6 +173,7 @@
 
     <div class="ra"><a v-if="PROPOSAL_ACTIVE" href="#" class="button" id="add_dewar" title="Add a package to this shipment" @click.prevent="onAddDewar"><i class="fa fa-plus"></i> Add Item to Shipment</a></div>
 
+    <validation-observer ref="dewarsObserver">
     <!--
       List of dewars/parcels within this shipment
       The user can add a dewar/parcel to this list by clicking on Add Item to shipment.
@@ -192,7 +196,7 @@
           <span>{{row['BARCODE']}}</span>
         </td>
         <td>
-          <validation-provider v-if="isEditingRowIndex(rowIndex)" slim rules="required" v-slot="{ errors }">
+          <validation-provider v-if="isEditingRowIndex(rowIndex)" slim :rules="{required: false, regex:'^[a-zA-Z]{3}-[a-zA-Z]{2}-[0-9]+$'}" v-slot="{ errors }">
             <base-input-text v-model="newDewar['FACILITYCODE']" :quiet="true" :errorMessage="errors[0]"/>
           </validation-provider>
           <span v-else>{{row['FACILITYCODE']}}</span>
@@ -204,10 +208,19 @@
           <span v-else>{{row['WEIGHT']}}</span>
         </td>
         <td>
-          <validation-provider v-if="isEditingRowIndex(rowIndex)" slim rules="required|numeric" v-slot="{ errors }">
-            <base-input-text v-model="newDewar['FIRSTEXPERIMENTID']" :quiet="true" :errorMessage="errors[0]"/>
+          <validation-provider v-if="isEditingRowIndex(rowIndex)" slim rules="required|numeric|min_value:1" v-slot="{ errors }">
+            <!-- <base-input-text v-model="newDewar['FIRSTEXPERIMENTID']" :quiet="true" :errorMessage="errors[0]"/> -->
+            <base-input-select
+              v-model="newDewar['FIRSTEXPERIMENTID']"
+              :options="visits"
+              optionValueKey="SESSIONID"
+              optionTextKey="VISITDETAIL"
+              defaultText="Please select a visit"
+              defaultValue="0"
+              :errorMessage="errors[0]">
+            </base-input-select>
           </validation-provider>
-          <span v-else>{{row['FIRSTEXPERIMENTID']}}</span>
+          <span v-else>{{getVisitDetail(row['FIRSTEXPERIMENTID'])}}</span>
         </td>
         <td>
           <span>{{row['TRACKINGNUMBERTOSYNCHROTRON']}}</span>
@@ -240,25 +253,34 @@
         </div>
       </template>
     </table-component>
+    </validation-observer>
 
     <h1>
         Package Details: {{currentDewarName}}
-        <!-- Old style large add container button -->
-        <!-- <span v-if="PROPOSAL_ACTIVE" class="r padded_button add_container">
-          <a class="button" :href="'/containers/add/did/'+currentDewarId"><i class="fa fa-plus"></i> Add Container</a>
-        </span> -->
+        <!-- 
+          Add Container Button (1)
+          Old style large add container button
+        -->
+        <span v-if="PROPOSAL_ACTIVE" class="r padded_button add_container">
+          <router-link class="button" :to="'/containers/add/did/'+currentDewarId"><i class="fa fa-plus"></i> Add Container</router-link>
+        </span>
     </h1>
 
     <p class="help">This section shows contents and history for the selected package. Click the spyglass icon to view the contents of the container</p>
 
-    <!-- Tailwind style - makes the Add Container button to be consistent with Add Dewar -->
-    <div class="tw-flex tw-justify-end tw-my-2">
+    <!--
+      Add Container Button (2)
+      Tailwind style - makes the Add Container button to be consistent with Add Dewar
+    -->
+    <!-- 
+      <div class="tw-flex tw-justify-end tw-my-2">
         <span class="r padded_button add_container">
           <span v-if="PROPOSAL_ACTIVE" class="r padded_button add_container">
             <router-link class="button" :to="'/containers/add/did/'+currentDewarId"><i class="fa fa-plus"></i> Add Container</router-link>
           </span>
         </span>
-    </div>
+      </div>
+    -->
 
     <div class="tw-flex tw-flex-col sm:tw-flex-row">
       <!--
@@ -270,7 +292,7 @@
             {{container.NAME}} ({{container.SAMPLES}} Samples)
 
             <span class="r">
-              <a class="button button-notext print" title="Click to print container contents" :href="'/api/pdf/container/cid/'+container.CONTAINERID+'/prop/'+PROPOSAL" onPrintPdf><i class="fa fa-print"></i> <span>Print Container Report</span></a>
+              <a class="button button-notext print" title="Click to print container contents" :href="APIURL+'/pdf/container/cid/'+container.CONTAINERID+'/prop/'+PROPOSAL" @click="onPrintPdf"><i class="fa fa-print"></i> <span>Print Container Report</span></a>
               <a class="button button-notext view" title="Click to View Container" :href="'/containers/cid/'+container.CONTAINERID"><i class="fa fa-search"></i> <span>View Container</span></a>
               <a href="#" class="button button-notext move" @click.prevent="onMoveContainer(container.CONTAINERID)"><i class="fa fa-arrows"></i> <span>Move Container</span></a>
             </span>
@@ -343,13 +365,17 @@ import BaseInputSelect from 'app/components/base-input-select.vue'
 import TableComponent from 'app/components/table.vue'
 import PaginationComponent from 'app/components/pagination.vue'
 
-import { ValidationProvider }  from 'vee-validate'
+import VisitsCollection from 'collections/visits'
+
+import { ValidationProvider, ValidationObserver }  from 'vee-validate'
+import { mapState } from 'vuex'
 
 const INITIAL_DEWAR_STATE = {
   SHIPPINGID: '',
   CODE: '',
   FACILITYCODE: '',
   WEIGHT: '',
+  FIRSTEXPERIMENTID: ''
 }
 
 export default {
@@ -363,6 +389,7 @@ export default {
     'table-component': TableComponent,
     'pagination-component': PaginationComponent,
     'validation-provider': ValidationProvider,
+    'validation-observer': ValidationObserver,
   },
   props: {
     // The Shipment model will be passed into this page
@@ -392,6 +419,7 @@ export default {
         {key: 'CCOUNT', title: 'Containers'}
       ],
       dewars: [],
+      dewarsCollection: null,
       currentDewarId: null,
       currentDewarName: null,
 
@@ -413,20 +441,17 @@ export default {
       containers: [],
       containersTotal: 0,
 
-      shipment: {},
+      shipment: {}, // JSON representation of the Shipping Backbone model
+      visits: [],
+      visitsCollection: null
     }
   },
 
   computed: {
-    PROPOSAL: function() {
-      return this.$store.state.proposal.proposal
-    },
     PROPOSAL_ACTIVE: function() {
-      if (app.proposal && app.proposal.get('ACTIVE') == '1') return true
+      let isActive = this.proposalModel ? this.proposalModel.get('ACTIVE') : '0'
+      if (isActive == '1') return true
       else return false
-    },
-    APIURL: function() {
-      return this.$store.state.apiUrl
     },
     DHL_ENABLE: function() {
       return app.options.get('dhl_enable')
@@ -436,42 +461,24 @@ export default {
     },
     markAsSent: function() {
       return this.shipment.SHIPPINGSTATUS == 'opened' || this.shipment.SHIPPINGSTATUS == 'awb created' || this.shipment.SHIPPINGSTATUS == 'pickup booked'
-    }
+    },
+    ...mapState({ 'APIURL': 'apiUrl'}),
+    ...mapState('proposal', { 'proposalModel': 'proposalModel', 'PROPOSAL': 'proposal' })
   },
 
   created: function() {
-    // Marshall the model into JSON so we can use v-model
+    // Marshall the model into JSON so we can use v-model on its attributes
     this.shipment = Object.assign({}, this.model.toJSON())
-
-    // Backbone models for dewar / parcel contents
     this.getDewars()
-
-    // Get Lab Contacts
     this.getLocalContacts()
+    this.getVisits()
   },
   watch: {
-    currentDewarId: function() {
-      // When the currently selected dewar changes we need to update the history and tracking tables
-      // Note inconsistent use of id and dewarID!!!
-      this.getDewarHistory(this.currentDewarId)
-
-      this.updateDewarContent()
-
-      // Grab sort tracking as well
-      let dewartracking = new DewarTracking()
-      var d = this.dewarsCollection.findWhere({ DEWARID: this.currentDewarId })
-
-      if (d && (d.get('TRACKINGNUMBERTOSYNCHROTRON') || d.get('TRACKINGNUMBERTOSYNCHROTRON'))) {
-          dewartracking.queryParams.DEWARID = did
-
-          this.$store.dispatch('getCollection', dewartracking).then( (result) => {
-            console.log("DEWAR Tracking: " + JSON.stringify(result))
-            this.dewarTracking = result.toJSON()
-          })
-      } else {
-          this.dewarTracking = Object.assign({}, {ORIGIN: 'N/A', DESTINATION: 'N/A'})
-      }
-
+    currentDewarId: function(newId) {
+      // When the currently selected dewar changes we need to update the history, container list (contents) and tracking tables
+      this.getDewarHistory(newId)
+      this.getDewarContents(newId)
+      this.getDewarTrackingInformation(newId)
     },
   },
 
@@ -498,7 +505,13 @@ export default {
       this.editingDewarIndex = index
     },
     onSaveDewar: function() {
-      this.newDewar.SHIPPINGID = this.model.get('SHIPPINGID')
+      this.$refs.dewarsObserver.validate().then( (result) => {
+        if (result) this.saveDewar()
+        else this.$store.commit('notifications/addNotification', {title: 'Error', message: 'Form validation failed, please edit the dewar fields and try again', level: 'error'})
+      })
+    },
+    saveDewar: function() {
+      this.newDewar.SHIPPINGID = this.shipment.SHIPPINGID 
 
       let attributes = {}
 
@@ -542,7 +555,7 @@ export default {
     },
 
     onUpdateContent: function(payload) {
-      this.updateDewarContent(payload)
+      this.getDewarContents(this.currentDewarId, payload)
     },
 
     onUpdateHistory: function(payload) {
@@ -555,7 +568,6 @@ export default {
       dewarHistory.id = dewarId
 
       this.$store.dispatch('getCollection', dewarHistory).then( (result) => {
-        console.log("Got Dewar History: " + JSON.stringify(result))
         this.dewarHistory = result.toJSON()
         this.dewarHistoryTotal = result.state.totalRecords
       })
@@ -637,9 +649,7 @@ export default {
         app.dialog.show(new MoveContainerView({ model: result }))
         app.on('container:moved', function() {
           self.getDewars()
-
-          self.updateDewarContent()
-
+          self.getDewarContents(self.currentDewarId)
         })
       })
     },
@@ -664,17 +674,45 @@ export default {
         }
       })
     },
-    updateDewarContent: function(paging=null) {
+    getDewarTrackingInformation: function(dewarId) {
+      // Grab sort tracking as well
+      let dewartracking = new DewarTracking()
+      var d = this.dewarsCollection.findWhere({ DEWARID: dewarId })
+
+      if (d && (d.get('TRACKINGNUMBERTOSYNCHROTRON') || d.get('TRACKINGNUMBERTOSYNCHROTRON'))) {
+          dewartracking.queryParams.DEWARID = dewarId
+
+          this.$store.dispatch('getCollection', dewartracking).then( (result) => {
+            this.dewarTracking = result.toJSON()
+          })
+      } else {
+          this.dewarTracking = Object.assign({}, {ORIGIN: 'N/A', DESTINATION: 'N/A'})
+      }
+    },
+    getDewarContents: function(dewarId, paging=null) {
       let pagingState = paging || { pageSize: 5}
       
       let dewarContent = new Containers(null, {state: pagingState})
-      dewarContent.dewarID = this.currentDewarId
+      dewarContent.dewarID = dewarId
       dewarContent.setSorting('NAME')
 
       this.$store.dispatch('getCollection', dewarContent).then( (result) => {
         this.containers = result.toJSON()
         this.containersTotal = result.state.totalRecords
       })
+    },
+    getVisits: function() {
+      if (!this.visitsCollection) this.visitsCollection = new VisitsCollection(null, { queryParams: { next: 1 }, state: { pageSize: 9999 } })
+
+      this.$store.dispatch('getCollection', this.visitsCollection).then( (result) => {
+        this.visits = result.toJSON()
+      }, () => {
+        self.$store.commit('notifications/addNotification', { message: 'Error retrieving visits', level: 'error' })
+      })
+    },
+    getVisitDetail: function(id) {
+      let visit = this.visitsCollection.findWhere({SESSIONID: id})
+      return visit ? visit.get('VISIT') : ''
     },
     isEditingRowIndex: function(index) {
       return index == this.editingDewarIndex
