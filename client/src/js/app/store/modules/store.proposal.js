@@ -47,7 +47,7 @@ const proposalModule = {
     },
     // Set current visit / session number
     setVisit(state, visit) {
-      state.visit = visit
+      state.visit = visit ? visit : ''
     },
     clearVisit(state) {
       state.visit = ''
