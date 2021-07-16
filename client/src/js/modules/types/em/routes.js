@@ -3,9 +3,29 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 // Import style for lazy loading of Vue Single File Component
 const RelionView = () => import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/relion.vue')
 const RelionAddProcessing = () => import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/add-processing-job.vue')
+const DataCollectionView = () => import(/* webpackChunkName: "em" */ 'modules/types/em/dc/data-collection.vue')
 const ScipionView = import(/* webpackChunkName: "em" */ 'modules/types/em/scipion/views/scipion')
 
 const routes = [
+    {
+        'path': '/dc/visit/:visit_str/collection/:collection_id',
+        'component': DataCollectionView,
+        'props': route => ({
+            'dataCollectionId': route.params.collection_id,
+            'visit': route.params.visit_str
+        }),
+        'beforeEnter': (to, from, next) => {
+            if (to.params.collection_id && to.params.visit_str) {
+                next()
+            } else {
+                app.message({
+                    title: 'Data collection and/or visit not specified',
+                    message: 'No data collection and/or visit specified'
+                })
+                next('/notfound')
+            }
+        }
+    },
     {
         path: '/em/process/relion/session/:session_str',
         component: RelionView,

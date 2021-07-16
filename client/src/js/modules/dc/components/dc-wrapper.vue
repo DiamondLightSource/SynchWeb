@@ -13,7 +13,6 @@
          properties -->
     <em-dc-list
       v-if="typeOfView == 'EmDcList'"
-      :key="$route.fullPath"
       :collection="collection"
       :model="model"
       :params="params"
@@ -32,7 +31,7 @@ import DCList from 'modules/dc/datacollections'
 import GenericDCList from 'modules/types/gen/dc/datacollections'
 import SMDCList from 'modules/types/sm/dc/datacollections'
 import TomoDCList from 'modules/types/tomo/dc/datacollections'
-import EmDcList from 'modules/types/em/dc/views/list/em-dc-list.vue'
+import EmDcList from 'modules/types/em/dc-list/em-dc-list.vue'
 import POWDCList from 'modules/types/pow/dc/datacollections'
 import SAXSDCList from 'modules/types/saxs/dc/datacollections'
 import XPDFDCList from 'modules/types/xpdf/dc/datacollections'
