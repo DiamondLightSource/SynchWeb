@@ -21,12 +21,13 @@
           :class="{ 'same-as-selected':
             selectedItem[valueField] === option[valueField]
           }"
-          class="tw-cursor-pointer"
+          class="tw-cursor-pointer tw-flex tw-w-full tw-justify-between"
           :ref="`selectOption${optionIndex}`"
           :key="`selectOptionIndex${optionIndex}`"
           :value="option[valueField]"
           @click.stop="selectOption(option, $event)">
           {{ option[textField] }}
+          <slot name="icons"></slot>
         </div>
       </div>
       <slot></slot>
@@ -36,7 +37,6 @@
         type="text"
         :ref="`searchInput-${inputIndex}`"
         class="tw-w-full select-search-input"
-        @focusout="lostFocus"
         v-model="searchText"
         @focus="openOptionList($event)"/>
     </div>
@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { eq, has } from 'lodash'
+import { eq, has, cloneDeep } from 'lodash'
 import OutsideClickDirective from 'app/directives/outside-click.directive'
 
 export default {
@@ -104,6 +104,18 @@ export default {
     spacingClass: {
       type: String,
       default: 'tw-px-2'
+    },
+    hasIcon: {
+      type: Boolean,
+      default: false
+    },
+    iconClassName: {
+      type: String,
+      default: '',
+    },
+    iconParentClass: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -139,7 +151,6 @@ export default {
       this.searchText = ''
     },
     closeSelectDiv(force = true) {
-      console.log('Closed and shut down');
       // If IndexClass is passes into this method call, it will close all opened select in document except for the one
       // with a css class called `select-${indexClass}`
       // This is useful if you want to leave a parent select component open or if you
@@ -182,7 +193,7 @@ export default {
     filteredOptions() {
       const regex = new RegExp(this.searchText, 'i')
 
-      return this.data
+      return cloneDeep(this.data)
         .filter((option) => {
           const hasSearchText = option[this.textField].match(regex)
           if (hasSearchText && hasSearchText.length > 0) {
