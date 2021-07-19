@@ -23,6 +23,10 @@ client/node_modules
 client/assets
 client/index.php
 client/dist
+client/index.html
 
 api/config.php
 api/vendor
+api/src/MockUAS.php
+
+./idea
