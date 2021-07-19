@@ -12,6 +12,7 @@
       :experimentKind="experimentKind"
       :containerId="containerId"
       :sampleLocation="sampleLocation"
+      @input="handleSamplesChange"
       @save-sample="onSaveSample"
       @clone-sample="onCloneSample"
       @clear-sample="onClearSample"
@@ -30,6 +31,7 @@ import EventBus from 'app/components/utils/event-bus.js'
 
 import Sample from 'models/sample'
 import SingleSample from 'modules/types/saxs/samples/experiments/default/single-sample.vue'
+import PuckSamplesPlate from 'modules/types/mx/samples/puck-samples-plate.vue'
 
 import { SampleTableNewMap, SampleTableViewMap } from 'modules/types/saxs/samples/experiments/sample-table-map'
 
@@ -52,6 +54,7 @@ export default {
   components: {
     'single-sample-plate': SingleSample,
     'validation-observer': ValidationObserver,
+    'puck-samples-plate': PuckSamplesPlate
   },
   props: {
     containerType: {
@@ -70,6 +73,9 @@ export default {
     containerId: {
       type: Number
     },
+    containerGroup: {
+      type: String
+    }
   },
   data() {
     return {
@@ -92,6 +98,8 @@ export default {
       let component = sampleTableMap[experimentType]
 
       if (this.containerType.CAPACITY > 25) component = 'single-sample-plate'
+
+      if (this.containerGroup == 'mx') component = 'puck-samples-plate'
 
       return component
     },
@@ -296,6 +304,9 @@ export default {
       // this.$store.commit('samples/update', {index: targetIndex, key: 'LOCATION', value: (targetIndex+1).toString()})
       // this.$store.commit('samples/update', {index: targetIndex, key: 'NAME', value: this.generateSampleName(this.samples[sourceIndex].NAME, targetIndex+1)})
       return true
+    },
+    handleSamplesChange(data) {
+      console.log({ data })
     }
   }
 }
