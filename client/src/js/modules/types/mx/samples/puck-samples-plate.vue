@@ -19,7 +19,7 @@
     </div>
     <div class="list-header tw-flex tw-items-center tw-w-full tw-bg-table-header-background tw-text-table-header-color">
       <div
-        v-for="(column, columnIndex) in tableColumns"
+        v-for="(column, columnIndex) in requiredColumns"
         :key="columnIndex"
         :class="{
           'tw-flex': true,
@@ -35,6 +35,23 @@
       >
         {{ column.title }}
       </div>
+      <div class="tw-flex tw-w-1/2">
+        <div
+          v-for="(column, columnIndex) in dynamicColumns"
+          :key="columnIndex"
+          :class="{
+            'tw-flex': true,
+            'tw-items-center': true,
+            'tw-p-2': true,
+            'tw-justify-center': true,
+            'tw-text-center': true,
+            'tw-h-12': true,
+            [column.className]: true
+          }"
+        >
+          {{ column.title }}
+        </div>
+      </div>
     </div>
     <div class="tw-flex tw-py-1" v-for="(sample, sampleIndex) in samples" :key="sampleIndex">
       <div class="location-column tw-text-center">{{ sample.LOCATION || sampleIndex + 1 }}</div>
@@ -45,9 +62,18 @@
           textField="text"
           :inputIndex="sampleIndex"
           :selectCount="samples.length"
+          :selectedItem="formatSelectData(proteinsOptionsList, sample, 'PROTEINID')"
           defaultText=""
           size="small"
-          valueField="value">
+          :hasIcon="true"
+          iconClassName="fa-check"
+          iconParentClass="tw-text-green"
+          valueField="value"
+          v-on:handle-select-event="handleProteinSelection(sampleIndex, $event)"
+        >
+          <template slot="icons">
+            <span><i class="fa fa-check green"></i></span>
+          </template>
         </combo-box>
       </validation-provider>
 
@@ -65,11 +91,12 @@
         ></base-input-select>
       </validation-provider>
 
-
       <tabbed-columns
+        class="tw-w-1/2"
         :currentTab="currentTab"
         :rowData="sample"
         :experimentKind=[]
+        :spaceGroups="spaceGroups"
         :selectedScreeningMode="{}"
         :selectedCenteringMode="{}"
         @input="handleFieldChange($event, sampleIndex)"
@@ -85,6 +112,7 @@ import BaseInputText from 'app/components/base-input-text.vue'
 import TabbedColumnsView from 'modules/types/mx/samples/tabbed-columns-view.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
+import { cloneDeep } from 'lodash'
 
 export default {
   name: 'puck-samples-plate',
@@ -144,78 +172,78 @@ export default {
         {
           key: 'ANOLAMLOUS',
           title: 'Anomalous',
-          className: 'anomalous-column'
+          className: 'tw-w-1/4'
         },
         {
           key: 'COMMENT',
           title: 'Comment',
-          className: 'comment-column'
+          className: 'tw-w-1/2'
         }
       ],
       extraFieldsColumns: [
         {
           key: 'USERPATH',
           title: 'User Path',
-          className: 'user-path-column'
+          className: 'tw-w-3/12'
         },
         {
           key: 'SPACEGROUP',
           title: 'Spacegroup',
-          className: 'space-group-column'
+          className: 'tw-w-3/12'
         },
         {
           key: 'CELLS',
           title: 'Unit Cell',
-          className: 'cell-column'
+          className: 'tw-w-4/12'
         }
       ],
       udcColumns: [
         {
           key: 'CENTERINGMETHOD',
           title: 'Centering Method',
-          className: 'centering-method-column'
+          className: 'tw-w-2/12'
         },
         {
           key: 'EXPERIMENTKIND',
           title: 'Experiment Kind',
-          className: 'experiment-kind-column'
+          className: 'tw-w-2/12'
         },
         {
           key: 'ENERGY',
           title: 'Energy (eV)',
-          className: 'energy-column'
+          className: 'tw-w-1/12'
         },
         {
           key: 'ANOMALOUS',
           title: 'Anomalous',
-          className: 'anomalous-column'
+          className: 'tw-w-2/12'
         },
         {
           key: 'SCREENINGMETHOD',
           title: 'Screening Method',
-          className: 'screening-method-column'
+          className: 'tw-w-2/12'
         },
         {
           key: 'REQUIREDRES',
           title: 'Reqd Res',
-          className: 'resolution-column'
+          className: 'tw-w-1/12'
         },
         {
           key: 'MINRES',
           title: 'Min Res',
-          className: 'resolution-column'
+          className: 'tw-w-1/12'
         },
         {
           key: 'NUMTOCOLLECT',
           title: 'No to collect',
-          className: 'collect-column'
+          className: 'tw-w-1/12'
         }
       ],
       currentTab: 'basic',
     }
   },
   computed: {
-    tableColumns() {
+    selectedColumns() {
       const columnsMap = {
         basic: this.basicColumns,
         extraFields: this.extraFieldsColumns,
@@ -225,12 +253,27 @@ export default {
 
       return [...this.requiredColumns, ...columnsMap[this.currentTab]]
     },
+    dynamicColumns() {
+      const columnsMap = {
+        basic: this.basicColumns,
+        extraFields: this.extraFieldsColumns,
+        unattended: this.udcColumns
+      }
+
+
+      return columnsMap[this.currentTab]
+    },
     samples: {
       get() {
+        console.log(this.values)
         return this.value
       },
-      set(val) {
-        this.$emit('input', val)
+      set(payload) {
+        const { index, data, property } = payload
+        const samples = cloneDeep(this.samples)
+        samples[index][property] = data
+        console.log({ samples });
+        this.$emit('input', samples)
       }
     },
     proteinsOptionsList() {
@@ -245,8 +288,17 @@ export default {
     switchTabColumn(name) {
       this.currentTab = name
     },
-    formatSelectData() {
-      
+    formatSelectData(selectData, data, property) {
+      const matchedSelectData = selectData.find(select => select.value === data[property])
+
+      if (!matchedSelectData) {
+        return { value: '', text: '' }
+      }
+
+      return matchedSelectData
+    },
+    handleProteinSelection(index, data) {
+      this.samples = { index, data: data.value, property: 'PROTEINID' }
     }
   }
 }
@@ -270,13 +322,13 @@ export default {
   width: 150px;
 }
 .anomalous-column {
-  width: 100px;
+  width: 80px;
 }
 .comment-column, .cell-column {
   width: 200px;
 }
 .space-group-column, .centering-method-column, .experiment-kind-column {
-  width: 70px;
+  width: 100px;
 }
 .energy-column {
   width: 50px;
@@ -286,7 +338,7 @@ export default {
   word-wrap: break-word;
 }
 .screening-method-column {
-  width: 70px;
+  width: 100px;
   word-wrap: break-word;
 }
 </style>
