@@ -18,6 +18,7 @@
         v-for="job in autoProcessing"
         :key="job.ID"
         :job="job"
+        :data-collection-id="dataCollectionId"
       />
     </div>
   </section>

@@ -1,6 +1,6 @@
 <template>
   <span>
-    {{ title }}: {{ size }} <i
+    {{ title }}: {{ count }} <i
       class="fa icon"
       :alt="label"
       :class="icon"
@@ -25,8 +25,10 @@ export default {
         'statusValues': function() {
             return Object.values(this.status)
         },
-        'size': function() {
-            return this.statusValues.length
+        'count': function() {
+            const length = this.statusValues.length
+            this.$emit('counted', length)
+            return length
         },
         'label': function() {
             if (this.statusValues.length == 0) {
