@@ -1,107 +1,104 @@
 <template>
-  <div class="data_collection">
-    <ul
-      v-if="dataCollection !== null"
-      class="clearfix"
+  <ul
+    class="clearfix"
+  >
+    <list-item
+      label="Voltage"
+      :item="voltage"
+    />
+    <list-item
+      label="C1 Lens"
+      :item="c1Lens"
+      label2="Aperture"
+      :item2="c1Aperture"
+    />
+    <list-item
+      label="C2 Lens"
+      :item="c2Lens"
+      label2="Aperture"
+      :item2="c2Aperture"
+    />
+    <list-item
+      label="C3 Lens"
+      :item="c3Lens"
+      label2="Aperture"
+      :item2="c3Aperture"
+    />
+    <list-item
+      label="Obj Aperture"
+      :item="objAperture"
+    />
+    <list-item
+      label="Magnification"
+      :item="magnification"
+    />
+    <list-item
+      label="Magnification"
+      :item="magnification"
+    />
+    <list-item
+      v-if="hasEnergyFilter"
+      label="Energy Filter"
+      :item="energyFilter"
+    />
+    <list-item
+      label="Phase Plate"
+      :item="phasePlate"
+    />
+    <list-item
+      label="Beamsize"
+      :item="beamSize"
+    />
+    <list-item
+      label="Detector"
+      :item="detector"
+    />
+    <list-item
+      label="Detector Mode"
+      :item="detectorMode"
+    />
+    <list-item
+      label="Sample Pixel Size"
+      :item="samplePixelSize"
+    />
+    <list-item
+      label="Binning"
+      :item="binning"
+    />
+    <list-item
+      label="Image Size"
+      :item="imageSize"
+    />
+    <list-item
+      label="No. Movies"
+      :item="noMovies"
+    />
+    <list-item
+      label="Frames/Movie"
+      :item="framesMovie"
+    />
+    <list-item
+      label="Frame Length"
+      :item="frameLength"
+    />
+    <list-item
+      label="Total Dose"
+      :item="totalDose"
+    />
+    <list-item
+      v-if="isStopped"
+      label="Status"
+      item="Stopped"
+    />
+    <!-- TODO: make comments work -->
+    <li
+      class="comment"
+      title="Click to edit the comment for this data collection"
     >
-      <list-item
-        label="Voltage"
-        :item="voltage"
-      />
-      <list-item
-        label="C1 Lens"
-        :item="c1Lens"
-        label2="Aperture"
-        :item2="c1Aperture"
-      />
-      <list-item
-        label="C2 Lens"
-        :item="c2Lens"
-        label2="Aperture"
-        :item2="c2Aperture"
-      />
-      <list-item
-        label="C3 Lens"
-        :item="c3Lens"
-        label2="Aperture"
-        :item2="c3Aperture"
-      />
-      <list-item
-        label="Obj Aperture"
-        :item="objAperture"
-      />
-      <list-item
-        label="Magnification"
-        :item="magnification"
-      />
-      <list-item
-        label="Magnification"
-        :item="magnification"
-      />
-      <list-item
-        v-if="hasEntergyFilter"
-        label="Energy Filter"
-        :item="energyFilter"
-      />
-      <list-item
-        label="Phase Plate"
-        :item="phasePlate"
-      />
-      <list-item
-        label="Beamsize"
-        :item="beamSize"
-      />
-      <list-item
-        label="Detector"
-        :item="detector"
-      />
-      <list-item
-        label="Detector Mode"
-        :item="detectorMode"
-      />
-      <list-item
-        label="Sample Pixel Size"
-        :item="samplePixelSize"
-      />
-      <list-item
-        label="Binning"
-        :item="binning"
-      />
-      <list-item
-        label="Image Size"
-        :item="imageSize"
-      />
-      <list-item
-        label="No. Movies"
-        :item="noMovies"
-      />
-      <list-item
-        label="Frames/Movie"
-        :item="framesMovie"
-      />
-      <list-item
-        label="Frame Length"
-        :item="frameLength"
-      />
-      <list-item
-        label="Total Dose"
-        :item="totalDose"
-      />
-      <list-item
-        v-if="isStopped"
-        label="Status"
-        item="Stopped"
-      />
-      <!-- TODO: make comments work -->
-      <li
-        class="comment"
-        title="Click to edit the comment for this data collection"
-      >
-        Comment:
-        <span class="COMMENTS">{{ dataCollection.COMMENTS }}</span>
-      </li>
-    </ul>
-  </div>
+      Comment:
+      <span class="COMMENTS">{{ dataCollection.COMMENTS }}</span>
+    </li>
+  </ul>
 </template>
 
 <script>
@@ -180,6 +177,9 @@ export default {
                 this.fieldString('DETECTORMODEL')
             ).trim()
         },
+        'detectorMode': function() {
+            return this.fieldString('DETECTORMODE')
+        },
         'samplePixelSize': function() {
             return this.datumWithUnit('PIXELSIZEONIMAGE', angstrom + '/pix')
         },
@@ -226,7 +226,7 @@ export default {
                 return 'INVALID'
             }
             if (Number.isFinite(number)) {
-                return kv + unit
+                return number + unit
             }
             return '&infin;'
         },
