@@ -1,6 +1,5 @@
 <template>
   <section class="content">
-
     <dialog-box />
 
     <h1 class="no_mobile">
@@ -9,26 +8,29 @@
 
     <all-collections-link />
 
-    <h1 style="background-color: #ffa; padding: 20px;">
-      TODO: astigmatism, estimated focus &amp; estimated resolution graphs
-    </h1>
     <div class="data_collection" type="data">
       <data-collection-header
         v-if="dataCollection !== null"
         :data-collection="dataCollection"
       />
+
+      <processing-job
+        v-for="job in autoProcessing"
+        :key="job.ID"
+        :job="job"
+      />
     </div>
-
-
   </section>
 </template>
 
 <script>
 import AllCollectionsLink from 'modules/types/em/dc/all-collections-link.vue'
+import ApStatusCollection from 'modules/types/em/collections/apstatuses'
 import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
 import DataCollectionModel from 'models/datacollection.js'
 import DialogBox from 'app/components/dialogbox.vue'
 import EventBus from 'app/components/utils/event-bus.js'
+import ProcessingJob from 'modules/types/em/dc/ap/processing-job.vue'
 
 export default {
     'name': 'EmDcList',
@@ -36,6 +38,7 @@ export default {
         'all-collections-link': AllCollectionsLink,
         'data-collection-header': DataCollectionHeader,
         'dialog-box': DialogBox,
+        'processing-job': ProcessingJob,
     },
     'props': {
         'dataCollectionId': {
@@ -50,6 +53,9 @@ export default {
     'data': function() {
         return {
             'dataCollection': null,
+            'autoProcessing': null,
+            'dataCollectionModel': new DataCollectionModel(),
+            'apStatusCollection': new ApStatusCollection(),
         }
     },
     'computed': {
@@ -109,6 +115,32 @@ export default {
                 })
             }
             fetch()
+        },
+        'fetchAutoProcessingCollection': function() {
+            this.$store.commit('loading', true)
+            const component = this
+            // eslint-disable-next-line no-unused-vars
+            const successCallback = function(model, response, options) {
+                component.autoProcessing = response
+                console.log('fetched autoprocessing', component.autoProcessing)
+                component.$store.commit('loading', false)
+            }
+            // eslint-disable-next-line no-unused-vars
+            const errorCallback = function(model, response, options) {
+                console.log(response.responseJSON)
+                component.$store.commit('loading', false)
+                component.$store.commit('notifications/addNotification', {
+                    'title': 'Error',
+                    'message': 'Could not retrieve data collection',
+                    'level': 'error'
+                })
+            }
+            this.apStatusCollection.fetch({
+                'data': { 'ids': [this.dataCollectionId] },
+                'type': 'POST',
+                'success': successCallback,
+                'error': errorCallback,
+            })
         },
     },
 }
