@@ -21,7 +21,8 @@ class Process extends Page
             
             'PROCESSINGJOBPARAMETERID' => '\d+',
             'PARAMETERKEY' => '\w+',
-            'PARAMETERVALUE' => '([\w-\.,])+',
+            // Processing parameter value needs to cope with '/' characters e.g. spacegroups for reprocessing
+            'PARAMETERVALUE' => '([a-zA-Z0-9-_\.,\/])+',
 
             'AUTOMATIC' => '\d',
 
