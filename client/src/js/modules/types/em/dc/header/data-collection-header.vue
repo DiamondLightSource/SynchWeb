@@ -102,9 +102,8 @@
 </template>
 
 <script>
-// modules/types/em/dc/dc.js
 import KvLambda from 'modules/types/em/utils/kv-lambda'
-import ListItem from 'modules/types/em/dc/list-item.vue'
+import ListItem from 'modules/types/em/dc/header/list-item.vue'
 
 const angstrom = '#197;'
 const electron = 'e<span class="super">-</span>'
