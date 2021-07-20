@@ -22,8 +22,8 @@
     <pagination
       class="page_wrap"
       :total-records="dataCollectionsLength"
-      initial-page="1"
-      page-links="3"
+      :initial-page="1"
+      :page-links="3"
       @page-changed="pageChanged"
     />
 
@@ -75,7 +75,7 @@ export default {
             'required': true,
         },
         'breadcrumbs': {
-            'type': Object,
+            'type': Array,
             'required': true,
         },
     },

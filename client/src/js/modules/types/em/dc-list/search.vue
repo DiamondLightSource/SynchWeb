@@ -2,7 +2,7 @@
   <marionette-wrapper
     :options="marionetteOptions"
     :mview="searchView"
-    preloaded="true"
+    preloaded
   />
 </template>
 
@@ -25,7 +25,7 @@ export default {
             'required': true,
         },
         'url': {
-            'type': String,
+            'type': Boolean,
             'required': true,
         },
     },
