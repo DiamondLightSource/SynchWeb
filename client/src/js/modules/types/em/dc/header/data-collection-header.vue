@@ -102,12 +102,9 @@
 </template>
 
 <script>
+import FormatsUnits from 'modules/types/em/utils/formats-units'
 import KvLambda from 'modules/types/em/utils/kv-lambda'
 import ListItem from 'modules/types/em/dc/header/list-item.vue'
-
-const angstrom = '#197;'
-const electron = 'e<span class="super">-</span>'
-const angstromSquared = angstrom + '<span class="super">2</span>'
 
 export default {
     'name': 'DataCollectionHeader',
@@ -121,122 +118,105 @@ export default {
         },
     },
     'computed': {
+        'formatsUnits': function() {
+            return FormatsUnits(this.dataCollection)
+        },
         'voltage': function() {
             const kvLambda = KvLambda()
-            return this.numberWithUnit(
+            return this.formatsUnits.numberWithUnit(
                 kvLambda.l2kV(this.dataCollection.WAVELENGTH),
                 'kV'
             )
         },
         'c1Lens': function() {
-            return this.datumWithUnit('C1LENS', '%')
+            return this.formatsUnits.datumWithUnit('C1LENS', '%')
         },
         'c2Lens': function() {
-            return this.datumWithUnit('C2LENS', '%')
+            return this.formatsUnits.datumWithUnit('C2LENS', '%')
         },
         'c3Lens': function() {
-            return this.datumWithUnit('C3LENS', '%')
+            return this.formatsUnits.datumWithUnit('C3LENS', '%')
         },
         'c1Aperture': function() {
-            return this.datumWithUnit('C1APERTURE', '&mu;m')
+            return this.formatsUnits.datumWithUnit('C1APERTURE', '&mu;m')
         },
         'c2Aperture': function() {
-            return this.datumWithUnit('C2APERTURE', '&mu;m')
+            return this.formatsUnits.datumWithUnit('C2APERTURE', '&mu;m')
         },
         'c3Aperture': function() {
-            return this.datumWithUnit('C3APERTURE', '&mu;m')
+            return this.formatsUnits.datumWithUnit('C3APERTURE', '&mu;m')
         },
         'objAperture': function() {
-            return this.datumWithUnit('OBJAPERTURE', '&mu;m')
+            return this.formatsUnits.datumWithUnit('OBJAPERTURE', '&mu;m')
         },
         'hasMagnification': function() {
             return !(!this.dataCollection.MAGNIFICATION)
         },
         'magnification': function() {
-            return this.datumWithUnit('MAGNIFICATION', 'x')
+            return this.formatsUnits.datumWithUnit('MAGNIFICATION', 'x')
         },
         'hasEnergyFilter': function() {
             return !(!this.dataCollection.SLITGAPHORIZONTAL)
         },
         'energyFilter': function() {
-            return this.fieldString('SLITGAPHORIZONTAL')
+            return this.formatsUnits.fieldString('SLITGAPHORIZONTAL')
         },
         'phasePlate': function() {
             return this.dataCollection.PHASEPLATE == 1 ? 'Yes' : 'No'
         },
         'beamSize': function() {
-            return this.dimensions(
-                this.datumWithUnit('BSX', '&mu;m'),
-                this.datumWithUnit('BSY', '&mu;m')
+            return this.formatsUnits.dimensions(
+                this.formatsUnits.datumWithUnit('BSX', '&mu;m'),
+                this.formatsUnits.datumWithUnit('BSY', '&mu;m')
             )
         },
         'detector': function() {
             return (
-                this.fieldString('DETECTORMANUFACTURER') + ' ' +
-                this.fieldString('DETECTORMODEL')
+                this.formatsUnits.fieldString('DETECTORMANUFACTURER') + ' ' +
+                this.formatsUnits.fieldString('DETECTORMODEL')
             ).trim()
         },
         'detectorMode': function() {
-            return this.fieldString('DETECTORMODE')
+            return this.formatsUnits.fieldString('DETECTORMODE')
         },
         'samplePixelSize': function() {
-            return this.datumWithUnit('PIXELSIZEONIMAGE', angstrom + '/pix')
+            return this.formatsUnits.datumWithUnit(
+                'PIXELSIZEONIMAGE',
+                this.formatsUnits.angstrom + '/pix'
+            )
         },
         'binning': function() {
-            return this.datumWithUnit('BINNING', 'pix')
+            return this.formatsUnits.datumWithUnit('BINNING', 'pix')
         },
         'imageSize': function() {
-            return this.dimensions(
-                this.datumWithUnit('IMAGESIZEX', 'pix'),
-                this.datumWithUnit('IMAGESIZEY', 'pix')
+            return this.formatsUnits.dimensions(
+                this.formatsUnits.datumWithUnit('IMAGESIZEX', 'pix'),
+                this.formatsUnits.datumWithUnit('IMAGESIZEY', 'pix')
             )
         },
         'noMovies': function() {
-            return this.fieldString('NUMIMG')
+            return this.formatsUnits.fieldString('NUMIMG')
         },
         'framesMovie': function() {
-            return this.fieldString('NUMBEROFPASSES')
+            return this.formatsUnits.fieldString('NUMBEROFPASSES')
         },
         'frameLength': function() {
-            return this.numberWithUnit(
+            return this.formatsUnits.numberWithUnit(
                 parseFloat(this.dataCollection.EXPOSURETIME) /
                     parseInt(this.dataCollection.NUMBEROFPASSES, 10),
                 's'
             )
         },
         'totalDose': function() {
-            return this.datumWithUnit(
-                'TOTALDOSE', electron + '/' + angstromSquared
+            return this.formatsUnits.datumWithUnit(
+                'TOTALDOSE',
+                this.formatsUnits.electron + '/' +
+                    this.formatsUnits.angstromSquared
             )
         },
         'isStopped': function() {
             return this.dataCollection.STATE == false
         },
     },
-    'methods': {
-        'dimensions': function (x, y) {
-            if (x || y) {
-                return (x + ' x ' + y).trim()
-            }
-            return ''
-        },
-        'numberWithUnit': function(number, unit) {
-            if (Number.isNaN(number)) {
-                return 'INVALID'
-            }
-            if (Number.isFinite(number)) {
-                return number + unit
-            }
-            return '&infin;'
-        },
-        'datumWithUnit': function(field, unit) {
-            const value = this.fieldString[field]
-            return value ? value + unit : ''
-        },
-        'fieldString': function(field) {
-            const value = this.dataCollection[field]
-            return value ? value : ''
-        },
-    }
 }
 </script>
