@@ -11,7 +11,7 @@ const routes = [
         'path': '/dc/visit/:visit_str/collection/:collection_id',
         'component': DataCollectionView,
         'props': route => ({
-            'dataCollectionId': route.params.collection_id,
+            'dataCollectionId': parseInt(route.params.collection_id, 10),
             'visit': route.params.visit_str
         }),
         'beforeEnter': (to, from, next) => {

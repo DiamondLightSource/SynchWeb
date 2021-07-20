@@ -42,7 +42,7 @@ export default {
     },
     'props': {
         'dataCollectionId': {
-            'type': String,
+            'type': Number,
             'required': true,
         },
         'visit': {
