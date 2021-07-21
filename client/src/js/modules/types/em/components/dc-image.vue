@@ -12,19 +12,20 @@
       <img
         ref="image"
         :alt="imageTitle"
-        :height="imageHeight"
+        :height="proportionalHeight"
       >
     </a>
   </div>
 </template>
 
 <script>
-import proportionalHeight from 'modules/types/em/utils/proportional-height'
+import proportionalHeight from 'modules/types/em/components/proportional-height'
 import XHRImage from 'utils/xhrimage'
 import 'jquery.mp' // TODO: JQuery!!!
 
 export default {
     'name': "DcImage",
+    'mixins': [proportionalHeight],
     'props': {
         'containerClass': {
             'type': String,
@@ -49,9 +50,10 @@ export default {
         }
     },
     'computed': {
-        'imageHeight': proportionalHeight,
         'image': function() {
-            this.xhrImage.load(this.imageUrl)
+            if (this.imageUrl) {
+                this.xhrImage.load(this.imageUrl)
+            }
             return this.imageUrl
         },
     },

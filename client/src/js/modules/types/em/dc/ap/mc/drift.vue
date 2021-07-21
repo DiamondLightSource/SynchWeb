@@ -14,11 +14,16 @@ import 'jquery.flot.resize'
 import 'jquery.flot.selection'
 import DriftModel from 'modules/types/em/models/drift'
 import driftOptions from 'modules/types/em/dc/ap/mc/drift-options'
-import proportionalHeight from 'modules/types/em/utils/proportional-height'
+import proportionalHeight from 'modules/types/em/components/proportional-height'
 
 export default {
     'name': "Drift",
+    'mixins': [proportionalHeight],
     'props': {
+        'active': {
+            'type': Boolean,
+            'required': true,
+        },
         'dataCollectionId' : {
             'type': Number,
             'required': true,
@@ -40,7 +45,7 @@ export default {
             )
         },
         'plotDivStyle': function() {
-            const height = proportionalHeight() + 'px;'
+            const height = this.proportionalHeight + 'px;'
             return 'height: ' + height +
                 ' min-height: ' + height +
                 ' max-height: ' + height
@@ -51,12 +56,16 @@ export default {
         'movieNumber': function(newValue, oldValue) {
             this.updateAndPlot();
         },
+        // eslint-disable-next-line no-unused-vars
+        'active': function(newValue, oldValue) {
+            this.updateAndPlot();
+        },
     },
     'mounted': function () {
         this.updateAndPlot();
     },
-    'destroyed': function () {
-        this.model.stop()
+    'beforeUnmount': function () {
+        this.driftModel.stop()
         this.plot.shutdown()
     },
     'methods': {
@@ -65,6 +74,9 @@ export default {
         },
         'updateAndPlot': function() {
             const vm = this
+            if (vm.active == false) {
+                return
+            }
             vm.$store.commit('loading', true)
             const redraw = function(data) {
                 vm.plot.setData(vm.plotData(data))

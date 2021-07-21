@@ -23,6 +23,7 @@
       <drift
         :data-collection-id="dataCollectionId"
         :movie-number="movieNumber"
+        :active="active"
       />
 
       <!-- FFT of Motion Corrected Image -->
@@ -94,28 +95,34 @@ export default {
             })
         },
         'loadedMovieNumber': function() {
-            return this.motionCorrection === null ?
-                null : this.motionCorrection.IMAGENUMBER
+            return this.motionCorrection === null ? null :
+                this.motionCorrection.IMAGENUMBER
+        },
+        'programId': function() {
+            return this.motionCorrection === null ? 0 :
+                this.motionCorrection.AUTOPROCPROGRAMID
         },
         'logUrl': function() {
-            if (this.motionCorrection === null) {
+            if (this.programId == 0) {
                 return '#'
             }
             return this.$store.state.apiUrl +
                 '/download/id/' + this.dataCollectionId +
-                '/aid/' + this.motionCorrection.AUTOPROCPROGRAMID +
+                '/aid/' + this.programId +
                 '/log/1'
         },
         'fftUrl': function() {
-            return this.$store.state.apiUrl +
-                '/em/mc/fft/image/' + this.dataCollectionId +
-                '/n/' + this.movieNumber +
-                '/t/2'
+            return this.active == false ? '' :
+                this.$store.state.apiUrl +
+                    '/em/mc/fft/image/' + this.dataCollectionId +
+                    '/n/' + this.movieNumber +
+                    '/t/2'
         },
         'imageUrl': function() {
-            return this.$store.state.apiUrl +
-                '/em/mc/fft/image/' + this.dataCollectionId +
-                '/n/' + this.movieNumber
+            return this.active == false ? '' :
+                this.$store.state.apiUrl +
+                    '/em/mc/fft/image/' + this.dataCollectionId +
+                    '/n/' + this.movieNumber
         },
     },
     'watch': {
