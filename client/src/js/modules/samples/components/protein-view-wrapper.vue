@@ -19,6 +19,8 @@ import { ProteinViewMap } from 'modules/samples/components/samples-map'
 import Protein from 'models/protein'
 
 import store from 'app/store/store'
+// Allow us to map store values to local computed properties
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'protein-view-wrapper',
@@ -44,21 +46,21 @@ export default {
                 model: this.model,
             }
         },
-        proposalType : function() {
-            return this.$store.state.proposal.proposalType
-        }
+        // Combine with local computed properties, spread operator
+        // Allows us to use this.currentProposal mapped to vuex state/getters
+        ...mapGetters('proposal', {
+            proposalType: 'currentProposalType'
+        })
     },
     created: function() {
         // Set the marionette view constructor we need based on the type
-        this.mview = ProteinViewMap[this.proposalType].view || ProteinViewMap['default'].view
-
-        let title = ProteinViewMap[this.proposalType].title || 'Protein'
-
-        console.log("Protein View Created for proposal Type = " + this.proposalType)
+        let title = ProteinViewMap[this.proposalType] ? ProteinViewMap[this.proposalType].title : ProteinViewMap['default'].title
 
         this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }]
 
         this.model = new Protein({ PROTEINID: this.pid })
+
+        this.mview = ProteinViewMap[this.proposalType] ? ProteinViewMap[this.proposalType].view : ProteinViewMap['default'].view
 
         this.ready = true
     },
