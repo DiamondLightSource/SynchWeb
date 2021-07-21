@@ -16,6 +16,12 @@
       class="button next"
       @click.prevent="nextMovie"
     ><i class="fa fa-angle-right" /></a>
+    <label>Show most recent
+      <input
+        v-model="showMostRecent"
+        type="checkbox"
+      >
+    </label>
   </div>
 </template>
 
@@ -24,25 +30,38 @@ export default {
     'name': "MovieSelect",
     'props': {
         'max': {
+            // TODO: Vee Validate mvieNumber form input!
             'type': Number,
             'required': true,
         },
     },
     'data': function() {
         return {
-            'movieNumber': 1, // TODO: Vee Validate
+            'movieNumber': 0,
+            'showMostRecent': true,
             'timeout': null,
         }
     },
     'watch': {
-        'movieNumber': function() {
+        // eslint-disable-next-line no-unused-vars
+        'max': function(newValue, oldValue) {
+            this.maxMovie()
+        },
+        // eslint-disable-next-line no-unused-vars
+        'showMostRecent': function(newValue, oldValue) {
+            this.maxMovie()
+        },
+        // eslint-disable-next-line no-unused-vars
+        'movieNumber': function(newValue, oldValue) {
             this.movieNumberChanged()
-        }
-    },
-    'mounted': function() {
-        this.movieNumberChanged()
+        },
     },
     'methods': {
+        'maxMovie': function() {
+            if (this.showMostRecent) {
+                this.movieNumber = this.max
+            }
+        },
         'nextMovie': function() {
             // TODO: make button disableable
             if (this.movieNumber < this.max) {
@@ -65,7 +84,7 @@ export default {
                     vm.timeout = null
                     vm.$emit('changed', vm.movieNumber)
                 },
-                1000
+                500
             )
         },
     },
