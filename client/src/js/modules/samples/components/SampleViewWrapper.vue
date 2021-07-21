@@ -17,6 +17,9 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import { SampleViewMap } from 'modules/samples/components/samples-map'
 import Sample from 'models/sample'
+// XPDF Instance extends the sample model
+// Could potentially move the Sample or Instance to a lookup in SampleMap
+import Instance from 'modules/types/xpdf/models/instance'
 
 import store from 'app/store/store'
 
@@ -33,7 +36,6 @@ export default {
             ready: false,
             mview: null,
             model: null,
-            collection: null,
             params: null,
             queryParams: null,
             bc : [],
@@ -43,7 +45,6 @@ export default {
     computed: {
         options: function() {
             return {
-                collection: this.collection,
                 model: this.model,
                 params: this.params,
                 queryParams: this.queryParams
@@ -68,11 +69,6 @@ export default {
 
         this.model = new (this.proposalType == 'xpdf' ? Instance : Sample)({ BLSAMPLEID: this.sid }, { addPrimary: this.proposalType == 'xpdf'})
         // For xpdf there is data.seq = 1 used in the fetch request!
-        // var data = {}
-        // if (app.type == 'xpdf') data.seq = 1
-        // sample.fetch({
-        //      data: data,
-        //      success: function() {
         // For a model we pass the 'data' query parameters in as options.queryParameters
         if (this.proposalType == 'xpdf') this.queryParams = { seq: 1 }
 
