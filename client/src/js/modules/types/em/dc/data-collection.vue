@@ -82,34 +82,44 @@ export default {
     },
     'methods': {
         'fetchDataCollectionModel': function() {
-            const component = this
+            const vm = this
             const fetchParams = {
                 'ID': this.collectionId,
                 'prop': this.$store.state.proposal.proposal
             }
-            // eslint-disable-next-line no-unused-vars
-            const successCallback = function(model, response, options) {
-                component.$store.commit('loading', false)
-                component.dataCollection = response
-                console.log('fetched data collection', component.dataCollection)
-                component.fetchAutoProcessingCollection()
+            const successCallback = function(
+                model, // eslint-disable-line no-unused-vars
+                response,
+                options // eslint-disable-line no-unused-vars
+            ) {
+                vm.$store.commit('loading', false)
+                vm.dataCollection = response
+                console.log('fetched data collection', vm.dataCollection)
+                vm.fetchAutoProcessingCollection()
+                // if (this.model.get('ACTIVE') == 1) {
+                    // TODO: this was / should be (???) 10 seconds, not 30!
+                    //setTimeout(fetch, 30 * 1000)
+                //}
             }
-            // eslint-disable-next-line no-unused-vars
-            const errorCallback = function(model, response, options) {
-                component.$store.commit('loading', false)
+            const errorCallback = function(
+                model, // eslint-disable-line no-unused-vars
+                response,
+                options // eslint-disable-line no-unused-vars
+            ) {
+                vm.$store.commit('loading', false)
                 console.log(response.responseJSON)
-                component.$store.commit('notifications/addNotification', {
+                vm.$store.commit('notifications/addNotification', {
                     'title': 'Error',
                     'message': 'Could not retrieve data collection',
                     'level': 'error'
                 })
             }
             const fetch = function() {
-                component.$store.commit('loading', true)
-                // component.$store.dispatch('getModel', model)
-                // doesn't currently support 'data':
-                // hence the use of model.fetch here
-                component.dataCollectionModel.fetch({
+                vm.$store.commit('loading', true)
+                /* TODO: [SCI-9935]
+                   vm.$store.dispatch('getModel', model)
+                   doesn't currently support 'data': */
+                vm.dataCollectionModel.fetch({
                     'data': fetchParams,
                     'success': successCallback,
                     'error': errorCallback,
@@ -119,18 +129,18 @@ export default {
         },
         'fetchAutoProcessingCollection': function() {
             this.$store.commit('loading', true)
-            const component = this
+            const vm = this
             // eslint-disable-next-line no-unused-vars
             const successCallback = function(model, response, options) {
-                component.autoProcessing = response
-                console.log('fetched autoprocessing', component.autoProcessing)
-                component.$store.commit('loading', false)
+                vm.autoProcessing = response
+                console.log('fetched autoprocessing', vm.autoProcessing)
+                vm.$store.commit('loading', false)
             }
             // eslint-disable-next-line no-unused-vars
             const errorCallback = function(model, response, options) {
                 console.log(response.responseJSON)
-                component.$store.commit('loading', false)
-                component.$store.commit('notifications/addNotification', {
+                vm.$store.commit('loading', false)
+                vm.$store.commit('notifications/addNotification', {
                     'title': 'Error',
                     'message': 'Could not retrieve data collection',
                     'level': 'error'

@@ -102,15 +102,16 @@
 </template>
 
 <script>
-import FormatsUnits from 'modules/types/em/utils/formats-units'
+import formatsUnits from 'modules/types/em/components/formats-units'
 import KvLambda from 'modules/types/em/utils/kv-lambda'
-import ListItem from 'modules/types/em/dc/header/list-item.vue'
+import ListItem from 'modules/types/em/components/list-item.vue'
 
 export default {
     'name': 'DataCollectionHeader',
     'components': {
         'list-item': ListItem,
     },
+    'mixins': [formatsUnits],
     'props': {
         'dataCollection': {
             'type': Object,
@@ -118,100 +119,97 @@ export default {
         },
     },
     'computed': {
-        'formatsUnits': function() {
-            return FormatsUnits(this.dataCollection)
-        },
         'voltage': function() {
             const kvLambda = KvLambda()
-            return this.formatsUnits.numberWithUnit(
+            return this.numberWithUnit(
                 kvLambda.l2kV(this.dataCollection.WAVELENGTH),
                 'kV'
             )
         },
         'c1Lens': function() {
-            return this.formatsUnits.datumWithUnit('C1LENS', '%')
+            return this.datumWithUnit(this.dataCollection.C1LENS, '%')
         },
         'c2Lens': function() {
-            return this.formatsUnits.datumWithUnit('C2LENS', '%')
+            return this.datumWithUnit(this.dataCollection.C2LENS, '%')
         },
         'c3Lens': function() {
-            return this.formatsUnits.datumWithUnit('C3LENS', '%')
+            return this.datumWithUnit(this.dataCollection.C3LENS, '%')
         },
         'c1Aperture': function() {
-            return this.formatsUnits.datumWithUnit('C1APERTURE', '&mu;m')
+            return this.datumWithUnit(this.dataCollection.C1APERTURE, '&mu;m')
         },
         'c2Aperture': function() {
-            return this.formatsUnits.datumWithUnit('C2APERTURE', '&mu;m')
+            return this.datumWithUnit(this.dataCollection.C2APERTURE, '&mu;m')
         },
         'c3Aperture': function() {
-            return this.formatsUnits.datumWithUnit('C3APERTURE', '&mu;m')
+            return this.datumWithUnit(this.dataCollection.C3APERTURE, '&mu;m')
         },
         'objAperture': function() {
-            return this.formatsUnits.datumWithUnit('OBJAPERTURE', '&mu;m')
+            return this.datumWithUnit(this.dataCollection.OBJAPERTURE, '&mu;m')
         },
         'hasMagnification': function() {
             return !(!this.dataCollection.MAGNIFICATION)
         },
         'magnification': function() {
-            return this.formatsUnits.datumWithUnit('MAGNIFICATION', 'x')
+            return this.datumWithUnit(this.dataCollection.MAGNIFICATION, 'x')
         },
         'hasEnergyFilter': function() {
             return !(!this.dataCollection.SLITGAPHORIZONTAL)
         },
         'energyFilter': function() {
-            return this.formatsUnits.fieldString('SLITGAPHORIZONTAL')
+            return this.datumOrBlank(this.dataCollection.SLITGAPHORIZONTAL)
         },
         'phasePlate': function() {
             return this.dataCollection.PHASEPLATE == 1 ? 'Yes' : 'No'
         },
         'beamSize': function() {
-            return this.formatsUnits.dimensions(
-                this.formatsUnits.datumWithUnit('BSX', '&mu;m'),
-                this.formatsUnits.datumWithUnit('BSY', '&mu;m')
+            return this.dimensions(
+                this.datumWithUnit(this.dataCollection.BSX, '&mu;m'),
+                this.datumWithUnit(this.dataCollection.BSY, '&mu;m')
             )
         },
         'detector': function() {
             return (
-                this.formatsUnits.fieldString('DETECTORMANUFACTURER') + ' ' +
-                this.formatsUnits.fieldString('DETECTORMODEL')
+                this.datumOrBlank(this.dataCollection.DETECTORMANUFACTURER) +
+                ' ' +
+                this.datumOrBlank(this.dataCollection.DETECTORMODEL)
             ).trim()
         },
         'detectorMode': function() {
-            return this.formatsUnits.fieldString('DETECTORMODE')
+            return this.datumOrBlank(this.dataCollection.DETECTORMODE)
         },
         'samplePixelSize': function() {
-            return this.formatsUnits.datumWithUnit(
-                'PIXELSIZEONIMAGE',
-                this.formatsUnits.angstrom + '/pix'
+            return this.datumWithUnit(
+                this.dataCollection.PIXELSIZEONIMAGE,
+                this.angstromPerPixel
             )
         },
         'binning': function() {
-            return this.formatsUnits.datumWithUnit('BINNING', 'pix')
+            return this.datumWithUnit(this.dataCollection.BINNING, 'pix')
         },
         'imageSize': function() {
-            return this.formatsUnits.dimensions(
-                this.formatsUnits.datumWithUnit('IMAGESIZEX', 'pix'),
-                this.formatsUnits.datumWithUnit('IMAGESIZEY', 'pix')
+            return this.dimensions(
+                this.datumWithUnit(this.dataCollection.IMAGESIZEX, 'pix'),
+                this.datumWithUnit(this.dataCollection.IMAGESIZEY, 'pix')
             )
         },
         'noMovies': function() {
-            return this.formatsUnits.fieldString('NUMIMG')
+            return this.datumOrBlank(this.dataCollection.NUMIMG)
         },
         'framesMovie': function() {
-            return this.formatsUnits.fieldString('NUMBEROFPASSES')
+            return this.datumOrBlank(this.dataCollection.NUMBEROFPASSES)
         },
         'frameLength': function() {
-            return this.formatsUnits.numberWithUnit(
+            return this.numberWithUnit(
                 parseFloat(this.dataCollection.EXPOSURETIME) /
                     parseInt(this.dataCollection.NUMBEROFPASSES, 10),
                 's'
             )
         },
         'totalDose': function() {
-            return this.formatsUnits.datumWithUnit(
-                'TOTALDOSE',
-                this.formatsUnits.electron + '/' +
-                    this.formatsUnits.angstromSquared
+            return this.datumWithUnit(
+                this.dataCollection.TOTALDOSE,
+                this.electronsPerAngstromSquared
             )
         },
         'isStopped': function() {

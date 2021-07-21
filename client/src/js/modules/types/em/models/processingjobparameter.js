@@ -1,10 +1,6 @@
-define([
-    'backbone'
-], function (
-    Backbone
-) {
+define(['backbone'], function (Backbone) {
     return Backbone.Model.extend({
-        urlRoot: '/em/process/relion/job/parameters',
-        idAttribute: 'PROCESSINGJOBPARAMETERID',
+        'urlRoot': '/em/process/relion/job/parameters',
+        'idAttribute': 'PROCESSINGJOBPARAMETERID',
     })
-});
+})

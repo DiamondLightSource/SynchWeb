@@ -26,10 +26,22 @@
           />
         </span>
       </h1>
+
       <div
         ref="autoproc"
         class="autoproc"
       >
+        <motion-correction
+          :active="showAutoProcessing"
+          :length="lengthMc"
+          :data-collection-id="dataCollectionId"
+        />
+
+        <ctf-estimation
+          :active="showAutoProcessing"
+          :length="lengthCtf"
+          :data-collection-id="dataCollectionId"
+        />
       </div>
     </div>
   </section>
@@ -37,12 +49,16 @@
 
 <script>
 import 'jquery.mp' // TODO: JQuery!!!!
-import statusItem from 'modules/types/em/dc/ap/status-item.vue'
+import CtfEstimation from 'modules/types/em/dc/ap/ctf/ctf-estimation.vue'
+import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
+import StatusItem from 'modules/types/em/dc/ap/status-item.vue'
 
 export default {
     'name': 'ProcessingJob',
     'components': {
-        'status-item': statusItem,
+        'ctf-estimation': CtfEstimation,
+        'motion-correction': MotionCorrection,
+        'status-item': StatusItem,
     },
     'props': {
         'job': {
