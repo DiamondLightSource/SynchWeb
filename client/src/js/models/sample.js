@@ -78,7 +78,7 @@ define(['backbone', 'collections/components',
             },
             SPACEGROUP: {
                 required: false,
-                pattern: 'word',
+                pattern: 'wwsldash',
             },
 
             ANOMALOUSSCATTERER: {
