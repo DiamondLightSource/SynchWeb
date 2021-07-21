@@ -666,6 +666,14 @@ html[xmlns] .dataTables_wrapper { display: block; }
             td:nth-of-type(7):before { content: "Completeness"; }
             td:nth-of-type(8):before { content: "Cell"; }
         }
+
+        &.autoprocess {
+            td:nth-of-type(1):before { content: "Processing Programs"; }
+            td:nth-of-type(2):before { content: "Comments"; }
+            td:nth-of-type(3):before { content: "Message"; }
+            td:nth-of-type(4):before { content: "Start Time"; }
+            td:nth-of-type(5):before { content: "End Time"; }
+        }
     }
 }
 
@@ -674,4 +682,8 @@ div.table.bg table {
     th:not(.renderable), tr:not(.empty) td:not(.renderable) {
         display: none;
     }
+}
+
+table.autoprocess {
+    margin-top: 5px;
 }

@@ -48,7 +48,8 @@ application.addInitializer(function() {
 //     'dc': 'dc_list',
 //     'dc(/visit/:visit)(/dcg/:dcg)(/page/:page)(/s/:search)(/ty/:ty)(/id/:id)(/pjid/:pjid)': 'dc_list',
 //     'dc/view/id/:id': 'di_viewer',
-//     'dc/map/id/:id(/ty/:ty)(/dt/:dt)(/ppl/:ppl)': 'mapmodelviewer',
+//     'dc/map/id/:id(/ty/:ty)(/dt/:dt)(/ppl/:ppl)': 'mapmodelviewer', OLD
+//     'dc/map/id/:id/aid/:aid': 'mapmodelviewer', NEW
 //     'dc/rsv/id/:id': 'rsviewer',
 //     'dc/summary/visit/:visit': 'summary',
 //     'dc/apstatussummary/visit/:visit(/ty/:ty)': 'apstatussummary',
@@ -99,14 +100,12 @@ let routes = [
     }),
   },
   {
-    path: '/dc/map/id/:id([0-9]+)(/ty/)?:ty([a-zA-Z0-9_-]+)?(/dt/)?:dt([a-zA-Z0-9_-]+)?(/ppl/)?:ppl([a-zA-Z0-9_-]+)?',
+    path: '/dc/map/id/:id([0-9]+)(/aid/)?:aid([0-9]+)?',
     name: 'dc-mapmodelviewer',
     component: MapModelWrapper,
     props: route => ({
       id: +route.params.id || null,
-      ty: route.params.ty || 'dimple',
-      dt: route.params.dt || '',
-      ppl: route.params.ppl || '',
+      aid: +route.params.aid || null,
     }),
   },
   {
