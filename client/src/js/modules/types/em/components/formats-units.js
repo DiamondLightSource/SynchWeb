@@ -20,11 +20,17 @@ export default {
         },
     },
     'methods': {
-        'dimensions': function (x, y) {
+        'pairOfValues': function(x, y, separator) {
             if (x || y) {
-                return (x + ' x ' + y).trim()
+                return (x + separator + y).trim()
             }
             return ''
+        },
+        'dimensions': function (x, y) {
+            return this.pairOfValues(x, y, ' x ')
+        },
+        'range': function (x, y) {
+            return this.pairOfValues(x, y, ' - ')
         },
         'numberWithUnit': function(number, unit) {
             if (Number.isNaN(number)) {

@@ -1,6 +1,6 @@
 <template>
-  <div class="mc dcap clearfix">
-    <h2>Motion Correction</h2>
+  <div class="ctf dcap clearfix">
+    <h2>CTF Estimation</h2>
 
     <movie-select
       :max="length"
@@ -20,51 +20,34 @@
       class="data_collection"
       type="data"
     >
-      <drift
-        :data-collection-id="dataCollectionId"
-        :movie-number="movieNumber"
-        :active="active"
-      />
-
-      <!-- FFT of Motion Corrected Image -->
       <dc-image
-        container-class="diffraction fft2"
         container-title="Click to view FFT"
-        image-title="FFT Drift Corrected"
-        :image-url="fftUrl"
-      />
-
-      <!-- Motion Corrected Image -->
-      <dc-image
         container-class="diffraction fft"
-        container-title="Click to view drift corrected FFT"
-        image-title="FFT"
+        image-title="FFT Theoretical"
         :image-url="imageUrl"
       />
 
       <params
-        v-if="motionCorrection !== null"
-        :motion-correction="motionCorrection"
+        v-if="ctfEstimation !== null"
+        :ctf-estimation="ctfEstimation"
       />
     </div>
   </div>
 </template>
 
 <script>
+import CtfModel from 'modules/types/em/models/ctf'
 import DcImage from 'modules/types/em/components/dc-image.vue'
-import Drift from 'modules/types/em/dc/ap/mc/drift.vue'
-import LogView from 'views/log' // TODO: needs fixing or scrapping ?
+import LogView from 'views/log'
 import MarionetteApplication from 'app/marionette-application.js'
-import MotionCorrectionModel from 'modules/types/em/models/motioncorrection'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
-import Params from 'modules/types/em/dc/ap/mc/params.vue'
+import Params from 'modules/types/em/dc/ap/ctf/params.vue'
 import utils from 'utils'
 
 export default {
-    'name': "MotionCorrection",
+    'name': "CtfEstimation",
     'components': {
         'dc-image': DcImage,
-        'drift': Drift,
         'movie-select': MovieSelect,
         'params': Params,
     },
@@ -85,23 +68,23 @@ export default {
     'data': function() {
         return {
             'movieNumber': 1,
-            'motionCorrection': null,
+            'ctfEstimation': null,
         }
     },
     'computed': {
-        'motionCorrectionModel': function() {
-            return new MotionCorrectionModel({
+        'ctfModel': function() {
+            return new CtfModel({
                 'id': this.dataCollectionId,
-                'TYPE': 'Motion Correction',
+                'TYPE': 'CTF',
             })
         },
         'loadedMovieNumber': function() {
-            return this.motionCorrection === null ? null :
-                this.motionCorrection.IMAGENUMBER
+            return this.ctfEstimation === null ? null :
+                this.ctfEstimation.IMAGENUMBER
         },
         'programId': function() {
-            return this.motionCorrection === null ? 0 :
-                this.motionCorrection.AUTOPROCPROGRAMID
+            return this.ctfEstimation === null ? 0 :
+                this.ctfEstimation.AUTOPROCPROGRAMID
         },
         'logUrl': function() {
             if (this.programId == 0) {
@@ -112,18 +95,13 @@ export default {
                 '/aid/' + this.programId +
                 '/log/1'
         },
-        'fftUrl': function() {
-            return this.active == false ? '' :
-                this.$store.state.apiUrl +
-                    '/em/mc/fft/image/' + this.dataCollectionId +
-                    '/n/' + this.movieNumber +
-                    '/t/2'
-        },
         'imageUrl': function() {
-            return this.active == false ? '' :
-                this.$store.state.apiUrl +
-                    '/em/mc/fft/image/' + this.dataCollectionId +
-                    '/n/' + this.movieNumber
+            if (this.programId == 0) {
+                return '#'
+            }
+            return this.$store.state.apiUrl +
+                '/em/ctf/image/' + this.dataCollectionId +
+                '/n/' + this.movieNumber
         },
     },
     'watch': {
@@ -152,7 +130,7 @@ export default {
                 options // eslint-disable-line no-unused-vars
             ) {
                 vm.$store.commit('loading', false)
-                vm.motionCorrection = response
+                vm.ctfEstimation = response
             }
             const errorCallback = function (
                 model, // eslint-disable-line no-unused-vars
@@ -163,7 +141,7 @@ export default {
                 console.log(response.responseJSON)
                 vm.$store.commit('notifications/addNotification', {
                     'title': 'Error',
-                    'message': 'Could not retrieve motion correction data',
+                    'message': 'Could not retrieve CTF data',
                     'level': 'error'
                 })
             }
@@ -171,7 +149,7 @@ export default {
             /* TODO: [SCI-9935]
                vm.$store.dispatch('getModel', model)
                doesn't currently support 'data': */
-            vm.motionCorrectionModel.fetch({
+            vm.ctfModel.fetch({
                 'data': { 'IMAGENUMBER': vm.movieNumber },
                 'success': successCallback,
                 'error': errorCallback,
@@ -186,7 +164,7 @@ export default {
                     // TODO: Dialog broken!
                     MarionetteApplication.getInstance().dialog.show(
                         new LogView({
-                            'title': 'Motion Correction Log File',
+                            'title': 'CTF Log File',
                             'url': signedUrl,
                         })
                     )
