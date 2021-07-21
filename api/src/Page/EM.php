@@ -567,10 +567,20 @@ class EM extends Page
 
             // Add DataCollection
 
-            $this->db->pq("
-                    INSERT INTO DataCollection (sessionId, dataCollectionGroupId, startTime, endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
-                    VALUES (:1, :2, NOW(), NOW(), :3, :4, :5, :6, :7) RETURNING dataCollectionId INTO :id",
-                array($session['SESSIONID'], $dataCollectionGroupId, 'DataCollection Simulated', $imageDirectory, $imageSuffix, $fileTemplate, 'Created by SynchWeb')
+            $this->db->pq(
+                "INSERT INTO DataCollection (sessionId, dataCollectionGroupId, startTime,
+                    endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
+                VALUES (:1, :2, NOW(), :3, :4, :5, :6, :7, :8) RETURNING dataCollectionId INTO :id",
+                array(
+                    $session['SESSIONID'],
+                    $dataCollectionGroupId,
+                    $session['ENDDATE'],
+                    'DataCollection Simulated',
+                    $imageDirectory,
+                    $imageSuffix,
+                    $fileTemplate,
+                    'Created by SynchWeb'
+                )
             );
 
             $dataCollectionId = $this->db->id();
@@ -841,7 +851,7 @@ class EM extends Page
 
         try {
             $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_queue, $zocalo_message, true);
+            $queue->send($zocalo_queue, $zocalo_message, true, $this->user->login);
         } catch (Exception $e) {
             $this->_error($e->getMessage(), 500);
         }
@@ -924,7 +934,7 @@ class EM extends Page
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
-                WHERE dc.datacollectionid = :1 AND m.movienumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $in));
 
         if (!sizeof($rows)) $this->_error('No such motion correction');
         $row = $rows[0];
@@ -1111,13 +1121,19 @@ class EM extends Page
     {
         $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
 
-        $rows = $this->db->pq("SELECT c.ctfid, c.boxsizex, c.boxsizey, c.minresolution, c.maxresolution, c.mindefocus, c.maxdefocus, c.defocusstepsize, c.astigmatism, c.astigmatismangle, c.estimatedresolution, c.estimateddefocus, c.amplitudecontrast, c.ccvalue, c.ffttheoreticalfullpath, c.comments, c.autoprocprogramid, m.movienumber AS imagenumber, dc.datacollectionid
+        $rows = $this->db->pq(
+            "SELECT c.ctfid, c.boxsizex, c.boxsizey, c.minresolution, c.maxresolution, c.mindefocus, c.maxdefocus,
+                c.defocusstepsize, c.astigmatism, c.astigmatismangle, c.estimatedresolution, c.estimateddefocus,
+                c.amplitudecontrast, c.ccvalue, c.ffttheoreticalfullpath, c.comments, c.autoprocprogramid,
+                m.movienumber AS imagenumber, dc.datacollectionid
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
                 INNER JOIN movie m ON m.movieid = mc.movieid
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
-                WHERE dc.datacollectionid = :1 AND m.movienumber = :2 AND app.processingstatus = 1", array($this->arg('id'), $in));
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2",
+            array($this->arg('id'), $in)
+        );
 
         if (!sizeof($rows)) $this->_error('No such ctf correction');
         $row = $rows[0];
