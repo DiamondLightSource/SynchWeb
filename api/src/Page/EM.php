@@ -72,6 +72,8 @@ class EM extends Page
         array('/mc/drift/:id(/n/:IMAGENUMBER)', 'get', '_mc_plot'),
         array('/mc/histogram', 'get', '_mc_drift_histogram'),
 
+        array('/attachments/:id', 'get', '_auto_proc_attachments'),
+
         array('/ctf/:id', 'get', '_ctf_result'),
         array('/ctf/image/:id(/n/:IMAGENUMBER)', 'get', '_ctf_image'),
         array('/ctf/histogram', 'get', '_ctf_histogram'),
@@ -1105,6 +1107,39 @@ class EM extends Page
         }
 
         $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
+    }
+
+    private function _auto_proc_attachments()
+    {
+        $rows = $this->db->pq(
+            "SELECT
+                AutoProcProgramAttachment.autoProcProgramAttachmentId AS id,
+                CONCAT(
+                    AutoProcProgramAttachment.filePath,
+                    '/',
+                    AutoProcProgramAttachment.fileName
+                ) AS file,
+                AutoProcProgramAttachment.recordTimeStamp,
+                AutoProcProgramAttachment.fileType,
+                AutoProcProgramAttachment.importanceRank
+            FROM AutoProcProgramAttachment
+            LEFT JOIN AutoProcProgram
+                ON AutoProcProgram.autoProcProgramId = AutoProcProgramAttachment.autoProcProgramId
+            LEFT JOIN ProcessingJob
+                ON ProcessingJob.processingJobId = AutoProcProgram.processingJobId
+            WHERE ProcessingJob.dataCollectionId = :1",
+            array($this->arg('id'))
+        );
+        if (!sizeof($rows)) {
+            $this->_error('No auto proccessing attachments found');
+        }
+        $result = array();
+        foreach ($rows as $row) {
+            if (file_exists($row['FILE'])) {
+                array_push($result, $row);
+            }
+        }
+        $this->_output($result);
     }
 
     function _ctf_result()
