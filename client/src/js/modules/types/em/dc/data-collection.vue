@@ -9,6 +9,12 @@
     <all-collections-link />
 
     <div class="data_collection" type="data">
+      <data-collection-toolbar
+        v-if="dataCollection !== null"
+        :data-collection="dataCollection"
+        :data-collection-model="dataCollectionModel"
+      />
+
       <data-collection-header
         v-if="dataCollection !== null"
         :data-collection="dataCollection"
@@ -29,6 +35,7 @@ import AllCollectionsLink from 'modules/types/em/dc/all-collections-link.vue'
 import ApStatusCollection from 'modules/types/em/collections/apstatuses'
 import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
 import DataCollectionModel from 'models/datacollection.js'
+import DataCollectionToolbar from 'modules/types/em/dc/dc-toolbar.vue'
 import DialogBox from 'app/components/dialogbox.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import ProcessingJob from 'modules/types/em/dc/ap/processing-job.vue'
@@ -38,6 +45,7 @@ export default {
     'components': {
         'all-collections-link': AllCollectionsLink,
         'data-collection-header': DataCollectionHeader,
+        'data-collection-toolbar': DataCollectionToolbar,
         'dialog-box': DialogBox,
         'processing-job': ProcessingJob,
     },
@@ -55,11 +63,15 @@ export default {
         return {
             'dataCollection': null,
             'autoProcessing': null,
-            'dataCollectionModel': new DataCollectionModel(),
-            'apStatusCollection': new ApStatusCollection(),
         }
     },
     'computed': {
+        'dataCollectionModel': function() {
+            return new DataCollectionModel()
+        },
+        'apStatusCollection': function() {
+            return new ApStatusCollection()
+        },
         'beamline': function() {
             return this.dataCollection ? this.dataCollection.BL : ''
         },
@@ -78,10 +90,10 @@ export default {
     },
     'mounted': function() {
         this.$store.commit('proposal/setVisit', this.visit)
-        this.fetchDataCollectionModel()
+        this.fetchDataCollection()
     },
     'methods': {
-        'fetchDataCollectionModel': function() {
+        'fetchDataCollection': function() {
             const vm = this
             const fetchParams = {
                 'ID': this.collectionId,
