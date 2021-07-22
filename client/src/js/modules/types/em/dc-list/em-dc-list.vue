@@ -127,10 +127,14 @@ export default {
             this.collection.getPage(pagination.currentPage)
             this.getCollection()
         },
-        'rowClicked': function(model) {
+        'rowClicked': function(dataCollectionModel) {
+            // This may be a list for all collections in a proposal
+            // without a specific visit number, hence:
+            const visit = this.$store.state.proposal.proposal +
+                '-' + dataCollectionModel.get('VN')
             this.$router.push(
-                '/dc/visit/' + this.$store.state.proposal.visit +
-                '/collection/' + model.get('ID')
+                '/dc/visit/' + visit +
+                '/collection/' + dataCollectionModel.get('ID')
             )
         },
         'getCollection': function() {

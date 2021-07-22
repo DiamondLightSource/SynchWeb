@@ -43,6 +43,10 @@ export default {
             },
         },
         'isInactive': function() {
+            if (!this.model) {
+                return true
+            }
+
             return this.model.get('VISIT').match(/^(cm|nt|nr)/) == null &&
                 this.model.get('ACTIVE') != '1'
         },
