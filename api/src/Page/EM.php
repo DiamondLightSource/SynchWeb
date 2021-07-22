@@ -1109,7 +1109,7 @@ class EM extends Page
         $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
     }
 
-    private function _auto_proc_attachments()
+    public function _auto_proc_attachments()
     {
         $rows = $this->db->pq(
             "SELECT
