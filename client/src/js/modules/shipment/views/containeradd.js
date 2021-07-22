@@ -299,7 +299,7 @@ define(['backbone',
                 CONTAINERTYPE: this.type.get('name'),
             })
             
-            if (this.type.get('name').indexOf('puck') > -1) {
+            if (this.type.get('name').toLowerCase().indexOf('puck') > -1) {
                 console.log('selected puck type', this.model.get('CAPACITY'), this.type)
                 this.buildCollection()
                 this.puck.$el.css('width', app.mobile() ? '100%' : '25%')
@@ -509,7 +509,7 @@ define(['backbone',
         
         
         selectSample: function() {
-            if (this.type.get('name').indexOf('puck') == -1 && this.type.get('name') != 'PCRStrip') {
+            if (this.type.get('name').toLowerCase().indexOf('puck') == -1 && this.type.get('name') != 'PCRStrip') {
                 var s = this.samples.findWhere({ isSelected: true })
                 if (s) {
                     this.singlesample.setModel(s)
