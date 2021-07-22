@@ -42,6 +42,11 @@
           :length="lengthCtf"
           :data-collection-id="dataCollectionId"
         />
+
+        <ice-breaker
+          :active="showAutoProcessing"
+          :data-collection-id="dataCollectionId"
+        />
       </div>
     </div>
   </section>
@@ -50,6 +55,7 @@
 <script>
 import 'jquery.mp' // TODO: JQuery!!!!
 import CtfEstimation from 'modules/types/em/dc/ap/ctf/ctf-estimation.vue'
+import IceBreaker from 'modules/types/em/dc/ap/ice/ice-breaker.vue'
 import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
 import StatusItem from 'modules/types/em/dc/ap/status-item.vue'
 
@@ -57,6 +63,7 @@ export default {
     'name': 'ProcessingJob',
     'components': {
         'ctf-estimation': CtfEstimation,
+        'ice-breaker': IceBreaker,
         'motion-correction': MotionCorrection,
         'status-item': StatusItem,
     },
