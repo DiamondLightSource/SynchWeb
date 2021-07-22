@@ -103,7 +103,7 @@
 
 <script>
 import formatsUnits from 'modules/types/em/components/formats-units'
-import KvLambda from 'modules/types/em/utils/kv-lambda'
+import KvLambda from 'modules/types/em/components/kv-lambda'
 import ListItem from 'modules/types/em/components/list-item.vue'
 
 export default {
