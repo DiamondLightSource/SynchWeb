@@ -17,6 +17,7 @@
     </p>
 
     <div
+      v-if="ctfEstimation !== null"
       class="data_collection"
       type="data"
     >
@@ -26,10 +27,7 @@
         :image-url="imageUrl"
       />
 
-      <params
-        v-if="ctfEstimation !== null"
-        :ctf-estimation="ctfEstimation"
-      />
+      <params :ctf-estimation="ctfEstimation" />
     </div>
   </div>
 </template>

@@ -17,6 +17,7 @@
     </p>
 
     <div
+      v-if="motionCorrection !== null"
       class="data_collection"
       type="data"
     >
@@ -38,10 +39,7 @@
         :image-url="imageUrl"
       />
 
-      <params
-        v-if="motionCorrection !== null"
-        :motion-correction="motionCorrection"
-      />
+      <params :motion-correction="motionCorrection" />
     </div>
   </div>
 </template>
