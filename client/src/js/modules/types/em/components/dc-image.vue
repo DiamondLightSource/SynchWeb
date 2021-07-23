@@ -7,7 +7,7 @@
   >
     <a
       :href="imageUrl"
-      :title="imageTitle"
+      :title="title"
     >
       <img
         ref="image"
