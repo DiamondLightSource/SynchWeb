@@ -76,6 +76,7 @@ class EM extends Page
 
         array('/ctf/:id', 'get', '_ctf_result'),
         array('/ctf/image/:id(/n/:IMAGENUMBER)', 'get', '_ctf_image'),
+        array('/ctf/summary/:id', 'get', '_ctf_summary'),
         array('/ctf/histogram', 'get', '_ctf_histogram'),
 
         array('/process/relion/session/:session', 'post', '_relion_start'),
@@ -1137,6 +1138,54 @@ class EM extends Page
         foreach ($rows as $row) {
             if (file_exists($row['FILE'])) {
                 array_push($result, $row);
+            }
+        }
+        $this->_output($result);
+    }
+
+    public function _ctf_summary()
+    {
+        $rows = $this->db->pq(
+            'SELECT
+                DATE_FORMAT(Movie.createdTimeStamp, "%d-%m-%Y %H:%i:%s") as startTime,
+                CTF.astigmatism,
+                CTF.estimatedResolution,
+                CTF.estimatedDefocus
+            FROM CTF
+            INNER JOIN AutoProcProgram
+                ON AutoProcProgram.autoProcProgramId = CTF.autoProcProgramId
+            INNER JOIN ProcessingJob
+                ON ProcessingJob.processingJobId = AutoProcProgram.processingJobId
+            INNER JOIN MotionCorrection
+                ON MotionCorrection.motionCorrectionId = CTF.motionCorrectionId
+            INNER JOIN Movie
+                ON Movie.movieId = MotionCorrection.movieId
+            WHERE Movie.dataCollectionId = :1
+            ORDER BY Movie.createdtimestamp',
+            array($this->arg('id'))
+        );
+        $columns = array(
+            'ASTIGMATISM' => 'Astigmatism',
+            'ESTIMATEDDEFOCUS' => 'Estimated Defocus',
+            'ESTIMATEDRESOLUTION' => 'Estimated Resolution',
+        );
+        $result = array();
+        foreach ($columns as $field => $label) {
+            $result[$field] = array(
+                'label' => $label,
+                'data' => array(),
+            );
+        }
+        foreach ($rows as $row) {
+            $javaScriptTime = $this->jst($row['STARTTIME']);
+            foreach ($columns as $field => $label) {
+                array_push(
+                    $result[$field]['data'],
+                    array(
+                        $javaScriptTime,
+                        floatval(round($row[$field], 4))
+                    )
+                );
             }
         }
         $this->_output($result);

@@ -1,70 +1,73 @@
 <template>
-  <section>
-    <h1>Processing Job: {{ job.ID }}</h1>
-
-    <h1 style="background-color: #ffa; padding: 20px;">
-      TODO: astigmatism, estimated focus &amp; estimated resolution graphs
+  <div class="holder">
+    <h1
+      title="Click to show autoprocessing results"
+      class="ap"
+      @click="clickHeader"
+    >
+      Processing Job: {{ processingJobId }}
+      <span>
+        <status-item
+          title="Motion Correction"
+          :status="job.MC"
+          @counted="countedMc"
+        />
+        <status-item
+          title="CTF Estimation"
+          :status="job.CTF"
+          @counted="countedCtf"
+        />
+      </span>
     </h1>
 
-    <div class="holder">
-      <h1
-        title="Click to show autoprocessing results"
-        class="ap"
-        @click="clickHeader"
-      >
-        Auto Processing
-        <span>
-          <status-item
-            title="Motion Correction"
-            :status="job.MC"
-            @counted="countedMc"
-          />
-          <status-item
-            title="CTF Estimation"
-            :status="job.CTF"
-            @counted="countedCtf"
-          />
-        </span>
-      </h1>
+    <div
+      ref="autoproc"
+      class="autoproc"
+    >
+      <processing-summary :processing-job-id="processingJobId" />
 
-      <div
-        ref="autoproc"
-        class="autoproc"
-      >
-        <motion-correction
-          :active="showAutoProcessing"
-          :length="lengthMc"
-          :data-collection-id="dataCollectionId"
-        />
+      <motion-correction
+        :active="showAutoProcessing"
+        :length="lengthMc"
+        :data-collection-id="dataCollectionId"
+      />
 
-        <ctf-estimation
-          :active="showAutoProcessing"
-          :length="lengthCtf"
-          :data-collection-id="dataCollectionId"
-        />
+      <ctf-estimation
+        :active="showAutoProcessing"
+        :length="lengthCtf"
+        :data-collection-id="dataCollectionId"
+      />
 
-        <ice-breaker
-          :active="showAutoProcessing"
-          :data-collection-id="dataCollectionId"
-        />
-      </div>
+      <ice-breaker
+        :active="showAutoProcessing"
+        :data-collection-id="dataCollectionId"
+      />
+
+      <auto-picker
+        :active="showAutoProcessing"
+        :data-collection-id="dataCollectionId"
+      />
     </div>
-  </section>
+  </div>
 </template>
 
 <script>
 import 'jquery.mp' // TODO: JQuery!!!!
+import AutoPicker from 'modules/types/em/dc/ap/cryolo/auto-picker.vue'
 import CtfEstimation from 'modules/types/em/dc/ap/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/dc/ap/ice/ice-breaker.vue'
 import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
+import ProcessingSummary from 'modules/types/em/dc/ap/summary/processing-summary.vue'
 import StatusItem from 'modules/types/em/dc/ap/status-item.vue'
 
 export default {
     'name': 'ProcessingJob',
     'components': {
+        'auto-picker': AutoPicker,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
         'motion-correction': MotionCorrection,
+        'processing-summary': ProcessingSummary,
         'status-item': StatusItem,
     },
     'props': {
@@ -83,6 +86,11 @@ export default {
             'lengthMc': 0,
             'lengthCtf': 0,
         }
+    },
+    'computed': {
+        'processingJobId': function() {
+            return parseInt(this.job.ID, 10)
+        },
     },
     'methods': {
         // This would be better using modern idioms rather than using JQuery

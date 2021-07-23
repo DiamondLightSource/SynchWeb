@@ -106,18 +106,14 @@ export default {
                 '/aid/' + this.programId +
                 '/log/1'
         },
-        'fftUrl': function() {
-            return this.active == false ? '' :
-                this.$store.state.apiUrl +
-                    '/em/mc/fft/image/' + this.dataCollectionId +
-                    '/n/' + this.movieNumber +
-                    '/t/2'
-        },
         'imageUrl': function() {
             return this.active == false ? '' :
                 this.$store.state.apiUrl +
                     '/em/mc/fft/image/' + this.dataCollectionId +
                     '/n/' + this.movieNumber
+        },
+        'fftUrl': function() {
+            return this.imageUrl + '/t/2'
         },
     },
     'watch': {
