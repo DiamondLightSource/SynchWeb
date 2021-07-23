@@ -11,7 +11,7 @@
     >
       <img
         ref="image"
-        :alt="imageTitle"
+        :alt="title"
         :height="proportionalHeight"
       >
     </a>
@@ -31,15 +31,11 @@ export default {
             'type': String,
             'required': true
         },
-        'containerTitle': {
+        'title': {
             'type': String,
             'required': true,
         },
         'imageUrl': {
-            'type': String,
-            'required': true,
-        },
-        'imageTitle': {
             'type': String,
             'required': true,
         },
@@ -55,6 +51,9 @@ export default {
                 this.xhrImage.load(this.imageUrl)
             }
             return this.imageUrl
+        },
+        'containerTitle': function() {
+            return 'Click to view ' + this.title
         },
     },
     'mounted': function() {

@@ -21,9 +21,8 @@
       type="data"
     >
       <dc-image
-        container-title="Click to view FFT"
         container-class="diffraction fft"
-        image-title="FFT Theoretical"
+        title="FFT Theoretical"
         :image-url="imageUrl"
       />
 

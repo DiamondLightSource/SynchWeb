@@ -26,19 +26,15 @@
         :active="active"
       />
 
-      <!-- FFT of Motion Corrected Image -->
       <dc-image
         container-class="diffraction fft2"
-        container-title="Click to view FFT"
-        image-title="FFT Drift Corrected"
+        title="FFT of Motion Corrected Image"
         :image-url="fftUrl"
       />
 
-      <!-- Motion Corrected Image -->
       <dc-image
         container-class="diffraction fft"
-        container-title="Click to view drift corrected FFT"
-        image-title="FFT"
+        title="Motion Corrected Image"
         :image-url="imageUrl"
       />
 
