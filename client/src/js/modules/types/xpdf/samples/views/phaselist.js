@@ -16,17 +16,6 @@ define(['marionette',
         event: 'phases:view',
         argument: 'PROTEINID',
         cookie: true,
-
-        render: function() {
-            Backgrid.Row.prototype.render.call(this)
-
-            // Highlight approved samples
-            // Currently all samples with an external id are green
-            // In future use Protein safetyLevel to discriminate
-            if (this.model.get('EXTERNAL') == '1') this.$el.addClass('active')
-
-            return this
-        },
     })
 
 
@@ -47,6 +36,7 @@ define(['marionette',
             { name: 'SEQUENCE', label: 'Composition', cell: 'string', editable: false },
             { name: 'DENSITY', label: 'Crystallographic Density', cell: 'string', editable: false },
             { name: 'PDBS', label: 'Has CIF', cell: table.TemplateCell, editable: false, template: '<%-(PDBS > 0 ? "Yes" : "No")%>' },
+            { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
         ],
     
         hiddenColumns: [],
