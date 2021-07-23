@@ -2,6 +2,10 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
     
     var plate_types = [
          { name: 'Puck', capacity: 16 },
+         { name: 'Unipuck', capacity: 16 },
+         { name: 'Actorpuck', capacity: 12 },
+         { name: 'Spinepuck', capacity: 10 },
+         { name: 'I23puck', capacity: 4 },
         
          { name: 'ReferencePlate', well_per_row: 2,
              drop_per_well_x: 1, drop_per_well_y: 1,
@@ -119,8 +123,17 @@ define(['backbone', 'modules/shipment/models/platetype', 'utils/kvcollection'], 
         keyAttribute: 'name',
         valueAttribute: 'name',
         
-        initialize: function(options) {
-            this.reset(this.plateTypes)
+        initialize: function(models, options) {
+            if (options && options.filtered && app.options.get("enabled_container_types").length) {
+                var filtered = _.filter(this.plateTypes, function(pl) {
+                    return app.options.get("enabled_container_types").indexOf(pl.name) > -1
+                })
+                this.reset(filtered)    
+            } else {
+                this.reset(this.plateTypes)
+            }
+
+            
             this.on('change:isSelected', this.onSelectedChanged, this);
         },
         

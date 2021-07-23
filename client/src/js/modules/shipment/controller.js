@@ -173,7 +173,7 @@ define(['backbone',
                 container.fetch({
                     success: function() {
                         app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: container.get('NAME') }])
-                        var is_plate = !(['Box', 'Puck', 'PCRStrip', null].indexOf(container.get('CONTAINERTYPE')) > -1)
+                        var is_plate = ['Box', 'Puck', 'PCRStrip', null].indexOf(container.get('CONTAINERTYPE')) == -1 && container.get('CONTAINERTYPE').indexOf('puck') == -1
                         if (is_plate && container.get('CONTAINERTYPE').includes('Xpdf')) is_plate = false
                         console.log('is plate', is_plate)
                         if (is_plate) app.content.show(new ContainerPlateView({ model: container, params: { iid: iid, sid: sid } }))
