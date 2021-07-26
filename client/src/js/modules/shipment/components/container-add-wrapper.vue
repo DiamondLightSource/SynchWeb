@@ -17,7 +17,8 @@
 * Router guard determines if we can still add content to the proposal
 * Then displays the addcontainer view specific to a proposal type
 */
-import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
+import MarionetteView from 'app/views/marionette/marionette-wrapper.vue
+import MxContainerAdd from 'modules/types/mx/shipment/views/container-add.vue'
 
 import { ContainerAddMap } from 'modules/shipment/components/container-map'
 import Dewar from 'models/dewar'
@@ -27,7 +28,8 @@ import store from 'app/store/store'
 export default {
     name: 'container-add-wrapper',
     components: {
-        'marionette-view': MarionetteView
+        'marionette-view': MarionetteView,
+        'mx-container-add': MxContainerAdd
     },
     props: {
         'did': Number,
@@ -42,6 +44,7 @@ export default {
             params: null,
             queryParams: null,
             bc : [],
+            componentType: 'marionette-view',
         }
     },
     computed: {
@@ -68,8 +71,14 @@ export default {
                 await this.$store.dispatch('getModel', this.model)
                 this.mview = ContainerAddMap[this.proposalType] ? ContainerAddMap[this.proposalType].view : ContainerAddMap['default'].view
                 // USe the legacy components if we have then defined, else use the newer style component
-                if (!this.mview) this.componentType = 'saxs-container-add'
+                if (!this.mview) {
+                    const newAddContainers = {
+                        mx: 'mx-container-add',
+                    }
 
+                    this.componentType = newAddContainers[this.proposalType]
+                }
+    
                 // Update the breadcrumbs
                 this.bc.push({ title: this.model.get('SHIPPINGNAME'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
                 this.bc.push({ title: 'Containers' })
