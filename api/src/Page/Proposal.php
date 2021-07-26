@@ -1168,30 +1168,24 @@ class Proposal extends Page
             if (!sizeof($cont)) $this->_error('No such container');
             $cont = $cont[0];
 
-            if (!$cont['SESSIONID']) $this->_error('That container does not have a session');
+            if ($cont['SESSIONID']) {
+                $uas = new UAS($auto_user, $auto_pass);
+                $code = $uas->close_session($cont['EXTERNALID']);
 
-            $delivered_time = $this->_calculate_delivered_time($cont['SESSIONID']);
-            $uas = new UAS($auto_user, $auto_pass);
-            $code = $uas->close_session($cont['EXTERNALID'], $delivered_time);
+                if ($code == 200) {
+                    // Don't wait for UAS sync - set end Date in ISPyB now as well
+                    $this->db->pq("UPDATE blsession SET endDate=CURRENT_TIMESTAMP WHERE sessionid=:1", array($cont['SESSIONID']));
+                    $this->_output(array('MESSAGE' => 'Session closed', 'VISIT' => $cont['VISIT']));
+                } else if ($code == 403) {
+                    $this->_output(array('MESSAGE' => 'Session already closed', 'VISIT' => $cont['VISIT']));
 
-            if ($code == 200) {
-                // Don't wait for UAS sync - set end Date in ISPyB now as well
-                $this->db->pq("UPDATE blsession SET endDate=CURRENT_TIMESTAMP WHERE sessionid=:1", array($cont['SESSIONID']));
-                $this->_output(array('MESSAGE' => 'Session closed', 'VISIT' => $cont['VISIT']));
-            } else if ($code == 403) {
-                $this->_output(array('MESSAGE' => 'Session already closed', 'VISIT' => $cont['VISIT']));
+                } else {
+                    $this->_error('Something went wrong closing that session, response code was: '.$code);
+                }
 
             } else {
-                $this->_error('Something went wrong closing that session, response code was: '.$code);
+                $this->_error('That container does not have a session');
             }
-        }
-        /*
-        * TODO - add algorithm from Mark W - determine how much delivered time this session has used
-        * @return delivered time in minutes.
-        */
-        function _calculate_delivered_time($sessionId) {
-            $delivered_time = 42;
 
-            return $delivered_time;
         }
 }
