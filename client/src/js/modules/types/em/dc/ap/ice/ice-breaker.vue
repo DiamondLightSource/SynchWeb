@@ -89,7 +89,6 @@ export default {
                vm.$store.dispatch('getModel', model)
                doesn't currently support 'data': */
             vm.attachmentsModel.fetch({
-                'data': { 'id': this.dataCollectionId },
                 'success': successCallback,
                 'error': errorCallback,
             })
