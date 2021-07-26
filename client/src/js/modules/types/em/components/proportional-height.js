@@ -13,5 +13,11 @@ export default {
                 proportionalHeight * heightScalingFactor * 0.8
             );
         },
+        'plotDivStyle': function() {
+            const height = this.proportionalHeight + 'px;'
+            return 'height: ' + height +
+                ' min-height: ' + height +
+                ' max-height: ' + height
+        },
     },
 }

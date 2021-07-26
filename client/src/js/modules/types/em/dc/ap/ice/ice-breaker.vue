@@ -5,6 +5,12 @@
       class="data_collection"
       type="data"
     >
+      <histogram
+        v-for="attachment in reverseOrderAttachments"
+        :key="attachment.ID"
+        :attachment="attachment"
+      />
+
       <ul class="clearfix">
         <li
           v-if="attachments == null || attachments.length == 0"
@@ -12,14 +18,11 @@
         >
           No Autoprocessing attachments
         </li>
-        <li
+        <pdf-attachment
           v-for="attachment in attachments"
           :key="attachment.ID"
-          class="comment"
-        >
-          <strong>{{ attachment.RECORDTIMESTAMP }}</strong>
-          <span class="COMMENTS">{{ attachment.FILE }}</span>
-        </li>
+          :attachment="attachment"
+        />
       </ul>
     </div>
   </div>
@@ -27,9 +30,15 @@
 
 <script>
 import AttachmentsModel from 'modules/types/em/models/attachments'
+import Histogram from 'modules/types/em/dc/ap/ice/histogram.vue'
+import PdfAttachment from 'modules/types/em/dc/ap/ice/pdf-attachment.vue'
 
 export default {
     'name': "IceBreaker",
+    'components': {
+        'histogram': Histogram,
+        'pdf-attachment': PdfAttachment,
+    },
     'props': {
         'active' : {
             'type': Boolean,
@@ -46,6 +55,12 @@ export default {
         }
     },
     'computed': {
+        'reverseOrderAttachments': function() {
+            if (this.attachments === null) {
+                return []
+            }
+            return this.attachments.slice().reverse()
+        },
         'attachmentsModel': function() {
             return new AttachmentsModel({
                 'id': this.dataCollectionId,

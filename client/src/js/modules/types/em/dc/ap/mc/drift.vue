@@ -44,12 +44,6 @@ export default {
                 driftOptions
             )
         },
-        'plotDivStyle': function() {
-            const height = this.proportionalHeight + 'px;'
-            return 'height: ' + height +
-                ' min-height: ' + height +
-                ' max-height: ' + height
-        },
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
