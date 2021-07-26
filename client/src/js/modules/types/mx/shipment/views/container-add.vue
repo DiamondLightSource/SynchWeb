@@ -575,8 +575,7 @@ export default {
       console.log({validated})
 
       if (validated) {
-        console.log(this.$refs.observer.fields)
-        // this.addContainer()
+        this.addContainer()
       } else {
         console.log("Form validation failed ")
       }
@@ -642,11 +641,6 @@ export default {
       for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
         this.experimentKindList.push({ value: key, text: value })
       }
-    },
-    resetFormValidation() {
-      requestAnimationFrame(() => {
-        this.$ref.observer.reset()
-      })
     }
   },
   provide() {
