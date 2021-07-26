@@ -12,7 +12,6 @@
       :experimentKind="experimentKind"
       :containerId="containerId"
       :sampleLocation="sampleLocation"
-      @input="handleSamplesChange"
       @save-sample="onSaveSample"
       @clone-sample="onCloneSample"
       @clear-sample="onClearSample"
@@ -52,7 +51,7 @@ export default {
   name: 'sample-editor',
   components: {
     'single-sample-plate': SingleSample,
-    'validation-observer': ValidationObserver
+    'validation-observer': ValidationObserver,
   },
   props: {
     containerType: {
@@ -70,7 +69,7 @@ export default {
     },
     containerId: {
       type: Number
-    }
+    },
   },
   data() {
     return {
@@ -97,9 +96,7 @@ export default {
       return component
     },
     // These options will be passed into the marionette sample table view
-    ...mapGetters({
-      samples: ['samples/samples']
-    })
+    ...mapGetters('samples', ['samples'])
   },
   // We are passing a plain JSON array to the sample plate view
   // So we need to detect when the parent backbone collection is changed (reset)

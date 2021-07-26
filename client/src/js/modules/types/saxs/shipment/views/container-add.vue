@@ -209,7 +209,6 @@ Once container is valid then samples are added
           :proteins="proteinsCollection"
           :gproteins="gProteinsCollection"
           :automated="containerState.AUTOMATED"
-          :containerGroup="containerGroup"
           @select-sample="onSelectSample"
         />
       </div>
@@ -256,10 +255,6 @@ import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
-import SpaceGroupList from 'utils/sgs.js'
-import CenteringMethodList from 'utils/centringmethods.js'
-import AnomalousList from 'utils/anoms.js'
-import ExperimentKindsList from 'utils/experimentkinds.js'
 // import BaseInputCombobox from 'app/components/base-input-combobox.vue'
 
 import ProcessingPipelines from 'collections/processingpipelines'
@@ -413,11 +408,7 @@ export default {
       showAllExperimentTypes: false,
 
       usersCollection: null,
-      users: [],
-      spaceGroups: SpaceGroupList.list,
-      centeringMethods: CenteringMethodList.list,
-      anomalousList: AnomalousList.list,
-      experimentKindList: []
+      users: []
     }
   },
   computed: {
@@ -549,7 +540,6 @@ export default {
     this.getContainerRegistry()
     this.getUsers()
     this.getProcessingPipelines()
-    this.formatExperimentKindList()
   },
 
   methods: {
@@ -689,19 +679,6 @@ export default {
     onContainerCellClicked: function(location) {
       EventBus.$emit('select-sample', location)
     },
-    formatExperimentKindList() {
-      for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
-        this.experimentKindList.push({ value: key, text: value })
-      }
-    }
   },
-  provide() {
-    return {
-      $spaceGroups: this.spaceGroups,
-      $centeringMethods: this.centeringMethods,
-      $anomalousList: this.anomalousList,
-      $experimentKindList: this.experimentKindList
-    }
-  }
 }
 </script>

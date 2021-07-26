@@ -5,7 +5,6 @@ export const SampleTableNewMap = {
   default: MxSamplesPlate
 }
 
-
 export const SampleTableViewMap = {
   default: SampleTableView
 }

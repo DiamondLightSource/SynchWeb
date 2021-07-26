@@ -32,4 +32,4 @@ export default {
       return this.formatSelectData(selectData, data, property).value;
     },
   },
-};
+}
