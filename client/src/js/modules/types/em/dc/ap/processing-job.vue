@@ -43,17 +43,17 @@
         :data-collection-id="dataCollectionId"
       />
 
-      <!-- auto-picker
+      <auto-picker
         :active="showAutoProcessing"
         :data-collection-id="dataCollectionId"
-      / -->
+      />
     </div>
   </div>
 </template>
 
 <script>
 import 'jquery.mp' // TODO: JQuery!!!!
-//import AutoPicker from 'modules/types/em/dc/ap/cryolo/auto-picker.vue'
+import AutoPicker from 'modules/types/em/dc/ap/cryolo/auto-picker.vue'
 import CtfEstimation from 'modules/types/em/dc/ap/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/dc/ap/ice/ice-breaker.vue'
 import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
@@ -63,7 +63,7 @@ import StatusItem from 'modules/types/em/dc/ap/status-item.vue'
 export default {
     'name': 'ProcessingJob',
     'components': {
-        //'auto-picker': AutoPicker,
+        'auto-picker': AutoPicker,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
         'motion-correction': MotionCorrection,
