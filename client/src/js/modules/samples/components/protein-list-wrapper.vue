@@ -16,6 +16,8 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import { ProteinListMap } from 'modules/samples/components/samples-map'
 import Proteins from 'collections/proteins'
+// Allow us to map store values to local computed properties
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'protein-list-wrapper',
@@ -33,7 +35,8 @@ export default {
             model: null,
             collection: null,
             params: null,
-            bc : []
+            bc : [],
+            title: null,
         }
     },
     computed: {
@@ -41,27 +44,30 @@ export default {
             return {
                 collection: this.collection,
                 model: this.model,
-                params: this.params
+                params: this.params,
+                title: this.title
             }
-        }
+        },
+        ...mapGetters('proposal', {
+            proposalType: 'currentProposalType'
+        })
     },
     created: function() {
-        let proposalType = this.$store.state.proposal.proposalType
-        console.log("ProteinList View Created for proposal Type = " + proposalType)
+        this.title = ProteinListMap[this.proposalType] ? ProteinListMap[this.proposalType].title : ProteinListMap['default'].title
 
-        let title = ProteinListMap[proposalType].title || 'Protein'
-
-        this.bc = [{ title: title+'s', url: '/'+title.toLowerCase()+'s' }]
+        this.bc = [{ title: this.title+'s', url: '/'+ this.title.toLowerCase()+'s' }]
 
         this.params = {s: this.search }
         // Extra search params needed as a special case
-        if (proposalType == 'xpdf') this.params.seq = 1
-
+        if (this.proposalType == 'xpdf') {
+            this.params.seq = 1
+            this.params.external = 1
+            this.params.original = 1
+        }
         // page will be passed in as prop in Number format
         this.collection = new Proteins(null, { state: { currentPage: this.page || 1 }, queryParams: this.params })
 
-        this.mview = ProteinListMap[proposalType].view || ProteinListMap['default'].view
-
+        this.mview = ProteinListMap[this.proposalType] ? ProteinListMap[this.proposalType].view : ProteinListMap['default'].view
         // We have no need to wait for proposal lookups here
         this.ready = true
     },

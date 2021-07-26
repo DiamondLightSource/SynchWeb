@@ -40,10 +40,12 @@ define(['backbone'], function(Backbone){
                 }
             })
 
-            console.log('type icon', this.get('TYPE')+icon)
+            var auto = !this.get('AUTOMATIC') ? ' <i class="fa fa-refresh" title="Reprocessed"></i>': ''
+
+            // console.log('type icon', this.get('TYPE')+icon)
             this.set({
                 ICON: icon,
-                'TYPEICON': this.get('TYPE')+icon
+                'TYPEICON': this.get('TYPE')+icon+auto
             })
         },
     })

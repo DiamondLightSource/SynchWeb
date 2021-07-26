@@ -73,6 +73,12 @@ define([
         },
 
         editable: true,
+
+        templateHelpers: function() {
+            return {
+                IS_STAFF: app.staff
+            }
+        },
         
         initialize: function() {
             this.allphases = new Proteins()

@@ -135,6 +135,7 @@ class Shipment extends Page
                               array('/dewars(/:did)(/sid/:sid)(/fc/:FACILITYCODE)', 'get', '_get_dewars'),
                               array('/dewars', 'post', '_add_dewar'),
                               array('/dewars/:did', 'patch', '_update_dewar'),
+                              array('/dewars/comments/:did', 'patch', '_update_dewar_comments'), // endpoint to allow bcr to update comments
 
                               array('/dewars/history(/did/:did)', 'get', '_get_history'),
                               array('/dewars/history', 'post', '_add_history'),
@@ -1165,8 +1166,28 @@ class Shipment extends Page
                 }
             }
         }
-        
-        
+        /*
+        * Added for Logistics App. Stores basic info about state of the dewar via comments.
+        * No user is logged in hence this is provided as extra end point.
+        * Once authentication/authorization is moved into separate service merge this with other patch request.
+        */        
+        function _update_dewar_comments() {
+            if (!$this->has_arg('did')) $this->_error('No dewar specified');
+            if (!$this->has_arg('COMMENTS')) $this->_error('No dewar comments specified');
+
+            $dewars = $this->db->pq("SELECT d.dewarid
+              FROM dewar d
+              WHERE d.dewarid = :1", array($this->arg('did')));
+
+            if (!sizeof($dewars)) $this->_error('Dewar ' . $this->arg('did') . ' not found', 404);
+
+            $dewar = $dewars[0];
+
+            $this->db->pq("UPDATE dewar set comments=:2 WHERE dewarid=:1", array($dewar['DEWARID'], $this->arg('COMMENTS')));
+
+            $this->_output(array('DEWARID' => $dewar['DEWARID']));
+        }
+
         
         # Update shipping status to sent, email for CL3
         function _send_shipment() {
@@ -1368,7 +1389,7 @@ class Shipment extends Page
                 INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = sh.proposalid
                 LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
-                LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid
+                LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'
                 LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
                 LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                 LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
@@ -1430,7 +1451,7 @@ class Shipment extends Page
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
                                   LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
-                                  LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid
+                                  LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'
                                   LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
                                   LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                                   LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
@@ -1514,7 +1535,7 @@ class Shipment extends Page
                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                   INNER JOIN proposal p ON p.proposalid = sh.proposalid
                   INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
-                  WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL", array($this->proposalid, $this->arg('CONTAINERID')));
+                  WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL AND ss.source='manual'", array($this->proposalid, $this->arg('CONTAINERID')));
 
                 foreach ($samples as $s) {
                     $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));

@@ -16,6 +16,7 @@ define(['marionette', 'modules/samples/controller'], function(Marionette, c) {
       'xsamples(/s/:s)(/page/:page)': 'crystallist',
       'xsamples/cid/:cid': 'crystalview',
       'xsamples/add': 'crystaladd',
+      'xsamples/simple/add/:pid': 'simplesampleadd',
 
       'proteins(/s/:s)(/page/:page)': 'proteinlist',
       'proteins/pid/:pid': 'proteinview',
@@ -25,6 +26,7 @@ define(['marionette', 'modules/samples/controller'], function(Marionette, c) {
       'phases(/s/:s)(/page/:page)': 'proteinlist',
       'phases/pid/:pid': 'proteinview',
       'phases/add': 'proteinadd',
+      'phases/pid/:pid/clone': 'proteinclone',
     },
       
     loadEvents: ['samples:show', 'proteins:show', 'samples:view', 'proteins:view', 

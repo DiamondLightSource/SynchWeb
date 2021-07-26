@@ -21,7 +21,8 @@ class Process extends Page
             
             'PROCESSINGJOBPARAMETERID' => '\d+',
             'PARAMETERKEY' => '\w+',
-            'PARAMETERVALUE' => '([\w-\.,])+',
+            // Processing parameter value needs to cope with '/' characters e.g. spacegroups for reprocessing
+            'PARAMETERVALUE' => '([a-zA-Z0-9-_\.,\/])+',
 
             'AUTOMATIC' => '\d',
 
@@ -393,7 +394,7 @@ class Process extends Page
 
         try {
             $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_mx_reprocess_queue, $message, true);
+            $queue->send($zocalo_mx_reprocess_queue, $message, true, $this->user->login);
         } catch (Exception $e) {
             $this->_error($e->getMessage(), 500);
         }

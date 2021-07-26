@@ -71,6 +71,9 @@ class Authentication
 					# Allow barcode reader ips unauthorised access to add history
 		            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
 
+					# Allow barcode reader ips unauthorised access to add comments
+		            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && $parts[2] == 'comments' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
+
 		            # Container notification: allow beamlines running in automated mode to notify users
 		    		($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'notify' && in_array($_SERVER["REMOTE_ADDR"], $auto))
 		    	) {

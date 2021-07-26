@@ -6,6 +6,10 @@ define(['marionette', 'jquery'], function(Marionette, $) {
   
         ui: {
             holder: '.holder h1 span',
+            xrc: '.holder h1.xrc span',
+            strat: '.holder h1.strat span',
+            ap: '.holder h1.ap span',
+            dp: '.holder h1.dp span',
         },
     
         initialize: function(options) {
@@ -43,20 +47,32 @@ define(['marionette', 'jquery'], function(Marionette, $) {
                     '<i class="fa icon red fa-times alt="Failed"></i>']
 
             if (this.getOption('XRC')) {
-                this.ui.holder.html('Xray Centring: ' + val[res['XrayCentring']])
+                this.ui.xrc.html('Xray Centring: ' + val[res['XrayCentring']])
 
-            } else if (this.getOption('SCREEN')) {
-                this.ui.holder.empty()
+            } else if (this.getOption('SCREEN') != 0) {
+                this.ui.strat.empty()
                 _.each(res['screening'], function(sc, n) {
-                    this.ui.holder.append(n+': '+val[sc]+' ')
+                    this.ui.strat.append(n+': '+val[sc]+' ')
                 }, this)
                
             } else {
-                _.each(['autoproc','downstream'], function(ty, id) {
-                    this.ui.holder.eq(id).empty()
-                    _.each(res[ty], function(ap, n) {
-                        this.ui.holder.eq(id).append(n+': '+val[ap]+' ')
-                    }, this)
+                _.each({ap: 'autoproc',dp: 'downstream'}, function(ty, id) {
+                    this.ui[id].empty()
+                    var allResults = []
+                    if (res[ty]) {
+                        _.each(res[ty], function(ap, n) {
+                            var ress = {}
+                            _.each(ap, function(a) {
+                                if (!(a in ress)) ress[a] = 0
+                                ress[a]++
+                            })
+                            allResults.push(n+': '+_.map(ress, function(c, st) { return c > 1 ? '<span class="count">'+c+'x</span> '+val[st] : val[st]}).join(' '))
+                        }, this)
+
+                        this.ui[id].append(allResults.join('<span class="separator">|</span>'))
+                    } else {
+                        this.ui[id].append('No processing results')
+                    }
                 }, this)
             }
         }

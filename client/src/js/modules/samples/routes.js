@@ -4,16 +4,17 @@
 // The wrapper components use samples-map to figure out which views are required
 
 // Because we are using wrapper vue components we can use the standard lazy loading async method
-const ProteinListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ProteinListWrapper.vue')
-const ProteinAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ProteinAddWrapper.vue')
-const ProteinViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ProteinViewWrapper.vue')
+const ProteinListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-list-wrapper.vue')
+const ProteinAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-add-wrapper.vue')
+const ProteinViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-view-wrapper.vue')
 
-const SampleListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleListWrapper.vue')
-const SampleViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleViewWrapper.vue')
+const SampleListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-list-wrapper.vue')
+const SampleViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-view-wrapper.vue')
+const XpdfSimpleSampleAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/XpdfSimpleSampleAddWrapper.vue')
 
-const CrystalListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/CrystalListWrapper.vue')
-const CrystalViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/CrystalViewWrapper.vue')
-const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/CrystalAddWrapper.vue')
+const CrystalListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-list-wrapper.vue')
+const CrystalViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-view-wrapper.vue')
+const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-add-wrapper.vue')
 
 app.addInitializer(function() {
   app.on('samples:show', function() {
@@ -147,6 +148,15 @@ const routes = [
     name: 'phase-add',
     component: ProteinAddWrapper,
   },
+  // This redirects to protein clone...
+  {
+    path: '/phases/pid/:pid([0-9]+)/clone',
+    name: 'phases-clone',
+    component: ProteinAddWrapper,
+    props: route => ({
+      pid: +route.params.pid
+    })
+  },
   // Crystals routes
   // XPDF routes - these are identical with xsamples below
   // Only xpdf have views supported as no other proposal type has suitable views implemented
@@ -197,6 +207,14 @@ const routes = [
     path: '/xsamples/add',
     name: 'xsamples-add',
     component: CrystalAddWrapper,
+  },
+  {
+    path: '/xsamples/simple/add/:pid',
+    name: 'xsamples-simple-sample-add',
+    component: XpdfSimpleSampleAddWrapper,
+    props: route => ({
+      pid: +route.params.pid
+    }),
   },
 ]
 
