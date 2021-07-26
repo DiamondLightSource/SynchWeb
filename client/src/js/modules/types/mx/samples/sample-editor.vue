@@ -31,6 +31,7 @@ import EventBus from 'app/components/utils/event-bus.js'
 
 import Sample from 'models/sample'
 import SingleSample from 'modules/types/saxs/samples/experiments/default/single-sample.vue'
+import SamplePlateNew from 'modules/types/mx/samples/sample-plate-new.vue'
 
 import { SampleTableNewMap, SampleTableViewMap } from 'modules/types/saxs/samples/experiments/sample-table-map'
 
@@ -38,21 +39,12 @@ import { ValidationObserver }  from 'vee-validate'
 
 import { mapGetters } from 'vuex'
 
-const EXPERIMENT_TYPE_ROBOT = 22
-const EXPERIMENT_TYPE_HPLC = 21
-const EXPERIMENT_TYPE_RACK = 23
-
-const EXPERIMENT_TYPES = {
-  EXPERIMENT_TYPE_ROBOT: 'robot',
-  EXPERIMENT_TYPE_HPLC: 'hplc',
-  EXPERIMENT_TYPE_RACK: 'rack',
-}
-
 export default {
   name: 'sample-editor',
   components: {
     'single-sample-plate': SingleSample,
-    'validation-observer': ValidationObserver
+    'validation-observer': ValidationObserver,
+    'mx-sample-plate-new': SamplePlateNew
   },
   props: {
     containerType: {
@@ -85,14 +77,13 @@ export default {
       let sampleTableMap = this.containerId ? SampleTableViewMap : SampleTableNewMap
       let experimentType = 'default'
 
-      // Some experiment kinds have custom sample tables
-      if (this.experimentKind == EXPERIMENT_TYPE_ROBOT) experimentType = 'robot'
-      if (this.experimentKind == EXPERIMENT_TYPE_HPLC) experimentType = 'hplc'
-      if (this.experimentKind == EXPERIMENT_TYPE_RACK) experimentType = 'rack'
-
       let component = sampleTableMap[experimentType]
 
-      if (this.containerType.CAPACITY > 25) component = 'single-sample-plate'
+      if (this.containerType.CAPACITY > 25) {
+        component = 'single-sample-plate'
+      } else {
+        component = 'mx-sample-plate-new'
+      }
 
       return component
     },
@@ -299,6 +290,9 @@ export default {
       // this.$store.commit('samples/update', {index: targetIndex, key: 'LOCATION', value: (targetIndex+1).toString()})
       // this.$store.commit('samples/update', {index: targetIndex, key: 'NAME', value: this.generateSampleName(this.samples[sourceIndex].NAME, targetIndex+1)})
       return true
+    },
+    handleSamplesChange(data) {
+      console.log({ data })
     }
   }
 }

@@ -8,7 +8,8 @@
         'select-selected': true,
         [spacingClass]: true,
         [size]: true,
-        [`select-${inputIndex}`]: true
+        [`select-${inputIndex}`]: true,
+        'tw-h-8': true
       }"
       v-show="!searching"
       @click="openSelectDiv(inputIndex, $event)" >
@@ -26,17 +27,17 @@
           :key="`selectOptionIndex${optionIndex}`"
           :value="option[valueField]"
           @click.stop="selectOption(option, $event)">
-          {{ option[textField] }}
-          <slot name="icons"></slot>
+          <slot :option="option">
+            {{ option[textField] }}
+          </slot>
         </div>
       </div>
-      <slot></slot>
     </div>
     <div class="search-select" v-show="searchable && searching">
       <input
         type="text"
         :ref="`searchInput-${inputIndex}`"
-        class="tw-w-full select-search-input"
+        class="tw-w-full select-search-input tw-h-8"
         v-model="searchText"
         @focus="openOptionList($event)"/>
     </div>
@@ -104,18 +105,6 @@ export default {
     spacingClass: {
       type: String,
       default: 'tw-px-2'
-    },
-    hasIcon: {
-      type: Boolean,
-      default: false
-    },
-    iconClassName: {
-      type: String,
-      default: '',
-    },
-    iconParentClass: {
-      type: String,
-      default: ''
     }
   },
   data() {

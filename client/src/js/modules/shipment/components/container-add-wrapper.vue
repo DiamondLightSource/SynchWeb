@@ -28,6 +28,7 @@
 */
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import SaxsContainerAdd from 'modules/types/saxs/shipment/views/container-add.vue'
+import MxContainerAdd from 'modules/types/mx/shipment/views/container-add.vue'
 
 import { ContainerAddMap } from 'modules/shipment/components/container-map'
 import Dewar from 'models/dewar'
@@ -39,6 +40,7 @@ export default {
     components: {
         'marionette-view': MarionetteView,
         'saxs-container-add': SaxsContainerAdd,
+        'mx-container-add': MxContainerAdd
     },
     props: {
         'did': Number,
@@ -80,7 +82,14 @@ export default {
                 await this.$store.dispatch('getModel', this.model)
                 this.mview = ContainerAddMap[this.proposalType] ? ContainerAddMap[this.proposalType].view : ContainerAddMap['default'].view
                 // USe the legacy components if we have then defined, else use the newer style component
-                if (!this.mview) this.componentType = 'saxs-container-add'
+                if (!this.mview) {
+                    const newAddContainers = {
+                        mx: 'mx-container-add',
+                        saxs: 'saxs-container-add'
+                    }
+                    
+                    this.componentType = newAddContainers[this.proposalType]
+                }
     
                 // Update the breadcrumbs
                 this.bc.push({ title: this.model.get('SHIPPINGNAME'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
