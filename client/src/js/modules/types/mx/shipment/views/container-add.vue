@@ -211,10 +211,6 @@ import { mapGetters } from 'vuex'
 
 import { ValidationObserver, ValidationProvider, Validator }  from 'vee-validate'
 
-const STORAGE_TEMP_NEG_80 = -80
-const STORAGE_TEMP_0 = 0
-const STORAGE_TEMP_25 = 25
-
 const initialContainerState = {
   DEWARID: "",
   BARCODECHECK: null,
@@ -246,48 +242,6 @@ const INITIAL_CONTAINER_TYPE = {
   WELLDROP: -1,
   WELLPERROW: null,
 }
-// Wrap the ajax call into a promise
-// Move this to the store later?
-const checkBarcode = function(value) {
-  return new Promise((resolve, reject) => {
-    Backbone.ajax({
-        url: app.apiurl+'/shipment/containers/barcode/'+value,
-        success: function(resp) {
-          resolve(resp)
-        },
-        error: function(err) {
-          reject(err)
-        }
-    })
-  })
-}
-
-// A Method used by vee-validate
-const validateBarcode = function(value) {
-  return new Promise((resolve, reject) => {
-    let retVal = {valid: false, data: { message: ''}}
-
-    checkBarcode(value).then( () => {
-      // A 200 response means the barcode is in use
-      retVal.valid = false
-      retVal.data.message ='This barcode is already registered'
-    }, (response) => {
-      // If there is an error (400) response, then no barcode exists with this value, so it's OK!
-      retVal.valid = true
-      retVal.data.message = response.responseText || 'This barcode is available'
-    }).finally(() => {
-      resolve(retVal)
-    })
-  })
-}
-
-// Setup barcode check validation rule
-Validator.extend('unique-barcode', {
-  validate: validateBarcode,
-  getMessage: (field, params, data) => {
-    return data.message;
-  }
-});
 
 export default {
   name: 'MxAddContainer',
@@ -329,13 +283,6 @@ export default {
       containerGroup: '',
 
       selectedSample: null,
-
-      storageTemperatures: [
-        {ID: '', NAME: '-'},
-        {ID: STORAGE_TEMP_NEG_80, NAME: '-80'},
-        {ID: STORAGE_TEMP_0, NAME: '0'},
-        {ID: STORAGE_TEMP_25, NAME: '25'},
-      ],
 
       plateKey: 0,
       plateType: null,
