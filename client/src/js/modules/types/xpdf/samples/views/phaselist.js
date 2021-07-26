@@ -32,11 +32,11 @@ define(['marionette',
         columns: [
             { name: 'NAME', label: 'Name', cell: 'string', editable: false },
             { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false },
+            { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
             { name: 'MOLECULARMASS', label: 'Molecular Mass', cell: 'string', editable: false },
             { name: 'SEQUENCE', label: 'Composition', cell: 'string', editable: false },
             { name: 'DENSITY', label: 'Crystallographic Density', cell: 'string', editable: false },
             { name: 'PDBS', label: 'Has CIF', cell: table.TemplateCell, editable: false, template: '<%-(PDBS > 0 ? "Yes" : "No")%>' },
-            { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
         ],
     
         hiddenColumns: [],
