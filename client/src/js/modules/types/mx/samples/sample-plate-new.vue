@@ -24,7 +24,7 @@
         :class="{
           'tw-flex': true,
           'tw-items-center': true,
-          'tw-p-2': true,
+          'tw-py-1': true,
           'tw-justify-center': true,
           'tw-text-center': true,
           'tw-h-12': true,
@@ -36,11 +36,17 @@
         {{ column.title }}
       </div>
     </div>
-    <div class="tw-flex tw-py-1" v-for="(sample, sampleIndex) in samples" :key="sampleIndex">
-      <div class="location-column tw-text-center">{{ sample.LOCATION || sampleIndex + 1 }}</div>
+    <div class="tw-flex tw-w-full" v-for="(sample, sampleIndex) in inputValue" :key="sampleIndex">
+      <div class="location-column tw-text-center tw-py-1">{{ sample.LOCATION || sampleIndex + 1 }}</div>
 
-      <validation-provider class="tw-px-3 protein-column" tag="div">
+      <validation-provider
+        class="tw-px-3 protein-column tw-py-1"
+        tag="div"
+        :rules="sample['NAME'] ? 'required|min_value:1' : ''" name="Protein"
+        :vid="`protein-${sample['LOCATION']}`"
+        v-slot="{ errors }">
         <combo-box
+          v-if="displayInputForm(sample)"
           :data="proteinsOptionsList"
           textField="text"
           :inputIndex="sampleIndex"
@@ -49,32 +55,79 @@
           size="small"
           valueField="value">
         </combo-box>
+        <div v-else>{{ selectDataValue(proteinsOptionsList, sample, 'PROTEINID') }}</div>
+        <span>{{ errors[0] }}</span>
       </validation-provider>
 
-      <validation-provider tag="div" class="name-column">
-        <base-input-text inputClass="tw-w-full"></base-input-text>
+      <validation-provider
+        tag="div"
+        class="name-column tw-py-1"
+        :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''"
+        name="Sample Name"
+        :vid="`sample-name-${sample['LOCATION']}`"
+        v-slot="{ errors }">
+        <base-input-text
+          v-if="displayInputForm(sample)"
+          inputClass="tw-w-full tw-h-8"
+          v-model="sample['NAME']"
+          :errorMessage="errors[0]"
+          :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+          :value="sample['NAME']"
+          @input="handleFieldChange({
+            index: sampleIndex,
+            field: 'NAME',
+            value: $event
+          })"
+        />
+        <p v-else>{{ sample['NAME'] }}</p>
       </validation-provider>
 
-      <validation-provider tag="div" class="tw-px-3 tw-border-r sample-group-column">
+      <validation-provider
+        tag="div"
+        class="tw-px-3 tw-border-r sample-group-column tw-py-1"
+        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
+        name="Sample Group"
+        :vid="`sample-group-${sample['BLSAMPLEGROUPID']}`"
+        v-slot="{ errors }">
         <base-input-select
+          v-if="displayInputForm(sample)"
           :options="anomalousOptionsList"
           optionValueKey="value"
           optionTextKey="text"
-          inputClass="tw-w-full"
-          @input="handleSampleGroupSelection(sampleIndex)"
-        ></base-input-select>
+          inputClass="tw-w-full tw-h-8"
+          :value="sample['BLSAMPLEGROUPID']"
+          @input="handleFieldChange({
+            index: sampleIndex,
+            field: 'BLSAMPLEGROUPID',
+            value: $event
+          })"
+          :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+          :errorMessage="errors[0]"/>
+          <p v-else>{{ selectDataValue(proteinsOptionsList, sample, 'BLSAMPLEGROUPID') }}</p>
       </validation-provider>
 
 
       <tabbed-columns
+        class="tw-w-1/2 tw-py-1"
         :currentTab="currentTab"
         :rowData="sample"
+        :rowDatIndex="sampleIndex"
         :experimentKind=[]
         :selectedScreeningMode="{}"
         :selectedCenteringMode="{}"
-        @input="handleFieldChange($event, sampleIndex)"
-      >
-      </tabbed-columns>
+        :sampleIndex="sampleIndex"
+        @input="handleFieldChange"
+      />
+
+      <div class="actions-column tw-py-1 tw-text-right">
+        <span v-if="containerId">
+          <a class="button" href="" v-if="editingRow != sample['LOCATION']" @click.prevent="editRow(sample)"><i class="fa fa-edit"></i></a>
+        </span>
+        <span v-else>
+          <a class="button tw-mx-1" href="" @click.prevent="$emit('clone-sample', sample['LOCATION'])"><i class="fa fa-plus"></i></a>
+          <a class="button tw-mx-1" href="" @click.prevent="$emit('clear-sample', sample['LOCATION'])"><i class="fa fa-times"></i></a>
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -85,9 +138,12 @@ import BaseInputText from 'app/components/base-input-text.vue'
 import TabbedColumnsView from 'modules/types/mx/samples/tabbed-columns-view.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
+import { SampleTableMixin } from 'modules/types/saxs/samples/experiments/sample-table-mixin.js'
+import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
 
 export default {
-  name: 'puck-samples-plate',
+  name: 'mx-sample-plate-new',
+  mixins: [SampleTableMixin, MxSampleTableMixin],
   components: {
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,
@@ -105,19 +161,10 @@ export default {
     },
     containerId: {
       type: Number
-    },
-    value: {
-      type: Array,
-      required: true
     }
   },
   data() {
     return {
-      tabNames: [
-        { key: 'basic', name: 'Basic' },
-        { key: 'extraFields', name: 'Extra Fields' },
-        { key: 'unattended', name: 'Unattended (UDC)' }
-      ],
       requiredColumns: [
         {
           key: 'LOCATION',
@@ -212,6 +259,8 @@ export default {
         }
       ],
       currentTab: 'basic',
+      editingRow: null,
+      sample: {}
     }
   },
   computed: {
@@ -225,30 +274,63 @@ export default {
 
       return [...this.requiredColumns, ...columnsMap[this.currentTab]]
     },
-    samples: {
-      get() {
-        return this.value
-      },
-      set(val) {
-        this.$emit('input', val)
+    dynamicColumns() {
+      const columnsMap = {
+        basic: this.basicColumns,
+        extraFields: this.extraFieldsColumns,
+        unattended: this.udcColumns
       }
+
+      if (!this.showUDCColumns && this.currentTab === 'unattended') {
+        return []
+      }
+
+
+      return columnsMap[this.currentTab]
     },
     proteinsOptionsList() {
-      console.log(this.proteins.toJSON())
       return this.proteins.toJSON().map(item => ({ value: item.PROTEINID, text: item.ACRONYM }))
+    },
+    showUDCColumns() {
+      return this.$showUDCColumns()
+    },
+    tabNames() {
+      const tabs = [
+        { key: 'basic', name: 'Basic' },
+        { key: 'extraFields', name: 'Extra Fields' }
+      ]
+
+      if (this.showUDCColumns) {
+        tabs.push({ key: 'unattended', name: 'Unattended (UDC)' })
+      }
+
+      return tabs
     }
   },
   methods: {
-    handleFieldChange(data, sampleIndex) {
-      console.log({ data, sampleIndex })
+    handleFieldChange(data) {
+      const { index, key, value } = data
+      this.$emit('reset-form-validation')
+      this.$store.commit('samples/update', { index, key,  value })
     },
     switchTabColumn(name) {
       this.currentTab = name
     },
-    formatSelectData() {
-      
+    handleProteinSelection(index, data) {
+      this.$store.commit('samples/update', { index, key: 'PROTEINID', value: data.value })
+    },
+    editRow(row) {
+      this.sample = row
+      this.sample.CONTAINERID = this.containerId
+      this.editingRow = row.LOCATION
+    },
+    displayInputForm(row) {
+      return !this.containerId || Number(this.editingRow) === Number(row.LOCATION)
     }
-  }
+  },
+  inject: [
+    '$showUDCColumns'
+  ]
 }
 </script>
 
@@ -288,5 +370,8 @@ export default {
 .screening-method-column {
   width: 70px;
   word-wrap: break-word;
+}
+.actions-column {
+  width: calc(10% - 30px);
 }
 </style>
