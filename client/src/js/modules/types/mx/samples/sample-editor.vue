@@ -5,22 +5,22 @@
     <!-- Wrap the form in an observer component so we can check validation state on submission -->
     <validation-observer ref="sampleObserver">
     
-    <!-- Use plate table, single or table depending on capacity -->
-    <component
-      :is="sampleComponent"
-      :proteins="proteins"
-      :experimentKind="experimentKind"
-      :containerId="containerId"
-      :sampleLocation="sampleLocation"
-      @input="handleSamplesChange"
-      @save-sample="onSaveSample"
-      @clone-sample="onCloneSample"
-      @clear-sample="onClearSample"
-      @clone-container="onCloneContainer"
-      @clear-container="onClearContainer"
-      @clone-container-column="onCloneColumn"
-      @clone-container-row="onCloneRow"
-    />
+      <!-- Use plate table, single or table depending on capacity -->
+      <component
+        :is="sampleComponent"
+        :proteins="proteins"
+        :experimentKind="experimentKind"
+        :containerId="containerId"
+        :sampleLocation="sampleLocation"
+        @save-sample="onSaveSample"
+        @clone-sample="onCloneSample"
+        @clear-sample="onClearSample"
+        @clone-container="onCloneContainer"
+        @clear-container="onClearContainer"
+        @clone-container-column="onCloneColumn"
+        @clone-container-row="onCloneRow"
+        @reset-form-validation="resetFormValidation"
+      />
 
     </validation-observer>
   </div>
@@ -291,8 +291,11 @@ export default {
       // this.$store.commit('samples/update', {index: targetIndex, key: 'NAME', value: this.generateSampleName(this.samples[sourceIndex].NAME, targetIndex+1)})
       return true
     },
-    handleSamplesChange(data) {
-      console.log({ data })
+    // Reset the validation for the field when an input is edited
+    resetFormValidation() {
+      requestAnimationFrame(() => {
+        this.$refs.sampleObserver.reset()
+      })
     }
   }
 }
