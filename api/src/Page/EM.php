@@ -548,8 +548,8 @@ class EM extends Page
         // Returns null otherwise
 
         if ($session['SESSIONID']) {
-            $result = $this->db->pq("
-            SELECT dataCollectionId
+            $result = $this->db->pq(
+            "SELECT dataCollectionId
             FROM DataCollection
             WHERE SESSIONID = :1
             AND imageDirectory = :2
@@ -1152,9 +1152,9 @@ class EM extends Page
                 AutoProcProgramAttachment.fileType,
                 AutoProcProgramAttachment.importanceRank
             FROM AutoProcProgramAttachment
-            LEFT JOIN AutoProcProgram
+            INNER JOIN AutoProcProgram
                 ON AutoProcProgram.autoProcProgramId = AutoProcProgramAttachment.autoProcProgramId
-            LEFT JOIN ProcessingJob
+            INNER JOIN ProcessingJob
                 ON ProcessingJob.processingJobId = AutoProcProgram.processingJobId
             WHERE ProcessingJob.dataCollectionId = :1",
             array($this->arg('id'))
