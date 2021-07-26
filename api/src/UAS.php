@@ -83,10 +83,10 @@ class UAS
 		return $this->code;
 	}
 
-	function close_session($sessionid, $deliveredTime=0) {
+	function close_session($sessionid) {
 		$resp = $this->_curl(array(
             'URL' => $this->url.'/uas/rest/v1/session/'.$sessionid,
-            'FIELDS' => array('endAt' => date('Y-m-d\TH:i:s.000\Z'), $deliveredTime),
+            'FIELDS' => array('endAt' => date('Y-m-d\TH:i:s.000\Z')),
             'PATCH' => 1,
             'HEADERS' => array(
                 'Content-type: application/json',
