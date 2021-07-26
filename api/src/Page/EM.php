@@ -1159,13 +1159,14 @@ class EM extends Page
             WHERE ProcessingJob.dataCollectionId = :1",
             array($this->arg('id'))
         );
-        if (!sizeof($rows)) {
-            $this->_error('No auto proccessing attachments found');
-        }
         $result = array();
-        foreach ($rows as $row) {
-            if (file_exists($row['FILE'])) {
-                array_push($result, $row);
+        // Don't report an error if no attachments found, just return an
+        // empty object
+        if (sizeof($rows) > 0) {
+            foreach ($rows as $row) {
+                if (file_exists($row['FILE'])) {
+                    array_push($result, $row);
+                }
             }
         }
         $this->_output($result);

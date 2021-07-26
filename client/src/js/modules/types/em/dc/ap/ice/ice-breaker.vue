@@ -7,6 +7,12 @@
     >
       <ul class="clearfix">
         <li
+          v-if="attachments == null || attachments.length == 0"
+          class="comment"
+        >
+          No Autoprocessing attachments
+        </li>
+        <li
           v-for="attachment in attachments"
           :key="attachment.ID"
           class="comment"
