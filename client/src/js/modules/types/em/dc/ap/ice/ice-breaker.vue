@@ -40,10 +40,6 @@ export default {
         'pdf-attachment': PdfAttachment,
     },
     'props': {
-        'active' : {
-            'type': Boolean,
-            'required': true,
-        },
         'dataCollectionId': {
             'type': Number,
             'required': true,
@@ -68,21 +64,12 @@ export default {
             })
         },
     },
-    'watch': {
-        // eslint-disable-next-line no-unused-vars
-        'active': function(newValue, oldValue) {
-            this.fetchAttachments()
-        },
-    },
     'mounted': function() {
         this.fetchAttachments()
     },
     'methods': {
         'fetchAttachments': function() {
             const vm = this
-            if (vm.active == false) {
-                return
-            }
             vm.$store.commit('loading', true)
             const successCallback = function(
                 model, // eslint-disable-line no-unused-vars

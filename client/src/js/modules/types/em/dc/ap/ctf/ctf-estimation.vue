@@ -49,10 +49,6 @@ export default {
         'params': Params,
     },
     'props': {
-        'active' : {
-            'type': Boolean,
-            'required': true,
-        },
         'length': {
             'type': Number,
             'required': true,
@@ -103,13 +99,12 @@ export default {
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
-        'active': function(newValue, oldValue) {
-            this.fetchMovie()
-        },
-        // eslint-disable-next-line no-unused-vars
         'movieNumber': function(newValue, oldValue) {
             this.fetchMovie()
         },
+    },
+    'mounted': function() {
+        this.fetchMovie()
     },
     'methods': {
         'newMovie': function(movieNumber) {
@@ -117,7 +112,7 @@ export default {
         },
         'fetchMovie': function() {
             const vm = this
-            if (vm.active == false || vm.movieNumber == vm.loadedMovieNumber) {
+            if (vm.movieNumber == vm.loadedMovieNumber) {
                 return
             }
             vm.$store.commit('loading', true)

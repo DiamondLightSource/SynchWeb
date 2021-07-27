@@ -26,13 +26,13 @@ export default {
         },
     },
     'computed': {
-        'blankData': function() {
-            return {'label': this.plotData.label, 'data': []}
+        'parsedData': function() {
+            return [JSON.parse(this.plotData)]
         },
         'plot': function() {
             return $.plot(
                 this.$refs.plot,
-                this.blankData,
+                this.parsedData,
                 chartOptions
             )
         },
@@ -60,15 +60,8 @@ export default {
     },
     'methods': {
         'updateAndPlot': function() {
-            const vm = this
-            const redraw = function(data) {
-                console.log(data)
-                vm.plot.setData([data])
-                vm.plot.draw()
-            }
-            // First plot a blank chart to clear existing data
-            //redraw(this.blankData)
-            redraw(JSON.parse(this.plotData))
+            this.plot.setData(this.parsedData)
+            this.plot.draw()
         },
     },
 }

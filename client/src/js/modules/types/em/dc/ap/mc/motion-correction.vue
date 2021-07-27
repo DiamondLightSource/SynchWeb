@@ -24,7 +24,6 @@
       <drift
         :data-collection-id="dataCollectionId"
         :movie-number="movieNumber"
-        :active="active"
       />
 
       <dc-image
@@ -63,10 +62,6 @@ export default {
         'params': Params,
     },
     'props': {
-        'active' : {
-            'type': Boolean,
-            'required': true,
-        },
         'length': {
             'type': Number,
             'required': true,
@@ -107,10 +102,9 @@ export default {
                 '/log/1'
         },
         'imageUrl': function() {
-            return this.active == false ? '' :
-                this.$store.state.apiUrl +
-                    '/em/mc/fft/image/' + this.dataCollectionId +
-                    '/n/' + this.movieNumber
+            return this.$store.state.apiUrl +
+                '/em/mc/fft/image/' + this.dataCollectionId +
+                '/n/' + this.movieNumber
         },
         'fftUrl': function() {
             return this.imageUrl + '/t/2'
@@ -118,13 +112,12 @@ export default {
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
-        'active': function(newValue, oldValue) {
-            this.fetchMovie()
-        },
-        // eslint-disable-next-line no-unused-vars
         'movieNumber': function(newValue, oldValue) {
             this.fetchMovie()
         },
+    },
+    'mounted': function() {
+        this.fetchMovie()
     },
     'methods': {
         'newMovie': function(movieNumber) {
@@ -132,7 +125,7 @@ export default {
         },
         'fetchMovie': function() {
             const vm = this
-            if (vm.active == false || vm.movieNumber == vm.loadedMovieNumber) {
+            if (vm.movieNumber == vm.loadedMovieNumber) {
                 return
             }
             vm.$store.commit('loading', true)

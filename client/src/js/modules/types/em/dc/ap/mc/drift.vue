@@ -20,10 +20,6 @@ export default {
     'name': "Drift",
     'mixins': [proportionalHeight],
     'props': {
-        'active': {
-            'type': Boolean,
-            'required': true,
-        },
         'dataCollectionId' : {
             'type': Number,
             'required': true,
@@ -50,10 +46,6 @@ export default {
         'movieNumber': function(newValue, oldValue) {
             this.updateAndPlot();
         },
-        // eslint-disable-next-line no-unused-vars
-        'active': function(newValue, oldValue) {
-            this.updateAndPlot();
-        },
     },
     'mounted': function () {
         this.updateAndPlot();
@@ -68,9 +60,6 @@ export default {
         },
         'updateAndPlot': function() {
             const vm = this
-            if (vm.active == false) {
-                return
-            }
             vm.$store.commit('loading', true)
             const redraw = function(data) {
                 vm.plot.setData(vm.plotData(data))

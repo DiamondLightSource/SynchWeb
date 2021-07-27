@@ -3,7 +3,7 @@
     <h1
       title="Click to show autoprocessing results"
       class="ap"
-      @click="clickHeader"
+      @click="showAutoProcessing = !showAutoProcessing"
     >
       Processing Job: {{ processingJobId }}
       <span>
@@ -24,29 +24,31 @@
       ref="autoproc"
       class="autoproc"
     >
-      <processing-summary :processing-job-id="processingJobId" />
+      <template v-if="showAutoProcessing">
+        <processing-summary
+          :processing-job-id="processingJobId"
+        />
 
-      <motion-correction
-        :active="showAutoProcessing"
-        :length="lengthMc"
-        :data-collection-id="dataCollectionId"
-      />
+        <motion-correction
+          :length="lengthMc"
+          :data-collection-id="dataCollectionId"
+        />
 
-      <ctf-estimation
-        :active="showAutoProcessing"
-        :length="lengthCtf"
-        :data-collection-id="dataCollectionId"
-      />
+        <ctf-estimation
+          :length="lengthCtf"
+          :data-collection-id="dataCollectionId"
+        />
 
-      <ice-breaker
-        :active="showAutoProcessing"
-        :data-collection-id="dataCollectionId"
-      />
+        <ice-breaker
+          :data-collection-id="dataCollectionId"
+        />
 
       <auto-picker
         :active="showAutoProcessing"
         :data-collection-id="dataCollectionId"
       />
+
+      </template>
     </div>
   </div>
 </template>
@@ -92,14 +94,21 @@ export default {
             return parseInt(this.job.ID, 10)
         },
     },
-    'methods': {
-        // This would be better using modern idioms rather than using JQuery
-        // But it'd require more changes to the global style sheets and
-        // JQuery does the job for now
-        'clickHeader': function() {
-            $(this.$refs.autoproc).slideToggle()
-            this.showAutoProcessing = !this.showAutoProcessing
+    'watch': {
+        'showAutoProcessing': function(
+            newValue,
+            oldValue // eslint-disable-line no-unused-vars
+        ) {
+            // TODO: jQuery
+            const container = $(this.$refs.autoproc)
+            if (newValue) {
+                container.slideDown()
+            } else {
+                container.slideUp()
+            }
         },
+    },
+    'methods': {
         'countedMc': function(length) {
             this.lengthMc = length
         },
