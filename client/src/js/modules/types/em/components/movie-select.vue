@@ -30,7 +30,7 @@ export default {
     'name': "MovieSelect",
     'props': {
         'max': {
-            // TODO: Vee Validate mvieNumber form input!
+            // TODO: Vee Validate movieNumber form input!
             'type': Number,
             'required': true,
         },
@@ -55,6 +55,9 @@ export default {
         'movieNumber': function(newValue, oldValue) {
             this.movieNumberChanged()
         },
+    },
+    'mounted': function() {
+        this.maxMovie()
     },
     'methods': {
         'maxMovie': function() {
