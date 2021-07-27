@@ -48,6 +48,7 @@ class Shipment extends Page
                               'BARCODE' => '([\w-])+',
                               'LOCATION' => '[\w|\s|-]+',
                               'NEXTLOCATION' => '[\w|\s|-]+',
+                              'STATUS' => '[\w|\s|-]+',
 
                               'PURCHASEDATE' => '\d+-\d+-\d+',
                               'LABCONTACTID' => '\d+',
@@ -118,6 +119,7 @@ class Shipment extends Page
                               'READYBYTIME' => '\d\d:\d\d',
                               'CLOSETIME' => '\d\d:\d\d',
                               'PRODUCTCODE' => '\w',
+                              'BEAMLINENAME' => '[\w-]+',
 
                               'manifest' => '\d',
                               'currentuser' => '\d',
@@ -177,6 +179,7 @@ class Shipment extends Page
                               array('/containers/registry/proposals/:CONTAINERREGISTRYHASPROPOSALID', 'delete', '_rem_prop_container'),
 
                               array('/containers/history', 'get', '_container_history'),
+                              array('/containers/history', 'post', '_add_container_history'),
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
                               
@@ -1691,9 +1694,70 @@ class Shipment extends Page
         }
 
 
+        /**
+         * Controller method for add container history endpoint.
+         * This is called from another service when the container is scanned into a location.
+         * 
+         * The calling application must be in the bcr whitelist group and include the CONTAINERID and LOCATION in the parameters
+         * On success, a new entry in ContainerHistory is created with the location updated.
+         * The ContainerHistory.status can be changed with the optional STATUS argument.
+         * The ContainerHistory.beamlineName can be changed with the optional BEAMLINE argument.
+         * It returns error if CONTAINERID does not refer to an existing container.
+         */
         function _add_container_history() {
+            if (!$this->bcr()) $this->_error('You need to be on the internal network to add history');
 
+            if (!$this->has_arg('CONTAINERID') && !$this->has_arg('CODE')) $this->_error('No container id or code specified');
+            if (!$this->has_arg('LOCATION')) $this->_error('No location specified');
+
+            $where = '1=1';
+            $args = array();
+
+            if ($this->has_arg('CONTAINERID')) {
+                $where .= ' AND c.containerid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('CONTAINERID'));
+            } else if ($this->has_arg('CODE')) {
+                $where .= ' AND c.code=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('CODE'));
+            }
+
+            $cont = $this->db->pq("SELECT c.containerid, d.dewarid, s.shippingid, d.dewarstatus
+              FROM container c
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping s ON s.shippingid = d.shippingid
+              WHERE $where ORDER BY c.containerid DESC", $args);
+
+            if (!sizeof($cont)) $this->_error('No such container', 404);
+            else $cont = $cont[0];
+
+            // We may need to update the dewar and shipping status - for now leave them alone
+
+            // Optionally we can set the beamlinename in ContainerHistory
+            $beamline_name = $this->has_arg('BEAMLINENAME') ? $this->arg('BEAMLINENAME') : null;
+
+            // Figure out the most recent status for this container
+            // Initially use the dewar status unless its been set previously
+            $container_status = strtolower($cont['DEWARSTATUS']);
+
+            if ($this->has_arg('STATUS')) $container_status = $this->arg('STATUS');
+            else {
+                // Get last status for this container - we are only going to change its location
+                $container_history = $this->db->pq("SELECT status FROM containerhistory WHERE containerid = :1 ORDER BY containerhistoryid DESC LIMIT 1", array($cont['CONTAINERID']));
+
+                if (sizeof($container_history)) $container_status = $container_history[0]['STATUS'];
+            }
+
+            // Insert new record to store container location
+            $this->db->pq("INSERT INTO containerhistory (containerid,status,location,beamlinename) VALUES (:1,:2,:3,:4)", array($cont['CONTAINERID'], $container_status, $this->arg('LOCATION'), $beamline_name));
+            $chid = $this->db->id();
+
+            // Update the container beamlinelocation so we can filter out duplicate container history entries
+            $this->db->pq("UPDATE container SET beamlinelocation=:1 WHERE containerid=:2", array($this->arg('LOCATION'), $cont['CONTAINERID']));
+
+            $this->_output(array('CONTAINERHISTORYID' => $chid));
         }
+
+
 
 
         function _container_registry() {
