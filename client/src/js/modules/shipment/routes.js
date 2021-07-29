@@ -36,6 +36,7 @@ const ManifestView = import(/* webpackChunkName: "shipment" */ 'modules/shipment
 const DewarStats = import(/* webpackChunkName: "shipment-stats" */ 'modules/shipment/views/dewarstats')
 const DispatchView = import(/*webpackChunkName: "shipment" */ 'modules/shipment/views/dispatch')
 const TransferView = import(/*webpackChunkName: "shipment" */ 'modules/shipment/views/transfer')
+const ImportFromCSV = import(/*webpackChunkName: "shipment" */ 'modules/shipment/views/fromcsv')
 
 // In future may want to move these into wrapper components
 // Similar approach was used for samples with a samples-map to determine the correct view
@@ -309,6 +310,31 @@ const routes = [
         props: {
           mview: DewarStats,
           breadcrumbs: [bc, { title: 'Dewar Stats' }]
+        }
+      },
+      {
+        path: 'csv/:sid',
+        name: 'shipment-import-csv',
+        component: MarionetteView,
+        props: route => ({
+          mview: ImportFromCSV,
+          breadcrumbs: [bc, { title: 'Import from CSV' }],
+          breadcrumb_tags: ['SHIPPINGNAME'], // Append shipment model name to the bc
+          options: {
+            model: new Shipment({ SHIPPINGID: route.params.sid })
+          }
+        }),
+        beforeEnter: (to, from, next) => {
+          // Call the loading state here because we are finding the proposal based on this shipment id
+          // Prop lookup sets the proposal and type via set application.cookie method which we mapped to the store
+          store.dispatch('proposal/proposalLookup', { field: 'SHIPPINGID', value: to.params.sid } )
+            .then( () => {
+              console.log("Calling next - Success, shipment model will be prefetched in marionette view")
+              next()
+            }, () => {
+              console.log("Error, no proposal found from the shipment id")
+              next('/notfound')
+            })
         }
       },
     ],
