@@ -23,6 +23,8 @@ $ git clone https://github.com/DiamondLightSource/SynchWeb
 ### Customise front end - config.json
 An example configuration is provided in client/src/js/config_sample.json
 This file should be copied to create a client/src/js/config.json file and edited to customise the application for your site.
+To create your own logo at the top of the page, update the tailwind.config.js header-site-logo.
+The footer logo (ispyb logo image) can also be customised by setting the tailwind.config.js footer-site-logo before building the client.
 
 | Parameter | Description |
 | ------ | ------ |
@@ -35,8 +37,6 @@ This file should be copied to create a client/src/js/config.json file and edited
 | maintenance_message | Can be used so app serves static page under maintenance periods |
 | maintenance | Flag to indicate if client is in maintenance mode|
 | ga_ident | Google Analytics id|
-| site_name | Site Name to display in footer |
-| site_link | URL to site home page |
 | data_catalogue | Object that includes name and url property for a link to a data catalogue - displayed on the landing page |
 | site_image | PNG image of site logo to display in header|
 | csv_profile | The csv profile for importing shipments, currently only imca, see src/js/csv/imca.js |
