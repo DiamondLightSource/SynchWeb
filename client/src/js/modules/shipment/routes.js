@@ -11,6 +11,7 @@ import Backbone from 'backbone'
 import Shipments from 'collections/shipments.js'
 import Shipment from 'models/shipment.js'
 
+import Container from 'models/container.js'
 import Containers from 'collections/containers.js'
 import ContainerRegistry from 'modules/shipment/models/containerregistry'
 import ContainersRegistry  from 'modules/shipment/collections/containerregistry'
