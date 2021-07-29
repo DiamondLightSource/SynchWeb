@@ -38,7 +38,6 @@ The footer logo (ispyb logo image) can also be customised by setting the tailwin
 | maintenance | Flag to indicate if client is in maintenance mode|
 | ga_ident | Google Analytics id|
 | data_catalogue | Object that includes name and url property for a link to a data catalogue - displayed on the landing page |
-| site_image | PNG image of site logo to display in header|
 | csv_profile | The csv profile for importing shipments, currently only imca, see src/js/csv/imca.js |
 | enable_exp_plan | Whether to enable editing of experimental plan fields when creating samples |
 | auto_collect_label | Customise the auto collect label from the default 'Automated' |
