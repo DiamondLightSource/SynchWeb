@@ -1520,7 +1520,20 @@ class Sample extends Page
                 }
             }
 
-            if($this->has_arg('PLANORDER')) {
+            // Deal with special case (xpdf?)
+            // This method is used to update/patch samples so it does not necessarily have a containerid
+            // Isolate the requirement for a container id here because its only important when updating collection plans
+            $maxLocation = null;
+
+            if($this->has_arg('CONTAINERID') && $this->arg('CONTAINERID') == 0) {
+                $defaultContainerLocation = $this->_get_default_sample_container();
+                $this->args['CONTAINERID'] = $defaultContainerLocation['CONTAINERID'];
+                $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
+                $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
+                $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
+            }
+
+            if($this->has_arg('PLANORDER') && $maxLocation != null) {
                 // If we're moving a BLSample to a new container we need to adjust the DCP plan order not to clash with existing plans for samples in the new container
                 $dcps = $this->db->pq("SELECT dataCollectionPlanId FROM BLSample_has_DataCollectionPlan
                                 WHERE blSampleId = :1", array($this->arg('sid')));
