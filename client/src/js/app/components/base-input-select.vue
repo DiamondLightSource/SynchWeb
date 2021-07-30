@@ -36,11 +36,11 @@ Slots include:
       @blur="onBlur"
       @focus="$emit('focus')"
     >
-      <option v-show="defaultText" disabled value="">{{defaultText}}</option>
+      <option v-show="defaultText" disabled :value="defaultValue">{{defaultText}}</option>
       <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
     </select>
 
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ inlineText }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ inlineText }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -93,6 +93,10 @@ export default {
       type: String,
       required: false
     },
+    defaultValue: {
+      type: String,
+      default: ""
+    },
     // Pass in class styling for input
     inputClass: {
       type: String,
@@ -121,6 +125,7 @@ export default {
   data() {
     return {
       editable: true,
+      showEditIcon: false,
       localValue: this.value
     }
   },
@@ -129,6 +134,9 @@ export default {
     value: function(newVal) {
       this.localValue = newVal
     },
+    editable: function(value) {
+      if (value == false) this.showEditIcon = false
+    }
   },
   computed: {
     // If a user passes in an error Message, add the error class to the input
