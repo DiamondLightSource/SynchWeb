@@ -77,6 +77,7 @@ let routes = [
 
 let router = new Router({
   mode: 'history',
+  base: store.state.appUrl,
   routes: routes,
 })
 
