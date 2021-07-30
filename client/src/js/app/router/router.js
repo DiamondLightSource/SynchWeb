@@ -165,7 +165,7 @@ router.beforeEach((to, from, next) => {
 
           if (permissionOk) next()
           else {
-            application.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+            application.message({ title: 'Access Denied', message: 'You do not have access to that page', level: 'error' })
             next({path: '/403', query: { url: to.fullPath, prev: from.path}})
           }
         })

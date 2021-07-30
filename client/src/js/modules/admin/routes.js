@@ -264,7 +264,7 @@ const routes = [
         // Left here as a reference for alternative method to meta
         beforeEnter(to, from, next) {
             if (!app.user_can('manage_users')) {
-                app.message({ title: 'Access Denied', message: 'You do not have access to that page' })
+                app.message({ title: 'Access Denied', message: 'You do not have access to that page', level: 'error' })
                 next('/403?url='+to.fullPath)
             } else {
                 next()
