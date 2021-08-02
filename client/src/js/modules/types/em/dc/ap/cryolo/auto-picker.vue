@@ -1,34 +1,22 @@
 <template>
-  <div class="dcap clearfix">
-    <h2>Cryolo Auto Picker</h2>
-
-    <p class="ra">
-      <!-- NOT USED ?!?! -->
-      <!-- a
-        class="dll button"
-        :href="dllUrl"
-        @click.prevent="showOutput"
-      ><i class="fa fa-download" /> Micrograph</a -->
-    </p>
-
-    <div
-      class="data_collection"
-      type="data"
-    >
-      TODO:
-    </div>
-  </div>
+  <processing-section
+    section-title="Cryolo Auto Picker"
+    :data-available="true"
+  >
+    <p>TODO:</p>
+  </processing-section>
 </template>
 
 <script>
+import ProcessingSection from 'modules/types/em/components/processing-section.vue'
+
 export default {
     'name': "AutoPicker",
+    'components': {
+        'processing-section': ProcessingSection,
+    },
     'props': {
-        'active' : {
-            'type': Boolean,
-            'required': true,
-        },
-        'dataCollectionId': {
+        'autoProcProgramId': {
             'type': Number,
             'required': true,
         },
