@@ -990,14 +990,34 @@ class EM extends Page
     {
         $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
 
-        $rows = $this->db->pq("SELECT mc.motioncorrectionid, mc.firstframe, mc.lastframe, mc.doseperframe, mc.doseweight, mc.totalmotion, mc.averagemotionperframe, mc.micrographsnapshotfullpath, mc.patchesusedx, mc.patchesusedy, mc.fftfullpath, mc.fftcorrectedfullpath, mc.comments, mc.autoprocprogramid, m.movienumber AS imagenumber, dc.datacollectionid
-                FROM motioncorrection mc
-                INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
-                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $in));
+        $rows = $this->db->pq(
+            "SELECT
+                mc.motioncorrectionid,
+                mc.firstframe,
+                mc.lastframe,
+                mc.doseperframe,
+                mc.doseweight,
+                mc.totalmotion,
+                mc.averagemotionperframe,
+                mc.micrographsnapshotfullpath,
+                mc.patchesusedx,
+                mc.patchesusedy,
+                mc.fftfullpath,
+                mc.fftcorrectedfullpath,
+                mc.comments,
+                mc.autoprocprogramid,
+                m.movienumber AS imagenumber
+            FROM motioncorrection mc
+            INNER JOIN movie m ON m.movieid = mc.movieid
+            INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+            INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
+            WHERE mc.autoprocprogramid = :1 AND m.movienumber = :2",
+            array($this->arg('id'), $in)
+        );
 
-        if (!sizeof($rows)) $this->_error('No such motion correction');
+        if (!sizeof($rows)) {
+            $this->_error('No such motion correction');
+        }
         $row = $rows[0];
 
         $row['FFTFULLPATH'] = file_exists($row['FFTFULLPATH']) ? 1 : 0;
