@@ -4,6 +4,10 @@ export default Object.assign(
     {},
     utils.default_plot,
     {
+        'grid': {
+            'backgroundColor': '#fff',
+            'borderColor': '#fff',
+        },
         'xaxis': {
             'tickFormatter': function(
                 val, // eslint-disable-line no-unused-vars
@@ -11,15 +15,6 @@ export default Object.assign(
             ) {
                 return ''
             }
-        },
-        'grid': {
-            'borderWidth': 0,
-            'margin': {
-                'top': 0,
-                'left': 50,
-                'bottom': 0,
-                'right': 50,
-            },
         },
         'series': {
             'lines': {
