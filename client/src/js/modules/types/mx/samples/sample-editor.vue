@@ -95,7 +95,7 @@ export default {
       let location = +sampleLocation
       // Take the next sample in the list and copy this data
       // Locations should be in range 1..samples.length-1 (can't clone last sample in list)
-      if (location < 1 || location > (this.samples.length-1)) { console.log("Sample Editor error cloning sample index"); return}
+      if (location < 1 || location > (this.samples.length-1)) return
 
       // Sample to be copied and next index
       let sampleIndex = location - 1
@@ -108,12 +108,18 @@ export default {
           break
         }
       }
-      let nextSampleLocation = nextSampleIndex+1 // LOCATION to be stored in the cloned sample
+      let nextSampleLocation = nextSampleIndex + 1 // LOCATION to be stored in the cloned sample
 
       if (nextSampleIndex > 0) {
-        this.$store.commit('samples/setSample', { data: Object.assign(this.samples[nextSampleIndex], this.samples[sampleIndex]), index:nextSampleIndex})
-        this.$store.commit('samples/update', { index: nextSampleIndex, key: 'LOCATION', value: nextSampleLocation.toString() })
-        this.$store.commit('samples/update', { index: nextSampleIndex, key: 'NAME', value: this.generateSampleName(this.samples[sampleIndex].NAME, nextSampleLocation) })
+        this.$store.commit('samples/setSample', {
+          data: {
+            ...this.samples[nextSampleIndex],
+            ...this.samples[sampleIndex],
+            LOCATION: nextSampleLocation.toString(),
+            NAME: this.generateSampleName(this.samples[sampleIndex].NAME, nextSampleLocation)
+          },
+          index: nextSampleIndex
+        })
       }
     },
     // Clear row for a single row in the sample table
@@ -121,16 +127,14 @@ export default {
       let location = +sampleLocation
       // Clear the row for this location
       // Locations should be in range 1..samples.length
-      if (location < 1 || location > this.samples.length) { console.log("Sample Editor error clearing sample index"); return }
+      if (location < 1 || location > this.samples.length) return
       // The location is one more than the sample index
-      let index = location -1 
+      let index = location - 1 
       this.$store.commit('samples/clearSample', index)
     },
     // Take first entry (or index) and clone all rows
     onCloneContainer(sampleIndex=0) {
-      console.log("Clone Container from sample Index = " + sampleIndex)
-
-      for (var i=0; i<this.samples.length; i++) {
+      for (var i=0; i < this.samples.length; i++) {
         this.cloneSample(sampleIndex, i)
       }
     },
@@ -153,14 +157,6 @@ export default {
 
       return sampleName
     },
-    // This gets triggered on successful creation of container
-    // Save the samples collection to the database
-    // Could add final validation check here, but the container will already exist
-    // Better to catch earlier - prevent container add for instance if samples are invalid
-    // If we are wrapping this component within a validation observer the submit container step will be prevented
-    onSaveSamples(containerId) {
-      
-    },
     // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
     onSaveSample(location) {
@@ -173,7 +169,6 @@ export default {
         }
       })
     },
-
     saveSample(location) {
       let sampleIndex = +location -1
       // Create a new Sample Model so it uses the BLSAMPLEID to check for post, update etc
@@ -248,10 +243,6 @@ export default {
       sampleClone.NAME = this.generateSampleName(baseName, targetIndex+1)
       this.$store.commit('samples/setSample', {index: targetIndex, data: sampleClone})
 
-      // Alternative option if reactivity is not working as we would like...
-      // this.$store.commit('samples/setSample', { index:targetIndex, data: Object.assign(this.samples[targetIndex], this.samples[sourceIndex])})
-      // this.$store.commit('samples/update', {index: targetIndex, key: 'LOCATION', value: (targetIndex+1).toString()})
-      // this.$store.commit('samples/update', {index: targetIndex, key: 'NAME', value: this.generateSampleName(this.samples[sourceIndex].NAME, targetIndex+1)})
       return true
     },
     // Reset the validation for the field when an input is edited

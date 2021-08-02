@@ -402,7 +402,6 @@ export default {
       let type = this.containerTypesCollection.findWhere({CONTAINERTYPEID: newVal})
 
       if (!type) {
-        console.log("Could not find container type: " + newVal)
         return
       }
       this.containerState.CONTAINERTYPE = type.get('NAME')
@@ -513,11 +512,9 @@ export default {
     async onSubmit() {
       const validated = await this.$refs.observer.validate()
 
-      if (validated) {
-        this.addContainer()
-      } else {
-        console.log("Form validation failed ")
-      }
+      if (!validated) return
+
+      this.addContainer()
     },
     addContainer() {
       let experimentType = this.experimentTypesCollection.findWhere({EXPERIMENTTYPEID: this.containerState.EXPERIMENTTYPEID})
@@ -544,30 +541,29 @@ export default {
     },
     async saveContainer(model) {
       try {
-        // const result = await this.$store.dispatch('saveModel', { model: model })
+        const result = await this.$store.dispatch('saveModel', { model: model })
 
-        // const containerId = result.get('CONTAINERID')
+        const containerId = result.get('CONTAINERID')
 
-        // // Save samples added in the container
-        // if (!containerId) return
+        // Save samples added in the container
+        if (!containerId) return
 
-        // await this.$store.dispatch('samples/save', containerId)
-        // this.$store.commit('notifications/addNotification', {
-        //   message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it`,
-        //   level: 'info',
-        //   persist: true
-        // })
-        // // If we have a container id we are creating all samples
-        // // On success, reset because we will want to start with a clean slate
-        // this.$store.commit('samples/reset')
+        await this.$store.dispatch('samples/save', containerId)
+        this.$store.commit('notifications/addNotification', {
+          message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it`,
+          level: 'info',
+          persist: true
+        })
+        // If we have a container id we are creating all samples
+        // On success, reset because we will want to start with a clean slate
+        this.$store.commit('samples/reset')
 
-        // // Reset container - we may want to add more containers so just reset the name and barcode
-        // this.containerState.NAME = ''
-        // this.containerState.CODE = ''
-        // // Reset state of form
-        // this.$refs.observer.reset()
+        // Reset container - we may want to add more containers so just reset the name and barcode
+        this.containerState.NAME = ''
+        this.containerState.CODE = ''
+        // Reset state of form
+        this.$refs.observer.reset()
       } catch (error) {
-        console.log("Error saving Container: " + err)
         this.$store.commit('notifications/addNotification', {
           message: 'Something went wrong creating this container, please try again',
           level: 'error'
