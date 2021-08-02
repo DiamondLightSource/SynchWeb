@@ -1,46 +1,41 @@
 <template>
-  <div class="dcap clearfix">
-    <h2>Ice Breaker</h2>
-    <div
-      class="data_collection"
-      type="data"
-    >
-      <histogram
-        v-for="attachment in reverseOrderAttachments"
+  <processing-section
+    section-title="Ice Breaker"
+    :data-available="attachments !== null"
+  >
+    <parameter-list width="15%">
+      <pdf-attachment
+        v-for="attachment in attachments"
         :key="attachment.ID"
         :attachment="attachment"
       />
+    </parameter-list>
 
-      <ul class="clearfix">
-        <li
-          v-if="attachments == null || attachments.length == 0"
-          class="comment"
-        >
-          No Autoprocessing attachments
-        </li>
-        <pdf-attachment
-          v-for="attachment in attachments"
-          :key="attachment.ID"
-          :attachment="attachment"
-        />
-      </ul>
-    </div>
-  </div>
+    <histogram
+      v-for="attachment in attachments"
+      :key="attachment.ID"
+      :attachment="attachment"
+    />
+  </processing-section>
 </template>
 
 <script>
 import AttachmentsModel from 'modules/types/em/models/attachments'
 import Histogram from 'modules/types/em/dc/ap/ice/histogram.vue'
+import ParameterList from '../../../components/parameter-list.vue'
 import PdfAttachment from 'modules/types/em/dc/ap/ice/pdf-attachment.vue'
+import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 
 export default {
     'name': "IceBreaker",
     'components': {
         'histogram': Histogram,
+        'parameter-list': ParameterList,
         'pdf-attachment': PdfAttachment,
+        'processing-section': ProcessingSection,
     },
     'props': {
-        'dataCollectionId': {
+        'autoProcProgramId': {
             'type': Number,
             'required': true,
         },
@@ -51,17 +46,8 @@ export default {
         }
     },
     'computed': {
-        'reverseOrderAttachments': function() {
-            if (this.attachments === null) {
-                return []
-            }
-            return this.attachments.slice().reverse()
-        },
         'attachmentsModel': function() {
-            return new AttachmentsModel({
-                'id': this.dataCollectionId,
-                'TYPE': 'Attachments',
-            })
+            return new AttachmentsModel({ 'id': this.autoProcProgramId })
         },
     },
     'mounted': function() {

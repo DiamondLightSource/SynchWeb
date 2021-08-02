@@ -3,7 +3,7 @@
     v-if="isJson"
     class="ice-breaker-histogram"
     style="padding: 100px; text-align: center;"
-    :style="plotDivStyle"
+    :style="proportionalHeight"
   >
     TO DO: Histogram<br>
     <strong>{{ attachment.RECORDTIMESTAMP }}</strong>
@@ -20,13 +20,11 @@ export default {
         attachment,
         proportionalHeight
     ],
-
 }
 </script>
 
 <style>
 .ice-breaker-histogram {
-    float: right;
     background: #dadada;
     padding: 0;
     margin: 0.25%;
