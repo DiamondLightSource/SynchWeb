@@ -1,9 +1,19 @@
 define(['backbone'], function(Backbone) {
     return Backbone.Model.extend({
         'urlRoot': '/em/mc/drift',
-        // eslint-disable-next-line no-unused-vars
-        'parse': function(r, options) {
-            return { 'data': r }
+        'parse': function(
+            response,
+            options // eslint-disable-line no-unused-vars
+        ) {
+            const drift = {
+                'data': response,
+                'label': 'Drift',
+                'color': '#F0F',
+            }
+            console.log('drift', drift)
+            return {
+                'drift': JSON.stringify(drift)
+            }
         },
     })
 })

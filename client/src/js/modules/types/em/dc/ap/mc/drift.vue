@@ -1,26 +1,22 @@
 <template>
-  <div
-    ref="plot"
-    class="distl"
-    title="Drift Plot"
-    :style="plotDivStyle"
+  <chart
+    :options="chartOptions"
+    :plot-data="chartData"
   />
 </template>
 
 <script>
-import $ from 'jquery'
-import 'jquery.flot'
-import 'jquery.flot.resize'
-import 'jquery.flot.selection'
 import DriftModel from 'modules/types/em/models/drift'
 import driftOptions from 'modules/types/em/dc/ap/mc/drift-options'
-import proportionalHeight from 'modules/types/em/components/proportional-height'
+import Chart from 'modules/types/em/components/chart.vue'
 
 export default {
     'name': "Drift",
-    'mixins': [proportionalHeight],
+    'components': {
+        'chart': Chart,
+    },
     'props': {
-        'dataCollectionId' : {
+        'autoProcProgramId' : {
             'type': Number,
             'required': true,
         },
@@ -29,16 +25,15 @@ export default {
             'required': true,
         },
     },
+    'data': function() {
+        return {
+            'chartOptions': driftOptions,
+            'chartData': '',
+        }
+    },
     'computed': {
         'driftModel': function() {
-            return new DriftModel({ 'id': this.dataCollectionId })
-        },
-        'plot': function() {
-            return $.plot(
-                this.$refs.plot,
-                this.plotData([]),
-                driftOptions
-            )
+            return new DriftModel({ 'id': this.autoProcProgramId })
         },
     },
     'watch': {
@@ -52,38 +47,27 @@ export default {
     },
     'beforeUnmount': function () {
         this.driftModel.stop()
-        this.plot.shutdown()
     },
     'methods': {
-        'plotData': function(rawData) {
-            return [{ 'data': rawData, 'label': 'Drift' }]
-        },
         'updateAndPlot': function() {
             const vm = this
-            vm.$store.commit('loading', true)
-            const redraw = function(data) {
-                vm.plot.setData(vm.plotData(data))
-                vm.plot.draw()
-            }
             const successCallback = function (
-                model, // eslint-disable-line no-unused-vars
-                response,
+                model,
+                response, // eslint-disable-line no-unused-vars
                 options // eslint-disable-line no-unused-vars
             ) {
+                vm.chartData = model.attributes.drift
                 vm.$store.commit('loading', false)
-                // console.log('drift', response)
-                redraw(response)
             }
             const errorCallback = function (
                 model, // eslint-disable-line no-unused-vars
                 response,
                 options // eslint-disable-line no-unused-vars
             ) {
-                vm.$store.commit('loading', false)
                 console.log('drift error', response)
+                vm.$store.commit('loading', false)
             }
-            // First plot a blank chart to clear existing data
-            redraw([])
+            vm.$store.commit('loading', true)
             this.driftModel.fetch({
                 'data': { 'IMAGENUMBER': this.movieNumber },
                 'success': successCallback,

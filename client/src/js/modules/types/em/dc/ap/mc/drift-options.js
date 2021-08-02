@@ -12,9 +12,6 @@ export default Object.assign(
             'min': -20,
             'max': 20,
         },
-        'grid': {
-            'borderWidth': 0,
-        },
         'series': {
             'lines': {
                 'show': true
