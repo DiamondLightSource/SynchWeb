@@ -462,6 +462,7 @@ export default {
     this.getImagingScheduleCollections()
     this.getImagingScreensCollections()
   },
+
   methods: {
     // Called on Add Container
     // Calls the validation method on our observer component
@@ -560,9 +561,12 @@ export default {
   },
   provide() {
     return {
-      $shipments: () => ([]),
-      $dewars: () => ([]),
-      $containers: () => ([])
+      $spaceGroups: this.spaceGroups,
+      $centeringMethods: this.centeringMethods,
+      $anomalousList: this.anomalousList,
+      $experimentKindList: this.experimentKindList,
+      $showUDCColumns: () => this.showUDCColumns,
+      $sampleLocation: () => this.sampleLocation
     }
   }
 }

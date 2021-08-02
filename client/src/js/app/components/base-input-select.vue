@@ -28,7 +28,7 @@ Slots include:
       :id="id"
       :name="name"
       :value="localValue"
-      :disabled="isDisabled"
+      :disabled="disabled"
       :class="classObject"
       @change="updateValue"
       @blur="onBlur"
@@ -132,19 +132,12 @@ export default {
       type: String,
       default: ''
     },
-    outerClass: {
-      type: String,
-    },
     // If using the input within a table, set quiet mode to suppress error messages
     // Keeps the styling around input fields
     quiet: {
       type: Boolean,
       default: false
     },
-    isDisabled: {
-      type: Boolean,
-      default: false
-    }
   },
   data() {
     return {
