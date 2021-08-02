@@ -67,6 +67,8 @@ class EM extends Page
     public static $dispatch = array(
         array('/aps', 'post', '_ap_status'),
 
+        array('/jobs/:id', 'get', '_jobs_by_collection'),
+
         array('/mc/:id', 'get', '_mc_result'),
         array('/mc/image/:id(/n/:IMAGENUMBER)', 'get', '_mc_image'),
         array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
@@ -196,7 +198,7 @@ class EM extends Page
 
         if ($valid_parameters['projectAcquisitionSoftware'] == 'EPU') {
             $fileTemplate = "GridSquare_*/Data/*.{$valid_parameters['projectMovieFileNameExtension']}";
-        } else if ($valid_parameters['projectAcquisitionSoftware'] == 'SerialEM') {
+        } elseif ($valid_parameters['projectAcquisitionSoftware'] == 'SerialEM') {
             $fileTemplate = "Frames/*.{$valid_parameters['projectMovieFileNameExtension']}";
         } else {
             $fileTemplate = null;
@@ -380,53 +382,91 @@ class EM extends Page
         return $path;
     }
 
+    private function processingJobs($where, $args)
+    {
+        $processingJobs = null;
+
+        $total = $this->db->pq(
+            "SELECT count(PJ.processingJobId) as total
+            FROM ProcessingJob PJ
+            JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
+            JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+            LEFT JOIN AutoProcProgram app ON PJ.processingJobId = app.processingJobId
+            $where",
+            $args
+        );
+        $total = intval($total[0]['TOTAL']);
+
+        $args = $this->handlePaginationArguments($args);
+
+        // In the test data, we have a few occurrences of multiple
+        // AutoProcProgram rows on a single ProcessingJob
+        // I don't know if this is a testing artifact or expected in normal
+        // operation but I've included autoProcProgramId here just in case
+        $processingJobs = $this->db->paginate(
+            "SELECT
+                PJ.processingJobId,
+                PJ.dataCollectionId,
+                PJ.recordTimestamp,
+                APP.autoProcProgramId,
+                APP.processingStatus,
+                APP.processingStartTime,
+                APP.processingEndTime,
+                (SELECT COUNT(MotionCorrection.motionCorrectionId)
+                    FROM MotionCorrection
+                    WHERE MotionCorrection.autoProcProgramId = APP.autoProcProgramId
+                ) AS mcCount,
+                (SELECT COUNT(CTF.ctfId)
+                    FROM CTF
+                    WHERE CTF.autoProcProgramId = APP.autoProcProgramId
+                ) AS ctfCount,
+                CASE
+                    WHEN (APP.processingJobId IS NULL) THEN 'submitted'
+                    WHEN (APP.processingStartTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
+                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus IS NULL) THEN 'running'
+                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
+                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
+                    ELSE ''
+                END AS processingStatusDescription
+            FROM ProcessingJob PJ
+            INNER JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
+            INNER JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
+            LEFT JOIN AutoProcProgram APP ON PJ.processingJobId = APP.processingJobId
+            $where",
+            $args
+        );
+
+        return array(
+            'total' => $total,
+            'data' => $processingJobs,
+        );
+    }
+
+    public function _jobs_by_collection()
+    {
+        if (!$this->has_arg('id')) {
+            $this->_error('No data collection provided');
+        }
+
+        $this->_output($this->processingJobs(
+            'WHERE DC.dataCollectionId = :1',
+            array($this->arg('id'))
+        ));
+    }
+
     public function _relion_jobs()
     {
         // Finds queued and running ProcessingJobs associated with session
         // Returns null otherwise
         $session = $this->determineSession($this->arg('session'));
 
-        if (!$session['SESSIONID']) $this->_error('No session provided');
+        if (!$session['SESSIONID']) {
+            $this->_error('No session provided');
+        }
 
-        $processingJobs = null;
-
-        $where = "WHERE BLS.sessionId = :1";
-        $args = array($session['SESSIONID']);
-
-        $total = $this->db->pq("
-            SELECT count(PJ.processingJobId) as total
-            FROM ProcessingJob PJ
-            JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-            JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-            LEFT JOIN AutoProcProgram app ON PJ.processingJobId = app.processingJobId
-            $where", $args);
-        $total = intval($total[0]['TOTAL']);
-
-        $args = $this->handlePaginationArguments($args);
-
-        $processingJobs = $this->db->paginate("
-            SELECT PJ.processingJobId,
-                    PJ.dataCollectionId,
-                    PJ.recordTimestamp,
-                    APP.processingStatus,
-                    APP.processingStartTime,
-                    APP.processingEndTime,
-                    CASE
-                        WHEN (APP.processingJobId IS NULL) THEN 'submitted'
-                        WHEN (APP.processingStartTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
-                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus IS NULL) THEN 'running'
-                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
-                        WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
-                        END AS processingStatusDescription
-            FROM ProcessingJob PJ
-                        JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-                        JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-                        LEFT JOIN AutoProcProgram APP ON PJ.processingJobId = APP.processingJobId
-            $where", $args);
-
-        $this->_output(array(
-            'total'=> $total,
-            'data'=> $processingJobs
+        $this->_output($this->processingJobs(
+            'WHERE BLS.sessionId = :1',
+            array($session['SESSIONID'])
         ));
     }
 
