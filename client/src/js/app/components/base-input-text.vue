@@ -14,7 +14,7 @@ Component will emit a save event when the value changes
   <div :class="outerClass">
 
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id">{{label}}
+    <label v-if="label" :for="id" :class="labelClass">{{label}}
       <slot name="description">
         <span v-if="description" class="small">{{description}}</span>
       </slot>
@@ -107,6 +107,11 @@ export default {
     },
     // For input text that needs a placeholder text
     placeholderText: {
+      type: String,
+      default: ''
+    },
+    // For cases where we need to add a css class to the label of the input field
+    labelClass: {
       type: String,
       default: ''
     }

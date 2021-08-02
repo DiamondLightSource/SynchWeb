@@ -27,7 +27,6 @@
           'tw-py-1': true,
           'tw-justify-center': true,
           'tw-text-center': true,
-          'tw-h-12': true,
           'tw-border-table-header-color': columnIndex === 3,
           'tw-border-r': columnIndex === 3,
           [column.className]: true
@@ -35,12 +34,28 @@
       >
         {{ column.title }}
       </div>
+      <div class="tw-flex tw-w-1/2">
+        <div
+          v-for="(column, columnIndex) in dynamicColumns"
+          :key="columnIndex"
+          :class="{
+            'tw-flex': true,
+            'tw-items-center': true,
+            'tw-py-1': true,
+            'tw-justify-center': true,
+            'tw-text-center': true,
+            [column.className]: true
+          }"
+        >
+          {{ column.title }}
+        </div>
+      </div>
     </div>
     <div class="tw-flex tw-w-full" v-for="(sample, sampleIndex) in inputValue" :key="sampleIndex">
       <div class="location-column tw-text-center tw-py-1">{{ sample.LOCATION || sampleIndex + 1 }}</div>
 
       <validation-provider
-        class="tw-px-3 protein-column tw-py-1"
+        class="tw-px-2 protein-column tw-py-1"
         tag="div"
         :rules="sample['NAME'] ? 'required|min_value:1' : ''" name="Protein"
         :vid="`protein-${sample['LOCATION']}`"
@@ -61,7 +76,7 @@
 
       <validation-provider
         tag="div"
-        class="name-column tw-py-1"
+        class="name-column tw-py-1 tw-px-2"
         :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''"
         name="Sample Name"
         :vid="`sample-name-${sample['LOCATION']}`"
@@ -72,19 +87,13 @@
           v-model="sample['NAME']"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          :value="sample['NAME']"
-          @input="handleFieldChange({
-            index: sampleIndex,
-            field: 'NAME',
-            value: $event
-          })"
         />
         <p v-else>{{ sample['NAME'] }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
-        class="tw-px-3 tw-border-r sample-group-column tw-py-1"
+        class="tw-px-2 tw-border-r sample-group-column tw-py-1"
         :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
         name="Sample Group"
         :vid="`sample-group-${sample['BLSAMPLEGROUPID']}`"
@@ -95,12 +104,7 @@
           optionValueKey="value"
           optionTextKey="text"
           inputClass="tw-w-full tw-h-8"
-          :value="sample['BLSAMPLEGROUPID']"
-          @input="handleFieldChange({
-            index: sampleIndex,
-            field: 'BLSAMPLEGROUPID',
-            value: $event
-          })"
+          v-model="sample['BLSAMPLEGROUPID']"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           :errorMessage="errors[0]"/>
           <p v-else>{{ selectDataValue(proteinsOptionsList, sample, 'BLSAMPLEGROUPID') }}</p>
@@ -138,12 +142,11 @@ import BaseInputText from 'app/components/base-input-text.vue'
 import TabbedColumnsView from 'modules/types/mx/samples/tabbed-columns-view.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
-import { SampleTableMixin } from 'modules/types/saxs/samples/experiments/sample-table-mixin.js'
 import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
 
 export default {
   name: 'mx-sample-plate-new',
-  mixins: [SampleTableMixin, MxSampleTableMixin],
+  mixins: [MxSampleTableMixin],
   components: {
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,
@@ -151,17 +154,6 @@ export default {
     'combo-box': ComboBox,
     'validation-provider': ValidationProvider,
     'validation-observer': ValidationObserver
-  },
-  props: {
-    proteins: {
-      type: Array
-    },
-    experimentKind: {
-      type: String
-    },
-    containerId: {
-      type: Number
-    }
   },
   data() {
     return {
@@ -243,7 +235,7 @@ export default {
           className: 'screening-method-column'
         },
         {
-          key: 'REQUIREDRES',
+          key: 'REQUIREDRESOLUTION',
           title: 'Reqd Res',
           className: 'resolution-column'
         },
@@ -288,9 +280,6 @@ export default {
 
       return columnsMap[this.currentTab]
     },
-    proteinsOptionsList() {
-      return this.proteins.toJSON().map(item => ({ value: item.PROTEINID, text: item.ACRONYM }))
-    },
     showUDCColumns() {
       return this.$showUDCColumns()
     },
@@ -316,9 +305,6 @@ export default {
     switchTabColumn(name) {
       this.currentTab = name
     },
-    handleProteinSelection(index, data) {
-      this.$store.commit('samples/update', { index, key: 'PROTEINID', value: data.value })
-    },
     editRow(row) {
       this.sample = row
       this.sample.CONTAINERID = this.containerId
@@ -328,9 +314,13 @@ export default {
       return !this.containerId || Number(this.editingRow) === Number(row.LOCATION)
     }
   },
-  inject: [
-    '$showUDCColumns'
-  ]
+  watch: {
+    showUDCColumns() {
+      if (!this.showUDCColumns) {
+        this.currentTab = 'basic'
+      }
+    }
+  }
 }
 </script>
 
