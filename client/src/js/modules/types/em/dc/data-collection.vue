@@ -8,7 +8,7 @@
 
     <all-collections-link />
 
-    <div class="data_collection" type="data">
+    <div class="data-collection">
       <data-collection-toolbar
         v-if="dataCollection !== null"
         :data-collection="dataCollection"
@@ -22,7 +22,7 @@
 
       <processing-job
         v-for="job in autoProcessing"
-        :key="job.ID"
+        :key="job.PROCESSINGJOBID + job.AUTOPROCPROGRAMID"
         :job="job"
         :data-collection-id="dataCollectionId"
       />
@@ -32,7 +32,7 @@
 
 <script>
 import AllCollectionsLink from 'modules/types/em/dc/all-collections-link.vue'
-import ApStatusCollection from 'modules/types/em/collections/apstatuses'
+import ProcessingJobsCollection from 'modules/types/em/collections/processingjobs'
 import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
 import DataCollectionModel from 'models/datacollection.js'
 import DataCollectionToolbar from 'modules/types/em/dc/dc-toolbar.vue'
@@ -69,8 +69,15 @@ export default {
         'dataCollectionModel': function() {
             return new DataCollectionModel()
         },
-        'apStatusCollection': function() {
-            return new ApStatusCollection()
+        'processingJobsCollection': function() {
+            return new ProcessingJobsCollection(null, {
+                'state': {
+                    'currentPage': 1, // TODO: pagination
+                    'pageSize': 15, // TODO: pagination
+                    'dataCollection': this.dataCollectionId,
+                }
+            })
+
         },
         'beamline': function() {
             return this.dataCollection ? this.dataCollection.BL : ''
@@ -140,12 +147,11 @@ export default {
             fetch()
         },
         'fetchAutoProcessingCollection': function() {
-            this.$store.commit('loading', true)
             const vm = this
             // eslint-disable-next-line no-unused-vars
             const successCallback = function(model, response, options) {
-                vm.autoProcessing = response
-                console.log('fetched autoprocessing', vm.autoProcessing)
+                vm.autoProcessing = response.data
+                console.log('fetched autopProcessing', vm.autoProcessing)
                 vm.$store.commit('loading', false)
             }
             // eslint-disable-next-line no-unused-vars
@@ -158,9 +164,8 @@ export default {
                     'level': 'error'
                 })
             }
-            this.apStatusCollection.fetch({
-                'data': { 'ids': [this.dataCollectionId] },
-                'type': 'POST',
+            this.$store.commit('loading', true)
+            this.processingJobsCollection.fetch({
                 'success': successCallback,
                 'error': errorCallback,
             })
@@ -168,3 +173,17 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+/* data_collection (with an underscore) will bind to "old-style" styles
+   and mess up some of the "new-style" styles, we're using here */
+.data-collection {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    background: #efefef;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #e2e2e2;
+}
+</style>

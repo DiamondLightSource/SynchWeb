@@ -1,5 +1,5 @@
 <template>
-  <h1 class="title">
+  <div class="dc-toolbar">
     <span class="button_holder">
       <a
         href="#"
@@ -98,7 +98,7 @@
       class="fa fa-archive r"
       title="This data collection is archived and data is no longer available on disk"
     />
-  </h1>
+  </div>
 </template>
 
 <script>
@@ -214,3 +214,10 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+.dc-toolbar {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+</style>

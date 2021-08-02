@@ -1,115 +1,133 @@
 <template>
-  <ul
-    class="clearfix"
-  >
-    <list-item
+  <parameter-list width="100%">
+    <parameter-list-item
+      width="20%"
       label="Voltage"
       :item="voltage"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="C1 Lens"
       :item="c1Lens"
       label2="Aperture"
       :item2="c1Aperture"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="C2 Lens"
       :item="c2Lens"
       label2="Aperture"
       :item2="c2Aperture"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="C3 Lens"
       :item="c3Lens"
       label2="Aperture"
       :item2="c3Aperture"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Obj Aperture"
       :item="objAperture"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Magnification"
       :item="magnification"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Magnification"
       :item="magnification"
     />
-    <list-item
+    <parameter-list-item
       v-if="hasEnergyFilter"
+      width="20%"
       label="Energy Filter"
       :item="energyFilter"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Phase Plate"
       :item="phasePlate"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Beamsize"
       :item="beamSize"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Detector"
       :item="detector"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Detector Mode"
       :item="detectorMode"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Sample Pixel Size"
       :item="samplePixelSize"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Binning"
       :item="binning"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Image Size"
       :item="imageSize"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="No. Movies"
       :item="noMovies"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Frames/Movie"
       :item="framesMovie"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Frame Length"
       :item="frameLength"
     />
-    <list-item
+    <parameter-list-item
+      width="20%"
       label="Total Dose"
       :item="totalDose"
     />
-    <list-item
+    <parameter-list-item
       v-if="isStopped"
+      width="20%"
       label="Status"
       item="Stopped"
     />
-    <!-- TODO: make comments work -->
-    <li
-      class="comment"
-      title="Click to edit the comment for this data collection"
-    >
-      Comment:
-      <span class="COMMENTS">{{ dataCollection.COMMENTS }}</span>
-    </li>
-  </ul>
+    <parameter-list-item
+      width="100%"
+      help-text="Click to edit the comment for this data collection"
+      label="Comment"
+      :item="dataCollection.COMMENTS"
+    />
+  </parameter-list>
 </template>
 
 <script>
 import formatsUnits from 'modules/types/em/components/formats-units'
 import KvLambda from 'modules/types/em/components/kv-lambda'
-import ListItem from 'modules/types/em/components/list-item.vue'
+import ParameterList from 'modules/types/em/components/parameter-list.vue'
+import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
 
 export default {
     'name': 'DataCollectionHeader',
     'components': {
-        'list-item': ListItem,
+        'parameter-list': ParameterList,
+        'parameter-list-item': ParameterListItem,
     },
     'mixins': [formatsUnits],
     'props': {
