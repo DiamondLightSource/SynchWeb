@@ -1220,7 +1220,7 @@ class EM extends Page
                 ON AutoProcProgram.autoProcProgramId = AutoProcProgramAttachment.autoProcProgramId
             INNER JOIN ProcessingJob
                 ON ProcessingJob.processingJobId = AutoProcProgram.processingJobId
-            WHERE ProcessingJob.dataCollectionId = :1",
+            WHERE AutoProcProgramAttachment.autoProcProgramId = :1",
             array($this->arg('id'))
         );
         $result = array();
