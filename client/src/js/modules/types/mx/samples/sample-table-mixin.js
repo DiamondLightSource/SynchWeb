@@ -37,7 +37,6 @@ export default {
         return this.$store.state.samples.samples;
       },
       set(val) {
-      console.log({ val })
         this.$store.commit("samples/set", val);
       },
     },

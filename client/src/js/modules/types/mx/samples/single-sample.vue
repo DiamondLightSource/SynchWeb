@@ -455,7 +455,6 @@ export default {
       this.$emit('save-sample', location)
     },
     onExtraPuckToggle(value) {
-      console.log(value);
       this.currentTab = value ? 'extraFields' : ''
     }
 	}
