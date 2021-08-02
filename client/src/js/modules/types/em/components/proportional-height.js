@@ -9,15 +9,9 @@ export default {
             const heightScalingFactor = windowWidth < 800 ? 1.65 : (
                 windowWidth < 1280 ? 1.3 : 1
             )
-            return Math.round(
+            return 'height: ' + Math.round(
                 proportionalHeight * heightScalingFactor * 0.8
-            );
-        },
-        'plotDivStyle': function() {
-            const height = this.proportionalHeight + 'px;'
-            return 'height: ' + height +
-                ' min-height: ' + height +
-                ' max-height: ' + height
+            ) + 'px;';
         },
     },
 }

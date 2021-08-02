@@ -12,7 +12,7 @@
       <img
         ref="image"
         :alt="title"
-        :height="proportionalHeight"
+        :style="proportionalHeight"
       >
     </a>
   </div>
