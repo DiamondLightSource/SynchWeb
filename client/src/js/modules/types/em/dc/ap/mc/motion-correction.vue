@@ -1,46 +1,44 @@
 <template>
-  <div class="mc dcap clearfix">
-    <h2>Motion Correction</h2>
+  <processing-section
+    section-title="Motion Correction"
+    :data-available="motionCorrection !== null"
+  >
+    <template #controls>
+      <div style="display: flex; justify-content: space-between;">
+        <movie-select
+          :max="movieCount"
+          @changed="newMovie"
+        />
 
-    <movie-select
-      :max="length"
-      @changed="newMovie"
+        <div>
+          <a
+            class="view button logf"
+            :href="logUrl"
+            @click.prevent="showLog"
+          ><i class="fa fa-search" /> Log file</a>
+        </div>
+      </div>
+    </template>
+
+    <params :motion-correction="motionCorrection" />
+
+    <dc-image
+      container-class="diffraction fft"
+      title="Motion Corrected Image"
+      :image-url="imageUrl"
     />
 
-    <p class="ra">
+    <dc-image
+      container-class="diffraction fft2"
+      title="FFT of Motion Corrected Image"
+      :image-url="fftUrl"
+    />
 
-      <a
-        class="view button logf"
-        :href="logUrl"
-        @click.prevent="showLog"
-      ><i class="fa fa-search" /> Log file</a>
-    </p>
-
-    <div
-      v-if="motionCorrection !== null"
-      class="data_collection"
-      type="data"
-    >
-      <drift
-        :data-collection-id="dataCollectionId"
-        :movie-number="movieNumber"
-      />
-
-      <dc-image
-        container-class="diffraction fft2"
-        title="FFT of Motion Corrected Image"
-        :image-url="fftUrl"
-      />
-
-      <dc-image
-        container-class="diffraction fft"
-        title="Motion Corrected Image"
-        :image-url="imageUrl"
-      />
-
-      <params :motion-correction="motionCorrection" />
-    </div>
-  </div>
+    <drift
+      :auto-proc-program-id="autoProcProgramId"
+      :movie-number="movieNumber"
+    />
+  </processing-section>
 </template>
 
 <script>
@@ -51,6 +49,7 @@ import MarionetteApplication from 'app/marionette-application.js'
 import MotionCorrectionModel from 'modules/types/em/models/motioncorrection'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import Params from 'modules/types/em/dc/ap/mc/params.vue'
+import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 import utils from 'utils'
 
 export default {
@@ -60,32 +59,32 @@ export default {
         'drift': Drift,
         'movie-select': MovieSelect,
         'params': Params,
+        'processing-section': ProcessingSection,
     },
     'props': {
-        'length': {
+        'autoProcProgramId': {
             'type': Number,
             'required': true,
         },
-        'dataCollectionId': {
+        'movieCount': {
             'type': Number,
             'required': true,
         },
     },
     'data': function() {
         return {
-            'movieNumber': 1,
+            'movieNumber': 0,
             'motionCorrection': null,
         }
     },
     'computed': {
         'motionCorrectionModel': function() {
             return new MotionCorrectionModel({
-                'id': this.dataCollectionId,
-                'TYPE': 'Motion Correction',
+                'id': this.autoProcProgramId,
             })
         },
         'loadedMovieNumber': function() {
-            return this.motionCorrection === null ? null :
+            return this.motionCorrection === null ? 0 :
                 this.motionCorrection.IMAGENUMBER
         },
         'programId': function() {
@@ -96,14 +95,16 @@ export default {
             if (this.programId == 0) {
                 return '#'
             }
+            const dataCollectionId = 0
             return this.$store.state.apiUrl +
-                '/download/id/' + this.dataCollectionId +
+                '/download/id/' + dataCollectionId +
                 '/aid/' + this.programId +
                 '/log/1'
         },
         'imageUrl': function() {
+            const dataCollectionId = 0
             return this.$store.state.apiUrl +
-                '/em/mc/fft/image/' + this.dataCollectionId +
+                '/em/mc/fft/image/' + dataCollectionId +
                 '/n/' + this.movieNumber
         },
         'fftUrl': function() {
@@ -134,21 +135,22 @@ export default {
                 response,
                 options // eslint-disable-line no-unused-vars
             ) {
-                vm.$store.commit('loading', false)
                 vm.motionCorrection = response
+                console.log('got motion correction', vm.motionCorrection)
+                vm.$store.commit('loading', false)
             }
             const errorCallback = function (
                 model, // eslint-disable-line no-unused-vars
                 response,
                 options // eslint-disable-line no-unused-vars
             ) {
-                vm.$store.commit('loading', false)
                 console.log(response.responseJSON)
                 vm.$store.commit('notifications/addNotification', {
                     'title': 'Error',
                     'message': 'Could not retrieve motion correction data',
                     'level': 'error'
                 })
+                vm.$store.commit('loading', false)
             }
             vm.$store.commit('loading', true)
             /* TODO: [SCI-9935]

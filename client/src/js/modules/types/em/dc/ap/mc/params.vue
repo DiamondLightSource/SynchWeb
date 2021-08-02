@@ -1,56 +1,56 @@
 <template>
-  <ul class="clearfix">
-    <list-item
+  <parameter-list>
+    <parameter-list-item
       label="Movie Number"
       :item="movieNumber"
     />
-    <list-item
+    <parameter-list-item
       label="First Frame"
       :item="firstFrame"
     />
-    <list-item
+    <parameter-list-item
       label="Last Frame"
       :item="lastFrame"
     />
-    <list-item
+    <parameter-list-item
       label="Dose Per Frame"
       :item="dosePerFrame"
     />
-    <list-item
+    <parameter-list-item
       label="Dose Weight"
       :item="doseWeight"
     />
-    <list-item
+    <parameter-list-item
       label="Total Motion"
       :item="totalMotion"
     />
-    <list-item
+    <parameter-list-item
       label="Average Motion / Frame"
       :item="averageMotionPerFrame"
     />
-    <list-item
+    <parameter-list-item
       label="Patches Used"
       :item="patchesUsed"
     />
-    <!-- TODO: make comments work -->
-    <li
-      class="comment"
-      title="Click to edit the comment for motion correction"
-    >
-      Comment:
-      <span class="COMMENTS">{{ motionCorrection.COMMENTS }}</span>
-    </li>
-  </ul>
+    <parameter-list-item
+      width="100%"
+      help-text="Click to edit the comment for motion correction"
+      label="Comments"
+      :item="comments"
+    />
+  </parameter-list>
 </template>
 
 <script>
 import formatsUnits from 'modules/types/em/components/formats-units'
-import ListItem from 'modules/types/em/components/list-item.vue'
+import ParameterList from 'modules/types/em/components/parameter-list.vue'
+import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
 
 export default {
     'name': "Params",
     'components': {
-        'list-item': ListItem,
+        'parameter-list-item': ParameterListItem,
+        'parameter-list': ParameterList,
     },
     'mixins': [formatsUnits],
     'props': {
@@ -98,6 +98,9 @@ export default {
                 this.motionCorrection.PATCHESUSEDX,
                 this.motionCorrection.PATCHESUSEDY
             )
+        },
+        'comments': function() {
+            return this.datumOrBlank(this.motionCorrection.COMMENTS)
         },
     },
 }
