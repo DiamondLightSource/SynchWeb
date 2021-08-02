@@ -9,13 +9,15 @@ define([
         'model': ProcessingJob,
         'mode': 'server',
         'url': function() {
-            return '/em/process/relion/jobs' + (
-                this.state.session ? '/' + this.state.session : ''
-            )
+            const session = this.state.session
+            return session === null ?
+                '/em/jobs/' + this.state.dataCollection :
+                '/em/process/relion/jobs/' + session
         },
         'state': {
-            pageSize: 15,
-            session: null,
+            'pageSize': 15,
+            'session': null,
+            'dataCollection': null,
         },
         // eslint-disable-next-line no-unused-vars
         'parseState': function(r, q, state, options) {
