@@ -72,7 +72,7 @@ class EM extends Page
         array('/mc/:id', 'get', '_mc_result'),
         array('/mc/image/:id(/n/:IMAGENUMBER)', 'get', '_mc_image'),
         array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
-        array('/mc/drift/:id(/n/:IMAGENUMBER)', 'get', '_mc_plot'),
+        array('/mc/drift/:id(/n/:IMAGENUMBER)', 'get', '_mc_drift_plot'),
         array('/mc/histogram', 'get', '_mc_drift_histogram'),
 
         array('/attachments/:id', 'get', '_auto_proc_attachments'),
@@ -1096,17 +1096,21 @@ class EM extends Page
         }
     }
 
-    function _mc_plot()
+    function _mc_drift_plot()
     {
         $im = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
 
-        $rows = $this->db->pq("SELECT mcd.deltax, mcd.deltay, mcd.framenumber 
-                FROM motioncorrectiondrift mcd
-                INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
-                INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                WHERE dc.datacollectionid = :1 AND m.movienumber = :2
-                ORDER BY mcd.framenumber", array($this->arg('id'), $im));
+        $rows = $this->db->pq(
+            "SELECT
+                mcd.deltax, mcd.deltay
+            FROM motioncorrectiondrift mcd
+            INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
+            INNER JOIN movie m ON m.movieid = mc.movieid
+            INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+            WHERE mc.autoProcProgramId = :1 AND m.movienumber = :2
+            ORDER BY mcd.framenumber",
+            array($this->arg('id'), $im)
+        );
 
         $data = array();
         foreach ($rows as $r) {
