@@ -80,6 +80,14 @@
               />
             </div>
 
+            <div class="pck tw-mb-2 tw-py-2">
+              <label>Show all spacegroups</label>
+              <base-input-checkbox
+                name="SHOW SPACEGROUP"
+                v-model="containerState.SPACEGROUP"
+              />
+            </div>
+
             <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="owner">
               <base-input-select
                 label="Owner"
@@ -153,7 +161,6 @@
             :proteins="proteinsCollection"
             :gproteins="gProteinsCollection"
             :automated="containerState.AUTOMATED"
-            @select-sample="onSelectSample"
             @reset-form-validation="resetFormValidation"
           />
         </div>
@@ -181,7 +188,6 @@
 </template>
 
 <script>
-import Backbone from 'backbone'
 import Container from 'models/container'
 import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
 import ValidContainerGraphic from 'modules/types/saxs/samples/valid-container-graphic.vue'
@@ -263,7 +269,7 @@ export default {
     'breadcrumb_tags' : Array, // These are model properties appended to the breadcrumbs title
     'options': Object, // In common with container add views, this options should include a dewar model
   },
-  data: function() {
+  data() {
     return {
       containerState: initialContainerState,
 
@@ -306,7 +312,8 @@ export default {
       centeringMethods: CenteringMethodList.list,
       anomalousList: AnomalousList.list,
       experimentKindList: [],
-      showUDCColumns: false
+      showUDCColumns: false,
+      sampleLocation: 0
     }
   },
   computed: {
@@ -369,7 +376,7 @@ export default {
     },
 
 		validSamples: function() {
-      return this.samples.map( (entry) => {
+      return this.samples.map((entry) => {
         let sample = {}
         sample.LOCATION = entry.LOCATION
         sample.NAME = entry.NAME
@@ -385,7 +392,6 @@ export default {
       samples: ['samples/samples']
     }),
   },
-
   watch: {
     showAllContainerTypes: function(newVal) {
       // Which container id should be selected
@@ -424,7 +430,6 @@ export default {
       this.containerState.NAME = entry['BARCODE'] || '-'
     },
   },
-
   created: function() {
     this.dewar = this.options.dewar.toJSON()
     this.containerState.DEWARID = this.dewar.DEWARID
@@ -442,9 +447,8 @@ export default {
     this.getProcessingPipelines()
     this.formatExperimentKindList()
   },
-
   methods: {
-    getProteins: function() {
+    async getProteins() {
       this.proteinsCollection = new DistinctProteins()
       // If we want to only allow valid samples
       if (app.options.get('valid_components') && !app.staff) {
@@ -452,74 +456,62 @@ export default {
       }
 
       this.gProteinsCollection = new DistinctProteins()
-      // For now assume Green only
-      // this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
-
-      this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
-        this.proteins = result.toJSON()
-        this.proteinsLoaded = true
-      })
+      const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
+      this.proteins = result.toJSON()
+      this.proteinsLoaded = true
     },
-    getExperimentTypes: function() {
+    async getExperimentTypes() {
       this.experimentTypesCollection = new ExperimentTypes()
 
       this.experimentFilter = [this.$store.state.proposal.proposalType]
 
-      this.$store.dispatch('getCollection', this.experimentTypesCollection).then( (result) => {
-        this.experimentTypes = result.toJSON()
-        // We need to find the first experiment type that matches our proposal type
-        let initialExperimentType = result.findWhere({PROPOSALTYPE: this.$store.state.proposal.proposalType})
-        this.containerState.EXPERIMENTTYPEID = initialExperimentType ? initialExperimentType.get('EXPERIMENTTYPEID') : ''
-      })
+      const result = await this.$store.dispatch('getCollection', this.experimentTypesCollection)
+      let initialExperimentType = result.findWhere({ PROPOSALTYPE: this.$store.state.proposal.proposalType })
+      this.containerState.EXPERIMENTTYPEID = initialExperimentType ? initialExperimentType.get('EXPERIMENTTYPEID') : ''
+      this.experimentTypes = result.toJSON()
     },
-    getContainerRegistry: function() {
+    async getContainerRegistry() {
       this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
-
-      this.$store.dispatch('getCollection', this.containerRegistryCollection).then( (result) => {
-        this.containerRegistry = result.toJSON()
-        this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
-      })
+      const result = await this.$store.dispatch('getCollection', this.containerRegistryCollection)
+      this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
+      this.containerRegistry = result.toJSON()
     },
-    getContainerTypes: function() {
+    async getContainerTypes() {
       this.containerTypesCollection = new ContainerTypes()
 
       this.containerFilter = [this.$store.state.proposal.proposalType]
 
-      this.$store.dispatch('getCollection', this.containerTypesCollection).then( (result) => {
-        this.containerTypes = result.toJSON()
-        // Do we have valid start state?
-        if (this.containerTypes.length) {
-          let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
-          this.containerState.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
-        }
-      })
+      const result = await this.$store.dispatch('getCollection', this.containerTypesCollection)
+      this.containerTypes = result.toJSON()
+      // Do we have valid start state?
+      if (this.containerTypes.length) {
+        let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
+        this.containerState.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
+      }
     },
-    getUsers: function() {
+    async getUsers() {
       this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
       this.usersCollection.queryParams.all = 1
       this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
 
-      this.$store.dispatch('getCollection', this.usersCollection).then( (result) => {
-        this.users = result.toJSON()
-        // Set plate owner to current user
-        this.containerState.PERSONID = this.$store.state.user.personId
-      })
+      const result = await this.$store.dispatch('getCollection', this.usersCollection)
+      this.users = result.toJSON()
+      // Set plate owner to current user
+      this.containerState.PERSONID = this.$store.state.user.personId
     },
-    getProcessingPipelines: function() {
+    async getProcessingPipelines() {
       let processingPipelinesCollection = new ProcessingPipelines()
 
       processingPipelinesCollection.queryParams.pipelinestatus = 'optional'
       processingPipelinesCollection.queryParams.category = 'processing'
       
-      this.$store.dispatch('getCollection', processingPipelinesCollection).then( (result) => {
-        this.processingPipelines = result.toJSON()
-      })
+      const result = await this.$store.dispatch('getCollection', processingPipelinesCollection)
+      this.processingPipelines = result.toJSON()
     },
     // Called on Add Container
     // Calls the validation method on our observer component
     async onSubmit() {
       const validated = await this.$refs.observer.validate()
-      console.log({validated})
 
       if (validated) {
         this.addContainer()
@@ -527,7 +519,7 @@ export default {
         console.log("Form validation failed ")
       }
     },
-    addContainer: function() {
+    addContainer() {
       let experimentType = this.experimentTypesCollection.findWhere({EXPERIMENTTYPEID: this.containerState.EXPERIMENTTYPEID})
 
       let containerModel = new Container({
@@ -549,40 +541,46 @@ export default {
         SCREENID: "",
       })
       this.saveContainer(containerModel)
-      // Save the samples...
-      console.log("addContainer: " + JSON.stringify(containerModel))
     },
+    async saveContainer(model) {
+      try {
+        // const result = await this.$store.dispatch('saveModel', { model: model })
 
-    saveContainer: function(model) {
-      // this.$store.commit('loading', true)
-      this.$store.dispatch('saveModel', {model: model}).then( (result) => {
-        let cid = model.get('CONTAINERID')
-        this.$store.commit('notifications/addNotification', { message: 'New Container created, click <a href=/containers/cid/'+cid+'>here</a> to view it', level: 'info', persist: true})
+        // const containerId = result.get('CONTAINERID')
 
-        EventBus.$emit('save-samples', cid)
+        // // Save samples added in the container
+        // if (!containerId) return
 
-        // Reset container - we may want to add more containers so just reset the name and barcode
-        this.containerState.NAME = ''
-        this.containerState.CODE = ''
-        // Reset state of form
-        this.$refs.observer.reset()
-      }, (err) => {
+        // await this.$store.dispatch('samples/save', containerId)
+        // this.$store.commit('notifications/addNotification', {
+        //   message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it`,
+        //   level: 'info',
+        //   persist: true
+        // })
+        // // If we have a container id we are creating all samples
+        // // On success, reset because we will want to start with a clean slate
+        // this.$store.commit('samples/reset')
+
+        // // Reset container - we may want to add more containers so just reset the name and barcode
+        // this.containerState.NAME = ''
+        // this.containerState.CODE = ''
+        // // Reset state of form
+        // this.$refs.observer.reset()
+      } catch (error) {
         console.log("Error saving Container: " + err)
-        this.$store.commit('notifications/addNotification', { message: 'Something went wrong creating this container, please try again', level: 'error'})
-      }).finally( () => {
-        // this.$store.commit('loading', false)
-        // Test scroll to top
+        this.$store.commit('notifications/addNotification', {
+          message: 'Something went wrong creating this container, please try again',
+          level: 'error'
+        })
+      } finally {
         window.scrollTo(0,0);
-      })
+      }
     },
-
-    // Reset Backbone Samples Collection
-    resetSamples: function(capacity) {
+    resetSamples(capacity) {
       this.$store.commit('samples/reset', capacity)
     },
-
-    onContainerCellClicked: function(location) {
-      EventBus.$emit('select-sample', location)
+    onContainerCellClicked(location) {
+      this.sampleLocation = location - 1
     },
     formatExperimentKindList() {
       for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
@@ -596,7 +594,8 @@ export default {
       $centeringMethods: this.centeringMethods,
       $anomalousList: this.anomalousList,
       $experimentKindList: this.experimentKindList,
-      $showUDCColumns: () => this.showUDCColumns
+      $showUDCColumns: () => this.showUDCColumns,
+      $sampleLocation: () => this.sampleLocation
     }
   }
 }
