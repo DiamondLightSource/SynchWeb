@@ -1,35 +1,33 @@
 <template>
-  <div class="ctf dcap clearfix">
-    <h2>CTF Estimation</h2>
+  <processing-section
+    section-title="CTF Estimation"
+    :data-available="ctfEstimation !== null"
+  >
+    <template #controls>
+      <div style="display: flex; justify-content: space-between;">
+        <movie-select
+          :max="movieCount"
+          @changed="newMovie"
+        />
 
-    <movie-select
-      :max="length"
-      @changed="newMovie"
+        <div>
+          <a
+            class="view button logf"
+            :href="logUrl"
+            @click.prevent="showLog"
+          ><i class="fa fa-search" /> Log file</a>
+        </div>
+      </div>
+    </template>
+
+    <params :ctf-estimation="ctfEstimation" />
+
+    <dc-image
+      container-class="diffraction fft"
+      title="FFT Theoretical"
+      :image-url="imageUrl"
     />
-
-    <p class="ra">
-
-      <a
-        class="view button logf"
-        :href="logUrl"
-        @click.prevent="showLog"
-      ><i class="fa fa-search" /> Log file</a>
-    </p>
-
-    <div
-      v-if="ctfEstimation !== null"
-      class="data_collection"
-      type="data"
-    >
-      <dc-image
-        container-class="diffraction fft"
-        title="FFT Theoretical"
-        :image-url="imageUrl"
-      />
-
-      <params :ctf-estimation="ctfEstimation" />
-    </div>
-  </div>
+  </processing-section>
 </template>
 
 <script>
@@ -39,6 +37,7 @@ import LogView from 'views/log'
 import MarionetteApplication from 'app/marionette-application.js'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import Params from 'modules/types/em/dc/ap/ctf/params.vue'
+import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 import utils from 'utils'
 
 export default {
@@ -47,13 +46,14 @@ export default {
         'dc-image': DcImage,
         'movie-select': MovieSelect,
         'params': Params,
+        'processing-section': ProcessingSection,
     },
     'props': {
-        'length': {
+        'movieCount': {
             'type': Number,
             'required': true,
         },
-        'dataCollectionId': {
+        'autoProcProgramId': {
             'type': Number,
             'required': true,
         },
@@ -67,7 +67,7 @@ export default {
     'computed': {
         'ctfModel': function() {
             return new CtfModel({
-                'id': this.dataCollectionId,
+                'id': this.autoProcProgramId,
                 'TYPE': 'CTF',
             })
         },
@@ -84,7 +84,7 @@ export default {
                 return '#'
             }
             return this.$store.state.apiUrl +
-                '/download/id/' + this.dataCollectionId +
+                '/download/id/' + this.autoProcProgramId +
                 '/aid/' + this.programId +
                 '/log/1'
         },
@@ -93,7 +93,7 @@ export default {
                 return '#'
             }
             return this.$store.state.apiUrl +
-                '/em/ctf/image/' + this.dataCollectionId +
+                '/em/ctf/image/' + this.autoProcProgramId +
                 '/n/' + this.movieNumber
         },
     },
@@ -115,7 +115,6 @@ export default {
             if (vm.movieNumber == vm.loadedMovieNumber) {
                 return
             }
-            vm.$store.commit('loading', true)
             const successCallback = function(
                 model, // eslint-disable-line no-unused-vars
                 response,

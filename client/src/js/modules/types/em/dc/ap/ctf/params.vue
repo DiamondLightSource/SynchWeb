@@ -1,68 +1,68 @@
 <template>
-  <ul class="clearfix">
-    <list-item
+  <parameter-list>
+    <parameter-list-item
       label="Movie Number"
       :item="movieNumber"
     />
-    <list-item
+    <parameter-list-item
       label="Box size"
       :item="boxSize"
     />
-    <list-item
+    <parameter-list-item
       label="Resolution"
       :item="resolution"
     />
-    <list-item
+    <parameter-list-item
       label="Defocus"
       :item="defocus"
     />
-    <list-item
+    <parameter-list-item
       label="Defocus Step Size"
       :item="defocusStepSize"
     />
-    <list-item
+    <parameter-list-item
       label="Astigmatism"
       :item="astigmatism"
     />
-    <list-item
+    <parameter-list-item
       label="Astigmatism Angle"
       :item="astigmatismAngle"
     />
-    <list-item
+    <parameter-list-item
       label="Estimated Resolution"
       :item="estimatedResolution"
     />
-    <list-item
+    <parameter-list-item
       label="Estimated Defocus"
       :item="estimatedDefocus"
     />
-    <list-item
+    <parameter-list-item
       label="Estimated Defocus"
       :item="amplitudeContrast"
     />
-    <list-item
+    <parameter-list-item
       label="CC Value"
       :item="ccValue"
     />
-    <!-- TODO: make comments work -->
-    <li
-      class="comment"
-      title="Click to edit the comment for CTF estimation"
-    >
-      Comment:
-      <span class="COMMENTS">{{ ctfEstimation.COMMENTS }}</span>
-    </li>
-  </ul>
+    <parameter-list-item
+      width="100%"
+      help-text="Click to edit the comment for CTF Estimation"
+      label="Comments"
+      :item="comments"
+    />
+  </parameter-list>
 </template>
 
 <script>
 import formatsUnits from 'modules/types/em/components/formats-units'
-import ListItem from 'modules/types/em/components/list-item.vue'
+import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
+import ParameterList from '../../../components/parameter-list.vue'
 
 export default {
     'name': "Params",
     'components': {
-        'list-item': ListItem,
+        'parameter-list-item': ParameterListItem,
+        'parameter-list': ParameterList,
     },
     'mixins': [formatsUnits],
     'props': {
@@ -113,6 +113,9 @@ export default {
         },
         'ccValue': function() {
             return this.datumOrBlank(this.ctfEstimation.CCVALUE)
+        },
+        'comments': function() {
+            return this.datumOrBlank(this.ctfEstimation.COMMENTS)
         },
     },
 }
