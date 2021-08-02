@@ -15,7 +15,7 @@
     <a href="#" class="button clear" @click.prevent="$emit('clear-container-sample')" title="Clear Sample"><i class="fa fa-times"></i></a>
 
     <div v-if="extra" class="tw-flex tw-flex-row-reverse">
-      <a class="button extrainfo r" href="#" title="Show extra fields" @click.prevent="toggleExtra" ><i :class="['fa extra-state', extraToggle ? 'fa-plus' : 'fa-minus']"></i> Extra Fields</a>
+      <a class="button extrainfo r" href="#" title="Show extra fields" @click.prevent="toggleExtra" ><i :class="['fa extra-state', extraToggle ? 'fa-minus' : 'fa-plus']"></i> Extra Fields</a>
     </div>
 
   </div>
@@ -32,7 +32,7 @@ export default {
   },
   data: function() {
     return {
-      extraToggle: true
+      extraToggle: false
     }
   },
   methods: {

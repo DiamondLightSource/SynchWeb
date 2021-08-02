@@ -16,7 +16,7 @@ Slots include:
   <div :class="outerClass">
 
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id">{{label}}
+    <label v-if="label" :for="id" :class="labelClass">{{label}}
       <slot name="description">
         <span v-if="description" class="small">{{description}}</span>
       </slot>
@@ -120,7 +120,15 @@ export default {
     // Use the save event to update this prop
     initialText: {
       type: String,
-    }
+    },
+    // For cases where we need to add a css class to the label of the input field
+    labelClass: {
+      type: String,
+      default: ''
+    },
+    outerClass: {
+      type: String,
+    },
   },
   data() {
     return {

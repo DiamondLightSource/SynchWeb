@@ -11,7 +11,6 @@
         :proteins="proteins"
         :experimentKind="experimentKind"
         :containerId="containerId"
-        :sampleLocation="sampleLocation"
         @save-sample="onSaveSample"
         @clone-sample="onCloneSample"
         @clear-sample="onClearSample"
@@ -30,7 +29,7 @@
 import EventBus from 'app/components/utils/event-bus.js'
 
 import Sample from 'models/sample'
-import SingleSample from 'modules/types/saxs/samples/experiments/default/single-sample.vue'
+import SingleSample from 'modules/types/mx/samples/single-sample.vue'
 import SamplePlateNew from 'modules/types/mx/samples/sample-plate-new.vue'
 
 import { SampleTableNewMap, SampleTableViewMap } from 'modules/types/saxs/samples/experiments/sample-table-map'
@@ -65,13 +64,10 @@ export default {
     }
   },
   data() {
-    return {
-      sampleLocation: 1,
-    }
+    return {}
   },
-
   computed: {
-    sampleComponent: function() {
+    sampleComponent() {
       // Use a table editor unless capacity > 25
       // If we have been passed a valid container id then we are editing the samples, else new table
       let sampleTableMap = this.containerId ? SampleTableViewMap : SampleTableNewMap
@@ -92,22 +88,9 @@ export default {
       samples: ['samples/samples']
     })
   },
-  // We are passing a plain JSON array to the sample plate view
-  // So we need to detect when the parent backbone collection is changed (reset)
-  // On reset, update our samples list
-  created: function() {
-    // Parent Add Container component will send a message once it has successfully created the container
-    EventBus.$on('save-samples', this.onSaveSamples)
-    EventBus.$on('select-sample', this.onSelectSample)
-  },
   methods: {
-    // We will need to pass up the event to select a sample in case graphic needs to change
-    onSelectSample: function(location) {
-      console.log("Samples Editor - detected select-sample - " + location)
-      this.sampleLocation = +location
-    },
     // Clone the next free row based on the current row
-    onCloneSample: function(sampleLocation) {
+    onCloneSample(sampleLocation) {
       // Make sure we are using numbers for locations
       let location = +sampleLocation
       // Take the next sample in the list and copy this data
@@ -119,8 +102,8 @@ export default {
       let nextSampleIndex = -1
       // Recreate current behaviour - find the next non-zero protein id
       // This means you can click any row icon and it will fill whatever is the next empty link item based on protein id/valid acronym
-      for (var i=location; i<this.samples.length; i++) {
-        if ( +this.samples[i]['PROTEINID'] < 0) {
+      for (var i = location; i < this.samples.length; i++) {
+        if (+this.samples[i]['PROTEINID'] < 0) {
           nextSampleIndex = i
           break
         }
@@ -128,13 +111,13 @@ export default {
       let nextSampleLocation = nextSampleIndex+1 // LOCATION to be stored in the cloned sample
 
       if (nextSampleIndex > 0) {
-        this.$store.commit('samples/setSample', { data:Object.assign(this.samples[nextSampleIndex], this.samples[sampleIndex]), index:nextSampleIndex})
-        this.$store.commit('samples/update', {index: nextSampleIndex, key: 'LOCATION', value: nextSampleLocation.toString()})
-        this.$store.commit('samples/update', {index: nextSampleIndex, key: 'NAME', value: this.generateSampleName(this.samples[sampleIndex].NAME, nextSampleLocation)})
+        this.$store.commit('samples/setSample', { data: Object.assign(this.samples[nextSampleIndex], this.samples[sampleIndex]), index:nextSampleIndex})
+        this.$store.commit('samples/update', { index: nextSampleIndex, key: 'LOCATION', value: nextSampleLocation.toString() })
+        this.$store.commit('samples/update', { index: nextSampleIndex, key: 'NAME', value: this.generateSampleName(this.samples[sampleIndex].NAME, nextSampleLocation) })
       }
     },
     // Clear row for a single row in the sample table
-    onClearSample: function(sampleLocation) {
+    onClearSample(sampleLocation) {
       let location = +sampleLocation
       // Clear the row for this location
       // Locations should be in range 1..samples.length
@@ -144,7 +127,7 @@ export default {
       this.$store.commit('samples/clearSample', index)
     },
     // Take first entry (or index) and clone all rows
-    onCloneContainer: function(sampleIndex=0) {
+    onCloneContainer(sampleIndex=0) {
       console.log("Clone Container from sample Index = " + sampleIndex)
 
       for (var i=0; i<this.samples.length; i++) {
@@ -152,14 +135,14 @@ export default {
       }
     },
     // Remove all sample information from every row
-    onClearContainer: function() {
+    onClearContainer() {
       for (var i=0; i<this.samples.length; i++) {
         this.$store.commit('samples/clearSample', i)
       }
     },
     // When cloning, take the last digits and pad the new samples names
     // So if 1: sample-01, 2: will equal sample-02 etc.
-    generateSampleName: function(name, startAtIndex) {
+    generateSampleName(name, startAtIndex) {
       if (!name) return null
 
       let name_base = name.replace(/([\d]+)$/, '')
@@ -175,29 +158,12 @@ export default {
     // Could add final validation check here, but the container will already exist
     // Better to catch earlier - prevent container add for instance if samples are invalid
     // If we are wrapping this component within a validation observer the submit container step will be prevented
-    onSaveSamples: function(containerId) {
-      // If no container id we can't correctly add the new samples to the container
-      if (!containerId) return
-
-      this.$refs.sampleObserver.validate().then( (result) => {
-        if (result) this.saveSamples(containerId)
-        else console.log("Error saving samples for container " + containerId)
-      })
+    onSaveSamples(containerId) {
+      
     },
-
-    saveSamples: function(containerId) {
-      this.$store.dispatch('samples/save', containerId).then( () => {
-          // If we have a container id we are creating all samples
-          // On success, reset because we will want to start with a clean slate
-          this.$store.commit('samples/reset')
-        }, (err) => {
-          this.$store.commit('notifications/addNotification', { message: err.message, level: 'error'})
-        })
-    },
-    
     // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
-    onSaveSample: function(location) {
+    onSaveSample(location) {
       this.$refs.sampleObserver.validate().then( (result) => {
         console.log("Sample Editor is Valid was: " + result)
         if (result) this.saveSample(location)
@@ -208,7 +174,7 @@ export default {
       })
     },
 
-    saveSample: function(location) {
+    saveSample(location) {
       let sampleIndex = +location -1
       // Create a new Sample Model so it uses the BLSAMPLEID to check for post, update etc
       let sampleModel = new Sample( this.samples[sampleIndex] )
@@ -218,7 +184,7 @@ export default {
         if (!this.samples[sampleIndex]['BLSAMPLEID']) this.$store.commit('samples/update', {index: sampleIndex, key: 'BLSAMPLEID', value: result.get('BLSAMPLEID')})
       }, (err) => console.log("Error saving model: " + JSON.stringify(err)))
     },
-    getRowColDrop: function(pos) {
+    getRowColDrop(pos) {
       let well = this.containerType.WELLDROP > -1 ? 1 : 0
       let dropTotal = (this.containerType.DROPPERWELLX * this.containerType.DROPPERWELLY) - well
       
@@ -230,7 +196,7 @@ export default {
 
       return { row: row, col: col, drop: drop, pos: pos }
     },
-    onCloneColumn: function(location) {
+    onCloneColumn(location) {
       let sampleIndex = +location - 1
 
       console.log("Current Sample = " + JSON.stringify(this.samples[sampleIndex]))
@@ -251,7 +217,7 @@ export default {
         }
       }
     },
-    onCloneRow: function(location) {
+    onCloneRow(location) {
       let sampleIndex = +location - 1
 
       let sourceCoordinates = this.getRowColDrop(location)
@@ -269,15 +235,12 @@ export default {
         }
       }
     },
-    cloneSample: function(sourceIndex, targetIndex) {
+    cloneSample(sourceIndex, targetIndex) {
       if (targetIndex >= this.samples.length) return false
       if (sourceIndex >= this.samples.length) return false
 
       let sourceSample = this.samples[sourceIndex]
-      if (sourceSample.PROTEINID < 0) {
-        console.log("Can't clone non-existant sample")
-        return false
-      }
+      if (sourceSample.PROTEINID < 0) return false
 
       let baseName = this.samples[sourceIndex].NAME
       let sampleClone = Object.assign(this.samples[targetIndex], this.samples[sourceIndex])
