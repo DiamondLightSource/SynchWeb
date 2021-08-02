@@ -1308,19 +1308,21 @@ class EM extends Page
         $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
         if ($n < 1) $n = 1;
 
-        $imgs = $this->db->pq("SELECT c.ffttheoreticalfullpath 
-                FROM ctf c
-                INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-                INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $n));
+        $imgs = $this->db->pq(
+            "SELECT c.ffttheoreticalfullpath
+            FROM ctf c
+            INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
+            INNER JOIN movie m ON m.movieid = mc.movieid
+            INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+            WHERE c.autoprocprogramid = :1 AND m.movienumber = :2",
+            array($this->arg('id'), $n)
+        );
 
         if (!sizeof($imgs)) $this->_error('No such ctf correction');
         $img = $imgs[0];
 
         if (file_exists($img['FFTTHEORETICALFULLPATH'])) {
             $this->_send_image($img['FFTTHEORETICALFULLPATH']);
-
         } else {
             $this->app->contentType('image/png');
             readfile('assets/images/no_image.png');
