@@ -1,56 +1,54 @@
 <template>
-  <div class="holder">
+  <section>
     <h1
+      class="jobHeading"
       title="Click to show autoprocessing results"
-      class="ap"
-      @click="showAutoProcessing = !showAutoProcessing"
+      @click="showProcessing = !showProcessing"
     >
-      Processing Job: {{ processingJobId }}
-      <span>
-        <status-item
-          title="Motion Correction"
-          :status="job.MC"
-          @counted="countedMc"
-        />
-        <status-item
-          title="CTF Estimation"
-          :status="job.CTF"
-          @counted="countedCtf"
-        />
-      </span>
+      <div>
+        Processing Job: {{ processingJobId }}
+      </div>
+      <div>
+        AutoProc Program: {{ autoProcProgramId }}
+      </div>
+      <div class="processTime">
+        Processing Start: {{ job.PROCESSINGSTARTTIME }}
+      </div>
+      <div class="processTime">
+        Processing End: {{ job.PROCESSINGSTARTTIME }}
+      </div>
+      <status-description :status="job.PROCESSINGSTATUSDESCRIPTION" />
     </h1>
 
     <div
-      ref="autoproc"
-      class="autoproc"
+      ref="processing"
+      class="processing"
     >
-      <template v-if="showAutoProcessing">
-        <processing-summary
-          :processing-job-id="processingJobId"
+      <template v-if="showProcessing">
+        <summary-charts
+          :auto-proc-program-id="autoProcProgramId"
         />
 
         <motion-correction
-          :length="lengthMc"
-          :data-collection-id="dataCollectionId"
+          :auto-proc-program-id="autoProcProgramId"
+          :movie-count="mcMovieCount"
         />
 
         <ctf-estimation
-          :length="lengthCtf"
-          :data-collection-id="dataCollectionId"
+          :auto-proc-program-id="autoProcProgramId"
+          :movie-count="ctfMovieCount"
         />
 
         <ice-breaker
-          :data-collection-id="dataCollectionId"
+          :auto-proc-program-id="autoProcProgramId"
         />
 
-      <auto-picker
-        :active="showAutoProcessing"
-        :data-collection-id="dataCollectionId"
-      />
-
+        <auto-picker
+          :auto-proc-program-id="autoProcProgramId"
+        />
       </template>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
@@ -59,8 +57,8 @@ import AutoPicker from 'modules/types/em/dc/ap/cryolo/auto-picker.vue'
 import CtfEstimation from 'modules/types/em/dc/ap/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/dc/ap/ice/ice-breaker.vue'
 import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
-import ProcessingSummary from 'modules/types/em/dc/ap/summary/processing-summary.vue'
-import StatusItem from 'modules/types/em/dc/ap/status-item.vue'
+import SummaryCharts from 'modules/types/em/dc/ap/summary-charts/summary-charts.vue'
+import StatusDescription from 'modules/types/em/dc/ap/status-description.vue'
 
 export default {
     'name': 'ProcessingJob',
@@ -69,8 +67,8 @@ export default {
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
         'motion-correction': MotionCorrection,
-        'processing-summary': ProcessingSummary,
-        'status-item': StatusItem,
+        'summary-charts': SummaryCharts,
+        'status-description': StatusDescription,
     },
     'props': {
         'job': {
@@ -84,23 +82,31 @@ export default {
     },
     'data': function() {
         return {
-            'showAutoProcessing': false,
+            'showProcessing': false,
             'lengthMc': 0,
             'lengthCtf': 0,
         }
     },
     'computed': {
         'processingJobId': function() {
-            return parseInt(this.job.ID, 10)
+            return parseInt(this.job.PROCESSINGJOBID, 10)
+        },
+        'autoProcProgramId': function() {
+            return parseInt(this.job.AUTOPROCPROGRAMID, 10)
+        },
+        'mcMovieCount': function() {
+            return parseInt(this.job.MCCOUNT, 10)
+        },
+        'ctfMovieCount': function() {
+            return parseInt(this.job.CTFCOUNT, 10)
         },
     },
     'watch': {
-        'showAutoProcessing': function(
+        'showProcessing': function(
             newValue,
             oldValue // eslint-disable-line no-unused-vars
         ) {
-            // TODO: jQuery
-            const container = $(this.$refs.autoproc)
+            const container = $(this.$refs.processing) // TODO: jQuery
             if (newValue) {
                 container.slideDown()
             } else {
@@ -108,13 +114,24 @@ export default {
             }
         },
     },
-    'methods': {
-        'countedMc': function(length) {
-            this.lengthMc = length
-        },
-        'countedCtf': function(length) {
-            this.lengthCtf = length
-        },
-    },
 }
 </script>
+
+<style scoped>
+.jobHeading {
+    cursor: pointer;
+    background: #afafaf;
+    padding: 8px;
+    font-size: 12px;
+    margin-top: 2px;
+    display: flex;
+    justify-content: space-between;
+}
+.processTime {
+    font-weight: bold;
+}
+.processing {
+    background: #ffffff;
+    overflow: auto;
+}
+</style>
