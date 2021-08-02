@@ -44,7 +44,7 @@ Slots include:
       <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]" :class="getOptionClass(option[optionClassKey])">{{option[optionTextKey]}}</option>
     </select>
 
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit">{{ inlineText }} <span><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ inlineText }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
     <!-- Use a cancel button with inline edit mode - because getting the combobox to play with onblur events tricky -->
     <button v-if="inline && editable" @mousedown="onCancel" class="button">Cancel</button>
@@ -140,6 +140,7 @@ export default {
   data() {
     return {
       editable: true,
+      showEditIcon: false,
       localValue: this.value,
       comboBoxParent: null,
     }
@@ -152,7 +153,10 @@ export default {
     // This should only get changed if we are in inline edit mode
     editable: function(newVal) {
       if (newVal) this.showCombobox()
-      else this.hideCombobox()
+      else {
+        this.hideCombobox()
+        this.showEditIcon = false
+      }
     }
   },
   computed: {

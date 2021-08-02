@@ -20,8 +20,9 @@
 <h1>EPICS Screens</h1>
 <div class="screens"></div>
 
-<h1>GDA Log</h1>
-
-<div class="log gda"></div>
+<% if (IS_STAFF) {%>
+    <h1>GDA Log</h1>
+    <div class="log gda"></div>
+<%}%>
 
 <div class="calendar"></div>
