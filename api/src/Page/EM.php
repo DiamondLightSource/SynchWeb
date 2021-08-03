@@ -76,6 +76,7 @@ class EM extends Page
         array('/mc/histogram', 'get', '_mc_drift_histogram'),
 
         array('/attachments/:id', 'get', '_auto_proc_attachments'),
+        array('/attachment/:id', 'get', '_auto_proc_attachment'),
 
         array('/ctf/:id', 'get', '_ctf_result'),
         array('/ctf/image/:id(/n/:IMAGENUMBER)', 'get', '_ctf_image'),
@@ -1228,12 +1229,42 @@ class EM extends Page
         // empty object
         if (sizeof($rows) > 0) {
             foreach ($rows as $row) {
-                if (file_exists($row['FILE'])) {
+                $file = $row['FILE'];
+                if (file_exists($file)) {
+                    if (strtolower(pathinfo($file, PATHINFO_EXTENSION)) == 'json') {
+                        $row['JSON'] = file_get_contents($file);
+                    }
                     array_push($result, $row);
                 }
             }
         }
         $this->_output($result);
+    }
+
+    public function _auto_proc_attachment()
+    {
+        $rows = $this->db->pq(
+            "SELECT
+                AutoProcProgramAttachment.autoProcProgramAttachmentId AS id,
+                CONCAT(
+                    AutoProcProgramAttachment.filePath,
+                    '/',
+                    AutoProcProgramAttachment.fileName
+                ) AS file,
+                AutoProcProgramAttachment.fileType
+            FROM AutoProcProgramAttachment
+            WHERE AutoProcProgramAttachment.autoProcProgramAttachmentId = :1",
+            array($this->arg('id'))
+        );
+        $result = array();
+        if (!sizeof($rows)) {
+            $this->_error('No such attachment');
+        }
+        $file = $rows[0]['FILE'];
+        if (!file_exists($file)) {
+            $this->_error('No such attachment');
+        }
+        $this->_send_image($file);
     }
 
     public function _ctf_summary()
