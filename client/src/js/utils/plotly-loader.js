@@ -6,6 +6,7 @@ var Plotly = require('plotly.js/lib/core');
 // Extend with other plot types as required...
 Plotly.register([
     require('plotly.js/lib/scatter'),
+    require('plotly.js/lib/histogram'), // used by EM/IceBreaker
 ]);
 
 module.exports = Plotly;

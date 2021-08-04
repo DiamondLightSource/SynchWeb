@@ -1,16 +1,14 @@
 <template>
   <div
-    v-if="attachment.hasPlot"
     class="ice-breaker-histogram"
-    style="padding: 100px; text-align: center;"
     :style="proportionalHeight"
     :title="attachment.timeStamp"
-  >
-  </div>
+  />
 </template>
 
 <script>
 import proportionalHeight from 'modules/types/em/components/proportional-height'
+import plotly from 'utils/plotly-loader'
 
 export default {
     'name': "Histogram",
@@ -21,6 +19,10 @@ export default {
             'required': true,
         },
     },
+    'mounted': function() {
+        const plotData = this.attachment.plotData
+        plotly.newPlot(this.$el, plotData.data, plotData.layout)
+    },
 }
 </script>
 
@@ -28,6 +30,6 @@ export default {
 .ice-breaker-histogram {
     background: #dadada;
     overflow: hidden;
-    width: 23.5%;
+    width: 400px;
 }
 </style>

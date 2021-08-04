@@ -4,18 +4,22 @@
     :data-available="attachments !== null"
   >
     <parameter-list width="15%">
-      <download
-        v-for="attachment in attachments"
-        :key="attachment.attributes.id"
-        :attachment="attachment.attributes"
-      />
+      <template v-for="attachment in attachments">
+        <download
+          v-if="!attachment.attributes.hasPlot"
+          :key="attachment.attributes.id + 'p'"
+          :attachment="attachment.attributes"
+        />
+      </template>
     </parameter-list>
 
-    <histogram
-      v-for="attachment in attachments"
-      :key="attachment.attributes.id"
-      :attachment="attachment.attributes"
-    />
+    <template v-for="attachment in attachments">
+      <histogram
+        v-if="attachment.attributes.hasPlot"
+        :key="attachment.attributes.id + 'h'"
+        :attachment="attachment.attributes"
+      />
+    </template>
   </processing-section>
 </template>
 

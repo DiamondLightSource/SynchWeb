@@ -1,8 +1,5 @@
 <template>
-  <custom-list-item
-    v-if="!attachment.hasPlot"
-    width="100%"
-  >
+  <custom-list-item width="100%">
     <a
       href="#"
       @click.prevent="fetchFile"
