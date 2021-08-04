@@ -1,12 +1,5 @@
-define([
-    'backbone',
-    'modules/types/em/models/processing-attachment'
-], function(
-    Backbone,
-    ProcessingAttachment
-) {
+define(['backbone'], function(Backbone) {
     return Backbone.Collection.extend({
-        'model': ProcessingAttachment,
         'initialize': function(models, options) {
             this.url = '/em/attachments/' + options.id
         },
