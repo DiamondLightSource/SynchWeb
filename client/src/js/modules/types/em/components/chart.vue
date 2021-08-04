@@ -23,7 +23,7 @@ export default {
     'props': {
         'width': {
             'type': String,
-            'default': '25%',
+            'default': '400px',
         },
         'options': {
             'type': Object,

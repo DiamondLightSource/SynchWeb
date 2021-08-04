@@ -31,5 +31,6 @@ export default {
     background: #dadada;
     overflow: hidden;
     width: 400px;
+    border-radius: 6px;
 }
 </style>
