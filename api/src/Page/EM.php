@@ -1286,7 +1286,7 @@ class EM extends Page
             ORDER BY Movie.createdtimestamp',
             array($this->arg('id'))
         );
-        $this->_output(array('summary' => $rows));
+        $this->_output($rows);
     }
 
     function _ctf_result()

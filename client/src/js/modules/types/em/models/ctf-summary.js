@@ -23,7 +23,7 @@ define(['backbone'], function(Backbone) {
                 },
             }
             var dataAvailable = false
-            response.summary.forEach(function(row) {
+            response.forEach(function(row) {
                 Object.keys(charts).forEach(function(chart) {
                     charts[chart].data.push([row.TIME, row[chart]])
                     dataAvailable = true
