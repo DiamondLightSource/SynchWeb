@@ -1,6 +1,6 @@
 <template>
   <li
-    title="helpText"
+    :title="helpText"
     :style="styleWidth"
   >
     <slot />

@@ -1,12 +1,12 @@
 <template>
   <custom-list-item
-    helpText="helpText"
+    :help-text="helpText"
     :width="width"
   >
-    {{ label }}:
+    <strong>{{ label }}:</strong>
     <span v-html="item" />
     <template v-if="label2">
-      {{ label2 }}:
+      <strong>{{ label2 }}:</strong>
       <span v-html="item2" />
     </template>
   </custom-list-item>
