@@ -1,21 +1,43 @@
 <template>
-  <div class="dcap">
+  <div>
     Movie:
-    <a
-      href="#"
-      class="button prev"
-      @click.prevent="prevMovie"
-    ><i class="fa fa-angle-left" /></a>
+
+    <base-input-button
+      :disabled="movieNumber <= 1"
+      @click="movieNumber = 1"
+    >
+      <i class="fa fa-angle-double-left" />
+    </base-input-button>
+
+    <base-input-button
+      :disabled="movieNumber <= 1"
+      @click="movieNumber--"
+    >
+      <i class="fa fa-angle-left" />
+    </base-input-button>
+
     <input
       v-model.number="movieNumber"
       type="text"
+      :maxlength="maxlength"
+      :size="maxlength"
       name="movie"
     >
-    <a
-      href="#"
-      class="button next"
-      @click.prevent="nextMovie"
-    ><i class="fa fa-angle-right" /></a>
+
+    <base-input-button
+      :disabled="movieNumber >= max"
+      @click="movieNumber++"
+    >
+      <i class="fa fa-angle-right" />
+    </base-input-button>
+
+    <base-input-button
+      :disabled="movieNumber >= max"
+      @click="movieNumber = max"
+    >
+      <i class="fa fa-angle-double-right" />
+    </base-input-button>
+
     <label>Show most recent
       <input
         v-model="showMostRecent"
@@ -26,11 +48,15 @@
 </template>
 
 <script>
+import BaseInputButton from 'app/components/base-input-button.vue'
+
 export default {
     'name': "MovieSelect",
+    'components': {
+        'base-input-button': BaseInputButton,
+    },
     'props': {
         'max': {
-            // TODO: Vee Validate movieNumber form input!
             'type': Number,
             'required': true,
         },
@@ -42,42 +68,41 @@ export default {
             'timeout': null,
         }
     },
+    'computed': {
+        'maxlength': function() {
+            return this.max.toString().length
+        }
+    },
     'watch': {
         // eslint-disable-next-line no-unused-vars
         'max': function(newValue, oldValue) {
-            this.maxMovie()
+            this.selectMax()
         },
         // eslint-disable-next-line no-unused-vars
         'showMostRecent': function(newValue, oldValue) {
-            this.maxMovie()
+            this.selectMax()
         },
         // eslint-disable-next-line no-unused-vars
         'movieNumber': function(newValue, oldValue) {
-            this.movieNumberChanged()
+            if (this.movieNumber < 1) {
+                this.movieNumber = 1
+            }
+            if (this.movieNumber > this.max) {
+                this.movieNumber = this.max
+            }
+            this.selectionChanged()
         },
     },
     'mounted': function() {
-        this.maxMovie()
+        this.selectMax()
     },
     'methods': {
-        'maxMovie': function() {
+        'selectMax': function() {
             if (this.showMostRecent) {
                 this.movieNumber = this.max
             }
         },
-        'nextMovie': function() {
-            // TODO: make button disableable
-            if (this.movieNumber < this.max) {
-                this.movieNumber = this.movieNumber + 1
-            }
-        },
-        'prevMovie': function() {
-            // TODO: make button disableable
-            if (this.movieNumber > 0) {
-                this.movieNumber = this.movieNumber - 1
-            }
-        },
-        'movieNumberChanged': function() {
+        'selectionChanged': function() {
             const vm = this
             if (vm.timeout !== null) {
                 clearTimeout(vm.timeout)
