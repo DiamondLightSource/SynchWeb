@@ -29,6 +29,10 @@
           :auto-proc-program-id="autoProcProgramId"
         />
 
+        <job-parameters
+          :processing-job-id="processingJobId"
+        />
+
         <motion-correction
           :auto-proc-program-id="autoProcProgramId"
           :movie-count="mcMovieCount"
@@ -59,6 +63,7 @@ import IceBreaker from 'modules/types/em/dc/ap/ice/ice-breaker.vue'
 import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
 import SummaryCharts from 'modules/types/em/dc/ap/summary-charts/summary-charts.vue'
 import StatusDescription from 'modules/types/em/dc/ap/status-description.vue'
+import JobParameters from 'modules/types/em/dc/ap/job-parameters.vue'
 
 export default {
     'name': 'ProcessingJob',
@@ -66,17 +71,14 @@ export default {
         'auto-picker': AutoPicker,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
+        'job-parameters': JobParameters,
         'motion-correction': MotionCorrection,
-        'summary-charts': SummaryCharts,
         'status-description': StatusDescription,
+        'summary-charts': SummaryCharts,
     },
     'props': {
         'job': {
             'type': Object,
-            'required': true,
-        },
-        'dataCollectionId': {
-            'type': Number,
             'required': true,
         },
     },
