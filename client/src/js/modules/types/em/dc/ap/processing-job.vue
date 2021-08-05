@@ -63,7 +63,7 @@ import IceBreaker from 'modules/types/em/dc/ap/ice/ice-breaker.vue'
 import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
 import SummaryCharts from 'modules/types/em/dc/ap/summary-charts/summary-charts.vue'
 import StatusDescription from 'modules/types/em/dc/ap/status-description.vue'
-import JobParameters from 'modules/types/em/dc/ap/job-parameters.vue'
+import JobParameters from 'modules/types/em/dc/ap/parameters/job-parameters.vue'
 
 export default {
     'name': 'ProcessingJob',
