@@ -63,7 +63,7 @@ export default {
     },
     'computed': {
         'hideIconClass': function() {
-            return 'fa fa-angle-' + (this.hidden ? 'up' : 'down')
+            return 'fa fa-' + (this.hidden ? 'plus' : 'minus')
         },
     }
 }
