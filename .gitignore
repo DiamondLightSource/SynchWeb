@@ -15,6 +15,7 @@ sftp-config.json
 
 .sass-cache/
 .DS_Store
+.idea/
 
 /api/composer.lock
 /api/composer.phar

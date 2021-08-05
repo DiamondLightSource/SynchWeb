@@ -193,11 +193,9 @@ import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
 import ValidContainerGraphic from 'modules/types/saxs/samples/valid-container-graphic.vue'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import ContainerRegistry from 'modules/shipment/collections/containerregistry'
-
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
 import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
-
-import EventBus from 'app/components/utils/event-bus.js'
+import SampleGroups from 'collections/samplegroups'
 
 import SampleEditor from 'modules/types/mx/samples/sample-editor.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
@@ -313,7 +311,9 @@ export default {
       anomalousList: AnomalousList.list,
       experimentKindList: [],
       showUDCColumns: false,
-      sampleLocation: 0
+      sampleLocation: 0,
+      sampleGroupsCollection: null,
+      sampleGroups: []
     }
   },
   computed: {
@@ -445,6 +445,7 @@ export default {
     this.getUsers()
     this.getProcessingPipelines()
     this.formatExperimentKindList()
+    this.getSampleGroups()
   },
   methods: {
     async getProteins() {
@@ -582,6 +583,12 @@ export default {
       for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
         this.experimentKindList.push({ value: key, text: value })
       }
+    },
+    async getSampleGroups() {
+      this.sampleGroupsCollection = new SampleGroups(null, { state: { pageSize: 9999 }})
+
+      const result = await this.$store.dispatch('getCollection', this.sampleGroupsCollection)
+      this.sampleGroups = result.groups().toJSON()
     }
   },
   provide() {
