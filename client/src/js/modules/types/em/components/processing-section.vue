@@ -1,28 +1,43 @@
 <template>
   <div class="processing-section">
-    <h2>{{ sectionTitle }}</h2>
+    <div class="ps-header">
+      <h2 class="ps-title">
+        {{ sectionTitle }}
+      </h2>
 
-    <div class="top-bar">
-      <slot name="controls" />
+      <div class="ps-controls">
+        <base-input-button @click="hidden = !hidden">
+          <i :class="hideIconClass" />
+        </base-input-button>
+      </div>
     </div>
 
-    <div
-      class="detail-container"
-    >
-      <template v-if="dataAvailable">
-        <slot />
-      </template>
+    <div v-if="! hidden">
+      <div class="top-bar">
+        <slot name="controls" />
+      </div>
 
-      <p v-else>
-        {{ notAvailableMessage }}
-      </p>
+      <div class="detail-container">
+        <template v-if="dataAvailable">
+          <slot />
+        </template>
+
+        <p v-else>
+          {{ notAvailableMessage }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import BaseInputButton from 'app/components/base-input-button.vue'
+
 export default {
     'name': 'ProcessingSection',
+    'components': {
+        'base-input-button': BaseInputButton,
+    },
     'props': {
         'dataAvailable': {
             'type': Boolean,
@@ -36,7 +51,21 @@ export default {
             'type': String,
             'required': true,
         },
+        'defaultHidden': {
+            'type': Boolean,
+            'default': false,
+        }
     },
+    'data': function() {
+        return {
+            'hidden': this.defaultHidden
+        }
+    },
+    'computed': {
+        'hideIconClass': function() {
+            return 'fa fa-angle-' + (this.hidden ? 'up' : 'down')
+        },
+    }
 }
 </script>
 
@@ -52,14 +81,25 @@ export default {
     padding-bottom: 5px;
 }
 .detail-container {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    flex-direction: row;
     padding: 10px;
     border-radius: 6px;
     margin-bottom: 15px;
     background: #efefef;
-    border: 1px solid #e2e2e2;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #e2e2e2;
+}
+.ps-controls {
+    margin-left: 10px;
+}
+.detail-container,
+.ps-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+.ps-title {
+    flex-grow: 1;
 }
 </style>

@@ -3,6 +3,7 @@
     section-title="Processing Parameters"
     :data-available="dataAvailable"
     not-available-message="No processing parameters available"
+    default-hidden
   >
     <parameter-list width="100%">
       <template v-for="parameter in parameters">
