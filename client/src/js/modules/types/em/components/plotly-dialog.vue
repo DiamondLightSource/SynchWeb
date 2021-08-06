@@ -19,7 +19,7 @@
       class="main-screen-preview"
       static
       :style="proportionalHeight"
-      :title="titleText"
+      :title="title"
       :layout="layout"
       :chart-data="chartData"
       @click="showDialog = true"
@@ -49,7 +49,7 @@ export default {
             'required': true,
         },
         'chartData': {
-            'type': Object,
+            'type': Array,
             'required': true,
         },
         'title': {
@@ -64,7 +64,11 @@ export default {
     },
     'computed': {
         'bigChartStyle': function() {
-            return 'width: 900px;'
+            const width = window.innerWidth
+            const height = window.innerHeight
+            const style = 'width: ' + (width - width / 10) +
+                'px; height: ' + (height - height / 5) + 'px;'
+            return style
         },
     },
 }
