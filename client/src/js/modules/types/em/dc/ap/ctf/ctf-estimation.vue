@@ -112,7 +112,11 @@ export default {
         },
         'fetchMovie': function() {
             const vm = this
-            if (vm.movieNumber == vm.loadedMovieNumber) {
+            if (
+                (!vm.autoProcProgramId) ||
+                (!vm.movieNumber) ||
+                (vm.movieNumber == vm.loadedMovieNumber)
+            ) {
                 return
             }
             const successCallback = function(
@@ -128,13 +132,8 @@ export default {
                 response,
                 options // eslint-disable-line no-unused-vars
             ) {
-                vm.$store.commit('loading', false)
                 console.log(response.responseJSON)
-                vm.$store.commit('notifications/addNotification', {
-                    'title': 'Error',
-                    'message': 'Could not retrieve CTF data',
-                    'level': 'error'
-                })
+                vm.$store.commit('loading', false)
             }
             vm.$store.commit('loading', true)
             /* TODO: [SCI-9935]
