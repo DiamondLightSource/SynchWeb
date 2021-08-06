@@ -1,30 +1,29 @@
 <template>
   <section>
-    <h1
-      class="jobHeading"
-      title="Click to show autoprocessing results"
-      @click="showProcessing = !showProcessing"
-    >
+    <h1 class="jobHeading">
       <div>
         Processing Job: {{ processingJobId }}
       </div>
       <div>
-        AutoProc Program: {{ autoProcProgramId }}
+        AutoProc Program: {{ autoProcProgramId ? autoProcProgramId : 'NONE' }}
       </div>
       <div class="processTime">
-        Processing Start: {{ job.PROCESSINGSTARTTIME }}
+        Processing Start: {{ startTime }}
       </div>
       <div class="processTime">
-        Processing End: {{ job.PROCESSINGSTARTTIME }}
+        Processing End: {{ endTime }}
       </div>
-      <status-description :status="job.PROCESSINGSTATUSDESCRIPTION" />
+      <status-description :status="status" />
+      <div>
+        <hide-button v-model="hidden" />
+      </div>
     </h1>
 
     <div
       ref="processing"
       class="processing"
     >
-      <template v-if="showProcessing">
+      <template v-if="!hidden">
         <summary-charts
           :auto-proc-program-id="autoProcProgramId"
         />
@@ -56,20 +55,21 @@
 </template>
 
 <script>
-import 'jquery.mp' // TODO: JQuery!!!!
 import AutoPicker from 'modules/types/em/dc/ap/cryolo/auto-picker.vue'
 import CtfEstimation from 'modules/types/em/dc/ap/ctf/ctf-estimation.vue'
+import HideButton from 'modules/types/em/components/hide-button.vue'
 import IceBreaker from 'modules/types/em/dc/ap/ice/ice-breaker.vue'
-import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
-import SummaryCharts from 'modules/types/em/dc/ap/summary-charts/summary-charts.vue'
-import StatusDescription from 'modules/types/em/dc/ap/status-description.vue'
 import JobParameters from 'modules/types/em/dc/ap/parameters/job-parameters.vue'
+import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
+import StatusDescription from 'modules/types/em/dc/ap/status-description.vue'
+import SummaryCharts from 'modules/types/em/dc/ap/summary-charts/summary-charts.vue'
 
 export default {
     'name': 'ProcessingJob',
     'components': {
         'auto-picker': AutoPicker,
         'ctf-estimation': CtfEstimation,
+        'hide-button': HideButton,
         'ice-breaker': IceBreaker,
         'job-parameters': JobParameters,
         'motion-correction': MotionCorrection,
@@ -84,7 +84,7 @@ export default {
     },
     'data': function() {
         return {
-            'showProcessing': false,
+            'hidden': true,
             'lengthMc': 0,
             'lengthCtf': 0,
         }
@@ -102,18 +102,16 @@ export default {
         'ctfMovieCount': function() {
             return parseInt(this.job.CTFCOUNT, 10)
         },
-    },
-    'watch': {
-        'showProcessing': function(
-            newValue,
-            oldValue // eslint-disable-line no-unused-vars
-        ) {
-            const container = $(this.$refs.processing) // TODO: jQuery
-            if (newValue) {
-                container.slideDown()
-            } else {
-                container.slideUp()
-            }
+        'startTime': function() {
+            const time = this.job.PROCESSINGSTARTTIME
+            return time ? time : 'Not started'
+        },
+        'endTime': function () {
+            const time = this.job.PROCESSINGENDTIME
+            return time ? time : 'Not finished'
+        },
+        'status': function() {
+            return this.job.PROCESSINGSTATUSDESCRIPTION
         },
     },
 }

@@ -6,9 +6,7 @@
       </h2>
 
       <div class="ps-controls">
-        <base-input-button @click="hidden = !hidden">
-          <i :class="hideIconClass" />
-        </base-input-button>
+        <hide-button v-model="hidden" />
       </div>
     </div>
 
@@ -31,12 +29,12 @@
 </template>
 
 <script>
-import BaseInputButton from 'app/components/base-input-button.vue'
+import HideButton from 'modules/types/em/components/hide-button.vue'
 
 export default {
     'name': 'ProcessingSection',
     'components': {
-        'base-input-button': BaseInputButton,
+        'hide-button': HideButton,
     },
     'props': {
         'dataAvailable': {
@@ -61,11 +59,6 @@ export default {
             'hidden': this.defaultHidden
         }
     },
-    'computed': {
-        'hideIconClass': function() {
-            return 'fa fa-' + (this.hidden ? 'plus' : 'minus')
-        },
-    }
 }
 </script>
 
