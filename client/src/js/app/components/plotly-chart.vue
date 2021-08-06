@@ -1,0 +1,80 @@
+<template>
+  <div
+    class="plotly-chart"
+    :title="title"
+    @click="click"
+  />
+</template>
+
+<script>
+import Plotly from 'utils/plotly-loader'
+
+export default {
+    'name': "PlotlyChart",
+    'props': {
+        'layout': {
+            'type': Object,
+            'required': true,
+        },
+        'chartData': {
+            'type': Object,
+            'required': true,
+        },
+        'title': {
+            'type': String,
+            'required': true,
+        },
+        'static': {
+            'type': Boolean,
+            'default': false,
+        }
+    },
+    'data': function() {
+        return {
+            'chartActive': false,
+        }
+    },
+    'watch': {
+        'layout': function() {
+            this.showChart()
+        },
+        'chartData': function() {
+            this.showChart()
+        },
+    },
+    'mounted': function () {
+        this.showChart()
+    },
+    'beforeDestroy': function() {
+        this.destroyChart()
+    },
+    'methods': {
+        'destroyChart': function() {
+            if (this.chartActive) {
+                Plotly.purge(this.$el)
+                this.chartActive = false
+            }
+        },
+        'showChart': function() {
+            this.destroyChart()
+            Plotly.newPlot(
+                this.$el,
+                this.chartData,
+                this.layout,
+                this.static ? { 'staticPlot': true } : {}
+            );
+        },
+        'click': function() {
+            if (this.static) {
+                this.$emit('click')
+            }
+        },
+    },
+}
+</script>
+
+<style>
+.plotly-chart {
+    background: #dadada;
+}
+</style>

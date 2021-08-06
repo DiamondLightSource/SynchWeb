@@ -6,7 +6,7 @@
     <parameter-list width="15%">
       <template v-for="(attachment, key) in attachments">
         <download
-          v-if="key != 'id' && !attachment.hasPlot"
+          v-if="key != 'id' && !attachment.hasChart"
           :key="attachment.id + 'p'"
           :attachment="attachment"
         />
@@ -14,10 +14,12 @@
     </parameter-list>
 
     <template v-for="(attachment, key) in attachments">
-      <histogram
-        v-if="key != 'id' && attachment.hasPlot"
+      <plotly-dialog
+        v-if="key != 'id' && attachment.hasChart"
         :key="attachment.id + 'h'"
-        :attachment="attachment"
+        :title="attachment.chartData.titleText"
+        :layout="attachment.chartData.layout"
+        :chart-data="attachment.chartData.data"
       />
     </template>
   </processing-section>
@@ -26,16 +28,16 @@
 <script>
 import AttachmentsModel from 'modules/types/em/models/processing-attachments'
 import Download from 'modules/types/em/dc/ap/ice/download.vue'
-import Histogram from 'modules/types/em/dc/ap/ice/histogram.vue'
 import ParameterList from '../../../components/parameter-list.vue'
+import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 
 export default {
     'name': "IceBreaker",
     'components': {
-        'histogram': Histogram,
-        'parameter-list': ParameterList,
         'download': Download,
+        'parameter-list': ParameterList,
+        'plotly-dialog': PlotlyDialog,
         'processing-section': ProcessingSection,
     },
     'props': {
