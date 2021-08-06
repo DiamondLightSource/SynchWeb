@@ -1,21 +1,23 @@
 <template>
   <section>
-    <h1 class="jobHeading">
-      <div>
+    <h1 class="job-heading">
+      <div class="column">
         Processing Job: {{ processingJobId }}
       </div>
-      <div>
+      <div class="column">
         AutoProc Program: {{ autoProcProgramId ? autoProcProgramId : 'NONE' }}
       </div>
-      <div class="processTime">
+      <div class="column process-time">
         Processing Start: {{ startTime }}
       </div>
-      <div class="processTime">
+      <div class="column process-time">
         Processing End: {{ endTime }}
       </div>
-      <status-description :status="status" />
-      <div>
-        <hide-button v-model="hidden" />
+      <div class="last-column">
+        <status-description :status="status" />
+        <div class="buttons">
+          <hide-button v-model="hidden" />
+        </div>
       </div>
     </h1>
 
@@ -118,7 +120,7 @@ export default {
 </script>
 
 <style scoped>
-.jobHeading {
+.job-heading {
     cursor: pointer;
     background: #afafaf;
     padding: 8px;
@@ -127,11 +129,23 @@ export default {
     display: flex;
     justify-content: space-between;
 }
-.processTime {
+.column {
+    width: 21%;
+}
+.last-column {
+    width: 16%;
+    display: flex;
+    justify-content: space-between;
+}
+.process-time {
     font-weight: bold;
 }
 .processing {
     background: #ffffff;
     overflow: auto;
+}
+.buttons {
+    display: flex;
+    justify-content: flex-end;
 }
 </style>
