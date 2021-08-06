@@ -1,8 +1,6 @@
 define(['backbone'], function(Backbone) {
-    return Backbone.Collection.extend({
-        'initialize': function(models, options) {
-            this.url = '/em/attachments/' + options.id
-        },
+    return Backbone.Model.extend({
+        'urlRoot': '/em/attachments/',
         'parse': function(
             response,
             options // eslint-disable-line no-unused-vars
@@ -16,7 +14,7 @@ define(['backbone'], function(Backbone) {
                     'fileName': fileName,
                     'extension': fileName.split('.').pop(),
                     'fileType': attachment.FILETYPE,
-                    'plotData': json ? JSON.parse(json) : null,
+                    'plotData': json,
                     'hasPlot': json ? true : false,
                 }
             })

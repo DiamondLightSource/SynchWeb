@@ -2,7 +2,7 @@
   <div
     class="ice-breaker-histogram"
     :style="proportionalHeight"
-    :title="attachment.timeStamp"
+    :title="titleText"
   />
 </template>
 
@@ -19,9 +19,21 @@ export default {
             'required': true,
         },
     },
+    'data': function() {
+        return {
+            'titleText': '',
+        }
+    },
     'mounted': function() {
-        const plotData = this.attachment.plotData
-        plotly.newPlot(this.$el, plotData.data, plotData.layout)
+        const plotData = JSON.parse(this.attachment.plotData)
+        const layout = plotData.layout
+        this.titleText = layout.title.text.split('<br>')[1]
+        plotly.newPlot(this.$el, plotData.data, {
+            'barmode': layout.barmode,
+            'xaxis': layout.xaxis,
+            'yaxis': layout.yaxis,
+            'margin': { 'l': 50, 'r': 10, 'b': 50, 't': 10 },
+        })
     },
 }
 </script>

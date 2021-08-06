@@ -4,27 +4,27 @@
     :data-available="attachments !== null"
   >
     <parameter-list width="15%">
-      <template v-for="attachment in attachments">
+      <template v-for="(attachment, key) in attachments">
         <download
-          v-if="!attachment.attributes.hasPlot"
-          :key="attachment.attributes.id + 'p'"
-          :attachment="attachment.attributes"
+          v-if="key != 'id' && !attachment.hasPlot"
+          :key="attachment.id + 'p'"
+          :attachment="attachment"
         />
       </template>
     </parameter-list>
 
-    <template v-for="attachment in attachments">
+    <template v-for="(attachment, key) in attachments">
       <histogram
-        v-if="attachment.attributes.hasPlot"
-        :key="attachment.attributes.id + 'h'"
-        :attachment="attachment.attributes"
+        v-if="key != 'id' && attachment.hasPlot"
+        :key="attachment.id + 'h'"
+        :attachment="attachment"
       />
     </template>
   </processing-section>
 </template>
 
 <script>
-import AttachmentsCollection from 'modules/types/em/collections/processing-attachments'
+import AttachmentsModel from 'modules/types/em/models/processing-attachments'
 import Download from 'modules/types/em/dc/ap/ice/download.vue'
 import Histogram from 'modules/types/em/dc/ap/ice/histogram.vue'
 import ParameterList from '../../../components/parameter-list.vue'
@@ -50,10 +50,8 @@ export default {
         }
     },
     'computed': {
-        'attachmentsCollection': function() {
-            return new AttachmentsCollection(null, {
-                'id': this.autoProcProgramId
-            })
+        'attachmentsModel': function() {
+            return new AttachmentsModel({ 'id': this.autoProcProgramId })
         },
     },
     'mounted': function() {
@@ -61,10 +59,13 @@ export default {
     },
     'methods': {
         'fetchAttachments': function() {
+            if (!this.autoProcProgramId) {
+                return
+            }
             this.$store.commit('loading', true)
-            this.$store.dispatch('getCollection', this.attachmentsCollection).then(
-                (attachmentsCollection) => {
-                    this.attachments = attachmentsCollection.models
+            this.$store.dispatch('getModel', this.attachmentsModel).then(
+                (attachmentsModel) => {
+                    this.attachments = attachmentsModel.attributes
                     console.log('attachments', this.attachments)
                     this.$store.commit('loading', false)
                 },
