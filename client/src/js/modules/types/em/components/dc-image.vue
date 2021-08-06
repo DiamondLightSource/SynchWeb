@@ -5,26 +5,32 @@
     :title="containerTitle"
     :data-image="image"
   >
-    <a
-      :href="imageUrl"
+    <dialog-image
+      :is-active="showDialog"
       :title="title"
+      :src="src"
+      @cancel="showDialog = false"
+    />
+    <img
+      :alt="title"
+      :style="proportionalHeight"
+      :src="src"
+      :class="imageClass"
+      @click="showDialog = true"
     >
-      <img
-        ref="image"
-        :alt="title"
-        :style="proportionalHeight"
-      >
-    </a>
   </div>
 </template>
 
 <script>
+import DialogImage from 'app/components/dialog-image.vue'
 import proportionalHeight from 'modules/types/em/components/proportional-height'
 import XHRImage from 'utils/xhrimage'
-import 'jquery.mp' // TODO: JQuery!!!
 
 export default {
     'name': "DcImage",
+    'components': {
+        'dialog-image': DialogImage,
+    },
     'mixins': [proportionalHeight],
     'props': {
         'containerClass': {
@@ -43,6 +49,9 @@ export default {
     'data': function() {
         return {
             'xhrImage': new XHRImage(),
+            'src': '',
+            'imageClass': '',
+            'showDialog': false,
         }
     },
     'computed': {
@@ -57,12 +66,10 @@ export default {
         },
     },
     'mounted': function() {
-        const imageTag = this.$refs.image
-        const container = this.$refs.container
+        const vm = this
         this.xhrImage.onload = function() {
-            imageTag.setAttribute('src', this.src)
-            imageTag.classList.add('show')
-            $(container).magnificPopup({ delegate: 'a', type: 'image' })
+            vm.src = this.src
+            vm.imageClass = 'show'
         }
     },
 }
