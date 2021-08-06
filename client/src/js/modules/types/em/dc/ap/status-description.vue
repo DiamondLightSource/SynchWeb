@@ -21,9 +21,9 @@ export default {
     'computed': {
         'icon': function() {
             return {
-                'submitted': 'grey fa-cog fa-spin', // TODO
-                'queued': 'grey fa-cog fa-spin', // TODO
-                'running': 'grey fa-cog fa-spin',
+                'submitted': 'fa-spinner fa-spin',
+                'queued': 'fa-spinner fa-spin',
+                'running': 'fa-cog fa-spin',
                 'failure': 'red fa-times',
                 'success': 'green fa-check',
                 '': 'blue fa-question-circle',
