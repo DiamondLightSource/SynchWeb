@@ -52,24 +52,21 @@ export default {
     },
     'methods': {
         'fetchSummaryModel': function() {
-            const successCallback = (model) => {
-                this.ctfSummaryData = model.attributes
-                console.log('fetched summary CTF data', this.ctfSummaryData)
-                this.$store.commit('loading', false)
+            if (! this.autoProcProgramId) {
+                return
             }
-            const errorCallback = (error) => {
-                console.log(error)
-                this.$store.commit('notifications/addNotification', {
-                    'title': 'Error',
-                    'message': 'Could not retrieve autoprocessing summary',
-                    'level': 'error'
-                })
-                this.$store.commit('loading', false)
-            }
+
             this.$store.commit('loading', true)
             this.$store.dispatch('getModel', this.ctfSummaryModel).then(
-                successCallback,
-                errorCallback
+                (model) => {
+                    this.ctfSummaryData = model.attributes
+                    console.log('fetched summary CTF data', this.ctfSummaryData)
+                    this.$store.commit('loading', false)
+                },
+                (error) => {
+                    console.log('Could not retrieve autoprocessing summary', error)
+                    this.$store.commit('loading', false)
+                }
             )
         },
     },
