@@ -1,31 +1,45 @@
 import Backbone from 'backbone'
 
 const parse = function(response) {
-    var xAxis = []
-    var charts = {
-        'ASTIGMATISM': [],
-        'ESTIMATEDDEFOCUS': [],
-        'ESTIMATEDRESOLUTION': [],
+    const parseSingleChart = function(json) {
+        if (!json) {
+            return ''
+        }
+        const chartData = JSON.parse(json)
+        const layout = chartData.layout
+        return {
+            'layout': {
+                'barmode': layout.barmode,
+                'xaxis': layout.xaxis,
+                'yaxis': layout.yaxis,
+                'margin': { 'l': 50, 'r': 10, 'b': 50, 't': 10 },
+            },
+            'data': chartData.data,
+            'titleText': layout.title.text.split('<br>')[1]
+        }
     }
-    var dataAvailable = false
-    response.forEach(function(row) {
-        xAxis.push(row.MOVIENUMBER)
-        dataAvailable = true
-        Object.keys(charts).forEach(function(chart) {
-            charts[chart].push(row[chart])
-        })
+
+    return response.map(function(attachment) {
+        const fileName = attachment.FILE
+        const json = attachment.JSON
+        return {
+            'id': attachment.ID,
+            'timeStamp': attachment.RECORDTIMESTAMP,
+            'fileName': fileName,
+            'extension': fileName.split('.').pop(),
+            'fileType': attachment.FILETYPE,
+            'chartData': json ? parseSingleChart(json) : null,
+        }
     })
-    return {
-        'available': dataAvailable,
-        'xAxis': xAxis,
-        'astigmatism': charts.ASTIGMATISM,
-        'estimatedFocus': charts.ESTIMATEDDEFOCUS,
-        'estimatedResolution': charts.ESTIMATEDRESOLUTION,
-    }
 }
 
 export default {
     'namespaced': true,
+    'mutations': {
+        fetched(state, response) {
+
+        },
+    },
     'actions': {
         fetch(context, autoProcProgramId) {
             const store = this
@@ -34,7 +48,7 @@ export default {
                 Backbone.ajax({
                     'type': 'GET',
                     'url': store.state.apiUrl +
-                        '/em/ctf/summary/' + autoProcProgramId,
+                        '/em/attachments/' + autoProcProgramId,
                     'success': function (
                         response,
                         status, // eslint-disable-line no-unused-vars
@@ -45,7 +59,7 @@ export default {
                         // open at any one time.
                         const parsed = parse(response)
                         store.commit('loading', false)
-                        console.log('fetched CTF summary data', parsed)
+                        console.log('Ice Breaker processing attachments', parsed)
                         resolve(parsed)
                     },
                     'error': function(
@@ -56,7 +70,7 @@ export default {
                         store.commit('loading', false)
                         reject(response.responseJSON || {
                             'status': 400,
-                            'message': 'Error fetching summary CTF data',
+                            'message': 'Error fetching Ice Breaker attachments',
                         })
                     },
                 })
