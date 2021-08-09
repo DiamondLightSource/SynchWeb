@@ -1,29 +1,61 @@
 <template>
-  <chart
-    :options="chartOptions"
-    :plot-data="plotData"
+  <plotly-dialog
+    :is-active="isActive"
+    :layout="layout"
+    :chart-data="chartData"
+    :title="title"
     width="30%"
   />
 </template>
 
 <script>
-import summaryOptions from 'modules/types/em/dc/ap/summary-charts/chart-options'
-import Chart from 'modules/types/em/components/chart.vue'
+import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 
 export default {
     'name': "SummaryChart",
     'components': {
-        'chart': Chart,
+        'plotly-dialog': PlotlyDialog,
     },
     'props': {
-        'plotData': {
-            'type': String,
+        'xAxis': {
+            'type': Array,
             'required': true,
         },
+        'yAxis': {
+            'type': Array,
+            'required': true,
+        },
+        'title': {
+            'type': String,
+            'required': true,
+        }
     },
-    'data': function() {
-        return {
-            'chartOptions': summaryOptions,
+    'computed': {
+        'isActive': function() {
+            return this.xAxis.length > 0 &&
+              this.yAxis.length == this.xAxis.length
+        },
+        'layout': function () {
+            return {
+                'xaxis': {
+                    'autotick': false,
+                    'tick0': 0,
+                    'dtick': this.xAxis.length / 10,
+                },
+                'margin': {
+                    't': 10,
+                    'l': 30,
+                    'r': 20,
+                    'b': 20,
+                },
+            }
+        },
+        'chartData': function() {
+            return [{
+                'x': this.xAxis,
+                'y': this.yAxis,
+                'type': 'bar',
+            }]
         }
     },
 }
