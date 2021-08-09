@@ -57,12 +57,16 @@ export default {
         },
         'showChart': function() {
             this.destroyChart()
-            Plotly.newPlot(
-                this.$el,
-                this.chartData,
-                this.layout,
-                this.static ? { 'staticPlot': true } : {}
-            );
+            const options = this.static ? {
+                'staticPlot': true,
+            } : {
+                'displaylogo': false,
+
+                // displayModebar is handy when trying to debug Plotly
+                // modebar issues!
+                // 'displayModeBar': true,
+            }
+            Plotly.newPlot(this.$el, this.chartData, this.layout, options);
         },
         'click': function() {
             if (this.static) {
@@ -73,8 +77,16 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .plotly-chart {
     background: #dadada;
+}
+</style>
+
+<style>
+/* Override the setting of the background colour of .active in
+   src/css/partials/_utility.scss @ line 64 */
+.modebar-group .active {
+    background: none;
 }
 </style>
