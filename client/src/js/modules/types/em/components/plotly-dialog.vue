@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="previewStyle">
     <dialog-modal
       :is-active="showDialog"
       :title="title"
@@ -18,7 +18,6 @@
     <plotly-chart
       class="main-screen-preview"
       static
-      :style="proportionalHeight"
       :title="title"
       :layout="layout"
       :chart-data="chartData"
@@ -56,6 +55,10 @@ export default {
             'type': String,
             'required': true,
         },
+        'width': {
+            'type': String,
+            'default': '400px'
+        },
     },
     'data': function () {
         return {
@@ -63,6 +66,9 @@ export default {
         }
     },
     'computed': {
+        'previewStyle': function() {
+            return this.proportionalHeight + ' width: ' + this.width
+        },
         'bigChartStyle': function() {
             const width = window.innerWidth
             const height = window.innerHeight
@@ -77,7 +83,8 @@ export default {
 <style>
 .main-screen-preview {
     overflow: hidden;
-    width: 400px;
     border-radius: 6px;
+    width: 100%;
+    height: 100%;
 }
 </style>
