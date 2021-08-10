@@ -1,57 +1,43 @@
 <template>
   <section>
-    <h1 class="job-heading">
-      <div class="column">
-        Processing Job: {{ processingJobId }}
-      </div>
-      <div class="column">
-        AutoProc Program: {{ autoProcProgramId ? autoProcProgramId : 'NONE' }}
-      </div>
-      <div class="column process-time">
-        Processing Start: {{ startTime }}
-      </div>
-      <div class="column process-time">
-        Processing End: {{ endTime }}
-      </div>
-      <div class="last-column">
-        <status-description :status="status" />
-        <div class="buttons">
-          <hide-button v-model="hidden" />
-        </div>
-      </div>
-    </h1>
+    <job-header
+      :processing-job-id="processingJobId"
+      :auto-proc-program-id="autoProcProgramId"
+      :start-time="job.PROCESSINGSTARTTIME"
+      :end-time="job.PROCESSINGENDTIME"
+      :status="job.PROCESSINGSTATUSDESCRIPTION"
+      @hide="hide"
+    />
 
     <div
-      ref="processing"
       class="processing"
+      v-if="!hidden"
     >
-      <template v-if="!hidden">
-        <summary-charts
-          :auto-proc-program-id="autoProcProgramId"
-        />
+      <summary-charts
+        :auto-proc-program-id="autoProcProgramId"
+      />
 
-        <job-parameters
-          :processing-job-id="processingJobId"
-        />
+      <job-parameters
+        :processing-job-id="processingJobId"
+      />
 
-        <motion-correction
-          :auto-proc-program-id="autoProcProgramId"
-          :movie-count="mcMovieCount"
-        />
+      <motion-correction
+        :auto-proc-program-id="autoProcProgramId"
+        :movie-count="mcMovieCount"
+      />
 
-        <ctf-estimation
-          :auto-proc-program-id="autoProcProgramId"
-          :movie-count="ctfMovieCount"
-        />
+      <ctf-estimation
+        :auto-proc-program-id="autoProcProgramId"
+        :movie-count="ctfMovieCount"
+      />
 
-        <ice-breaker
-          :auto-proc-program-id="autoProcProgramId"
-        />
+      <ice-breaker
+        :auto-proc-program-id="autoProcProgramId"
+      />
 
-        <auto-picker
-          :auto-proc-program-id="autoProcProgramId"
-        />
-      </template>
+      <auto-picker
+        :auto-proc-program-id="autoProcProgramId"
+      />
     </div>
   </section>
 </template>
@@ -59,11 +45,10 @@
 <script>
 import AutoPicker from 'modules/types/em/cryolo/auto-picker.vue'
 import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
-import HideButton from 'modules/types/em/components/hide-button.vue'
 import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
+import JobHeader from 'modules/types/em/autoproc/job-header.vue'
 import JobParameters from 'modules/types/em/job-parameters/job-parameters.vue'
 import MotionCorrection from 'modules/types/em/mc/motion-correction.vue'
-import StatusDescription from 'modules/types/em/autoproc/status-description.vue'
 import SummaryCharts from 'modules/types/em/ctf-summary/summary-charts.vue'
 
 export default {
@@ -71,11 +56,10 @@ export default {
     'components': {
         'auto-picker': AutoPicker,
         'ctf-estimation': CtfEstimation,
-        'hide-button': HideButton,
         'ice-breaker': IceBreaker,
+        'job-header': JobHeader,
         'job-parameters': JobParameters,
         'motion-correction': MotionCorrection,
-        'status-description': StatusDescription,
         'summary-charts': SummaryCharts,
     },
     'props': {
@@ -87,8 +71,6 @@ export default {
     'data': function() {
         return {
             'hidden': true,
-            'lengthMc': 0,
-            'lengthCtf': 0,
         }
     },
     'computed': {
@@ -116,36 +98,17 @@ export default {
             return this.job.PROCESSINGSTATUSDESCRIPTION
         },
     },
+    'methods': {
+        'hide': function(hidden) {
+            this.hidden = hidden
+        }
+    }
 }
 </script>
 
 <style scoped>
-.job-heading {
-    cursor: pointer;
-    background: #afafaf;
-    padding: 8px;
-    font-size: 12px;
-    margin-top: 2px;
-    display: flex;
-    justify-content: space-between;
-}
-.column {
-    width: 21%;
-}
-.last-column {
-    width: 16%;
-    display: flex;
-    justify-content: space-between;
-}
-.process-time {
-    font-weight: bold;
-}
 .processing {
     background: #ffffff;
     overflow: auto;
-}
-.buttons {
-    display: flex;
-    justify-content: flex-end;
 }
 </style>
