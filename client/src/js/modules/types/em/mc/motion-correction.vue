@@ -43,12 +43,11 @@
 
 <script>
 import DcImage from 'modules/types/em/components/dc-image.vue'
-import Drift from 'modules/types/em/dc/ap/mc/drift.vue'
+import Drift from 'modules/types/em/mc/drift.vue'
 import LogView from 'views/log' // TODO: needs fixing or scrapping ?
-import MarionetteApplication from 'app/marionette-application.js'
 import MotionCorrectionModel from 'modules/types/em/models/motioncorrection'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
-import Params from 'modules/types/em/dc/ap/mc/params.vue'
+import Params from 'modules/types/em/mc/params.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 import utils from 'utils'
 
@@ -168,13 +167,6 @@ export default {
                 'url': url,
                 'callback': function(response) {
                     const signedUrl = url + '?token=' + response.token
-                    // TODO: Dialog broken!
-                    MarionetteApplication.getInstance().dialog.show(
-                        new LogView({
-                            'title': 'Motion Correction Log File',
-                            'url': signedUrl,
-                        })
-                    )
                 },
             })
         },
