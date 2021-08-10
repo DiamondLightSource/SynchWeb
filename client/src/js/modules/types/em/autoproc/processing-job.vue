@@ -10,8 +10,8 @@
     />
 
     <div
-      class="processing"
       v-if="!hidden"
+      class="processing"
     >
       <summary-charts
         :auto-proc-program-id="autoProcProgramId"
