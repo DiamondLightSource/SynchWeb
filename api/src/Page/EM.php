@@ -1272,7 +1272,7 @@ class EM extends Page
     {
         $rows = $this->db->pq(
             'SELECT
-                UNIX_TIMESTAMP(Movie.createdTimeStamp) as time,
+                Movie.movieNumber,
                 CTF.astigmatism,
                 CTF.estimatedResolution,
                 CTF.estimatedDefocus
