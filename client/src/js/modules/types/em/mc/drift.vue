@@ -1,19 +1,21 @@
 <template>
-  <chart
-    :options="chartOptions"
-    :plot-data="chartData"
+  <plotly-dialog
+    v-if="points > 0"
+    :layout="layout"
+    :chart-data="chartData"
+    title="Drift"
+    width="400px"
   />
 </template>
 
 <script>
-import Chart from 'modules/types/em/components/chart.vue'
-import DriftModel from 'modules/types/em/models/drift'
-import driftOptions from 'modules/types/em/mc/drift-options'
+import DriftViewModel from 'modules/types/em/mc/drift-view-model.js'
+import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 
 export default {
     'name': "Drift",
     'components': {
-        'chart': Chart,
+        'plotly-dialog': PlotlyDialog,
     },
     'props': {
         'autoProcProgramId' : {
@@ -26,53 +28,38 @@ export default {
         },
     },
     'data': function() {
-        return {
-            'chartOptions': driftOptions,
-            'chartData': '',
-        }
+        return DriftViewModel.defaultData()
     },
     'computed': {
-        'driftModel': function() {
-            return new DriftModel({ 'id': this.autoProcProgramId })
+        'layout': function() {
+            return JSON.stringify({
+                'margin': { 't': 10, 'l': 30, 'r': 20, 'b': 20 },
+                'xaxis': { 'range': [-20, 20] },
+                'yaxis': { 'range': [-20, 20] },
+            })
         },
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
         'movieNumber': function(newValue, oldValue) {
-            this.updateAndPlot();
+            this.fetch();
         },
     },
     'mounted': function () {
-        this.updateAndPlot();
-    },
-    'beforeUnmount': function () {
-        this.driftModel.stop()
+        this.fetch();
     },
     'methods': {
-        'updateAndPlot': function() {
-            const vm = this
-            const successCallback = function (
-                model,
-                response, // eslint-disable-line no-unused-vars
-                options // eslint-disable-line no-unused-vars
-            ) {
-                vm.chartData = model.attributes.drift
-                vm.$store.commit('loading', false)
-            }
-            const errorCallback = function (
-                model, // eslint-disable-line no-unused-vars
-                response,
-                options // eslint-disable-line no-unused-vars
-            ) {
-                console.log('drift error', response)
-                vm.$store.commit('loading', false)
-            }
-            vm.$store.commit('loading', true)
-            this.driftModel.fetch({
-                'data': { 'IMAGENUMBER': this.movieNumber },
-                'success': successCallback,
-                'error': errorCallback,
-            })
+        'fetch': function() {
+            DriftViewModel.fetch(
+                this.$store,
+                this.autoProcProgramId,
+                this.movieNumber
+            ).then(
+                (state) => {
+                    this.chartData = state.chartData
+                    this.points = state.points
+                }
+            )
         },
     },
 }

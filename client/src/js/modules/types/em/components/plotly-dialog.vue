@@ -46,10 +46,6 @@ export default {
     },
     'mixins': [proportionalHeight],
     'props': {
-        'isActive': {
-            'type': Boolean,
-            'default': false,
-        },
         'layout': {
             // A JSON string of an object
             // This is JSON to prevent Vue "polluting" it with observers

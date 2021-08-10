@@ -5,7 +5,6 @@
     not-available-message="No CTF data available"
   >
     <plotly-dialog
-      :is-active="isActive"
       :layout="layout"
       :chart-data="state.astigmatism"
       title="Astigmatism"
@@ -13,7 +12,6 @@
     />
 
     <plotly-dialog
-      :is-active="isActive"
       :layout="layout"
       :chart-data="state.estimatedFocus"
       title="Estimated Focus"
@@ -21,7 +19,6 @@
     />
 
     <plotly-dialog
-      :is-active="isActive"
       :layout="layout"
       :chart-data="state.estimatedResolution"
       title="Estimated Resolution"

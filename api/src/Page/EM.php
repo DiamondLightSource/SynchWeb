@@ -1099,26 +1099,27 @@ class EM extends Page
 
     function _mc_drift_plot()
     {
-        $im = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
 
         $rows = $this->db->pq(
-            "SELECT
-                mcd.deltax, mcd.deltay
+            "SELECT mcd.deltax, mcd.deltay
             FROM motioncorrectiondrift mcd
             INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
             INNER JOIN movie m ON m.movieid = mc.movieid
             INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
             WHERE mc.autoProcProgramId = :1 AND m.movienumber = :2
             ORDER BY mcd.framenumber",
-            array($this->arg('id'), $im)
+            array(
+                $this->arg('id'),
+                $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1
+            )
         );
-
-        $data = array();
+        $xAxis = array();
+        $yAxis = array();
         foreach ($rows as $r) {
-            array_push($data, array($r['DELTAX'], $r['DELTAY']));
+            array_push($xAxis, $r['DELTAX']);
+            array_push($yAxis, $r['DELTAY']);
         }
-
-        $this->_output($data);
+        $this->_output(array('xAxis' => $xAxis, 'yAxis' => $yAxis));
     }
 
     function _mc_drift_histogram()
