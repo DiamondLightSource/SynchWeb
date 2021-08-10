@@ -1,22 +1,22 @@
 <template>
   <processing-section
     section-title="Summary"
-    :data-available="available"
+    :data-available="state.available"
     not-available-message="No CTF data available"
   >
     <summary-chart
-      :x-axis="xAxis"
-      :y-axis="astigmatism"
+      :x-axis="state.xAxis"
+      :y-axis="state.astigmatism"
       title="Astigmatism"
     />
     <summary-chart
-      :x-axis="xAxis"
-      :y-axis="estimatedFocus"
+      :x-axis="state.xAxis"
+      :y-axis="state.estimatedFocus"
       title="Estimated Focus"
     />
     <summary-chart
-      :x-axis="xAxis"
-      :y-axis="estimatedResolution"
+      :x-axis="state.xAxis"
+      :y-axis="state.estimatedResolution"
       title="Estimated Resolution"
     />
   </processing-section>
@@ -25,7 +25,7 @@
 <script>
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 import SummaryChart from 'modules/types/em/dc/ap/summary-charts/summary-chart.vue'
-import StoreModule from 'modules/types/em/dc/ap/summary-charts/store-module.js'
+import ViewModel from 'modules/types/em/dc/ap/summary-charts/view-model.js'
 
 export default {
     'name': 'ProcessingSummary',
@@ -41,47 +41,20 @@ export default {
     },
     'data': function() {
         return {
-            'available': false,
-            'xAxis': [],
-            'astigmatism': [],
-            'estimatedFocus': [],
-            'estimatedResolution': [],
-        }
-    },
-    'beforeCreate': function() {
-        if (! this.$store.hasModule('ctfSummary')) {
-            this.$store.registerModule('ctfSummary', StoreModule);
+            'state': ViewModel.defaultData(),
         }
     },
     'mounted': function() {
         this.fetchData()
     },
-    'beforeDestroy': function() {
-        this.$store.unregisterModule('ctfSummary')
-    },
     'methods': {
         'fetchData': function() {
+            // If this job has not yet run, autoProcProgramId "doesn't exist"
             if (! this.autoProcProgramId) {
                 return
             }
-            this.$store.dispatch(
-                'ctfSummary/fetch',
-                this.autoProcProgramId
-            ).then (
-                (ctfSummary) => {
-                    this.available = ctfSummary.available
-                    this.xAxis = ctfSummary.xAxis
-                    this.astigmatism = ctfSummary.astigmatism
-                    this.estimatedFocus = ctfSummary.estimatedFocus
-                    this.estimatedResolution = ctfSummary.estimatedResolution
-                },
-                () => {
-                    this.available = false
-                    this.xAxis = []
-                    this.astigmatism = []
-                    this.estimatedFocus = []
-                    this.estimatedResolution = []
-                }
+            ViewModel.fetch(this.$store, this.autoProcProgramId).then(
+                (ctfSummary) => { this.state = ctfSummary }
             )
         },
     },

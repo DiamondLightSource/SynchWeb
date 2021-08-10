@@ -30,7 +30,7 @@ import Download from 'modules/types/em/dc/ap/ice/download.vue'
 import ParameterList from '../../../components/parameter-list.vue'
 import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import StoreModule from 'modules/types/em/dc/ap/ice/store-module.js'
+import ViewModel from 'modules/types/em/dc/ap/ice/view-model.js'
 
 export default {
     'name': "IceBreaker",
@@ -47,36 +47,19 @@ export default {
         },
     },
     'data': function() {
-        return {
-            'attachments': [],
-        }
-    },
-    'beforeCreate': function() {
-        if (! this.$store.hasModule('iceBreaker')) {
-            this.$store.registerModule('iceBreaker', StoreModule);
-        }
+        return ViewModel.defaultData()
     },
     'mounted': function() {
         this.fetchData()
     },
-    'beforeDestroy': function() {
-        this.$store.unregisterModule('iceBreaker')
-    },
     'methods': {
         'fetchData': function() {
+            // If this job has not yet run, autoProcProgramId "doesn't exist"
             if (!this.autoProcProgramId) {
                 return
             }
-            this.$store.dispatch(
-                'iceBreaker/fetch',
-                this.autoProcProgramId
-            ).then (
-                (attachments) => {
-                    this.attachments = attachments
-                },
-                () => {
-                    this.attachments = []
-                },
+            ViewModel.fetch(this.$store, this.autoProcProgramId).then(
+                (attachments) => { this.attachments = attachments }
             )
         },
     },

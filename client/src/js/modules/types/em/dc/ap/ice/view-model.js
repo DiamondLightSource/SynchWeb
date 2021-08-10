@@ -1,6 +1,6 @@
-import Backbone from 'backbone'
+import baseViewModel from 'modules/types/em/components/view-model'
 
-const parse = function(response) {
+const middleware = function(response) {
     const parseSingleChart = function(json) {
         if (!json) {
             return ''
@@ -34,47 +34,15 @@ const parse = function(response) {
 }
 
 export default {
-    'namespaced': true,
-    'mutations': {
-        fetched(state, response) {
-
-        },
+    'fetch': function(store, autoProcProgramId) {
+        return baseViewModel(
+            store,
+            '/em/attachments/' + autoProcProgramId,
+            'Ice Breaker attachments',
+            middleware
+        )
     },
-    'actions': {
-        fetch(context, autoProcProgramId) {
-            const store = this
-            store.commit('loading', true)
-            return new Promise((resolve, reject) => {
-                Backbone.ajax({
-                    'type': 'GET',
-                    'url': store.state.apiUrl +
-                        '/em/attachments/' + autoProcProgramId,
-                    'success': function (
-                        response,
-                        status, // eslint-disable-line no-unused-vars
-                        xhr // eslint-disable-line no-unused-vars
-                    ) {
-                        // we can't have this stored in a state in VueX
-                        // because there may be multiple processing jobs
-                        // open at any one time.
-                        const parsed = parse(response)
-                        store.commit('loading', false)
-                        console.log('Ice Breaker processing attachments', parsed)
-                        resolve(parsed)
-                    },
-                    'error': function(
-                        model, // eslint-disable-line no-unused-vars
-                        response,
-                        options // eslint-disable-line no-unused-vars
-                    ) {
-                        store.commit('loading', false)
-                        reject(response.responseJSON || {
-                            'status': 400,
-                            'message': 'Error fetching Ice Breaker attachments',
-                        })
-                    },
-                })
-            })
-        },
+    'defaultData': function() {
+        return { 'attachments': [] }
     },
 }
