@@ -27,6 +27,13 @@
 </template>
 
 <script>
+////////////////////////////////////////////////////////////////////
+//
+// A simple static plotly chart that can be clicked on to open up a
+// nearly full screen interactive version in a modal dialog
+//
+////////////////////////////////////////////////////////////////////
+
 import DialogModal from 'app/components/dialog-modal.vue'
 import PlotlyChart from 'app/components/plotly-chart.vue'
 import proportionalHeight from 'modules/types/em/components/proportional-height'
@@ -44,11 +51,15 @@ export default {
             'default': false,
         },
         'layout': {
-            'type': Object,
+            // A JSON string of an object
+            // This is JSON to prevent Vue "polluting" it with observers
+            'type': String,
             'required': true,
         },
         'chartData': {
-            'type': Array,
+            // A JSON string of an array
+            // This is JSON to prevent Vue "polluting" it with observers
+            'type': String,
             'required': true,
         },
         'title': {

@@ -7,14 +7,18 @@ const middleware = function(response) {
         }
         const chartData = JSON.parse(json)
         const layout = chartData.layout
+        // layout and data elements for plotly charts are passed between
+        // components as JSON... If left as plain objects or arrays, Vue will
+        // "pollute" them with observers... and when we're looking at arrays
+        // with thousands of elements that has a huge impact
         return {
-            'layout': {
+            'layout': JSON.stringify({
                 'barmode': layout.barmode,
                 'xaxis': layout.xaxis,
                 'yaxis': layout.yaxis,
                 'margin': { 'l': 50, 'r': 10, 'b': 50, 't': 10 },
-            },
-            'data': chartData.data,
+            }),
+            'data': JSON.stringify(chartData.data),
             'titleText': layout.title.text.split('<br>')[1]
         }
     }

@@ -1,15 +1,10 @@
 import baseViewModel from 'modules/types/em/components/view-model'
 
 const buildModel = function(
-    available,
-    xAxis,
-    astigmatism,
-    estimatedFocus,
-    estimatedResolution
+    points, astigmatism, estimatedFocus, estimatedResolution
 ) {
     return {
-        'available': available,
-        'xAxis': xAxis,
+        'points': points,
         'astigmatism': astigmatism,
         'estimatedFocus': estimatedFocus,
         'estimatedResolution': estimatedResolution,
@@ -18,25 +13,27 @@ const buildModel = function(
 
 const middleware = function(response) {
     var xAxis = []
-    var charts = {
+    var yAxes = {
         'ASTIGMATISM': [],
         'ESTIMATEDDEFOCUS': [],
         'ESTIMATEDRESOLUTION': [],
     }
-    var dataAvailable = false
+    const chartData = function (key) {
+        return JSON.stringify([{ 'x': xAxis, 'y': yAxes[key], 'type': 'bar' }])
+    }
+
     response.forEach(function(row) {
         xAxis.push(row.MOVIENUMBER)
-        dataAvailable = true
-        Object.keys(charts).forEach(function(chart) {
-            charts[chart].push(row[chart])
+        Object.keys(yAxes).forEach(function(chart) {
+            yAxes[chart].push(row[chart])
         })
     })
+
     return buildModel(
-        dataAvailable,
-        xAxis,
-        charts.ASTIGMATISM,
-        charts.ESTIMATEDDEFOCUS,
-        charts.ESTIMATEDRESOLUTION
+        response.length,
+        chartData('ASTIGMATISM'),
+        chartData('ESTIMATEDDEFOCUS'),
+        chartData('ESTIMATEDRESOLUTION')
     )
 }
 
@@ -50,6 +47,6 @@ export default {
         )
     },
     'defaultData': function() {
-        return buildModel(false, [], [], [], [])
+        return buildModel(0, '', '', '')
     },
 }

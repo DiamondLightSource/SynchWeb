@@ -13,11 +13,15 @@ export default {
     'name': "PlotlyChart",
     'props': {
         'layout': {
-            'type': Object,
+            // A JSON string of an object
+            // This is JSON to prevent Vue "polluting" it with observers
+            'type': String,
             'required': true,
         },
         'chartData': {
-            'type': Array,
+            // A JSON string of an array
+            // This is JSON to prevent Vue "polluting" it with observers
+            'type': String,
             'required': true,
         },
         'title': {
@@ -25,6 +29,7 @@ export default {
             'required': true,
         },
         'static': {
+            // Set to true if the chart is NOT interactive
             'type': Boolean,
             'default': false,
         }
@@ -61,12 +66,16 @@ export default {
                 'staticPlot': true,
             } : {
                 'displaylogo': false,
-
                 // displayModebar is handy when trying to debug Plotly
                 // modebar issues!
                 // 'displayModeBar': true,
             }
-            Plotly.newPlot(this.$el, this.chartData, this.layout, options);
+            Plotly.newPlot(
+                this.$el,
+                JSON.parse(this.chartData),
+                JSON.parse(this.layout),
+                options
+            );
         },
         'click': function() {
             if (this.static) {
