@@ -6,9 +6,9 @@
 </template>
 
 <script>
-import DriftModel from 'modules/types/em/models/drift'
-import driftOptions from 'modules/types/em/dc/ap/mc/drift-options'
 import Chart from 'modules/types/em/components/chart.vue'
+import DriftModel from 'modules/types/em/models/drift'
+import driftOptions from 'modules/types/em/mc/drift-options'
 
 export default {
     'name': "Drift",

@@ -56,7 +56,7 @@
 <script>
 import formatsUnits from 'modules/types/em/components/formats-units'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
-import ParameterList from '../../../components/parameter-list.vue'
+import ParameterList from 'modules/types/em/components/parameter-list.vue'
 
 export default {
     'name': "Params",

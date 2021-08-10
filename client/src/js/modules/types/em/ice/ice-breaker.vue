@@ -26,11 +26,11 @@
 </template>
 
 <script>
-import Download from 'modules/types/em/dc/ap/ice/download.vue'
-import ParameterList from '../../../components/parameter-list.vue'
+import Download from 'modules/types/em/ice/download.vue'
+import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import ViewModel from 'modules/types/em/dc/ap/ice/view-model.js'
+import ViewModel from 'modules/types/em/ice/view-model.js'
 
 export default {
     'name': "IceBreaker",

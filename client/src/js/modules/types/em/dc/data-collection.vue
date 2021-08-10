@@ -31,13 +31,13 @@
 
 <script>
 import AllCollectionsLink from 'modules/types/em/dc/all-collections-link.vue'
-import ProcessingJobsCollection from 'modules/types/em/collections/processingjobs'
 import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
 import DataCollectionModel from 'models/datacollection.js'
 import DataCollectionToolbar from 'modules/types/em/dc/dc-toolbar.vue'
 import DialogBox from 'app/components/dialogbox.vue'
 import EventBus from 'app/components/utils/event-bus.js'
-import ProcessingJob from 'modules/types/em/dc/ap/processing-job.vue'
+import ProcessingJob from 'modules/types/em/autoproc/processing-job.vue'
+import ProcessingJobsCollection from 'modules/types/em/collections/processingjobs'
 
 export default {
     'name': 'EmDcList',

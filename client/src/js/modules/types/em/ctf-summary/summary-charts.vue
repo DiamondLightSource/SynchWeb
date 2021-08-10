@@ -24,8 +24,8 @@
 
 <script>
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import SummaryChart from 'modules/types/em/dc/ap/summary-charts/summary-chart.vue'
-import ViewModel from 'modules/types/em/dc/ap/summary-charts/view-model.js'
+import SummaryChart from 'modules/types/em/ctf-summary/summary-chart.vue'
+import ViewModel from 'modules/types/em/ctf-summary/view-model.js'
 
 export default {
     'name': 'ProcessingSummary',

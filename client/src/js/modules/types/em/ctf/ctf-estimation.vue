@@ -36,7 +36,7 @@ import DcImage from 'modules/types/em/components/dc-image.vue'
 import LogView from 'views/log'
 import MarionetteApplication from 'app/marionette-application.js'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
-import Params from 'modules/types/em/dc/ap/ctf/params.vue'
+import Params from 'modules/types/em/ctf/params.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 import utils from 'utils'
 

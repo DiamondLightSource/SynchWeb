@@ -57,14 +57,14 @@
 </template>
 
 <script>
-import AutoPicker from 'modules/types/em/dc/ap/cryolo/auto-picker.vue'
-import CtfEstimation from 'modules/types/em/dc/ap/ctf/ctf-estimation.vue'
+import AutoPicker from 'modules/types/em/cryolo/auto-picker.vue'
+import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
 import HideButton from 'modules/types/em/components/hide-button.vue'
-import IceBreaker from 'modules/types/em/dc/ap/ice/ice-breaker.vue'
-import JobParameters from 'modules/types/em/dc/ap/parameters/job-parameters.vue'
-import MotionCorrection from 'modules/types/em/dc/ap/mc/motion-correction.vue'
-import StatusDescription from 'modules/types/em/dc/ap/status-description.vue'
-import SummaryCharts from 'modules/types/em/dc/ap/summary-charts/summary-charts.vue'
+import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
+import JobParameters from 'modules/types/em/ap-parameters/job-parameters.vue'
+import MotionCorrection from 'modules/types/em/mc/motion-correction.vue'
+import StatusDescription from 'modules/types/em/autoproc/status-description.vue'
+import SummaryCharts from 'modules/types/em/ctf-summary/summary-charts.vue'
 
 export default {
     'name': 'ProcessingJob',
