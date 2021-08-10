@@ -18,6 +18,23 @@
       <div class="body">
         <slot name="contents" />
       </div>
+
+      <footer class="footer">
+        <button
+          v-if="confirmLabel"
+          class="confirm dialog-button"
+          @click="$emit('confirm')"
+        >
+          {{ confirmLabel }}
+        </button>
+        <button
+          v-if="cancelLabel"
+          class="cancel dialog-button"
+          @click="$emit('cancel')"
+        >
+          {{ cancelLabel }}
+        </button>
+      </footer>
     </div>
   </div>
 </template>
@@ -46,7 +63,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .background {
     /* needs a z-index to place it above div.form span.ferror which has
        position: relative; */
@@ -71,7 +88,8 @@ export default {
     border-radius: 0.5rem;
     background-color: #fff;
 }
-.header {
+.header,
+.footer {
     display: flex;
     justify-content: space-between;
 }
@@ -80,5 +98,20 @@ export default {
 }
 .body {
     padding: 10px;
+}
+.dialog-button {
+    width: 50%;
+    color: #fff;
+    padding: 5px;
+    margin: 8px;
+    border-radius: 5px;
+    background-color: #4a5568;
+    cursor: pointer;
+}
+.confirm:hover {
+    background-color: #48bb78;
+}
+.cancel:hover {
+    background-color: #f56565;
 }
 </style>
