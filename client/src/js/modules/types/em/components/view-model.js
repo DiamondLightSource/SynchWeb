@@ -46,11 +46,11 @@ export default function (store, url, humanName, middleware) {
                 resolve(handleResult(response))
             },
             'error': function(
-                model, // eslint-disable-line no-unused-vars
-                response,
+                model,
+                response, // eslint-disable-line no-unused-vars
                 options // eslint-disable-line no-unused-vars
             ) {
-                handleError(response)
+                handleError(JSON.parse(model.responseText).message)
                 reject()
             }
         })
