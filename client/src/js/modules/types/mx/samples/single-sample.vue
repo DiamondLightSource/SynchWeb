@@ -103,7 +103,7 @@
         :vid="`sample-group-${inputValue[sampleLocation]['BLSAMPLEGROUPID']}`"
         v-slot="{ errors }">
         <base-input-select
-          :options="anomalousOptionsList"
+          :options="sampleGroups"
           optionValueKey="value"
           optionTextKey="text"
           inputClass="tw-w-48 tw-h-8"

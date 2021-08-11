@@ -51,7 +51,14 @@
         </div>
       </div>
     </div>
-    <div class="tw-flex tw-w-full" v-for="(sample, sampleIndex) in inputValue" :key="sampleIndex">
+    <div
+      class="tw-flex tw-w-full"
+      :class="{
+        'tw-bg-table-body-background': sampleIndex % 2 == 0,
+        'tw-bg-table-body-background-odd': sampleIndex % 2 == 1
+      }"
+      v-for="(sample, sampleIndex) in inputValue"
+      :key="sampleIndex">
       <div class="location-column tw-text-center tw-py-1">{{ sample.LOCATION || sampleIndex + 1 }}</div>
 
       <validation-provider
@@ -76,7 +83,7 @@
             <span><i class="fa fa-check green"></i></span> {{ option['text'] }}
           </template>
         </combo-box>
-        <div v-else>{{ selectDataValue(proteinsOptionsList, sample, 'PROTEINID') }}</div>
+        <div v-else class="tw-text-center">{{ selectDataValue(proteinsOptionsList, sample, 'PROTEINID') }}</div>
         <span>{{ errors[0] }}</span>
       </validation-provider>
 
@@ -94,7 +101,7 @@
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
-        <p v-else>{{ sample['NAME'] }}</p>
+        <p v-else class="tw-text-center">{{ sample['NAME'] }}</p>
       </validation-provider>
 
       <validation-provider
@@ -106,14 +113,14 @@
         v-slot="{ errors }">
         <base-input-select
           v-if="displayInputForm(sample)"
-          :options="anomalousOptionsList"
+          :options="sampleGroups"
           optionValueKey="value"
           optionTextKey="text"
           inputClass="tw-w-full tw-h-8"
           v-model="sample['BLSAMPLEGROUPID']"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           :errorMessage="errors[0]"/>
-          <p v-else>{{ selectDataValue(proteinsOptionsList, sample, 'BLSAMPLEGROUPID') }}</p>
+          <p v-else class="tw-text-center">{{ findSampleGroupsBySample(sample['PROTEINID']) }}</p>
       </validation-provider>
 
       <tabbed-columns
@@ -127,11 +134,12 @@
         :selectedCenteringMode="{}"
         :sampleIndex="sampleIndex"
         @input="handleFieldChange"
+        :containerId="containerId"
       />
 
       <div class="actions-column tw-py-1 tw-text-right">
         <span v-if="containerId">
-          <a class="button" href="" v-if="editingRow != sample['LOCATION']" @click.prevent="editRow(sample)"><i class="fa fa-edit"></i></a>
+          <router-link class="button" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
         </span>
         <span v-else>
           <a class="button tw-mx-1" href="" @click.prevent="$emit('clone-sample', sample['LOCATION'])"><i class="fa fa-plus"></i></a>
@@ -269,7 +277,6 @@ export default {
         unattended: this.udcColumns
       }
 
-
       return [...this.requiredColumns, ...columnsMap[this.currentTab]]
     },
     dynamicColumns() {
@@ -318,6 +325,19 @@ export default {
     },
     displayInputForm(row) {
       return !this.containerId || Number(this.editingRow) === Number(row.LOCATION)
+    },
+    findSampleGroupsBySample(proteinId) {
+      return this.sampleGroups.reduce((acc, curr) => {
+        const hasSample = curr.MEMBERS.toJSON().find(member => Number(member.PROTEINID) === Number(proteinId))
+
+        if (hasSample && curr.toJSON().NAME) {
+          acc += `${curr.toJSON().NAME}, `
+        } else {
+          acc += `${curr.toJSON().BLSAMPLEGROUPID}, `
+        }
+
+        return acc
+      }, '')
     }
   },
   watch: {
