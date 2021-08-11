@@ -15,13 +15,13 @@
     <search
       class="srch clearfix"
       :collection="collection"
-      :value="searchValue"
+      :value="params.search"
       :url="searchUrl"
     />
 
     <pagination
       class="page_wrap"
-      :total-records="dataCollectionsLength"
+      :total-records="collection.state.totalRecords"
       :initial-page="1"
       :page-links="3"
       @page-changed="pageChanged"
@@ -34,13 +34,6 @@
         @row-clicked="rowClicked"
       />
     </div>
-
-    <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
-    <!--                                                                                  -->
-    <!-- TODO: Mirror two pagination controls                                             -->
-    <!-- https://bootstrap-vue.org/docs/components/pagination#goto-firstlast-button-type  -->
-    <!--                                                                                  -->
-    <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
   </section>
 </template>
 
@@ -81,28 +74,39 @@ export default {
     },
     'data': function() {
         return {
-            'tableHeaders': [
-                { 'title': 'Data Collection ID', 'key': 'ID'},
-                { 'title': 'Archived', 'key': 'ARCHIVED', 'format': this.archivedFormat},
-                { 'title': 'Comments', 'key': 'COMMENTS'},
-                { 'title': 'Run Status', 'key': 'RUNSTATUS'},
-                { 'title': 'File Directory', 'key': 'DIR'},
-                { 'title': 'Start Time', 'key': 'STA'},
-            ],
+            'tableHeaders': [{
+                'title': 'Data Collection ID',
+                'key': 'ID'
+            }, {
+                'title': 'Archived',
+                'key': 'ARCHIVED',
+                'format': function(archived) {
+                    return archived ? 'Archived': 'Live'
+                },
+            }, {
+                'title': 'Comments',
+                'key': 'COMMENTS'
+            }, {
+                'title': 'Run Status',
+                'key': 'RUNSTATUS'
+            }, {
+                'title': 'File Directory',
+                'key': 'DIR'
+            }, {
+                'title': 'Start Time',
+                'key': 'STA'
+            }],
             'tableData': [],
         }
     },
     'computed': {
         'heading': function () {
             const heading = 'Data Collections for '
-            const visit = this.$store.state.proposal.visit
-            if (visit == '') {
-                return heading + this.$store.state.proposal.proposal
+            if (this.model.has('VISIT')) {
+                return heading + this.model.get('VISIT') +
+                  ' on ' + this.model.get('BEAMLINENAME')
             }
-            return heading + visit + ' on ' + this.model.get('BEAMLINENAME')
-        },
-        'searchValue': function() {
-            return this.params.search
+            return heading + this.$store.state.proposal.proposal
         },
         'searchUrl': function() {
             // In old Marionette version this was
@@ -110,18 +114,16 @@ export default {
             // But, as far as I can see, options.noSearchUrl doesn't exist
             return true
         },
-        'dataCollectionsLength': function () {
-            return this.collection.state.totalRecords
-        },
     },
     'mounted': function() {
         EventBus.$emit('bcChange', this.breadcrumbs)
+        this.$store.commit(
+            'proposal/setVisit',
+            this.model.has('VISIT') ? this.model.get('VISIT') : false
+        );
         this.getCollection()
     },
     'methods': {
-        'archivedFormat': function(archived) {
-            return archived ? 'Archived': 'Live'
-        },
         'pageChanged': function (pagination) {
             this.collection.setPageSize(pagination.pageSize)
             this.collection.getPage(pagination.currentPage)

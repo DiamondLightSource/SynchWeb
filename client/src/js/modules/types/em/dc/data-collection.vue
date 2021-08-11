@@ -6,7 +6,12 @@
       Data Collection {{ dataCollectionId }} for {{ visit }} on {{ beamline }}
     </h1>
 
-    <all-collections-link />
+    <h1 class="message nou">
+      <a
+        class="button"
+        :href="'/dc/visit/' + visit"
+      >View All Data Collections</a>
+    </h1>
 
     <div class="data-collection">
       <data-collection-toolbar
@@ -30,7 +35,6 @@
 </template>
 
 <script>
-import AllCollectionsLink from 'modules/types/em/dc/all-collections-link.vue'
 import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
 import DataCollectionModel from 'models/datacollection.js'
 import DataCollectionToolbar from 'modules/types/em/dc/dc-toolbar.vue'
@@ -42,7 +46,6 @@ import ProcessingJobsCollection from 'modules/types/em/collections/processingjob
 export default {
     'name': 'EmDcList',
     'components': {
-        'all-collections-link': AllCollectionsLink,
         'data-collection-header': DataCollectionHeader,
         'data-collection-toolbar': DataCollectionToolbar,
         'dialog-box': DialogBox,
