@@ -1,7 +1,7 @@
 <template>
   <processing-section
     section-title="Processing Parameters"
-    :data-available="dataAvailable"
+    :data-available="parameters.length > 0"
     not-available-message="No processing parameters available"
     default-hidden
   >
@@ -32,8 +32,8 @@
 <script>
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
-import ProcessingJobParameters from 'modules/types/em/collections/processingjobparameters'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
+import ViewModel from 'modules/types/em/job-parameters/view-model'
 
 export default {
     'name': 'JobParameters',
@@ -49,36 +49,12 @@ export default {
         },
     },
     'data': function() {
-        return {
-            parameters: [],
-        }
-    },
-    'computed': {
-        'dataAvailable': function() {
-            return true // TODO
-        },
+        return { 'parameters': [] }
     },
     'mounted': function() {
-        this.fetchProcessingParameters()
+        ViewModel.fetch(this.$store, this.processingJobId).then(
+            (parameters) => { this.parameters = parameters }
+        )
     },
-    'methods': {
-        'fetchProcessingParameters': function() {
-            const processingParametersCollection = new ProcessingJobParameters()
-            processingParametersCollection.queryParams.processingJobId = this.processingJobId
-            this.$store.dispatch(
-                'getCollection',
-                processingParametersCollection
-            ).then((collection) => {
-                this.parameters = collection.models.map(function(parameter) {
-                    return {
-                        'key': parameter.get('PARAMETERKEY'),
-                        'value': parameter.get('PARAMETERVALUE'),
-                    }
-                })
-            }, () => {
-                console.log('no processing parameters')
-            })
-        }
-    }
 }
 </script>
