@@ -2,8 +2,8 @@
   <dialog-modal
     :is-active="isActive"
     :title="title"
-    :cancel-label="cancelLabel"
-    :confirm-label="confirmLabel"
+    cancel-label=""
+    confirm-label="Close"
     @cancel="$emit('cancel')"
     @confirm="$emit('confirm')"
   >
@@ -28,7 +28,10 @@ export default {
         'marionette-wrapper': MarionetteWrapper,
     },
     'props': {
-        'mView': [Function, Promise],
+        'mView': {
+            'type': [Function, Promise],
+            'required': true,
+        },
         'options': {
             'type': Object,
             'required': true,

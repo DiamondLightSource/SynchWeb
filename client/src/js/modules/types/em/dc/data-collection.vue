@@ -16,7 +16,6 @@
     <div class="data-collection">
       <data-collection-toolbar
         v-if="dataCollection !== null"
-        :data-collection="dataCollection"
         :data-collection-model="dataCollectionModel"
       />
 
@@ -37,7 +36,7 @@
 <script>
 import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
 import DataCollectionModel from 'models/datacollection.js'
-import DataCollectionToolbar from 'modules/types/em/dc/dc-toolbar.vue'
+import DataCollectionToolbar from 'modules/types/em/dc-toolbar/dc-toolbar.vue'
 import DialogBox from 'app/components/dialogbox.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import ProcessingJob from 'modules/types/em/autoproc/processing-job.vue'
@@ -153,7 +152,7 @@ export default {
             // eslint-disable-next-line no-unused-vars
             const successCallback = function(model, response, options) {
                 vm.autoProcessing = response.data
-                console.log('fetched autopProcessing', vm.autoProcessing)
+                console.log('fetched autoProcessing', vm.autoProcessing)
                 vm.$store.commit('loading', false)
             }
             // eslint-disable-next-line no-unused-vars
