@@ -116,7 +116,7 @@ export default {
       // TODO - get container types from data base
       let is_plate = ['box', 'puck', 'pcrstrip', null].indexOf(containerType) == -1 && containerType.indexOf('puck') == -1
 
-          return is_plate
+      return is_plate
     },
     async updateContainerModel(data) {
       this.model.set(data)

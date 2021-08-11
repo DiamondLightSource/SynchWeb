@@ -148,8 +148,8 @@ class Sample extends Page
                               'STRATEGYOPTION' => '',
                               'MINIMUMRESOLUTION' => '\d+(.\d+)?'
                                );
-
-
+        
+        
         public static $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
                               array('/:sid', 'patch', '_update_sample'),
                               array('/:sid', 'put', '_update_sample_full'),
@@ -927,32 +927,32 @@ class Sample extends Page
               $join WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
 
-
-
+            
+            
             $start = 0;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
             $end = $pp;
-
+            
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
                 $start = $pg*$pp;
                 $end = $pg*$pp+$pp;
             }
-
+            
             $st = sizeof($args)+1;
             $en = $st + 1;
             array_push($args, $start);
             array_push($args, $end);
-
+            
             $order = 'b.blsampleid DESC';
-
-
+            
+            
             if ($this->has_arg('sort_by')) {
                 $cols = array('SAMPLEID' => 'b.blsampleid', 'NAME' => 'b.name', 'ACRONYM' => 'pr.acronym', 'SPACEGROUP' => 'cr.spacegroup', 'COMMENTS' => 'b.comments', 'SHIPMENT' => 'shipment', 'DEWAR' => 'dewar', 'CONTAINER' => 'container', 'b.blsampleid', 'SC' => 'sc', 'SCRESOLUTION' => 'scresolution', 'DC' => 'ap', 'DCRESOLUTION' => 'dcresolution', 'POSITION' => 'TO_NUMBER(b.location)', 'RECORDTIMESTAMP' => 'b.recordtimestamp');
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-
+            
             $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
@@ -1260,7 +1260,7 @@ class Sample extends Page
 
             return $a;
         }
-        
+
         
         # ------------------------------------------------------------------------
         # List of proteins for a proposal

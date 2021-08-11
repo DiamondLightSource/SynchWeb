@@ -444,13 +444,6 @@ export default {
     containersSamplesGroupData(newValues) {
       this.updateContainerSampleGroupsData(newValues)
     },
-  },
-  provide() {
-    return {
-      $shipments: () => this.shipments,
-      $dewars: () => this.dewars,
-      $containers: () => this.containers
-    }
   }
 }
 </script>

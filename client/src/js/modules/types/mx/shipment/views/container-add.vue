@@ -304,6 +304,10 @@ export default {
       dewar: null,
       plateKey: 0,
       plateType: null,
+
+      processingPipeline: '',
+      processingPipelines: [],
+
       proteinCombo: '123540',
       proteinSelection: null,
       selectedSample: null,
@@ -558,16 +562,6 @@ export default {
     closeModalAction() {
       this.displayImagerScheduleModal = false
     },
-  },
-  provide() {
-    return {
-      $spaceGroups: this.spaceGroups,
-      $centeringMethods: this.centeringMethods,
-      $anomalousList: this.anomalousList,
-      $experimentKindList: this.experimentKindList,
-      $showUDCColumns: () => this.showUDCColumns,
-      $sampleLocation: () => this.sampleLocation
-    }
   }
 }
 </script>
