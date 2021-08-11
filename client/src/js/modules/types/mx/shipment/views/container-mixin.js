@@ -1,0 +1,129 @@
+import Users from "collections/users";
+import ProcessingPipelines from 'collections/processingpipelines'
+import SpaceGroupList from 'utils/sgs.js'
+import CenteringMethodList from 'utils/centringmethods.js'
+import AnomalousList from 'utils/anoms.js'
+import ExperimentKindsList from 'utils/experimentkinds.js'
+import DistinctProteins from "js/modules/shipment/collections/distinctproteins";
+import ExperimentTypes from "js/modules/shipment/collections/experimenttypes";
+import ContainerRegistry from "js/modules/shipment/collections/containerregistry";
+import ContainerTypes from "js/modules/shipment/collections/containertypes";
+import SampleGroups from "js/collections/samplegroups";
+
+export default {
+  data() {
+    return {
+      anomalousList: AnomalousList.list,
+
+      centeringMethods: CenteringMethodList.list,
+      containerTypes: [],
+      containerTypesCollection: null,
+      containerRegistryCollection: null,
+      containerState: {},
+
+      experimentTypes: [],
+      experimentTypesCollection: null,
+      experimentKindList: [],
+
+      containerRegistry: [],
+      containerRegistryId: '',
+      processingPipeline: '',
+      processingPipelines: [],
+
+      users: [],
+      usersCollection: null,
+
+      sampleGroupsCollection: null,
+      sampleGroups: [],
+      spaceGroups: SpaceGroupList.list,
+      showUDCColumns: false,
+    }
+  },
+  methods: {
+    async getUsers() {
+      this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
+      this.usersCollection.queryParams.all = 1
+      this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
+
+      const result = await this.$store.dispatch('getCollection', this.usersCollection)
+      this.users = result.toJSON()
+      // Set plate owner to current user
+      this.containerState.PERSONID = this.$store.state.user.personId
+    },
+    async getProcessingPipelines() {
+      let processingPipelinesCollection = new ProcessingPipelines()
+
+      processingPipelinesCollection.queryParams.pipelinestatus = 'optional'
+      processingPipelinesCollection.queryParams.category = 'processing'
+
+      const result = await this.$store.dispatch('getCollection', processingPipelinesCollection)
+      this.processingPipelines = result.toJSON()
+    },
+    async getProteins() {
+      this.proteinsCollection = new DistinctProteins()
+      // If we want to only allow valid samples
+      if (app.options.get('valid_components') && !app.staff) {
+        this.proteinsCollection.queryParams.external = 1
+      }
+
+      this.gProteinsCollection = new DistinctProteins()
+      const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
+      this.proteins = result.toJSON()
+      this.proteinsLoaded = true
+    },
+    async getExperimentTypes() {
+      this.experimentTypesCollection = new ExperimentTypes()
+
+      this.experimentFilter = [this.$store.state.proposal.proposalType]
+
+      const result = await this.$store.dispatch('getCollection', this.experimentTypesCollection)
+      let initialExperimentType = result.findWhere({ PROPOSALTYPE: this.$store.state.proposal.proposalType })
+      this.containerState.EXPERIMENTTYPEID = initialExperimentType ? initialExperimentType.get('EXPERIMENTTYPEID') : ''
+      this.experimentTypes = result.toJSON()
+    },
+    async getContainerRegistry() {
+      this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
+      const result = await this.$store.dispatch('getCollection', this.containerRegistryCollection)
+      this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
+      this.containerRegistry = result.toJSON()
+    },
+    async getContainerTypes() {
+      this.containerTypesCollection = new ContainerTypes()
+
+      this.containerFilter = [this.$store.state.proposal.proposalType]
+
+      const result = await this.$store.dispatch('getCollection', this.containerTypesCollection)
+      this.containerTypes = result.toJSON()
+      // Do we have valid start state?
+      if (this.containerTypes.length) {
+        let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
+        this.containerState.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
+      }
+    },
+    formatExperimentKindList() {
+      for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
+        this.experimentKindList.push({ value: key, text: value })
+      }
+    },
+    async getSampleGroups() {
+      this.sampleGroupsCollection = new SampleGroups(null, { state: { pageSize: 9999 }})
+
+      const result = await this.$store.dispatch('getCollection', this.sampleGroupsCollection)
+      this.sampleGroups = result.groups().toJSON().map((group, index) => ({
+        value: group.BLSAMPLEGROUPID,
+        text: group.NAME || `Sample Group ${index}`
+      }))
+    }
+  },
+  provide() {
+    return {
+      $spaceGroups: this.spaceGroups,
+      $centeringMethods: this.centeringMethods,
+      $anomalousList: this.anomalousList,
+      $experimentKindList: this.experimentKindList,
+      $showUDCColumns: () => this.showUDCColumns,
+      $sampleLocation: () => this.sampleLocation,
+      $sampleGroups: () => this.sampleGroups
+    }
+  }
+}

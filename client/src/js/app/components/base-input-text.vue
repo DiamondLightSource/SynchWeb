@@ -36,7 +36,7 @@ Component will emit a save event when the value changes
       @blur="onBlur"
       @focus="$emit('focus')"
     >
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditable = true" @mouseleave="showEditable = false">{{ value }}<span v-show="showEditable"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditable = true" @mouseleave="showEditable = false">{{ inlineText }}<span v-show="showEditable"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
     <button v-if="inline && editable" class="button tw-px-2 tw-py-1" @mousedown="onSave">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -114,7 +114,11 @@ export default {
     labelClass: {
       type: String,
       default: ''
-    }
+    },
+    // For cases where the value is null but you want to display a custom text telling the user what to do
+    initialText: {
+      type: String,
+    },
   },
   data() {
     return {
@@ -126,6 +130,9 @@ export default {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
       return [ this.inputClass, this.errorMessage ? this.errorClass : '']
+    },
+    inlineText() {
+      return this.initialText || this.value
     }
   },
   created() {

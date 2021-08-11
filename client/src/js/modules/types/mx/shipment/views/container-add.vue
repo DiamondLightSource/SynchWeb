@@ -161,7 +161,6 @@
             :proteins="proteinsCollection"
             :gproteins="gProteinsCollection"
             :automated="containerState.AUTOMATED"
-            @reset-form-validation="resetFormValidation"
           />
         </div>
         <!--
@@ -191,11 +190,6 @@
 import Container from 'models/container'
 import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
 import ValidContainerGraphic from 'modules/types/saxs/samples/valid-container-graphic.vue'
-import ContainerTypes from 'modules/shipment/collections/containertypes'
-import ContainerRegistry from 'modules/shipment/collections/containerregistry'
-import DistinctProteins from 'modules/shipment/collections/distinctproteins'
-import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
-import SampleGroups from 'collections/samplegroups'
 
 import SampleEditor from 'modules/types/mx/samples/sample-editor.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
@@ -203,17 +197,12 @@ import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
-import SpaceGroupList from 'utils/sgs.js'
-import CenteringMethodList from 'utils/centringmethods.js'
-import AnomalousList from 'utils/anoms.js'
-import ExperimentKindsList from 'utils/experimentkinds.js'
 
-import ProcessingPipelines from 'collections/processingpipelines'
-import Users from 'collections/users'
+import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
 
 import { mapGetters } from 'vuex'
 
-import { ValidationObserver, ValidationProvider, Validator }  from 'vee-validate'
+import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 const initialContainerState = {
   DEWARID: "",
@@ -249,6 +238,7 @@ const INITIAL_CONTAINER_TYPE = {
 
 export default {
   name: 'MxAddContainer',
+  mixins: [ContainerMixin],
   components: {
     'base-input-groupselect': BaseInputGroupSelect,
     'base-input-select': BaseInputSelect,
@@ -270,30 +260,16 @@ export default {
   data() {
     return {
       containerState: initialContainerState,
-
       containerType: INITIAL_CONTAINER_TYPE,
-      containerTypes: [],
-      containerTypesCollection: null,
-      containerRegistryCollection: null,
 
       // The dewar that this container will belong to
       dewar: null,
 
-      experimentTypes: [],
-      experimentTypesCollection: null,
-
-      containerRegistry: [],
-      containerRegistryId: '',
       containerGroup: '',
 
-      selectedSample: null,
 
       plateKey: 0,
       plateType: null,
-
-      processingPipeline: '',
-      processingPipelines: [],
-
       proteinCombo: '123540',
       proteinsLoaded: false,
       proteinsCollection: null,
@@ -301,19 +277,10 @@ export default {
       proteins: [],
       proteinSelection: null,
 
+      selectedSample: null,
       showAllContainerTypes: false,
       showAllExperimentTypes: false,
-
-      usersCollection: null,
-      users: [],
-      spaceGroups: SpaceGroupList.list,
-      centeringMethods: CenteringMethodList.list,
-      anomalousList: AnomalousList.list,
-      experimentKindList: [],
-      showUDCColumns: false,
-      sampleLocation: 0,
-      sampleGroupsCollection: null,
-      sampleGroups: []
+      sampleLocation: 0
     }
   },
   computed: {
@@ -448,66 +415,6 @@ export default {
     this.getSampleGroups()
   },
   methods: {
-    async getProteins() {
-      this.proteinsCollection = new DistinctProteins()
-      // If we want to only allow valid samples
-      if (app.options.get('valid_components') && !app.staff) {
-          this.proteinsCollection.queryParams.external = 1
-      }
-
-      this.gProteinsCollection = new DistinctProteins()
-      const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
-      this.proteins = result.toJSON()
-      this.proteinsLoaded = true
-    },
-    async getExperimentTypes() {
-      this.experimentTypesCollection = new ExperimentTypes()
-
-      this.experimentFilter = [this.$store.state.proposal.proposalType]
-
-      const result = await this.$store.dispatch('getCollection', this.experimentTypesCollection)
-      let initialExperimentType = result.findWhere({ PROPOSALTYPE: this.$store.state.proposal.proposalType })
-      this.containerState.EXPERIMENTTYPEID = initialExperimentType ? initialExperimentType.get('EXPERIMENTTYPEID') : ''
-      this.experimentTypes = result.toJSON()
-    },
-    async getContainerRegistry() {
-      this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
-      const result = await this.$store.dispatch('getCollection', this.containerRegistryCollection)
-      this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
-      this.containerRegistry = result.toJSON()
-    },
-    async getContainerTypes() {
-      this.containerTypesCollection = new ContainerTypes()
-
-      this.containerFilter = [this.$store.state.proposal.proposalType]
-
-      const result = await this.$store.dispatch('getCollection', this.containerTypesCollection)
-      this.containerTypes = result.toJSON()
-      // Do we have valid start state?
-      if (this.containerTypes.length) {
-        let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
-        this.containerState.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
-      }
-    },
-    async getUsers() {
-      this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
-      this.usersCollection.queryParams.all = 1
-      this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
-
-      const result = await this.$store.dispatch('getCollection', this.usersCollection)
-      this.users = result.toJSON()
-      // Set plate owner to current user
-      this.containerState.PERSONID = this.$store.state.user.personId
-    },
-    async getProcessingPipelines() {
-      let processingPipelinesCollection = new ProcessingPipelines()
-
-      processingPipelinesCollection.queryParams.pipelinestatus = 'optional'
-      processingPipelinesCollection.queryParams.category = 'processing'
-      
-      const result = await this.$store.dispatch('getCollection', processingPipelinesCollection)
-      this.processingPipelines = result.toJSON()
-    },
     // Called on Add Container
     // Calls the validation method on our observer component
     async onSubmit() {
@@ -578,27 +485,6 @@ export default {
     },
     onContainerCellClicked(location) {
       this.sampleLocation = location - 1
-    },
-    formatExperimentKindList() {
-      for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
-        this.experimentKindList.push({ value: key, text: value })
-      }
-    },
-    async getSampleGroups() {
-      this.sampleGroupsCollection = new SampleGroups(null, { state: { pageSize: 9999 }})
-
-      const result = await this.$store.dispatch('getCollection', this.sampleGroupsCollection)
-      this.sampleGroups = result.groups().toJSON()
-    }
-  },
-  provide() {
-    return {
-      $spaceGroups: this.spaceGroups,
-      $centeringMethods: this.centeringMethods,
-      $anomalousList: this.anomalousList,
-      $experimentKindList: this.experimentKindList,
-      $showUDCColumns: () => this.showUDCColumns,
-      $sampleLocation: () => this.sampleLocation
     }
   }
 }
