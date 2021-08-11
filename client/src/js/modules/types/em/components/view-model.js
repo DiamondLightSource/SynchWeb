@@ -35,6 +35,8 @@ export default function (store, url, humanName, middleware) {
 
     store.commit('loading', true)
     return new Promise((resolve, reject) => {
+        // Backbone.ajax is overridden in src/js/app/marionette-application.js
+        // to provide additional SynchWeb specific functionality
         Backbone.ajax({
             'type': 'GET',
             'url': store.state.apiUrl + url,
