@@ -66,6 +66,9 @@ export default {
     },
     sampleLocation() {
       return this.$sampleLocation()
+    },
+    sampleGroups() {
+      return this.$sampleGroups()
     }
   },
   methods: {
@@ -83,7 +86,7 @@ export default {
     },
     displayInputForm(row) {
       return (
-        !this.containerId || Number(this.editingRow) === Number(row.LOCATION)
+        !this.containerId
       );
     },
     formatSelectData(selectData, data, property) {
@@ -98,7 +101,7 @@ export default {
       return matchedSelectData;
     },
     selectDataValue(selectData, data, property) {
-      return this.formatSelectData(selectData, data, property).value;
+      return this.formatSelectData(selectData, data, property).text;
     },
     onSaveSample: function(row) {
       // Event triggered by confirmation of row edit
@@ -161,6 +164,7 @@ export default {
     "$anomalousList",
     "$experimentKindList",
     "$showUDCColumns",
-    "$sampleLocation"
+    "$sampleLocation",
+    "$sampleGroups"
   ]
 };

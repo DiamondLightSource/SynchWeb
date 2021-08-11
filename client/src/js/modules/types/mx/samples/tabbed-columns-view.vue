@@ -18,7 +18,7 @@
           v-model="inputValue[sampleIndex]['ANOMALOUSSCATTERER']"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
-        <p v-else>{{ selectDataValue(anomalousOptionsList, inputValue, 'ANOMALOUSSCATTERER') }}</p>
+        <p v-else class="tw-text-center">{{ selectDataValue(anomalousOptionsList, inputValue, 'ANOMALOUSSCATTERER') }}</p>
       </validation-provider>
 
       <validation-provider
@@ -30,7 +30,7 @@
           inputClass="tw-w-full tw-h-8"
           v-model="inputValue[sampleIndex]['COMMENTS']"
         />
-        <p v-else>{{ inputValue[sampleIndex]['COMMENTS'] }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['COMMENTS'] }}</p>
       </validation-provider>
     </div>
 
@@ -49,7 +49,7 @@
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
-        <p v-else>{{ inputValue[sampleIndex]['USERPATH'] }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['USERPATH'] }}</p>
       </validation-provider>
 
       <validation-provider
@@ -69,7 +69,7 @@
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
-        <p v-else>{{ selectDataValue(spaceGroupList, inputValue, 'SPACEGROUP') }}</p>
+        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'SPACEGROUP') }}</p>
       </validation-provider>
 
 
@@ -91,7 +91,7 @@
               :errorClass="errors[0] ? 'ferror' : ''"
               v-model="inputValue[sampleIndex]['CELL_A']"
             />
-            <p v-else>{{ inputValue[sampleIndex]['CELL_A'] }}</p>
+            <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['CELL_A'] }}</p>
           </validation-provider>
 
           <validation-provider
@@ -110,7 +110,7 @@
               :errorClass="errors[0] ? 'ferror' : ''"
               v-model="inputValue[sampleIndex]['CELL_B']"
             />
-            <p v-else>{{ inputValue[sampleIndex]['CELL_B'] }}</p>
+            <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['CELL_B'] }}</p>
           </validation-provider>
 
           <validation-provider
@@ -130,7 +130,7 @@
               :errorClass="errors[0] ? 'ferror' : ''"
               v-model="inputValue[sampleIndex]['CELL_C']"
             />
-            <p v-else>{{ inputValue[sampleIndex]['CELL_C'] }}</p>
+            <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['CELL_C'] }}</p>
           </validation-provider>
         </div>
 
@@ -153,7 +153,7 @@
               :errorClass="errors[0] ? 'ferror' : ''"
               v-model="inputValue[sampleIndex]['CELL_ALPHA']"
             />
-            <p v-else>{{ inputValue[sampleIndex]['CELL_ALPHA'] }}</p>
+            <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['CELL_ALPHA'] }}</p>
           </validation-provider>
 
           <validation-provider
@@ -173,7 +173,7 @@
               :errorClass="errors[0] ? 'ferror' : ''"
               :quiet="true"
             />
-            <p v-else>{{ inputValue[sampleIndex]['CELL_BETA'] }}</p>
+            <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['CELL_BETA'] }}</p>
           </validation-provider>
 
           <validation-provider
@@ -193,7 +193,7 @@
               v-model="inputValue[sampleIndex]['CELL_GAMMA']"
               :quiet="true"
             />
-            <p v-else>{{ inputValue[sampleIndex]['CELL_GAMMA'] }}</p>
+            <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['CELL_GAMMA'] }}</p>
           </validation-provider>
         </div>
       </div>
@@ -219,7 +219,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['CENTERINGMETHOD']"
         />
-        <p v-else>{{ selectDataValue(spaceGroupList, inputValue, 'CENTERINGMETHOD') }}</p>
+        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'CENTERINGMETHOD') }}</p>
       </validation-provider>
 
       <validation-provider
@@ -239,7 +239,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['EXPERIMENTKIND']"
         />
-        <p v-else>{{ selectDataValue(spaceGroupList, inputValue, 'EXPERIMENTKIND') }}</p>
+        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'EXPERIMENTKIND') }}</p>
       </validation-provider>
 
       <validation-provider
@@ -256,7 +256,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['ENERGY']"
         />
-        <p v-else>{{ inputValue[sampleIndex]['ENERGY'] }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['ENERGY'] }}</p>
       </validation-provider>
 
       <validation-provider
@@ -276,7 +276,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['ANOMALOUSSCATTERER']"
         />
-        <p v-else>{{ selectDataValue(spaceGroupList, inputValue, 'ANOMALOUSSCATTERER') }}</p>
+        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'ANOMALOUSSCATTERER') }}</p>
       </validation-provider>
 
       <validation-provider
@@ -296,7 +296,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['SCREENINGMETHOD']"
         />
-        <p v-else>{{ selectDataValue(spaceGroupList, inputValue, 'SCREENINGMETHOD') }}</p>
+        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'SCREENINGMETHOD') }}</p>
       </validation-provider>
 
       <validation-provider
@@ -314,7 +314,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['REQUIREDRESOLUTION']"
         />
-        <p v-else>{{ inputValue[sampleIndex]['REQUIREDRESOLUTION'] }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['REQUIREDRESOLUTION'] }}</p>
       </validation-provider>
 
       <validation-provider
@@ -332,7 +332,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['MINIMUMRESOLUTION']"
         />
-        <p v-else>{{ inputValue[sampleIndex]['MINIMUMRESOLUTION'] }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['MINIMUMRESOLUTION'] }}</p>
       </validation-provider>
 
       <validation-provider
@@ -350,7 +350,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['NOTOCOLLECT']"
         />
-        <p v-else>{{ inputValue[sampleIndex]['NOTOCOLLECT'] }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['NOTOCOLLECT'] }}</p>
       </validation-provider>
     </div>
   </div>

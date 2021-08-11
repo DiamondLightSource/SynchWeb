@@ -4,7 +4,6 @@
     
     <!-- Wrap the form in an observer component so we can check validation state on submission -->
     <validation-observer ref="sampleObserver">
-    
       <!-- Use plate table, single or table depending on capacity -->
       <component
         :is="sampleComponent"
