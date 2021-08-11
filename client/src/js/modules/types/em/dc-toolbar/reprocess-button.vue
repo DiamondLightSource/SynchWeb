@@ -26,8 +26,6 @@ export default {
     },
     'computed': {
         'mView': function() {
-            // TODO: this view has a template for EM
-            // TODO: but it'd probably be better to use James' /relion/ stuff
             return ReprocessView
         },
         'mViewOptions': function() {
