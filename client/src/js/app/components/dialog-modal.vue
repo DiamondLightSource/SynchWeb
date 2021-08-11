@@ -91,7 +91,7 @@ export default {
 .header,
 .footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
 }
 .heading {
     flex-grow: 1;
