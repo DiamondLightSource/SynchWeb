@@ -24,7 +24,7 @@ import DialogMarionetteView from 'app/components/dialog-marionette-view.vue'
 import ButtonWithFunction from 'modules/types/em/dc-toolbar/button-with-function.vue'
 
 export default {
-    'name': 'ButtonWithDialog',
+    'name': 'ButtonWithMarionetteDialog',
     'components': {
         'button-with-function': ButtonWithFunction,
         'dialog-marionette-view': DialogMarionetteView,
