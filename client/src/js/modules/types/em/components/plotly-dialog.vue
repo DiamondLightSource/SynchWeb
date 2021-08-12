@@ -5,14 +5,12 @@
       :title="title"
       @cancel="showDialog = false"
     >
-      <template #contents>
-        <plotly-chart
-          :style="bigChartStyle"
-          :title="title"
-          :layout="layout"
-          :chart-data="chartData"
-        />
-      </template>
+      <plotly-chart
+        :style="bigChartStyle"
+        :title="title"
+        :layout="layout"
+        :chart-data="chartData"
+      />
     </dialog-modal>
 
     <plotly-chart
@@ -77,6 +75,7 @@ export default {
             return this.proportionalHeight + ' width: ' + this.width
         },
         'bigChartStyle': function() {
+            // TODO: this is a bit rubbish!
             const width = window.innerWidth
             const height = window.innerHeight
             const style = 'width: ' + (width - width / 10) +

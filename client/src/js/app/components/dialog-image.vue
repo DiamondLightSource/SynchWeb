@@ -4,9 +4,7 @@
     :title="title"
     @cancel="$emit('cancel')"
   >
-    <template #contents>
-      <img :src="src">
-    </template>
+    <img :src="src">
   </dialog-modal>
 </template>
 
