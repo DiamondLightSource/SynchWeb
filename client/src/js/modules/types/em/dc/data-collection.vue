@@ -1,7 +1,5 @@
 <template>
   <section class="content">
-    <dialog-box />
-
     <h1 class="no_mobile">
       Data Collection {{ dataCollectionId }} for {{ visit }} on {{ beamline }}
     </h1>
@@ -37,7 +35,6 @@
 import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
 import DataCollectionModel from 'models/datacollection.js'
 import DataCollectionToolbar from 'modules/types/em/dc-toolbar/dc-toolbar.vue'
-import DialogBox from 'app/components/dialogbox.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import ProcessingJob from 'modules/types/em/autoproc/processing-job.vue'
 import ProcessingJobsCollection from 'modules/types/em/collections/processingjobs'
@@ -47,7 +44,6 @@ export default {
     'components': {
         'data-collection-header': DataCollectionHeader,
         'data-collection-toolbar': DataCollectionToolbar,
-        'dialog-box': DialogBox,
         'processing-job': ProcessingJob,
     },
     'props': {
