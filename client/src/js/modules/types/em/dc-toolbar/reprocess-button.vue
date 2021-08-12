@@ -1,5 +1,5 @@
 <template>
-  <button-with-dialog
+  <button-with-marionette-dialog
     icon-class="fa fa-cog"
     button-text="Reprocess"
     dialog-title="Reprocesses"
@@ -11,13 +11,13 @@
 </template>
 
 <script>
-import ButtonWithDialog from 'modules/types/em/dc-toolbar/button-with-dialog.vue'
+import ButtonWithMarionetteDialog from 'modules/types/em/dc-toolbar/button-with-marionette-dialog.vue'
 import ReprocessView from 'modules/dc/views/reprocess2'
 
 export default {
     'name': 'ReprocessesButton',
     'components': {
-        'button-with-dialog': ButtonWithDialog,
+        'button-with-marionette-dialog': ButtonWithMarionetteDialog,
     },
     'props': {
         'dataCollectionModel': {
@@ -27,6 +27,8 @@ export default {
     },
     'computed': {
         'mView': function() {
+            // TODO: this view has a template for EM
+            // TODO: but it'd probably be better to use James' /relion/ stuff
             return ReprocessView
         },
         'mViewOptions': function() {

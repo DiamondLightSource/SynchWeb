@@ -1,5 +1,5 @@
 <template>
-  <button-with-dialog
+  <button-with-marionette-dialog
     icon-class="fa fa-book"
     button-text="Add to Project"
     dialog-title="Add to project"
@@ -11,12 +11,12 @@
 
 <script>
 import AddToProjectView from 'modules/projects/views/addto'
-import ButtonWithDialog from 'modules/types/em/dc-toolbar/button-with-dialog.vue'
+import ButtonWithMarionetteDialog from 'modules/types/em/dc-toolbar/button-with-marionette-dialog.vue'
 
 export default {
     'name': 'AddToProjectButton',
     'components': {
-        'button-with-dialog': ButtonWithDialog,
+        'button-with-marionette-dialog': ButtonWithMarionetteDialog,
     },
     'props': {
         'dataCollectionModel': {

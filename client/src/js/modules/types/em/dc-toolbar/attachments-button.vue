@@ -1,5 +1,5 @@
 <template>
-  <button-with-dialog
+  <button-with-marionette-dialog
     icon-class="fa fa-file"
     :button-label="count.toString()"
     :button-text="countLabel"
@@ -12,12 +12,12 @@
 
 <script>
 import AttachmentsView from 'modules/dc/views/attachments'
-import ButtonWithDialog from 'modules/types/em/dc-toolbar/button-with-dialog.vue'
+import ButtonWithMarionetteDialog from 'modules/types/em/dc-toolbar/button-with-marionette-dialog.vue'
 
 export default {
     'name': 'AttachmentsButton',
     'components': {
-        'button-with-dialog': ButtonWithDialog,
+        'button-with-marionette-dialog': ButtonWithMarionetteDialog,
     },
     'props': {
         'dataCollectionModel': {
