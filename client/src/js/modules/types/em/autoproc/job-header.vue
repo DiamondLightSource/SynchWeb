@@ -83,6 +83,7 @@ export default {
     margin-top: 2px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 .column {
     width: 21%;
@@ -91,6 +92,7 @@ export default {
     width: 16%;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 .process-time {
     font-weight: bold;

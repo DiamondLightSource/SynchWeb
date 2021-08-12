@@ -5,6 +5,7 @@
       :icon-class="iconClass"
       :button-label="buttonLabel"
       :button-text="buttonText"
+      :enabled="enabled"
       @click="showDialog = true"
     />
     <dialog-marionette-view
@@ -56,6 +57,10 @@ export default {
         'mViewOptions': {
             'type': Object,
             'required': true,
+        },
+        'enabled': {
+            'type': Boolean,
+            'default': true,
         },
     },
     'data': function() {

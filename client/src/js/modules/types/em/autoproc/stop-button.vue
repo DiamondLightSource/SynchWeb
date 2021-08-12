@@ -3,35 +3,37 @@
     v-if="showButton"
     class="stop-button"
   >
-    <dialog-confirmation
+    <dialog-modal
       :is-active="showConfirmation"
-      :message="confirmationMessage"
       title="Are You Sure"
       confirm-label="Yes"
       cancel-label="No"
       @confirm="confirmed"
       @cancel="showConfirmation = false"
-    />
+    >
+      Are you sure you want to stop processing job
+      {{ processingJobId }}?
+    </dialog-modal>
 
-    <base-input-button
-      type="danger"
+    <flat-button
+      class="red"
       @click="showConfirmation = true"
     >
       <i class="fa fa-times" />
-    </base-input-button>
+    </flat-button>
   </div>
 </template>
 
 <script>
 import Backbone from 'backbone'
-import BaseInputButton from 'app/components/base-input-button.vue'
-import DialogConfirmation from 'app/components/dialog-confirmation.vue'
+import FlatButton from 'app/components/flat-button.vue'
+import DialogModal from 'app/components/dialog-modal.vue'
 
 export default {
     'name': 'StopButton',
     'components': {
-        'base-input-button': BaseInputButton,
-        'dialog-confirmation': DialogConfirmation,
+        'flat-button': FlatButton,
+        'dialog-modal': DialogModal,
     },
     'props': {
         'status': {
@@ -59,10 +61,6 @@ export default {
         'stopUrl': function () {
             return this.$store.state.apiUrl +
                 '/em/process/relion/job/' + this.processingJobId
-        },
-        'confirmationMessage': function() {
-            return 'Are you sure you want to stop processing job ' +
-                    this.processingJobId + '?'
         },
     },
     'methods': {

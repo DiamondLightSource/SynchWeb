@@ -16,32 +16,38 @@
       </header>
 
       <div class="body">
-        <slot name="contents" />
+        <slot />
       </div>
 
       <footer class="footer">
-        <button
+        <flat-button
           v-if="confirmLabel"
-          class="confirm dialog-button"
+          class="green"
           @click="$emit('confirm')"
         >
           {{ confirmLabel }}
-        </button>
-        <button
+        </flat-button>
+
+        <flat-button
           v-if="cancelLabel"
-          class="cancel dialog-button"
+          class="red"
           @click="$emit('cancel')"
         >
           {{ cancelLabel }}
-        </button>
+        </flat-button>
       </footer>
     </div>
   </div>
 </template>
 
 <script>
+import FlatButton from 'app/components/flat-button.vue'
+
 export default {
     'name': 'DialogModal',
+    'components': {
+        'flat-button': FlatButton,
+    },
     'props': {
         'isActive': {
             'type': Boolean,
@@ -80,6 +86,10 @@ export default {
     width: 100%;
     background-color: rgba(0, 0, 0, 0.75);
 }
+.flat-button {
+    width: 50%;
+    margin: 8px;
+}
 .dialog-box {
     box-shadow:
       0 10px 15px -3px rgb(0 0 0 / 10%),
@@ -98,20 +108,5 @@ export default {
 }
 .body {
     padding: 10px;
-}
-.dialog-button {
-    width: 50%;
-    color: #fff;
-    padding: 5px;
-    margin: 8px;
-    border-radius: 5px;
-    background-color: #4a5568;
-    cursor: pointer;
-}
-.confirm:hover {
-    background-color: #48bb78;
-}
-.cancel:hover {
-    background-color: #f56565;
 }
 </style>

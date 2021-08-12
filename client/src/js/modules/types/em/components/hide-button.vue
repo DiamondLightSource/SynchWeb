@@ -1,16 +1,18 @@
 <template>
-  <base-input-button @click="click">
+  <flat-button
+    class="blue"
+    @click="click">
     <i :class="hideIconClass" />
-  </base-input-button>
+  </flat-button>
 </template>
 
 <script>
-import BaseInputButton from 'app/components/base-input-button.vue'
+import FlatButton from 'app/components/flat-button.vue'
 
 export default {
     'name': 'HideButton',
     'components': {
-        'base-input-button': BaseInputButton,
+        'flat-button': FlatButton,
     },
     'props': {
         'value': {

@@ -4,6 +4,7 @@
     class="button button-notext"
     :class="highlightClass"
     :title="hint"
+    :enabled="enabled"
     @click.prevent="$emit('click')"
   >
     <i :class="iconClass" />
@@ -31,6 +32,10 @@ export default {
         'hint': {
             'type': String,
             'required': true,
+        },
+        'enabled': {
+            'type': Boolean,
+            'default': true,
         },
         'highlight': {
             'type': Boolean,

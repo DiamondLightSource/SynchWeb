@@ -2,19 +2,19 @@
   <div>
     Movie:
 
-    <base-input-button
+    <flat-button
       :disabled="movieNumber <= 1"
       @click="movieNumber = 1"
     >
       <i class="fa fa-angle-double-left" />
-    </base-input-button>
+    </flat-button>
 
-    <base-input-button
+    <flat-button
       :disabled="movieNumber <= 1"
       @click="movieNumber--"
     >
       <i class="fa fa-angle-left" />
-    </base-input-button>
+    </flat-button>
 
     <input
       v-model.number="movieNumber"
@@ -24,19 +24,19 @@
       name="movie"
     >
 
-    <base-input-button
+    <flat-button
       :disabled="movieNumber >= max"
       @click="movieNumber++"
     >
       <i class="fa fa-angle-right" />
-    </base-input-button>
+    </flat-button>
 
-    <base-input-button
+    <flat-button
       :disabled="movieNumber >= max"
       @click="movieNumber = max"
     >
       <i class="fa fa-angle-double-right" />
-    </base-input-button>
+    </flat-button>
 
     <label>Show most recent
       <input
@@ -48,12 +48,12 @@
 </template>
 
 <script>
-import BaseInputButton from 'app/components/base-input-button.vue'
+import FlatButton from 'app/components/flat-button.vue'
 
 export default {
     'name': "MovieSelect",
     'components': {
-        'base-input-button': BaseInputButton,
+        'flat-button': FlatButton,
     },
     'props': {
         'max': {
