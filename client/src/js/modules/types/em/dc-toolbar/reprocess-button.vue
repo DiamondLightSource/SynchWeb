@@ -3,6 +3,7 @@
     icon-class="fa fa-cog"
     button-text="Reprocess"
     dialog-title="Reprocesses"
+    :disabled="dataCollectionModel.get('ARCHIVED') == '1'"
     hint="Reprocess"
     :m-view="mView"
     :m-view-options="mViewOptions"

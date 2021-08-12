@@ -1,6 +1,5 @@
 <template>
   <button
-    :disabled="disabled"
     class="flat-button"
     @click="$emit('click')"
   >
@@ -11,12 +10,6 @@
 <script>
 export default {
     'name': "FlatButton",
-    'props': {
-        'disabled': {
-            'type': Boolean,
-            'default': false,
-        },
-    },
 }
 </script>
 
@@ -24,9 +17,13 @@ export default {
 .flat-button {
     padding: 5px;
     border-radius: 5px;
-    color: #fff;
-    background-color: #666;
+    color: #000;
+    background-color: #bbb;
     cursor: pointer;
+}
+.flat-button.highlight {
+    background-color: #fe3;
+    color: #000;
 }
 .flat-button:disabled {
     background-color: #ccc;
@@ -37,8 +34,8 @@ export default {
     color: #fff;
 }
 .flat-button:hover {
-    background-color: #999;
-    color: #000;
+    background-color: #666;
+    color: #fff;
 }
 .flat-button.green:hover {
     background-color: #4b7;

@@ -7,13 +7,11 @@
     @cancel="$emit('cancel')"
     @confirm="$emit('confirm')"
   >
-    <template #contents>
-      <marionette-wrapper
-        :mview="mView"
-        :options="options"
-        preloaded
-      />
-    </template>
+    <marionette-wrapper
+      :mview="mView"
+      :options="options"
+      preloaded
+    />
   </dialog-modal>
 </template>
 

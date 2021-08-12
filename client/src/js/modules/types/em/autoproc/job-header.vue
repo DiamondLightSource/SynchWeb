@@ -77,7 +77,8 @@ export default {
 <style scoped>
 .job-header {
     cursor: pointer;
-    background: #afafaf;
+    background: #666;
+    color: #fff;
     padding: 8px;
     font-size: 12px;
     margin-top: 2px;

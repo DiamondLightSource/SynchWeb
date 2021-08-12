@@ -19,7 +19,7 @@
       class="red"
       @click="showConfirmation = true"
     >
-      <i class="fa fa-times" />
+      <i class="fa fa-ban" />
     </flat-button>
   </div>
 </template>

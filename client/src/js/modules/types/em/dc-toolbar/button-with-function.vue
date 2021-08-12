@@ -1,21 +1,25 @@
 <template>
-  <a
-    href="#"
-    class="button button-notext"
-    :class="highlightClass"
+  <flat-button
+    :class="highlight ? 'highlight' : ''"
+    class="blue"
     :title="hint"
-    :enabled="enabled"
-    @click.prevent="$emit('click')"
+    :disabled="disabled"
+    @click="$emit('click')"
   >
     <i :class="iconClass" />
     <b v-if="buttonLabel != ''">{{ buttonLabel }}</b>
-    <span>{{ buttonText }}</span>
-  </a>
+    <span style="display: none;">{{ buttonText }}</span>
+  </flat-button>
 </template>
 
 <script>
+import FlatButton from 'app/components/flat-button.vue'
+
 export default {
     'name': 'ButtonWithFunction',
+    'components': {
+        'flat-button': FlatButton,
+    },
     'props': {
         'iconClass': {
             'type': String,
@@ -33,18 +37,13 @@ export default {
             'type': String,
             'required': true,
         },
-        'enabled': {
+        'disabled': {
             'type': Boolean,
-            'default': true,
+            'default': false,
         },
         'highlight': {
             'type': Boolean,
             'default': false,
-        },
-    },
-    'computed': {
-        'highlightClass': function() {
-            return this.highlight ? 'button-highlight' : ''
         },
     },
 }

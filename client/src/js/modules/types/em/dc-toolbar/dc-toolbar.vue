@@ -2,30 +2,12 @@
   <div class="dc-toolbar">
     <span class="button_holder">
       <add-to-project-button :data-collection-model="dataCollectionModel" />
-
       <favourite-button :data-collection-model="dataCollectionModel" />
-
       <!-- DCG Link -->
-
-      <span class="dclink">
-        <a
-          :href="dataCollectionUrl"
-          class="perm button button-notext"
-          title="Permalink"
-        >
-          <i class="fa fa-link" />
-          <span>Permalink</span>
-        </a>
-      </span>
-
+      <permalink-button :data-collection-model="dataCollectionModel" />
       <comments-button :data-collection-model="dataCollectionModel" />
-
       <attachments-button :data-collection-model="dataCollectionModel" />
-
-      <reprocess-button
-        v-if="!archived"
-        :data-collection-model="dataCollectionModel"
-      />
+      <reprocess-button :data-collection-model="dataCollectionModel" />
     </span>
 
     <!-- if you're using this outside EM you will need to check if
@@ -37,15 +19,10 @@
 
     <span class="spacer"> - </span>
 
-    <i
-      class="button fa expand"
-      :class="expandClass"
-      @click="displayFullPath = !displayFullPath"
-    />
-    <span class="temp">{{ displayPath }}</span>
+    <display-path :data-collection-model="dataCollectionModel" />
 
     <i
-      v-if="archived"
+      v-if="dataCollectionModel.get('ARCHIVED') == '1'"
       class="fa fa-archive r"
       title="This data collection is archived and data is no longer available on disk"
     />
@@ -56,7 +33,9 @@
 import AddToProjectButton from 'modules/types/em/dc-toolbar/add-to-project-button.vue'
 import AttachmentsButton from 'modules/types/em/dc-toolbar/attachments-button.vue'
 import CommentsButton from 'modules/types/em/dc-toolbar/comments-button.vue'
+import DisplayPath from 'modules/types/em/dc-toolbar/display-path.vue'
 import FavouriteButton from 'modules/types/em/dc-toolbar/favourite-button.vue'
+import PermalinkButton from 'modules/types/em/dc-toolbar/permalink-button.vue'
 import ReprocessButton from 'modules/types/em/dc-toolbar/reprocess-button.vue'
 
 export default {
@@ -65,7 +44,9 @@ export default {
         'add-to-project-button': AddToProjectButton,
         'attachments-button': AttachmentsButton,
         'comments-button': CommentsButton,
+        'display-path': DisplayPath,
         'favourite-button': FavouriteButton,
+        'permalink-button': PermalinkButton,
         'reprocess-button': ReprocessButton,
     },
     'props': {
@@ -74,37 +55,15 @@ export default {
             'required': true,
         },
     },
-    'data': function() {
-        return {
-            'displayFullPath': false,
-        }
-    },
     'computed': {
-        'displayPath': function() {
-            return this.dataCollectionModel.get(
-                this.displayFullPath ? 'DIRFULL' : 'DIR'
-            ) + this.dataCollectionModel.get('FILETEMPLATE')
-        },
-        'expandClass': function() {
-            return this.displayFullPath ? 'fa-caret-left' : 'fa-caret-right'
-        },
         'visit': function() {
             return this.$store.state.proposal.visit
         },
         'visitHref': function() {
             return '/dc/visit/' + this.visit
         },
-        // This URL format is unique to EM
-        // If using the toolbar in a different "type", adjustment will be needed
-        'dataCollectionUrl': function() {
-            return this.visitHref + '/collection/' +
-                this.dataCollectionModel.get('ID')
-        },
         'startTime': function() {
             return this.dataCollectionModel.get('ST')
-        },
-        'archived': function() {
-            return this.dataCollectionModel.get('ARCHIVED') == '1'
         },
     },
 }

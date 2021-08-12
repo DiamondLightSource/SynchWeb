@@ -6,7 +6,9 @@
   >
     <div class="dialog-box">
       <header class="header">
-        <h2 class="heading">{{ title }}</h2>
+        <h2 class="heading">
+          {{ title }}
+        </h2>
         <button
           aria-label="close"
           @click.prevent="$emit('cancel')"
@@ -97,6 +99,7 @@ export default {
     padding: 1rem;
     border-radius: 0.5rem;
     background-color: #fff;
+    color: #000;
 }
 .header,
 .footer {
