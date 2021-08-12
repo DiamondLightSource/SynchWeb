@@ -8,12 +8,16 @@
       AutoProc Program: {{ autoProcProgramId ? autoProcProgramId : 'NONE' }}
     </div>
 
-    <div class="column process-time">
-      Processing Start: {{ startTime ? startTime : 'Not started' }}
+    <div class="column">
+      Processing Start:
+      <strong v-if="startTime">{{ startTime }}</strong>
+      <span v-else>Not started</span>
     </div>
 
-    <div class="column process-time">
-      Processing End: {{ endTime ? endTime : 'Not finished' }}
+    <div class="column">
+      Processing End:
+      <strong v-if="endTime">{{ endTime }}</strong>
+      <span v-else>Not finished</span>
     </div>
 
     <div class="last-column">
@@ -77,10 +81,10 @@ export default {
 <style scoped>
 .job-header {
     cursor: pointer;
-    background: #666;
+    background: #555;
     color: #fff;
     padding: 8px;
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 2px;
     display: flex;
     justify-content: space-between;
@@ -94,9 +98,6 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-.process-time {
-    font-weight: bold;
 }
 .buttons {
     display: flex;
