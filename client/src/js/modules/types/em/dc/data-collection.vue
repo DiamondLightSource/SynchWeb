@@ -13,8 +13,9 @@
 
     <div class="data-collection">
       <data-collection-toolbar
-        v-if="dataCollection !== null"
+        v-if="dataCollection !== null && autoProcessing !== null"
         :data-collection-model="dataCollectionModel"
+        :auto-processing="autoProcessing"
       />
 
       <data-collection-header

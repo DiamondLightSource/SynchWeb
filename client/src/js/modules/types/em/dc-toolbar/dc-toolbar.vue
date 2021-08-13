@@ -2,12 +2,21 @@
   <div class="dc-toolbar">
     <span class="button_holder">
       <add-to-project-button :data-collection-model="dataCollectionModel" />
+
       <favourite-button :data-collection-model="dataCollectionModel" />
+
       <!-- DCG Link -->
+
       <permalink-button :data-collection-model="dataCollectionModel" />
+
       <comments-button :data-collection-model="dataCollectionModel" />
+
       <attachments-button :data-collection-model="dataCollectionModel" />
-      <reprocess-button :data-collection-model="dataCollectionModel" />
+
+      <reprocess-button
+        :data-collection="dataCollectionModel.attributes"
+        :auto-processing="autoProcessing"
+      />
     </span>
 
     <!-- if you're using this outside EM you will need to check if
@@ -52,6 +61,10 @@ export default {
     'props': {
         'dataCollectionModel': {
             'type': Object,
+            'required': true,
+        },
+        'autoProcessing': {
+            'type': Array,
             'required': true,
         },
     },

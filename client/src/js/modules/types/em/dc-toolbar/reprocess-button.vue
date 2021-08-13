@@ -1,42 +1,53 @@
 <template>
-  <button-with-marionette-dialog
+  <button-with-dialog
     icon-class="fa fa-cog"
     button-text="Reprocess"
-    dialog-title="Reprocesses"
-    :disabled="dataCollectionModel.get('ARCHIVED') == '1'"
-    hint="Reprocess"
-    :m-view="mView"
-    :m-view-options="mViewOptions"
-  />
+    dialog-title="Run Relion Processing"
+    :disabled="hintText != 'Run Relion processing'"
+    :hint="hintText"
+  >
+    <relion-form :data-collection="dataCollection" />
+  </button-with-dialog>
 </template>
 
 <script>
-import ButtonWithMarionetteDialog from 'modules/types/em/dc-toolbar/button-with-marionette-dialog.vue'
-import ReprocessView from 'modules/dc/views/reprocess2'
+import ButtonWithDialog from 'modules/types/em/dc-toolbar/button-with-dialog.vue'
+import RelionForm from 'modules/types/em/relion/relion-form.vue'
 
 export default {
     'name': 'ReprocessesButton',
     'components': {
-        'button-with-marionette-dialog': ButtonWithMarionetteDialog,
+        'button-with-dialog': ButtonWithDialog,
+        'relion-form': RelionForm
     },
     'props': {
-        'dataCollectionModel': {
+        'dataCollection': {
             'type': Object,
+            'required': true,
+        },
+        'autoProcessing': {
+            'type': Array,
             'required': true,
         },
     },
     'computed': {
-        'mView': function() {
-            // TODO: this view has a template for EM
-            // TODO: but it'd probably be better to use James' /relion/ stuff
-            return ReprocessView
-        },
-        'mViewOptions': function() {
-            return {
-                'model': this.dataCollectionModel,
-                'visit': this.visit,
+        'hintText': function () {
+            if (this.dataCollection.ARCHIVED == '1') {
+                return "Relion processing can't be run because this data collection is archived";
             }
-        },
+
+            const blockingStatus = this.autoProcessing.reduce(function(result, job) {
+                const status = job.PROCESSINGSTATUSDESCRIPTION
+                return ['submitted', 'queued', 'running'].includes(status) ?
+                    status : result
+            }, '')
+            if (blockingStatus) {
+                return "Relion processing can't be run because there is already a job " +
+                    blockingStatus + ' on this data collection'
+            }
+
+            return 'Run Relion processing';
+        }
     },
 }
 </script>
