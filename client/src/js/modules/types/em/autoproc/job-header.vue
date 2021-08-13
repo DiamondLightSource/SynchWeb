@@ -56,15 +56,15 @@ export default {
         },
         'startTime': {
             'type': String,
-            'required': true,
+            'default': '',
         },
         'endTime': {
             'type': String,
-            'required': true,
+            'default': '',
         },
         'status': {
             'type': String,
-            'required': true,
+            'default': '',
         },
     },
     'data': function() {

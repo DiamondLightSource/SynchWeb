@@ -86,17 +86,6 @@ export default {
         'ctfMovieCount': function() {
             return parseInt(this.job.CTFCOUNT, 10)
         },
-        'startTime': function() {
-            const time = this.job.PROCESSINGSTARTTIME
-            return time ? time : 'Not started'
-        },
-        'endTime': function () {
-            const time = this.job.PROCESSINGENDTIME
-            return time ? time : 'Not finished'
-        },
-        'status': function() {
-            return this.job.PROCESSINGSTATUSDESCRIPTION
-        },
     },
     'methods': {
         'hide': function(hidden) {
