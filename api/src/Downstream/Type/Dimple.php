@@ -30,9 +30,11 @@ class Dimple extends DownstreamPlugin {
         }
 
         $mrrun = $this->db->pq(
-            "SELECT mxmrrunid, success, message, inputcoordfile, rundirectory, logfile, 
+            "SELECT mxmrrunid, processingstatus, processingmessage,
             rvaluestart, rvalueend, rfreevaluestart, rfreevalueend
-            FROM mxmrrun 
+            FROM mxmrrun m
+            INNER JOIN autoprocprogram app
+            ON m.autoprocprogramid = app.autoprocprogramid
             WHERE autoprocscalingid=:1",
             array($this->process['PARAMETERS']["scaling_id"])
         );
@@ -64,7 +66,7 @@ class Dimple extends DownstreamPlugin {
         foreach ($blobs as $blob) {
             if (
                 file_exists(
-                    $this->_mrrun['RUNDIRECTORY'] . '/' . $blob['VIEW1']
+                    $blob['FILEPATH']. '/' . $blob['VIEW1']
                 )
             ) {
                 $blob_count++;
@@ -132,7 +134,7 @@ class Dimple extends DownstreamPlugin {
         if (sizeof($blobs)) {
             $views = array("VIEW1", "VIEW2", "VIEW3");
             if ($n < sizeof($views)) {
-                return $this->_mrrun['RUNDIRECTORY'] .
+                return $blobs[0]["FILEPATH"] .
                     '/' .
                     $blobs[0][$views[$n]];
             }
