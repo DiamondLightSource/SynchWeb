@@ -13,7 +13,7 @@ export default {
             return this.angstrom + '<span class="super">2</span>'
         },
         'angstromPerPixel': function() {
-            return this.angstrom + '/pix'
+            return this.angstrom + '/pixel'
         },
         'electronsPerAngstromSquared': function() {
             return this.electron + '/' + this.angstromSquared
