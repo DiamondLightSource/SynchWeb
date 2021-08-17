@@ -9,7 +9,7 @@
         :vid="`anomalous-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :options="anomalousOptionsList"
           inputClass="tw-w-full tw-h-8"
           optionValueKey="value"
@@ -26,7 +26,7 @@
         class="tw-px-2 tw-w-1/2"
         name="Comment">
         <base-input-text
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           inputClass="tw-w-full tw-h-8"
           v-model="inputValue[sampleIndex]['COMMENTS']"
         />
@@ -43,7 +43,7 @@
         :vid="`user-path-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           inputClass="tw-w-full tw-h-8"
           v-model="inputValue[sampleIndex]['USERPATH']"
           :errorMessage="errors[0]"
@@ -60,7 +60,7 @@
         :vid="`spacegroup-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :options="spaceGroupList"
           optionValueKey="value"
           optionTextKey="text"
@@ -83,7 +83,7 @@
             :vid="`cell-a-${sampleIndex}`"
             v-slot="{ errors }">
             <base-input-text
-              v-if="displayInputForm(inputValue)"
+              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
               placeholderText="A"
               :quiet="true"
               inputClass="tw-w-12 tw-h-8"
@@ -102,7 +102,7 @@
             :vid="`cell-b-${sampleIndex}`"
             v-slot="{ errors }">
             <base-input-text
-              v-if="displayInputForm(inputValue)"
+              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
               placeholderText="B"
               :quiet="true"
               inputClass="tw-w-12 tw-h-8"
@@ -122,7 +122,7 @@
             v-slot="{ errors }"
             >
             <base-input-text
-              v-if="displayInputForm(inputValue)"
+              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
               placeholderText="C"
               inputClass="tw-w-12 tw-h-8"
               :errorMessage="errors[0]"
@@ -145,7 +145,7 @@
             v-slot="{ errors }"
             >
             <base-input-text
-              v-if="displayInputForm(inputValue)"
+              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
               placeholderText="α"
               inputClass="tw-w-12 tw-h-8"
               :quiet="true"
@@ -165,7 +165,7 @@
             v-slot="{ errors }"
             >
             <base-input-text
-              v-if="displayInputForm(inputValue)"
+              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
               placeholderText="β"
               inputClass="tw-w-12 tw-h-8"
               :errorMessage="errors[0]"
@@ -185,7 +185,7 @@
             v-slot="{ errors }"
             >
             <base-input-text
-              v-if="displayInputForm(inputValue)"
+              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
               placeholderText="γ"
               inputClass="tw-w-12 tw-h-8"
               :errorMessage="errors[0]"
@@ -210,7 +210,7 @@
         v-slot="{ errors }"
         >
         <base-input-select
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :options="centeringMethodList"
           optionValueKey="value"
           optionTextKey="text"
@@ -230,7 +230,7 @@
         :vid="`experiment-kind-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :options="experimentKindList"
           inputClass="tw-w-full tw-h-8"
           optionValueKey="value"
@@ -250,7 +250,7 @@
         :vid="`energy-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -267,7 +267,7 @@
         :vid="`anomalous-scatterer-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :options="anomalousOptionsList"
           optionValueKey="value"
           inputClass="tw-w-full tw-h-8"
@@ -287,7 +287,7 @@
         :vid="`screening-method-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :options="screeningMethodList"
           optionValueKey="value"
           optionTextKey="text"
@@ -307,7 +307,7 @@
         :vid="`required-resolution-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :disabled="selectedScreeningMode.value !== 'None'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
@@ -325,7 +325,7 @@
         :vid="`minimum-resolution-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :disabled="selectedScreeningMode.value !== 'Better Than'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
@@ -343,7 +343,7 @@
         :vid="`no-to-collect-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="displayInputForm(inputValue)"
+          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
           :disabled="selectedScreeningMode.value !== 'Collect Best N'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
@@ -405,7 +405,12 @@ export default {
     sampleIndex: {
       type: Number,
       required: true
+    },
+    currentEditingRow: {
+      type: [String, null],
+      default: null
     }
+
   },
   data() {
     return {}

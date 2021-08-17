@@ -9,6 +9,7 @@ import ProposalStore from './modules/store.proposal.js'
 import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
 import SamplesStore from './modules/store.samples.js'
+import ShipmentStore from './modules/store.shipment.js'
 
 // Configuration
 import Options from 'models/options.js'
@@ -28,6 +29,7 @@ const store = new Vuex.Store({
     user: UserStore,
     notifications: NotificationStore,
     samples: SamplesStore,
+    shipment: ShipmentStore
   },
   state: {
     // Flag we use to check if we have already setup options

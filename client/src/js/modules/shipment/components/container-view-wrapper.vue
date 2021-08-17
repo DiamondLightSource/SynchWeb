@@ -10,6 +10,7 @@
           :mview="mview"
           :breadcrumbs="bc"
           :containerModel="model"
+          @update-container-state="updateContainerModel"
         />
     </section>
 </template>
@@ -65,64 +66,67 @@ export default {
         }
     },
     created: function() {
-        console.log("Container View Created for proposal Type = " + this.proposalType)
+      console.log("Container View Created for proposal Type = " + this.proposalType)
 
-        // Determine the marionette view constructor we need based on the type
-        this.bc = [{ title: 'Shipments', url: '/shipments' }]
+      // Determine the marionette view constructor we need based on the type
+      this.bc = [{ title: 'Shipments', url: '/shipments' }]
 
-        // We need to know what the container type is before rendering
-        this.model = new Container({ CONTAINERID: this.cid })
-        this.getContainer()
+      // We need to know what the container type is before rendering
+      this.model = new Container({ CONTAINERID: this.cid })
+      this.getContainer()
     },
     methods: {
-        // We get the model here because the view we render depends on the container details
-        async getContainer() {
-            try {
-                const container = await this.$store.dispatch('getModel', this.model)
-                const isPlate = this.isPlate(container)
+      // We get the model here because the view we render depends on the container details
+      async getContainer() {
+          try {
+              const container = await this.$store.dispatch('getModel', this.model)
+              const isPlate = this.isPlate(container)
 
-                if (isPlate) {
-                  this.mview = ContainerPlateViewMap[this.proposalType] ? ContainerPlateViewMap[this.proposalType].view : null
-                  this.params = { iid: this.iid, sid: this.sid }
-                } else {
-                  this.mview = ContainerViewMap[this.proposalType] ? ContainerViewMap[this.proposalType].view : ContainerViewMap['default'].view
+              if (isPlate) {
+                this.mview = ContainerPlateViewMap[this.proposalType] ? ContainerPlateViewMap[this.proposalType].view : null
+                this.params = { iid: this.iid, sid: this.sid }
+              } else {
+                this.mview = ContainerViewMap[this.proposalType] ? ContainerViewMap[this.proposalType].view : ContainerViewMap['default'].view
+              }
+
+              if (!this.mview) {
+                const newViewContainers = {
+                  mx: 'mx-container-view',
+                  saxs: 'saxs-container-plate-view'
                 }
 
-                if (!this.mview) {
-                  const newViewContainers = {
-                    mx: 'mx-container-view',
-                    saxs: 'saxs-container-plate-view'
-                  }
+                this.componentType = newViewContainers[this.proposalType]
+              }
+              // Update the breadcrumbs
+              this.bc.push({ title: this.model.get('SHIPMENT'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
+              this.bc.push({ title: 'Containers' })
+              this.bc.push({ title: this.model.get('NAME') })
+          } catch (error) {
+            console.log("Error getting container model " + error.msg)
+            app.alert({ title: 'No such container', message: error.msg})
+          } finally {
+            this.ready = true
+          }
+      },
+      // Determine if the container is a plate type
+      isPlate(model) {
+          let containerType = model.get('CONTAINERTYPE')
 
-                  this.componentType = newViewContainers[this.proposalType]
-                }
-                // Update the breadcrumbs
-                this.bc.push({ title: this.model.get('SHIPMENT'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
-                this.bc.push({ title: 'Containers' })
-                this.bc.push({ title: this.model.get('NAME') })
-            } catch (error) {
-              console.log("Error getting container model " + error.msg)
-              app.alert({ title: 'No such container', message: error.msg})
-            } finally {
-              this.ready = true
-            }
-        },
-        // Determine if the container is a plate type
-        isPlate(model) {
-            let containerType = model.get('CONTAINERTYPE')
+          // This is the current logic to determine the plate type
+          // Anything other than Box, Puck or PCRStrip
+          // TODO - get container types from data base
+          let is_plate = !(['Box', 'Puck', 'PCRStrip', null].indexOf(containerType) > -1)
 
-            // This is the current logic to determine the plate type
-            // Anything other than Box, Puck or PCRStrip
-            // TODO - get container types from data base
-            let is_plate = !(['Box', 'Puck', 'PCRStrip', null].indexOf(containerType) > -1)
+          // Also disclude anything with an Xpdf prefix...
+          if (is_plate && model.get('CONTAINERTYPE').includes('Xpdf')) is_plate = false
 
-            // Also disclude anything with an Xpdf prefix...
-            if (is_plate && model.get('CONTAINERTYPE').includes('Xpdf')) is_plate = false
+          console.log('is plate', is_plate)
 
-            console.log('is plate', is_plate)
-
-            return is_plate
-        }
+          return is_plate
+      },
+      async updateContainerModel(data) {
+        this.model.set(data)
+      }
     },
     beforeRouteEnter: function(to, from, next) {
       // Lookup the proposal first to make sure we can still add to it
