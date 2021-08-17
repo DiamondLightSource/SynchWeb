@@ -85,9 +85,8 @@ export default {
       this.editingRow = row.LOCATION;
     },
     displayInputForm(row) {
-      return (
-        !this.containerId
-      );
+      // console.log({ row })
+      return !this.containerId || Number(this.editingRow) === Number(row.LOCATION)
     },
     formatSelectData(selectData, data, property) {
       const matchedSelectData = selectData.find(

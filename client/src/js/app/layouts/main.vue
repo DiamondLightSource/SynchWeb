@@ -34,10 +34,11 @@
       Wrapping dialog box region in a component. In future we can redesign this
       For now it just registers the region and works with existing marionette views
     -->
-    <dialog-box></dialog-box>
+    <dialog-box v-if="displayModal"></dialog-box>
 
     <!-- Show logos, links etc. -->
     <footer-panel />
+    <portal-target name="dialog"></portal-target>
   </div>
 </template>
 
@@ -76,6 +77,7 @@ export default {
         admin_menu: [],
         proposal_menu: [],
         bc: [{title: 'Home', link: '/'}],
+        displayModal: false
       }
     },
     computed: {

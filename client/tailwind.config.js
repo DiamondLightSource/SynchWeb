@@ -128,6 +128,9 @@ module.exports = {
         'table-pages-disable-color': '#ababab',
 // Plot
         'plot-legend-background': '#dddddd',
+
+// Modal
+        'modal-header-background': '#e9e9e9'
       }
     }
   },

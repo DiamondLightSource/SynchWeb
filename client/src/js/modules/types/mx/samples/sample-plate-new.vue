@@ -68,7 +68,7 @@
         :vid="`protein-${sample['LOCATION']}`"
         v-slot="{ errors }">
         <combo-box
-          v-if="displayInputForm(sample)"
+          v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
           :data="proteinsOptionsList"
           textField="text"
           :inputIndex="sampleIndex"
@@ -89,7 +89,7 @@
         :vid="`sample-name-${sample['LOCATION']}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="displayInputForm(sample)"
+          v-if="!containerId"
           inputClass="tw-w-full tw-h-8"
           v-model="sample['NAME']"
           :errorMessage="errors[0]"
@@ -106,7 +106,7 @@
         :vid="`sample-group-${sample['BLSAMPLEGROUPID']}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="displayInputForm(sample)"
+          v-if="sample['LOCATION'] === editingRow"
           :options="sampleGroups"
           optionValueKey="value"
           optionTextKey="text"
@@ -120,6 +120,7 @@
 
       <tabbed-columns
         class="tw-w-1/2 tw-py-1"
+        :currentEditingRow="editingRow"
         :currentTab="currentTab"
         :rowData="sample"
         :rowDatIndex="sampleIndex"
@@ -133,7 +134,15 @@
 
       <div class="actions-column tw-py-1 tw-text-right">
         <span v-if="containerId">
-          <router-link class="button" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
+          <span v-if="editingRow === sample['LOCATION']">
+            <a class="button tw-cursor-pointer" @click="saveSample(sample['LOCATION'])"><i class="fa fa-check"></i></a>
+            <a class="button tw-cursor-pointer" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
+          </span>
+          <span v-else>
+            <a class="button tw-cursor-pointer" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
+            <router-link v-if="sample['BLSAMPLEID']" class="button" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
+            <a class="button tw-cursor-pointer" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
+          </span>
         </span>
         <span v-else>
           <a class="button tw-mx-1" href="" @click.prevent="$emit('clone-sample', sample['LOCATION'])"><i class="fa fa-plus"></i></a>
@@ -141,6 +150,25 @@
         </span>
       </div>
     </div>
+    <portal to="dialog">
+      <dialog-box
+        v-if="displaySampleGroupModal"
+        size="small"
+        @perform-modal-action="performModalAction"
+        @close-modal-action="closeModalAction">
+        <template>
+          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
+            <p>Sample Groups</p>
+            <button
+              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+              @click="closeModalAction">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <div class="tw-py-3 tw-px-4"></div>
+        </template>
+      </dialog-box>
+    </portal>
   </div>
 </template>
 
@@ -151,6 +179,7 @@ import TabbedColumnsView from 'modules/types/mx/samples/tabbed-columns-view.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
+import Dialog from 'app/components/dialogbox.vue'
 
 export default {
   name: 'mx-sample-plate-new',
@@ -161,7 +190,8 @@ export default {
     'tabbed-columns': TabbedColumnsView,
     'combo-box': ComboBox,
     'validation-provider': ValidationProvider,
-    'validation-observer': ValidationObserver
+    'validation-observer': ValidationObserver,
+    'dialog-box': Dialog
   },
   data() {
     return {
@@ -259,8 +289,8 @@ export default {
         }
       ],
       currentTab: 'basic',
-      editingRow: null,
-      sample: {}
+      sample: {},
+      displaySampleGroupModal: false
     }
   },
   computed: {
@@ -317,9 +347,6 @@ export default {
       this.sample.CONTAINERID = this.containerId
       this.editingRow = row.LOCATION
     },
-    displayInputForm(row) {
-      return !this.containerId || Number(this.editingRow) === Number(row.LOCATION)
-    },
     findSampleGroupsBySample(proteinId) {
       return this.sampleGroups.reduce((acc, curr) => {
         const hasSample = curr.MEMBERS.toJSON().find(member => Number(member.PROTEINID) === Number(proteinId))
@@ -332,6 +359,17 @@ export default {
 
         return acc
       }, '')
+    },
+    onAddToSampleGroup() {
+      this.displaySampleGroupModal = true
+    },
+    closeSampleEditing() {
+      this.editingRow = null
+    },
+    closeModalAction() {
+      this.displaySampleGroupModal = false
+    },
+    performModalAction() {
     }
   },
   watch: {
@@ -349,7 +387,7 @@ export default {
   width: 30px;
 }
 .protein-column {
-  width: 20%;
+  width: 18%;
 }
 .name-column {
   width: 10%;
@@ -382,6 +420,6 @@ export default {
   word-wrap: break-word;
 }
 .actions-column {
-  width: calc(10% - 30px);
+  width: calc(12% - 30px);
 }
 </style>

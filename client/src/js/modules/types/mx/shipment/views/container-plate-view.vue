@@ -65,7 +65,13 @@
 
           <li>
             <span class="label">Automated Collection</span>
-            <span><button class="button"><i class="fa fa-plus"></i> Queue</button> this container for Auto Collect</span>
+            <span v-if="containerQueueId">
+              This container was queued for auto collection on {{container['QUEUEDTIMESTAMP']}}
+              <a @click="onUnQueueContainer" class="tw-cursor-pointer button unqueue"><i class="fa fa-times"></i> Unqueue</a>
+            </span>
+            <span v-else>
+              <a @click="onQueueContainer" class="tw-cursor-pointer button queue"><i class="fa fa-plus"></i> Queue</a> this container for Auto Collect
+            </span>
           </li>
 
           <li>
@@ -117,6 +123,25 @@
       />
     </div>
 
+    <portal to="dialog">
+      <dialog-box
+        v-if="displayQueueModal"
+        @perform-modal-action="performModalAction(modal[currentModal].actions.confirm)"
+        @close-modal-action="closeModalAction(modal[currentModal].actions.cancel)">
+        <template>
+          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
+            <p>Queue Container?</p>
+            <button
+              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+              @click="closeModalAction(modal[currentModal].actions.cancel)">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <div class="tw-py-3 tw-px-4" v-html="modal[currentModal].message"></div>
+        </template>
+      </dialog-box>
+    </portal>
+
   </div>
 </template>
 
@@ -137,6 +162,8 @@ import ValidContainerGraphic from 'modules/types/saxs/samples/valid-container-gr
 import TableComponent from 'app/components/table.vue'
 import PaginationComponent from 'app/components/pagination.vue'
 import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
+import Dialog from 'app/components/dialogbox.vue'
+import formatDate from 'date-fns-tz/format'
 
 import { mapGetters } from 'vuex'
 
@@ -162,7 +189,8 @@ export default {
     'valid-container-graphic': ValidContainerGraphic,
     'table-component': TableComponent,
     'pagination-component': PaginationComponent,
-    'base-input-checkbox': BaseInputCheckBox
+    'base-input-checkbox': BaseInputCheckBox,
+    'dialog-box': Dialog
   },
   props: {
     containerModel: {
@@ -188,7 +216,27 @@ export default {
       experimentKind: null,
       plateType: null, // Stores if a puck or plate type
       containerType: '',
-      plateKey: 0
+      plateKey: 0,
+      displayQueueModal: false,
+      modal: {
+        queueContainer: {
+          actions: {
+            cancel: 'closeModal',
+            confirm: 'queueContainer'
+          },
+          message: `<p>Are you sure you want to queue this container for auto collection?</p>`
+        },
+        unQueueContainer: {
+          actions: {
+            cancel: 'closeModal',
+            confirm: 'unQueueContainer'
+          },
+          message: `<p>Are you sure you want to remove this container from the queue? You will loose your current place</p>`
+        }
+      },
+      currentModal: 'queueContainer',
+      containerQueueId: null,
+      autoCollectMessage: ''
     }
   },
   computed: {
@@ -210,9 +258,7 @@ export default {
   },
   created: function() {
     // Get samples for this container id
-    this.container = Object.assign({}, this.containerModel.toJSON())
-    this.containerId = this.containerModel.get('CONTAINERID')
-
+    this.loadContainerData()
     this.samplesCollection = new Samples()
     this.samplesCollection.queryParams.cid = this.containerId
     this.getSamples(this.samplesCollection)
@@ -222,9 +268,13 @@ export default {
     this.getContainerTypes()
     this.getUsers()
     this.getProcessingPipelines()
-
   },
   methods: {
+    loadContainerData() {
+      this.container = Object.assign({}, this.containerModel.toJSON())
+      this.containerId = this.containerModel.get('CONTAINERID')
+      this.containerQueueId = this.containerModel.get('CONTAINERQUEUEID')
+    },
     async  getProteins() {
       this.proteinsCollection = new DistinctProteins()
       this.gProteinsCollection = new DistinctProteins()
@@ -313,6 +363,66 @@ export default {
     },
     onContainerCellClicked: function(location) {
       EventBus.$emit('select-sample', location)
+    },
+    onQueueContainer() {
+      this.currentModal = 'queueContainer'
+      this.displayQueueModal = true
+    },
+    onUnQueueContainer() {
+      this.currentModal = 'unQueueContainer'
+      this.displayQueueModal = true
+    },
+    // This method is used to trigger the action we want to carry out when the modal confirmation button is clicked
+    performModalAction(selectedModalAction) {
+      this[selectedModalAction]()
+    },
+    // This method is used to trigger the action we want to carry out when the modal close button is clicked
+    closeModalAction(selectedModalAction) {
+      this[selectedModalAction]()
+    },
+    closeModal() {
+      this.displayQueueModal = false
+    },
+    async queueContainer() {
+      try {
+        this.displayQueueModal = false
+        const response = await this.$store.dispatch('shipment/queueContainer', { CONTAINERID: this.containerId })
+        this.$emit('update-container-state', {
+          CONTAINERQUEUEID: response.CONTAINERQUEUEID,
+          QUEUEDTIMESTAMP: formatDate(new Date(), 'dd-MM-yyyy HH:mm')
+        })
+        this.$nextTick(() => {
+          this.loadContainerData()
+          // TODO: Toggle Auto in the samples table
+        })
+      } catch (error) {
+        this.$store.commit('notifications/addNotification', {
+          title: 'Error',
+          message: error.message,
+          level: 'error'
+        })
+      } finally {
+        // TODO: Toggle loading state off
+      }
+    },
+    async unQueueContainer() {
+      try {
+        this.displayQueueModal = false
+        const response = await this.$store.dispatch('shipment/unQueueContainer', { CONTAINERID: this.containerId })
+        this.$emit('update-container-state', { CONTAINERQUEUEID: null })
+        this.$nextTick(() => {
+          this.loadContainerData()
+          // TODO: Toggle Auto in the samples table
+        })
+      } catch (error) {
+        this.$store.commit('notifications/addNotification', {
+          title: 'Error',
+          message: error.message,
+          level: 'error'
+        })
+      } finally {
+        // TODO: Toggle loading state off
+      }
     }
   },
   provide() {
