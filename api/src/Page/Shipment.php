@@ -48,6 +48,7 @@ class Shipment extends Page
                               'BARCODE' => '([\w-])+',
                               'LOCATION' => '[\w|\s|-]+',
                               'NEXTLOCATION' => '[\w|\s|-]+',
+                              'STATUS' => '[\w|\s|-]+',
 
                               'PURCHASEDATE' => '\d+-\d+-\d+',
                               'LABCONTACTID' => '\d+',
@@ -118,6 +119,7 @@ class Shipment extends Page
                               'READYBYTIME' => '\d\d:\d\d',
                               'CLOSETIME' => '\d\d:\d\d',
                               'PRODUCTCODE' => '\w',
+                              'BEAMLINENAME' => '[\w-]+',
 
                               'manifest' => '\d',
                               'currentuser' => '\d',
@@ -135,6 +137,7 @@ class Shipment extends Page
                               array('/dewars(/:did)(/sid/:sid)(/fc/:FACILITYCODE)', 'get', '_get_dewars'),
                               array('/dewars', 'post', '_add_dewar'),
                               array('/dewars/:did', 'patch', '_update_dewar'),
+                              array('/dewars/comments/:did', 'patch', '_update_dewar_comments'), // endpoint to allow bcr to update comments
 
                               array('/dewars/history(/did/:did)', 'get', '_get_history'),
                               array('/dewars/history', 'post', '_add_history'),
@@ -176,6 +179,7 @@ class Shipment extends Page
                               array('/containers/registry/proposals/:CONTAINERREGISTRYHASPROPOSALID', 'delete', '_rem_prop_container'),
 
                               array('/containers/history', 'get', '_container_history'),
+                              array('/containers/history', 'post', '_add_container_history'),
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
                               
@@ -855,6 +859,7 @@ class Shipment extends Page
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
+            if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
@@ -1164,8 +1169,28 @@ class Shipment extends Page
                 }
             }
         }
-        
-        
+        /*
+        * Added for Logistics App. Stores basic info about state of the dewar via comments.
+        * No user is logged in hence this is provided as extra end point.
+        * Once authentication/authorization is moved into separate service merge this with other patch request.
+        */        
+        function _update_dewar_comments() {
+            if (!$this->has_arg('did')) $this->_error('No dewar specified');
+            if (!$this->has_arg('COMMENTS')) $this->_error('No dewar comments specified');
+
+            $dewars = $this->db->pq("SELECT d.dewarid
+              FROM dewar d
+              WHERE d.dewarid = :1", array($this->arg('did')));
+
+            if (!sizeof($dewars)) $this->_error('Dewar ' . $this->arg('did') . ' not found', 404);
+
+            $dewar = $dewars[0];
+
+            $this->db->pq("UPDATE dewar set comments=:2 WHERE dewarid=:1", array($dewar['DEWARID'], $this->arg('COMMENTS')));
+
+            $this->_output(array('DEWARID' => $dewar['DEWARID']));
+        }
+
         
         # Update shipping status to sent, email for CL3
         function _send_shipment() {
@@ -1281,9 +1306,9 @@ class Shipment extends Page
 
             if ($this->has_arg('ty')) {
                 if ($this->arg('ty') == 'plate') {
-                    $where .= " AND c.containertype NOT LIKE 'Puck'";
+                    $where .= " AND c.containertype NOT LIKE '%puck'";
                 } else if ($this->arg('ty') == 'puck') {
-                    $where .= " AND c.containertype LIKE 'Puck'";
+                    $where .= " AND c.containertype LIKE '%puck'";
                 } else if ($this->arg('ty') == 'imager') {
                     $where .= " AND c.imagerid IS NOT NULL";
                 } else if ($this->arg('ty') == 'todispose') {
@@ -1304,7 +1329,7 @@ class Shipment extends Page
 
 
             if ($this->has_arg('PUCK')) {
-                $where .= " AND c.containertype LIKE 'Puck'";
+                $where .= " AND c.containertype LIKE '%puck'";
             }
 
             
@@ -1367,7 +1392,7 @@ class Shipment extends Page
                 INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = sh.proposalid
                 LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
-                LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid
+                LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'
                 LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
                 LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                 LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
@@ -1429,7 +1454,7 @@ class Shipment extends Page
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
                                   LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
-                                  LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid
+                                  LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'
                                   LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
                                   LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                                   LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
@@ -1513,7 +1538,7 @@ class Shipment extends Page
                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                   INNER JOIN proposal p ON p.proposalid = sh.proposalid
                   INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
-                  WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL", array($this->proposalid, $this->arg('CONTAINERID')));
+                  WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL AND ss.source='manual'", array($this->proposalid, $this->arg('CONTAINERID')));
 
                 foreach ($samples as $s) {
                     $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
@@ -1669,9 +1694,70 @@ class Shipment extends Page
         }
 
 
+        /**
+         * Controller method for add container history endpoint.
+         * This is called from another service when the container is scanned into a location.
+         * 
+         * The calling application must be in the bcr whitelist group and include the CONTAINERID and LOCATION in the parameters
+         * On success, a new entry in ContainerHistory is created with the location updated.
+         * The ContainerHistory.status can be changed with the optional STATUS argument.
+         * The ContainerHistory.beamlineName can be changed with the optional BEAMLINE argument.
+         * It returns error if CONTAINERID does not refer to an existing container.
+         */
         function _add_container_history() {
+            if (!$this->bcr()) $this->_error('You need to be on the internal network to add history');
 
+            if (!$this->has_arg('CONTAINERID') && !$this->has_arg('CODE')) $this->_error('No container id or code specified');
+            if (!$this->has_arg('LOCATION')) $this->_error('No location specified');
+
+            $where = '1=1';
+            $args = array();
+
+            if ($this->has_arg('CONTAINERID')) {
+                $where .= ' AND c.containerid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('CONTAINERID'));
+            } else if ($this->has_arg('CODE')) {
+                $where .= ' AND c.code=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('CODE'));
+            }
+
+            $cont = $this->db->pq("SELECT c.containerid, d.dewarid, s.shippingid, d.dewarstatus
+              FROM container c
+              INNER JOIN dewar d ON d.dewarid = c.dewarid
+              INNER JOIN shipping s ON s.shippingid = d.shippingid
+              WHERE $where ORDER BY c.containerid DESC", $args);
+
+            if (!sizeof($cont)) $this->_error('No such container', 404);
+            else $cont = $cont[0];
+
+            // We may need to update the dewar and shipping status - for now leave them alone
+
+            // Optionally we can set the beamlinename in ContainerHistory
+            $beamline_name = $this->has_arg('BEAMLINENAME') ? $this->arg('BEAMLINENAME') : null;
+
+            // Figure out the most recent status for this container
+            // Initially use the dewar status unless its been set previously
+            $container_status = strtolower($cont['DEWARSTATUS']);
+
+            if ($this->has_arg('STATUS')) $container_status = $this->arg('STATUS');
+            else {
+                // Get last status for this container - we are only going to change its location
+                $container_history = $this->db->pq("SELECT status FROM containerhistory WHERE containerid = :1 ORDER BY containerhistoryid DESC LIMIT 1", array($cont['CONTAINERID']));
+
+                if (sizeof($container_history)) $container_status = $container_history[0]['STATUS'];
+            }
+
+            // Insert new record to store container location
+            $this->db->pq("INSERT INTO containerhistory (containerid,status,location,beamlinename) VALUES (:1,:2,:3,:4)", array($cont['CONTAINERID'], $container_status, $this->arg('LOCATION'), $beamline_name));
+            $chid = $this->db->id();
+
+            // Update the container beamlinelocation so we can filter out duplicate container history entries
+            $this->db->pq("UPDATE container SET beamlinelocation=:1 WHERE containerid=:2", array($this->arg('LOCATION'), $cont['CONTAINERID']));
+
+            $this->_output(array('CONTAINERHISTORYID' => $chid));
         }
+
+
 
 
         function _container_registry() {
@@ -2479,7 +2565,7 @@ class Shipment extends Page
          */
         function _notify_container() {
             global $auto;
-            
+
             if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
             if (!$this->has_arg('BARCODE')) $this->_error('No container specified');
 

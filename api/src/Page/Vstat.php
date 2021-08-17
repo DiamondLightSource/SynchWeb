@@ -317,7 +317,7 @@ class Vstat extends Page
             //$bs = $this->_get_archive('SR-DI-DCCT-01:SIGNAL', strtotime($info['ST']), strtotime($info['EN']), 200);
             $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']), 2000);
                                     
-            if (!sizeof($bs)) $bs = array();
+            if (!$bs) $bs = array();
                                     
             $lastv = 0;
             $ex = 3600*1000;
@@ -440,7 +440,7 @@ class Vstat extends Page
                                     
                 // Beam status
                 $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']), 2000);
-                if (!sizeof($bs)) $bs = array();
+                if (!$bs) $bs = array();
                 
                 $lastv = 0;
                 $ex = 3600*1000;
@@ -576,7 +576,8 @@ class Vstat extends Page
                 } else {
                     $dc_types[$dc['EXPERIMENTTYPE']]['failed']++; 
                     if ($dc['LOGFILE']) {
-                        $last = rtrim(end(file($dc['LOGFILE'])));
+                        $lines = file($dc['LOGFILE']);
+                        $last = rtrim(end($lines));
 
                         if (!array_key_exists($last, $dc_types[$dc['EXPERIMENTTYPE']]['messages'])) {
                             $dc_types[$dc['EXPERIMENTTYPE']]['messages'][$last] = array(
@@ -675,8 +676,8 @@ class Vstat extends Page
 
         // BAG Overview Stats
         function _overview() {
-            global $bl_types;
-            $bls = implode("', '", $bl_types[$this->ty]);
+            $beamlines = $this->_get_beamlines_from_type($this->ty);
+            $bls = implode("', '", $beamlines);
 
             $where = " AND p.proposalcode NOT IN ('cm') AND s.beamlinename in ('$bls')";
             $args = array();
@@ -838,8 +839,8 @@ class Vstat extends Page
 
         // Histogram of beamline parameters
         function _parameter_histogram() {
-            global $bl_types;
-            $bls = implode('\', \'', $bl_types[$this->ty]);
+            $beamlines = $this->_get_beamlines_from_type($this->ty);
+            $bls = implode('\', \'', $beamlines);
 
             $types = array(
                 'energy' => array('unit' => 'eV', 'st' => 5000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
@@ -932,8 +933,9 @@ class Vstat extends Page
 
 
         function _dewars_breakdown() {
-            global $bl_types;
-            $bls = implode("', '", $bl_types[$this->ty]);
+            $beamlines = $this->_get_beamlines_from_type($this->ty);
+
+            $bls = implode("', '", $beamlines);
 
             // $where = " AND p.proposalcode NOT IN ('cm') AND ses.beamlinename in ('$bls')";
             $where = " AND p.proposalcode NOT IN ('cm')";

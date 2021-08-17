@@ -1,7 +1,7 @@
 define(['marionette',
     'backgrid',
     'modules/shipment/collections/distinctproteins',
-    'utils/sgs',
+    'collections/spacegroups',
     'utils/anoms',
     'utils/centringmethods',
     'utils/experimentkinds',
@@ -21,7 +21,7 @@ define(['marionette',
 
     'templates/samples/sample.html',
     'backbone', 'backbone-validation'
-    ], function(Marionette, Backgrid, DistinctProteins, SG, Anom, CM, EXP, RS, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
+    ], function(Marionette, Backgrid, DistinctProteins, SpaceGroups, Anom, CM, EXP, RS, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
         ComponentsView,
         InspectionImages, ImageHistoryView,
         template, Backbone) {
@@ -73,6 +73,8 @@ define(['marionette',
             this.subsamples.fetch()
 
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubsample)
+
+            this.spacegroups = new SpaceGroups(null, { state: { pageSize: 9999 } })
         },
 
 
@@ -85,10 +87,14 @@ define(['marionette',
         },
         
         
-        onRender: function() {
+        onRender: function () {
+            var self = this
             var edit = new Editable({ model: this.model, el: this.$el })
-            //edit.create('ACRONYM', 'select')
-            edit.create('SPACEGROUP', 'select', { data: SG.obj() })
+
+            this.spacegroups.fetch().done(function () {
+                edit.create('SPACEGROUP', 'select', { data: self.spacegroups.kv() })
+            })
+            
             edit.create('ANOMALOUSSCATTERER', 'select', { data: Anom.obj() })
             edit.create('COMMENTS', 'text')
             edit.create('VOLUME', 'text')
@@ -109,7 +115,7 @@ define(['marionette',
             })
 
             this.distinct = new DistinctProteins()
-            var self = this
+
             this.distinct.fetch().done(function() {
                 var opts = _.map(self.distinct.kv(), function(v,k) { return { value: v, id: k } })
                 edit.create('PROTEINID', 'autocomplete', { autocomplete: { source: opts } })

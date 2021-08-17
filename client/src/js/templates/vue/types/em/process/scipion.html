@@ -84,15 +84,15 @@
                 </li>
             </ul>
 
-            <button name="start" type="submit" class="submit" v-on:click.prevent="onSubmit" v-if="!isJobQueued" :disabled="isFormReadOnly">
+            <button name="start" type="submit" class="button submit" v-on:click.prevent="onSubmit" v-if="!isJobQueued" :disabled="isFormReadOnly">
                 Start Processing
             </button>
 
-            <button name="cancel" type="submit" class="submit" v-on:click.prevent="onContinue" v-if="!isJobQueued" :disabled="isFormReadOnly">
+            <button name="cancel" type="submit" class="button submit" v-on:click.prevent="onContinue" v-if="!isJobQueued" :disabled="isFormReadOnly">
                 Cancel
             </button>
 
-            <button name="start" type="submit" class="submit" v-on:click.prevent="onContinue" v-if="isJobQueued">
+            <button name="start" type="submit" class="button submit" v-on:click.prevent="onContinue" v-if="isJobQueued">
                 Monitor
             </button>
         </div>

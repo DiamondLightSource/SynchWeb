@@ -106,20 +106,29 @@
 
             
             <li class="head">Courier Details</li>
+            <% if (SHIPPING.DELIVERYAGENT_AGENTCODE) { %>
+            <li>
+                <label>
+                    Use another account
+                    <span class="small">Use another courier account instead</span>
+                </label>
+                <input type="checkbox" name="USE_ANOTHER_COURIER_ACCOUNT" value="0" />
+            </li>
             <li>
                 <label>Courier
                     <span class="small">Courier Name</span>
                 </label>
-                <span class="courier"></span>
+                <input type="text" name="DELIVERYAGENT_AGENTNAME" />
             </li>
 
-            <% if (!DEWAR.FACILITYCODE) { %>
+
             <li>
                 <label>Account Number
                     <span class="small">Courier account number</span>
                 </label>
                 <input type="text" name="DELIVERYAGENT_AGENTCODE" />
             </li>
+            <% } %>
 
             <li>
                 <label>Airway Bill Number
@@ -127,7 +136,6 @@
                 </label>
                 <input type="text" name="AWBNUMBER" />
             </li>
-            <% } %>
 
 
             <li>

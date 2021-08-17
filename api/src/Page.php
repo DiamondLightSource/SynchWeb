@@ -131,15 +131,17 @@ class Page
         function _get_type_from_beamline($bl) {
             global $bl_types;
 
-            $bl_type = null;
+            $beamline_type = null;
 
-            foreach ($bl_types as $tty => $bls) {
-                if (in_array($bl, $bls)) {
-                    $bl_type = $tty;
+            foreach($bl_types as $type) {
+                if ($type['name'] == $bl) {
+                    $beamline_type = $type['group'];
+              
                     break;
                 }
             }
-            return $bl_type;
+
+            return $beamline_type;
         }
 
         /**
@@ -147,25 +149,41 @@ class Page
         * The return value can be checked with empty() if required
         *
         * @param String $ty Beamline type/group 'mx', 'em', etc. or 'all' to get all beamlines
-        * @return Array Returns list of beamlines within the group or empty array
+        * @param Boolean $archived Default: False. Flag that allows archived beamlines to be included in result
+        * @return Array Returns list of beamlines that are part of the beamline type
         */
-        function _get_beamlines_from_type($ty) {
+        function _get_beamlines_from_type($ty, $archived = False) {
             global $bl_types;
-
-            $bls = array();
-
+        
+            $beamlines = array();
+        
             // Guard against null value passed in
-            if (!$ty) return $bls;
-
+            if (!$ty) return $beamlines;
+        
             if ($ty == 'all') {
-                foreach($bl_types as $beamlines) {
-                    $bls = array_merge($bls, $beamlines);
-                }
-            } else {            
-                if(array_key_exists($ty, $bl_types)) $bls = $bl_types[$ty];
+                $beamlines = array_filter(array_map(function($k) use ($archived) {
+                    if ($archived) {
+                        // Then return all beamlines ignoring the archived property for each beamline
+                        return $k['name'];
+                    } else {
+                        // We need to filter beamlines where its archived property is set to true.
+                        // If there is no archived property set for the beamline, it's not archived
+                        $beamlineIsArchived = array_key_exists('archived', $k) ? $k['archived'] : False;
+                        return $beamlineIsArchived ? NULL : $k['name'];
+                    }
+                }, $bl_types));
+            } else {
+                $beamlines = array_filter(array_map(function($k) use ($ty, $archived) {
+                    $beamlineIsArchived = array_key_exists('archived', $k) ? $k['archived'] : False;
+                    if ($archived && $k['group'] == $ty) {
+                        return $k['name'];
+                    } else if ($k['group'] == $ty && !$beamlineIsArchived) {
+                        return $k['name'];
+                    }
+                }, $bl_types));
             }
             
-            return $bls;
+            return $beamlines;
         }
 
 

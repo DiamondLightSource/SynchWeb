@@ -63,7 +63,7 @@ define(['vue',
                     model.save({}, {
                         success: function(model, response, options) {
                             // Indicate success and reset form
-                            app.alert({message: "Feedback successfully submitted"})
+                            app.message({message: "Feedback successfully submitted"})
                             self.isLoading = false
                             self.resetForm()
                         },

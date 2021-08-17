@@ -3,7 +3,6 @@ define(['backbone'], function(Backbone) {
     idAttribute: 'ID',
     urlRoot: function() { return '/dc/single'+(this.get('TYPE') ? '/t/'+this.get('TYPE') : '') },
       
-      
     /*parse: function(resp, options) {
         console.log(options)
         return options.data && options.data.pp ? resp : resp[1][0]

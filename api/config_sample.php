@@ -89,38 +89,11 @@
         'pipeline=dials ' => 'DIALS',
     );
 
+    # Filtered downstream jobs
+    $downstream_filter = array();
+
     # Crystal alignment programs
     $strat_align = array('XOalign', 'dials.align_crystal');
-
-    # Places to search for autoprocessing and screening statuses. File scraping is done if no database value is available.
-    $ap_statuses = array(
-        'locations' => array('/processed', 'tmp'),
-
-        'types' => array(
-            'screening' => array(
-                # Name on datacollectionpage => (folder, log file, grep for success, database name for matching)
-                "Mosflm" => array('simple_strategy/', 'strategy_native.log', 'Phi start'),
-                "EDNA" => array('edna/', 'summary.html', 'Selected spacegroup'),
-            ),
-            'autoproc' => array(
-                "Fast DP" => array('fast_dp/', 'fast_dp.log', 'I/sigma', 'fast_dp'),
-                
-                "Xia2/3dii" => array('xia2/3dii-run/', 'xia2.txt' , 'I/sigma', 'xia2 3dii'),
-                "DIALS" => array('xia2/dials-run/', 'xia2.txt' , 'I/sigma', 'xia2 dials'),
-                
-                "Xia2/Multiplex" => array('xia2.multiplex/', 'xia2.multiplex.log' , 'clustering summary', 'xia2.multiplex'),
-                
-                "autoPROC" => array('autoPROC/ap-run/', 'autoPROC.log', 'Normal termination', 'autoPROC'),            
-            ),
-            'downstream' => array(
-                "Fast EP" => array('fast_ep/', 'fast_ep.log', 'Best hand:'),
-                "Dimple" => array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
-                "MrBUMP" => array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
-                "Big EP/XDS" => array('big_ep/', '/xia2/3dii-run/big_ep*.log', 'Results for', ''),
-                "Big EP/DIALS" => array('big_ep/', '/xia2/dials-run/big_ep_*.log', 'Results for', 'Residues'),
-            )
-        )
-    );
 
     # Active MQ - Set to empty string to disable
     $activemq_server = 'tcp://activemq.server.ac.uk';
@@ -282,9 +255,28 @@
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
     #     mx, gen, em
-    $bl_types = array('mx' => array('i02', 'i03', 'i04'),
-                      'gen' => array('i11'),
-                      );
+    $bl_types = array(
+        array(
+            'name' => 'i02',
+            'group' => 'mx',
+            'archived' => True
+        ),
+        array(
+            'name' => 'i03',
+            'group' => 'mx',
+            'archived' => False
+        ),
+        array(
+            'name' => 'i04',
+            'group' => 'mx',
+            'archived' => False
+        ),
+        array(
+            'name' => 'i11',
+            'group' => 'gen',
+            'archived' => False
+        )
+    );
 
 
     # Webcam IPs

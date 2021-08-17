@@ -43,6 +43,7 @@ class Sample extends Page
                               'capillary' => '',
                               'capillaryPhase' => '',
                               'json' => '',
+                              'dcp' => '\d',
 
                               'collected_during' => '\w+\d+-\d+',
 
@@ -62,7 +63,7 @@ class Sample extends Page
 
                               'NAME' => '[\w\s-()]+',
                               'COMMENTS' => '.*',
-                              'SPACEGROUP' => '(\w+)|^$', // Any word character or empty string
+                              'SPACEGROUP' => '(\w|\s|\-|\/)+|^$', // Any word character (inc spaces bars and slashes) or empty string
                               'CELL_A' => '\d+(.\d+)?',
                               'CELL_B' => '\d+(.\d+)?',
                               'CELL_C' => '\d+(.\d+)?',
@@ -126,6 +127,8 @@ class Sample extends Page
                                // external is a flag to indicate this protein/sample has a user office system id
                                // whereas externalid is the actual reference
                               'external' => '\d',
+                              // Original refers to the real user office sample - not any clone / copy
+                              'original' => '\d',
                               'EXTERNALID' => '\w+',
                               'SAFETYLEVEL' => '\w+',
 
@@ -135,7 +138,9 @@ class Sample extends Page
                               'GROUPORDER' => '\d+',
                               'TYPE' => '\w+',
                               'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
+                              'PLANORDER' => '\d',
 
+                              'SAMPLEGROUPID' => '\d+',
                                );
         
         
@@ -186,6 +191,9 @@ class Sample extends Page
                               array('/groups', 'post', '_add_sample_to_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_group'),
                               array('/groups/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
+
+                              array('/spacegroups(/:SPACEGROUPID)', 'get', '_get_spacegroups'),
+
         );
 
 
@@ -245,7 +253,7 @@ class Sample extends Page
                     $capillaryPhase = $attrs->capillaryPhase;
 
                     // Critical sub model validation, we again can't proceed if anything is missing
-                    if (!array_key_exists('ACRONYM', $phase)) $this->_error('No protein acronym');
+                    if (!array_key_exists('PROTEINID', $phase) && !array_key_exists('ACRONYM', $phase)) $this->_error('No protein id or acronym');
                     if (!array_key_exists('ACRONYM', $capillaryPhase)) $this->_error('No protein acronym for capillary material');
                     if (!array_key_exists('NAME', $crystal)) $this->_error('No crystal name specified');
                     if (!array_key_exists('NAME', $capillary) || !array_key_exists('CRYSTALID', $capillary)) $this->_error('No capillary name specified');
@@ -254,7 +262,7 @@ class Sample extends Page
 
                     // Create ID holder for this iteration (this set of sample information)
                     $ids[$model] = array();
-                    
+
                     /**
                      * Insert Proteins
                      * For each iteration there will be an actual protein and usually (not always) a capillary in which the protein is held
@@ -278,14 +286,15 @@ class Sample extends Page
                         $phaseSeq = array_key_exists('SEQUENCE', $protein) ? $protein->SEQUENCE : '';
                         $phaseMass = array_key_exists('MOLECULARMASS', $protein) ? $protein->MOLECULARMASS : null;
                         $phaseDensity = array_key_exists('DENSITY', $protein) ? $protein->DENSITY : null;
+                        $externalid = array_key_exists('EXTERNALID', $protein) ? $protein->EXTERNALID : null;
                         
                         $chk = $this->db->pq("SELECT proteinid FROM protein
                             WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $protein->ACRONYM));
-                            if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
+                            if (sizeof($chk)) $this->_error('Protein acronym ' . $protein->ACRONYM . ' already exists in this proposal');
 
-                        $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density) 
-                            VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6) RETURNING proteinid INTO :id',
-                            array($this->proposalid, $phaseName, $protein->ACRONYM, $phaseSeq, $phaseMass, $phaseDensity));
+                        $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,density,externalid)
+                            VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,UNHEX(:7)) RETURNING proteinid INTO :id',
+                            array($this->proposalid, $phaseName, $protein->ACRONYM, $phaseSeq, $phaseMass, $phaseDensity, $externalid));
                             
                         if($isCapillary){
                             $ids[$model]['CAPILLARYPHASEID'] = $this->db->id();
@@ -355,7 +364,7 @@ class Sample extends Page
                     $blSamples = array();
                     // In ISPyB a container can be various things, but for simple sample it is a box that can be imagined to have a grid layout
                     // We need to know which space the next sample needs to be added into. This query looks up the next free space
-                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids['CONTAINERID']));
+                    $maxloc_tmp = $this->db->pq("SELECT IFNULL((SELECT location FROM blsample WHERE containerid =:1 ORDER BY location * 1 DESC LIMIT 1),0) as location", array($ids[$model]['CONTAINERID']));
                     $maxLocation = $maxloc_tmp[0]['LOCATION'];
                     
                     // Like Proteins and Crystals, we need to check if we need to add the BLSample related information for the capillary as well as the sample
@@ -392,9 +401,12 @@ class Sample extends Page
 
                         $expTime = $attrs->EXPOSURETIME ? $attrs->EXPOSURETIME : 600;
 
+                        // Need to know the highest current DCP plan order so we can add new ones after it
+                        $maxLocation = $this->_get_current_max_dcp_plan_order($ids[$model]['CONTAINERID']);
+
                         $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid, planorder) 
-                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], 0));
-                        
+                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $maxLocation+1));
+
                         $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
                             VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $detector1_id, $expTime, $detector1_distance));
 
@@ -426,7 +438,7 @@ class Sample extends Page
                         }
 
                         $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
-                        VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLECAPILLARYID'], $ids[$model]['SAMPLEGROUPID'], 2, 'container'));
+                        VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLECAPILLARYID'], $ids[$model]['SAMPLEGROUPID'], 2, 'capillary'));
                 
                         $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type) 
                         VALUES (:1,:2, :3, :4)", array($ids[$model]['BLSAMPLEID'], $ids[$model]['SAMPLEGROUPID'], 1, 'sample'));
@@ -554,7 +566,7 @@ class Sample extends Page
             }
 
             $this->db->wait_rep_sync(true);
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,6) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, cq2.completedtimestamp as queuecompleted
+            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,6) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, cq2.completedtimestamp as queuecompleted
               FROM blsubsample ss
               LEFT OUTER JOIN position po ON po.positionid = ss.positionid
               LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
@@ -578,6 +590,7 @@ class Sample extends Page
               LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
 
               LEFT OUTER JOIN datacollection dc ON ss.blsubsampleid = dc.blsubsampleid
+              LEFT OUTER JOIN datacollectiongroup dcg on dc.datacollectiongroupid = dcg.datacollectiongroupid
               LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
               LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
               
@@ -589,7 +602,7 @@ class Sample extends Page
               LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
               LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid AND app.processingstatus = 1
 
-              WHERE p.proposalid=:1 $where
+              WHERE p.proposalid=:1 AND ss.source='manual' $where
               GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx, po.posy, po.posz
               $having
               ORDER BY ss.blsubsampleid", $args);
@@ -931,7 +944,7 @@ class Sample extends Page
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
+            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath
                                   
@@ -954,6 +967,7 @@ class Sample extends Page
                                   
                                   LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = b.diffractionplanid 
                                   LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
+                                  LEFT OUTER JOIN datacollectiongroup dcg ON dc.datacollectiongroupid = dcg.datacollectiongroupid
                                   LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
                                   LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
                                   
@@ -968,7 +982,7 @@ class Sample extends Page
 
                                   LEFT OUTER JOIN blsampleimage si ON b.blsampleid = si.blsampleid
 
-                                  LEFT OUTER JOIN blsubsample ss ON b.blsubsampleid = ss.blsubsampleid
+                                  LEFT OUTER JOIN blsubsample ss ON b.blsubsampleid = ss.blsubsampleid AND ss.source='manual'
                                   LEFT OUTER JOIN blsample ssp ON ss.blsampleid = ssp.blsampleid
                                   
                                   
@@ -989,6 +1003,12 @@ class Sample extends Page
                     if (array_key_exists($k, $r)) {
                       if ($r[$k]) $r[$k] = explode(',', $r[$k]);
                     }
+                }
+
+                // display DCP count for each sample
+                if($this->has_arg('dcp')){
+                    $dcpCount = $this->db->pq("SELECT COUNT(*) AS DCPCOUNT FROM BLSample_has_DataCollectionPlan WHERE blSampleId =:1", array($r['BLSAMPLEID']));
+                    $r['DCPCOUNT'] = $dcpCount[0]['DCPCOUNT'];
                 }
             }
 
@@ -1239,8 +1259,15 @@ class Sample extends Page
             array_push($args, $end);
             
             $order = 'pr.proteinid DESC';
-            
-            
+
+            $group = 'pr.proteinId';
+
+            // Only display original UAS approved proteins (not clones which have the same externalId)
+            if($this->has_arg('original') && $this->arg('original') == 1){
+                $group = 'pr.externalId';
+                $order .= ', pr.bltimeStamp DESC';
+            }
+
             if ($this->has_arg('sort_by')) {
                 $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' =>'pr.molecularmass', 'HASSEQ' => "CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END");
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
@@ -1269,8 +1296,7 @@ class Sample extends Page
                                 INNER JOIN proposal p ON p.proposalid = pr.proposalid
                                 $join
                                 WHERE $where
-                                GROUP BY pr.proteinid
-                                /*GROUP BY pr.proteinid,pr.name,pr.acronym,pr.molecularmass, pr.sequence, CONCAT(p.proposalcode,p.proposalnumber)*/
+                                GROUP BY $group
                                 ORDER BY $order", $args);
             
             $ids = array();
@@ -1381,19 +1407,29 @@ class Sample extends Page
         # ------------------------------------------------------------------------
         # Update a particular field for a sample
         function _update_sample() {
+
             if (!$this->has_arg('sid')) $this->_error('No sampleid specified');
-            
+
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
               WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid,$this->arg('sid')));
-            
+
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE');
+            if($this->has_arg('CONTAINERID') && $this->arg('CONTAINERID') == 0) {
+                $defaultContainerLocation = $this->_get_default_sample_container();
+                $this->args['CONTAINERID'] = $defaultContainerLocation['CONTAINERID'];
+                $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
+            }
+
+            $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
+            $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
+
+            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
             foreach ($sfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE blsample SET $f=:1 WHERE blsampleid=:2", array($this->arg($f), $samp['BLSAMPLEID']));
@@ -1423,6 +1459,76 @@ class Sample extends Page
                 }
             }
 
+            if($this->has_arg('PLANORDER')) {
+                // If we're moving a BLSample to a new container we need to adjust the DCP plan order not to clash with existing plans for samples in the new container
+                $dcps = $this->db->pq("SELECT dataCollectionPlanId FROM BLSample_has_DataCollectionPlan
+                                WHERE blSampleId = :1", array($this->arg('sid')));
+
+                if(sizeof($dcps)) {
+                    foreach($dcps as $dcp){
+                        ++$maxLocation;
+                        $this->db->pq("UPDATE BLSample_has_DataCollectionPlan SET planOrder = :1 WHERE dataCollectionPlanId = :2 AND blSampleId = :3", array($maxLocation, $dcp['DATACOLLECTIONPLANID'], $this->arg('sid')));
+                    }
+                }
+            }
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Look up the default container for proposal and the next available location
+        function _get_default_sample_container() {
+
+            $containers = $this->db->pq("SELECT DISTINCT c.containerId, c.code, b.location
+              FROM Container c
+              INNER JOIN BLSample b ON b.containerId = c.containerId
+              INNER JOIN Crystal cr ON cr.crystalId = b.crystalId
+              INNER JOIN Protein pr ON pr.proteinId = cr.proteinId
+              WHERE pr.proposalId =:1 AND c.code LIKE :2", array($this->proposalid, "%_samples"));
+
+            $free = null;
+
+            if(sizeof($containers)){
+                $locations = array();
+                foreach($containers as $c) {
+                    array_push($locations, $c['LOCATION']);
+                }
+
+                $free = max($locations)+1;
+
+                for($i=1; $i<max($locations); $i++){
+                    if(!in_array($i, $locations)){
+                        $free = $i;
+                        break;
+                    }
+                }
+            } else {
+                // It's possible the default container is empty so we would fail to find it above
+                // Find it via dewars and shipping instead
+                $containers = $this->db->pq("SELECT c.containerId, c.code
+                  FROM Container c
+                  INNER JOIN Dewar d ON c.dewarId = d.dewarId
+                  INNER JOIN Shipping s ON d.shippingId = s.shippingId
+                  INNER JOIN Proposal p on s.proposalId = p.proposalId
+                  WHERE p.proposalId = :1 AND c.code LIKE :2", array($this->proposalid, "%_samples"));
+
+                $free = 1;
+            }
+
+            return array('CONTAINERID'=>$containers[0]['CONTAINERID'], 'LOCATION'=>$free);
+        }
+
+
+        # ------------------------------------------------------------------------
+        # Look up highest value DPC plan order to append new ones
+        function _get_current_max_dcp_plan_order($containerId) {
+
+            $maxLocation = $this->db->pq("SELECT MAX(bhd.planOrder) AS LOC
+                                        FROM BLSample_has_DataCollectionPlan bhd
+                                        INNER JOIN BLSample bls ON bls.blSampleId = bhd.blSampleId
+                                        INNER JOIN Container c ON c.containerId = bls.containerId
+                                        WHERE c.containerId = :1", array($containerId));
+
+            return $maxLocation[0]['LOC'];
         }
         
         
@@ -2051,5 +2157,36 @@ class Sample extends Page
 
             $this->_output(new \stdClass);
         }
+        // Get spacegroups from database
+        // Could extend this to filter on spacegroupshortname (also unique)
+        // Also extend to take mx used flag to return a filtered list
+        function _get_spacegroups() {
+            // Store the spacegroup id if we have one
+            $sid = $this->has_arg('SPACEGROUPID') ? $this->arg('SPACEGROUPID') : null;
+            // Reusing ty as a parameter. Set this to mx to only get those items in MX_used column
+            $mx = $this->has_arg('ty') ? $this->arg('ty') == 'mx' : null;
+            $where = "WHERE 1=1";
+            $args = array();
+
+            // Are we looking for a specific id or subset of entries?
+            // Presence of id takes precedence over mx flag
+            if ($sid) {
+                $where .= ' AND spacegroupid = :'.(sizeof($args)+1);
+                array_push($args, $sid);
+            } else if ($mx) {
+                $where .= ' AND mx_used = :'.(sizeof($args)+1);
+                array_push($args, 1);
+            }
+
+            $rows = $this->db->pq("SELECT spacegroupid, spacegroupnumber, spacegroupshortname, spacegroupname, bravaisLattice FROM spacegroup $where", $args);
+
+            if (!sizeof($rows)) {
+                if ($this->has_arg('SPACEGROUPID')) $this->_error('Spacegroup id not found');
+                else $this->_error('No spacegroup types found');
+            }
+
+            if ($this->has_arg('SPACEGROUPID')) $this->_output($rows[0]);
+            else $this->_output(array('total' => count($rows), 'data' => $rows));
+          }
 }
 

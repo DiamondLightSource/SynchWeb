@@ -30,16 +30,17 @@
             <div class="sta small"></div> 
         </div>
         <div class="form">
+            <!-- Added a couple of tailwind / css style tweaks to align buttons with input height and make spinner readable -->
             <ul>
                 <li class="nowrap">
                     <span class="label">Inspections</span>
                     <select name="inspection"></select>
-                    <a href="#" class="button button-notext add_inspection"><i class="fa fa-plus"></i> <span>Add</span></a>
+                    <a href="#" class="button button-notext add_inspection tw-h-6"><i class="fa fa-plus"></i> <span>Add</span></a>
                 </li>
                 <li>
                     <span class="label">Movie</span>
-                    Gap: <input type="number" step="0.1" name="gap" value="0.5" />s
-                    <a href="#" class="button play_inspection"><i class="fa fa-play"></i> <span>Play</span></a> 
+                    <span>Gap: </span><input type="number" step="0.1" name="gap" value="0.5" style="width: 6em"/><span>s</span>
+                    <a href="#" class="button play_inspection tw-h-6"><i class="fa fa-play"></i> <span class="tw-ml-2">Play</span></a> 
                 </li>
             </ul>
         </div>
@@ -99,9 +100,9 @@
             <span class="BARCODE"><%-BARCODE%></span>
         </li>
 
-        <li class="clearfix reorder">
-            <div class="COMMENTS text"><%-COMMENTS%></div>
+        <li class="clearfix">
             <span class="label">Comments</span>
+            <div class="COMMENTS text tw-inline-block"><%-COMMENTS%></div>
         </li>
 
         <% if (REQUESTEDIMAGERID) { %>
@@ -147,7 +148,8 @@
         <% } %>
 
         <% if (IMAGERID) { %>
-        <li class="clearfix reorder">
+        <li class="clearfix">
+            <span class="label">Actions</span>
             
             <div class="text_table">
                 <div class="queue"></div>
@@ -158,13 +160,12 @@
                 </div> 
                 <div class="return"></div>
             </div>
-            <span class="label">Actions</span>
         </li>
         <% } %>
 
-        <li class="clearfix reorder">
-            <div class="history text_table"></div>
-            <span class="label">Location History</span>
+        <li class="clearfix">
+            <span class="label tw-align-top">Location History</span>
+            <div class="history tw-inline-block"></div>
         </li>
 
     </ul>

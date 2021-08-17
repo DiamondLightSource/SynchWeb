@@ -114,6 +114,7 @@ define(['backbone',
             autoprocessing_pipeline: 'select[name=PIPELINE]',
             auto: 'input[name=AUTOMATED]',
             extrastate: '.extra-state',
+            spacegroups: 'input[name=SPACEGROUPS]',
         },
         
         
@@ -152,6 +153,7 @@ define(['backbone',
 
             'change @ui.registry': 'updateName',
             'click @ui.auto': 'updateAutomated',
+            'click @ui.spacegroups': 'updateSpaceGroups',
             'change @ui.autoprocessing_pipeline': 'updateProcessing',
         },
 
@@ -169,6 +171,10 @@ define(['backbone',
             if (this.table.currentView) this.table.currentView.toggleAuto(this.ui.auto.is(':checked'))
         },
 
+        updateSpaceGroups: function(e) {
+            // Use full list of spacegroups
+            if (this.table.currentView) this.table.currentView.toggleSpaceGroups(this.ui.spacegroups.is(':checked'))
+        },
         updateName: function(e) {
             var rc = this.containerregistry.findWhere({ CONTAINERREGISTRYID: this.ui.registry.val() })
             if (rc) this.ui.name.val(rc.get('BARCODE'))
@@ -220,11 +226,12 @@ define(['backbone',
             if (u) {
                 if (!u.get('EMAILADDRESS')) {
                     this.ui.pid.addClass('invalid')
-                    this.ui.pid.after('<span class="emsg ferror">Please update your email address by clicking view</span>')
+                    this.ui.pid.siblings('span.emsg').show()
+                    // this.ui.pid.after('<span class="emsg ferror">Please update your email address by clicking view</span>')
 
                 } else {
                     this.ui.pid.removeClass('invalid')
-                    this.ui.pid.siblings('span.emsg').remove()
+                    this.ui.pid.siblings('span.emsg').hide()
                 }
             }
         },
@@ -298,11 +305,12 @@ define(['backbone',
                 CONTAINERTYPE: this.type.get('name'),
             })
             
-            if (this.type.get('name') == 'Puck') {
+            if (this.type.get('name').toLowerCase().indexOf('puck') > -1) {
+                console.log('selected puck type', this.model.get('CAPACITY'), this.type)
                 this.buildCollection()
                 this.puck.$el.css('width', app.mobile() ? '100%' : '25%')
-                this.puck.show(new PuckView({ collection: this.samples }))
-                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, auto: this.ui.auto.is(':checked') })
+                this.puck.show(new PuckView({ collection: this.samples, capacity: this.model.get('CAPACITY') }))
+                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, auto: this.ui.auto.is(':checked'), allSpacegroups: this.ui.spacegroups.is(':checked') })
                 this.table.show(this.stable)
                 this.single.empty()
                 this.grp.empty()
@@ -316,7 +324,7 @@ define(['backbone',
                 this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.buildCollection()
-                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, type: 'non-xtal' })
+                this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, type: 'non-xtal', allSpacegroups: this.ui.spacegroups.is(':checked') })
                 this.table.show(this.stable)
                 this.single.empty()
                 this.grp.empty()
@@ -429,6 +437,7 @@ define(['backbone',
                 samples: populated_samples.toJSON(),
                 title: this.ui.name.val(),
                 time: new Date(),
+                type: this.ui.type.val(),
             }
             
             this.cache.set({ data: data })
@@ -442,6 +451,8 @@ define(['backbone',
         loadContainerCache: function() {
             if (!this.cache.get('data')) return
 
+            if (this.cache.get('data').type) this.ui.type.val(this.cache.get('data').type).trigger('change')
+
             _.each(this.cache.get('data').samples, function(s) {
                 var samp = this.samples.findWhere({ LOCATION: s.LOCATION })
                 samp.get('components').reset(s.components)
@@ -453,7 +464,9 @@ define(['backbone',
             
             this.ui.name.val(this.cache.get('data').title)
             
-            app.alert({ message: 'Container contents last saved: '+this.cache.get('data').time, persist: 'saved', className: 'message notify', scrollTo: false })
+            // Changed this to be an info message not alert.
+            // Also the container is not really saved but cached
+            app.message({ message: 'Container contents last cached: '+this.cache.get('data').time, persist: 'saved', className: 'message notify', scrollTo: false })
             console.log('loaded cache', this.cache)
         },
         
@@ -502,7 +515,7 @@ define(['backbone',
         
         
         selectSample: function() {
-            if (this.type.get('name') != 'Puck' && this.type.get('name') != 'PCRStrip') {
+            if (this.type.get('name').toLowerCase().indexOf('puck') == -1 && this.type.get('name') != 'PCRStrip') {
                 var s = this.samples.findWhere({ isSelected: true })
                 if (s) {
                     this.singlesample.setModel(s)
@@ -544,7 +557,7 @@ define(['backbone',
             this.ready2 = this.cache.fetch()
 
             
-            this.ctypes = new PlateTypes()
+            this.ctypes = new PlateTypes(null, { filtered: true })
             if (!app.user_can('disp_cont')) this.ctypes.remove(this.ctypes.findWhere({ name: 'ReferencePlate' }))
             
             this.cacheContainer = _.debounce(this.cacheContainer, 3000)

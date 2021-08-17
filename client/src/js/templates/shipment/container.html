@@ -7,9 +7,9 @@
 <p class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
 <% } %>
 
-<div class="form clearfix puck_wrap">
-    <div class="puck" title="Click to jump to a position in the puck"></div>
+<div class="tw-flex puck_wrap">
 
+<div class="form tw-w-2/3">
     <ul>
         <li>
             <span class="label">Shipment</span>
@@ -76,11 +76,13 @@
             <span class="COMMENTS"><%-COMMENTS%></span>
         </li>
 
-        <li class="clearfix reorder">
-            <div class="history text_table small"></div>
+        <li class="clearfix">
             <span class="label">Location History</span>
+            <div class="history tw-inline-block tw-w-2/3"></div>
         </li>
     </ul>
+</div>
+<div class="puck tw-w-1/3" title="Click to jump to a position in the puck"></div>
 </div>
 
 <a class="button extrainfo r" href="#" title="Show extra fields"><i class="extra-state fa fa-plus"></i> Extra Fields</a>
