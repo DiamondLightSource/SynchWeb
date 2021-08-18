@@ -67,7 +67,7 @@ export default {
     },
     'computed': {
         'dataCollectionModel': function() {
-            return new DataCollectionModel()
+            return new DataCollectionModel({ 'ID': this.dataCollectionId })
         },
         'processingJobsCollection': function() {
             return new ProcessingJobsCollection(null, {
@@ -77,7 +77,6 @@ export default {
                     'dataCollection': this.dataCollectionId,
                 }
             })
-
         },
         'beamline': function() {
             return this.dataCollection ? this.dataCollection.BL : ''
@@ -85,18 +84,21 @@ export default {
     },
     'watch': {
         'dataCollection': function() {
-            if (this.dataCollection) {
-                EventBus.$emit('bcChange', [
-                    { 'title': 'Data Collections', 'url': '/dc' },
-                    { 'title': this.dataCollection.BL },
-                    { 'title': this.visit, 'url': '/dc/visit/' + this.visit },
-                    { 'title': 'Data Collection ' + this.dataCollectionId }
-                ])
-                this.watchProcessingAllowed()
+            if (!this.dataCollection) {
+                return
             }
+            EventBus.$emit('bcChange', [
+                { 'title': 'Data Collections', 'url': '/dc' },
+                { 'title': this.dataCollection.BL },
+                { 'title': this.visit, 'url': '/dc/visit/' + this.visit },
+                { 'title': 'Data Collection ' + this.dataCollectionId }
+            ])
         },
         'processingJobs': function() {
-            this.watchProcessingAllowed()
+            this.$store.commit('em/processingAllowedCheck', {
+                'dataCollection': this.dataCollection,
+                'processingJobs': this.processingJobs,
+            })
         },
     },
     'mounted': function() {
@@ -104,80 +106,53 @@ export default {
         this.fetchDataCollection()
     },
     'methods': {
-        'watchProcessingAllowed': function() {
-            this.$store.commit('em/processingAllowedCheck', {
-                'dataCollection': this.dataCollection,
-                'processingJobs': this.processingJobs,
-            })
-        },
         'fetchDataCollection': function() {
             const vm = this
-            const fetchParams = {
-                'ID': this.collectionId,
-                'prop': this.$store.state.proposal.proposal
-            }
-            const successCallback = function(
-                model, // eslint-disable-line no-unused-vars
-                response,
-                options // eslint-disable-line no-unused-vars
-            ) {
+            vm.$store.commit('loading', true)
+            vm.$store.dispatch('getModel', this.dataCollectionModel).then(
+                function(model) {
+                    vm.dataCollection = model.attributes
+                    console.log('fetched data collection', vm.dataCollection)
+                    if (vm.dataCollection.ACTIVE == 1) {
+                        // TODO: this was / should be (???) 10 seconds, not 30!
+                        setTimeout(vm.fetchDataCollection(), 30 * 1000)
+                    }
+                    vm.fetchProcessingJobsCollection()
+
+                },
+                function(error) {
+                    console.log('error fetching dataCollection', error)
+                    vm.$store.commit('notifications/addNotification', {
+                        'title': 'Error',
+                        'message': 'Could not retrieve data collection',
+                        'level': 'error'
+                    })
+                }
+            ).finally(function() {
                 vm.$store.commit('loading', false)
-                vm.dataCollection = response
-                console.log('fetched data collection', vm.dataCollection)
-                vm.fetchProcessingJobsCollection()
-                // if (this.model.get('ACTIVE') == 1) {
-                    // TODO: this was / should be (???) 10 seconds, not 30!
-                    //setTimeout(fetch, 30 * 1000)
-                //}
-            }
-            const errorCallback = function(
-                model, // eslint-disable-line no-unused-vars
-                response,
-                options // eslint-disable-line no-unused-vars
-            ) {
-                vm.$store.commit('loading', false)
-                console.log(response.responseJSON)
-                vm.$store.commit('notifications/addNotification', {
-                    'title': 'Error',
-                    'message': 'Could not retrieve data collection',
-                    'level': 'error'
-                })
-            }
-            const fetch = function() {
-                vm.$store.commit('loading', true)
-                /* TODO: [SCI-9935]
-                   vm.$store.dispatch('getModel', model)
-                   doesn't currently support 'data': */
-                vm.dataCollectionModel.fetch({
-                    'data': fetchParams,
-                    'success': successCallback,
-                    'error': errorCallback,
-                })
-            }
-            fetch()
+            })
         },
         'fetchProcessingJobsCollection': function() {
             const vm = this
-            // eslint-disable-next-line no-unused-vars
-            const successCallback = function(model, response, options) {
-                vm.processingJobs = response.data
-                console.log('fetched processingJobs', vm.processingJobs)
+            vm.$store.commit('loading', true)
+            vm.$store.dispatch(
+                'getCollection', this.processingJobsCollection
+            ).then(
+                function(result) {
+                    vm.processingJobs = result.map(function(jobModel) {
+                        return jobModel.attributes
+                    })
+                },
+                function(error) {
+                    console.log('error fetching processing jobs', error)
+                    vm.$store.commit('notifications/addNotification', {
+                        'title': 'Error',
+                        'message': 'Could not retrieve processing jobs',
+                        'level': 'error'
+                    })
+                }
+            ).finally(function() {
                 vm.$store.commit('loading', false)
-            }
-            // eslint-disable-next-line no-unused-vars
-            const errorCallback = function(model, response, options) {
-                console.log(response.responseJSON)
-                vm.$store.commit('loading', false)
-                vm.$store.commit('notifications/addNotification', {
-                    'title': 'Error',
-                    'message': 'Could not retrieve data collection',
-                    'level': 'error'
-                })
-            }
-            this.$store.commit('loading', true)
-            this.processingJobsCollection.fetch({
-                'success': successCallback,
-                'error': errorCallback,
             })
         },
     },
