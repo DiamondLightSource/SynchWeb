@@ -73,6 +73,7 @@ export default {
 
 <style scoped>
 .background {
+    z-index: 1; /* enough to make it "higher" than plotly */
     top: 0;
     right: 0;
     bottom: 0;
