@@ -15,6 +15,7 @@ define([], function() {
             xsamples: 'Samples',
             phases: 'Phases',
             contacts: 'Lab Contacts',
+            conexs: 'Conexs Submission'
         },
         
         extra: {
