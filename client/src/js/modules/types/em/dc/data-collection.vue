@@ -15,18 +15,16 @@
       v-if="dataCollection !== null"
       class="data-collection"
     >
-      <relion-dialog :data-collection="dataCollection" />
+      <relion-dialog />
 
       <data-collection-toolbar
-        v-if="autoProcessing !== null"
         :data-collection-model="dataCollectionModel"
-        :auto-processing="autoProcessing"
       />
 
       <data-collection-header :data-collection="dataCollection" />
 
       <processing-job
-        v-for="job in autoProcessing"
+        v-for="job in processingJobs"
         :key="job.PROCESSINGJOBID + job.AUTOPROCPROGRAMID"
         :job="job"
       />
@@ -64,7 +62,7 @@ export default {
     'data': function() {
         return {
             'dataCollection': null,
-            'autoProcessing': null,
+            'processingJobs': [],
         }
     },
     'computed': {
@@ -94,7 +92,11 @@ export default {
                     { 'title': this.visit, 'url': '/dc/visit/' + this.visit },
                     { 'title': 'Data Collection ' + this.dataCollectionId }
                 ])
+                this.watchProcessingAllowed()
             }
+        },
+        'processingJobs': function() {
+            this.watchProcessingAllowed()
         },
     },
     'mounted': function() {
@@ -102,6 +104,12 @@ export default {
         this.fetchDataCollection()
     },
     'methods': {
+        'watchProcessingAllowed': function() {
+            this.$store.commit('em/processingAllowedCheck', {
+                'dataCollection': this.dataCollection,
+                'processingJobs': this.processingJobs,
+            })
+        },
         'fetchDataCollection': function() {
             const vm = this
             const fetchParams = {
@@ -116,7 +124,7 @@ export default {
                 vm.$store.commit('loading', false)
                 vm.dataCollection = response
                 console.log('fetched data collection', vm.dataCollection)
-                vm.fetchAutoProcessingCollection()
+                vm.fetchProcessingJobsCollection()
                 // if (this.model.get('ACTIVE') == 1) {
                     // TODO: this was / should be (???) 10 seconds, not 30!
                     //setTimeout(fetch, 30 * 1000)
@@ -148,12 +156,12 @@ export default {
             }
             fetch()
         },
-        'fetchAutoProcessingCollection': function() {
+        'fetchProcessingJobsCollection': function() {
             const vm = this
             // eslint-disable-next-line no-unused-vars
             const successCallback = function(model, response, options) {
-                vm.autoProcessing = response.data
-                console.log('fetched autoProcessing', vm.autoProcessing)
+                vm.processingJobs = response.data
+                console.log('fetched processingJobs', vm.processingJobs)
                 vm.$store.commit('loading', false)
             }
             // eslint-disable-next-line no-unused-vars

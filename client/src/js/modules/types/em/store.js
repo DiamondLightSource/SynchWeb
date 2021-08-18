@@ -4,13 +4,46 @@ const module = {
     'namespaced': true,
     'state': {
         'processingDialog': false,
+        'processingDisallowedReason': '',
     },
     'getters': {
         'processingDialogVisible': function(state) {
             return state.processingDialog
         },
+        'processingAllowed': function(state) {
+            return state.processingDisallowedReason == ''
+        },
+        'processingDisallowedReason': function(state) {
+            return state.processingDisallowedReason == '' ?
+                '' :
+                "Relion processing can't be run because" +
+                    state.processingDisallowedReason
+        }
     },
     'mutations': {
+        'processingAllowedCheck': function(state, payload) {
+            if (payload.dataCollection.ARCHIVED == '1') {
+                state.processingDisallowedReason =
+                    'this data collection is archived'
+                return
+            }
+
+            const blockingStatus = payload.processingJobs.reduce(
+                function(result, job) {
+                    const status = job.PROCESSINGSTATUSDESCRIPTION
+                    return ['submitted', 'queued', 'running'].includes(status) ?
+                        status : result
+                },
+                ''
+            )
+            if (blockingStatus) {
+                state.processingDisallowedReason = 'there is already a job ' +
+                    blockingStatus + ' on this data collection'
+                return
+            }
+
+            state.processingDisallowedReason = ''
+        },
         'cancelProcessingDialog': function(state) {
             state.processingDialog = false
         },

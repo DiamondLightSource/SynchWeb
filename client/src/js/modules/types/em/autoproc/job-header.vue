@@ -22,10 +22,13 @@
 
     <div class="last-column">
       <status-description :status="status" />
-      <div class="buttons">
+      <div class="header-buttons">
         <stop-button
           :status="status"
           :processing-job-id="processingJobId"
+        />
+        <reprocess-button
+          :status="status"
         />
         <hide-button v-model="hidden" />
       </div>
@@ -35,6 +38,7 @@
 
 <script>
 import HideButton from 'modules/types/em/components/hide-button.vue'
+import ReprocessButton from 'modules/types/em/autoproc/reprocess-button.vue'
 import StatusDescription from 'modules/types/em/autoproc/status-description.vue'
 import StopButton from 'modules/types/em/autoproc/stop-button.vue'
 
@@ -42,6 +46,7 @@ export default {
     'name': 'JobHeader',
     'components': {
         'hide-button': HideButton,
+        'reprocess-button': ReprocessButton,
         'status-description': StatusDescription,
         'stop-button': StopButton,
     },
@@ -99,8 +104,11 @@ export default {
     justify-content: space-between;
     align-items: center;
 }
-.buttons {
+.header-buttons {
     display: flex;
     justify-content: flex-end;
+}
+.header-button {
+    margin-right: 5px;
 }
 </style>

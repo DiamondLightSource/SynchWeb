@@ -13,10 +13,7 @@
 
       <attachments-button :data-collection-model="dataCollectionModel" />
 
-      <reprocess-button
-        :data-collection="dataCollectionModel.attributes"
-        :auto-processing="autoProcessing"
-      />
+      <reprocess-button />
     </span>
 
     <!-- if you're using this outside EM you will need to check if
@@ -45,7 +42,7 @@ import CommentsButton from 'modules/types/em/dc-toolbar/comments-button.vue'
 import DisplayPath from 'modules/types/em/dc-toolbar/display-path.vue'
 import FavouriteButton from 'modules/types/em/dc-toolbar/favourite-button.vue'
 import PermalinkButton from 'modules/types/em/dc-toolbar/permalink-button.vue'
-import ReprocessButton from 'modules/types/em/dc-toolbar/reprocess-button.vue'
+import ReprocessButton from 'modules/types/em/components/reprocess-button.vue'
 
 export default {
     'name': 'DcToolbar',
@@ -61,10 +58,6 @@ export default {
     'props': {
         'dataCollectionModel': {
             'type': Object,
-            'required': true,
-        },
-        'autoProcessing': {
-            'type': Array,
             'required': true,
         },
     },
