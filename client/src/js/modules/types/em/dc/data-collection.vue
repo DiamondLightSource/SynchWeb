@@ -109,13 +109,15 @@ export default {
         'fetchDataCollection': function() {
             const vm = this
             vm.$store.commit('loading', true)
+            // prevent url mangling by the Backbone model
+            this.dataCollectionModel.set('TYPE', '')
             vm.$store.dispatch('getModel', this.dataCollectionModel).then(
                 function(model) {
                     vm.dataCollection = model.attributes
                     console.log('fetched data collection', vm.dataCollection)
-                    if (vm.dataCollection.ACTIVE == 1) {
+                    if (vm.dataCollection.ARCHIVED == '0') {
                         // TODO: this was / should be (???) 10 seconds, not 30!
-                        setTimeout(vm.fetchDataCollection(), 30 * 1000)
+                        setTimeout(vm.fetchDataCollection, 30 * 1000)
                     }
                     vm.fetchProcessingJobsCollection()
 
@@ -142,6 +144,7 @@ export default {
                     vm.processingJobs = result.map(function(jobModel) {
                         return jobModel.attributes
                     })
+                    console.log('fetched processing jobs', vm.processingJobs)
                 },
                 function(error) {
                     console.log('error fetching processing jobs', error)
