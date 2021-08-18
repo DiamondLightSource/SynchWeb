@@ -47,6 +47,7 @@ export default {
     },
     'methods': {
         'click': function() {
+            this.$store.commit('em/showProcessingDialog', true)
         }
     },
 }

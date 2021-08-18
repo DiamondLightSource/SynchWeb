@@ -11,17 +11,19 @@
       >View All Data Collections</a>
     </h1>
 
-    <div class="data-collection">
+    <div
+      v-if="dataCollection !== null"
+      class="data-collection"
+    >
+      <relion-dialog :data-collection="dataCollection" />
+
       <data-collection-toolbar
-        v-if="dataCollection !== null && autoProcessing !== null"
+        v-if="autoProcessing !== null"
         :data-collection-model="dataCollectionModel"
         :auto-processing="autoProcessing"
       />
 
-      <data-collection-header
-        v-if="dataCollection !== null"
-        :data-collection="dataCollection"
-      />
+      <data-collection-header :data-collection="dataCollection" />
 
       <processing-job
         v-for="job in autoProcessing"
@@ -39,6 +41,7 @@ import DataCollectionToolbar from 'modules/types/em/dc-toolbar/dc-toolbar.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import ProcessingJob from 'modules/types/em/autoproc/processing-job.vue'
 import ProcessingJobsCollection from 'modules/types/em/collections/processingjobs'
+import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
 
 export default {
     'name': 'EmDcList',
@@ -46,6 +49,7 @@ export default {
         'data-collection-header': DataCollectionHeader,
         'data-collection-toolbar': DataCollectionToolbar,
         'processing-job': ProcessingJob,
+        'relion-dialog': RelionDialog,
     },
     'props': {
         'dataCollectionId': {

@@ -104,6 +104,7 @@
 .loading {
     opacity: 0.4;
     position: relative;
+    z-index: 1000;
 
     &:after {
         margin: auto;
