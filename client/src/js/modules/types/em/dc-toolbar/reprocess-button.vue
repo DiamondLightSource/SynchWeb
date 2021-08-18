@@ -1,24 +1,20 @@
 <template>
-  <button-with-dialog
+  <button-with-function
     icon-class="fa fa-cog"
     button-text="Reprocess"
-    dialog-title="Run Relion Processing"
     :disabled="hintText != 'Run Relion processing'"
     :hint="hintText"
-  >
-    <relion-form :data-collection="dataCollection" />
-  </button-with-dialog>
+    @click="click"
+  />
 </template>
 
 <script>
-import ButtonWithDialog from 'modules/types/em/dc-toolbar/button-with-dialog.vue'
-import RelionForm from 'modules/types/em/relion/relion-form.vue'
+import ButtonWithFunction from 'modules/types/em/dc-toolbar/button-with-function.vue'
 
 export default {
     'name': 'ReprocessesButton',
     'components': {
-        'button-with-dialog': ButtonWithDialog,
-        'relion-form': RelionForm
+        'button-with-function': ButtonWithFunction,
     },
     'props': {
         'dataCollection': {
@@ -47,6 +43,10 @@ export default {
             }
 
             return 'Run Relion processing';
+        }
+    },
+    'methods': {
+        'click': function() {
         }
     },
 }
