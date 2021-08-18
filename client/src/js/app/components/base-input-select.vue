@@ -14,7 +14,6 @@ Slots include:
 -->
 <template>
   <div :class="outerClass">
-
     <!-- The label which includes an optional subtitle -->
     <label v-if="label" :for="id">{{label}}
       <slot name="description">
@@ -31,7 +30,6 @@ Slots include:
       :value="localValue"
       :disabled="disabled"
       :class="classObject"
-      @input="updateValue"
       @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
