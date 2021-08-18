@@ -73,9 +73,6 @@ export default {
 
 <style scoped>
 .background {
-    /* needs a z-index to place it above div.form span.ferror which has
-       position: relative; */
-    z-index: 10;
     top: 0;
     right: 0;
     bottom: 0;
@@ -108,8 +105,5 @@ export default {
 }
 .heading {
     flex-grow: 1;
-}
-.body {
-    padding: 10px;
 }
 </style>
