@@ -130,7 +130,8 @@ const proposalModule = {
       return state.proposal
     },
     currentProposalType: state => state.proposalType,
-    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null
+    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null,
+    currentVisit: state => state.visit,
   }
 }
 
