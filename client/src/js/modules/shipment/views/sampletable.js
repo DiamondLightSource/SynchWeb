@@ -182,7 +182,7 @@ define(['marionette',
             this.listenTo(this.spacegroups, 'reset', this.updateSpacegroups, this)
             
             var st = ''
-            _.each(['R', 'SC', 'AI', 'DC', 'AP'], function(t) {
+            _.each(['R', 'SC', 'AI', 'GR', 'ES', 'XM', 'XS', 'DC', 'AP'], function(t) {
                 if (this.model.get(t) > 0) st = t
             }, this)
             this.model.set({ STATUS: st })

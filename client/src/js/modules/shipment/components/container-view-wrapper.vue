@@ -112,14 +112,15 @@ export default {
         // Determine if the container is a plate type
         isPlate: function(model) {
             let containerType = model.get('CONTAINERTYPE')
-
+            if (!containerType) return false
+            containerType = containerType.toLowerCase()
             // This is the current logic to determine the plate type
             // Anything other than Box, Puck or PCRStrip
             // TODO - get container types from data base
-            let is_plate = !(['Box', 'Puck', 'PCRStrip', null].indexOf(containerType) > -1)
+            let is_plate = ['box', 'puck', 'pcrstrip', null].indexOf(containerType) == -1 && containerType.indexOf('puck') == -1
 
             // Also disclude anything with an Xpdf prefix...
-            if (is_plate && model.get('CONTAINERTYPE').includes('Xpdf')) is_plate = false
+            if (is_plate && containerType.includes('xpdf')) is_plate = false
 
             console.log('is plate', is_plate)
 

@@ -305,10 +305,11 @@ define(['backbone',
                 CONTAINERTYPE: this.type.get('name'),
             })
             
-            if (this.type.get('name') == 'Puck') {
+            if (this.type.get('name').toLowerCase().indexOf('puck') > -1) {
+                console.log('selected puck type', this.model.get('CAPACITY'), this.type)
                 this.buildCollection()
                 this.puck.$el.css('width', app.mobile() ? '100%' : '25%')
-                this.puck.show(new PuckView({ collection: this.samples }))
+                this.puck.show(new PuckView({ collection: this.samples, capacity: this.model.get('CAPACITY') }))
                 this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, auto: this.ui.auto.is(':checked'), allSpacegroups: this.ui.spacegroups.is(':checked') })
                 this.table.show(this.stable)
                 this.single.empty()
@@ -436,6 +437,7 @@ define(['backbone',
                 samples: populated_samples.toJSON(),
                 title: this.ui.name.val(),
                 time: new Date(),
+                type: this.ui.type.val(),
             }
             
             this.cache.set({ data: data })
@@ -448,6 +450,8 @@ define(['backbone',
         
         loadContainerCache: function() {
             if (!this.cache.get('data')) return
+
+            if (this.cache.get('data').type) this.ui.type.val(this.cache.get('data').type).trigger('change')
 
             _.each(this.cache.get('data').samples, function(s) {
                 var samp = this.samples.findWhere({ LOCATION: s.LOCATION })
@@ -511,7 +515,7 @@ define(['backbone',
         
         
         selectSample: function() {
-            if (this.type.get('name') != 'Puck' && this.type.get('name') != 'PCRStrip') {
+            if (this.type.get('name').toLowerCase().indexOf('puck') == -1 && this.type.get('name') != 'PCRStrip') {
                 var s = this.samples.findWhere({ isSelected: true })
                 if (s) {
                     this.singlesample.setModel(s)
@@ -553,7 +557,7 @@ define(['backbone',
             this.ready2 = this.cache.fetch()
 
             
-            this.ctypes = new PlateTypes()
+            this.ctypes = new PlateTypes(null, { filtered: true })
             if (!app.user_can('disp_cont')) this.ctypes.remove(this.ctypes.findWhere({ name: 'ReferencePlate' }))
             
             this.cacheContainer = _.debounce(this.cacheContainer, 3000)

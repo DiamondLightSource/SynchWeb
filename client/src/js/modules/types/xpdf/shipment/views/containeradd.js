@@ -43,7 +43,7 @@ define([
         // Override the plate types with the XPDF sample stages
         initialize: function(options) {
             ContainerAdd.__super__.initialize.call(this, options)
-            this.ctypes = new XpdfStageTypes()
+            this.ctypes = new XpdfStageTypes(null, { filtered: false })
 
             for(var i = this.ctypes.length-1; i >=0; i--){
                 var c = this.ctypes.models[i]
