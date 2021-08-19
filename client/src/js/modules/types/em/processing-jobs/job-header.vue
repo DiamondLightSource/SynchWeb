@@ -38,9 +38,9 @@
 
 <script>
 import HideButton from 'modules/types/em/components/hide-button.vue'
-import ReprocessButton from 'modules/types/em/autoproc/reprocess-button.vue'
-import StatusDescription from 'modules/types/em/autoproc/status-description.vue'
-import StopButton from 'modules/types/em/autoproc/stop-button.vue'
+import ReprocessButton from 'modules/types/em/processing-jobs/reprocess-button.vue'
+import StatusDescription from 'modules/types/em/processing-jobs/status-description.vue'
+import StopButton from 'modules/types/em/processing-jobs/stop-button.vue'
 
 export default {
     'name': 'JobHeader',
