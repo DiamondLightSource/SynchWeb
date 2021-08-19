@@ -37,7 +37,7 @@ import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue
 import DataCollectionModel from 'models/datacollection.js'
 import DataCollectionToolbar from 'modules/types/em/dc-toolbar/dc-toolbar.vue'
 import EventBus from 'app/components/utils/event-bus.js'
-import ProcessingJob from 'modules/types/em/autoproc/processing-job.vue'
+import ProcessingJob from 'modules/types/em/processing-jobs/processing-job.vue'
 import ProcessingJobsCollection from 'modules/types/em/collections/processingjobs'
 import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
 
