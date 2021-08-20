@@ -4,11 +4,10 @@
       Data Collection {{ dataCollectionId }} for {{ visit }} on {{ beamline }}
     </h1>
 
-    <h1 class="message nou">
-      <a
-        class="button"
-        :href="'/dc/visit/' + visit"
-      >View All Data Collections</a>
+    <h1 class="nou">
+      <flat-button @click="$router.push('/dc/visit/' + visit)">
+        View All Data Collections
+      </flat-button>
     </h1>
 
     <div
@@ -37,6 +36,7 @@ import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue
 import DataCollectionModel from 'models/datacollection.js'
 import DataCollectionToolbar from 'modules/types/em/dc-toolbar/dc-toolbar.vue'
 import EventBus from 'app/components/utils/event-bus.js'
+import FlatButton from 'app/components/flat-button.vue'
 import ProcessingJob from 'modules/types/em/processing-jobs/processing-job.vue'
 import ProcessingJobsCollection from 'modules/types/em/collections/processingjobs'
 import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
@@ -46,6 +46,7 @@ export default {
     'components': {
         'data-collection-header': DataCollectionHeader,
         'data-collection-toolbar': DataCollectionToolbar,
+        'flat-button': FlatButton,
         'processing-job': ProcessingJob,
         'relion-dialog': RelionDialog,
     },
