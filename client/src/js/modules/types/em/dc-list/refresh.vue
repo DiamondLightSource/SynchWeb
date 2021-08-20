@@ -3,22 +3,31 @@
     v-if="isInactive"
     class="message notify"
   >
-    This visit is inactive and will not auto update | Auto Refresh
+    This
+    {{ proposalOrVisit == 'PROP' ? 'proposal' : 'visit' }}
+    is inactive and will not auto update | Auto Refresh
     <input
+      v-model="autoRefresh"
       type="checkbox"
-      :value="autoRefresh"
     >
-    <a
-      href="#"
-      class="button refresh"
-      @click.prevent="refreshDCs"
-    ><i class="fa fa-refresh" /> Refresh</a>
+    <flat-button
+      class="refresh-button"
+      @click="collection.fetch()"
+    >
+      <i class="fa fa-refresh" />
+      Refresh
+    </flat-button>
   </p>
 </template>
 
 <script>
+import FlatButton from 'app/components/flat-button.vue'
+
 export default {
     'name': 'Refresh',
+    'components': {
+        'flat-button': FlatButton,
+    },
     'props': {
         'collection': {
             'type': Object,
@@ -42,26 +51,29 @@ export default {
                 }
             },
         },
+        'proposalOrVisit': function() {
+            // This is a bit "horrible"...
+            // but it's needed to fit in with the rest of SynchWeb.
+            // The data collections list can be passed a Proposal model
+            // or a visit model depending on context and we have to determine
+            // which to use here.
+            return this.model.has('PROP') ? 'PROP' : 'VISIT'
+        },
         'isInactive': function() {
             if (!this.model) {
                 return true
             }
-            // This is a bit "horrible"... but it's needed to fit in with the
-            // rest of SynchWeb.
-            // The data collections list can be passed a Proposal model
-            // or a visit model depending on context and we have to determine
-            // which to use here.
-            const proposalOrVisit = this.model.has('PROP') ?
-                this.model.get('PROP') : this.model.get('VISIT')
-
-            return proposalOrVisit.match(/^(cm|nt|nr)/) == null &&
-                this.model.get('ACTIVE') != '1'
-        },
-    },
-    'methods': {
-        'refreshDCs': function() {
-            this.collection.fetch()
+            if (this.model.get(this.proposalOrVisit).match(/^(cm|nt|nr)/) == null) {
+                return false;
+            }
+            return this.model.get('ACTIVE') != '1'
         },
     },
 }
 </script>
+
+<style scoped>
+.refresh-button {
+    margin-left: 20px;
+}
+</style>
