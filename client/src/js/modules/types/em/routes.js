@@ -27,7 +27,7 @@ const routes = [
                 })
                 next('/notfound')
             }
-        }
+        },
     },
     {
         path: '/em/process/relion/session/:session_str',
