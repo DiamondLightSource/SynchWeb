@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-show="currentTab === 'basic'" class="tw-flex tw-w-full">
+    <div v-show="currentTab === 'basic'" class="tw-flex tw-w-full tw-items-center">
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-1/4"
@@ -9,7 +9,7 @@
         :vid="`anomalous-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :options="anomalousOptionsList"
           inputClass="tw-w-full tw-h-8"
           optionValueKey="value"
@@ -26,7 +26,7 @@
         class="tw-px-2 tw-w-1/2"
         name="Comment">
         <base-input-text
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           inputClass="tw-w-full tw-h-8"
           v-model="inputValue[sampleIndex]['COMMENTS']"
         />
@@ -34,7 +34,7 @@
       </validation-provider>
     </div>
 
-    <div v-show="currentTab === 'extraFields'" class="tw-flex tw-w-full">
+    <div v-show="currentTab === 'extraFields'" class="tw-flex tw-w-full tw-items-center">
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-3/12"
@@ -43,7 +43,7 @@
         :vid="`user-path-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           inputClass="tw-w-full tw-h-8"
           v-model="inputValue[sampleIndex]['USERPATH']"
           :errorMessage="errors[0]"
@@ -60,7 +60,7 @@
         :vid="`spacegroup-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :options="spaceGroupList"
           optionValueKey="value"
           optionTextKey="text"
@@ -83,7 +83,7 @@
             :vid="`cell-a-${sampleIndex}`"
             v-slot="{ errors }">
             <base-input-text
-              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+              v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
               placeholderText="A"
               :quiet="true"
               inputClass="tw-w-12 tw-h-8"
@@ -102,7 +102,7 @@
             :vid="`cell-b-${sampleIndex}`"
             v-slot="{ errors }">
             <base-input-text
-              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+              v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
               placeholderText="B"
               :quiet="true"
               inputClass="tw-w-12 tw-h-8"
@@ -122,7 +122,7 @@
             v-slot="{ errors }"
             >
             <base-input-text
-              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+              v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
               placeholderText="C"
               inputClass="tw-w-12 tw-h-8"
               :errorMessage="errors[0]"
@@ -145,7 +145,7 @@
             v-slot="{ errors }"
             >
             <base-input-text
-              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+              v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
               placeholderText="α"
               inputClass="tw-w-12 tw-h-8"
               :quiet="true"
@@ -165,7 +165,7 @@
             v-slot="{ errors }"
             >
             <base-input-text
-              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+              v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
               placeholderText="β"
               inputClass="tw-w-12 tw-h-8"
               :errorMessage="errors[0]"
@@ -185,7 +185,7 @@
             v-slot="{ errors }"
             >
             <base-input-text
-              v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+              v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
               placeholderText="γ"
               inputClass="tw-w-12 tw-h-8"
               :errorMessage="errors[0]"
@@ -200,7 +200,7 @@
     </div>
 
 
-    <div v-show="currentTab === 'unattended' && showUDCColumns" class="tw-w-full tw-flex">
+    <div v-show="currentTab === 'unattended' && showUDCColumns" class="tw-w-full tw-flex tw-items-center">
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-2/12"
@@ -210,7 +210,7 @@
         v-slot="{ errors }"
         >
         <base-input-select
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :options="centeringMethodList"
           optionValueKey="value"
           optionTextKey="text"
@@ -230,7 +230,7 @@
         :vid="`experiment-kind-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :options="experimentKindList"
           inputClass="tw-w-full tw-h-8"
           optionValueKey="value"
@@ -250,7 +250,7 @@
         :vid="`energy-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -267,7 +267,7 @@
         :vid="`anomalous-scatterer-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :options="anomalousOptionsList"
           optionValueKey="value"
           inputClass="tw-w-full tw-h-8"
@@ -287,7 +287,7 @@
         :vid="`screening-method-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :options="screeningMethodList"
           optionValueKey="value"
           optionTextKey="text"
@@ -307,7 +307,7 @@
         :vid="`required-resolution-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :disabled="selectedScreeningMode.value !== 'None'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
@@ -325,7 +325,7 @@
         :vid="`minimum-resolution-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :disabled="selectedScreeningMode.value !== 'Better Than'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
@@ -343,7 +343,7 @@
         :vid="`no-to-collect-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="inputValue[sampleIndex]['LOCATION'] === currentEditingRow"
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :disabled="selectedScreeningMode.value !== 'Collect Best N'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
@@ -415,7 +415,11 @@ export default {
   data() {
     return {}
   },
-  methods: {},
+  methods: {
+    canEditRow(location) {
+      return !this.containerId || location === this.currentEditingRow
+    }
+  },
   computed: {
     showUDCColumns() {
       return this.$showUDCColumns()

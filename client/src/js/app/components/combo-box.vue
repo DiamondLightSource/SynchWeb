@@ -17,7 +17,8 @@ The v-closable takes an object as argumnt with properties:
       :class="{
         'select-selected': true,
         ['tw-px-2']: true,
-        [`select-${inputIndex}`]: true
+        [`select-${inputIndex}`]: true,
+        [size]: true
       }"
       v-show="!searching"
       @click="openComboBox(inputIndex, $event)" >
@@ -45,6 +46,7 @@ The v-closable takes an object as argumnt with properties:
         type="text"
         :ref="`searchInput-${inputIndex}`"
         class="tw-w-full select-search-input"
+        :class="{[size]: true}"
         v-model="searchText"
         @focus="openOptionsList($event)"/>
     </div>
@@ -103,6 +105,12 @@ export default {
       type: Array,
       default: () => ([])
     },
+    size: {
+      // This is used for setting the size of the combo-box. The default is an empty string ''. The other option is to
+      // set it to 'small'
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {
@@ -148,15 +156,16 @@ export default {
           selectedItemWrapper[i].classList.remove('select-arrow-active') // Revert the arrow icon when closed
         }
       }
-      
+
       for (let j = 0; j < selectItemsWrapper.length; j += 1) {
         if (dropDownList.indexOf(j) > -1) {
           var classNames = selectItemsWrapper[j].classList
           const isSelfTriggered = this.excludedSelectElements.some(element => classNames.contains(element))
-          
+
           if (force) {
             this.searching = false
           }
+
           if (!isSelfTriggered || force) {
             selectItemsWrapper[j].classList.add('select-hide') // Hide the dropdown list in combobox
           }
@@ -190,7 +199,7 @@ export default {
 
 <style scoped>
 .select-selected {
-  @apply tw-bg-white tw-h-10 tw-rounded tw-border tw-border-content-dark-background tw-flex tw-items-center tw-cursor-pointer
+  @apply tw-bg-white tw-h-8 tw-rounded tw-border tw-border-content-dark-background tw-flex tw-items-center tw-cursor-pointer
 }
 .select-selected.small {
   height: 30px;
@@ -262,5 +271,11 @@ export default {
 }
 .items-list div:hover, .same-as-selected {
   @apply tw-bg-content-active tw-text-white;
+}
+.select-search-input.small {
+  @apply tw-h-8;
+}
+.select-search-input {
+  @apply tw-h-10;
 }
 </style>

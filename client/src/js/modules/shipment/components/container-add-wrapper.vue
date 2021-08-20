@@ -17,7 +17,7 @@
 * Router guard determines if we can still add content to the proposal
 * Then displays the addcontainer view specific to a proposal type
 */
-import MarionetteView from 'app/views/marionette/marionette-wrapper.vue
+import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import MxContainerAdd from 'modules/types/mx/shipment/views/container-add.vue'
 
 import { ContainerAddMap } from 'modules/shipment/components/container-map'
