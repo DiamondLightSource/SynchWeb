@@ -1,7 +1,6 @@
 <template>
   <flat-button
     :class="highlight ? 'highlight' : ''"
-    class="blue"
     :title="hint"
     :disabled="disabled"
     @click="$emit('click')"

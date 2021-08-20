@@ -1,9 +1,6 @@
 <template>
   <span>
-    <flat-button
-      class="expand-button blue"
-      @click="displayFullPath = !displayFullPath"
-    >
+    <flat-button @click="displayFullPath = !displayFullPath">
       <i :class="expandClass" />
     </flat-button>
     <span class="temp">{{ displayPath }}</span>
@@ -41,10 +38,3 @@ export default {
     },
 }
 </script>
-
-<style scoped>
-.expand-button {
-    padding-left: 8px;
-    padding-right: 8px;
-}
-</style>

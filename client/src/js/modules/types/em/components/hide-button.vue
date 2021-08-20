@@ -1,7 +1,8 @@
 <template>
   <flat-button
-    class="blue"
-    @click="click">
+    level="primary"
+    @click="click"
+  >
     <i :class="hideIconClass" />
   </flat-button>
 </template>

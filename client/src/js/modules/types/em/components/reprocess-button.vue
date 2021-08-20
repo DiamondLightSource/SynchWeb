@@ -1,6 +1,5 @@
 <template>
   <flat-button
-    class="blue"
     :title="hintText"
     :disabled="hintText != 'Run Relion processing'"
     @click="click"

@@ -16,7 +16,7 @@
     </dialog-modal>
 
     <flat-button
-      class="red"
+      level="danger"
       @click="showConfirmation = true"
     >
       <i class="fa fa-ban" />

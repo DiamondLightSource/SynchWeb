@@ -24,7 +24,7 @@
       <footer class="footer">
         <flat-button
           v-if="confirmLabel"
-          class="green"
+          level="success"
           @click="$emit('confirm')"
         >
           {{ confirmLabel }}
@@ -32,7 +32,7 @@
 
         <flat-button
           v-if="cancelLabel"
-          class="red"
+          level="danger"
           @click="$emit('cancel')"
         >
           {{ cancelLabel }}
