@@ -1,6 +1,6 @@
 <template>
   <flat-button
-    :class="highlight ? 'highlight' : ''"
+    :level="level"
     :title="hint"
     :disabled="disabled"
     @click="$emit('click')"
@@ -40,9 +40,9 @@ export default {
             'type': Boolean,
             'default': false,
         },
-        'highlight': {
-            'type': Boolean,
-            'default': false,
+        'level': {
+            'type': String,
+            'default': 'secondary',
         },
     },
 }

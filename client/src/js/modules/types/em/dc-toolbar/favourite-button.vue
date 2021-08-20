@@ -3,7 +3,7 @@
     hint="Click to add this data collection to the list of favourite data collections"
     icon-class="fa fa-star-o"
     button-text="Favourite"
-    :highlight="flagHighlight"
+    :level="buttonLevel"
     @click="dataCollectionModel.flag()"
   />
 </template>
@@ -22,22 +22,11 @@ export default {
             'required': true,
         },
     },
-    'data': function() {
-        return {
-            'flagHighlight': false,
-        }
+    'computed': {
+        'buttonLevel': function() {
+            return this.dataCollectionModel.get('COMMENTS').match(/_FLAG_/) === null ?
+                'secondary': 'info'
+        },
     },
-    'mounted': function() {
-        const vm = this
-        vm.checkComment(vm.dataCollectionModel)
-        vm.dataCollectionModel.on('sync', function() {
-            vm.checkComment(this)
-        });
-    },
-    'methods': {
-        'checkComment': function(model) {
-            this.flagHighlight = model.get('COMMENTS').match(/_FLAG_/) !== null
-        }
-    }
 }
 </script>
