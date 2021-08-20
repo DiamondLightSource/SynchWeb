@@ -158,7 +158,7 @@ import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputCheckBox from 'app/components/base-input-checkbox.vue'
 
-import ValidContainerGraphic from 'modules/types/saxs/samples/valid-container-graphic.vue'
+import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
 import TableComponent from 'app/components/table.vue'
 import PaginationComponent from 'app/components/pagination.vue'
 import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
@@ -329,12 +329,9 @@ export default {
     },
     async getExperimentTypes() {
       let experimentTypesCollection = new ExperimentTypes()
-
       const result = await this.$store.dispatch('getCollection', experimentTypesCollection)
       let experimentType = this.findExperimentType(result)
-
       this.experimentKind = experimentType.length > 0 ? experimentType[0].EXPERIMENTTYPEID : 0
-
     },
     findExperimentType(collection) {
       let proposalType = this.$store.state.proposal.proposalType

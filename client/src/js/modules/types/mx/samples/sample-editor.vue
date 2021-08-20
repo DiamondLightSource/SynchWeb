@@ -25,13 +25,9 @@
 </template>
 
 <script>
-import EventBus from 'app/components/utils/event-bus.js'
-
 import Sample from 'models/sample'
 import SingleSample from 'modules/types/mx/samples/single-sample.vue'
-import SamplePlateNew from 'modules/types/mx/samples/sample-plate-new.vue'
-
-import { SampleTableNewMap, SampleTableViewMap } from 'modules/types/saxs/samples/experiments/sample-table-map'
+import SamplePlateNew from 'js/modules/types/mx/samples/samples-plate.vue'
 
 import { ValidationObserver }  from 'vee-validate'
 
@@ -69,18 +65,8 @@ export default {
     sampleComponent() {
       // Use a table editor unless capacity > 25
       // If we have been passed a valid container id then we are editing the samples, else new table
-      let sampleTableMap = this.containerId ? SampleTableViewMap : SampleTableNewMap
-      let experimentType = 'default'
 
-      let component = sampleTableMap[experimentType]
-
-      if (this.containerType.CAPACITY > 25) {
-        component = 'single-sample-plate'
-      } else {
-        component = 'mx-sample-plate-new'
-      }
-
-      return component
+      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-sample-plate-new'
     },
     // These options will be passed into the marionette sample table view
     ...mapGetters({

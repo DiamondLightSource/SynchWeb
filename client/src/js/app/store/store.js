@@ -8,6 +8,7 @@ import MenuStore from './modules/store.menus.js'
 import ProposalStore from './modules/store.proposal.js'
 import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
+import SamplesStore from './modules/store.samples.js'
 import ShipmentStore from './modules/store.shipment.js'
 
 // Configuration
@@ -27,6 +28,7 @@ const store = new Vuex.Store({
     proposal: ProposalStore,
     user: UserStore,
     notifications: NotificationStore,
+    samples: SamplesStore,
     shipment: ShipmentStore
   },
   state: {

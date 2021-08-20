@@ -391,7 +391,7 @@ import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import Table from 'app/components/table.vue'
 
-import PlateSampleControls from 'modules/types/saxs/samples/plate-sample-controls.vue'
+import PlateSampleControls from 'modules/types/mx/samples/plate-sample-controls.vue'
 import SampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
 
 import { ValidationProvider }  from 'vee-validate'

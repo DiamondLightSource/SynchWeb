@@ -188,8 +188,7 @@
 
 <script>
 import Container from 'models/container'
-import ContainerGraphic from 'modules/shipment/components/ContainerGraphic.vue'
-import ValidContainerGraphic from 'modules/types/saxs/samples/valid-container-graphic.vue'
+import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
 
 import SampleEditor from 'modules/types/mx/samples/sample-editor.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
@@ -245,7 +244,6 @@ export default {
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
     'base-input-checkbox': BaseInputCheckbox,
-    'container-graphic': ContainerGraphic,
     'valid-container-graphic': ValidContainerGraphic,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,

@@ -182,6 +182,7 @@ class Shipment extends Page
                               array('/containers/history', 'post', '_add_container_history'),
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
+                              array('/containers/types', 'get', '_get_container_types'),
                               
                               array('/containers/notify/:BARCODE', 'get', '_notify_container'),
 
@@ -1757,8 +1758,18 @@ class Shipment extends Page
             $this->_output(array('CONTAINERHISTORYID' => $chid));
         }
 
-
-
+        function _get_container_types() {
+            $where = '';
+            // By default only return active container types.
+            // If all param set return everything
+            if ($this->has_arg('all')) {
+                $where .= '1=1';
+            } else {
+                $where .= 'ct.active = 1';
+            }
+            $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where");
+            $this->_output(array('total' => count($rows), 'data' => $rows));
+        }
 
         function _container_registry() {
             $args = array($this->proposalid);

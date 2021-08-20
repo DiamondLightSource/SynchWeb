@@ -52,7 +52,7 @@
       </div>
     </div>
     <div
-      class="tw-flex tw-w-full"
+      class="tw-flex tw-w-full tw-items-center"
       :class="{
         'tw-bg-table-body-background': sampleIndex % 2 == 0,
         'tw-bg-table-body-background-odd': sampleIndex % 2 == 1
@@ -89,7 +89,7 @@
         :vid="`sample-name-${sample['LOCATION']}`"
         v-slot="{ errors }">
         <base-input-text
-          v-if="!containerId"
+          v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
           inputClass="tw-w-full tw-h-8"
           v-model="sample['NAME']"
           :errorMessage="errors[0]"
@@ -106,7 +106,7 @@
         :vid="`sample-group-${sample['BLSAMPLEGROUPID']}`"
         v-slot="{ errors }">
         <base-input-select
-          v-if="sample['LOCATION'] === editingRow"
+          v-if="!containerId || (!sample['BLSAMPLEID'] && sample['LOCATION'] === editingRow)"
           :options="sampleGroups"
           optionValueKey="value"
           optionTextKey="text"
