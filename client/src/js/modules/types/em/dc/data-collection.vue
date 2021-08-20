@@ -106,67 +106,65 @@ export default {
         this.$store.commit('proposal/setVisit', this.visit)
         this.fetchDataCollection()
     },
-    'unmount': function() {
+    'beforeDestroy': function() {
         if (this.timeout !== null) {
             clearTimeout(this.timeout)
             this.timeout = null;
+            console.log('cleared dataCollection fetch timer', this.timeout)
         }
     },
     'methods': {
         'fetchDataCollection': function() {
-            const vm = this
-            vm.$store.commit('loading', true)
+            this.$store.commit('loading', true)
             // prevent url mangling by the Backbone model
             this.dataCollectionModel.set('TYPE', '')
-            vm.$store.dispatch('getModel', this.dataCollectionModel).then(
-                function(model) {
-                    vm.dataCollection = model.attributes
-                    console.log('fetched data collection', vm.dataCollection)
-                    if (vm.dataCollection.ARCHIVED == '0') {
-                        vm.timeout = setTimeout(
-                            vm.fetchDataCollection,
+            this.$store.dispatch('getModel', this.dataCollectionModel).then(
+                (model) => {
+                    this.dataCollection = model.attributes
+                    console.log('fetched data collection', this.dataCollection, this.dataCollection.ID)
+                    if (this.dataCollection.ARCHIVED == '0') {
+                        this.timeout = setTimeout(
+                            this.fetchDataCollection,
                             /* TODO: this was / should be (???)
                                      10 seconds, not 30! */
                             30 * 1000
                         )
                     }
-                    vm.fetchProcessingJobsCollection()
-
+                    this.fetchProcessingJobsCollection()
                 },
-                function(error) {
+                (error) => {
                     console.log('error fetching dataCollection', error)
-                    vm.$store.commit('notifications/addNotification', {
+                    this.$store.commit('notifications/addNotification', {
                         'title': 'Error',
                         'message': 'Could not retrieve data collection',
                         'level': 'error'
                     })
                 }
-            ).finally(function() {
-                vm.$store.commit('loading', false)
+            ).finally(() => {
+                this.$store.commit('loading', false)
             })
         },
         'fetchProcessingJobsCollection': function() {
-            const vm = this
-            vm.$store.commit('loading', true)
-            vm.$store.dispatch(
+            this.$store.commit('loading', true)
+            this.$store.dispatch(
                 'getCollection', this.processingJobsCollection
             ).then(
-                function(result) {
-                    vm.processingJobs = result.map(function(jobModel) {
+                (result) => {
+                    this.processingJobs = result.map((jobModel) => {
                         return jobModel.attributes
                     })
-                    console.log('fetched processing jobs', vm.processingJobs)
+                    console.log('fetched processing jobs', this.processingJobs)
                 },
-                function(error) {
+                (error) => {
                     console.log('error fetching processing jobs', error)
-                    vm.$store.commit('notifications/addNotification', {
+                    this.$store.commit('notifications/addNotification', {
                         'title': 'Error',
                         'message': 'Could not retrieve processing jobs',
                         'level': 'error'
                     })
                 }
-            ).finally(function() {
-                vm.$store.commit('loading', false)
+            ).finally(() => {
+                this.$store.commit('loading', false)
             })
         },
     },
