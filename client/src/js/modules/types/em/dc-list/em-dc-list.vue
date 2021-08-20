@@ -10,7 +10,6 @@
       :model="model"
     />
 
-
     <div class="toolbar">
       <toolbar />
       <search
@@ -45,6 +44,7 @@ import Refresh from 'modules/types/em/dc-list/refresh.vue'
 import Search from 'modules/types/em/dc-list/search.vue'
 import Table from 'app/components/table.vue'
 import Toolbar from 'modules/types/em/dc-list/toolbar.vue'
+import vueXModule from 'modules/types/em/store'
 
 export default {
     'name': 'EmDcList',
@@ -123,6 +123,9 @@ export default {
             this.model.has('VISIT') ? this.model.get('VISIT') : false
         );
         this.getCollection()
+    },
+    'beforeCreate': function() {
+        vueXModule.register(this.$store)
     },
     'methods': {
         'pageChanged': function (pagination) {

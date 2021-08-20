@@ -4,7 +4,7 @@
     button-text="Relion Processing"
     :show-text="showText"
     :hint="hint"
-    :disabled="hintText != 'Run Relion processing'"
+    :disabled="hint != 'Run Relion processing'"
     @click="click"
   />
 </template>

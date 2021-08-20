@@ -16,7 +16,7 @@ const module = {
         'processingDisallowedReason': function(state) {
             return state.processingDisallowedReason == '' ?
                 '' :
-                "Relion processing can't be run because" +
+                "Relion processing can't be run because " +
                     state.processingDisallowedReason
         }
     },

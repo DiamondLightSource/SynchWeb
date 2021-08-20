@@ -38,13 +38,16 @@
 
     <!-- <a class="button"  href="/em/process/visit/<%-VISIT%>" title="Scipion Processing"><i class="fa fa-cog"></i> <span>Processing</span></a> -->
 
-    <toolbar-button
+    <!-- toolbar-button
       :show-text="!isMobile"
       :href="relionUrl"
       button-text="Relion Processing"
       hint="Relion Processing"
       icon="fa fa-cog"
-    />
+    / -->
+
+    <reprocess-button :show-text="!isMobile" />
+    <relion-dialog />
   </div>
 </template>
 
@@ -52,6 +55,8 @@
 import DewarsView from 'modules/proposal/views/dewars'
 import MarionetteApplication from 'app/marionette-application'
 import MarionetteWrapper from 'app/views/marionette/marionette-wrapper.vue'
+import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
+import ReprocessButton from 'modules/types/em/components/reprocess-button.vue'
 import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 import UserView from 'modules/proposal/views/users'
 
@@ -59,6 +64,8 @@ export default {
     'name': 'Toolbar',
     'components': {
         'marionette-wrapper': MarionetteWrapper,
+        'relion-dialog': RelionDialog,
+        'reprocess-button': ReprocessButton,
         'toolbar-button': ToolbarButton,
     },
     'data': function () {
