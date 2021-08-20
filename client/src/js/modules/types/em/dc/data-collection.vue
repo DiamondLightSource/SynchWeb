@@ -63,6 +63,7 @@ export default {
         return {
             'dataCollection': null,
             'processingJobs': [],
+            'timeout': null,
         }
     },
     'computed': {
@@ -105,6 +106,12 @@ export default {
         this.$store.commit('proposal/setVisit', this.visit)
         this.fetchDataCollection()
     },
+    'umount': function() {
+        if (this.timeout !== null) {
+            clearTimeout(this.timeout)
+            this.timeout = null;
+        }
+    },
     'methods': {
         'fetchDataCollection': function() {
             const vm = this
@@ -116,8 +123,12 @@ export default {
                     vm.dataCollection = model.attributes
                     console.log('fetched data collection', vm.dataCollection)
                     if (vm.dataCollection.ARCHIVED == '0') {
-                        // TODO: this was / should be (???) 10 seconds, not 30!
-                        setTimeout(vm.fetchDataCollection, 30 * 1000)
+                        vm.timeout = setTimeout(
+                            vm.fetchDataCollection,
+                            /* TODO: this was / should be (???)
+                                     10 seconds, not 30! */
+                            30 * 1000
+                        )
                     }
                     vm.fetchProcessingJobsCollection()
 
