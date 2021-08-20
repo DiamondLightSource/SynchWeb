@@ -1,6 +1,6 @@
 <template>
   <button-with-marionette-dialog
-    icon-class="fa fa-file"
+    icon="fa fa-file"
     :button-label="count.toString()"
     :button-text="countLabel"
     dialog-title="Attachments"

@@ -1,8 +1,8 @@
 <template>
   <span>
-    <button-with-function
+    <toolbar-button
       :hint="hint"
-      :icon-class="iconClass"
+      :icon="icon"
       :button-label="buttonLabel"
       :button-text="buttonText"
       :disabled="disabled"
@@ -21,16 +21,16 @@
 
 <script>
 import DialogMarionetteView from 'app/components/dialog-marionette-view.vue'
-import ButtonWithFunction from 'modules/types/em/dc-toolbar/button-with-function.vue'
+import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 
 export default {
     'name': 'ButtonWithMarionetteDialog',
     'components': {
-        'button-with-function': ButtonWithFunction,
+        'toolbar-button': ToolbarButton,
         'dialog-marionette-view': DialogMarionetteView,
     },
     'props': {
-        'iconClass': {
+        'icon': {
             'type': String,
             'required': true,
         },

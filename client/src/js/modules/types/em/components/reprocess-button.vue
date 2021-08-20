@@ -1,28 +1,35 @@
 <template>
-  <flat-button
-    :title="hintText"
+  <toolbar-button
+    icon="fa fa-cog"
+    button-text="Relion Processing"
+    :show-text="showText"
+    :hint="hint"
     :disabled="hintText != 'Run Relion processing'"
     @click="click"
-  >
-    <i class="fa fa-cog" />
-  </flat-button>
+  />
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import FlatButton from 'app/components/flat-button.vue'
+import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 
 export default {
     'name': 'ReprocessesButton',
     'components': {
-        'flat-button': FlatButton,
+        'toolbar-button': ToolbarButton,
+    },
+    'props': {
+        'showText': {
+            'type': Boolean,
+            'default': false,
+        }
     },
     'computed': {
         ...mapGetters('em', [
             'processingAllowed',
             'processingDisallowedReason',
         ]),
-        'hintText': function () {
+        'hint': function () {
             return this.processingAllowed ?
                 'Run Relion processing' :
                 this.processingDisallowedReason

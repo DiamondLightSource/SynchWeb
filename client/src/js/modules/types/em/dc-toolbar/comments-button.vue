@@ -1,6 +1,6 @@
 <template>
   <button-with-marionette-dialog
-    icon-class="fa fa-comments"
+    icon="fa fa-comments"
     :button-label="count.toString()"
     :button-text="countLabel"
     dialog-title="Comments"

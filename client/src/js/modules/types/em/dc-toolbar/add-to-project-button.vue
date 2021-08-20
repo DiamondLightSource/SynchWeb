@@ -1,6 +1,6 @@
 <template>
   <button-with-marionette-dialog
-    icon-class="fa fa-book"
+    icon="fa fa-book"
     button-text="Add to Project"
     dialog-title="Add to project"
     hint="Add to project"

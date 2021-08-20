@@ -10,14 +10,15 @@
       :model="model"
     />
 
-    <toolbar />
 
-    <search
-      class="srch clearfix"
-      :collection="collection"
-      :value="params.search"
-      :url="searchUrl"
-    />
+    <div class="toolbar">
+      <toolbar />
+      <search
+        :collection="collection"
+        :value="params.search"
+        :url="searchUrl"
+      />
+    </div>
 
     <pagination
       class="page_wrap"
@@ -156,3 +157,10 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+}
+</style>

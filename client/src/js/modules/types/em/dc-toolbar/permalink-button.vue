@@ -1,19 +1,19 @@
 <template>
-  <button-with-function
+  <toolbar-button
     hint="Permalink"
-    icon-class="fa fa-link"
+    icon="fa fa-link"
     button-text="Permalink"
     @click="click"
   />
 </template>
 
 <script>
-import ButtonWithFunction from 'modules/types/em/dc-toolbar/button-with-function.vue'
+import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 
 export default {
     'name': 'DcToolbar',
     'components': {
-        'button-with-function': ButtonWithFunction,
+        'toolbar-button': ToolbarButton,
     },
     'props': {
         'dataCollectionModel': {

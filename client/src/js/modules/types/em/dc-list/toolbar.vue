@@ -1,15 +1,17 @@
 <template>
   <div class="links">
-    <toolbar-link
+    <toolbar-button
       :href="statsUrl"
-      title="Visit Stats"
-      icon="fa-pie-chart"
+      :show-text="!isMobile"
+      button-text="Visit Stats"
+      hint="Visit Stats"
+      icon="fa fa-pie-chart"
     />
 
-    <toolbar-link
-      extra-class="users"
-      title="Users"
-      icon="fa-users"
+    <toolbar-button
+      :show-text="!isMobile"
+      button-text="Users"
+      icon="fa fa-users"
       @mouseover="showUsers = true"
       @mouseleave="showUsers = false"
     >
@@ -18,12 +20,12 @@
         :options="marionetteOptions"
         :mview="userView"
       />
-    </toolbar-link>
+    </toolbar-button>
 
-    <toolbar-link
-      title="Parcels"
-      extra-class="dewars"
-      icon="fa-truck"
+    <toolbar-button
+      :show-text="!isMobile"
+      button-text="Parcels"
+      icon="fa fa-truck"
       @mouseover="showDewars = true"
       @mouseleave="showDewars = false"
     >
@@ -32,29 +34,32 @@
         :options="marionetteOptions"
         :mview="dewarsView"
       />
-    </toolbar-link>
+    </toolbar-button>
 
     <!-- <a class="button"  href="/em/process/visit/<%-VISIT%>" title="Scipion Processing"><i class="fa fa-cog"></i> <span>Processing</span></a> -->
 
-    <toolbar-link
+    <toolbar-button
+      :show-text="!isMobile"
       :href="relionUrl"
-      title="Relion Processing"
-      icon="fa-cog"
+      button-text="Relion Processing"
+      hint="Relion Processing"
+      icon="fa fa-cog"
     />
   </div>
 </template>
 
 <script>
-import UserView from 'modules/proposal/views/users'
 import DewarsView from 'modules/proposal/views/dewars'
+import MarionetteApplication from 'app/marionette-application'
 import MarionetteWrapper from 'app/views/marionette/marionette-wrapper.vue'
-import ToolbarLink from 'modules/types/em/dc-list/toolbar-link.vue'
+import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
+import UserView from 'modules/proposal/views/users'
 
 export default {
     'name': 'Toolbar',
     'components': {
         'marionette-wrapper': MarionetteWrapper,
-        'toolbar-link': ToolbarLink,
+        'toolbar-button': ToolbarButton,
     },
     'data': function () {
         return {
@@ -65,6 +70,9 @@ export default {
         }
     },
     'computed' : {
+        'isMobile': function() {
+            return MarionetteApplication.getInstance().mobile()
+        },
         'marionetteOptions': function() {
             return { 'visit': this.$store.state.proposal.visit }
         },
