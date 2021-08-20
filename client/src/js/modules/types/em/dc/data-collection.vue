@@ -106,7 +106,7 @@ export default {
         this.$store.commit('proposal/setVisit', this.visit)
         this.fetchDataCollection()
     },
-    'umount': function() {
+    'unmount': function() {
         if (this.timeout !== null) {
             clearTimeout(this.timeout)
             this.timeout = null;
