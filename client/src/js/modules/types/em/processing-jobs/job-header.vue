@@ -85,7 +85,6 @@ export default {
 
 <style scoped>
 .job-header {
-    cursor: pointer;
     background: #555;
     color: #fff;
     padding: 8px;
