@@ -1,6 +1,4 @@
-import baseViewModel from 'modules/types/em/components/view-model'
-
-const middleware = function(response) {
+export default function(response) {
     const parseSingleChart = function(json) {
         if (!json) {
             return ''
@@ -35,18 +33,4 @@ const middleware = function(response) {
             'chartData': json ? parseSingleChart(json) : null,
         }
     })
-}
-
-export default {
-    'fetch': function(store, autoProcProgramId) {
-        return baseViewModel(
-            store,
-            '/em/attachments/' + autoProcProgramId,
-            'Ice Breaker attachments',
-            middleware
-        )
-    },
-    'defaultData': function() {
-        return { 'attachments': [] }
-    },
 }

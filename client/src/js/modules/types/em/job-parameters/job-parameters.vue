@@ -30,10 +30,10 @@
 </template>
 
 <script>
+import middleware from 'modules/types/em/job-parameters/middleware'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import ViewModel from 'modules/types/em/job-parameters/view-model'
 
 export default {
     'name': 'JobParameters',
@@ -52,7 +52,12 @@ export default {
         return { 'parameters': [] }
     },
     'mounted': function() {
-        ViewModel.fetch(this.$store, this.processingJobId).then(
+        this.$store.dispatch('em/fetch', {
+            'url': '/em/process/relion/job/parameters?processingJobId=' +
+                this.processingJobId,
+            'humanName': 'Processing Job Parameters',
+            'middleware': middleware,
+        }).then(
             (parameters) => { this.parameters = parameters }
         )
     },

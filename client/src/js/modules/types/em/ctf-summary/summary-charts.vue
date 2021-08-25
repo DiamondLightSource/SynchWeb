@@ -30,7 +30,7 @@
 <script>
 import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import ViewModel from 'modules/types/em/ctf-summary/view-model.js'
+import middleware from 'modules/types/em/ctf-summary/middleware'
 
 export default {
     'name': 'ProcessingSummary',
@@ -46,7 +46,12 @@ export default {
     },
     'data': function() {
         return {
-            'state': ViewModel.defaultData(),
+            'state': {
+                'points': 0,
+                'astigmatism': '',
+                'estimatedFocus': '',
+                'estimatedResolution': '',
+            },
         }
     },
     'computed': {
@@ -73,7 +78,11 @@ export default {
             if (! this.autoProcProgramId) {
                 return
             }
-            ViewModel.fetch(this.$store, this.autoProcProgramId).then(
+            this.$store.dispatch('em/fetch', {
+                'url': '/em/ctf/summary/' + this.autoProcProgramId,
+                'humanName': 'CTF summary data',
+                'middleware': middleware,
+            }).then(
                 (ctfSummary) => { this.state = ctfSummary }
             )
         },

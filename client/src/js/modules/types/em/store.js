@@ -1,3 +1,4 @@
+import Backbone from 'backbone'
 import relion from 'modules/types/em/relion/parameters-store'
 
 const module = {
@@ -49,6 +50,53 @@ const module = {
         },
         'showProcessingDialog': function(state) {
             state.processingDialog = true
+        },
+    },
+    'actions': {
+        'fetch': function(context, {url, humanName, middleware}) {
+            const handleResult = function (response) {
+                const result = typeof middleware == 'function' ?
+                    middleware(response) : response;
+                console.log(humanName, result)
+                context.commit('loading', false, {'root': true })
+                return result
+            }
+
+            const handleError = function(response) {
+                const message = 'Could not retrieve ' + humanName
+                context.commit('notifications/addNotification', {
+                    'title': 'Error',
+                    'message': message,
+                    'level': 'error'
+                }, {'root': true })
+                console.log(response || message)
+                context.commit('loading', false, {'root': true })
+            }
+
+            context.commit('loading', true, {'root': true })
+            return new Promise((resolve, reject) => {
+                // Backbone.ajax is overridden in src/js/app/marionette-application.js
+                // to provide additional SynchWeb specific functionality
+                Backbone.ajax({
+                    'type': 'GET',
+                    'url': context.rootGetters.apiUrl + url,
+                    'success': function (
+                        response,
+                        status, // eslint-disable-line no-unused-vars
+                        xhr // eslint-disable-line no-unused-vars
+                    ) {
+                        resolve(handleResult(response))
+                    },
+                    'error': function(
+                        model,
+                        response, // eslint-disable-line no-unused-vars
+                        options // eslint-disable-line no-unused-vars
+                    ) {
+                        handleError(JSON.parse(model.responseText).message)
+                        reject()
+                    }
+                })
+            })
         },
     },
 }

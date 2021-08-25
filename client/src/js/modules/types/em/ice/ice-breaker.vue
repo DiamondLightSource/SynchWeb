@@ -27,10 +27,10 @@
 
 <script>
 import Download from 'modules/types/em/ice/download.vue'
+import middleware from 'modules/types/em/ice/middleware'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import ViewModel from 'modules/types/em/ice/view-model.js'
 
 export default {
     'name': "IceBreaker",
@@ -47,21 +47,20 @@ export default {
         },
     },
     'data': function() {
-        return ViewModel.defaultData()
+        return { 'attachments': [] }
     },
     'mounted': function() {
-        this.fetchData()
-    },
-    'methods': {
-        'fetchData': function() {
-            // If this job has not yet run, autoProcProgramId "doesn't exist"
-            if (!this.autoProcProgramId) {
-                return
-            }
-            ViewModel.fetch(this.$store, this.autoProcProgramId).then(
-                (attachments) => { this.attachments = attachments }
-            )
-        },
+        // If this job has not yet run, autoProcProgramId "doesn't exist"
+        if (!this.autoProcProgramId) {
+            return
+        }
+        this.$store.dispatch('em/fetch', {
+            'url': '/em/attachments/' + this.autoProcProgramId,
+            'humanName': 'Ice Breaker attachments',
+            'middleware': middleware,
+        }).then(
+            (attachments) => { this.attachments = attachments }
+        )
     },
 }
 </script>

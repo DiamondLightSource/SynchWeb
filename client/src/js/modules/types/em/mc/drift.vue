@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import DriftViewModel from 'modules/types/em/mc/drift-view-model.js'
+import driftMiddleware from 'modules/types/em/mc/drift-middleware'
 import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 
 export default {
@@ -28,7 +28,7 @@ export default {
         },
     },
     'data': function() {
-        return DriftViewModel.defaultData()
+        return driftMiddleware.defaultData()
     },
     'computed': {
         'layout': function() {
@@ -50,11 +50,12 @@ export default {
     },
     'methods': {
         'fetch': function() {
-            DriftViewModel.fetch(
-                this.$store,
-                this.autoProcProgramId,
-                this.movieNumber
-            ).then(
+            this.$store.dispatch('em/fetch', {
+                'url': '/em/mc/drift/' + this.autoProcProgramId +
+                    '/n/' + this.movieNumber,
+                'humanName': 'MC Drift',
+                'middleware': driftMiddleware.middleware,
+            }).then(
                 (state) => {
                     this.chartData = state.chartData
                     this.points = state.points
