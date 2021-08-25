@@ -1,24 +1,7 @@
 /**
- * Mixin for Vue components to provide useful data formatting
+ * Mixin for Vue components to provide parameter formatting
  */
 export default {
-    'computed': {
-        'angstrom': function() {
-            return '&#197;'
-        },
-        'electron': function() {
-            return 'e<span class="super">-</span>'
-        },
-        'angstromSquared': function() {
-            return this.angstrom + '<span class="super">2</span>'
-        },
-        'angstromPerPixel': function() {
-            return this.angstrom + '/pixel'
-        },
-        'electronsPerAngstromSquared': function() {
-            return this.electron + '/' + this.angstromSquared
-        },
-    },
     'methods': {
         'pairOfValues': function(x, y, separator) {
             if (x || y) {

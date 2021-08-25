@@ -42,9 +42,10 @@
 </template>
 
 <script>
-import formatsUnits from 'modules/types/em/components/formats-units'
+import parameterFormats from 'modules/types/em/components/parameter-formats'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
+import unitsHtml from 'modules/types/em/components/units-html.js'
 
 export default {
     'name': "Params",
@@ -52,7 +53,7 @@ export default {
         'parameter-list-item': ParameterListItem,
         'parameter-list': ParameterList,
     },
-    'mixins': [formatsUnits],
+    'mixins': [parameterFormats],
     'props': {
         'motionCorrection': {
             'type': Object,
@@ -72,25 +73,22 @@ export default {
         'dosePerFrame': function() {
             return this.datumWithUnit(
                 this.motionCorrection.DOSEPERFRAME,
-                this.electronsPerAngstromSquared
+                unitsHtml.electron + '/' + unitsHtml.angstromSquared
             )
         },
         'doseWeight': function() {
             return this.datumWithUnit(
-                this.motionCorrection.DOSEWEIGHT,
-                '?'
+                this.motionCorrection.DOSEWEIGHT, '?'
             )
         },
         'totalMotion': function() {
             return this.datumWithUnit(
-                this.motionCorrection.TOTALMOTION,
-                this.angstrom
+                this.motionCorrection.TOTALMOTION, 'Å'
             )
         },
         'averageMotionPerFrame': function() {
             return this.datumWithUnit(
-                this.motionCorrection.AVERAGEMOTIONPERFRAME,
-                this.angstrom
+                this.motionCorrection.AVERAGEMOTIONPERFRAME, 'Å'
             )
         },
         'patchesUsed': function() {

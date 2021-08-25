@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import formatsUnits from 'modules/types/em/components/formats-units'
+import parameterFormats from 'modules/types/em/components/parameter-formats'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 
@@ -64,7 +64,7 @@ export default {
         'parameter-list-item': ParameterListItem,
         'parameter-list': ParameterList,
     },
-    'mixins': [formatsUnits],
+    'mixins': [parameterFormats],
     'props': {
         'ctfEstimation': {
             'type': Object,
@@ -83,30 +83,30 @@ export default {
         },
         'resolution': function() {
             return this.range(
-                this.datumWithUnit(this.ctfEstimation.MINRESOLUTION, this.angstrom),
-                this.datumWithUnit(this.ctfEstimation.MAXRESOLUTION, this.angstrom)
+                this.datumWithUnit(this.ctfEstimation.MINRESOLUTION, 'Å'),
+                this.datumWithUnit(this.ctfEstimation.MAXRESOLUTION, 'Å')
             )
         },
         'defocus': function() {
             return this.range(
-                this.datumWithUnit(this.ctfEstimation.MINDEFOCUS, this.angstrom),
-                this.datumWithUnit(this.ctfEstimation.MAXDEFOCUS, this.angstrom)
+                this.datumWithUnit(this.ctfEstimation.MINDEFOCUS, 'Å'),
+                this.datumWithUnit(this.ctfEstimation.MAXDEFOCUS, 'Å')
             )
         },
         'defocusStepSize': function() {
-            return this.datumWithUnit(this.ctfEstimation.DEFOCUSSTEPSIZE, this.angstrom)
+            return this.datumWithUnit(this.ctfEstimation.DEFOCUSSTEPSIZE, 'Å')
         },
         'astigmatism': function() {
-            return this.datumWithUnit(this.ctfEstimation.ASTIGMATISM, this.angstrom)
+            return this.datumWithUnit(this.ctfEstimation.ASTIGMATISM, 'Å')
         },
         'astigmatismAngle': function() {
             return this.datumWithUnit(this.ctfEstimation.ASTIGMATISMANGLE, '&deg;')
         },
         'estimatedResolution': function() {
-            return this.datumWithUnit(this.ctfEstimation.ESTIMATEDRESOLUTION, this.angstrom)
+            return this.datumWithUnit(this.ctfEstimation.ESTIMATEDRESOLUTION, 'Å')
         },
         'estimatedDefocus': function() {
-            return this.datumWithUnit(this.ctfEstimation.ESTIMATEDDEFOCUS, this.angstrom)
+            return this.datumWithUnit(this.ctfEstimation.ESTIMATEDDEFOCUS, 'Å')
         },
         'amplitudeContrast': function() {
             return this.datumOrBlank(this.ctfEstimation.AMPLITUDECONTRAST)

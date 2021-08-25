@@ -118,10 +118,11 @@
 </template>
 
 <script>
-import formatsUnits from 'modules/types/em/components/formats-units'
 import KvLambda from 'modules/types/em/components/kv-lambda'
+import parameterFormats from 'modules/types/em/components/parameter-formats'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
+import unitsHtml from 'modules/types/em/components/units-html.js'
 
 export default {
     'name': 'DataCollectionHeader',
@@ -129,7 +130,7 @@ export default {
         'parameter-list': ParameterList,
         'parameter-list-item': ParameterListItem,
     },
-    'mixins': [formatsUnits],
+    'mixins': [parameterFormats],
     'props': {
         'dataCollection': {
             'type': Object,
@@ -198,8 +199,7 @@ export default {
         },
         'samplePixelSize': function() {
             return this.datumWithUnit(
-                this.dataCollection.PIXELSIZEONIMAGE,
-                this.angstromPerPixel
+                this.dataCollection.PIXELSIZEONIMAGE, 'Å/pixel'
             )
         },
         'binning': function() {
@@ -227,7 +227,7 @@ export default {
         'totalDose': function() {
             return this.datumWithUnit(
                 this.dataCollection.TOTALDOSE,
-                this.electronsPerAngstromSquared
+                unitsHtml.electron + '/' + unitsHtml.angstromSquared
             )
         },
         'isStopped': function() {
