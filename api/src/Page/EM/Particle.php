@@ -16,8 +16,6 @@ trait Particle
 
         if (sizeof($images) == 1) {
             $image = $images[0]['classImageFullPath'];
-            // Temporary work around - images miss-named in some test data
-            $image = str_replace('_classes_class', '_classes_', $image);
             if (file_exists($image)) {
                 $this->_send_image($image);
                 return;
@@ -93,6 +91,4 @@ trait Particle
             false
         );
     }
-
-    //                 ParticleClassification.classImageFullPath,
 }

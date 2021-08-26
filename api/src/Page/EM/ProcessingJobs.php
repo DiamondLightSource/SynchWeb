@@ -83,25 +83,6 @@ trait ProcessingJobs
             $this->paginationArguments($args)
         );
 
-        /*
-        $mock = array(
-            'submitted',
-            'queued',
-            'running',
-            'failure',
-            'success',
-            ''
-        );
-
-        $mockKey = 0;
-        foreach ($processingJobs as $key => $processingJob) {
-            $processingJobs[$key]['PROCESSINGSTATUSDESCRIPTION'] = $mock[$mockKey];
-            if (++$mockKey >= count($mock)) {
-                $mockKey = 0;
-            }
-        }
-        */
-
         return array(
             'total' => intval($total[0]['total']),
             'data' => $processingJobs,
