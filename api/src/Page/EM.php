@@ -7,6 +7,8 @@ use SynchWeb\Queue;
 
 class EM extends Page
 {
+    use \SynchWeb\Page\EM\Pagination;
+    use \SynchWeb\Page\EM\ProcessingJobs;
     public static $arg_list = array(
         'id' => '\d+',
         'ids' => '\d+',
@@ -67,7 +69,9 @@ class EM extends Page
     public static $dispatch = array(
         array('/aps', 'post', '_ap_status'),
 
-        array('/jobs/:id', 'get', '_jobs_by_collection'),
+        // See Synchweb\Page\EM\ProcessingJobs
+        array('/jobs/:id', 'get', 'processingJobsByCollection'),
+        array('/process/relion/jobs/:session', 'get', 'processingJobsBySession'),
 
         array('/mc/:id', 'get', '_mc_result'),
         array('/mc/image/:id(/n/:IMAGENUMBER)', 'get', '_mc_image'),
@@ -85,7 +89,6 @@ class EM extends Page
 
         array('/process/relion/session/:session', 'post', '_relion_start'),
         array('/process/relion/session/:session', 'get', '_relion_status'),
-        array('/process/relion/jobs/:session', 'get', '_relion_jobs'),
         array('/process/relion/job/:processingJobId', 'patch', '_relion_stop'),
         array('/process/relion/job/parameters', 'get', '_relion_parameters'),
 
@@ -381,94 +384,6 @@ class EM extends Page
         }
 
         return $path;
-    }
-
-    private function processingJobs($where, $args)
-    {
-        $processingJobs = null;
-
-        $total = $this->db->pq(
-            "SELECT count(PJ.processingJobId) as total
-            FROM ProcessingJob PJ
-            JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-            JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-            LEFT JOIN AutoProcProgram app ON PJ.processingJobId = app.processingJobId
-            $where",
-            $args
-        );
-        $total = intval($total[0]['TOTAL']);
-
-        $args = $this->handlePaginationArguments($args);
-
-        // In the test data, we have a few occurrences of multiple
-        // AutoProcProgram rows on a single ProcessingJob
-        // I don't know if this is a testing artifact or expected in normal
-        // operation but I've included autoProcProgramId here just in case
-        $processingJobs = $this->db->paginate(
-            "SELECT
-                PJ.processingJobId,
-                PJ.dataCollectionId,
-                PJ.recordTimestamp,
-                APP.autoProcProgramId,
-                APP.processingStatus,
-                APP.processingStartTime,
-                APP.processingEndTime,
-                (SELECT COUNT(MotionCorrection.motionCorrectionId)
-                    FROM MotionCorrection
-                    WHERE MotionCorrection.autoProcProgramId = APP.autoProcProgramId
-                ) AS mcCount,
-                (SELECT COUNT(CTF.ctfId)
-                    FROM CTF
-                    WHERE CTF.autoProcProgramId = APP.autoProcProgramId
-                ) AS ctfCount,
-                CASE
-                    WHEN (APP.processingJobId IS NULL) THEN 'submitted'
-                    WHEN (APP.processingStartTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
-                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus IS NULL) THEN 'running'
-                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
-                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
-                    ELSE ''
-                END AS processingStatusDescription
-            FROM ProcessingJob PJ
-            INNER JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-            INNER JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-            LEFT JOIN AutoProcProgram APP ON PJ.processingJobId = APP.processingJobId
-            $where",
-            $args
-        );
-
-        return array(
-            'total' => $total,
-            'data' => $processingJobs,
-        );
-    }
-
-    public function _jobs_by_collection()
-    {
-        if (!$this->has_arg('id')) {
-            $this->_error('No data collection provided');
-        }
-
-        $this->_output($this->processingJobs(
-            'WHERE DC.dataCollectionId = :1',
-            array($this->arg('id'))
-        ));
-    }
-
-    public function _relion_jobs()
-    {
-        // Finds queued and running ProcessingJobs associated with session
-        // Returns null otherwise
-        $session = $this->determineSession($this->arg('session'));
-
-        if (!$session['SESSIONID']) {
-            $this->_error('No session provided');
-        }
-
-        $this->_output($this->processingJobs(
-            'WHERE BLS.sessionId = :1',
-            array($session['SESSIONID'])
-        ));
     }
 
     private function exitIfUnfinishedProcessingJobsExist($session)
@@ -1509,22 +1424,5 @@ class EM extends Page
         if (!sizeof($parameters)) $this->_error('No parameters for processing job');
 
         $this->_output( array('data'=>$parameters, 'total'=>sizeof($parameters)));
-    }
-
-    function handlePaginationArguments($args) {
-        $perPage = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
-        $start = 0;
-        $end = $perPage;
-            
-        if ($this->has_arg('page') && $this->arg('page') > 0) {
-            $page = $this->arg('page') - 1;
-            $start = $page*$perPage;
-            $end = $page*$perPage+$perPage;
-        }
-            
-        array_push($args, $start);
-        array_push($args, $end);
-
-        return $args;
     }
 }
