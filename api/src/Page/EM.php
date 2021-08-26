@@ -8,6 +8,7 @@ use SynchWeb\Queue;
 class EM extends Page
 {
     use \SynchWeb\Page\EM\Pagination;
+    use \SynchWeb\Page\EM\Particle;
     use \SynchWeb\Page\EM\ProcessingJobs;
     public static $arg_list = array(
         'id' => '\d+',
@@ -92,7 +93,11 @@ class EM extends Page
         array('/process/relion/job/:processingJobId', 'patch', '_relion_stop'),
         array('/process/relion/job/parameters', 'get', '_relion_parameters'),
 
-        array('/process/scipion/session/:session', 'post', '_scipion_start')
+        array('/process/scipion/session/:session', 'post', '_scipion_start'),
+        
+        // See SynchWeb\Page\EM\Particle:
+        array('/particle/:id', 'get', 'particlePicker'),
+        array('/particle/image/:id', 'get', 'particleImage')
     );
 
     function _relion_start()

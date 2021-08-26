@@ -35,7 +35,7 @@
         :auto-proc-program-id="autoProcProgramId"
       />
 
-      <auto-picker
+      <picker
         :auto-proc-program-id="autoProcProgramId"
       />
     </div>
@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import AutoPicker from 'modules/types/em/cryolo/auto-picker.vue'
+import Picker from 'modules/types/em/particle/picker.vue'
 import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
 import JobHeader from 'modules/types/em/processing-jobs/job-header.vue'
@@ -54,7 +54,7 @@ import SummaryCharts from 'modules/types/em/ctf-summary/summary-charts.vue'
 export default {
     'name': 'ProcessingJob',
     'components': {
-        'auto-picker': AutoPicker,
+        'picker': Picker,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
         'job-header': JobHeader,
