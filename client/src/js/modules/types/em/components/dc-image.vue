@@ -3,7 +3,6 @@
     ref="container"
     :class="containerClass"
     :title="containerTitle"
-    :data-image="image"
   >
     <dialog-image
       :is-active="showDialog"
@@ -11,25 +10,26 @@
       :src="src"
       @cancel="showDialog = false"
     />
-    <img
-      :alt="title"
-      :style="proportionalHeight"
-      :src="src"
-      :class="imageClass"
+    <vue-xhr-image
+      v-model="src"
+      :title="title"
+      :computed-style="proportionalHeight"
+      :image-url="imageUrl"
       @click="showDialog = true"
-    >
+    />
   </div>
 </template>
 
 <script>
 import DialogImage from 'app/components/dialog-image.vue'
 import proportionalHeight from 'modules/types/em/components/proportional-height'
-import XHRImage from 'utils/xhrimage'
+import VueXhrImage from 'app/components/vue-xhr-image.vue'
 
 export default {
     'name': "DcImage",
     'components': {
         'dialog-image': DialogImage,
+        'vue-xhr-image': VueXhrImage,
     },
     'mixins': [proportionalHeight],
     'props': {
@@ -48,29 +48,14 @@ export default {
     },
     'data': function() {
         return {
-            'xhrImage': new XHRImage(),
             'src': '',
-            'imageClass': '',
             'showDialog': false,
         }
     },
     'computed': {
-        'image': function() {
-            if (this.imageUrl) {
-                this.xhrImage.load(this.imageUrl)
-            }
-            return this.imageUrl
-        },
         'containerTitle': function() {
             return 'Click to view ' + this.title
         },
-    },
-    'mounted': function() {
-        const vm = this
-        this.xhrImage.onload = function() {
-            vm.src = this.src
-            vm.imageClass = 'show'
-        }
     },
 }
 </script>
