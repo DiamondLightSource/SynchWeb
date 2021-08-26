@@ -5,7 +5,6 @@
     :title="hint"
     @click.prevent="$emit('click')"
     @mouseover.prevent="$emit('mouseover')"
-    @mouseleave="$emit('mouseleave')"
   >
     <slot />
   </button>

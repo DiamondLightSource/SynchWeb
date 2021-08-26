@@ -1,18 +1,17 @@
 <template>
-  <span>
+  <span @mouseleave="$emit('mouseleave')">
     <flat-button
       :level="level"
       :hint="hint"
       :disabled="disabled"
       @click="click"
       @mouseover="$emit('mouseover')"
-      @mouseleave="$emit('mouseleave')"
     >
       <i :class="icon" />
       <b v-if="buttonLabel != ''">{{ buttonLabel }}</b>
       <span :style="textStyle">{{ buttonText }}</span>
+      <slot />
     </flat-button>
-    <slot />
   </span>
 </template>
 
@@ -66,7 +65,7 @@ export default {
     'methods': {
         'click': function() {
             if (this.href) {
-                window.location = this.href
+                this.$router.push(this.href)
             } else {
                 this.$emit('click')
             }
@@ -74,3 +73,9 @@ export default {
     }
 }
 </script>
+
+<style>
+.marionette-wrapper {
+    color: #000;
+}
+</style>
