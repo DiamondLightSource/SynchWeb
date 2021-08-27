@@ -22,17 +22,17 @@
 
     <params :motion-correction="motionCorrection" />
 
-    <dc-image
+    <!-- dc-image
       container-class="diffraction fft"
       title="Motion Corrected Image"
       :image-url="imageUrl"
-    />
+    / -->
 
-    <dc-image
+    <!-- dc-image
       container-class="diffraction fft2"
       title="FFT of Motion Corrected Image"
       :image-url="fftUrl"
-    />
+    / -->
 
     <drift
       :auto-proc-program-id="autoProcProgramId"
