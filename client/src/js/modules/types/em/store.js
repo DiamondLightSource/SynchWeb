@@ -1,5 +1,4 @@
 import Backbone from 'backbone'
-import relion from 'modules/types/em/relion/parameters-store'
 
 const module = {
     'namespaced': true,
@@ -107,16 +106,8 @@ export default {
             store.registerModule('em', module)
             console.log('registered storage module em')
         }
-        if (!store.hasModule(['em', 'relion'])) {
-            store.registerModule(['em', 'relion'], relion)
-            console.log('registered storage module em/relion')
-        }
     },
     'unregister': function(store) {
-        if (store.hasModule(['em', 'relion'])) {
-            store.unregisterModule(['em', 'relion'])
-            console.log('unregistered storage module em/relion')
-        }
         if (store.hasModule('em')) {
             store.unregisterModule('em')
             console.log('unregistered storage module em')
