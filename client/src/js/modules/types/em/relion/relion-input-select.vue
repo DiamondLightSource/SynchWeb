@@ -1,56 +1,48 @@
 <template>
-  <base-input-select
-    v-model="value"
-    :name="name"
-    :disabled="disabled"
-    :label="label"
-    :options="baseOptions"
-    option-text-key="display"
-    option-value-key="value"
-    :default-text="defaultText"
-    :error-message="errorMessage"
-    input-class="relion-form-input"
-    outer-class="relion-form-field"
-  >
-    <template #description>
-      <div
-        v-for="description in extraDescription"
-        class="relion-form-note"
+  <div class="relion-form-field">
+    <label :for="id">
+      {{ label }}
+    </label>
+    <div
+      v-for="description in extraDescription"
+      class="relion-form-note"
+    >
+      {{ description }}
+    </div>
+    <select
+      :id="id"
+      v-model="value"
+      :name="name"
+      class="relion-form-input"
+    >
+      <option
+        v-for="option in baseOptions"
+        :key="option['value']"
+        :value="option['value']"
       >
-        {{ description }}
-      </div>
-    </template>
-  </base-input-select>
+        {{ option['display'] }}
+      </option>
+    </select>
+  </div>
 </template>
 
 <script>
-import BaseInputSelect from 'app/components/base-input-select.vue'
-import RelionInputMixin from 'modules/types/em/relion/relion-input-mixin'
+import relionInputMixin from 'modules/types/em/relion/relion-input-mixin'
 
 export default {
     'name': 'RelionInputSelect',
-    'components': {
-        'base-input-select': BaseInputSelect,
-    },
-    'mixins': [RelionInputMixin],
-    'props': {
-        'options': {
-            'type': Array,
-            'required': true,
-        },
-        'defaultText': {
-            type: String,
-            default: 'Please select',
-        },
-    },
+    'mixins': [relionInputMixin],
     'computed': {
         'baseOptions': function() {
-            return this.options.map(function(option) {
+            return this.parameters[this.name].options.map(function(option) {
                 return typeof option == 'string' ?
                     { 'display': option, 'value': option } :
                     option
             })
-        }
+        },
+        'id': function() {
+            return this.name + '-sel'
+        },
     },
 }
 </script>

@@ -1,16 +1,10 @@
-import { mapGetters } from 'vuex'
-
 export default {
     'props': {
-        'name': {
-            'type': String,
+        'parameters': {
+            'type': Object,
             'required': true,
         },
-        'disabled': {
-            'type': Boolean,
-            'default': false,
-        },
-        'label': {
+        'name': {
             'type': String,
             'required': true,
         },
@@ -20,19 +14,18 @@ export default {
         },
     },
     'computed': {
-        'errorMessage': function() {
-            return this.$store.state.em.relion.formErrors.first(this.name)
-        },
         'value': {
             'get': function() {
-                return this.$store.state.em.relion.params[this.name]
+                console.log('get', this.name, this.parameters[this.name].value)
+                return this.parameters[this.name].value
             },
             'set': function(newValue) {
-                this.$store.commit('em/relion/updateParam', {
-                    'name': this.name,
-                    'value': newValue
-                })
-            },
+                console.log('set', this.name, newValue)
+                this.$emit('update', { 'name': this.name, 'value': newValue })
+            }
         },
+        'label': function() {
+            return this.parameters[this.name].label
+        }
     },
 }

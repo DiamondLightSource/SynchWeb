@@ -1,33 +1,47 @@
 <template>
-  <base-input-text
-    v-model="value"
-    :name="name"
-    :disabled="disabled"
-    :label="label"
-    :error-message="errorMessage"
-    input-class="relion-form-input"
-    outer-class="relion-form-field"
-  >
-    <template #description>
-      <div
-        v-for="description in extraDescription"
-        class="relion-form-note"
-      >
-        {{ description }}
-      </div>
-    </template>
-  </base-input-text>
+  <div class="relion-form-field">
+    <label
+      :for="id"
+      v-html="label"
+    />
+    <div
+      v-for="description in extraDescription"
+      class="relion-form-note"
+    >
+      {{ description }}
+    </div>
+    <input
+      :id="id"
+      v-model="value"
+      type="text"
+      :name="name"
+      :class="error ? 'relion-form-input ferror' : 'relion-form-input'"
+    >
+    <div
+      v-if="error"
+      class="ferror relion-form-error"
+    >
+      {{ error }}
+    </div>
+  </div>
 </template>
 
 <script>
-import BaseInputText from 'app/components/base-input-text.vue'
-import RelionInputMixin from 'modules/types/em/relion/relion-input-mixin'
+import relionInputMixin from 'modules/types/em/relion/relion-input-mixin'
 
 export default {
     'name': 'RelionInputText',
-    'components': {
-        'base-input-text': BaseInputText,
+    'mixins': [relionInputMixin],
+    'props': {
+        'error': {
+            'type': String,
+            'default': '',
+        },
     },
-    'mixins': [RelionInputMixin],
+    'computed': {
+        'id': function() {
+            return this.name + '-txt'
+        },
+    },
 }
 </script>

@@ -1,38 +1,41 @@
 <template>
-  <base-input-checkbox
-    v-model="value"
-    :name="name"
-    :disabled="disabled"
-    :label="label"
-    input-class="relion-form-input"
-    :outer-class="outerClass"
-    :error-message="errorMessage"
+  <div
+    class="relion-form-field"
+    :class="extraClass"
   >
-    <template #description>
-      <div
-        v-for="description in extraDescription"
-        class="relion-form-note"
-      >
-        {{ description }}
-      </div>
-    </template>
-  </base-input-checkbox>
+    <input
+      :id="id"
+      v-model="value"
+      :name="name"
+      type="checkbox"
+    >
+    <label :for="id">
+      {{ label }}
+    </label>
+    <div
+      v-for="description in extraDescription"
+      class="relion-form-note"
+    >
+      {{ description }}
+    </div>
+  </div>
 </template>
 
 <script>
-import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
-import RelionInputMixin from 'modules/types/em/relion/relion-input-mixin'
+import relionInputMixin from 'modules/types/em/relion/relion-input-mixin'
 
 export default {
     'name': 'RelionInputCheckbox',
-    'components': {
-        'base-input-checkbox': BaseInputCheckbox,
-    },
-    'mixins': [RelionInputMixin],
+    'mixins': [relionInputMixin],
     'props': {
-        'outerClass': {
+        'extraClass': {
             'type': String,
-            'default': 'relion-form-field',
+            'default': '',
+        },
+    },
+    'computed': {
+        'id': function() {
+            return this.name + '-ck'
         },
     },
 }

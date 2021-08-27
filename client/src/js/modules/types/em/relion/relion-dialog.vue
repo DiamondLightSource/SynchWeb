@@ -17,41 +17,46 @@
         </h3>
 
         <relion-input-select
-          v-validate="'required'"
           name="projectAcquisitionSoftware"
-          label="Acquisition Software"
-          :options="['EPU', 'SerialEM']"
+          :parameters="parameters"
+          @update="update"
         />
 
         <relion-input-select
           name="projectMovieRawFolder"
-          label="Raw Folder (select)"
-          :options="['raw', 'raw2', 'raw3', 'raw4', 'raw5', 'raw6', 'raw7', 'raw8', 'raw9']"
+          :parameters="parameters"
+          :extra-description="['select from list']"
+          @update="update"
         />
 
         <relion-input-text
-          v-validate="{ required: true, regex: /^[\w-]+$/ }"
+          v-validate="'required|alpha_dash'"
           name="projectMovieRawFolder"
-          label="Raw Folder (or enter your own)"
+          :parameters="parameters"
+          :extra-description="['or enter your own']"
+          :error="errors.first('projectMovieRawFolder')"
+          @update="update"
         />
 
         <relion-input-select
-          v-validate="'required'"
           name="projectMovieFileNameExtension"
-          label="Movie File Name Extension"
-          :options="['.tif', '.tiff', '.mrc', '.eer']"
+          :parameters="parameters"
+          @update="update"
         />
 
         <relion-input-checkbox
           name="projectGainReferenceFile"
-          label="Gain Reference File"
+          :parameters="parameters"
+          @update="update"
         />
 
         <relion-input-text
-          v-if="projectGainReferenceFile"
+          v-if="requireGainReferenceFile"
           v-validate="{ required: true, regex: /^[\w-]+\.[\w]{3,4}$/ }"
-          label="Gain Reference File Name"
           name="projectGainReferenceFileName"
+          :parameters="parameters"
+          :error="errors.first('projectGainReferenceFileName')"
+          @update="update"
         />
       </div>
 
@@ -61,56 +66,62 @@
         </h3>
 
         <relion-input-select
-          v-validate="'required'"
           name="voltage"
-          label="Voltage (kV)"
-          :options="['200', '300']"
+          :parameters="parameters"
+          @update="update"
         />
 
         <relion-input-select
           name="sphericalAberration"
-          label="Spherical Aberration (mm)"
-          default-text=""
-          :options="[{ 'value': '2.7', 'display': '2.7 (Talos/Krios)' }]"
+          :parameters="parameters"
+          @update="update"
         />
 
         <relion-input-checkbox
           name="findPhaseShift"
-          label="Phase Plate Used"
+          :parameters="parameters"
+          @update="update"
         />
 
         <relion-input-text
           v-validate="'required|min_value:0.02|max_value:100'"
           name="pixelSize"
-          label="Pixel Size (Å/pixel)"
+          :parameters="parameters"
+          :error="errors.first('pixelSize')"
+          @update="update"
         />
 
         <relion-input-text
-          v-if="movieFileEer"
+          v-if="requireEer"
           v-validate="'integer|required|min_value:1'"
           name="eerGrouping"
-          label="EER fractionation"
+          :error="errors.first('eerGrouping')"
+          :parameters="parameter"
           :extra-description="['Number of frames to group into a fraction.','Excess frames are discarded.']"
+          @update="update"
         />
 
         <relion-input-select
           name="motionCorrectionBinning"
-          label="Motion Correction Binning"
-          :options="['1', '2']"
+          :parameters="parameters"
+          @update="update"
         />
 
         <relion-input-text
           v-validate="'required|min_value:0.02|max_value:10'"
           name="dosePerFrame"
-          :label="'Dose per frame (' + electronsPerAngstromSquared + ')'"
+          :parameters="parameters"
+          :error="errors.first('eerGrouping')"
+          @update="update"
         />
       </div>
 
       <div>
         <relion-input-checkbox
           name="pipelineDo1stPass"
-          label="Continue after CTF estimation"
-          outer-class="relion-form-field relion-after-ctf-header"
+          extra-class="relion-form-field relion-after-ctf-header"
+          :parameters="parameters"
+          @update="update"
         />
 
         <div class="relion-form">
@@ -119,15 +130,17 @@
               2D &amp; 3D Classification
             </h3>
 
-            <div v-if="pipelineDo1stPass">
+            <div v-if="require1stPass">
               <relion-input-checkbox
                 name="pipelineDo1stPassClassification2d"
-                label="Do 2D Classification"
+                :parameters="parameters"
+                @update="update"
               />
 
               <relion-input-checkbox
                 name="pipelineDo1stPassClassification3d"
-                label="Do 3D Classification"
+                :parameters="parameters"
+                @update="update"
               />
             </div>
           </div>
@@ -137,49 +150,61 @@
               Particle Picking
             </h3>
 
-            <div v-if="pipelineDo1stPass">
+            <div v-if="require1stPass">
               <relion-input-checkbox
                 name="particleUseCryolo"
-                label="Use crYOLO"
+                :parameters="parameters"
                 :extra-description="['Academic users only.','Not licensed for industry users.']"
+                @update="update"
               />
 
               <relion-input-text
                 v-validate="'required|min_value:0.02|max_value:1024'"
                 name="particleDiameterMin"
-                label="Minimum Diameter (Å)"
+                :parameters="parameters"
+                :error="errors.first('particleDiameterMin')"
+                @update="update"
               />
 
               <relion-input-text
                 v-validate="'required|min_value:0.02|max_value:4000'"
                 name="particleDiameterMax"
-                label="Maximum Diameter (Å)"
+                :error="errors.first('particleDiameterMax')"
+                :parameters="parameters"
+                @update="update"
               />
 
               <relion-input-text
                 v-validate="'required|min_value:0.1|max_value:1024'"
                 name="particleMaskDiameter"
-                label="Mask Diameter (Å)"
-                :disabled="calculateForMe"
+                :error="errors.first('particleMaskDiameter')"
+                :parameters="parameters"
+                :disabled="parameters.particleCalculateForMe.value"
+                @update="update"
               />
 
               <relion-input-text
                 v-validate="'required|min_value:0.1|max_value:1024'"
                 name="particleBoxSize"
-                label="Box Size (pixels)"
-                :disabled="calculateForMe"
+                :error="errors.first('particleBoxSize')"
+                :parameters="parameters"
+                :disabled="parameters.particleCalculateForMe.value"
+                @update="update"
               />
 
               <relion-input-text
                 v-validate="'required|min_value:0.1|max_value:1024'"
                 name="particleBoxSizeSmall"
-                label="Downsample Box Size (pixels)"
-                :disabled="calculateForMe"
+                :error="errors.first('particleBoxSizeSmall')"
+                :parameters="parameters"
+                :disabled="parameters.particleCalculateForMe.value"
+                @update="update"
               />
 
               <relion-input-checkbox
                 name="particleCalculateForMe"
-                label="Calculate For Me"
+                :parameters="parameters"
+                @update="update"
               />
             </div>
           </div>
@@ -189,21 +214,24 @@
               Second Pass
             </h3>
 
-            <div v-if="pipelineDo1stPass">
+            <div v-if="require1stPass">
               <relion-input-checkbox
                 name="pipelineDo2ndPass"
-                label="Do Second Pass"
+                :parameters="parameters"
+                @update="update"
               />
 
-              <template v-if="pipelineDo2ndPass">
+              <template v-if="require2ndPass">
                 <relion-input-checkbox
                   name="pipelineDo2ndPassClassification2d"
-                  label="Do 2D Classification"
+                  :parameters="parameters"
+                  @update="update"
                 />
 
                 <relion-input-checkbox
                   name="pipelineDo2ndPassClassification3d"
-                  label="Do 3D Classification"
+                  :parameters="parameters"
+                  @update="update"
                 />
               </template>
             </div>
@@ -217,10 +245,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import DialogModal from 'app/components/dialog-modal.vue'
-import FormatsUnits from 'modules/types/em/components/formats-units'
 import RelionInputCheckbox from 'modules/types/em/relion/relion-input-checkbox.vue'
 import RelionInputSelect from 'modules/types/em/relion/relion-input-select.vue'
 import RelionInputText from 'modules/types/em/relion/relion-input-text.vue'
+import parameters from 'modules/types/em/relion/parameters'
+import boxCalculator from 'modules/types/em/relion/box-calculator'
 
 export default {
     'name': 'RelionDialog',
@@ -230,27 +259,59 @@ export default {
         'relion-input-select': RelionInputSelect,
         'relion-input-text': RelionInputText,
     },
-    'mixins': [FormatsUnits],
+    'data': function() {
+        return {
+            'parameters': parameters,
+        }
+    },
     'computed': {
-        ...mapGetters('em/relion', [
-            'calculateForMe',
-            'movieFileEer',
-            'pipelineDo1stPass',
-            'pipelineDo2ndPass',
-            'projectGainReferenceFile',
-            'relionStartJson',
-        ]),
         ...mapGetters('em', [
             'processingDialogVisible'
         ]),
+        'require1stPass': function() {
+            return this.parameters.pipelineDo1stPass.value === true
+        },
+        'require2ndPass': function() {
+            return this.parameters.pipelineDo2ndPass.value === true
+        },
+        'requireGainReferenceFile': function() {
+            return this.parameters.projectGainReferenceFile.value === true
+        },
+        'requireEer': function() {
+            return this.parameters.projectMovieFileNameExtension.value == '.eer'
+        },
+    },
+    'mounted': function() {
+        this.setDefaults();
     },
     'methods': {
+        'setDefaults': function() {
+          for (const name in this.parameters) {
+              var parameter = this.parameters[name]
+              if (
+                  typeof parameter.value !== 'undefined' &&
+                  typeof parameter.default !== 'undefined'
+              ) {
+                  parameter.value = parameter.default
+              }
+          }
+        },
+        'update': function(payload) {
+            const name = payload.name
+            const value = payload.value
+            console.log(payload, this.parameters)
+            if (typeof this.parameters[name] == 'undefined') {
+                throw new Error('illegal attempt to update state of' + name)
+            }
+            this.parameters[name].value = value
+            console.log(payload, this.parameters)
+            boxCalculator(name, this.errors, this.parameters)
+        },
         'confirm': function() {
-            const vm = this
-            this.$validator.validateAll().then((result) => {
-                vm.$store.commit('em/relion/formErrors', vm.errors)
+            this.$validator.validate().then((result) => {
+                console.log(this.errors)
                 if (result) {
-                    vm.$store.dispatch('em/relion/start')
+                    //this.$store.dispatch('em/relion/start')
                 }
             })
         }
@@ -278,5 +339,9 @@ export default {
 }
 .relion-form-note {
     font-size: 10px;
+}
+.relion-form-error {
+    padding: 3px;
+    margin-top: 3px;
 }
 </style>

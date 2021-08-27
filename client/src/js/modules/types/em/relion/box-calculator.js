@@ -3,20 +3,14 @@
  * Runs whenever any parameter value is updated.
  *
  * @param {string} name the name of the parameter just updated
- * @param {object} store the VueX storage module
- * @param {object} params a reference to all of the parameters
+ * @param {object} errors a vee validate error bag
+ * @param {object} parameters a reference to all of the parameters
  */
-export default function (name, store, params) {
+export default function (name, errors, parameters) {
     const commit = function(diameter, size, sizeSmall) {
-        store.commit('em/relion/updateParam', {
-            'name': 'particleMaskDiameter', 'value': diameter
-        })
-        store.commit('em/relion/updateParam', {
-            'name': 'particleBoxSize', 'value': size
-        })
-        store.commit('em/relion/updateParam', {
-            'name': 'particleBoxSizeSmall', 'value': sizeSmall
-        })
+        parameters.particleMaskDiameter = diameter
+        parameters.particleBoxSize = size
+        parameters.particleBoxSizeSmall = sizeSmall
     }
 
     const boxSizeSmall = function(particleBoxSize, pixelSize) {
@@ -35,26 +29,24 @@ export default function (name, store, params) {
         return "Box size is too large!";
     }
 
-    const applicableParams = [
+    const applicableParameters = [
         'particleDiameterMax', 'pixelSize',
         'particleCalculateForMe', 'pipelineDo1stPass',
     ]
 
     if (!(
-        applicableParams.includes(name) &&
-        params.particleCalculateForMe &&
-        params.pipelineDo1stPass
+        applicableParameters.includes(name) &&
+        parameters.particleCalculateForMe.value &&
+        parameters.pipelineDo1stPass.value
     )) {
         return
     }
 
-    const pixelSize = store.hasFormError(
-        'pixelSize'
-    ) ? NaN : parseFloat(params.pixelSize)
+    const pixelSize = errors.has('pixelSize') ? NaN :
+        parseFloat(parameters.pixelSize.value)
 
-    const particleDiameterMax = store.hasFormError(
-        'particleDiameterMax'
-    ) ? NaN : parseFloat(params.particleDiameterMax)
+    const particleDiameterMax = errors.has('particleDiameterMax') ? NaN :
+        parseFloat(parameters.particleDiameterMax.value)
 
     if (pixelSize == 0.0 || isNaN(pixelSize) || isNaN(particleDiameterMax)) {
         commit('', '', '')
