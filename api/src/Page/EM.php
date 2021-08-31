@@ -83,8 +83,6 @@ class EM extends Page
         array('/mc/image/:id(/n/:IMAGENUMBER)', 'get', '_mc_image'),
         array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
         array('/mc/histogram', 'get', '_mc_drift_histogram'),
-
-        array('/ctf/summary/:id', 'get', '_ctf_summary'),
         array('/ctf/histogram', 'get', '_ctf_histogram'),
 
         // See Synchweb\Page\EM\Attachments
@@ -98,6 +96,7 @@ class EM extends Page
         // See Synchweb\Page\EM\Ctf
         array('/ctf/:id(/n/:movieNumber)', 'get', 'ctfResult'),
         array('/ctf/image/:id(/n/:movieNumber)', 'get', 'ctfImage'),
+        array('/ctf/summary/:id', 'get', 'ctfSummary'),
 
         // See Synchweb\Page\EM\Relion
         array('/process/relion/session/:session', 'post', 'relionStart'),
@@ -593,28 +592,6 @@ class EM extends Page
         }
 
         $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
-    }
-
-    public function _ctf_summary()
-    {
-        $rows = $this->db->pq(
-            'SELECT
-                Movie.movieNumber,
-                CTF.astigmatism,
-                CTF.estimatedResolution,
-                CTF.estimatedDefocus
-            FROM CTF
-            INNER JOIN AutoProcProgram
-                ON AutoProcProgram.autoProcProgramId = CTF.autoProcProgramId
-            INNER JOIN MotionCorrection
-                ON MotionCorrection.motionCorrectionId = CTF.motionCorrectionId
-            INNER JOIN Movie
-                ON Movie.movieId = MotionCorrection.movieId
-            WHERE CTF.autoProcProgramId = :1
-            ORDER BY Movie.createdtimestamp',
-            array($this->arg('id'))
-        );
-        $this->_output($rows);
     }
 
     function _ctf_plot()

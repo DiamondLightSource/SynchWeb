@@ -43,7 +43,7 @@ import PlotlyChart from 'app/components/plotly-chart.vue'
 import proportionalHeight from 'modules/types/em/components/proportional-height'
 
 export default {
-    'name': 'DialogPlotly',
+    'name': 'PlotlyDialog',
     'components': {
         'dialog-modal': DialogModal,
         'plotly-chart': PlotlyChart,
@@ -68,7 +68,7 @@ export default {
         },
         'width': {
             'type': String,
-            'default': '400px'
+            'default': '100%'
         },
     },
     'data': function () {

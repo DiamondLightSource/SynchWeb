@@ -89,4 +89,27 @@ trait Ctf
         $this->app->contentType('image/png');
         readfile('assets/images/no_image.png');
     }
+
+    public function ctfSummary()
+    {
+        $rows = $this->db->pq(
+            'SELECT
+                Movie.movieNumber,
+                CTF.astigmatism,
+                CTF.estimatedResolution,
+                CTF.estimatedDefocus
+            FROM CTF
+            INNER JOIN AutoProcProgram
+                ON AutoProcProgram.autoProcProgramId = CTF.autoProcProgramId
+            INNER JOIN MotionCorrection
+                ON MotionCorrection.motionCorrectionId = CTF.motionCorrectionId
+            INNER JOIN Movie
+                ON Movie.movieId = MotionCorrection.movieId
+            WHERE CTF.autoProcProgramId = :1
+            ORDER BY Movie.createdTimeStamp',
+            array($this->arg('id')),
+            false
+        );
+        $this->_output($rows);
+    }
 }
