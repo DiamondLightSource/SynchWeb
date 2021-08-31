@@ -7,6 +7,7 @@ use SynchWeb\Queue;
 
 class EM extends Page
 {
+    use \SynchWeb\Page\EM\Ctf;
     use \SynchWeb\Page\EM\Pagination;
     use \SynchWeb\Page\EM\Particle;
     use \SynchWeb\Page\EM\ProcessingJobs;
@@ -20,6 +21,7 @@ class EM extends Page
         'n' => '\d+',
         't' => '\d+',
         'IMAGENUMBER' => '\d+',
+        'movieNumber' => '\d+',
 
         'processingJobId' => '\d+',
 
@@ -85,10 +87,12 @@ class EM extends Page
         array('/attachments/:id', 'get', '_auto_proc_attachments'),
         array('/attachment/:id', 'get', '_auto_proc_attachment'),
 
-        array('/ctf/:id', 'get', '_ctf_result'),
-        array('/ctf/image/:id(/n/:IMAGENUMBER)', 'get', '_ctf_image'),
         array('/ctf/summary/:id', 'get', '_ctf_summary'),
         array('/ctf/histogram', 'get', '_ctf_histogram'),
+
+        // See Synchweb\Page\EM\Ctf
+        array('/ctf/:id(/n/:movieNumber)', 'get', 'ctfResult'),
+        array('/ctf/image/:id(/n/:movieNumber)', 'get', 'ctfImage'),
 
         // See Synchweb\Page\EM\Relion
         array('/process/relion/session/:session', 'post', 'relionStart'),
@@ -740,77 +744,6 @@ class EM extends Page
             array($this->arg('id'))
         );
         $this->_output($rows);
-    }
-
-    function _ctf_result()
-    {
-        $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
-
-        $rows = $this->db->pq(
-            "SELECT
-                c.ctfid,
-                c.boxsizex,
-                c.boxsizey,
-                c.minresolution,
-                c.maxresolution,
-                c.mindefocus,
-                c.maxdefocus,
-                c.defocusstepsize,
-                c.astigmatism,
-                c.astigmatismangle,
-                c.estimatedresolution,
-                c.estimateddefocus,
-                c.amplitudecontrast,
-                c.ccvalue,
-                c.ffttheoreticalfullpath,
-                c.comments,
-                c.autoprocprogramid,
-                m.movienumber AS imagenumber
-            FROM ctf c
-            INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-            INNER JOIN movie m ON m.movieid = mc.movieid
-            INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-            WHERE c.autoprocprogramid = :1 AND m.movienumber = :2",
-            // Maybe c.autoprocprogramid should be mc. ?????
-            array($this->arg('id'), $in)
-        );
-
-        if (!sizeof($rows)) $this->_error('No such ctf correction');
-        $row = $rows[0];
-
-        $row['FFTTHEORETICALFULLPATH'] = file_exists($row['FFTTHEORETICALFULLPATH']) ? 1 : 0;
-
-        foreach (array('ASTIGMATISM' => 2, 'ASTIGMATISMANGLE' => 1, 'ESTIMATEDRESOLUTION' => 2, 'ESTIMATEDDEFOCUS' => 0) as $k => $r) {
-            $row[$k] = number_format($row[$k], $r, '.', '');
-        }
-
-        $this->_output($row);
-    }
-
-    function _ctf_image()
-    {
-        $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
-        if ($n < 1) $n = 1;
-
-        $imgs = $this->db->pq(
-            "SELECT c.ffttheoreticalfullpath
-            FROM ctf c
-            INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-            INNER JOIN movie m ON m.movieid = mc.movieid
-            INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-            WHERE c.autoprocprogramid = :1 AND m.movienumber = :2",
-            array($this->arg('id'), $n)
-        );
-
-        if (!sizeof($imgs)) $this->_error('No such ctf correction');
-        $img = $imgs[0];
-
-        if (file_exists($img['FFTTHEORETICALFULLPATH'])) {
-            $this->_send_image($img['FFTTHEORETICALFULLPATH']);
-        } else {
-            $this->app->contentType('image/png');
-            readfile('assets/images/no_image.png');
-        }
     }
 
     function _ctf_plot()

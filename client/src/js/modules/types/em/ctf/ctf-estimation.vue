@@ -4,20 +4,10 @@
     :data-available="ctfEstimation !== null"
   >
     <template #controls>
-      <div style="display: flex; justify-content: space-between;">
-        <movie-select
-          :max="movieCount"
-          @changed="newMovie"
-        />
-
-        <div>
-          <a
-            class="view button logf"
-            :href="logUrl"
-            @click.prevent="showLog"
-          ><i class="fa fa-search" /> Log file</a>
-        </div>
-      </div>
+      <movie-select
+        :max="movieCount"
+        @changed="newMovie"
+      />
     </template>
 
     <params :ctf-estimation="ctfEstimation" />
@@ -31,14 +21,10 @@
 </template>
 
 <script>
-import CtfModel from 'modules/types/em/models/ctf'
 import DcImage from 'modules/types/em/components/dc-image.vue'
-import LogView from 'views/log'
-import MarionetteApplication from 'app/marionette-application.js'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import Params from 'modules/types/em/ctf/params.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import utils from 'utils'
 
 export default {
     'name': "CtfEstimation",
@@ -65,28 +51,13 @@ export default {
         }
     },
     'computed': {
-        'ctfModel': function() {
-            return new CtfModel({
-                'id': this.autoProcProgramId,
-                'TYPE': 'CTF',
-            })
-        },
         'loadedMovieNumber': function() {
             return this.ctfEstimation === null ? null :
-                this.ctfEstimation.IMAGENUMBER
+                this.ctfEstimation.movieNumber
         },
         'programId': function() {
             return this.ctfEstimation === null ? 0 :
-                this.ctfEstimation.AUTOPROCPROGRAMID
-        },
-        'logUrl': function() {
-            if (this.programId == 0) {
-                return '#'
-            }
-            return this.$store.state.apiUrl +
-                '/download/id/' + this.autoProcProgramId +
-                '/aid/' + this.programId +
-                '/log/1'
+                this.ctfEstimation.autoProcProgramId
         },
         'imageUrl': function() {
             if (this.programId == 0) {
@@ -111,55 +82,20 @@ export default {
             this.movieNumber = movieNumber
         },
         'fetchMovie': function() {
-            const vm = this
             if (
-                (!vm.autoProcProgramId) ||
-                (!vm.movieNumber) ||
-                (vm.movieNumber == vm.loadedMovieNumber)
+                (!this.autoProcProgramId) ||
+                (!this.movieNumber) ||
+                (this.movieNumber == this.loadedMovieNumber)
             ) {
                 return
             }
-            const successCallback = function(
-                model, // eslint-disable-line no-unused-vars
-                response,
-                options // eslint-disable-line no-unused-vars
-            ) {
-                vm.$store.commit('loading', false)
-                vm.ctfEstimation = response
-            }
-            const errorCallback = function (
-                model, // eslint-disable-line no-unused-vars
-                response,
-                options // eslint-disable-line no-unused-vars
-            ) {
-                console.log(response.responseJSON)
-                vm.$store.commit('loading', false)
-            }
-            vm.$store.commit('loading', true)
-            /* TODO: [SCI-9935]
-               vm.$store.dispatch('getModel', model)
-               doesn't currently support 'data': */
-            vm.ctfModel.fetch({
-                'data': { 'IMAGENUMBER': vm.movieNumber },
-                'success': successCallback,
-                'error': errorCallback,
-            })
-        },
-        'showLog': function() {
-            const url = this.logUrl
-            utils.sign({
-                'url': url,
-                'callback': function(response) {
-                    const signedUrl = url + '?token=' + response.token
-                    // TODO: Dialog broken!
-                    MarionetteApplication.getInstance().dialog.show(
-                        new LogView({
-                            'title': 'CTF Log File',
-                            'url': signedUrl,
-                        })
-                    )
-                },
-            })
+            this.$store.dispatch('em/fetch', {
+                'url': '/em/ctf/' + this.autoProcProgramId +
+                    '/n/' + this.movieNumber,
+                'humanName': 'CTF Estimation',
+            }).then(
+                (ctfEstimation) => { this.ctfEstimation = ctfEstimation }
+            )
         },
     },
 }

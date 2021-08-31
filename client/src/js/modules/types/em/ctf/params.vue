@@ -44,6 +44,7 @@
       label="CC Value"
       :item="ccValue"
     />
+    <!-- TODO: make comment editing work -->
     <parameter-list-item
       width="100%"
       help-text="Click to edit the comment for CTF Estimation"
@@ -73,49 +74,49 @@ export default {
     },
     'computed': {
         'movieNumber': function() {
-            return this.datumOrBlank(this.ctfEstimation.IMAGENUMBER)
+            return this.datumOrBlank(this.ctfEstimation.movieNumber)
         },
         'boxSize': function() {
             return this.dimensions(
-                this.datumWithUnit(this.ctfEstimation.BOXSIZEX, '&micro;m'),
-                this.datumWithUnit(this.ctfEstimation.BOXSIZEY, '&micro;m')
+                this.datumWithUnit(this.ctfEstimation.boxSizeX, '&micro;m'),
+                this.datumWithUnit(this.ctfEstimation.boxSizeY, '&micro;m')
             )
         },
         'resolution': function() {
             return this.range(
-                this.datumWithUnit(this.ctfEstimation.MINRESOLUTION, 'Å'),
-                this.datumWithUnit(this.ctfEstimation.MAXRESOLUTION, 'Å')
+                this.datumWithUnit(this.ctfEstimation.minResolution, 'Å'),
+                this.datumWithUnit(this.ctfEstimation.maxResolution, 'Å')
             )
         },
         'defocus': function() {
             return this.range(
-                this.datumWithUnit(this.ctfEstimation.MINDEFOCUS, 'Å'),
-                this.datumWithUnit(this.ctfEstimation.MAXDEFOCUS, 'Å')
+                this.datumWithUnit(this.ctfEstimation.minDefocus, 'Å'),
+                this.datumWithUnit(this.ctfEstimation.maxDefocus, 'Å')
             )
         },
         'defocusStepSize': function() {
-            return this.datumWithUnit(this.ctfEstimation.DEFOCUSSTEPSIZE, 'Å')
+            return this.datumWithUnit(this.ctfEstimation.defocusStepSize, 'Å')
         },
         'astigmatism': function() {
-            return this.datumWithUnit(this.ctfEstimation.ASTIGMATISM, 'Å')
+            return this.datumWithUnit(this.ctfEstimation.astigmatism, 'Å')
         },
         'astigmatismAngle': function() {
-            return this.datumWithUnit(this.ctfEstimation.ASTIGMATISMANGLE, '&deg;')
+            return this.datumWithUnit(this.ctfEstimation.astigmatismAngle, '&deg;')
         },
         'estimatedResolution': function() {
-            return this.datumWithUnit(this.ctfEstimation.ESTIMATEDRESOLUTION, 'Å')
+            return this.datumWithUnit(this.ctfEstimation.estimatedResolution, 'Å')
         },
         'estimatedDefocus': function() {
-            return this.datumWithUnit(this.ctfEstimation.ESTIMATEDDEFOCUS, 'Å')
+            return this.datumWithUnit(this.ctfEstimation.estimatedDefocus, 'Å')
         },
         'amplitudeContrast': function() {
-            return this.datumOrBlank(this.ctfEstimation.AMPLITUDECONTRAST)
+            return this.datumOrBlank(this.ctfEstimation.amplitudeContrast)
         },
         'ccValue': function() {
-            return this.datumOrBlank(this.ctfEstimation.CCVALUE)
+            return this.datumOrBlank(this.ctfEstimation.ccValue)
         },
         'comments': function() {
-            return this.datumOrBlank(this.ctfEstimation.COMMENTS)
+            return this.datumOrBlank(this.ctfEstimation.comments)
         },
     },
 }
