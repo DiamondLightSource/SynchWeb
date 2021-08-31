@@ -62,43 +62,43 @@ export default {
     },
     'computed': {
         'movieNumber': function() {
-            return this.datumOrBlank(this.motionCorrection.IMAGENUMBER)
+            return this.datumOrBlank(this.motionCorrection.movieNumber)
         },
         'firstFrame': function() {
-            return this.datumOrBlank(this.motionCorrection.FIRSTFRAME)
+            return this.datumOrBlank(this.motionCorrection.firstFrame)
         },
         'lastFrame': function() {
-            return this.datumOrBlank(this.motionCorrection.LASTFRAME)
+            return this.datumOrBlank(this.motionCorrection.lastFrame)
         },
         'dosePerFrame': function() {
             return this.datumWithUnit(
-                this.motionCorrection.DOSEPERFRAME,
+                this.motionCorrection.dosePerFrame,
                 unitsHtml.electron + '/' + unitsHtml.angstromSquared
             )
         },
         'doseWeight': function() {
             return this.datumWithUnit(
-                this.motionCorrection.DOSEWEIGHT, '?'
+                this.motionCorrection.doseWeight, '?'
             )
         },
         'totalMotion': function() {
             return this.datumWithUnit(
-                this.motionCorrection.TOTALMOTION, 'Å'
+                this.motionCorrection.totalMotion, 'Å'
             )
         },
         'averageMotionPerFrame': function() {
             return this.datumWithUnit(
-                this.motionCorrection.AVERAGEMOTIONPERFRAME, 'Å'
+                this.motionCorrection.averageMotionPerFrame, 'Å'
             )
         },
         'patchesUsed': function() {
             return this.dimensions(
-                this.motionCorrection.PATCHESUSEDX,
-                this.motionCorrection.PATCHESUSEDY
+                this.motionCorrection.patchesUsedX,
+                this.motionCorrection.patchesUsedY
             )
         },
         'comments': function() {
-            return this.datumOrBlank(this.motionCorrection.COMMENTS)
+            return this.datumOrBlank(this.motionCorrection.comments)
         },
     },
 }

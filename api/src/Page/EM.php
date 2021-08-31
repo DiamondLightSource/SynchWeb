@@ -8,6 +8,7 @@ use SynchWeb\Queue;
 class EM extends Page
 {
     use \SynchWeb\Page\EM\Ctf;
+    use \SynchWeb\Page\EM\MotionCorrection;
     use \SynchWeb\Page\EM\Pagination;
     use \SynchWeb\Page\EM\Particle;
     use \SynchWeb\Page\EM\ProcessingJobs;
@@ -78,10 +79,8 @@ class EM extends Page
         array('/jobs/:id', 'get', 'processingJobsByCollection'),
         array('/process/relion/jobs/:session', 'get', 'processingJobsBySession'),
 
-        array('/mc/:id', 'get', '_mc_result'),
         array('/mc/image/:id(/n/:IMAGENUMBER)', 'get', '_mc_image'),
         array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
-        array('/mc/drift/:id(/n/:IMAGENUMBER)', 'get', '_mc_drift_plot'),
         array('/mc/histogram', 'get', '_mc_drift_histogram'),
 
         array('/attachments/:id', 'get', '_auto_proc_attachments'),
@@ -89,6 +88,10 @@ class EM extends Page
 
         array('/ctf/summary/:id', 'get', '_ctf_summary'),
         array('/ctf/histogram', 'get', '_ctf_histogram'),
+
+        // See Synchweb\Page\EM\MotionCorrection
+        array('/mc/:id(/n/:movieNumber)', 'get', 'motionCorrectionResult'),
+        array('/mc/drift/:id(/n/:movieNumber)', 'get', 'motionCorrectionDriftPlot'),
 
         // See Synchweb\Page\EM\Ctf
         array('/ctf/:id(/n/:movieNumber)', 'get', 'ctfResult'),
@@ -443,51 +446,6 @@ class EM extends Page
         $this->_output(array_values($statuses));
     }
 
-    function _mc_result()
-    {
-        $in = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
-
-        $rows = $this->db->pq(
-            "SELECT
-                mc.motioncorrectionid,
-                mc.firstframe,
-                mc.lastframe,
-                mc.doseperframe,
-                mc.doseweight,
-                mc.totalmotion,
-                mc.averagemotionperframe,
-                mc.micrographsnapshotfullpath,
-                mc.patchesusedx,
-                mc.patchesusedy,
-                mc.fftfullpath,
-                mc.fftcorrectedfullpath,
-                mc.comments,
-                mc.autoprocprogramid,
-                m.movienumber AS imagenumber
-            FROM motioncorrection mc
-            INNER JOIN movie m ON m.movieid = mc.movieid
-            INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-            INNER JOIN autoprocprogram app ON app.autoprocprogramid = mc.autoprocprogramid
-            WHERE mc.autoprocprogramid = :1 AND m.movienumber = :2",
-            array($this->arg('id'), $in)
-        );
-
-        if (!sizeof($rows)) {
-            $this->_error('No such motion correction');
-        }
-        $row = $rows[0];
-
-        $row['FFTFULLPATH'] = file_exists($row['FFTFULLPATH']) ? 1 : 0;
-        $row['FFTCORRECTEDFULLPATH'] = file_exists($row['FFTCORRECTEDFULLPATH']) ? 1 : 0;
-        $row['MICROGRAPHSNAPSHOTFULLPATH'] = file_exists($row['MICROGRAPHSNAPSHOTFULLPATH']) ? 1 : 0;
-
-        foreach (array('TOTALMOTION' => 1, 'AVERAGEMOTIONPERFRAME' => 2) as $k => $r) {
-            $row[$k] = number_format($row[$k], $r);
-        }
-
-        $this->_output($row);
-    }
-
     function _mc_image()
     {
         $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
@@ -551,31 +509,6 @@ class EM extends Page
             $this->app->contentType('image/png');
             readfile('assets/images/no_image.png');
         }
-    }
-
-    function _mc_drift_plot()
-    {
-
-        $rows = $this->db->pq(
-            "SELECT mcd.deltax, mcd.deltay
-            FROM motioncorrectiondrift mcd
-            INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
-            INNER JOIN movie m ON m.movieid = mc.movieid
-            INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-            WHERE mc.autoProcProgramId = :1 AND m.movienumber = :2
-            ORDER BY mcd.framenumber",
-            array(
-                $this->arg('id'),
-                $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1
-            )
-        );
-        $xAxis = array();
-        $yAxis = array();
-        foreach ($rows as $r) {
-            array_push($xAxis, $r['DELTAX']);
-            array_push($yAxis, $r['DELTAY']);
-        }
-        $this->_output(array('xAxis' => $xAxis, 'yAxis' => $yAxis));
     }
 
     function _mc_drift_histogram()
