@@ -38,28 +38,34 @@
       <picker
         :auto-proc-program-id="autoProcProgramId"
       />
+
+      <classification
+        :auto-proc-program-id="autoProcProgramId"
+      />
     </div>
   </section>
 </template>
 
 <script>
-import Picker from 'modules/types/em/particle/picker.vue'
+import Classification from 'modules/types/em/classification/classification.vue'
 import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
 import JobHeader from 'modules/types/em/processing-jobs/job-header.vue'
 import JobParameters from 'modules/types/em/job-parameters/job-parameters.vue'
 import MotionCorrection from 'modules/types/em/mc/motion-correction.vue'
+import Picker from 'modules/types/em/picker/picker.vue'
 import SummaryCharts from 'modules/types/em/ctf-summary/summary-charts.vue'
 
 export default {
     'name': 'ProcessingJob',
     'components': {
-        'picker': Picker,
+        'classification': Classification,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
         'job-header': JobHeader,
         'job-parameters': JobParameters,
         'motion-correction': MotionCorrection,
+        'picker': Picker,
         'summary-charts': SummaryCharts,
     },
     'props': {
