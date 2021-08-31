@@ -1,6 +1,6 @@
 <template>
   <processing-section
-    section-title="Particle Picking"
+    section-title="Classification"
     :data-available="true"
   >
     <div
@@ -26,12 +26,12 @@
 </template>
 
 <script>
-import Parameters from 'modules/types/em/particle/parameters.vue'
-import PreviewImage from 'modules/types/em/particle/preview-image.vue'
+import Parameters from 'modules/types/em/classification/parameters.vue'
+import PreviewImage from 'modules/types/em/classification/preview-image.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 
 export default {
-    'name': "Picker",
+    'name': "Classification",
     'components': {
         'parameters': Parameters,
         'preview-image': PreviewImage,
