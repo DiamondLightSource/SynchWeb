@@ -6,7 +6,7 @@
     <parameter-list width="15%">
       <template v-for="(attachment, key) in attachments">
         <download
-          v-if="key != 'id' && attachment.chartData === null"
+          v-if="attachment.chartData === null"
           :key="attachment.id + 'p'"
           :attachment="attachment"
         />
@@ -15,7 +15,7 @@
 
     <template v-for="(attachment, key) in attachments">
       <plotly-dialog
-        v-if="key != 'id' && attachment.chartData !== null"
+        v-if="attachment.chartData !== null"
         :key="attachment.id + 'h'"
         :title="attachment.chartData.titleText"
         :layout="attachment.chartData.layout"
@@ -27,7 +27,6 @@
 
 <script>
 import Download from 'modules/types/em/ice/download.vue'
-import middleware from 'modules/types/em/ice/middleware'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
@@ -57,10 +56,46 @@ export default {
         this.$store.dispatch('em/fetch', {
             'url': '/em/attachments/' + this.autoProcProgramId,
             'humanName': 'Ice Breaker attachments',
-            'middleware': middleware,
         }).then(
-            (attachments) => { this.attachments = attachments }
+            (response) => {
+                this.attachments = response.map(this.parseSingleAttachment)
+            }
         )
+    },
+    'methods': {
+        'parseSingleAttachment': function(attachment) {
+            const fileName = attachment.file
+            const json = attachment.JSON
+            return {
+                'id': attachment.autoProcProgramAttachmentId,
+                'timeStamp': attachment.recordTimeStamp,
+                'fileName': fileName,
+                'extension': fileName.split('.').pop(),
+                'fileType': attachment.fileType,
+                'chartData': json ? this.parseSingleChart(json) : null,
+            }
+        },
+        'parseSingleChart': function(json) {
+            if (!json) {
+                return ''
+            }
+            const chartData = JSON.parse(json)
+            const layout = chartData.layout
+            // layout and data elements for plotly charts are passed between
+            // components as JSON... If left as plain objects or arrays, Vue will
+            // "pollute" them with observers... and when we're looking at arrays
+            // with thousands of elements that has a huge impact
+            return {
+                'layout': JSON.stringify({
+                    'barmode': layout.barmode,
+                    'xaxis': layout.xaxis,
+                    'yaxis': layout.yaxis,
+                    'margin': { 'l': 50, 'r': 10, 'b': 50, 't': 10 },
+                }),
+                'data': JSON.stringify(chartData.data),
+                'titleText': layout.title.text
+            }
+        },
     },
 }
 </script>

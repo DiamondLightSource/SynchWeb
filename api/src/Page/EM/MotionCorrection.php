@@ -71,7 +71,6 @@ trait MotionCorrection
             ),
             false
         );
-        error_log(var_export($rows, true));
         $xAxis = array();
         $yAxis = array();
         foreach ($rows as $row) {

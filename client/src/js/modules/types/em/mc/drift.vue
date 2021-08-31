@@ -32,9 +32,15 @@ export default {
     'computed': {
         'layout': function() {
             return JSON.stringify({
-                'margin': { 't': 10, 'l': 30, 'r': 20, 'b': 20 },
-                'xaxis': { 'range': [-20, 20] },
-                'yaxis': { 'range': [-20, 20] },
+                'margin': { 't': 10, 'l': 30, 'r': 30, 'b': 30 },
+                'xaxis': {
+                    'title': 'δx Å',
+                    'range': [-20, 20],
+                },
+                'yaxis': {
+                    'title': 'δy Å',
+                    'range': [-20, 20],
+                },
             })
         },
     },

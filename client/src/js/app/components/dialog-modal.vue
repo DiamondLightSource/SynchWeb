@@ -6,9 +6,10 @@
   >
     <div class="dialog-box">
       <header class="header">
-        <h2 class="heading">
-          {{ title }}
-        </h2>
+        <h2
+          class="heading"
+          v-html="title"
+        />
         <button
           aria-label="close"
           @click.prevent="$emit('cancel')"

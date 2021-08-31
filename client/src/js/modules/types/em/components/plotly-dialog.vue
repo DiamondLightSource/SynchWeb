@@ -1,5 +1,5 @@
 <template>
-  <div :style="previewStyle">
+  <div>
     <dialog-modal
       :is-active="showDialog"
       :title="title"
@@ -13,14 +13,20 @@
       />
     </dialog-modal>
 
-    <plotly-chart
-      class="main-screen-preview"
-      static
-      :title="title"
-      :layout="layout"
-      :chart-data="chartData"
-      @click="showDialog = true"
-    />
+    <div class="preview-container">
+      <div
+        class="chart-heading"
+        v-html="title"
+      />
+      <plotly-chart
+        :style="previewStyle"
+        class="main-screen-preview"
+        static
+        :layout="layout"
+        :chart-data="chartData"
+        @click="showDialog = true"
+      />
+    </div>
   </div>
 </template>
 
@@ -86,10 +92,19 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.chart-heading {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.preview-container {
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 6px;
+}
 .main-screen-preview {
     overflow: hidden;
-    border-radius: 6px;
     width: 100%;
     height: 100%;
 }

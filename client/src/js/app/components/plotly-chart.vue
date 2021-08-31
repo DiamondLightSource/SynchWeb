@@ -26,7 +26,7 @@ export default {
         },
         'title': {
             'type': String,
-            'required': true,
+            'default': '',
         },
         'static': {
             // Set to true if the chart is NOT interactive

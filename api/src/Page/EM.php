@@ -7,6 +7,7 @@ use SynchWeb\Queue;
 
 class EM extends Page
 {
+    use \SynchWeb\Page\EM\Attachments;
     use \SynchWeb\Page\EM\Ctf;
     use \SynchWeb\Page\EM\MotionCorrection;
     use \SynchWeb\Page\EM\Pagination;
@@ -83,11 +84,12 @@ class EM extends Page
         array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
         array('/mc/histogram', 'get', '_mc_drift_histogram'),
 
-        array('/attachments/:id', 'get', '_auto_proc_attachments'),
-        array('/attachment/:id', 'get', '_auto_proc_attachment'),
-
         array('/ctf/summary/:id', 'get', '_ctf_summary'),
         array('/ctf/histogram', 'get', '_ctf_histogram'),
+
+        // See Synchweb\Page\EM\Attachments
+        array('/attachments/:id', 'get', 'attachmentsGetAll'),
+        array('/attachment/:id', 'get', 'attachmentsGetOne'),
 
         // See Synchweb\Page\EM\MotionCorrection
         array('/mc/:id(/n/:movieNumber)', 'get', 'motionCorrectionResult'),
@@ -591,70 +593,6 @@ class EM extends Page
         }
 
         $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
-    }
-
-    public function _auto_proc_attachments()
-    {
-        $rows = $this->db->pq(
-            "SELECT
-                AutoProcProgramAttachment.autoProcProgramAttachmentId AS id,
-                CONCAT(
-                    AutoProcProgramAttachment.filePath,
-                    '/',
-                    AutoProcProgramAttachment.fileName
-                ) AS file,
-                AutoProcProgramAttachment.recordTimeStamp,
-                AutoProcProgramAttachment.fileType,
-                AutoProcProgramAttachment.importanceRank
-            FROM AutoProcProgramAttachment
-            INNER JOIN AutoProcProgram
-                ON AutoProcProgram.autoProcProgramId = AutoProcProgramAttachment.autoProcProgramId
-            INNER JOIN ProcessingJob
-                ON ProcessingJob.processingJobId = AutoProcProgram.processingJobId
-            WHERE AutoProcProgramAttachment.autoProcProgramId = :1",
-            array($this->arg('id'))
-        );
-        $result = array();
-        // Don't report an error if no attachments found, just return an
-        // empty object
-        if (sizeof($rows) > 0) {
-            foreach ($rows as $row) {
-                $file = $row['FILE'];
-                if (file_exists($file)) {
-                    if (strtolower(pathinfo($file, PATHINFO_EXTENSION)) == 'json') {
-                        $row['JSON'] = file_get_contents($file);
-                    }
-                    array_push($result, $row);
-                }
-            }
-        }
-        $this->_output($result);
-    }
-
-    public function _auto_proc_attachment()
-    {
-        $rows = $this->db->pq(
-            "SELECT
-                AutoProcProgramAttachment.autoProcProgramAttachmentId AS id,
-                CONCAT(
-                    AutoProcProgramAttachment.filePath,
-                    '/',
-                    AutoProcProgramAttachment.fileName
-                ) AS file,
-                AutoProcProgramAttachment.fileType
-            FROM AutoProcProgramAttachment
-            WHERE AutoProcProgramAttachment.autoProcProgramAttachmentId = :1",
-            array($this->arg('id'))
-        );
-        $result = array();
-        if (!sizeof($rows)) {
-            $this->_error('No such attachment');
-        }
-        $file = $rows[0]['FILE'];
-        if (!file_exists($file)) {
-            $this->_error('No such attachment');
-        }
-        $this->_send_image($file);
     }
 
     public function _ctf_summary()
