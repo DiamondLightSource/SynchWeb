@@ -3,7 +3,7 @@
     <dialog-modal
       :is-active="showDialog"
       :title="title"
-      @cancel="showDialog = false"
+      @cancel="close"
     >
       <plotly-chart
         :style="bigChartStyle"
@@ -96,11 +96,15 @@ export default {
         'select': function(selection) {
             const first = selection.points[0]
             const simplified = {
+                'chart': this,
                 'point': first.pointIndex,
                 'x': first.x,
                 'y': first.y,
             }
             this.$emit('select', simplified);
+        },
+        'close': function() {
+            this.showDialog = false
         },
     },
 }

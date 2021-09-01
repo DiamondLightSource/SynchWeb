@@ -100,16 +100,18 @@ export default {
     },
     'methods': {
         'select': function(selection) {
-            const x = selection.point
-            const movie = (x + 1).toString()
+            const x = selection.x
+            const label = x.toString()
             for (const chart in this.annotations) {
                 const y = this.yAxes[chart][x]
                 this.annotations[chart] = [{
-                    'text': movie,
+                    'text': label,
                     'x': x,
                     'y': y,
                 }]
             }
+            selection.chart.close();
+            this.$store.commit('em/selectMovies', x)
         },
         'plotlyData': function(yAxis) {
             return [{

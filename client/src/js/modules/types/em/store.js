@@ -5,6 +5,7 @@ const module = {
     'state': {
         'processingDialog': false,
         'processingDisallowedReason': '',
+        'selectedMovie': 0,
     },
     'getters': {
         'processingDialogVisible': function(state) {
@@ -18,7 +19,10 @@ const module = {
                 '' :
                 "Relion processing can't be run because " +
                     state.processingDisallowedReason
-        }
+        },
+        'selectedMovie': function(state) {
+            return state.selectedMovie
+        },
     },
     'mutations': {
         'processingAllowedCheck': function(state, payload) {
@@ -49,6 +53,9 @@ const module = {
         },
         'showProcessingDialog': function(state) {
             state.processingDialog = true
+        },
+        'selectMovies': function(state, selectedMovie) {
+            state.selectedMovie = selectedMovie
         },
     },
     'actions': {

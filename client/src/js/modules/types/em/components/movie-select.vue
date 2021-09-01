@@ -50,6 +50,7 @@
 
 <script>
 import FlatButton from 'app/components/flat-button.vue'
+import { mapGetters } from 'vuex'
 
 export default {
     'name': "MovieSelect",
@@ -71,6 +72,9 @@ export default {
         }
     },
     'computed': {
+        ...mapGetters({
+            'remoteSelectedMovie': 'em/selectedMovie'
+        }),
         'maxLength': function() {
             return this.max.toString().length
         }
@@ -83,6 +87,9 @@ export default {
         // eslint-disable-next-line no-unused-vars
         'showMostRecent': function(newValue, oldValue) {
             this.selectMax()
+        },
+        'remoteSelectedMovie': function() {
+            this.click(this.remoteSelectedMovie)
         },
         'movieNumber': function(
             newValue,
