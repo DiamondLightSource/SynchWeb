@@ -24,9 +24,6 @@ export default {
     proteins: {
       type: Array,
     },
-    experimentKind: {
-      type: String,
-    },
     containerId: {
       type: Number,
     },
@@ -37,6 +34,7 @@ export default {
         return this.$store.state.samples.samples;
       },
       set(val) {
+        console.log({ val })
         this.$store.commit("samples/set", val);
       },
     },
@@ -62,13 +60,41 @@ export default {
       return this.$spaceGroups.map((item) => ({ value: item, text: item }));
     },
     anomalousOptionsList() {
-      return this.$anomalousList.map((item) => ({ value: item, text: item }));
+      const anomalous = this.$anomalousList.map((item) => ({ value: item, text: item }))
+      anomalous.sort((a, b) => {
+        const aText = a.text.toLowerCase()
+        const bText = b.text.toLowerCase()
+
+        if (aText < bText) {
+          return -1
+        }
+
+        if (aText > bText) {
+          return 1
+        }
+
+        return 0
+      })
+
+      return anomalous
     },
     sampleLocation() {
       return this.$sampleLocation()
     },
     sampleGroups() {
       return this.$sampleGroups()
+    },
+    shipments() {
+      return this.$shipments()
+    },
+    dewars() {
+      return this.$dewars()
+    },
+    containers() {
+      return this.$containers()
+    },
+    sampleGroupsAndMembers() {
+      return this.$sampleGroupsAndMembers()
     }
   },
   methods: {
@@ -156,14 +182,20 @@ export default {
       if (protein) return protein.get("ACRONYM");
       else return null;
     },
+    checkSampleInSampleGroups(proteinId) {
+      return this.sampleGroupsAndMembers.some(group => group.MEMBERS.toJSON().find(member => Number(member.PROTEINID) === Number(proteinId)))
+    }
   },
   inject: [
     "$spaceGroups",
     "$centeringMethods",
     "$anomalousList",
     "$experimentKindList",
-    "$showUDCColumns",
     "$sampleLocation",
-    "$sampleGroups"
+    "$sampleGroups",
+    "$shipments",
+    "$dewars",
+    "$containers",
+    "$sampleGroupsAndMembers"
   ]
 };

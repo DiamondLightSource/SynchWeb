@@ -64,20 +64,20 @@
       <validation-provider
         class="tw-px-2 protein-column tw-py-1"
         tag="div"
-        :rules="sample['NAME'] ? 'required|min_value:1' : ''" name="Protein"
+        :rules="sample['NAME'] ? 'required' : ''"
+        name="Protein"
         :vid="`protein-${sample['LOCATION']}`"
         v-slot="{ errors }">
         <combo-box
           v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
           :data="proteinsOptionsList"
           textField="text"
+          valueField="value"
           :inputIndex="sampleIndex"
           :selectCount="inputValue.length"
-          :selectedItem="formatSelectData(proteinsOptionsList, sample, 'PROTEINID')"
           defaultText=""
           size="small"
-          valueField="value"
-          v-on:handle-select-event="handleProteinSelection(sampleIndex, $event)"
+          v-model="sample['PROTEINID']"
         >
           <template slot-scope="{ option }">
             <span><i class="fa fa-check green"></i></span> {{ option['text'] }}
@@ -106,7 +106,7 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-border-r sample-group-column tw-py-1"
+        class="tw-px-2 tw-border-r tw-border-table-header-background sample-group-column tw-py-1"
         :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
         name="Sample Group"
         :vid="`sample-group-${sample['BLSAMPLEGROUPID']}`"
@@ -127,14 +127,7 @@
         class="tw-w-1/2 tw-py-1"
         :currentEditingRow="editingRow"
         :currentTab="currentTab"
-        :rowData="sample"
-        :rowDatIndex="sampleIndex"
-        :experimentKind=[]
-        :spaceGroups="spaceGroups"
-        :selectedScreeningMode="{}"
-        :selectedCenteringMode="{}"
         :sampleIndex="sampleIndex"
-        @input="handleFieldChange"
         :containerId="containerId"
       />
 
@@ -160,6 +153,7 @@
       <dialog-box
         v-if="displaySampleGroupModal"
         size="small"
+        :hide-ok-button="true"
         @perform-modal-action="performModalAction"
         @close-modal-action="closeModalAction">
         <template>
@@ -171,7 +165,53 @@
               <i class="fa fa-times"></i>
             </button>
           </div>
-          <div class="tw-py-3 tw-px-4"></div>
+          <div class="tw-py-3 tw-px-4">
+
+            <base-input-select
+              class="tw-py-5"
+              option-text-key="text"
+              option-value-key="value"
+              :options="shipments"
+              inputClass="tw-w-full tw-h-6"
+              :value="containerSamplesGroupData['shipmentId']"
+              @input="onSampleGroupDataChange($event, 'shipmentId')"
+              label="Shipment:"
+              outerClass="tw-w-full tw-flex"
+              labelClass="tw-w-3/5 tw-font-bold"
+            />
+
+            <base-input-select
+              class="tw-py-5"
+              option-text-key="text"
+              option-value-key="value"
+              :options="dewars"
+              inputClass="tw-w-full tw-h-6"
+              :value="containerSamplesGroupData['dewarId']"
+              @input="onSampleGroupDataChange($event, 'dewarId')"
+              label="Dewars:"
+              outerClass="tw-w-full tw-flex"
+              labelClass="tw-w-3/5 tw-font-bold"
+            />
+
+            <base-input-select
+              class="tw-py-5"
+              option-text-key="text"
+              option-value-key="value"
+              :options="containers"
+              inputClass="tw-w-full tw-h-6"
+              :value="containerSamplesGroupData['containerId']"
+              @input="onSampleGroupDataChange($event, 'containerId')"
+              label="Containers:"
+              outerClass="tw-w-full tw-flex"
+              labelClass="tw-w-3/5 tw-font-bold"
+            />
+
+            <div class="tw-w-full tw-flex tw-justify-end tw-py-4">
+              <button class="button" @click="createNewSampleGroup">
+                <span class="fa fa-plus"></span> &nbsp; Create Group
+              </button>
+            </div>
+          </div>
         </template>
       </dialog-box>
     </portal>
@@ -188,7 +228,7 @@ import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
 import Dialog from 'app/components/dialogbox.vue'
 
 export default {
-  name: 'mx-sample-plate-new',
+  name: 'mx-sample-plate',
   mixins: [MxSampleTableMixin],
   components: {
     'base-input-select': BaseInputSelect,
@@ -227,7 +267,12 @@ export default {
         {
           key: 'ANOLAMLOUS',
           title: 'Anomalous',
-          className: 'tw-w-1/4'
+          className: 'tw-w-32'
+        },
+        {
+          key: 'BARCODE',
+          title: 'Barcode',
+          className: 'tw-w-32'
         },
         {
           key: 'COMMENT',
@@ -254,44 +299,44 @@ export default {
       ],
       udcColumns: [
         {
-          key: 'CENTERINGMETHOD',
+          key: 'CENTRINGMETHOD',
           title: 'Centering Method',
-          className: 'tw-w-2/12'
+          className: 'tw-w-24'
         },
         {
           key: 'EXPERIMENTKIND',
           title: 'Experiment Kind',
-          className: 'tw-w-2/12'
+          className: 'tw-w-32'
         },
         {
           key: 'ENERGY',
           title: 'Energy (eV)',
-          className: 'tw-w-1/12'
+          className: 'tw-w-20'
         },
         {
-          key: 'ANOMALOUS',
+          key: 'ANOMALOUSSCATTERER',
           title: 'Anomalous',
-          className: 'tw-w-2/12'
+          className: 'tw-w-24'
         },
         {
           key: 'SCREENINGMETHOD',
           title: 'Screening Method',
-          className: 'tw-w-2/12'
+          className: 'tw-w-24'
         },
         {
           key: 'REQUIREDRESOLUTION',
           title: 'Reqd Res',
-          className: 'tw-w-1/12'
+          className: 'tw-w-24'
         },
         {
           key: 'MINRES',
           title: 'Min Res',
-          className: 'tw-w-1/12'
+          className: 'tw-w-24'
         },
         {
           key: 'NUMTOCOLLECT',
           title: 'No to collect',
-          className: 'tw-w-1/12'
+          className: 'tw-w-24'
         }
       ],
       currentTab: 'basic',
@@ -316,27 +361,24 @@ export default {
         unattended: this.udcColumns
       }
 
-      if (!this.showUDCColumns && this.currentTab === 'unattended') {
-        return []
-      }
-
-
       return columnsMap[this.currentTab]
-    },
-    showUDCColumns() {
-      return this.$showUDCColumns()
     },
     tabNames() {
       const tabs = [
         { key: 'basic', name: 'Basic' },
-        { key: 'extraFields', name: 'Extra Fields' }
+        { key: 'extraFields', name: 'Extra Fields' },
+        { key: 'unattended', name: 'Unattended (UDC)' }
       ]
 
-      if (this.showUDCColumns) {
-        tabs.push({ key: 'unattended', name: 'Unattended (UDC)' })
-      }
-
       return tabs
+    },
+    containerSamplesGroupData: {
+      get() {
+        return this.$store.getters['samples/getContainerSamplesGroupData']
+      },
+      set(data) {
+        this.$store.commit('samples/setContainerSampleGroupData', data)
+      }
     }
   },
   methods: {
@@ -374,15 +416,40 @@ export default {
     },
     closeModalAction() {
       this.displaySampleGroupModal = false
+      this.editingRow = null
     },
     performModalAction() {
-    }
-  },
-  watch: {
-    showUDCColumns() {
-      if (!this.showUDCColumns) {
-        this.currentTab = 'basic'
+    },
+    createNewSampleGroup() {
+
+    },
+    async onSampleGroupDataChange(value, property) {
+      let changedSampleGroupsData = {}
+      switch(property) {
+        case 'shipmentId':
+          changedSampleGroupsData = {
+            shipmentId: value,
+            dewarId: null,
+            containerId: null
+          }
+          break
+        case 'dewarId':
+          changedSampleGroupsData = {
+            ...this.containerSamplesGroupData,
+            dewarId: value,
+            containerId: null
+          }
+          break
+        case 'containerId':
+          changedSampleGroupsData = {
+            ...this.containerSamplesGroupData,
+            containerId: value
+          }
+          break
+        default:
+          break
       }
+      this.containerSamplesGroupData = changedSampleGroupsData
     }
   }
 }
@@ -402,29 +469,29 @@ export default {
   width: 10%;
 }
 
-.user-path-column, .screening-method-column {
-  width: 150px;
-}
-.anomalous-column {
-  width: 80px;
-}
-.comment-column, .cell-column {
-  width: 200px;
-}
-.space-group-column, .centering-method-column, .experiment-kind-column {
-  width: 100px;
-}
-.energy-column {
-  width: 50px;
-}
-.resolution-column, .collect-column {
-  width: 40px;
-  word-wrap: break-word;
-}
-.screening-method-column {
-  width: 100px;
-  word-wrap: break-word;
-}
+/*.user-path-column, .screening-method-column {*/
+/*  width: 150px;*/
+/*}*/
+/*.anomalous-column {*/
+/*  width: 128px;*/
+/*}*/
+/*.comment-column, .cell-column {*/
+/*  width: 200px;*/
+/*}*/
+/*.space-group-column, .centering-method-column, .experiment-kind-column {*/
+/*  width: 100px;*/
+/*}*/
+/*.energy-column {*/
+/*  width: 50px;*/
+/*}*/
+/*.resolution-column, .collect-column {*/
+/*  width: 40px;*/
+/*  word-wrap: break-word;*/
+/*}*/
+/*.screening-method-column {*/
+/*  width: 100px;*/
+/*  word-wrap: break-word;*/
+/*}*/
 .actions-column {
   width: calc(12% - 30px);
 }

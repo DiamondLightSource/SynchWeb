@@ -27,7 +27,7 @@
 <script>
 import Sample from 'models/sample'
 import SingleSample from 'modules/types/mx/samples/single-sample.vue'
-import SamplePlateNew from 'js/modules/types/mx/samples/samples-plate.vue'
+import SamplePlate from 'js/modules/types/mx/samples/samples-plate.vue'
 
 import { ValidationObserver }  from 'vee-validate'
 
@@ -38,7 +38,7 @@ export default {
   components: {
     'single-sample-plate': SingleSample,
     'validation-observer': ValidationObserver,
-    'mx-sample-plate-new': SamplePlateNew
+    'mx-sample-plate': SamplePlate
   },
   props: {
     containerType: {
@@ -66,7 +66,7 @@ export default {
       // Use a table editor unless capacity > 25
       // If we have been passed a valid container id then we are editing the samples, else new table
 
-      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-sample-plate-new'
+      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-sample-plate'
     },
     // These options will be passed into the marionette sample table view
     ...mapGetters({

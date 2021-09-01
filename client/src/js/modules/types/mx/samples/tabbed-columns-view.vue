@@ -3,7 +3,7 @@
     <div v-show="currentTab === 'basic'" class="tw-flex tw-w-full tw-items-center">
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-1/4"
+        class="tw-px-2 tw-w-32"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
         name="Anomalous Scaterrer"
         :vid="`anomalous-${sampleIndex}`"
@@ -19,6 +19,18 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
         <p v-else class="tw-text-center">{{ selectDataValue(anomalousOptionsList, inputValue, 'ANOMALOUSSCATTERER') }}</p>
+      </validation-provider>
+
+      <validation-provider
+        tag="div"
+        class="tw-px-2 tw-w-32"
+        name="Barcode">
+        <base-input-text
+          v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
+          inputClass="tw-w-full tw-h-8"
+          v-model="inputValue[sampleIndex]['BARCODE']"
+        />
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['BARCODE'] }}</p>
       </validation-provider>
 
       <validation-provider
@@ -200,10 +212,10 @@
     </div>
 
 
-    <div v-show="currentTab === 'unattended' && showUDCColumns" class="tw-w-full tw-flex tw-items-center">
+    <div v-show="currentTab === 'unattended'" class="tw-w-full tw-flex tw-items-center">
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-2/12"
+        class="tw-px-2 tw-w-24"
         name="Centering Method"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
         :vid="`centering-method-${sampleIndex}`"
@@ -217,14 +229,14 @@
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          v-model="inputValue[sampleIndex]['CENTERINGMETHOD']"
+          v-model="inputValue[sampleIndex]['CENTRINGMETHOD']"
         />
-        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'CENTERINGMETHOD') }}</p>
+        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'CENTRINGMETHOD') }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-2/12"
+        class="tw-px-2 tw-w-32"
         name="Experiment Kind"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
         :vid="`experiment-kind-${sampleIndex}`"
@@ -237,16 +249,16 @@
           optionTextKey="text"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          v-model="inputValue[sampleIndex]['EXPERIMENTKIND']"
+          v-model="inputValue[sampleIndex]['EXPERIMENTTYPEID']"
         />
-        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'EXPERIMENTKIND') }}</p>
+        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'EXPERIMENTTYPEID') }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-1/12"
+        class="tw-px-2 tw-w-20"
         name="Energy"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['EXPERIMENTKIND'] === 'phasing' ? 'required|numeric' : ''"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['EXPERIMENTTYPEID'] === 'phasing' ? 'required|numeric' : ''"
         :vid="`energy-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
@@ -261,7 +273,7 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-2/12"
+        class="tw-px-2 tw-w-24"
         name="UDC Anomalous Scatterer"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['EXPERIMENTKIND'] === 'phasing' ? 'required' : ''"
         :vid="`anomalous-scatterer-${sampleIndex}`"
@@ -281,7 +293,7 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-2/12"
+        class="tw-px-2 tw-w-24"
         name="Screening Method"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
         :vid="`screening-method-${sampleIndex}`"
@@ -301,14 +313,14 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-1/12"
+        class="tw-px-2 tw-w-24"
         name="Required Resolution"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === 'None' ? 'required' : ''"
         :vid="`required-resolution-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="selectedScreeningMode.value !== 'None'"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'None'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -319,14 +331,14 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-1/12"
+        class="tw-px-2 tw-w-24"
         name="Minimum Resolution"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === 'Better Than' ? 'required' : ''"
         :vid="`minimum-resolution-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="selectedScreeningMode.value !== 'Better Than'"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'Better Than'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -337,14 +349,17 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-1/12"
+        class="tw-px-2 tw-w-24"
         name="No to Collect"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === 'Collect Best N' ? 'required' : ''"
+        :rules="
+          inputValue[sampleIndex]['PROTEINID'] > -1 &&
+          inputValue[sampleIndex]['SCREENINGMETHOD'] === 'Collect Best N' &&
+          checkSampleInSampleGroups(inputValue[sampleIndex]['PROTEINID']) ? 'required' : ''"
         :vid="`no-to-collect-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="selectedScreeningMode.value !== 'Collect Best N'"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'Collect Best N'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -380,28 +395,6 @@ export default {
       type: Array,
       default: () => ([])
     },
-    spaceGroupList: {
-      type: Array,
-      default: () => ([])
-    },
-    selectedScreeningMode: {
-      type: Object,
-      default: () => ({
-        value: 'None',
-        text: 'None'
-      })
-    },
-    selectedCenteringMode: {
-      type: Object,
-      default: () => ({
-        value: 'XRay',
-        text: 'X-Ray'
-      })
-    },
-    experimentKind: {
-      type: Array,
-      default: () => ([])
-    },
     sampleIndex: {
       type: Number,
       required: true
@@ -420,49 +413,5 @@ export default {
       return !this.containerId || location === this.currentEditingRow
     }
   },
-  computed: {
-    showUDCColumns() {
-      return this.$showUDCColumns()
-    }
-  },
 }
 </script>
-
-<style scoped>
-.location-column {
-  width: 30px;
-}
-.protein-column {
-  width: 20%;
-}
-.name-column {
-  width: 10%;
-} 
-.sample-group-column {
-  width: 10%;
-}
-
-.user-path-column, .screening-method-column {
-  width: 150px;
-}
-.anomalous-column {
-  width: 80px;
-}
-.comment-column, .cell-column {
-  width: 200px;
-}
-.space-group-column, .centering-method-column, .experiment-kind-column {
-  width: 100px;
-}
-.energy-column {
-  width: 50px;
-}
-.resolution-column, .collect-column {
-  width: 40px;
-  word-wrap: break-word;
-}
-.screening-method-column {
-  width: 100px;
-  word-wrap: break-word;
-}
-</style>

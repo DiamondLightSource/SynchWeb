@@ -89,16 +89,6 @@
               <pagination-component @page-changed="onUpdateHistory" />
             </div>
           </li>
-
-          <li>
-            <span class="label">Show UDC Column</span>
-            <span>
-              <base-input-checkbox
-                  name="ALLOW_UDC"
-                  v-model="showUDCColumns"
-              />
-            </span>
-          </li>
         </ul>
       </div> <!-- End Container Form Elements -->
 
@@ -150,8 +140,10 @@ import ContainerHistory from 'modules/shipment/collections/containerhistory'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
 import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
-import EventBus from 'app/components/utils/event-bus.js'
 import Samples from 'collections/samples'
+import Shipments from 'collections/shipments'
+import Containers from 'collections/containers'
+import Dewars from 'collections/dewars'
 import SampleEditor from 'modules/types/mx/samples/sample-editor.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
@@ -236,11 +228,20 @@ export default {
       },
       currentModal: 'queueContainer',
       containerQueueId: null,
-      autoCollectMessage: ''
+      autoCollectMessage: '',
+      sampleLocation: 0,
+
+      containers: [],
+      containersCollection: null,
+      shipments: [],
+      shipmentsCollection: null,
+      dewars: [],
+      dewarsCollection: null,
+      selectedDewarId: null,
+      selectedShipmentId: null
     }
   },
   computed: {
-
     validSamples: function() {
       return this.samples.map( (entry) => {
         let sample = {}
@@ -253,8 +254,12 @@ export default {
         return sample
       })
     },
-
-    ...mapGetters('samples', ['samples']),
+    ...mapGetters({
+      samples: ['samples/samples'],
+    }),
+    containersSamplesGroupData() {
+      return this.$store.getters['samples/getContainerSamplesGroupData']
+    }
   },
   created: function() {
     // Get samples for this container id
@@ -268,6 +273,8 @@ export default {
     this.getContainerTypes()
     this.getUsers()
     this.getProcessingPipelines()
+    this.getSampleGroups()
+    this.fetchShipments()
   },
   methods: {
     loadContainerData() {
@@ -359,7 +366,7 @@ export default {
       })
     },
     onContainerCellClicked: function(location) {
-      EventBus.$emit('select-sample', location)
+      this.sampleLocation = location - 1
     },
     onQueueContainer() {
       this.currentModal = 'queueContainer'
@@ -420,17 +427,56 @@ export default {
       } finally {
         // TODO: Toggle loading state off
       }
+    },
+    async fetchContainers() {
+      this.containersCollection = new Containers(null, { state: { pageSize: 9999 } })
+      this.containersCollection.queryParams.did = this.containersSamplesGroupData.dewarId
+
+      const result = await this.$store.dispatch('getCollection', this.containersCollection)
+      this.containers = result.toJSON().map((container, index) => ({
+        value: container.CONTAINERID,
+        text: container.NAME
+      }))
+    },
+    async fetchDewars() {
+      this.dewarsCollection = new Dewars(null, { state: { pageSize: 9999 } })
+      this.dewarsCollection.queryParams.sid = this.containersSamplesGroupData.shipmentId
+
+      const result = await this.$store.dispatch('getCollection', this.dewarsCollection)
+      this.dewars = result.toJSON().map((dewar, index) => ({
+        value: dewar.DEWARID,
+        text: dewar.CODE
+      }))
+    },
+    async fetchShipments() {
+      this.shipmentsCollection = new Shipments(null, { state: { pageSize: 9999 } })
+
+      const result = await this.$store.dispatch('getCollection', this.shipmentsCollection)
+      this.shipments = result.toJSON().map((shipment, index) => ({
+        value: shipment.SHIPPINGID,
+        text: shipment.SHIPPINGNAME
+      }))
+    },
+    async updateContainerSampleGroupsData(newData, oldData) {
+      if (newData.shipmentId !== null) {
+        await this.fetchDewars()
+      }
+
+      if (newData.dewarId !== null) {
+        await this.fetchContainers()
+      }
+    }
+  },
+  watch: {
+    containersSamplesGroupData(newValues, oldValues) {
+      this.updateContainerSampleGroupsData(newValues, oldValues)
     }
   },
   provide() {
     return {
-      $spaceGroups: this.spaceGroups,
-      $centeringMethods: this.centeringMethods,
-      $anomalousList: this.anomalousList,
-      $experimentKindList: this.experimentKindList,
-      $showUDCColumns: () => this.showUDCColumns,
-      $sampleLocation: () => this.sampleLocation,
-      $sampleGroups: () => this.sampleGroups
+      $shipments: () => this.shipments,
+      $dewars: () => this.dewars,
+      $containers: () => this.containers
     }
   }
 }
