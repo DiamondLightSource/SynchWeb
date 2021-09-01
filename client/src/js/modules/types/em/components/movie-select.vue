@@ -4,36 +4,37 @@
 
     <flat-button
       :disabled="movieNumber <= 1"
-      @click="movieNumber = 1"
+      @click="click(1)"
     >
       <i class="fa fa-angle-double-left" />
     </flat-button>
 
     <flat-button
       :disabled="movieNumber <= 1"
-      @click="movieNumber--"
+      @click="click(movieNumber - 1)"
     >
       <i class="fa fa-angle-left" />
     </flat-button>
 
     <input
-      v-model.number="movieNumber"
       type="text"
-      :maxlength="maxlength"
-      :size="maxlength"
       name="movie"
+      :maxlength="maxLength"
+      :size="maxLength"
+      :value="movieNumber"
+      @input.prevent="typed"
     >
 
     <flat-button
       :disabled="movieNumber >= max"
-      @click="movieNumber++"
+      @click="click(movieNumber + 1)"
     >
       <i class="fa fa-angle-right" />
     </flat-button>
 
     <flat-button
       :disabled="movieNumber >= max"
-      @click="movieNumber = max"
+      @click="click(max)"
     >
       <i class="fa fa-angle-double-right" />
     </flat-button>
@@ -65,11 +66,12 @@ export default {
         return {
             'movieNumber': 0,
             'showMostRecent': true,
-            'timeout': null,
+            'eventTimeout': null,
+            'keyTimeout': null,
         }
     },
     'computed': {
-        'maxlength': function() {
+        'maxLength': function() {
             return this.max.toString().length
         }
     },
@@ -82,38 +84,53 @@ export default {
         'showMostRecent': function(newValue, oldValue) {
             this.selectMax()
         },
-        // eslint-disable-next-line no-unused-vars
-        'movieNumber': function(newValue, oldValue) {
-            if (this.movieNumber < 1) {
-                this.movieNumber = 1
+        'movieNumber': function(
+            newValue,
+            oldValue  // eslint-disable-line no-unused-vars
+        ) {
+            // use a timeout so that the user can "hammer" the button
+            // without submitting "a million" server requests
+            if (this.eventTimeout !== null) {
+                clearTimeout(this.eventTimeout)
             }
-            if (this.movieNumber > this.max) {
-                this.movieNumber = this.max
-            }
-            this.selectionChanged()
+            this.eventTimeout = setTimeout(
+                () => {
+                    this.eventTimeout = null
+                    this.$emit('changed', newValue)
+                },
+                500
+            )
         },
     },
     'mounted': function() {
         this.selectMax()
     },
     'methods': {
+        'click': function(newMovieNumber) {
+            this.showMostRecent = false
+            this.movieNumber = newMovieNumber
+        },
+        'typed': function(inputEvent) {
+            // use a timeout so that the user can type multiple digits
+            // without submitting pointless server requests
+            if (this.keyTimeout !== null) {
+                clearTimeout(this.keyTimeout)
+            }
+            this.keyTimeout = setTimeout(
+                () => {
+                    this.keyTimeout = null
+                    const newValue = parseInt(inputEvent.srcElement.value, 10)
+                    if (newValue > 0 && newValue <= this.max) {
+                        this.click(newValue)
+                    }
+                },
+                1000
+            )
+        },
         'selectMax': function() {
             if (this.showMostRecent) {
                 this.movieNumber = this.max
             }
-        },
-        'selectionChanged': function() {
-            const vm = this
-            if (vm.timeout !== null) {
-                clearTimeout(vm.timeout)
-            }
-            vm.timeout = setTimeout(
-                function () {
-                    vm.timeout = null
-                    vm.$emit('changed', vm.movieNumber)
-                },
-                500
-            )
         },
     },
 }
