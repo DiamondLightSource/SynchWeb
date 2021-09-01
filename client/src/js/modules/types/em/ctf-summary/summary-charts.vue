@@ -59,9 +59,9 @@ export default {
                 'estimatedResolution': [],
             },
             'annotations': {
-                'astigmatism': '[]',
-                'estimatedDefocus': '[]',
-                'estimatedResolution': '[]',
+                'astigmatism': [],
+                'estimatedDefocus': [],
+                'estimatedResolution': [],
             },
         }
     },
@@ -70,46 +70,29 @@ export default {
             return this.points > 0
         },
         'layoutAstigmatism': function() {
-            var layout = this.layoutBasic
-            layout.yaxis = {
+            return this.plotlyLayout({
                 'title': 'Å'
-            }
-            return JSON.stringify(layout)
+            })
         },
         'dataAstigmatism': function() {
             return this.plotlyData(this.yAxes.astigmatism)
         },
         'layoutEstimatedDefocus': function() {
-            var layout = this.layoutBasic
-            layout.yaxis = {
+            return this.plotlyLayout({
                 'title': 'μm'
-            }
-            return JSON.stringify(layout)
+            })
         },
         'dataEstimatedDefocus': function() {
             return this.plotlyData(this.yAxes.estimatedDefocus)
         },
         'layoutEstimatedResolution': function() {
-            var layout = this.layoutBasic
-            layout.yaxis = {
+            return this.plotlyLayout({
                 'title': 'Å',
                 'range': [0, 10],
-            }
-            return JSON.stringify(layout)
+            })
         },
         'dataEstimatedResolution': function() {
             return this.plotlyData(this.yAxes.estimatedResolution)
-        },
-        'layoutBasic': function () {
-            return {
-                'xaxis': {
-                    'autotick': false,
-                    'tick0': 0,
-                    'dtick': this.points / 10,
-                    'title': 'movie'
-                },
-                'margin': { 't': 10, 'l': 40, 'r': 20, 'b': 30 },
-            }
         },
     },
     'mounted': function() {
@@ -121,20 +104,32 @@ export default {
             const movie = (x + 1).toString()
             for (const chart in this.annotations) {
                 const y = this.yAxes[chart][x]
-                this.annotations[chart] = JSON.stringify([{
+                this.annotations[chart] = [{
                     'text': movie,
                     'x': x,
                     'y': y,
-                }])
+                }]
             }
         },
         'plotlyData': function(yAxis) {
-            return JSON.stringify([{
+            return [{
                 'x': this.xAxis,
                 'y': yAxis,
                 'type': 'scatter',
                 'mode': 'markers',
-            }])
+            }]
+        },
+        'plotlyLayout': function(yAxis) {
+            return {
+                'xaxis': {
+                    'autotick': false,
+                    'tick0': 0,
+                    'dtick': this.points / 10,
+                    'title': 'movie'
+                },
+                'yaxis': yAxis,
+                'margin': { 't': 10, 'l': 40, 'r': 20, 'b': 30 },
+            }
         },
         'fetchData': function() {
             // If this job has not yet run, autoProcProgramId "doesn't exist"

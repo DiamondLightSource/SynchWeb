@@ -13,23 +13,16 @@ export default {
     'name': "PlotlyChart",
     'props': {
         'layout': {
-            // A JSON string of an object
-            // This is JSON to prevent Vue "polluting" it with observers
-            'type': String,
+            'type': Object,
             'required': true,
         },
         'chartData': {
-            // A JSON string of an array
-            // This is JSON to prevent Vue "polluting" it with observers
-            'type': String,
+            'type': Array,
             'required': true,
         },
         'annotations': {
-            /* A JSON string of an array
-             * This is JSON to prevent Vue "polluting" it with observers
-             */
-            'type': String,
-            'default': '[]',
+            'type': Array,
+            'default': [],
         },
         'title': {
             'type': String,
@@ -73,7 +66,7 @@ export default {
         'redrawChart': function() {
             if (this.chartActive) {
                 Plotly.relayout(this.$el, {
-                    'annotations': JSON.parse(this.annotations),
+                    'annotations': this.annotations,
                 })
             }
         },
@@ -90,15 +83,12 @@ export default {
                 // 'displayModeBar': true,
             }
 
-            const layout = JSON.parse(this.layout)
-            const annotations = JSON.parse(this.annotations)
-            if (annotations.length > 0) {
-                layout.annotations = annotations
+            const layout = this.layout
+            if (this.annotations.length > 0) {
+                layout.annotations = this.annotations
             }
 
-            const data = JSON.parse(this.chartData)
-
-            Plotly.newPlot(this.$el, data, layout, options);
+            Plotly.newPlot(this.$el, this.chartData, layout, options);
 
             if (!this.static) {
                 this.$el.on('plotly_click', (clickEvent) => {

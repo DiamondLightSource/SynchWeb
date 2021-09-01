@@ -31,7 +31,7 @@ export default {
     },
     'computed': {
         'layout': function() {
-            return JSON.stringify({
+            return {
                 'margin': { 't': 10, 'l': 30, 'r': 30, 'b': 30 },
                 'xaxis': {
                     'title': 'δx Å',
@@ -41,7 +41,7 @@ export default {
                     'title': 'δy Å',
                     'range': [-20, 20],
                 },
-            })
+            }
         },
     },
     'watch': {
@@ -69,12 +69,12 @@ export default {
         },
         'buildModel': function(xAxis, yAxis) {
             return {
-                'chartData': JSON.stringify([{
+                'chartData': [{
                     'x': xAxis,
                     'y': yAxis,
                     'type': 'scatter',
                     'mode': 'lines+markers',
-                }]),
+                }],
                 'points': xAxis.length,
             }
         },

@@ -54,22 +54,16 @@ export default {
     'mixins': [proportionalHeight],
     'props': {
         'layout': {
-            // A JSON string of an object
-            // This is JSON to prevent Vue "polluting" it with observers
-            'type': String,
+            'type': Object,
             'required': true,
         },
         'chartData': {
-            // A JSON string of an array
-            // This is JSON to prevent Vue "polluting" it with observers
-            'type': String,
+            'type': Array,
             'required': true,
         },
         'annotations': {
-            // A JSON string of an array
-            // This is JSON to prevent Vue "polluting" it with observers
-            'type': String,
-            'default': '[]',
+            'type': Array,
+            'default': function() { return [] },
         },
         'title': {
             'type': String,

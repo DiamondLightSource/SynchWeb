@@ -86,13 +86,13 @@ export default {
             // "pollute" them with observers... and when we're looking at arrays
             // with thousands of elements that has a huge impact
             return {
-                'layout': JSON.stringify({
+                'layout': {
                     'barmode': layout.barmode,
                     'xaxis': layout.xaxis,
                     'yaxis': layout.yaxis,
                     'margin': { 'l': 50, 'r': 10, 'b': 50, 't': 10 },
-                }),
-                'data': JSON.stringify(chartData.data),
+                },
+                'data': chartData.data,
                 'titleText': layout.title.text
             }
         },
