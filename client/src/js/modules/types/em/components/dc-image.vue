@@ -1,7 +1,6 @@
 <template>
   <div
     ref="container"
-    :class="containerClass"
     :title="containerTitle"
   >
     <dialog-image
@@ -10,6 +9,9 @@
       :src="src"
       @cancel="showDialog = false"
     />
+    <div class="image-heading">
+      {{ title }}
+    </div>
     <vue-xhr-image
       v-model="src"
       :title="title"
@@ -33,10 +35,6 @@ export default {
     },
     'mixins': [proportionalHeight],
     'props': {
-        'containerClass': {
-            'type': String,
-            'required': true
-        },
         'title': {
             'type': String,
             'required': true,
@@ -59,3 +57,11 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+.image-heading {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+</style>

@@ -13,7 +13,6 @@
     <params :ctf-estimation="ctfEstimation" />
 
     <dc-image
-      container-class="diffraction fft"
       title="FFT Theoretical"
       :image-url="imageUrl"
     />
