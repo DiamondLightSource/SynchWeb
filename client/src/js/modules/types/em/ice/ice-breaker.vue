@@ -20,6 +20,7 @@
         :title="attachment.chartData.titleText"
         :layout="attachment.chartData.layout"
         :chart-data="attachment.chartData.data"
+        width="400px"
       />
     </template>
   </processing-section>
