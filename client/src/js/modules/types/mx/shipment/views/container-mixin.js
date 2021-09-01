@@ -36,7 +36,7 @@ export default {
       sampleGroupsCollection: null,
       sampleGroups: [],
       spaceGroups: SpaceGroupList.list,
-      showUDCColumns: false,
+      sampleGroupsAndMembers: []
     }
   },
   methods: {
@@ -74,12 +74,10 @@ export default {
     async getExperimentTypes() {
       this.experimentTypesCollection = new ExperimentTypes()
 
-      this.experimentFilter = [this.$store.state.proposal.proposalType]
-
       const result = await this.$store.dispatch('getCollection', this.experimentTypesCollection)
-      let initialExperimentType = result.findWhere({ PROPOSALTYPE: this.$store.state.proposal.proposalType })
-      this.containerState.EXPERIMENTTYPEID = initialExperimentType ? initialExperimentType.get('EXPERIMENTTYPEID') : ''
-      this.experimentTypes = result.toJSON()
+      const proposalExperimentTypes = result.where({ PROPOSALTYPE: this.$store.state.proposal.proposalType })
+      this.experimentTypes = proposalExperimentTypes.map(type => type.toJSON())
+      this.containerState.EXPERIMENTTYPEID = this.experimentTypes.length > 0 ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
     },
     async getContainerRegistry() {
       this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
@@ -109,6 +107,7 @@ export default {
       this.sampleGroupsCollection = new SampleGroups(null, { state: { pageSize: 9999 }})
 
       const result = await this.$store.dispatch('getCollection', this.sampleGroupsCollection)
+      this.sampleGroupsAndMembers = result.groups().toJSON()
       this.sampleGroups = result.groups().toJSON().map((group, index) => ({
         value: group.BLSAMPLEGROUPID,
         text: group.NAME || `Sample Group ${index}`
@@ -121,9 +120,9 @@ export default {
       $centeringMethods: this.centeringMethods,
       $anomalousList: this.anomalousList,
       $experimentKindList: this.experimentKindList,
-      $showUDCColumns: () => this.showUDCColumns,
       $sampleLocation: () => this.sampleLocation,
-      $sampleGroups: () => this.sampleGroups
+      $sampleGroups: () => this.sampleGroups,
+      $sampleGroupsAndMembers: () => this.sampleGroupsAndMembers
     }
   }
 }

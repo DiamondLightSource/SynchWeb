@@ -22,14 +22,6 @@
               <span>{{dewar.CODE}}</span>
             </div>
 
-            <div>
-              <label>Show all container types</label>
-              <base-input-checkbox
-                name="SHOW_ALL_CONTAINER_TYPES"
-                v-model="showAllContainerTypes"
-              />
-            </div>
-
             <div class="tw-mb-2 tw-py-2">
               <base-input-groupselect
                 v-model="containerState.CONTAINERTYPEID"
@@ -130,14 +122,6 @@
                 </label>
                 <select name="SCREENID"></select>
             </div>
-
-            <div>
-              <label>Allow UDC</label>
-              <base-input-checkbox
-                name="ALLOW_UDC"
-                v-model="showUDCColumns"
-              />
-            </div>
           </div>
 
 
@@ -216,7 +200,6 @@ const initialContainerState = {
   BARCODE: "",
   PERSONID: "",
   EXPERIMENTTYPE: "",
-  STORAGETEMPERATURE: "",
   COMMENTS: "",
   REQUESTEDIMAGERID: null,
   SCHEDULEID: null,
@@ -276,7 +259,6 @@ export default {
       proteinSelection: null,
 
       selectedSample: null,
-      showAllContainerTypes: false,
       showAllExperimentTypes: false,
       sampleLocation: 0
     }
@@ -286,21 +268,11 @@ export default {
     // It assumes that any proposal type listed in containerFilter should be included
     groupedContainerTypes: function() {
       let groups = []
-      for (var i=0; i<this.containerFilter.length; i++) {
+      for (let i=0; i<this.containerFilter.length; i++) {
         // Find all containers with this proposal Type
         let proposalType = this.containerFilter[i]
         let containers = this.containerTypes.filter(container => container.PROPOSALTYPE === proposalType)
         groups.push({name: proposalType, options: containers})
-      }
-      return groups
-    },
-    groupedExperimentTypes: function() {
-      let groups = []
-      for (var i=0; i<this.experimentFilter.length; i++) {
-        // Find all containers with this proposal Type
-        let proposalType = this.experimentFilter[i]
-        let experiments = this.experimentTypes.filter(experiment => experiment.PROPOSALTYPE === proposalType)
-        groups.push({name: proposalType, options: experiments})
       }
       return groups
     },
@@ -317,11 +289,6 @@ export default {
       return unique
     },
     containerFilter: function() {
-      if (this.showAllContainerTypes) return this.containerTypesFilter
-      else return [this.$store.state.proposal.proposalType]
-    },
-    experimentFilter: function() {
-      if (this.showAllExperimentTypes) return this.experimentTypesFilter
       return [this.$store.state.proposal.proposalType]
     },
     ownerEmail: function() {
@@ -358,10 +325,6 @@ export default {
     }),
   },
   watch: {
-    showAllContainerTypes: function(newVal) {
-      // Which container id should be selected
-      if (newVal) this.containerState.CONTAINERTYPEID = "!"
-    },
     // When the container type changes we need to reset the samples list and redraw the container graphic
     'containerState.CONTAINERTYPEID': function(newVal) {
       let type = this.containerTypesCollection.findWhere({CONTAINERTYPEID: newVal})
@@ -417,10 +380,12 @@ export default {
     // Calls the validation method on our observer component
     async onSubmit() {
       const validated = await this.$refs.observer.validate()
+      console.log({ validated })
 
       if (!validated) return
 
-      this.addContainer()
+      // this.addContainer()
+
     },
     addContainer() {
       let experimentType = this.experimentTypesCollection.findWhere({EXPERIMENTTYPEID: this.containerState.EXPERIMENTTYPEID})
@@ -483,6 +448,13 @@ export default {
     },
     onContainerCellClicked(location) {
       this.sampleLocation = location - 1
+    }
+  },
+  provide() {
+    return {
+      $shipments: () => ([]),
+      $dewars: () => ([]),
+      $containers: () => ([])
     }
   }
 }

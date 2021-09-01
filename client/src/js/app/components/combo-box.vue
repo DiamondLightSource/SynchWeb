@@ -22,20 +22,20 @@ The v-closable takes an object as argumnt with properties:
       }"
       v-show="!searching"
       @click="openComboBox(inputIndex, $event)" >
-      {{ selectedItem[valueField] ? selectedItem[textField] : defaultText }}
+      {{ selectedItemText ? selectedItemText : defaultText }}
     </div>
     <div class="select-items select-hide" :class="{[`select-${inputIndex}`]: true}">
       <div class="items-list">
         <div
           v-for="(option, optionIndex) in filteredOptions"
           :class="{ 'same-as-selected':
-            selectedItem[valueField] === option[valueField]
+            value === String(option[valueField])
           }"
           class="tw-cursor-pointer tw-flex tw-w-full tw-justify-between"
           :ref="`selectOption${optionIndex}`"
           :key="`selectOptionIndex${optionIndex}`"
           :value="option[valueField]"
-          @click.stop="selectOption(option, $event)">
+          @click.stop="selectOption(option[valueField], $event)">
           <slot :option=option>{{ option[textField] }}</slot>
         </div>
       </div>
@@ -75,9 +75,9 @@ export default {
       type: String,
       required: true
     },
-    selectedItem: {
-      type: Object,
-      default: () => ({})
+    value: {
+      type: String,
+      required: true
     },
     defaultText: {
       type: String,
@@ -135,7 +135,7 @@ export default {
       })
     },
     selectOption(value, event) {
-      this.$emit('handle-select-event', value)
+      this.$emit('input', value)
       this.searching = false
       this.closeComboBox(false)
       event.target.parentElement.parentElement.classList.add('select-hide')
@@ -193,6 +193,11 @@ export default {
       const selectListIndex = [...this.excludedSelectItemsIndices, this.inputIndex]
       return selectListIndex.map(index => `select-${index}`)
     },
+    selectedItemText() {
+      const selectedItem = this.filteredOptions.find(option => String(option[this.valueField]) === this.value)
+
+      return selectedItem ? selectedItem[this.textField] : ''
+    }
   },
 }
 </script>

@@ -286,7 +286,7 @@
             label="Centering Method"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="inputValue[sampleLocation]['CENTERINGMETHOD']"
+            v-model="inputValue[sampleLocation]['CENTRINGMETHOD']"
           />
         </validation-provider>
 
@@ -373,7 +373,7 @@
       </div>
     
       <div v-if="containerId">
-        <button v-if="inputValue[sampleLocation][sampleLocation].BLSAMPLEID" class="button submit" @click="onSaveSample">Save Sample</button>
+        <button v-if="inputValue[sampleLocation].BLSAMPLEID" class="button submit" @click="onSaveSample">Save Sample</button>
         <button v-else class="button submit" @click="onSaveSample">Add Sample</button>
       </div>
 
@@ -399,11 +399,6 @@ import { ValidationProvider }  from 'vee-validate'
 export default {
   name: 'single-sample-default',
 	mixins: [SampleTableMixin],
-  props: {
-    sampleLocation: {
-      type: Number
-    }
-  },
   components: {
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,

@@ -18,6 +18,7 @@ Vue.use(VeeValidate)
 Vue.use(PortalVue)
 
 Vue.config.productionTip = false
+Vue.config.devtools = !config.production
 
 
 const vm = new Vue({
@@ -43,5 +44,4 @@ if (window.Cypress) {
   window.vm = vm
 }
 
-Vue.config.devtools = !config.production 
 module.hot.accept()

@@ -68,6 +68,7 @@ export default {
     // Trick to rerender component if container geometry changes
     updateGraphicView: function() {
       this.graphicKey += 1;
+      console.log(this.samples)
     },
     onCellClicked: function(location) {
       console.log("Valid Container Graphic Cell location clicked event " + JSON.stringify(location))

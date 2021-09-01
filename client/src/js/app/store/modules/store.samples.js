@@ -4,13 +4,34 @@ import Samples from 'collections/samples'
 const INITIAL_SAMPLE_STATE = {
   LOCATION: '',
   PROTEINID: -1,
-  CRYSTALID: -1,
   NAME: '',
-  TYPE: '',
-  VOLUME: '',
-  EXPERIMENTTYPEID: null,
+  CRYSTALID: -1,
+  ANOMALOUSSCATTERER: '',
   BARCODE: '',
   COMMENTS: '',
+  USERPATH: '',
+  SPACEGROUP: '',
+  CELL_A: '',
+  CELL_B: '',
+  CELL_C: '',
+  CELL_ALPHA: '',
+  CELL_BETA: '',
+  CELL_GAMMA: '',
+  REQUIREDRESOLUTION: '',
+  CENTRINGMETHOD: '',
+  ENERGY: '',
+  EXPERIMENTTYPEID: null,
+  VOLUME: '',
+  ABUNDANCE: '',
+  SYMBOL: '',
+  PACKINGFRACTION: '',
+  EXPERIMENTALDENSITY: '',
+  COMPOSITION: '',
+  LOOPTYPE: '',
+  DIMENSION1: '',
+  DIMENSION2: '',
+  DIMENSION3: '',
+  SHAPE: '',
 }
 
 // Use Location as idAttribute for this table
@@ -24,7 +45,12 @@ const samplesModule = {
   state: {
     // Proposal / visit info
     samples: [],
-    samplesCollection: new Samples() // Backbone model we will use to save
+    samplesCollection: new Samples(), // Backbone model we will use to save,
+    containersSamplesGroupData: {
+      shipmentId: null,
+      dewarId: null,
+      containerId: null
+    }
   },
   mutations: {
     //
@@ -70,6 +96,9 @@ const samplesModule = {
 
       console.log("samples/set - result is " + JSON.stringify(state.samples))
     },
+    setContainerSampleGroupData(state, data) {
+      state.containersSamplesGroupData = data
+    }
   },
   actions: {
     save({ commit, state, dispatch }, containerId) {
@@ -94,6 +123,7 @@ const samplesModule = {
   },
   getters: {
     samples: state => state.samples,
+    getContainerSamplesGroupData: state => state.containersSamplesGroupData
   }
 }
 

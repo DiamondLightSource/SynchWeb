@@ -19,7 +19,7 @@
               <slot></slot>
             </div>
             <div class="tw-border-t tw-border-content-border tw-p-3 tw-flex tw-w-full tw-justify-end">
-              <button class="ui-button ui-corner-all ui-widget tw-mr-px" @click="$emit('perform-modal-action')">Ok</button>
+              <button v-if="!hideOkButton" class="ui-button ui-corner-all ui-widget tw-mr-px" @click="$emit('perform-modal-action')">Ok</button>
               <button class="ui-button ui-corner-all ui-widget tw-ml-px" @click="$emit('close-modal-action')">Cancel</button>
             </div>
           </div>
@@ -39,6 +39,10 @@ export default {
         type: String,
         default: 'default'
       },
+      hideOkButton: {
+        type: Boolean,
+        default: false
+      }
     },
     data() {
       return {
