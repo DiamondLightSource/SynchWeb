@@ -10,6 +10,8 @@
         :title="title"
         :layout="layout"
         :chart-data="chartData"
+        :annotations="annotations"
+        @select="select"
       />
     </dialog-modal>
 
@@ -24,6 +26,7 @@
         static
         :layout="layout"
         :chart-data="chartData"
+        :annotations="annotations"
         @click="showDialog = true"
       />
     </div>
@@ -62,6 +65,12 @@ export default {
             'type': String,
             'required': true,
         },
+        'annotations': {
+            // A JSON string of an array
+            // This is JSON to prevent Vue "polluting" it with observers
+            'type': String,
+            'default': '[]',
+        },
         'title': {
             'type': String,
             'required': true,
@@ -87,6 +96,17 @@ export default {
             const style = 'width: ' + (width - width / 10) +
                 'px; height: ' + (height - height / 5) + 'px;'
             return style
+        },
+    },
+    'methods': {
+        'select': function(selection) {
+            const first = selection.points[0]
+            const simplified = {
+                'point': first.pointIndex,
+                'x': first.x,
+                'y': first.y,
+            }
+            this.$emit('select', simplified);
         },
     },
 }

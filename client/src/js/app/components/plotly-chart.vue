@@ -24,6 +24,13 @@ export default {
             'type': String,
             'required': true,
         },
+        'annotations': {
+            /* A JSON string of an array
+             * This is JSON to prevent Vue "polluting" it with observers
+             */
+            'type': String,
+            'default': '[]',
+        },
         'title': {
             'type': String,
             'default': '',
@@ -46,6 +53,9 @@ export default {
         'chartData': function() {
             this.showChart()
         },
+        'annotations': function() {
+            this.redrawChart()
+        },
     },
     'mounted': function () {
         this.showChart()
@@ -60,8 +70,17 @@ export default {
                 this.chartActive = false
             }
         },
+        'redrawChart': function() {
+            if (this.chartActive) {
+                Plotly.relayout(this.$el, {
+                    'annotations': JSON.parse(this.annotations),
+                })
+            }
+        },
         'showChart': function() {
             this.destroyChart()
+            this.chartActive = true
+
             const options = this.static ? {
                 'staticPlot': true,
             } : {
@@ -70,12 +89,22 @@ export default {
                 // modebar issues!
                 // 'displayModeBar': true,
             }
-            Plotly.newPlot(
-                this.$el,
-                JSON.parse(this.chartData),
-                JSON.parse(this.layout),
-                options
-            );
+
+            const layout = JSON.parse(this.layout)
+            const annotations = JSON.parse(this.annotations)
+            if (annotations.length > 0) {
+                layout.annotations = annotations
+            }
+
+            const data = JSON.parse(this.chartData)
+
+            Plotly.newPlot(this.$el, data, layout, options);
+
+            if (!this.static) {
+                this.$el.on('plotly_click', (clickEvent) => {
+                    this.$emit('select', clickEvent);
+                })
+            }
         },
         'click': function() {
             if (this.static) {
