@@ -10,7 +10,6 @@ class EM extends Page
     use \SynchWeb\Page\EM\Attachments;
     use \SynchWeb\Page\EM\Ctf;
     use \SynchWeb\Page\EM\MotionCorrection;
-    use \SynchWeb\Page\EM\Pagination;
     use \SynchWeb\Page\EM\Particle;
     use \SynchWeb\Page\EM\ProcessingJobs;
     use \SynchWeb\Page\EM\Relion;
@@ -447,9 +446,17 @@ class EM extends Page
         $this->_output(array_values($statuses));
     }
 
+    private function paginationArguments($args)
     {
+        $perPage = $this->has_arg('per_page') ?
+            $this->arg('per_page') : 15;
+        $page = ($this->has_arg('page') && $this->arg('page') > 0) ?
+            $this->arg('page') - 1 : 0;
 
+        array_push($args, $page * $perPage); // Offset
+        array_push($args, $perPage);         // Row Count
 
+        return $args;
     }
 
     private function sendImage($file)
