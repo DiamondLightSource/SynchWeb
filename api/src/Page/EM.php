@@ -80,7 +80,6 @@ class EM extends Page
         array('/jobs/:id', 'get', 'processingJobsByCollection'),
         array('/process/relion/jobs/:session', 'get', 'processingJobsBySession'),
 
-        array('/mc/image/:id(/n/:IMAGENUMBER)', 'get', '_mc_image'),
         array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
         array('/mc/histogram', 'get', '_mc_drift_histogram'),
         array('/ctf/histogram', 'get', '_ctf_histogram'),
@@ -92,6 +91,7 @@ class EM extends Page
         // See Synchweb\Page\EM\MotionCorrection
         array('/mc/:id(/n/:movieNumber)', 'get', 'motionCorrectionResult'),
         array('/mc/drift/:id(/n/:movieNumber)', 'get', 'motionCorrectionDriftPlot'),
+        array('/mc/snapshot/:id(/n/:movieNumber)', 'get', 'motionCorrectionSnapshot'),
 
         // See Synchweb\Page\EM\Ctf
         array('/ctf/:id(/n/:movieNumber)', 'get', 'ctfResult'),
@@ -105,7 +105,7 @@ class EM extends Page
         array('/process/relion/job/parameters', 'get', 'relionParameters'),
 
         array('/process/scipion/session/:session', 'post', '_scipion_start'),
-        
+
         // See SynchWeb\Page\EM\Particle:
         array('/particle/:id', 'get', 'particlePicker'),
         array('/particle/image/:id', 'get', 'particleImage')
@@ -447,39 +447,21 @@ class EM extends Page
         $this->_output(array_values($statuses));
     }
 
-    function _mc_image()
     {
-        $n = $this->has_arg('IMAGENUMBER') ? $this->arg('IMAGENUMBER') : 1;
-        if ($n < 1) $n = 1;
 
-        $imgs = $this->db->pq("SELECT mc.micrographsnapshotfullpath 
-                FROM motioncorrection mc
-                INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $n));
 
-        if (!sizeof($imgs)) $this->_error('No such micrograph');
-        $img = $imgs[0];
-
-        if (file_exists($img['MICROGRAPHSNAPSHOTFULLPATH'])) {
-            $this->_send_image($img['MICROGRAPHSNAPSHOTFULLPATH']);
-
-        } else {
-            $this->app->contentType('image/png');
-            readfile('assets/images/no_image.png');
-        }
     }
 
-    function _send_image($file)
+    private function sendImage($file)
     {
-        $this->_browser_cache();
+        $this->browserCache();
         $size = filesize($file);
         $this->app->response->headers->set("Content-length", $size);
         $this->app->contentType('image/' . pathinfo($file, PATHINFO_EXTENSION));
         readfile($file);
     }
 
-    function _browser_cache()
+    private function browserCache()
     {
         $expires = 60 * 60 * 24 * 14;
         $this->app->response->headers->set('Pragma', 'public');
@@ -504,7 +486,7 @@ class EM extends Page
         $file = $t == 2 ? $img['FFTCORRECTEDFULLPATH'] : $img['FFTFULLPATH'];
 
         if (file_exists($file)) {
-            $this->_send_image($file);
+            $this->sendImage($file);
 
         } else {
             $this->app->contentType('image/png');

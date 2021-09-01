@@ -79,4 +79,38 @@ trait MotionCorrection
         }
         $this->_output(array('xAxis' => $xAxis, 'yAxis' => $yAxis));
     }
+
+    private function motionCorrectionImage($imageName)
+    {
+        $rows = $this->db->pq(
+            "SELECT mc.{$imageName}
+            FROM MotionCorrection mc
+                INNER JOIN Movie m ON m.movieId = mc.movieId
+                INNER JOIN AutoProcProgram ap ON ap.autoProcProgramId = mc.autoProcProgramId
+                WHERE ap.autoProcProgramId = :1 AND m.movieNumber = :2",
+            array(
+                $this->arg('id'),
+                $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
+            ),
+            false
+        );
+
+        if (!sizeof($rows)) {
+            $this->_error('No such micrograph');
+        }
+        $image = $rows[0][$imageName];
+        error_log($image);
+        if (file_exists($image)) {
+            $this->sendImage($image);
+            return;
+        }
+
+        $this->app->contentType('image/png');
+        readfile('assets/images/no_image.png');
+    }
+
+    public function motionCorrectionSnapshot()
+    {
+        $this->motionCorrectionImage('micrographSnapshotFullPath');
+    }
 }

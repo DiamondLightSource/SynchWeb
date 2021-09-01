@@ -12,17 +12,10 @@
 
     <params :motion-correction="motionCorrection" />
 
-    <!-- dc-image
-      container-class="diffraction fft"
-      title="Motion Corrected Image"
-      :image-url="imageUrl"
-    / -->
-
-    <!-- dc-image
-      container-class="diffraction fft2"
-      title="FFT of Motion Corrected Image"
-      :image-url="fftUrl"
-    / -->
+    <dc-image
+      title="Micrograph Snapshot"
+      :image-url="snapshotUrl"
+    />
 
     <drift
       :auto-proc-program-id="autoProcProgramId"
@@ -32,7 +25,7 @@
 </template>
 
 <script>
-// import DcImage from 'modules/types/em/components/dc-image.vue'
+import DcImage from 'modules/types/em/components/dc-image.vue'
 import Drift from 'modules/types/em/mc/drift.vue'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import Params from 'modules/types/em/mc/params.vue'
@@ -41,7 +34,7 @@ import ProcessingSection from 'modules/types/em/components/processing-section.vu
 export default {
     'name': "MotionCorrection",
     'components': {
-        // 'dc-image': DcImage,
+        'dc-image': DcImage,
         'drift': Drift,
         'movie-select': MovieSelect,
         'params': Params,
@@ -68,17 +61,11 @@ export default {
             return this.motionCorrection === null ? 0 :
                 this.motionCorrection.movieNumber
         },
-        /*
-        'imageUrl': function() {
-            const dataCollectionId = 0
+        'snapshotUrl': function() {
             return this.$store.state.apiUrl +
-                '/em/mc/fft/image/' + dataCollectionId +
+                '/em/mc/snapshot/' + this.autoProcProgramId +
                 '/n/' + this.movieNumber
         },
-        'fftUrl': function() {
-            return this.imageUrl + '/t/2'
-        },
-        */
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
