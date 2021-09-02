@@ -71,7 +71,8 @@ export default {
         },
         'layoutAstigmatism': function() {
             return this.plotlyLayout({
-                'title': 'Å'
+                'title': 'Å',
+                'rangemode': 'tozero',
             })
         },
         'dataAstigmatism': function() {
@@ -79,7 +80,8 @@ export default {
         },
         'layoutEstimatedDefocus': function() {
             return this.plotlyLayout({
-                'title': 'μm'
+                'title': 'μm',
+                'rangemode': 'tozero',
             })
         },
         'dataEstimatedDefocus': function() {
@@ -152,9 +154,9 @@ export default {
                     response.forEach((row) => {
                         this.xAxis.push(row.movieNumber)
                         for (const chart in this.yAxes) {
-                            // the estimatedDefocus chart should be in microns
+                            // the estimatedDefocus chart should be in μm
                             const value = chart == 'estimatedDefocus' ?
-                                row[chart] / 1000.0 : row[chart]
+                                row[chart] / 10000.0 : row[chart]
                             this.yAxes[chart].push(value)
                         }
                     })
