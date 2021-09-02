@@ -4,7 +4,7 @@
     class="stop-button"
   >
     <dialog-modal
-      :is-active="showConfirmation"
+      :show-dialog="showConfirmation"
       title="Are You Sure"
       confirm-label="Yes"
       cancel-label="No"

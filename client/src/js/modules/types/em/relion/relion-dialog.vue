@@ -1,6 +1,6 @@
 <template>
   <dialog-modal
-    :is-active="processingDialogVisible"
+    :show-dialog="processingDialogVisible"
     title="Relion Processing"
     cancel-label="Cancel"
     confirm-label="Process"

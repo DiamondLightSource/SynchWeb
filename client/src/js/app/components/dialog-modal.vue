@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="isActive"
+    v-if="showDialog"
     class="background"
     @click.self="$emit('cancel')"
   >
@@ -52,7 +52,7 @@ export default {
         'flat-button': FlatButton,
     },
     'props': {
-        'isActive': {
+        'showDialog': {
             'type': Boolean,
             'default': false,
         },

@@ -1,6 +1,6 @@
 <template>
   <dialog-modal
-    :is-active="isActive"
+    :show-dialog="showDialog"
     :title="title"
     cancel-label=""
     confirm-label="Close"
@@ -34,7 +34,7 @@ export default {
             'type': Object,
             'required': true,
         },
-        'isActive': {
+        'showDialog': {
             'type': Boolean,
             'default': false,
         },

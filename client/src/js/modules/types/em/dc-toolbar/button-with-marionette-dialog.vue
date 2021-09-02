@@ -11,7 +11,7 @@
     <dialog-marionette-view
       :m-view="mView"
       :options="mViewOptions"
-      :is-active="showDialog"
+      :show-dialog="showDialog"
       :title="dialogTitle"
       @confirm="showDialog = false"
       @cancel="showDialog = false"

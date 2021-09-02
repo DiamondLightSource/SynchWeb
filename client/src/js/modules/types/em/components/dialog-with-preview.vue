@@ -1,7 +1,8 @@
 <template>
   <div :title="containerTitle">
     <dialog-modal
-      :is-active="showDialog"
+      v-if="showDialog"
+      :show-dialog="showDialog"
       :title="title"
       @cancel="close"
     >
