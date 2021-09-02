@@ -12,7 +12,7 @@
 
     <params :motion-correction="motionCorrection" />
 
-    <dc-image
+    <dialog-image
       title="Micrograph Snapshot"
       :image-url="snapshotUrl"
     />
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import DcImage from 'modules/types/em/components/dc-image.vue'
+import DialogImage from 'modules/types/em/components/dialog-image.vue'
 import Drift from 'modules/types/em/mc/drift.vue'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import Params from 'modules/types/em/mc/params.vue'
@@ -34,7 +34,7 @@ import ProcessingSection from 'modules/types/em/components/processing-section.vu
 export default {
     'name': "MotionCorrection",
     'components': {
-        'dc-image': DcImage,
+        'dialog-image': DialogImage,
         'drift': Drift,
         'movie-select': MovieSelect,
         'params': Params,

@@ -4,7 +4,7 @@
     :data-available="isActive"
     not-available-message="No CTF data available"
   >
-    <plotly-dialog
+    <dialog-plotly
       :layout="layoutAstigmatism"
       :chart-data="dataAstigmatism"
       :annotations="annotations.astigmatism"
@@ -13,7 +13,7 @@
       @select="select"
     />
 
-    <plotly-dialog
+    <dialog-plotly
       :layout="layoutEstimatedDefocus"
       :chart-data="dataEstimatedDefocus"
       :annotations="annotations.estimatedDefocus"
@@ -22,7 +22,7 @@
       @select="select"
     />
 
-    <plotly-dialog
+    <dialog-plotly
       :layout="layoutEstimatedResolution"
       :chart-data="dataEstimatedResolution"
       :annotations="annotations.estimatedResolution"
@@ -34,13 +34,13 @@
 </template>
 
 <script>
-import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
+import DialogPlotly from 'modules/types/em/components/dialog-plotly.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 
 export default {
     'name': 'ProcessingSummary',
     'components': {
-        'plotly-dialog': PlotlyDialog,
+        'dialog-plotly': DialogPlotly,
         'processing-section': ProcessingSection,
     },
     'props': {

@@ -1,5 +1,5 @@
 <template>
-  <plotly-dialog
+  <dialog-plotly
     v-if="points > 0"
     :layout="layout"
     :chart-data="chartData"
@@ -9,12 +9,12 @@
 </template>
 
 <script>
-import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
+import DialogPlotly from 'modules/types/em/components/dialog-plotly.vue'
 
 export default {
     'name': "Drift",
     'components': {
-        'plotly-dialog': PlotlyDialog,
+        'dialog-plotly': DialogPlotly,
     },
     'props': {
         'autoProcProgramId' : {

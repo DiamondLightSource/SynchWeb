@@ -14,7 +14,7 @@
     </parameter-list>
 
     <template v-for="(attachment, key) in attachments">
-      <plotly-dialog
+      <dialog-plotly
         v-if="attachment.chartData !== null"
         :key="attachment.id + 'h'"
         :title="attachment.chartData.titleText"
@@ -27,17 +27,17 @@
 </template>
 
 <script>
+import DialogPlotly from 'modules/types/em/components/dialog-plotly.vue'
 import Download from 'modules/types/em/ice/download.vue'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
-import PlotlyDialog from 'modules/types/em/components/plotly-dialog.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 
 export default {
     'name': "IceBreaker",
     'components': {
+        'dialog-plotly': DialogPlotly,
         'download': Download,
         'parameter-list': ParameterList,
-        'plotly-dialog': PlotlyDialog,
         'processing-section': ProcessingSection,
     },
     'props': {

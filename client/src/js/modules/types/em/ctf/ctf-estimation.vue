@@ -12,7 +12,7 @@
 
     <params :ctf-estimation="ctfEstimation" />
 
-    <dc-image
+    <dialog-image
       title="FFT Theoretical"
       :image-url="imageUrl"
     />
@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import DcImage from 'modules/types/em/components/dc-image.vue'
+import DialogImage from 'modules/types/em/components/dialog-image.vue'
 import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import Params from 'modules/types/em/ctf/params.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
@@ -28,7 +28,7 @@ import ProcessingSection from 'modules/types/em/components/processing-section.vu
 export default {
     'name': "CtfEstimation",
     'components': {
-        'dc-image': DcImage,
+        'dialog-image': DialogImage,
         'movie-select': MovieSelect,
         'params': Params,
         'processing-section': ProcessingSection,
