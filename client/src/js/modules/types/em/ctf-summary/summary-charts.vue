@@ -101,9 +101,10 @@ export default {
     'methods': {
         'select': function(selection) {
             const x = selection.x
+            const point = selection.point
             const label = x.toString()
             for (const chart in this.annotations) {
-                const y = this.yAxes[chart][x]
+                const y = this.yAxes[chart][point]
                 this.annotations[chart] = [{
                     'text': label,
                     'x': x,
