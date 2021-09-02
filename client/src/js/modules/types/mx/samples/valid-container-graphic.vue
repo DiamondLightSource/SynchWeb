@@ -48,7 +48,6 @@ export default {
       if (this.geometry.columns > 0) return 'plate-view'
       if (this.geometry.capacity > 0) return 'puck-view'
       // We have an unknown type, or incorrect data..
-      console.log("Container Graphic, container type not recognised: " + JSON.stringify(this.geometry))
       return null
     },
     geometry: function() {
@@ -68,15 +67,10 @@ export default {
     // Trick to rerender component if container geometry changes
     updateGraphicView: function() {
       this.graphicKey += 1;
-      console.log(this.samples)
     },
     onCellClicked: function(location) {
-      console.log("Valid Container Graphic Cell location clicked event " + JSON.stringify(location))
       let index = this.selectedItems.indexOf(location)
-      console.log(JSON.stringify(this.selectedItems))
-      console.log("Valid Container Graphic Index for location " + location + " " + index)
       if ( index < 0) {
-        console.log("Valid Container Graphic Adding location " + location + " to selected array")
         this.selectedItems.push(+location)
       }
       else this.selectedItems.splice(index, 1)
@@ -91,15 +85,12 @@ export default {
       this.updateGraphicView()
     },
     geometry: function(newVal) {
-      console.log("Valid Container Graphic New Geometry: " + newVal)
       this.updateGraphicView()
     },
     containerComponent: function(newVal) {
-      console.log("Valid Container Graphic New Component " + newVal)
       this.updateGraphicView()
     },
     samples: function() {
-      console.log("Valid Container Graphic Container Graphic detected changes")
       this.updateGraphicView()
     },
   },
