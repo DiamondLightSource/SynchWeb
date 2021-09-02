@@ -14,9 +14,10 @@
       :title="containerTitle"
       @click="show"
     >
-      <div class="preview-heading">
-        {{ title }}
-      </div>
+      <div
+        class="preview-heading"
+        v-html="title"
+      />
       <slot name="previewContent" />
     </div>
   </div>
