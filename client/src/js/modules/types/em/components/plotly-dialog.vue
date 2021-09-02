@@ -1,36 +1,31 @@
 <template>
-  <div>
-    <dialog-modal
-      :is-active="showDialog"
-      :title="title"
-      @cancel="close"
-    >
+  <dialog-with-preview
+    ref="dialog"
+    :title="title"
+  >
+    <template #dialogContent>
       <plotly-chart
-        :style="bigChartStyle"
+        :style="dialogChartStyle"
         :title="title"
         :layout="layout"
         :chart-data="chartData"
         :annotations="annotations"
         @select="select"
       />
-    </dialog-modal>
+    </template>
 
-    <div class="preview-container">
-      <div
-        class="chart-heading"
-        v-html="title"
-      />
+    <template #previewContent>
       <plotly-chart
-        :style="previewStyle"
-        class="main-screen-preview"
+        :style="previewChartStyle"
+        class="preview-chart"
         static
         :layout="layout"
         :chart-data="chartData"
         :annotations="annotations"
         @click="showDialog = true"
       />
-    </div>
-  </div>
+    </template>
+  </dialog-with-preview>
 </template>
 
 <script>
@@ -41,14 +36,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-import DialogModal from 'app/components/dialog-modal.vue'
+import DialogWithPreview from 'modules/types/em/components/dialog-with-preview.vue'
 import PlotlyChart from 'app/components/plotly-chart.vue'
 import proportionalHeight from 'modules/types/em/components/proportional-height'
+
+// TODO: rename to dialog-plotly for consistency
 
 export default {
     'name': 'PlotlyDialog',
     'components': {
-        'dialog-modal': DialogModal,
+        'dialog-with-preview': DialogWithPreview,
         'plotly-chart': PlotlyChart,
     },
     'mixins': [proportionalHeight],
@@ -74,16 +71,11 @@ export default {
             'default': '100%'
         },
     },
-    'data': function () {
-        return {
-            'showDialog': false,
-        }
-    },
     'computed': {
-        'previewStyle': function() {
+        'previewChartStyle': function() {
             return this.proportionalHeight + ' width: ' + this.width
         },
-        'bigChartStyle': function() {
+        'dialogChartStyle': function() {
             // TODO: this is a bit rubbish!
             const width = window.innerWidth
             const height = window.innerHeight
@@ -104,24 +96,14 @@ export default {
             this.$emit('select', simplified);
         },
         'close': function() {
-            this.showDialog = false
+            this.$refs.dialog.close()
         },
     },
 }
 </script>
 
 <style scoped>
-.chart-heading {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-.preview-container {
-    background-color: #fff;
-    padding: 5px;
-    border-radius: 6px;
-}
-.main-screen-preview {
+.preview-chart {
     overflow: hidden;
     width: 100%;
     height: 100%;
