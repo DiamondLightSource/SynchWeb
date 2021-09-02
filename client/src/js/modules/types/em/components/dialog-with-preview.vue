@@ -25,14 +25,12 @@
 
 <script>
 import DialogModal from 'app/components/dialog-modal.vue'
-import proportionalHeight from 'modules/types/em/components/proportional-height'
 
 export default {
     'name': "DialogWithPreview",
     'components': {
         'dialog-modal': DialogModal,
     },
-    'mixins': [proportionalHeight],
     'props': {
         'title': {
             'type': String,
@@ -50,13 +48,6 @@ export default {
         },
     },
     'methods': {
-        'maxSizeStyle': function(widthProperty, heightProperty) {
-            return widthProperty + ': ' + (
-                window.innerWidth - window.innerWidth / 10
-            ) + 'px; ' + heightProperty + ': ' + (
-                window.innerHeight - window.innerHeight / 5
-            ) + 'px;'
-        },
         'show': function() {
             this.showDialog = true
         },

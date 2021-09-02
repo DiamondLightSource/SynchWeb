@@ -1,9 +1,8 @@
 <template>
   <img
     :alt="title"
-    :style="computedStyle"
     :src="src"
-    :class="imageClass"
+    :class="computedImageClass"
     @click="$emit('click')"
   >
 </template>
@@ -22,13 +21,13 @@ export default {
             'type': String,
             'required': true,
         },
-        'computedStyle': {
-            'type': String,
-            'required': true,
-        },
         'imageUrl': {
             'type': String,
             'required': true,
+        },
+        'imageClass': {
+            'type': String,
+            'default': '',
         },
         // `src` is always blank initially
         // it will get a value when this component executes `xhrImage.load`
@@ -42,8 +41,13 @@ export default {
     'data': function() {
         return {
             'xhrImage': new XHRImage(),
-            'imageClass': '',
+            'show': false,
         }
+    },
+    'computed': {
+        'computedImageClass': function() {
+            return (this.imageClass + (this.show ? ' show' : '')).trim()
+        },
     },
     'watch': {
         'imageUrl': function() {
@@ -53,7 +57,7 @@ export default {
     'mounted': function() {
         const vm = this
         this.xhrImage.onload = function() {
-            vm.imageClass = 'show'
+            vm.show = true
             vm.$emit('change', this.src)
         }
         this.loadImage();

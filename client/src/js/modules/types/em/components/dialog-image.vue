@@ -6,7 +6,7 @@
     <template #dialogContent>
       <img
         :src="src"
-        :style="dialogImageStyle"
+        class="dialog-image"
       >
     </template>
 
@@ -14,15 +14,14 @@
       <vue-xhr-image
         v-model="src"
         :title="title"
-        :computed-style="proportionalHeight"
         :image-url="imageUrl"
+        image-class="di-preview-image"
       />
     </template>
   </dialog-with-preview>
 </template>
 
 <script>
-import proportionalHeight from 'modules/types/em/components/proportional-height'
 import VueXhrImage from 'app/components/vue-xhr-image.vue'
 import DialogWithPreview from 'modules/types/em/components/dialog-with-preview.vue'
 
@@ -32,7 +31,6 @@ export default {
         'dialog-with-preview': DialogWithPreview,
         'vue-xhr-image': VueXhrImage,
     },
-    'mixins': [proportionalHeight],
     'props': {
         'title': {
             'type': String,
@@ -48,10 +46,24 @@ export default {
             'src': '',
         }
     },
-    'computed': {
-        'dialogImageStyle': function() {
-            return this.$refs.dialog.maxSizeStyle('msx-width', 'max-height')
-        },
-    },
 }
 </script>
+
+<style scoped>
+.dialog-image {
+    max-width: 90vw;
+    max-height: 80vh;
+}
+</style>
+
+<style>
+.di-preview-image {
+    height: 14vw;
+    @media (max-width: 800px) {
+        height: 11vw;
+    }
+    @media (max-width: 1280px) {
+        height: 9vw;
+    }
+}
+</style>

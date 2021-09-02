@@ -4,7 +4,7 @@
     :layout="layout"
     :chart-data="chartData"
     title="Drift"
-    width="400px"
+    class="drift-chart"
   />
 </template>
 
@@ -81,3 +81,9 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+.drift-chart {
+    width: 28%;
+}
+</style>

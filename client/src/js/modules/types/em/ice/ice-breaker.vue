@@ -15,12 +15,12 @@
 
     <template v-for="(attachment, key) in attachments">
       <dialog-plotly
+        class="ice-breaker-chart"
         v-if="attachment.chartData !== null"
         :key="attachment.id + 'h'"
         :title="attachment.chartData.titleText"
         :layout="attachment.chartData.layout"
         :chart-data="attachment.chartData.data"
-        width="400px"
       />
     </template>
   </processing-section>
@@ -100,3 +100,9 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+.ice-breaker-chart {
+    width: 28%;
+}
+</style>

@@ -5,7 +5,7 @@
   >
     <template #dialogContent>
       <plotly-chart
-        :style="dialogChartStyle"
+        class="dialog-chart"
         :title="title"
         :layout="layout"
         :chart-data="chartData"
@@ -16,7 +16,6 @@
 
     <template #previewContent>
       <plotly-chart
-        :style="previewChartStyle"
         class="preview-chart"
         static
         :layout="layout"
@@ -38,7 +37,6 @@
 
 import DialogWithPreview from 'modules/types/em/components/dialog-with-preview.vue'
 import PlotlyChart from 'app/components/plotly-chart.vue'
-import proportionalHeight from 'modules/types/em/components/proportional-height'
 
 export default {
     'name': 'DialogPlotly',
@@ -46,7 +44,6 @@ export default {
         'dialog-with-preview': DialogWithPreview,
         'plotly-chart': PlotlyChart,
     },
-    'mixins': [proportionalHeight],
     'props': {
         'layout': {
             'type': Object,
@@ -63,18 +60,6 @@ export default {
         'title': {
             'type': String,
             'required': true,
-        },
-        'width': {
-            'type': String,
-            'default': '100%'
-        },
-    },
-    'computed': {
-        'previewChartStyle': function() {
-            return this.proportionalHeight + ' width: ' + this.width
-        },
-        'dialogChartStyle': function() {
-            return this.$refs.dialog.maxSizeStyle('width', 'height')
         },
     },
     'methods': {
@@ -99,6 +84,16 @@ export default {
 .preview-chart {
     overflow: hidden;
     width: 100%;
-    height: 100%;
+    height: 14vw;
+    @media (max-width: 800px) {
+        height: 11vw;
+    }
+    @media (max-width: 1280px) {
+        height: 9vw;
+    }
+}
+.dialog-chart {
+    width: 90vw;
+    height: 80vh;
 }
 </style>

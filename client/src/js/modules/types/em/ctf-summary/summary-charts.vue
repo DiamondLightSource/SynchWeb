@@ -9,7 +9,7 @@
       :chart-data="dataAstigmatism"
       :annotations="annotations.astigmatism"
       title="Astigmatism"
-      style="width: 33%"
+      class="summary-chart"
       @select="select"
     />
 
@@ -18,7 +18,7 @@
       :chart-data="dataEstimatedDefocus"
       :annotations="annotations.estimatedDefocus"
       title="Estimated Defocus"
-      style="width: 33%"
+      class="summary-chart"
       @select="select"
     />
 
@@ -27,7 +27,7 @@
       :chart-data="dataEstimatedResolution"
       :annotations="annotations.estimatedResolution"
       title="Estimated Resolution"
-      style="width: 33%"
+      class="summary-chart"
       @select="select"
     />
   </processing-section>
@@ -143,6 +143,7 @@ export default {
                 'humanName': 'CTF summary data',
             }).then(
                 (response) => {
+                    // TODO: would this be better in the API?
                     this.xAxis = []
                     this.yAxes.astigmatism = []
                     this.yAxes.estimatedDefocus = []
@@ -163,3 +164,9 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+.summary-chart {
+    width: 33%;
+}
+</style>
