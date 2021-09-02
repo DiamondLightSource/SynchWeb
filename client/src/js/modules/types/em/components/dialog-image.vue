@@ -1,7 +1,13 @@
 <template>
-  <dialog-with-preview :title="title">
+  <dialog-with-preview
+    ref="dialog"
+    :title="title"
+  >
     <template #dialogContent>
-      <img :src="src">
+      <img
+        :src="src"
+        :style="dialogImageStyle"
+      >
     </template>
 
     <template #previewContent>
@@ -41,6 +47,11 @@ export default {
         return {
             'src': '',
         }
+    },
+    'computed': {
+        'dialogImageStyle': function() {
+            return this.$refs.dialog.maxSizeStyle('msx-width', 'max-height')
+        },
     },
 }
 </script>

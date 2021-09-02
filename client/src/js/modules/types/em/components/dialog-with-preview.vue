@@ -49,6 +49,13 @@ export default {
         },
     },
     'methods': {
+        'maxSizeStyle': function(widthProperty, heightProperty) {
+            return widthProperty + ': ' + (
+                window.innerWidth - window.innerWidth / 10
+            ) + 'px; ' + heightProperty + ': ' + (
+                window.innerHeight - window.innerHeight / 5
+            ) + 'px;'
+        },
         'show': function() {
             this.showDialog = true
         },

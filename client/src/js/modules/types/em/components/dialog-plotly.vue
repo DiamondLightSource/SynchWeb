@@ -74,12 +74,7 @@ export default {
             return this.proportionalHeight + ' width: ' + this.width
         },
         'dialogChartStyle': function() {
-            // TODO: this is a bit rubbish!
-            const width = window.innerWidth
-            const height = window.innerHeight
-            const style = 'width: ' + (width - width / 10) +
-                'px; height: ' + (height - height / 5) + 'px;'
-            return style
+            return this.$refs.dialog.maxSizeStyle('width', 'height')
         },
     },
     'methods': {
