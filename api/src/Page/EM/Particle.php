@@ -17,7 +17,7 @@ trait Particle
         if (sizeof($images) == 1) {
             $image = $images[0]['classImageFullPath'];
             if (file_exists($image)) {
-                $this->_send_image($image);
+                $this->sendImage($image);
                 return;
             }
         }

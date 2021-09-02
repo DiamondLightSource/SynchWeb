@@ -82,7 +82,7 @@ trait Ctf
         $image = $rows[0]['fftTheoreticalFullPath'];
 
         if (file_exists($image)) {
-            $this->_send_image($image);
+            $this->sendImage($image);
             return;
         }
 

@@ -76,6 +76,6 @@ trait Attachments
             $this->_error('No such attachment');
         }
 
-        $this->_send_image($file);
+        $this->sendImage($file);
     }
 }
