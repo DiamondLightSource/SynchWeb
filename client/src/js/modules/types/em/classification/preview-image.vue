@@ -4,7 +4,6 @@
     <vue-xhr-image
       v-model="src"
       :title="heading"
-      computed-style="width: 150px;"
       :image-url="imageUrl"
       @click="click"
     />
@@ -65,5 +64,8 @@ export default {
 <style scoped>
 .preview-image {
     text-align: center;
+}
+.preview-image img {
+    width: 150px;
 }
 </style>
