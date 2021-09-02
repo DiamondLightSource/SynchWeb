@@ -40,10 +40,8 @@ import DialogWithPreview from 'modules/types/em/components/dialog-with-preview.v
 import PlotlyChart from 'app/components/plotly-chart.vue'
 import proportionalHeight from 'modules/types/em/components/proportional-height'
 
-// TODO: rename to dialog-plotly for consistency
-
 export default {
-    'name': 'PlotlyDialog',
+    'name': 'DialogPlotly',
     'components': {
         'dialog-with-preview': DialogWithPreview,
         'plotly-chart': PlotlyChart,

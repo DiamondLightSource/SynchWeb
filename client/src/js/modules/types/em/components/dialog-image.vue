@@ -20,10 +20,8 @@ import proportionalHeight from 'modules/types/em/components/proportional-height'
 import VueXhrImage from 'app/components/vue-xhr-image.vue'
 import DialogWithPreview from 'modules/types/em/components/dialog-with-preview.vue'
 
-// TODO: rename to dialog-image for consistency
-
 export default {
-    'name': "DcImage",
+    'name': "DialogImage",
     'components': {
         'dialog-with-preview': DialogWithPreview,
         'vue-xhr-image': VueXhrImage,
