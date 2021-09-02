@@ -1,5 +1,5 @@
 <template>
-  <div :title="containerTitle">
+  <div>
     <dialog-modal
       v-if="showDialog"
       :show-dialog="showDialog"
@@ -11,7 +11,7 @@
 
     <div
       class="preview-container"
-      :title="containerTitle"
+      :title="previewHint"
       @click="show"
     >
       <div
@@ -43,7 +43,7 @@ export default {
         }
     },
     'computed': {
-        'containerTitle': function() {
+        'previewHint': function() {
             return 'Click to view ' + this.title
         },
     },

@@ -4,10 +4,14 @@
     :title="title"
   >
     <template #dialogContent>
-      <img
-        :src="src"
-        class="dialog-image"
-      >
+      <div :class="dialogContainerClass">
+        <img
+          :src="src"
+          title="click to zoom"
+          :class="dialogImageClass"
+          @click="zoom"
+        >
+      </div>
     </template>
 
     <template #previewContent>
@@ -44,6 +48,22 @@ export default {
     'data': function() {
         return {
             'src': '',
+            'zoomed': false,
+        }
+    },
+    'computed': {
+        'dialogImageClass': function() {
+            return this.zoomed ? '' : 'dialog-image'
+        },
+        'dialogContainerClass': function() {
+            return ('dialog-image ' + (
+                this.zoomed ? 'dialog-image-scroll' : ''
+            )).trim()
+        },
+    },
+    'methods': {
+        'zoom': function() {
+            this.zoomed = !this.zoomed
         }
     },
 }
@@ -53,6 +73,9 @@ export default {
 .dialog-image {
     max-width: 90vw;
     max-height: 80vh;
+}
+.dialog-image-scroll {
+    overflow: scroll;
 }
 </style>
 
