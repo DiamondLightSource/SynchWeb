@@ -1,7 +1,7 @@
 <template>
   <processing-section
     section-title="Summary"
-    :data-available="isActive"
+    :data-available="hasData"
     not-available-message="No CTF data available"
   >
     <dialog-plotly
@@ -66,7 +66,7 @@ export default {
         }
     },
     'computed': {
-        'isActive': function() {
+        'hasData': function() {
             return this.points > 0
         },
         'layoutAstigmatism': function() {
