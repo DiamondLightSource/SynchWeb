@@ -467,6 +467,19 @@ class EM extends Page
         readfile($file);
     }
 
+    private function sendDownload($file)
+    {
+        $this->browserCache();
+        $pathInfo = pathinfo($file);
+        $this->app->response->headers->set('Content-length', filesize($file));
+        $this->app->response->headers->set(
+            'Content-Disposition',
+            'attachment; filename="' . $pathInfo['basename']
+        );
+        $this->app->contentType('application/' . $pathInfo['extension']);
+        readfile($file);
+    }
+
     private function browserCache()
     {
         $expires = 60 * 60 * 24 * 14;

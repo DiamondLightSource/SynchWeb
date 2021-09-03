@@ -35,7 +35,7 @@ export default {
                 '/em/attachment/' + this.attachment.id +
                 '?prop=' + this.$store.state.proposal.proposal
             this.signUrl(url, function(signedUrl) {
-                window.open(signedUrl, '_blank')
+                window.location = signedUrl
             })
         },
     },
