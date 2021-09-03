@@ -4,6 +4,28 @@ namespace SynchWeb\Page\EM;
 
 trait Ctf
 {
+    public function ctfMovies()
+    {
+        $rows = $this->db->pq(
+            "SELECT m.movieNumber
+            FROM CTF c
+            INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
+            INNER JOIN Movie m ON m.movieId = mc.movieId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
+            WHERE c.autoProcProgramId = :1",
+            array($this->arg('id')),
+            false
+        );
+        $this->_output(
+            array_map(
+                function ($row) {
+                    return $row['movieNumber'];
+                },
+                $rows
+            )
+        );
+    }
+
     public function ctfResult()
     {
         $rows = $this->db->pq(

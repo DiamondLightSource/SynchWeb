@@ -58,14 +58,6 @@ trait ProcessingJobs
                 APP.processingStatus,
                 APP.processingStartTime,
                 APP.processingEndTime,
-                (SELECT COUNT(MotionCorrection.motionCorrectionId)
-                    FROM MotionCorrection
-                    WHERE MotionCorrection.autoProcProgramId = APP.autoProcProgramId
-                ) AS mcCount,
-                (SELECT COUNT(CTF.ctfId)
-                    FROM CTF
-                    WHERE CTF.autoProcProgramId = APP.autoProcProgramId
-                ) AS ctfCount,
                 CASE
                     WHEN (APP.processingJobId IS NULL) THEN 'submitted'
                     WHEN (APP.processingStartTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'

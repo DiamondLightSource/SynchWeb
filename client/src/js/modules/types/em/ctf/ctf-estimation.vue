@@ -5,7 +5,7 @@
   >
     <template #controls>
       <movie-select
-        :max="movieCount"
+        :movie-list="movieList"
         @changed="newMovie"
       />
     </template>
@@ -34,10 +34,6 @@ export default {
         'processing-section': ProcessingSection,
     },
     'props': {
-        'movieCount': {
-            'type': Number,
-            'required': true,
-        },
         'autoProcProgramId': {
             'type': Number,
             'required': true,
@@ -46,6 +42,7 @@ export default {
     'data': function() {
         return {
             'movieNumber': 1,
+            'movieList': [],
             'ctfEstimation': null,
         }
     },
@@ -74,9 +71,17 @@ export default {
         },
     },
     'mounted': function() {
-        this.fetchMovie()
+        this.fetchMovies()
     },
     'methods': {
+        'fetchMovies': function() {
+            this.$store.dispatch('em/fetch', {
+                'url': '/em/ctf/' + this.autoProcProgramId,
+                'humanName': 'CTF List',
+            }).then(
+                (movieList) => { this.movieList = movieList }
+            )
+        },
         'newMovie': function(movieNumber) {
             this.movieNumber = movieNumber
         },
@@ -91,7 +96,7 @@ export default {
             this.$store.dispatch('em/fetch', {
                 'url': '/em/ctf/' + this.autoProcProgramId +
                     '/n/' + this.movieNumber,
-                'humanName': 'CTF Estimation',
+                'humanName': 'CTF Details',
             }).then(
                 (ctfEstimation) => { this.ctfEstimation = ctfEstimation }
             )

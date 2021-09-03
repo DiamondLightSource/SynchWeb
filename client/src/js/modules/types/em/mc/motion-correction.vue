@@ -5,7 +5,7 @@
   >
     <template #controls>
       <movie-select
-        :max="movieCount"
+        :movie-list="movieList"
         @changed="newMovie"
       />
     </template>
@@ -45,14 +45,11 @@ export default {
             'type': Number,
             'required': true,
         },
-        'movieCount': {
-            'type': Number,
-            'required': true,
-        },
     },
     'data': function() {
         return {
-            'movieNumber': 0,
+            'movieNumber': 1,
+            'movieList': [],
             'motionCorrection': null,
         }
     },
@@ -74,9 +71,18 @@ export default {
         },
     },
     'mounted': function() {
-        this.fetchMovie()
+        this.fetchMovies()
     },
     'methods': {
+        'fetchMovies': function() {
+            this.$store.dispatch('em/fetch', {
+                'url': '/em/mc/' + this.autoProcProgramId,
+                'humanName': 'Motion Correction List',
+            }).then(
+                (movieList) => { this.movieList = movieList }
+            )
+        },
+
         'newMovie': function(movieNumber) {
             this.movieNumber = movieNumber
         },
@@ -91,7 +97,7 @@ export default {
             this.$store.dispatch('em/fetch', {
                 'url': '/em/mc/' + this.autoProcProgramId +
                     '/n/' + this.movieNumber,
-                'humanName': 'Motion Correction',
+                'humanName': 'Motion Correction Details',
             }).then(
                 (response) => { this.motionCorrection = response }
             )

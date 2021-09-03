@@ -22,7 +22,7 @@ export default {
             'required': true,
         },
         'movieNumber': {
-            'type': Number,
+            'type': String,
             'required': true,
         },
     },

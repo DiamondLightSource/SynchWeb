@@ -4,6 +4,27 @@ namespace SynchWeb\Page\EM;
 
 trait MotionCorrection
 {
+    public function motionCorrectionMovies()
+    {
+        $rows = $this->db->pq(
+            "SELECT m.movieNumber
+            FROM MotionCorrection mc
+            INNER JOIN Movie m ON m.movieId = mc.movieId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
+            WHERE mc.autoProcProgramId = :1",
+            array($this->arg('id')),
+            false
+        );
+        $this->_output(
+            array_map(
+                function ($row) {
+                    return $row['movieNumber'];
+                },
+                $rows
+            )
+        );
+    }
+
     public function motionCorrectionResult()
     {
         $rows = $this->db->pq(

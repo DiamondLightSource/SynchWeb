@@ -3,15 +3,15 @@
     Movie:
 
     <flat-button
-      :disabled="movieNumber <= 1"
-      @click="click(1)"
+      :disabled="index < 1"
+      @click="click(0)"
     >
       <i class="fa fa-angle-double-left" />
     </flat-button>
 
     <flat-button
-      :disabled="movieNumber <= 1"
-      @click="click(movieNumber - 1)"
+      :disabled="index < 1"
+      @click="click(index - 1)"
     >
       <i class="fa fa-angle-left" />
     </flat-button>
@@ -26,15 +26,15 @@
     >
 
     <flat-button
-      :disabled="movieNumber >= max"
-      @click="click(movieNumber + 1)"
+      :disabled="index >= lastIndex"
+      @click="click(index + 1)"
     >
       <i class="fa fa-angle-right" />
     </flat-button>
 
     <flat-button
-      :disabled="movieNumber >= max"
-      @click="click(max)"
+      :disabled="index >= lastIndex"
+      @click="click(lastIndex)"
     >
       <i class="fa fa-angle-double-right" />
     </flat-button>
@@ -58,14 +58,15 @@ export default {
         'flat-button': FlatButton,
     },
     'props': {
-        'max': {
-            'type': Number,
+        'movieList': {
+            'type': Array,
             'required': true,
         },
     },
     'data': function() {
         return {
-            'movieNumber': 0,
+            'inputBoxClass': '',
+            'index': 0,
             'showMostRecent': true,
             'eventTimeout': null,
             'keyTimeout': null,
@@ -75,18 +76,27 @@ export default {
         ...mapGetters({
             'remoteSelectedMovie': 'em/selectedMovie'
         }),
+        'lastIndex': function() {
+            return this.movieList.length - 1
+        },
         'maxLength': function() {
-            return this.max.toString().length
-        }
+            return this.movieList.reduce(function(max, current) {
+                const length = current.toString().length
+                return length > max ? length : max
+            }, 0)
+        },
+        'movieNumber': function() {
+            return this.movieList[this.index]
+        },
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
-        'max': function(newValue, oldValue) {
-            this.selectMax()
+        'movieList': function(newValue, oldValue) {
+            this.selectLatest()
         },
         // eslint-disable-next-line no-unused-vars
         'showMostRecent': function(newValue, oldValue) {
-            this.selectMax()
+            this.selectLatest()
         },
         'remoteSelectedMovie': function() {
             this.click(this.remoteSelectedMovie)
@@ -110,12 +120,12 @@ export default {
         },
     },
     'mounted': function() {
-        this.selectMax()
+        this.selectLatest()
     },
     'methods': {
-        'click': function(newMovieNumber) {
+        'click': function(newIndex) {
             this.showMostRecent = false
-            this.movieNumber = newMovieNumber
+            this.index = newIndex
         },
         'typed': function(inputEvent) {
             // use a timeout so that the user can type multiple digits
@@ -126,17 +136,22 @@ export default {
             this.keyTimeout = setTimeout(
                 () => {
                     this.keyTimeout = null
-                    const newValue = parseInt(inputEvent.srcElement.value, 10)
-                    if (newValue > 0 && newValue <= this.max) {
-                        this.click(newValue)
+                    const newValue = parseInt(
+                        inputEvent.srcElement.value, 10
+                    ).toString()
+                    const newIndex = this.movieList.indexOf(newValue)
+                    const exists = newIndex >= 0
+                    this.inputBoxClass = exists ? '' : 'invalid'
+                    if (exists) {
+                        this.click(newIndex)
                     }
                 },
                 1000
             )
         },
-        'selectMax': function() {
+        'selectLatest': function() {
             if (this.showMostRecent) {
-                this.movieNumber = this.max
+                this.index = this.lastIndex
             }
         },
     },
