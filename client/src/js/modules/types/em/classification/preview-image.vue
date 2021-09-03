@@ -39,7 +39,7 @@ export default {
               this.particleClass.classNumber
         },
         'imageUrl': function() {
-            return this.$store.state.apiUrl + '/em/particle/image/' +
+            return this.$store.state.apiUrl + '/em/classification/image/' +
                 this.particleClass.particleClassificationId
         },
     },

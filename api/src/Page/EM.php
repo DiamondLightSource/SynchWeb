@@ -107,8 +107,8 @@ class EM extends Page
         array('/process/scipion/session/:session', 'post', '_scipion_start'),
 
         // See SynchWeb\Page\EM\Particle:
-        array('/particle/:id', 'get', 'particleClassification'),
-        array('/particle/image/:id', 'get', 'particleImage')
+        array('/classification/:id', 'get', 'particleClassification'),
+        array('/classification/image/:id', 'get', 'particleClassificationImage'),
     );
 
 

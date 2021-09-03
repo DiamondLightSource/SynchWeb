@@ -85,7 +85,7 @@ export default {
         },
         'fetch': function() {
             this.$store.dispatch('em/fetch', {
-                'url': '/em/particle/' + this.autoProcProgramId +
+                'url': '/em/classification/' + this.autoProcProgramId +
                     '?page=' + this.page +
                     '&per_page=' + this.perPage +
                     '&sort_by=' + this.sortBy,

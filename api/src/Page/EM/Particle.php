@@ -4,7 +4,7 @@ namespace SynchWeb\Page\EM;
 
 trait Particle
 {
-    public function particleImage()
+    public function particleClassificationImage()
     {
         $images = $this->db->pq(
             "SELECT ParticleClassification.classImageFullPath
@@ -32,7 +32,7 @@ trait Particle
     {
         $args = array($this->arg('id'));
 
-        $total = $this->particleQuery(
+        $total = $this->particleClassificationQuery(
             'COUNT(ParticlePicker.particlePickerId) AS total',
             $args
         );
@@ -43,7 +43,7 @@ trait Particle
         $order = $sortBy == 'particles' ?
             'ParticleClassification.particlesPerClass DESC' :
             'ParticleClassification.estimatedResolution';
-        $particles = $this->particleQuery(
+        $particles = $this->particleClassificationQuery(
             implode(',', array(
                 'ParticlePicker.firstMotionCorrectionId',
                 'ParticlePicker.particleDiameter',
@@ -74,7 +74,7 @@ trait Particle
         ));
     }
 
-    private function particleQuery($selection, $args, $options = '')
+    private function particleClassificationQuery($selection, $args, $options = '')
     {
         return $this->db->pq(
             "SELECT $selection
