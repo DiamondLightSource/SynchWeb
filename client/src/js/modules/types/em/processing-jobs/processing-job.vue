@@ -13,35 +13,13 @@
       v-if="!hidden"
       class="processing"
     >
-      <summary-charts
-        :auto-proc-program-id="autoProcProgramId"
-      />
-
-      <job-parameters
-        :processing-job-id="processingJobId"
-      />
-
-      <motion-correction
-        :auto-proc-program-id="autoProcProgramId"
-        :movie-count="mcMovieCount"
-      />
-
-      <ctf-estimation
-        :auto-proc-program-id="autoProcProgramId"
-        :movie-count="ctfMovieCount"
-      />
-
-      <ice-breaker
-        :auto-proc-program-id="autoProcProgramId"
-      />
-
-      <picker
-        :auto-proc-program-id="autoProcProgramId"
-      />
-
-      <classification
-        :auto-proc-program-id="autoProcProgramId"
-      />
+      <summary-charts :auto-proc-program-id="autoProcProgramId" />
+      <job-parameters :processing-job-id="processingJobId" />
+      <motion-correction :auto-proc-program-id="autoProcProgramId" />
+      <ctf-estimation :auto-proc-program-id="autoProcProgramId" />
+      <ice-breaker :auto-proc-program-id="autoProcProgramId" />
+      <picker :auto-proc-program-id="autoProcProgramId" />
+      <classification :auto-proc-program-id="autoProcProgramId" />
     </div>
   </section>
 </template>
@@ -85,12 +63,6 @@ export default {
         },
         'autoProcProgramId': function() {
             return parseInt(this.job.AUTOPROCPROGRAMID, 10)
-        },
-        'mcMovieCount': function() {
-            return parseInt(this.job.MCCOUNT, 10)
-        },
-        'ctfMovieCount': function() {
-            return parseInt(this.job.CTFCOUNT, 10)
         },
     },
     'methods': {
