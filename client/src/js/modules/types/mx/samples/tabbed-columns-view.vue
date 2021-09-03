@@ -315,12 +315,12 @@
         tag="div"
         class="tw-px-2 tw-w-24"
         name="Required Resolution"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === 'None' ? 'required' : ''"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === null ? 'required' : ''"
         :vid="`required-resolution-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'None'"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== null"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -333,12 +333,12 @@
         tag="div"
         class="tw-px-2 tw-w-24"
         name="Minimum Resolution"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === 'Better Than' ? 'required' : ''"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === 'all' ? 'required' : ''"
         :vid="`minimum-resolution-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'Better Than'"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'all'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -353,13 +353,13 @@
         name="No to Collect"
         :rules="
           inputValue[sampleIndex]['PROTEINID'] > -1 &&
-          inputValue[sampleIndex]['SCREENINGMETHOD'] === 'Collect Best N' &&
+          inputValue[sampleIndex]['SCREENINGMETHOD'] === 'best' &&
           checkSampleInSampleGroups(inputValue[sampleIndex]['PROTEINID']) ? 'required' : ''"
         :vid="`no-to-collect-${sampleIndex}`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'Collect Best N'"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'best'"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
