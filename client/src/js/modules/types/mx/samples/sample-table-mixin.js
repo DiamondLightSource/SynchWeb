@@ -6,15 +6,15 @@ export default {
       editingRow: null,
       screeningMethodList: [
         {
-          value: "None",
+          value: null,
           text: "None",
         },
         {
-          value: "Better Than",
+          value: "all",
           text: "Better Than",
         },
         {
-          value: "Collect Best N",
+          value: "best",
           text: "Collect Best N",
         },
       ],
