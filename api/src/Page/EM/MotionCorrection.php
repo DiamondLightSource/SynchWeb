@@ -99,7 +99,6 @@ trait MotionCorrection
             $this->_error('No such micrograph');
         }
         $image = $rows[0][$imageName];
-        error_log($image);
         if (file_exists($image)) {
             $this->sendImage($image);
             return;

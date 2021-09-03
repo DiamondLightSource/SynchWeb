@@ -14,7 +14,7 @@
 import VueXhrImage from 'app/components/vue-xhr-image.vue'
 
 export default {
-    'name': "PreviewImage",
+    'name': 'PreviewImage',
     'components': {
         'vue-xhr-image': VueXhrImage,
     },

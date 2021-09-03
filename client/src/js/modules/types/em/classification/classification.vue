@@ -1,12 +1,19 @@
 <template>
   <processing-section
+    ref="previewImages"
     section-title="Classification"
-    :data-available="true"
+    :data-available="particleClasses.length > 0"
   >
-    <div
-      ref="previewImages"
-      class="preview-images"
-    >
+    <template #controls>
+      <select-sort v-model="sortBy" />
+
+      <select-page
+        v-model="page"
+        :max="pageCount"
+      />
+    </template>
+
+    <div class="preview-images">
       <preview-image
         v-for="(particleClass, index) in particleClasses"
         :key="index"
@@ -15,10 +22,7 @@
         @click="click"
       />
     </div>
-    <div
-      v-if="particleClasses.length > 0"
-      class="main-image"
-    >
+    <div class="main-image">
       <parameters :particle-class="particleClasses[selectedIndex]" />
       <img :src="mainSrc">
     </div>
@@ -29,13 +33,17 @@
 import Parameters from 'modules/types/em/classification/parameters.vue'
 import PreviewImage from 'modules/types/em/classification/preview-image.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
+import SelectPage from 'modules/types/em/classification/select-page.vue'
+import SelectSort from 'modules/types/em/classification/select-sort.vue'
 
 export default {
-    'name': "Classification",
+    'name': 'Classification',
     'components': {
         'parameters': Parameters,
         'preview-image': PreviewImage,
         'processing-section': ProcessingSection,
+        'select-page': SelectPage,
+        'select-sort': SelectSort,
     },
     'props': {
         'autoProcProgramId': {
@@ -48,24 +56,46 @@ export default {
             'particleClasses': [],
             'mainSrc': '',
             'selectedIndex': 0,
+            'sortBy': 'particles',
+            'perPage': 0,
+            'page': 1,
+            'pageCount': 0,
         }
     },
+    'watch': {
+        'sortOrder': function(newValue, oldValue) {
+            this.page = 1
+            this.fetch()
+        },
+        'page': function(newValue, oldValue) {
+            console.log('************', newValue, oldValue)
+            this.fetch()
+        },
+    },
     'mounted': function() {
-        const pageSize = Math.floor(this.$refs.previewImages.clientWidth / 150)
-        this.$store.dispatch('em/fetch', {
-            'url': '/em/particle/' + this.autoProcProgramId +
-                '?page=1&per_page=' + pageSize,
-            'humanName': 'Particle Picking',
-        }).then(
-            (particleClasses) => {
-                this.particleClasses = particleClasses.data
-            }
+        this.perPage = Math.floor(
+            (document.getElementById('content-wrapper').clientWidth - 75) / 150
         )
+        this.fetch()
     },
     'methods': {
         'click': function(clicked) {
             this.mainSrc = clicked.src
             this.selectedIndex = clicked.index
+        },
+        'fetch': function() {
+            this.$store.dispatch('em/fetch', {
+                'url': '/em/particle/' + this.autoProcProgramId +
+                    '?page=' + this.page +
+                    '&per_page=' + this.perPage +
+                    '&sort_by=' + this.sortBy,
+                'humanName': 'Particle Classification',
+            }).then(
+                (response) => {
+                    this.pageCount = Math.ceil(response.total / this.perPage)
+                    this.particleClasses = response.classes
+                }
+            )
         },
     },
 }

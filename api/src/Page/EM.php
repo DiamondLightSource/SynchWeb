@@ -23,7 +23,6 @@ class EM extends Page
         't' => '\d+',
         'IMAGENUMBER' => '\d+',
         'movieNumber' => '\d+',
-
         'processingJobId' => '\d+',
 
         // EM PROCESSING
@@ -106,7 +105,7 @@ class EM extends Page
         array('/process/scipion/session/:session', 'post', '_scipion_start'),
 
         // See SynchWeb\Page\EM\Particle:
-        array('/particle/:id', 'get', 'particlePicker'),
+        array('/particle/:id', 'get', 'particleClassification'),
         array('/particle/image/:id', 'get', 'particleImage')
     );
 

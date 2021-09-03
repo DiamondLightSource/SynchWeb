@@ -74,7 +74,7 @@ import ParameterListItem from 'modules/types/em/components/parameter-list-item.v
 import unitsHtml from 'modules/types/em/components/units-html.js'
 
 export default {
-    'name': "Parameters",
+    'name': 'Parameters',
     'components': {
         'parameter-list-item': ParameterListItem,
         'parameter-list': ParameterList,

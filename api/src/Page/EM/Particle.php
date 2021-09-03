@@ -28,7 +28,7 @@ trait Particle
 
     /* ParticleClassificationGroup has load of null filled rows
        hence the INNER JOIN (is that wrong?) */
-    public function particlePicker()
+    public function particleClassification()
     {
         $args = array($this->arg('id'));
 
@@ -37,6 +37,12 @@ trait Particle
             $args
         );
 
+        $sortBy = $this->has_arg('sort_by') ?
+            strtolower($this->arg('sort_by')) :
+            'particles';
+        $order = $sortBy == 'particles' ?
+            'ParticleClassification.particlesPerClass DESC' :
+            'ParticleClassification.estimatedResolution';
         $particles = $this->particleQuery(
             implode(',', array(
                 'ParticlePicker.firstMotionCorrectionId',
@@ -58,17 +64,17 @@ trait Particle
                 'CryoemInitialModel.numberOfParticles'
             )),
             $this->paginationArguments($args),
-            'LIMIT :2, :3'
+            "ORDER BY $order LIMIT :2, :3"
         );
 
         // No need for an error if no rows found
         $this->_output(array(
             'total' => intval($total[0]['total']),
-            'data' => $particles,
+            'classes' => $particles,
         ));
     }
 
-    private function particleQuery($selection, $args, $limit = '')
+    private function particleQuery($selection, $args, $options = '')
     {
         return $this->db->pq(
             "SELECT $selection
@@ -86,7 +92,7 @@ trait Particle
                 ON CryoemInitialModel.cryoemInitialModelId =
                     ParticleClassification_has_CryoemInitialModel.cryoemInitialModelId
             WHERE ParticlePicker.programId = :1
-            $limit",
+            $options",
             $args,
             false
         );
