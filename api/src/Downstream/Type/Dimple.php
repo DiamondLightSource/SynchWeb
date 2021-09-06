@@ -14,7 +14,7 @@ class Dimple extends DownstreamPlugin {
 
     function _get_blobs() {
         return $this->db->pq(
-            "SELECT view1, view2, view3 
+            "SELECT view1, view2, view3, filepath
             FROM mxmrrunblob
             WHERE mxmrrunid = :1",
             array($this->_mrrun["MXMRRUNID"])
