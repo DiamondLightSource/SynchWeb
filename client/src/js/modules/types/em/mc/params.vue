@@ -34,7 +34,6 @@
     />
     <parameter-list-item
       width="100%"
-      help-text="Click to edit the comment for motion correction"
       label="Comments"
       :item="comments"
     />
