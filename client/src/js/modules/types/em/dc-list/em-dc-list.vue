@@ -60,10 +60,12 @@ export default {
         'toolbar': Toolbar,
     },
     'props': {
+        // collections/datacollections.js
         'collection': {
             'type': Object,
             'required': true,
         },
+        // Either models/visit.js or models/proposal.js
         'model': {
             'type': Object,
             'required': true,
@@ -126,16 +128,37 @@ export default {
             'proposal/setVisit',
             this.model.has('VISIT') ? this.model.get('VISIT') : false
         );
-        this.getCollection()
+        /* TODO: this Backbone compatible stuff needs to stay here
+           until modules/dc/components/dc-wrapper.vue can be refactored
+           and the search and pagination are no longer dependent on a
+           Backbone collection */
+        this.collection.on('sync', this.collectionFetched)
+        this.collection.on('error', this.collectionFailed)
+        this.collection.fetch()
     },
     'beforeCreate': function() {
         vueXModule.register(this.$store)
     },
+    'beforeDestroy': function() {
+        console.log('stopping Collection fetch')
+        this.collection.stop()
+    },
     'methods': {
+        'collectionFetched': function(collection) {
+            this.tableData = collection.models
+            console.log('Collection fetched', this.tableData)
+        },
+        'collectionFailed': function() {
+            this.$store.commit('notifications/addNotification', {
+                'title': 'Error',
+                'message': 'Could not retrieve data collections',
+                'level': 'error'
+            })
+        },
         'pageChanged': function (pagination) {
             this.collection.setPageSize(pagination.pageSize)
             this.collection.getPage(pagination.currentPage)
-            this.getCollection()
+            this.collection.fetch()
         },
         'rowClicked': function(dataCollectionModel) {
             // This may be a list for all collections in a proposal
@@ -145,20 +168,6 @@ export default {
             this.$router.push(
                 '/dc/visit/' + visit +
                 '/collection/' + dataCollectionModel.get('ID')
-            )
-        },
-        'getCollection': function() {
-            this.$store.dispatch('getCollection', this.collection).then(
-                (collection) => {
-                    this.tableData = collection.models
-                },
-                () => {
-                    this.$store.commit('notifications/addNotification', {
-                        'title': 'Error',
-                        'message': 'Could not retrieve data collections',
-                        'level': 'error'
-                    })
-                }
             )
         },
     },
