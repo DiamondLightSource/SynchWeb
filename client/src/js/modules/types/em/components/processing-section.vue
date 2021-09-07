@@ -21,7 +21,7 @@
         </template>
 
         <p v-else>
-          {{ notAvailableMessage }}
+          No data available
         </p>
       </div>
     </div>
@@ -40,10 +40,6 @@ export default {
         'dataAvailable': {
             'type': Boolean,
             'required': true,
-        },
-        'notAvailableMessage': {
-            'type': String,
-            'default': 'No data available',
         },
         'sectionTitle': {
             'type': String,

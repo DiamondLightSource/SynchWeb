@@ -1,37 +1,31 @@
 <template>
-  <processing-section
+  <processing-section-movie-list
     section-title="CTF Estimation"
-    :data-available="ctfEstimation !== null"
+    url-prefix="/em/ctf/"
+    :auto-proc-program-id="autoProcProgramId"
+    :loaded-movie-number="loadedMovieNumber"
+    @loaded="loaded"
   >
-    <template #controls>
-      <movie-select
-        :movie-list="movieList"
-        @changed="newMovie"
-      />
-    </template>
-
     <params :ctf-estimation="ctfEstimation" />
 
     <dialog-image
-      title="FFT Theoretical"
+      title="Summary Image"
       :image-url="imageUrl"
     />
-  </processing-section>
+  </processing-section-movie-list>
 </template>
 
 <script>
 import DialogImage from 'modules/types/em/components/dialog-image.vue'
-import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import Params from 'modules/types/em/ctf/params.vue'
-import ProcessingSection from 'modules/types/em/components/processing-section.vue'
+import ProcessingSectionMovieList from 'modules/types/em/components/processing-section-movie-list.vue'
 
 export default {
     'name': "CtfEstimation",
     'components': {
         'dialog-image': DialogImage,
-        'movie-select': MovieSelect,
         'params': Params,
-        'processing-section': ProcessingSection,
+        'processing-section-movie-list': ProcessingSectionMovieList,
     },
     'props': {
         'autoProcProgramId': {
@@ -41,65 +35,26 @@ export default {
     },
     'data': function() {
         return {
-            'movieNumber': 1,
-            'movieList': [],
-            'ctfEstimation': null,
+            'ctfEstimation': {},
         }
     },
     'computed': {
         'loadedMovieNumber': function() {
-            return this.ctfEstimation === null ? null :
-                this.ctfEstimation.movieNumber
-        },
-        'programId': function() {
-            return this.ctfEstimation === null ? 0 :
-                this.ctfEstimation.autoProcProgramId
+            return 'movieNumber' in this.ctfEstimation ?
+                this.ctfEstimation.movieNumber : ''
         },
         'imageUrl': function() {
-            if (this.programId == 0) {
+            const movie = this.loadedMovieNumber
+            if (movie == '') {
                 return '#'
             }
             return this.$store.state.apiUrl +
-                '/em/ctf/image/' + this.autoProcProgramId +
-                '/n/' + this.movieNumber
+                '/em/ctf/image/' + this.autoProcProgramId + '/n/' + movie
         },
-    },
-    'watch': {
-        // eslint-disable-next-line no-unused-vars
-        'movieNumber': function(newValue, oldValue) {
-            this.fetchMovie()
-        },
-    },
-    'mounted': function() {
-        this.fetchMovies()
     },
     'methods': {
-        'fetchMovies': function() {
-            this.$store.dispatch('em/fetch', {
-                'url': '/em/ctf/' + this.autoProcProgramId,
-                'humanName': 'CTF List',
-            }).then(
-                (movieList) => { this.movieList = movieList }
-            )
-        },
-        'newMovie': function(movieNumber) {
-            this.movieNumber = movieNumber
-        },
-        'fetchMovie': function() {
-            if (
-                (!this.autoProcProgramId) ||
-                (!this.movieNumber) ||
-                (this.movieNumber == this.loadedMovieNumber)
-            ) {
-                return
-            }
-            this.$store.dispatch('em/fetch', {
-                'url': '/em/ctf/' + this.autoProcProgramId +
-                    '/n/' + this.movieNumber,
-                'humanName': 'CTF Details',
-            }).then(
-                (ctfEstimation) => { this.ctfEstimation = ctfEstimation }
-            )
+        'loaded': function(ctfEstimation) {
+            this.ctfEstimation = ctfEstimation
         },
     },
 }

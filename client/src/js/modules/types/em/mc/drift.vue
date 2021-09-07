@@ -50,9 +50,6 @@ export default {
             this.fetch();
         },
     },
-    'mounted': function () {
-        this.fetch();
-    },
     'methods': {
         'fetch': function() {
             this.$store.dispatch('em/fetch', {

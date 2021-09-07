@@ -1,15 +1,11 @@
 <template>
-  <processing-section
+  <processing-section-movie-list
     section-title="Motion Correction"
-    :data-available="motionCorrection !== null"
+    url-prefix="/em/mc/"
+    :auto-proc-program-id="autoProcProgramId"
+    :loaded-movie-number="loadedMovieNumber"
+    @loaded="loaded"
   >
-    <template #controls>
-      <movie-select
-        :movie-list="movieList"
-        @changed="newMovie"
-      />
-    </template>
-
     <params :motion-correction="motionCorrection" />
 
     <dialog-image
@@ -19,26 +15,24 @@
 
     <drift
       :auto-proc-program-id="autoProcProgramId"
-      :movie-number="movieNumber"
+      :movie-number="loadedMovieNumber"
     />
-  </processing-section>
+  </processing-section-movie-list>
 </template>
 
 <script>
 import DialogImage from 'modules/types/em/components/dialog-image.vue'
 import Drift from 'modules/types/em/mc/drift.vue'
-import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import Params from 'modules/types/em/mc/params.vue'
-import ProcessingSection from 'modules/types/em/components/processing-section.vue'
+import ProcessingSectionMovieList from 'modules/types/em/components/processing-section-movie-list.vue'
 
 export default {
     'name': "MotionCorrection",
     'components': {
         'dialog-image': DialogImage,
         'drift': Drift,
-        'movie-select': MovieSelect,
         'params': Params,
-        'processing-section': ProcessingSection,
+        'processing-section-movie-list': ProcessingSectionMovieList,
     },
     'props': {
         'autoProcProgramId': {
@@ -48,59 +42,26 @@ export default {
     },
     'data': function() {
         return {
-            'movieNumber': 1,
-            'movieList': [],
-            'motionCorrection': null,
+            'motionCorrection': {},
         }
     },
     'computed': {
         'loadedMovieNumber': function() {
-            return this.motionCorrection === null ? 0 :
-                this.motionCorrection.movieNumber
+            return 'movieNumber' in this.motionCorrection ?
+                this.motionCorrection.movieNumber : ''
         },
         'snapshotUrl': function() {
+            const movie = this.loadedMovieNumber
+            if (movie == '') {
+                return '#'
+            }
             return this.$store.state.apiUrl +
-                '/em/mc/snapshot/' + this.autoProcProgramId +
-                '/n/' + this.movieNumber
+                '/em/mc/snapshot/' + this.autoProcProgramId + '/n/' + movie
         },
-    },
-    'watch': {
-        // eslint-disable-next-line no-unused-vars
-        'movieNumber': function(newValue, oldValue) {
-            this.fetchMovie()
-        },
-    },
-    'mounted': function() {
-        this.fetchMovies()
     },
     'methods': {
-        'fetchMovies': function() {
-            this.$store.dispatch('em/fetch', {
-                'url': '/em/mc/' + this.autoProcProgramId,
-                'humanName': 'Motion Correction List',
-            }).then(
-                (movieList) => { this.movieList = movieList }
-            )
-        },
-
-        'newMovie': function(movieNumber) {
-            this.movieNumber = movieNumber
-        },
-        'fetchMovie': function() {
-            if (
-                (!this.autoProcProgramId) ||
-                (!this.movieNumber) ||
-                (this.movieNumber == this.loadedMovieNumber)
-            ) {
-                return
-            }
-            this.$store.dispatch('em/fetch', {
-                'url': '/em/mc/' + this.autoProcProgramId +
-                    '/n/' + this.movieNumber,
-                'humanName': 'Motion Correction Details',
-            }).then(
-                (response) => { this.motionCorrection = response }
-            )
+        'loaded': function(motionCorrection) {
+            this.motionCorrection = motionCorrection
         },
     },
 }
