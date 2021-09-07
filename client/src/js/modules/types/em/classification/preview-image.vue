@@ -73,7 +73,7 @@ export default {
 .preview-image {
     text-align: center;
     background-color: #fff;
-    padding: 2px;
+    padding: 5px;
     border-radius: 6px;
 }
 .preview-image img {
