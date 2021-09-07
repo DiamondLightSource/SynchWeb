@@ -9,7 +9,7 @@
     <params :ctf-estimation="ctfEstimation" />
 
     <dialog-image
-      title="Summary Image"
+      title="FFT Theoretical"
       :image-url="imageUrl"
     />
   </processing-section-movie-list>
