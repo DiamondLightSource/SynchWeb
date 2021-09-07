@@ -27,6 +27,10 @@ export default {
             'type': Number,
             'required': true,
         },
+        'sortBy': {
+            'type': String,
+            'required': true,
+        },
     },
     'data': function() {
         return {
@@ -35,8 +39,12 @@ export default {
     },
     'computed': {
         'heading': function() {
+            const sortField = this.sortBy == 'particles' ?
+                this.particleClass.particlesPerClass :
+                this.particleClass.estimatedResolution
             return this.particleClass.batchNumber + ' - ' +
-              this.particleClass.classNumber
+                this.particleClass.classNumber +
+                ' (' + sortField + ')'
         },
         'imageUrl': function() {
             return this.$store.state.apiUrl + '/em/classification/image/' +
@@ -64,6 +72,9 @@ export default {
 <style scoped>
 .preview-image {
     text-align: center;
+    background-color: #fff;
+    padding: 2px;
+    border-radius: 6px;
 }
 .preview-image img {
     width: 150px;

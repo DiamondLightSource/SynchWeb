@@ -18,13 +18,17 @@
         v-for="(particleClass, index) in particleClasses"
         :key="index"
         :particle-class="particleClass"
+        :sort-by="sortBy"
         :index="index"
         @click="click"
       />
     </div>
-    <div class="main-image">
-      <parameters :particle-class="particleClasses[selectedIndex]" />
-      <img :src="mainSrc">
+    <div class="selected-class">
+      <parameters :particle-class="selectedClass" />
+      <div class="selected-image">
+        {{ heading }}
+        <img :src="selectedSrc">
+      </div>
     </div>
   </processing-section>
 </template>
@@ -54,21 +58,37 @@ export default {
     'data': function() {
         return {
             'particleClasses': [],
-            'mainSrc': '',
             'selectedIndex': 0,
+            'selectedSrc': '',
             'sortBy': 'particles',
             'perPage': 0,
             'page': 1,
             'pageCount': 0,
         }
     },
+    'computed': {
+        'selectedClass': function() {
+            const selected = this.particleClasses[this.selectedIndex]
+            return typeof selected == 'undefined' ? {} : selected
+        },
+        'heading': function() {
+            const batchNumber = 'batchNumber' in this.selectedClass ?
+                this.selectedClass.batchNumber : ''
+            const classNumber = 'classNumber' in this.selectedClass ?
+                this.selectedClass.classNumber : ''
+            return batchNumber && classNumber ? (
+                batchNumber + ' - ' + classNumber
+            ) : 'none selected'
+        },
+    },
     'watch': {
-        'sortOrder': function(newValue, oldValue) {
+        // eslint-disable-next-line no-unused-vars
+        'sortBy': function(newValue, oldValue) {
             this.page = 1
             this.fetch()
         },
+        // eslint-disable-next-line no-unused-vars
         'page': function(newValue, oldValue) {
-            console.log('************', newValue, oldValue)
             this.fetch()
         },
     },
@@ -80,8 +100,8 @@ export default {
     },
     'methods': {
         'click': function(clicked) {
-            this.mainSrc = clicked.src
             this.selectedIndex = clicked.index
+            this.selectedSrc = clicked.src
         },
         'fetch': function() {
             this.$store.dispatch('em/fetch', {
@@ -103,12 +123,18 @@ export default {
 
 <style scoped>
 .preview-images,
-.main-image {
+.selected-class {
     width: 100%;
     display: flex;
     justify-content: space-between;
 }
-.main-image {
+.selected-class {
     margin-top: 10px;
+}
+.selected-image {
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 6px;
+    text-align: center;
 }
 </style>

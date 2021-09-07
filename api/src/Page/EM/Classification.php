@@ -16,8 +16,6 @@ trait Classification
 
         if (sizeof($images) == 1) {
             $image = $images[0]['classImageFullPath'];
-            // Temporary work around - images miss-named in some test data
-            $image = str_replace('_classes_class', '_classes_', $image);
             if (file_exists($image)) {
                 $this->sendImage($image);
                 return;
@@ -48,7 +46,9 @@ trait Classification
 
         $order = $sortBy == 'particles' ?
             'ParticleClassification.particlesPerClass DESC' :
-            'ParticleClassification.estimatedResolution';
+            // Sort in ascending order by with "0" last.
+            "ParticleClassification.estimatedResolution = 0,
+                ParticleClassification.estimatedResolution";
 
         $particles = $this->classificationQuery(
             implode(',', array(
