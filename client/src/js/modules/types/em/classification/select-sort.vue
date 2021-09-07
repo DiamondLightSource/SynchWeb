@@ -9,10 +9,10 @@
       @change="$emit('input', $event.target.value)"
     >
       <option value="particles">
-        Number of Particles
+        Particles Per Class
       </option>
       <option value="resolution">
-        Resolution
+        Estimated Resolution
       </option>
     </select>
   </span>

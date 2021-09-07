@@ -33,7 +33,7 @@ trait Classification
         $args = array($this->arg('id'));
 
         $total = $this->classificationQuery(
-            'COUNT(ParticlePicker.particlePickerId) AS total',
+            'COUNT(ParticleClassification.particleClassificationId) AS total',
             $args
         );
 
@@ -52,9 +52,6 @@ trait Classification
 
         $particles = $this->classificationQuery(
             implode(',', array(
-                'ParticlePicker.firstMotionCorrectionId',
-                'ParticlePicker.particleDiameter',
-                'ParticlePicker.numberOfParticles',
                 'ParticleClassificationGroup.type',
                 'ParticleClassificationGroup.batchNumber',
                 'ParticleClassificationGroup.numberOfParticlesPerBatch',
@@ -62,6 +59,7 @@ trait Classification
                 'ParticleClassificationGroup.symmetry',
                 'ParticleClassification.particleClassificationId',
                 'ParticleClassification.classNumber',
+                'ParticleClassification.classDistribution',
                 'ParticleClassification.particlesPerClass',
                 'ParticleClassification.rotationAccuracy',
                 'ParticleClassification.translationAccuracy',
@@ -85,10 +83,7 @@ trait Classification
     {
         return $this->db->pq(
             "SELECT $selection
-            FROM ParticlePicker
-            INNER JOIN ParticleClassificationGroup
-                ON ParticleClassificationGroup.particlePickerId =
-                    ParticlePicker.particlePickerId
+            FROM ParticleClassificationGroup
             LEFT JOIN ParticleClassification
                 ON ParticleClassification.particleClassificationGroupId =
                     ParticleClassificationGroup.particleClassificationGroupId
@@ -98,7 +93,7 @@ trait Classification
             LEFT JOIN CryoemInitialModel
                 ON CryoemInitialModel.cryoemInitialModelId =
                     ParticleClassification_has_CryoemInitialModel.cryoemInitialModelId
-            WHERE ParticlePicker.programId = :1
+            WHERE ParticleClassificationGroup.programId = :1
             $options",
             $args,
             false
