@@ -4,9 +4,11 @@
     :width="width"
   >
     <strong>{{ label }}:</strong>
+    <!-- eslint-disable-next-line vue/no-v-html -->
     <span v-html="item" />
     <template v-if="label2">
       <strong>{{ label2 }}:</strong>
+      <!-- eslint-disable-next-line vue/no-v-html -->
       <span v-html="item2" />
     </template>
   </custom-list-item>

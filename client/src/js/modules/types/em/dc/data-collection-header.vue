@@ -54,7 +54,7 @@
     />
     <parameter-list-item
       width="20%"
-      label="Beamsize"
+      label="Beam Size"
       :item="beamSize"
     />
     <parameter-list-item
