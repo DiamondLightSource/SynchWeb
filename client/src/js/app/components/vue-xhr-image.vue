@@ -1,8 +1,8 @@
 <template>
   <img
+    v-if="src"
     :alt="title"
     :src="src"
-    :class="computedImageClass"
     @click="$emit('click')"
   >
 </template>
@@ -25,10 +25,6 @@ export default {
             'type': String,
             'required': true,
         },
-        'imageClass': {
-            'type': String,
-            'default': '',
-        },
         // `src` is always blank initially
         // it will get a value when this component executes `xhrImage.load`
         // to specify an image to load use `imageUrl`
@@ -41,13 +37,7 @@ export default {
     'data': function() {
         return {
             'xhrImage': new XHRImage(),
-            'show': false,
         }
-    },
-    'computed': {
-        'computedImageClass': function() {
-            return (this.imageClass + (this.show ? ' show' : '')).trim()
-        },
     },
     'watch': {
         'imageUrl': function() {
@@ -57,7 +47,6 @@ export default {
     'mounted': function() {
         const vm = this
         this.xhrImage.onload = function() {
-            vm.show = true
             vm.$emit('change', this.src)
         }
         this.loadImage();

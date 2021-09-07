@@ -19,7 +19,7 @@
         v-model="src"
         :title="title"
         :image-url="imageUrl"
-        image-class="di-preview-image"
+        class="di-preview-image"
       />
     </template>
   </dialog-with-preview>
