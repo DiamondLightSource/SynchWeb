@@ -2,9 +2,9 @@
 
 namespace SynchWeb\Page\EM;
 
-trait Particle
+trait Classification
 {
-    public function particleClassificationImage()
+    public function classificationImage()
     {
         $images = $this->db->pq(
             "SELECT ParticleClassification.classImageFullPath
@@ -16,6 +16,8 @@ trait Particle
 
         if (sizeof($images) == 1) {
             $image = $images[0]['classImageFullPath'];
+            // Temporary work around - images miss-named in some test data
+            $image = str_replace('_classes_class', '_classes_', $image);
             if (file_exists($image)) {
                 $this->sendImage($image);
                 return;
@@ -28,11 +30,11 @@ trait Particle
 
     /* ParticleClassificationGroup has load of null filled rows
        hence the INNER JOIN (is that wrong?) */
-    public function particleClassification()
+    public function classificationResult()
     {
         $args = array($this->arg('id'));
 
-        $total = $this->particleClassificationQuery(
+        $total = $this->classificationQuery(
             'COUNT(ParticlePicker.particlePickerId) AS total',
             $args
         );
@@ -40,10 +42,15 @@ trait Particle
         $sortBy = $this->has_arg('sort_by') ?
             strtolower($this->arg('sort_by')) :
             'particles';
+
+        // 'CryoemInitialModel.numberOfParticles'
+        // 'CryoemInitialModel.resolution'
+
         $order = $sortBy == 'particles' ?
             'ParticleClassification.particlesPerClass DESC' :
             'ParticleClassification.estimatedResolution';
-        $particles = $this->particleClassificationQuery(
+
+        $particles = $this->classificationQuery(
             implode(',', array(
                 'ParticlePicker.firstMotionCorrectionId',
                 'ParticlePicker.particleDiameter',
@@ -74,7 +81,7 @@ trait Particle
         ));
     }
 
-    private function particleClassificationQuery($selection, $args, $options = '')
+    private function classificationQuery($selection, $args, $options = '')
     {
         return $this->db->pq(
             "SELECT $selection

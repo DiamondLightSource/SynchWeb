@@ -8,9 +8,10 @@ use SynchWeb\Queue;
 class EM extends Page
 {
     use \SynchWeb\Page\EM\Attachments;
+    use \SynchWeb\Page\EM\Classification;
     use \SynchWeb\Page\EM\Ctf;
     use \SynchWeb\Page\EM\MotionCorrection;
-    use \SynchWeb\Page\EM\Particle;
+    use \SynchWeb\Page\EM\Picker;
     use \SynchWeb\Page\EM\ProcessingJobs;
     use \SynchWeb\Page\EM\Relion;
 
@@ -98,17 +99,22 @@ class EM extends Page
         array('/ctf/image/:id(/n/:movieNumber)', 'get', 'ctfImage'),
         array('/ctf/summary/:id', 'get', 'ctfSummary'),
 
+        // See SynchWeb\Page\EM\Picker:
+        array('/picker/:id', 'get', 'pickerMovies'),
+        array('/picker/:id/n/:movieNumber', 'get', 'pickerResult'),
+        array('/picker/image/:id(/n/:movieNumber)', 'get', 'pickerImage'),
+
+        // See SynchWeb\Page\EM\Classification:
+        array('/classification/:id', 'get', 'classificationResult'),
+        array('/classification/image/:id', 'get', 'classificationImage'),
+
         // See Synchweb\Page\EM\Relion
         array('/process/relion/session/:session', 'post', 'relionStart'),
         array('/process/relion/session/:session', 'get', 'relionStatus'),
         array('/process/relion/job/:processingJobId', 'patch', 'relionStop'),
         array('/process/relion/job/parameters', 'get', 'relionParameters'),
 
-        array('/process/scipion/session/:session', 'post', '_scipion_start'),
-
-        // See SynchWeb\Page\EM\Particle:
-        array('/classification/:id', 'get', 'particleClassification'),
-        array('/classification/image/:id', 'get', 'particleClassificationImage'),
+        array('/process/scipion/session/:session', 'post', '_scipion_start')
     );
 
 
