@@ -30,7 +30,6 @@
 </template>
 
 <script>
-import middleware from 'modules/types/em/job-parameters/middleware'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
@@ -56,9 +55,17 @@ export default {
             'url': '/em/process/relion/job/parameters?processingJobId=' +
                 this.processingJobId,
             'humanName': 'Processing Job Parameters',
-            'middleware': middleware,
         }).then(
-            (parameters) => { this.parameters = parameters }
+            (response) => {
+                /* TODO: once all Relion screens are updated,
+                   This endpoint can be updated to match */
+                this.parameters = response.data.map(function(parameter) {
+                    return {
+                        'key': parameter.PARAMETERKEY,
+                        'value': parameter.PARAMETERVALUE,
+                    }
+                })
+            }
         )
     },
 }

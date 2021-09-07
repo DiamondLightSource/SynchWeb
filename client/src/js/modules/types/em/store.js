@@ -59,13 +59,11 @@ const module = {
         },
     },
     'actions': {
-        'fetch': function(context, {url, humanName, middleware}) {
+        'fetch': function(context, {url, humanName}) {
             const handleResult = function (response) {
-                const result = typeof middleware == 'function' ?
-                    middleware(response) : response;
-                console.log(humanName, result)
+                console.log(humanName, response)
                 context.commit('loading', false, {'root': true })
-                return result
+                return response
             }
 
             const handleError = function(response) {
