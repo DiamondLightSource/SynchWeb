@@ -6,7 +6,7 @@ export default {
       editingRow: null,
       screeningMethodList: [
         {
-          value: null,
+          value: "none",
           text: "None",
         },
         {
@@ -41,13 +41,13 @@ export default {
     proteinsOptionsList() {
       return this.proteins
         .toJSON()
-        .map((item) => ({ value: item.PROTEINID, text: item.ACRONYM }));
+        .map((item) => ({ value: item.PROTEINID, text: item.ACRONYM, SAFETYLEVEL: item.SAFETYLEVEL }));
     },
     experimentKindList() {
       return this.$experimentKindList;
     },
     centeringMethodList() {
-      return this.$centeringMethods.reduce(
+      return this.$centeringMethods.filter(method => method).reduce(
         (acc, curr) => {
           if (curr) acc.push({ value: curr, text: curr });
 
@@ -95,6 +95,9 @@ export default {
     },
     sampleGroupsAndMembers() {
       return this.$sampleGroupsAndMembers()
+    },
+    allowUDC() {
+      return this.$allowUDC()
     }
   },
   methods: {
@@ -184,7 +187,11 @@ export default {
     },
     checkSampleInSampleGroups(proteinId) {
       return this.sampleGroupsAndMembers.some(group => group.MEMBERS.toJSON().find(member => Number(member.PROTEINID) === Number(proteinId)))
-    }
+    },
+    // checkNoToCollectValidity(screeningMethod, proteinId) {
+    //   if (screeningMethod === 'best' && this.checkSampleInSampleGroups(proteinId))
+    //
+    // }
   },
   inject: [
     "$spaceGroups",
@@ -196,6 +203,7 @@ export default {
     "$shipments",
     "$dewars",
     "$containers",
-    "$sampleGroupsAndMembers"
+    "$sampleGroupsAndMembers",
+    "$allowUDC"
   ]
 };

@@ -1605,8 +1605,8 @@ class Shipment extends Page
             if (!$this->has_arg('NAME')) $this->_error('No container name specified');
             if (!$this->has_arg('CONTAINERTYPE')) $this->_error('No container type specified');
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar id specified');
-        
-            
+
+
             $cap = $this->has_arg('CAPACITY') ? $this->arg('CAPACITY') : 16;
             $sch = $this->has_arg('SCHEDULEID') ? $this->arg('SCHEDULEID') : null;
             $scr = $this->has_arg('SCREENID') ? $this->arg('SCREENID') : null;
@@ -1624,9 +1624,9 @@ class Shipment extends Page
             $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid)
               VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING containerid INTO :id",
               array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline));
-                                 
+
             $cid = $this->db->id();
-            
+
             if ($this->has_arg('SCHEDULEID')) {
                 $sh = new ImagingShared($this->db);
                 $sh->_generate_schedule(array(

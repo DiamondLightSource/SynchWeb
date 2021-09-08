@@ -27,14 +27,12 @@
           'tw-py-1': true,
           'tw-justify-center': true,
           'tw-text-center': true,
-          'tw-border-table-header-color': columnIndex === 3,
-          'tw-border-r': columnIndex === 3,
           [column.className]: true
         }"
       >
         {{ column.title }}
       </div>
-      <div class="tw-flex tw-w-1/2">
+      <div class="tw-flex tw-w-1/2 tw-border-table-header-color tw-border-l">
         <div
           v-for="(column, columnIndex) in dynamicColumns"
           :key="columnIndex"
@@ -64,9 +62,9 @@
       <validation-provider
         class="tw-px-2 protein-column tw-py-1"
         tag="div"
-        :rules="sample['NAME'] ? 'required' : ''"
-        name="Protein"
-        :vid="`protein-${sample['LOCATION']}`"
+        :rules="sample['NAME'] && !containerId ? 'required' : ''"
+        :name="`Sample ${sampleIndex + 1} Protein`"
+        :vid="`sample ${sampleIndex + 1} protein`"
         v-slot="{ errors }">
         <combo-box
           v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
@@ -80,7 +78,10 @@
           v-model="sample['PROTEINID']"
         >
           <template slot-scope="{ option }">
-            <span><i class="fa fa-check green"></i></span> {{ option['text'] }}
+            <span class="tw-flex tw-justify-between tw-w-full">
+              <span class="tw-"><i v-if="option.SAFETYLEVEL == 'GREEN'" class="fa fa-check green"></i></span>
+              {{ option['text'] }}
+            </span>
           </template>
         </combo-box>
         <div v-else class="tw-text-center">{{ selectDataValue(proteinsOptionsList, sample, 'PROTEINID') }}</div>
@@ -90,15 +91,16 @@
       <validation-provider
         tag="div"
         class="name-column tw-py-1 tw-px-2"
-        :rules="sample['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''"
-        name="Sample Name"
-        :vid="`sample-name-${sample['LOCATION']}`"
+        :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:12|' : ''"
+        :name="`Sample ${sampleIndex + 1} Name`"
+        :vid="`sample ${sampleIndex + 1} name`"
         v-slot="{ errors }">
         <base-input-text
           v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
           inputClass="tw-w-full tw-h-8"
           v-model="sample['NAME']"
           :errorMessage="errors[0]"
+          :quiet="true"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
         <p v-else class="tw-text-center">{{ sample['NAME'] }}</p>
@@ -106,10 +108,10 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-border-r tw-border-table-header-background sample-group-column tw-py-1"
-        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
-        name="Sample Group"
-        :vid="`sample-group-${sample['BLSAMPLEGROUPID']}`"
+        class="tw-px-2 sample-group-column tw-py-1"
+        :rules="`required_if:sample ${sampleIndex} screening method,best`"
+        :name="`Sample ${sampleIndex + 1} Group`"
+        :vid="`sample ${sampleIndex + 1} group`"
         v-slot="{ errors }">
         <base-input-select
           v-if="!containerId || (!sample['BLSAMPLEID'] && sample['LOCATION'] === editingRow)"
@@ -117,15 +119,16 @@
           optionValueKey="value"
           optionTextKey="text"
           inputClass="tw-w-full tw-h-8"
-          v-model="sample['BLSAMPLEGROUPID']"
+          v-model="sample['SAMPLEGROUP']"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+          :quiet="true"
           :errorMessage="errors[0]"/>
           <p v-else class="tw-text-center">{{ findSampleGroupsBySample(sample['PROTEINID']) }}</p>
       </validation-provider>
 
 
       <tabbed-columns
-        class="tw-w-1/2 tw-py-1"
+        class="tw-w-1/2 tw-py-1 tw-border-l tw-border-table-header-background min-height-8"
         :currentEditingRow="editingRow"
         :currentTab="currentTab"
         :sampleIndex="sampleIndex"
@@ -135,13 +138,13 @@
       <div class="actions-column tw-py-1 tw-text-right">
         <span v-if="containerId">
           <span v-if="editingRow === sample['LOCATION']">
-            <a class="button tw-cursor-pointer" @click="saveSample(sample['LOCATION'])"><i class="fa fa-check"></i></a>
-            <a class="button tw-cursor-pointer" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
+            <a class="button tw-cursor-pointer  " @click="saveSample(sample['LOCATION'])"><i class="fa fa-check"></i></a>
+            <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
           </span>
           <span v-else>
-            <a class="button tw-cursor-pointer" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
-            <router-link v-if="sample['BLSAMPLEID']" class="button" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
-            <a class="button tw-cursor-pointer" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
+            <a class="button tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
+            <router-link v-if="sample['BLSAMPLEID']" class="button tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
+            <a class="button tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
           </span>
         </span>
         <span v-else>
@@ -345,6 +348,12 @@ export default {
       displaySampleGroupModal: false
     }
   },
+  props: {
+    currentlyEditingRow: {
+      type: Number,
+      default: -1
+    }
+  },
   computed: {
     tableColumns() {
       const columnsMap = {
@@ -452,6 +461,11 @@ export default {
       }
       this.containerSamplesGroupData = changedSampleGroupsData
     }
+  },
+  watch: {
+    currentlyEditingRow(newValue) {
+      this.editingRow = newValue
+    }
   }
 }
 </script>
@@ -469,31 +483,10 @@ export default {
 .sample-group-column {
   width: 10%;
 }
-
-/*.user-path-column, .screening-method-column {*/
-/*  width: 150px;*/
-/*}*/
-/*.anomalous-column {*/
-/*  width: 128px;*/
-/*}*/
-/*.comment-column, .cell-column {*/
-/*  width: 200px;*/
-/*}*/
-/*.space-group-column, .centering-method-column, .experiment-kind-column {*/
-/*  width: 100px;*/
-/*}*/
-/*.energy-column {*/
-/*  width: 50px;*/
-/*}*/
-/*.resolution-column, .collect-column {*/
-/*  width: 40px;*/
-/*  word-wrap: break-word;*/
-/*}*/
-/*.screening-method-column {*/
-/*  width: 100px;*/
-/*  word-wrap: break-word;*/
-/*}*/
 .actions-column {
   width: calc(12% - 30px);
+}
+.min-height-8 {
+  min-height: 32px;
 }
 </style>

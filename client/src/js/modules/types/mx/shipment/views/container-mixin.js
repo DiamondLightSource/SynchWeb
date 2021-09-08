@@ -10,12 +10,24 @@ import ContainerRegistry from "js/modules/shipment/collections/containerregistry
 import ContainerTypes from "js/modules/shipment/collections/containertypes";
 import SampleGroups from "js/collections/samplegroups";
 
+const INITIAL_CONTAINER_TYPE = {
+  CONTAINERTYPEID: 0,
+  CAPACITY: 0,
+  DROPPERWELLX: null,
+  DROPPERWELLY: null,
+  DROPHEIGHT: null,
+  DROPWIDTH: null,
+  WELLDROP: -1,
+  WELLPERROW: null,
+}
+
 export default {
   data() {
     return {
       anomalousList: AnomalousList.list,
 
       centeringMethods: CenteringMethodList.list,
+      containerType: {},
       containerTypes: [],
       containerTypesCollection: null,
       containerRegistryCollection: null,
@@ -82,8 +94,7 @@ export default {
     async getContainerRegistry() {
       this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
       const result = await this.$store.dispatch('getCollection', this.containerRegistryCollection)
-      this.containerRegistry.unshift({CONTAINERREGISTRYID: 0, BARCODE: "-"})
-      this.containerRegistry = result.toJSON()
+      this.containerRegistry = [{ CONTAINERREGISTRYID: null, BARCODE: ""}, ...result.toJSON()]
     },
     async getContainerTypes() {
       this.containerTypesCollection = new ContainerTypes()
@@ -97,10 +108,18 @@ export default {
         let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
         this.containerState.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
       }
+
+      if (this.container) {
+        let containerTypeModel = result.findWhere({NAME: this.container.CONTAINERTYPE})
+
+        if (containerTypeModel) {
+          this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, containerTypeModel.toJSON())
+        }
+      }
     },
     formatExperimentKindList() {
       for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
-        this.experimentKindList.push({ value: key, text: value })
+        this.experimentKindList.push({ value, text: key })
       }
     },
     async getSampleGroups() {
@@ -114,6 +133,11 @@ export default {
       }))
     }
   },
+  computed: {
+    containerFilter: function() {
+      return [this.$store.state.proposal.proposalType]
+    },
+  },
   provide() {
     return {
       $spaceGroups: this.spaceGroups,
@@ -122,7 +146,8 @@ export default {
       $experimentKindList: this.experimentKindList,
       $sampleLocation: () => this.sampleLocation,
       $sampleGroups: () => this.sampleGroups,
-      $sampleGroupsAndMembers: () => this.sampleGroupsAndMembers
+      $sampleGroupsAndMembers: () => this.sampleGroupsAndMembers,
+      $allowUDC: () => this.containerState.ALLOWUDC
     }
   }
 }

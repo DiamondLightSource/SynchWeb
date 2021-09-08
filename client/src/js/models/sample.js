@@ -10,6 +10,7 @@ define(['backbone', 'collections/components',
         initialize: function(attrs, options) {
             var addPrimary = (options && options.addPrimary) || (this.collection && this.collection.state.addPrimary)
             this.set('components', new Components(null, { pmodel: this, addPrimary: addPrimary }))
+            this.updateScreeningOptions()
 
             this.listenTo(this, 'change:EXPERIMENTKIND', this.updateExpKind)
             this.updateExpKind()
@@ -19,6 +20,7 @@ define(['backbone', 'collections/components',
 
             this.listenTo(this, 'change', this.updateHasData)
             this.updateHasData()
+
         },
 
         updateHasData: function() {
@@ -31,35 +33,62 @@ define(['backbone', 'collections/components',
             this.set('EXPERIMENTKINDNAME', val)
         },
 
+        updateScreeningOptions: function() {
+            const strategyOption = this.get('STRATEGYOPTION')
+            if (strategyOption) {
+                const option = JSON.parse(strategyOption)
+                this.set('SCREENINGMETHOD', option.screen)
+                this.set('SCREENINGCOLLECTVALUE', option.collect_samples)
+                this.set('SAMPLEGROUP', option.sample_group)
+            }
+        },
+
         updateRadSen: function() {
             var val = RS.key(this.get('RADIATIONSENSITIVITY'))
             this.set('RADIATIONSENSITIVITYNAME', val)
         },
 
         defaults: {
-            NAME: '',
-            CODE: '',
-            COMMENTS: '',
-            SPACEGROUP: '',
-            REQUIREDRESOLUTION: '',
+            ABUNDANCE: '',
             ANOMALOUSSCATTERER: '',
+            BLSUBSAMPLEID: '',
+            CODE: '',
             CELL_A: '',
             CELL_B: '',
             CELL_C: '',
             CELL_ALPHA: '',
             CELL_BETA: '',
             CELL_GAMMA: '',
-            VOLUME: '',
-            ABUNDANCE: '',
-            SYMBOL: '',
-            PACKINGFRACTION: '',
-            EXPERIMENTALDENSITY: '',
+            CENTRINGMETHOD: '',
+            COMMENTS: '',
             COMPOSITION: '',
-            LOOPTYPE: '',
+            CONTAINERID: '',
+            CRYSTALID: -1,
             DIMENSION1: '',
             DIMENSION2: '',
             DIMENSION3: '',
+            ENERGY: '',
+            EXPERIMENTALDENSITY: '',
+            EXPERIMENTKIND: '',
+            LOCATION: '',
+            LOOPTYPE: '',
+            MINIMUMRESOLUTION: '',
+            NAME: '',
+            PACKINGFRACTION: '',
+            PROTEINID: -1,
+            REQUIREDRESOLUTION: '',
+            RADIATIONSENSITIVITY: '',
+            SAMPLEGROUP: '',
+            SCREENCOMPONENTGROUPID: '',
+            SCREENINGMETHOD: '',
+            SCREENINGCOLLECTVALUE: '',
+            STRATEGYOPTION: '',
+            THEORETICALDENSITY: '',
             SHAPE: '',
+            SPACEGROUP: '',
+            SYMBOL: '',
+            USERPATH: '',
+            VOLUME: '',
         },
         
         validation: {
@@ -156,7 +185,22 @@ define(['backbone', 'collections/components',
                 pattern: 'twopath',
                 maxLength: 40,
             },
-
+            SCREENINGMETHOD: {
+                required: false,
+                pattern: 'word'
+            },
+            SCREENINGCOLLECTVALUE: {
+                required: false,
+                pattern: 'number'
+            },
+            SAMPLEGROUP: {
+                required: false,
+                pattern: 'numberorword'
+            },
+            EXPERIMENTKIND: {
+                required: false,
+                pattern: 'word'
+            },
 
             COMPONENTAMOUNTS: function(from_ui, attr, all_values) {
                 var values = all_values.components.pluck('ABUNDANCE')

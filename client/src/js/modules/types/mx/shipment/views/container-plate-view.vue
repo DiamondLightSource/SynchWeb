@@ -2,7 +2,6 @@
   <div class="content">
     <h1>Container {{container.NAME}}</h1>
 
-    <a name="top"></a>
     <p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
 
     <p v-if="container.CONTAINERSTATUS == 'processing'" class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
@@ -41,7 +40,7 @@
           </li>
           <li>
             <span class="label">Registered Container</span>
-            <span class="tw-relative">{{container.REGISTRY}} <router-link :to="`/container/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
+            <span class="tw-relative">{{container.REGISTRY}} <router-link :to="`/containers/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
           </li>
           <li>
             <span class="label">Barcode</span>
@@ -137,8 +136,6 @@
 
 <script>
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
-import ContainerTypes from 'modules/shipment/collections/containertypes'
-import DistinctProteins from 'modules/shipment/collections/distinctproteins'
 import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 import Samples from 'collections/samples'
 import Shipments from 'collections/shipments'
@@ -158,18 +155,6 @@ import Dialog from 'app/components/dialogbox.vue'
 import formatDate from 'date-fns-tz/format'
 
 import { mapGetters } from 'vuex'
-
-const INITIAL_CONTAINER_TYPE = {
-  CONTAINERTYPEID: 0,
-  CAPACITY: 0,
-  DROPPERWELLX: null,
-  DROPPERWELLY: null,
-  DROPHEIGHT: null,
-  DROPWIDTH: null,
-  WELLDROP: -1,
-  WELLPERROW: null,
-}
-
 export default {
   name: 'mx-container-view',
   mixins: [ContainerMixin],
@@ -207,7 +192,6 @@ export default {
 
       experimentKind: null,
       plateType: null, // Stores if a puck or plate type
-      containerType: '',
       plateKey: 0,
       displayQueueModal: false,
       modal: {
@@ -281,29 +265,6 @@ export default {
       this.container = Object.assign({}, this.containerModel.toJSON())
       this.containerId = this.containerModel.get('CONTAINERID')
       this.containerQueueId = this.containerModel.get('CONTAINERQUEUEID')
-    },
-    async  getProteins() {
-      this.proteinsCollection = new DistinctProteins()
-      this.gProteinsCollection = new DistinctProteins()
-      // If we want to only allow valid samples
-      if (app.options.get('valid_components') && !app.staff) {
-        this.proteinsCollection.queryParams.external = 1
-      }
-
-      const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
-      this.proteins = result.toJSON()
-      this.proteinsLoaded = true
-    },
-    async getContainerTypes() {
-      // Get the geometry for this container type
-      // When backend can get container type by name or id we can make this more efficient
-      let containerTypesCollection = new ContainerTypes()
-      const result = await this.$store.dispatch('getCollection', containerTypesCollection)
-      let containerTypeModel = result.findWhere({NAME: this.container.CONTAINERTYPE})
-
-      if (containerTypeModel) {
-        this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, containerTypeModel.toJSON())
-      }
     },
     // Callback from pagination
     onUpdateHistory(payload) {
@@ -412,7 +373,7 @@ export default {
     async unQueueContainer() {
       try {
         this.displayQueueModal = false
-        const response = await this.$store.dispatch('shipment/unQueueContainer', { CONTAINERID: this.containerId })
+        await this.$store.dispatch('shipment/unQueueContainer', { CONTAINERID: this.containerId })
         this.$emit('update-container-state', { CONTAINERQUEUEID: null })
         this.$nextTick(() => {
           this.loadContainerData()
@@ -433,7 +394,7 @@ export default {
       this.containersCollection.queryParams.did = this.containersSamplesGroupData.dewarId
 
       const result = await this.$store.dispatch('getCollection', this.containersCollection)
-      this.containers = result.toJSON().map((container, index) => ({
+      this.containers = result.toJSON().map(container => ({
         value: container.CONTAINERID,
         text: container.NAME
       }))
@@ -443,7 +404,7 @@ export default {
       this.dewarsCollection.queryParams.sid = this.containersSamplesGroupData.shipmentId
 
       const result = await this.$store.dispatch('getCollection', this.dewarsCollection)
-      this.dewars = result.toJSON().map((dewar, index) => ({
+      this.dewars = result.toJSON().map(dewar => ({
         value: dewar.DEWARID,
         text: dewar.CODE
       }))
@@ -452,12 +413,12 @@ export default {
       this.shipmentsCollection = new Shipments(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.shipmentsCollection)
-      this.shipments = result.toJSON().map((shipment, index) => ({
+      this.shipments = result.toJSON().map(shipment => ({
         value: shipment.SHIPPINGID,
         text: shipment.SHIPPINGNAME
       }))
     },
-    async updateContainerSampleGroupsData(newData, oldData) {
+    async updateContainerSampleGroupsData(newData) {
       if (newData.shipmentId !== null) {
         await this.fetchDewars()
       }
@@ -468,9 +429,9 @@ export default {
     }
   },
   watch: {
-    containersSamplesGroupData(newValues, oldValues) {
-      this.updateContainerSampleGroupsData(newValues, oldValues)
-    }
+    containersSamplesGroupData(newValues) {
+      this.updateContainerSampleGroupsData(newValues)
+    },
   },
   provide() {
     return {
