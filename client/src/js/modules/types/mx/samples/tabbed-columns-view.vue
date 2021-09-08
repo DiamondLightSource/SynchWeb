@@ -5,8 +5,8 @@
         tag="div"
         class="tw-px-2 tw-w-32"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-        name="Anomalous Scaterrer"
-        :vid="`anomalous-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} Anomalous Scatterer`"
+        :vid="`sample ${sampleIndex + 1} anomalous scatterer`"
         v-slot="{ errors }">
         <base-input-select
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
@@ -16,27 +16,31 @@
           optionTextKey="text"
           :errorMessage="errors[0]"
           v-model="inputValue[sampleIndex]['ANOMALOUSSCATTERER']"
+          :quiet="true"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
-        <p v-else class="tw-text-center">{{ selectDataValue(anomalousOptionsList, inputValue, 'ANOMALOUSSCATTERER') }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['ANOMALOUSSCATTERER'] }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-32"
-        name="Barcode">
+        :name="`Sample ${sampleIndex + 1} Barcode`"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
+        :vid="`sample ${sampleIndex + 1} code`">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           inputClass="tw-w-full tw-h-8"
-          v-model="inputValue[sampleIndex]['BARCODE']"
+          v-model="inputValue[sampleIndex]['CODE']"
         />
-        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['BARCODE'] }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['CODE'] }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-1/2"
-        name="Comment">
+        :name="`Sample ${sampleIndex + 1} Comment`"
+        :vid="`sample ${sampleIndex + 1} comment`">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           inputClass="tw-w-full tw-h-8"
@@ -50,15 +54,15 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-3/12"
-        name="User Path"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-        :vid="`user-path-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} User Path`"
+        :vid="`sample ${sampleIndex + 1} userpath`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           inputClass="tw-w-full tw-h-8"
           v-model="inputValue[sampleIndex]['USERPATH']"
           :errorMessage="errors[0]"
+          :quiet="true"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
         <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['USERPATH'] }}</p>
@@ -67,9 +71,8 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-3/12"
-        name="Space Group"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-        :vid="`spacegroup-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} Space Group`"
+        :vid="`sample ${sampleIndex + 1} spacegroup`"
         v-slot="{ errors }">
         <base-input-select
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
@@ -79,9 +82,10 @@
           inputClass="tw-w-full tw-h-8"
           v-model="inputValue[sampleIndex]['SPACEGROUP']"
           :errorMessage="errors[0]"
+          :quiet="true"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
         />
-        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'SPACEGROUP') }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['SPACEGROUP'] }}</p>
       </validation-provider>
 
 
@@ -90,9 +94,8 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            name="CELL A"
-            :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-            :vid="`cell-a-${sampleIndex}`"
+            :name="`Sample ${sampleIndex + 1} CELL-A`"
+            :vid="`sample ${sampleIndex + 1} cell-a`"
             v-slot="{ errors }">
             <base-input-text
               v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
@@ -109,9 +112,8 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            name="CELL B"
-            :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-            :vid="`cell-b-${sampleIndex}`"
+            :name="`Sample ${sampleIndex + 1} CELL-B`"
+            :vid="`sample ${sampleIndex + 1} cell-b`"
             v-slot="{ errors }">
             <base-input-text
               v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
@@ -128,9 +130,8 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            name="CELL C"
-            :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-            :vid="`cell-c-${sampleIndex}`"
+            :name="`Sample ${sampleIndex + 1} CELL-C`"
+            :vid="`sample ${sampleIndex + 1} cell-c`"
             v-slot="{ errors }"
             >
             <base-input-text
@@ -151,9 +152,8 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            name="CELL ALPHA"
-            :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-            :vid="`cell-d-${sampleIndex}`"
+            :name="`Sample ${sampleIndex + 1} CELL-ALPHA`"
+            :vid="`sample ${sampleIndex + 1} cell-alpha`"
             v-slot="{ errors }"
             >
             <base-input-text
@@ -171,9 +171,8 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            name="CELL BETA"
-            :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-            :vid="`cell-e-${sampleIndex}`"
+            :name="`Sample ${sampleIndex + 1} CELL-BETA`"
+            :vid="`sample ${sampleIndex + 1} cell-beta`"
             v-slot="{ errors }"
             >
             <base-input-text
@@ -191,9 +190,8 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            name="CELL GAMMA"
-            :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-            :vid="`cell-e-${sampleIndex}`"
+            :name="`Sample ${sampleIndex + 1} CELL-GAMMA`"
+            :vid="`sample ${sampleIndex + 1} cell-gamma`"
             v-slot="{ errors }"
             >
             <base-input-text
@@ -211,59 +209,65 @@
       </div>
     </div>
 
-
     <div v-show="currentTab === 'unattended'" class="tw-w-full tw-flex tw-items-center">
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        name="Centering Method"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-        :vid="`centering-method-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} Centering Method`"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
+        :vid="`sample ${sampleIndex + 1} centering method`"
         v-slot="{ errors }"
         >
         <base-input-select
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
+          :is-disabled="!allowUDC"
           :options="centeringMethodList"
           optionValueKey="value"
           optionTextKey="text"
           inputClass="tw-w-full tw-h-8"
+          :quiet="true"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['CENTRINGMETHOD']"
         />
-        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'CENTRINGMETHOD') }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['CENTRINGMETHOD'] }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-32"
-        name="Experiment Kind"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-        :vid="`experiment-kind-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} Experiment Kind`"
+        :vid="`sample ${sampleIndex + 1} experiment kind`"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
         v-slot="{ errors }">
         <base-input-select
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
+          :is-disabled="!allowUDC"
           :options="experimentKindList"
           inputClass="tw-w-full tw-h-8"
           optionValueKey="value"
           optionTextKey="text"
+          :quiet="true"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          v-model="inputValue[sampleIndex]['EXPERIMENTTYPEID']"
+          v-model="inputValue[sampleIndex]['EXPERIMENTKIND']"
         />
-        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'EXPERIMENTTYPEID') }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['EXPERIMENTKIND'] }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-20"
-        name="Energy"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['EXPERIMENTTYPEID'] === 'phasing' ? 'required|numeric' : ''"
-        :vid="`energy-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} Energy`"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD|numeric` : ''"
+        :vid="`sample ${sampleIndex + 1} energy`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
+          :disabled="inputValue[sampleIndex]['EXPERIMENTKIND'] !== 'SAD' || !allowUDC"
           inputClass="tw-w-full tw-h-8"
+          type="number"
+          :quiet="true"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['ENERGY']"
@@ -274,57 +278,63 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        name="UDC Anomalous Scatterer"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['EXPERIMENTKIND'] === 'phasing' ? 'required' : ''"
-        :vid="`anomalous-scatterer-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} UDC Anomalous Scatterer`"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD` : ''"
+        :vid="`sample ${sampleIndex + 1} UDC anomalous scatterer`"
         v-slot="{ errors }">
         <base-input-select
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
           :options="anomalousOptionsList"
+          :is-disabled="!allowUDC"
           optionValueKey="value"
           inputClass="tw-w-full tw-h-8"
           optionTextKey="text"
+          :quiet="true"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['ANOMALOUSSCATTERER']"
         />
-        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'ANOMALOUSSCATTERER') }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['ANOMALOUSSCATTERER'] }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        name="Screening Method"
         :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? 'required' : ''"
-        :vid="`screening-method-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} Screening Method`"
+        :vid="`sample ${sampleIndex + 1} screening method`"
         v-slot="{ errors }">
         <base-input-select
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
+          :is-disabled="!allowUDC"
           :options="screeningMethodList"
           optionValueKey="value"
           optionTextKey="text"
           inputClass="tw-w-full tw-h-8"
+          :quiet="true"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['SCREENINGMETHOD']"
         />
-        <p v-else class="tw-text-center">{{ selectDataValue(spaceGroupList, inputValue, 'SCREENINGMETHOD') }}</p>
+        <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['SCREENINGMETHOD'] }}</p>
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        name="Required Resolution"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === null ? 'required' : ''"
-        :vid="`required-resolution-${sampleIndex}`"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,none` : ''"
+        :name="`Sample ${sampleIndex + 1} Required Resolution`"
+        :vid="`sample ${sampleIndex + 1} required resolution`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== null"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'none' || !allowUDC"
+          type="number"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['REQUIREDRESOLUTION']"
+          :quiet="true"
         />
         <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['REQUIREDRESOLUTION'] }}</p>
       </validation-provider>
@@ -332,16 +342,18 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        name="Minimum Resolution"
-        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 && inputValue[sampleIndex]['SCREENINGMETHOD'] === 'all' ? 'required' : ''"
-        :vid="`minimum-resolution-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} Minimum Resolution`"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,all` : ''"
+        :vid="`sample ${sampleIndex + 1} minimum resolution`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'all'"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'all' || !allowUDC"
+          type="number"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+          :quiet="true"
           v-model="inputValue[sampleIndex]['MINIMUMRESOLUTION']"
         />
         <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['MINIMUMRESOLUTION'] }}</p>
@@ -350,20 +362,19 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        name="No to Collect"
-        :rules="
-          inputValue[sampleIndex]['PROTEINID'] > -1 &&
-          inputValue[sampleIndex]['SCREENINGMETHOD'] === 'best' &&
-          checkSampleInSampleGroups(inputValue[sampleIndex]['PROTEINID']) ? 'required' : ''"
-        :vid="`no-to-collect-${sampleIndex}`"
+        :name="`Sample ${sampleIndex + 1} No to Collect`"
+        :rules="inputValue[sampleIndex]['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,best`: ''"
+        :vid="`sample ${sampleIndex + 1} no to collect`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(inputValue[sampleIndex]['LOCATION'])"
-          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'best'"
+          :disabled="inputValue[sampleIndex]['SCREENINGMETHOD'] !== 'best' || !allowUDC"
+          type="number"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="inputValue[sampleIndex]['NOTOCOLLECT']"
+          :quiet="true"
         />
         <p v-else class="tw-text-center">{{ inputValue[sampleIndex]['NOTOCOLLECT'] }}</p>
       </validation-provider>
@@ -376,10 +387,11 @@ import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 import BaseSelectInput from 'app/components/base-input-select.vue'
 import BaseTextInput from 'app/components/base-input-text.vue'
 import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
+import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
 
 export default {
   name: 'tabbed-columns',
-  mixins: [MxSampleTableMixin],
+  mixins: [MxSampleTableMixin, VeeValidateCustomRules],
   components: {
     'base-input-select': BaseSelectInput,
     'base-input-text': BaseTextInput,

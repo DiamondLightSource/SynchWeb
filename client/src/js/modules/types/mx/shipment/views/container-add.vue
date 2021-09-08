@@ -122,6 +122,14 @@
                 </label>
                 <select name="SCREENID"></select>
             </div>
+
+            <div class="pck tw-mb-2 tw-py-2">
+              <label>Allow UDC</label>
+              <base-input-checkbox
+                name="Allow UDC"
+                v-model="containerState.ALLOWUDC"
+              />
+            </div>
           </div>
 
 
@@ -155,7 +163,7 @@
         <div class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4" v-show="invalid">
           <p class="tw-font-bold">Please fix the errors on the form</p>
           <div v-for="(error, index) in errors" :key="index">
-            <p v-show="error.length > 0" class="tw-black">{{index}}: {{error[0]}}</p>
+            <p v-show="error.length > 0" class="tw-black">{{error[0]}}</p>
           </div>
         </div>
 
@@ -205,6 +213,7 @@ const initialContainerState = {
   SCHEDULEID: null,
   SCREENID: null,
   EXPERIMENTTYPEID: "",
+  ALLOWUDC: false
 }
 
 const INITIAL_CONTAINER_TYPE = {
@@ -241,7 +250,6 @@ export default {
   data() {
     return {
       containerState: initialContainerState,
-      containerType: INITIAL_CONTAINER_TYPE,
 
       // The dewar that this container will belong to
       dewar: null,
@@ -287,9 +295,6 @@ export default {
       let types = this.experimentTypes.map( experiment => experiment.PROPOSALTYPE )
       let unique = types.filter( (value, index, self) => self.indexOf(value) === index )
       return unique
-    },
-    containerFilter: function() {
-      return [this.$store.state.proposal.proposalType]
     },
     ownerEmail: function() {
       // Does the selected owner have a valid email?
@@ -356,8 +361,40 @@ export default {
       let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID == newVal)
       this.containerState.NAME = entry['BARCODE'] || '-'
     },
+    'containerState.ALLOWUDC': function(newVal) {
+      let samples = []
+      if (newVal) {
+        samples = this.samples.map(sample => ({
+          ...sample,
+          CENTRINGMETHOD: 'xray',
+          EXPERIMENTKIND: 'SAD',
+          SCREENINGMETHOD: 'none'
+        }))
+      } else {
+        samples = this.samples.map(sample => ({
+          ...sample,
+          CENTRINGMETHOD: '',
+          EXPERIMENTKIND: '',
+          SCREENINGMETHOD: '',
+          ENERGY: '',
+          REQUIREDRESOLUTION: '',
+          MINIMUMRESOLUTION: '',
+          SCREENINGCOLLECTVALUE: ''
+        }))
+      }
+
+      this.$store.commit('samples/set', samples)
+    },
+    containerRegistry(newVal) {
+      if (newVal && newVal.length > 0) {
+        const [firstContainerRegistry] = newVal
+        this.containerState.CONTAINERREGISTRYID = firstContainerRegistry.CONTAINERREGISTRYID
+        this.containerState.NAME = firstContainerRegistry.BARCODE
+      }
+    }
   },
   created: function() {
+    this.containerType = INITIAL_CONTAINER_TYPE
     this.dewar = this.options.dewar.toJSON()
     this.containerState.DEWARID = this.dewar.DEWARID
 
@@ -380,12 +417,10 @@ export default {
     // Calls the validation method on our observer component
     async onSubmit() {
       const validated = await this.$refs.observer.validate()
-      console.log({ validated })
 
       if (!validated) return
 
-      // this.addContainer()
-
+      this.addContainer()
     },
     addContainer() {
       let experimentType = this.experimentTypesCollection.findWhere({EXPERIMENTTYPEID: this.containerState.EXPERIMENTTYPEID})

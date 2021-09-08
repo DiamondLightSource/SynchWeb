@@ -2,36 +2,44 @@ import Sample from 'models/sample'
 import Samples from 'collections/samples'
 
 const INITIAL_SAMPLE_STATE = {
-  LOCATION: '',
-  PROTEINID: -1,
-  NAME: '',
-  CRYSTALID: -1,
+  ABUNDANCE: '',
   ANOMALOUSSCATTERER: '',
-  BARCODE: '',
-  COMMENTS: '',
-  USERPATH: '',
-  SPACEGROUP: '',
+  BLSUBSAMPLEID: '',
+  CODE: '',
   CELL_A: '',
   CELL_B: '',
   CELL_C: '',
   CELL_ALPHA: '',
   CELL_BETA: '',
   CELL_GAMMA: '',
-  REQUIREDRESOLUTION: '',
   CENTRINGMETHOD: '',
-  ENERGY: '',
-  EXPERIMENTTYPEID: null,
-  VOLUME: '',
-  ABUNDANCE: '',
-  SYMBOL: '',
-  PACKINGFRACTION: '',
-  EXPERIMENTALDENSITY: '',
+  COMMENTS: '',
   COMPOSITION: '',
-  LOOPTYPE: '',
+  CONTAINERID: '',
+  CRYSTALID: -1,
   DIMENSION1: '',
   DIMENSION2: '',
   DIMENSION3: '',
+  ENERGY: '',
+  EXPERIMENTALDENSITY: '',
+  EXPERIMENTKIND: '',
+  LOCATION: '',
+  LOOPTYPE: '',
+  MINIMUMRESOLUTION: '',
+  NAME: '',
+  PACKINGFRACTION: '',
+  PROTEINID: -1,
+  REQUIREDRESOLUTION: '',
+  RADIATIONSENSITIVITY: '',
+  SCREENCOMPONENTGROUPID: '',
+  SCREENINGMETHOD: '',
+  SCREENINGCOLLECTVALUE: '',
+  THEORETICALDENSITY: '',
   SHAPE: '',
+  SPACEGROUP: '',
+  SYMBOL: '',
+  USERPATH: '',
+  VOLUME: '',
 }
 
 // Use Location as idAttribute for this table
@@ -68,7 +76,6 @@ const samplesModule = {
     },
     setSample(state, { data, index }) {
       if (index < state.samples.length) state.samples[index] = data
-      else console.log("Error trying to set sample data with index out of bounds:" + index)
     },
     clearSample(state, index) {
       if (index < state.samples.length) {
@@ -78,23 +85,17 @@ const samplesModule = {
         emptySample.LOCATION = location.toString()
 
         state.samples[index] = Object.assign(state.samples[index], emptySample)
-      } else {
-        console.log("Error trying to set sample data with index out of bounds: " + index)
       }
     },
     // Update an individual sample property
     update(state, { index, key, value }) {
       if (index < state.samples.length) state.samples[index][key] = value
-      else console.log("Error trying to set sample data with index " + index)
     },
     // Set all samples to a passed array - convenient when used with forms and computed properties
     set(state, data) {
       if (data.length <= state.samples.length) {
         state.samples = data.map((item) => { return item })
       }
-      else console.log("Error trying to set all sample data")
-
-      console.log("samples/set - result is " + JSON.stringify(state.samples))
     },
     setContainerSampleGroupData(state, data) {
       state.containersSamplesGroupData = data

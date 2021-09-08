@@ -16,6 +16,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         country: /^(\w|\s|\-|,|\(|\)|')+$/,
         visit: /^\w+\d+-\d+$/,
         twopath: /^(\w|-)+\/?(\w|-)+$/,
+        numberorword: /(^\w+$)|(^\d+$)/
     })
     
     _.extend(Backbone.Validation.messages, {
@@ -33,6 +34,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         country: 'This field must contain only letters, numbers, spaces, underscores, dashes, and commas',
         visit: 'This field must be of the format xxx123-123',
         twopath: 'This field can hold a path with two folders',
+        numberorword: 'This field can either hold numbers or a word'
     })
 
 })

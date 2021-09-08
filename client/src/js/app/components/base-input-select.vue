@@ -29,7 +29,7 @@ Slots include:
       :id="id"
       :name="name"
       :value="localValue"
-      :disabled="disabled"
+      :disabled="isDisabled"
       :class="classObject"
       @input="updateValue"
       @change="updateValue"
@@ -45,7 +45,7 @@ Slots include:
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
+      <span v-show="errorMessage && !quiet" :class="errorClass">{{ errorMessage }}</span>
     </slot>
 
     <!-- Placeholder for any buttons that should be placed after the input -->
@@ -129,6 +129,16 @@ export default {
     outerClass: {
       type: String,
     },
+    // If using the input within a table, set quiet mode to suppress error messages
+    // Keeps the styling around input fields
+    quiet: {
+      type: Boolean,
+      default: false
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {

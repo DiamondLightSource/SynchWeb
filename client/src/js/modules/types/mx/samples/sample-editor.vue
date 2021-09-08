@@ -3,9 +3,10 @@
   <div class="">
     
     <!-- Wrap the form in an observer component so we can check validation state on submission -->
-    <validation-observer ref="sampleObserver">
+    <validation-observer ref="sampleObserver" v-slot="{ invalid, errors }">
       <!-- Use plate table, single or table depending on capacity -->
       <component
+        ref="samples"
         :is="sampleComponent"
         :proteins="proteins"
         :experimentKind="experimentKind"
@@ -20,6 +21,12 @@
         @reset-form-validation="resetFormValidation"
       />
 
+      <div class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4" v-show="invalid">
+        <p class="tw-font-bold">Please fix the errors on the form</p>
+        <div v-for="(error, index) in errors" :key="index">
+          <p v-show="error.length > 0" class="tw-black">{{error[0]}}</p>
+        </div>
+      </div>
     </validation-observer>
   </div>
 </template>
@@ -146,23 +153,24 @@ export default {
     // Location should be the sample LOCATION
     onSaveSample(location) {
       this.$refs.sampleObserver.validate().then( (result) => {
-        console.log("Sample Editor is Valid was: " + result)
-        if (result) this.saveSample(location)
+        if (result) {
+          this.saveSample(location)
+          this.$refs.samples.closeSampleEditing()
+        }
         else {
           this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
-          console.log("Validation failed for sample location: " + location)
         }
       })
     },
-    saveSample(location) {
+    async saveSample(location) {
       let sampleIndex = +location -1
       // Create a new Sample Model so it uses the BLSAMPLEID to check for post, update etc
       let sampleModel = new Sample( this.samples[sampleIndex] )
 
-      this.$store.dispatch('saveModel', {model: sampleModel}).then( (result) => {
-        // Update BLSAMPLEID for this sample in the vuex store
-        if (!this.samples[sampleIndex]['BLSAMPLEID']) this.$store.commit('samples/update', {index: sampleIndex, key: 'BLSAMPLEID', value: result.get('BLSAMPLEID')})
-      }, (err) => console.log("Error saving model: " + JSON.stringify(err)))
+      const result = await this.$store.dispatch('saveModel', {model: sampleModel})
+
+      if (!this.samples[sampleIndex]['BLSAMPLEID'])
+        this.$store.commit('samples/update', {index: sampleIndex, key: 'BLSAMPLEID', value: result.get('BLSAMPLEID')})
     },
     getRowColDrop(pos) {
       let well = this.containerType.WELLDROP > -1 ? 1 : 0
@@ -178,21 +186,15 @@ export default {
     },
     onCloneColumn(location) {
       let sampleIndex = +location - 1
-
-      console.log("Current Sample = " + JSON.stringify(this.samples[sampleIndex]))
-
       let sourceCoordinates = this.getRowColDrop(location)
 
-      console.log("Source coordinates = " + JSON.stringify(sourceCoordinates))
-      for (var i=0; i<this.samples.length; i++) {
+      for (let i=0; i<this.samples.length; i++) {
         // We are only cloning samples that come after this one - so skip any with a lower index
         if (i > sampleIndex) {
           let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
-          console.log("Target coordinates = " + JSON.stringify(targetCoordinates))
 
           if (targetCoordinates['drop'] == sourceCoordinates['drop'] && targetCoordinates['col'] == sourceCoordinates['col']) {
-            let result = this.cloneSample(sampleIndex, i)
-            if (!result) console.log("Error cloning sample index: " + sampleIndex + " to: " + i)
+            this.cloneSample(sampleIndex, i)
           }
         }
       }
@@ -206,11 +208,9 @@ export default {
         // We are only cloning samples that come after this one - so skip any with a lower index
         if (i > sampleIndex) {
           let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
-          console.log("Target coordinates = " + JSON.stringify(targetCoordinates))
 
           if (targetCoordinates['drop'] == sourceCoordinates['drop'] && targetCoordinates['row'] == sourceCoordinates['row']) {
-            let result = this.cloneSample(sampleIndex, i)
-            if (!result) console.log("Error cloning sample index: " + sampleIndex + " to: " + i)
+            this.cloneSample(sampleIndex, i)
           }
         }
       }

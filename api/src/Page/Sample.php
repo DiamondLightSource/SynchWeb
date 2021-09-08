@@ -52,7 +52,7 @@ class Sample extends Page
                               'CRYSTALID' => '\d+',
                               'CONTAINERID' => '\d+',
                               'LOCATION' => '\d+',
-                              'CODE' => '\w+',
+                              'CODE' => '(\w|\s|\-)+|^$', // Change validation to work for dashes as well as numbers
                               // 'NAME' => '.*',
                               'ACRONYM' => '([\w-])+',
                               'SEQUENCE' => '[\s\w\(\)\.>\|;\n]+',
@@ -141,6 +141,11 @@ class Sample extends Page
                               'PLANORDER' => '\d',
 
                               'SAMPLEGROUPID' => '\d+',
+                              'SCREENINGMETHOD' => '\w+',
+                              'SCREENINGCOLLECTVALUE' => '\d+',
+                              'SAMPLEGROUP' => '\d+|\w+',
+                              'STRATEGYOPTION' => '',
+                              'MINIMUMRESOLUTION' => '\d+'
                                );
 
 
@@ -946,7 +951,7 @@ class Sample extends Page
 
             $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
-                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath
+                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
                                   
                                   FROM blsample b
 
@@ -1136,7 +1141,40 @@ class Sample extends Page
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
             }
 
-            foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY', 'USERPATH') as $f) {
+            foreach (
+                array(
+                    'CENTRINGMETHOD',
+                    'EXPERIMENTKIND',
+                    'RADIATIONSENSITIVITY',
+                    'SCREENCOMPONENTGROUPID',
+                    'BLSUBSAMPLEID',
+                    'COMPONENTIDS',
+                    'COMPONENTAMOUNTS',
+                    'REQUIREDRESOLUTION',
+                    'CELL_A',
+                    'CELL_B',
+                    'CELL_C',
+                    'CELL_ALPHA',
+                    'CELL_BETA',
+                    'CELL_GAMMA',
+                    'VOLUME',
+                    'ABUNDANCE',
+                    'PACKINGFRACTION',
+                    'DIMENSION1',
+                    'DIMENSION2',
+                    'DIMENSION3',
+                    'SHAPE',
+                    'THEORETICALDENSITY',
+                    'LOOPTYPE',
+                    'ENERGY',
+                    'USERPATH',
+                    'SCREENINGMETHOD',
+                    'SCREENINGCOLLECTVALUE',
+                    'SAMPLEGROUP',
+                    'STRATEGYOPTION',
+                    'MINIMUMRESOLUTION'
+                ) as $f
+            ) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
             }
@@ -1145,9 +1183,11 @@ class Sample extends Page
         }
 
 
-        function _do_add_sample($a) {
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7) RETURNING diffractionplanid INTO :id",
-                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH']));
+        function _do_add_sample($s) {
+            $a = $this->_prepare_strategy_option_for_sample($s);
+
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath, strategyoption, minimalresolution) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9) RETURNING diffractionplanid INTO :id",
+                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['STRATEGYOPTION'], $a['MINIMUMRESOLUTION']));
             $did = $this->db->id();
 
             if (!array_key_exists('CRYSTALID', $a)) {
@@ -1157,7 +1197,7 @@ class Sample extends Page
                     WHERE p.proposalid = :1 AND pr.proteinid = :2", array($this->proposalid, $a['PROTEINID']));
                 if (!sizeof($chk)) $this->_error('No such crystal');
 
-                $this->db->pq("INSERT INTO crystal (crystalid,proteinid,spacegroup,cell_a,cell_b,cell_c,cell_alpha,cell_beta,cell_gamma,abundance,theoreticaldensity) VALUES (s_crystal.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10) RETURNING crystalid INTO :id", 
+                $this->db->pq("INSERT INTO crystal (crystalid,proteinid,spacegroup,cell_a,cell_b,cell_c,cell_alpha,cell_beta,cell_gamma,abundance,theoreticaldensity) VALUES (s_crystal.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10) RETURNING crystalid INTO :id",
                 array($a['PROTEINID'], $a['SPACEGROUP'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['ABUNDANCE'], $a['THEORETICALDENSITY']));
                 $crysid = $this->db->id();
 
@@ -1172,12 +1212,47 @@ class Sample extends Page
 
                 $crysid = $a['CRYSTALID'];
             }
-                             
-            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16) RETURNING blsampleid INTO :id", 
+
+            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16) RETURNING blsampleid INTO :id",
                 array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE']));
             $sid = $this->db->id();
 
+            if ($a['SCREENINGMETHOD'] == 'best' && isset($a['SAMPLEGROUPID'])) {
+                $this->_save_sample_to_group($sid, $a['SAMPLEGROUPID'], null, null);
+            }
+
             return $sid;
+        }
+
+        function _prepare_strategy_option_for_sample($a) {
+            if ($a['SCREENINGMETHOD'] == 'best') {
+                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => $a['SCREENINGCOLLECTVALUE']);
+                if (is_numeric($a['SAMPLEGROUP'])) {
+                    $check = $this->db->paginate("SELECT bsg.blsamplegroupid FROM blsamplegroup bsg WHERE bsg.proposalid = :1 AND bsg.blsamplegroupid = :2", array($this->proposalid, $a['SAMPLEGROUP']));
+
+                    if (!sizeof($check)) $this->_error('No such sample group for this proposal.');
+
+                    $strategyOptionsData['sample_group'] = $a['SAMPLEGROUP'];
+                    $a['BLSAMPLEGROUPID'] = $a['SAMPLEGROUP'];
+                } else if (is_string($a['SAMPLEGROUP'])) {
+                    $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid,name,proposalid) VALUES(s_blsamplegroup.nextval,:1,:2) RETURNING blsamplegroupid INTO :id",
+                    array($a['SAMPLEGROUP'], $this->proposalid));
+                    $blSampleGroupId =  $this->db->id();
+
+                    $strategyOptionsData['sample_group'] = $blSampleGroupId;
+                    $a['BLSAMPLEGROUPID'] = $blSampleGroupId;
+                }
+            }
+            elseif ($a['SCREENINGMETHOD'] == 'all') {
+                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => null, "sample_group"=> null);
+            }
+            else {
+                $strategyOptionsData = null;
+            }
+
+            $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
+
+            return $a;
         }
         
         
@@ -2113,6 +2188,32 @@ class Sample extends Page
                 VALUES (:1,:2, :3, :4)", array($this->arg('BLSAMPLEID'), $sgid, $order, $type));
 
             $this->_output(array('BLSAMPLEGROUPSAMPLEID' => $sgid.'-'.$this->arg('BLSAMPLEID'), 'BLSAMPLEID' => $this->arg('BLSAMPLEID'), 'BLSAMPLEGROUPID' => $sgid));
+        }
+
+        function _save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type) {
+            if (!isset($blSampleId)) return 'No sample specified';
+
+            if (!isset($blSampleGroupId)) return 'No sample group specified. Create one before adding samples to group.';
+
+            $sgid = $blSampleGroupId;
+
+            $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid
+                  FROM blsample b
+                  INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                  INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+                  LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid
+                  WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid, $blSampleId));
+
+            if (!sizeof($samp)) return 'No such sample';
+            else $samp = $samp[0];
+
+            $order = isset($groupOrder) ? $groupOrder: 1;
+            $type = isset($type) ? $type : null;
+
+            $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type)
+                    VALUES (:1,:2, :3, :4)", array($blSampleId, $sgid, $order, $type));
+
+            return array('BLSAMPLEGROUPSAMPLEID' => $sgid.'-'.$blSampleId, 'BLSAMPLEID' => $blSampleId, 'BLSAMPLEGROUPID' => $sgid);
         }
 
 
