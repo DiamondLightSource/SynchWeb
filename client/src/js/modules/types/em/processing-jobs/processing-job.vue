@@ -3,9 +3,9 @@
     <job-header
       :processing-job-id="processingJobId"
       :auto-proc-program-id="autoProcProgramId"
-      :start-time="job.PROCESSINGSTARTTIME"
-      :end-time="job.PROCESSINGENDTIME"
-      :status="job.PROCESSINGSTATUSDESCRIPTION"
+      :start-time="job.processingStartTime"
+      :end-time="job.processingEndTime"
+      :status="job.processingStatusDescription"
       @hide="hide"
     />
 
@@ -59,10 +59,10 @@ export default {
     },
     'computed': {
         'processingJobId': function() {
-            return parseInt(this.job.PROCESSINGJOBID, 10)
+            return parseInt(this.job.processingJobId, 10)
         },
         'autoProcProgramId': function() {
-            return parseInt(this.job.AUTOPROCPROGRAMID, 10)
+            return parseInt(this.job.autoProcProgramId, 10)
         },
     },
     'methods': {

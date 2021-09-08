@@ -12,7 +12,8 @@ trait ProcessingJobs
 
         $this->_output($this->processingJobsQuery(
             'WHERE DC.dataCollectionId = :1',
-            array($this->arg('id'))
+            array($this->arg('id')),
+            false
         ));
     }
 
@@ -26,13 +27,14 @@ trait ProcessingJobs
             $this->_error('No session provided');
         }
 
-        $this->_output($this->processingJobs(
+        $this->_output($this->processingJobsQuery(
             'WHERE BLS.sessionId = :1',
-            array($session['SESSIONID'])
+            array($session['SESSIONID']),
+            true
         ));
     }
 
-    private function processingJobsQuery($where, $args)
+    private function processingJobsQuery($where, $args, $upperCase)
     {
         $total = $this->db->pq(
             "SELECT count(PJ.processingJobId) as total
@@ -72,7 +74,9 @@ trait ProcessingJobs
             LEFT JOIN AutoProcProgram APP ON PJ.processingJobId = APP.processingJobId
             $where
             LIMIT :2, :3",
-            $this->paginationArguments($args)
+            $this->paginationArguments($args),
+            $upperCase
+        );
         );
 
         return array(

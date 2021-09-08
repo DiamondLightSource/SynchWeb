@@ -24,7 +24,7 @@
 
       <processing-job
         v-for="job in processingJobs"
-        :key="job.PROCESSINGJOBID + job.AUTOPROCPROGRAMID"
+        :key="job.processingJobId + job.autoProcProgramId"
         :job="job"
       />
     </div>
@@ -38,7 +38,6 @@ import DataCollectionToolbar from 'modules/types/em/dc-toolbar/dc-toolbar.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import FlatButton from 'app/components/flat-button.vue'
 import ProcessingJob from 'modules/types/em/processing-jobs/processing-job.vue'
-import ProcessingJobsCollection from 'modules/types/em/collections/processingjobs'
 import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
 
 export default {
@@ -70,15 +69,6 @@ export default {
     'computed': {
         'dataCollectionModel': function() {
             return new DataCollectionModel({ 'ID': this.dataCollectionId })
-        },
-        'processingJobsCollection': function() {
-            return new ProcessingJobsCollection(null, {
-                'state': {
-                    'currentPage': 1, // TODO: pagination
-                    'pageSize': 15, // TODO: pagination
-                    'dataCollection': this.dataCollectionId,
-                }
-            })
         },
         'beamline': function() {
             return this.dataCollection ? this.dataCollection.BL : ''
@@ -131,7 +121,7 @@ export default {
                             30 * 1000
                         )
                     }
-                    this.fetchProcessingJobsCollection()
+                    this.fetchProcessingJobs()
                 },
                 (error) => {
                     console.log('error fetching dataCollection', error)
@@ -145,28 +135,16 @@ export default {
                 this.$store.commit('loading', false)
             })
         },
-        'fetchProcessingJobsCollection': function() {
-            this.$store.commit('loading', true)
-            this.$store.dispatch(
-                'getCollection', this.processingJobsCollection
-            ).then(
-                (result) => {
-                    this.processingJobs = result.map((jobModel) => {
-                        return jobModel.attributes
-                    })
-                    console.log('fetched processing jobs', this.processingJobs)
-                },
-                (error) => {
-                    console.log('error fetching processing jobs', error)
-                    this.$store.commit('notifications/addNotification', {
-                        'title': 'Error',
-                        'message': 'Could not retrieve processing jobs',
-                        'level': 'error'
-                    })
+        'fetchProcessingJobs': function() {
+            this.$store.dispatch('em/fetch', {
+                'url': '/em/jobs/' + this.dataCollectionId +
+                    '?currentPage=1&pageSize=500',
+                'humanName': 'Processing jobs',
+            }).then(
+                (response) => {
+                    this.processingJobs = response.data
                 }
-            ).finally(() => {
-                this.$store.commit('loading', false)
-            })
+            )
         },
     },
 }
