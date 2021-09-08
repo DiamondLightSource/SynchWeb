@@ -112,6 +112,9 @@ const samplesModule = {
       if (data.length <= state.samples.length) {
         state.samples = data.map((item) => { return item })
       }
+      else console.log("Error trying to set all sample data")
+
+      console.log("samples/set - result is " + JSON.stringify(state.samples))
     },
     setContainerSampleGroupData(state, data) {
       state.containersSamplesGroupData = data
