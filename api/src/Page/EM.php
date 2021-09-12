@@ -115,7 +115,7 @@ class EM extends Page
         array('/process/relion/session/:session', 'post', 'relionStart'),
         array('/process/relion/session/:session', 'get', 'relionStatus'),
         array('/process/relion/job/:processingJobId', 'patch', 'relionStop'),
-        array('/process/relion/job/parameters', 'get', 'relionParameters'),
+        array('/relion/parameters', 'get', 'relionParameters'),
 
         array('/process/scipion/session/:session', 'post', 'scipionStart')
     );

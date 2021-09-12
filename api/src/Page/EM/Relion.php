@@ -162,19 +162,30 @@ trait Relion
             $this->_error('Processing Job ID not provided');
         }
 
-        $parameters = $this->db->pq("
-            SELECT pj.processingjobparameterid,
-                pj.processingjobid,
-                pj.parameterkey,
-                pj.parametervalue
-            FROM ProcessingJobParameter pj
-            WHERE pj.processingjobid = :1", array($this->arg('processingJobId')));
+        $rows = $this->db->pq(
+            "SELECT
+                ProcessingJobParameter.parameterKey,
+                ProcessingJobParameter.parameterValue
+            FROM ProcessingJobParameter
+            WHERE ProcessingJobParameter.processingJobId = :1",
+            array($this->arg('processingJobId')),
+            false
+        );
 
-        if (!sizeof($parameters)) {
+        if (!sizeof($rows)) {
             $this->_error('No parameters for processing job');
         }
 
-        $this->_output(array('data' => $parameters, 'total' => sizeof($parameters)));
+        $results = array();
+        foreach ($rows as $row) {
+            $results[$row['parameterKey']] = $row['parameterValue'];
+        }
+
+        $transformer = new RelionParameterTransformer(
+            '',
+            RelionSchema::schema()
+        );
+        $this->_output($transformer->fetchParameters($results));
     }
 
     ////////////////////////////////////////////////////////////////////////////
