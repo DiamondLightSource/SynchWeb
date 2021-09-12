@@ -49,6 +49,15 @@ trait Relion
             $transformer->getFileTemplate()
         );
 
+        if (
+            $dataCollectionId &&
+            $this->unfinishedProcessingJobsExist($dataCollectionId)
+        ) {
+            $message = 'Relion processing job already exists for this data collection!';
+            error_log($message);
+            $this->_error($message, 400);
+        }
+
         if (!$dataCollectionId) {
             $dataCollectionId = $this->addDataCollection(
                 $session,
@@ -165,69 +174,59 @@ trait Relion
 
     ////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Returns dataCollectionId of first DataCollection associated with session
+     *
+     * Also checks for existing imageDirectory
+     *
+     * @param string $sessionId
+     * @param string $imageDirectory
+     * @param string $fileTemplate
+     *
+     * @return array|null
+     */
     private function findExistingDataCollection(
-        $session,
+        $sessionId,
         $imageDirectory,
         $fileTemplate
     ) {
-        // Returns dataCollectionId of first DataCollection associated with session
-        // Also checks for existing imageDirectory
-        // Returns null otherwise
-
-        if ($session['SESSIONID']) {
-            $result = $this->db->pq(
-                "SELECT dataCollectionId FROM DataCollection
-                    WHERE SESSIONID = :1 AND imageDirectory = :2 AND fileTemplate = :3
-                    LIMIT 1",
-                array(
-                    $session['SESSIONID'],
-                    $imageDirectory,
-                    $fileTemplate
-                )
-            );
-            if (count($result)) {
-                return $result[0]['DATACOLLECTIONID'];
-            }
+        if (!$sessionId) {
+            return null;
         }
 
-        return null;
+        $rows = $this->db->pq(
+            "SELECT dataCollectionId FROM DataCollection
+                WHERE SESSIONID=:1 AND imageDirectory=:2 AND fileTemplate=:3
+                LIMIT 1",
+            array(
+                $sessionId,
+                $imageDirectory,
+                $fileTemplate
+            ),
+            false
+        );
+
+        if (count($rows) == 0) {
+            return null;
+        }
+
+        return $rows[0]['DataCollectionId'];
     }
 
-    private function exitIfUnfinishedProcessingJobsExist($session)
+    private function unfinishedProcessingJobsExist($dataCollectionId)
     {
-        // Finds queued and running ProcessingJobs associated with session
-        // Returns null otherwise
+        $result = $this->db->pq(
+            "SELECT DC.dataCollectionId, APP.processingStatus
+            FROM DataCollection DC
+            INNER JOIN ProcessingJob PJ
+                ON PJ.dataCollectionId = DC.dataCollectionId
+            LEFT JOIN AutoProcProgram APP
+                ON APP.processingJobId = PJ.processingJobId
+            WHERE APP.processingStatus IS NULL AND DC.dataCollectionId = :1",
+            array($dataCollectionId)
+        );
 
-        if ($session['SESSIONID']) {
-            $result = $this->db->pq(
-                "SELECT
-                    APP.autoProcProgramId,
-                    APP.processingStartTime,
-                    APP.processingJobId,
-                    CASE
-                        WHEN (processingStartTime IS NULL AND processingEndTime IS NULL AND processingStatus IS NULL) THEN 'queued'
-                        WHEN (processingStartTime IS NOT NULL AND processingEndTime IS NULL AND processingStatus IS NULL) THEN 'running'
-                    END AS processingStatusDescription
-                FROM AutoProcProgram APP
-                JOIN ProcessingJob PJ ON PJ.processingJobId = APP.processingJobId
-                JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-                JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-                WHERE processingStatus IS NULL
-                  AND BLS.sessionId = :1",
-                array($session['SESSIONID'])
-            );
-
-            if (count($result)) {
-                $message = 'Relion processing job already exists for this session!';
-
-                error_log($message);
-                $this->_error($message, 400);
-
-                return $result;
-            }
-        }
-
-        return null;
+        return count($result) > 0;
     }
 
     ////////////////////////////////////////////////////////////////////////////
