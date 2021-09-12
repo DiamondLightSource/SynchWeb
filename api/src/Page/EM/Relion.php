@@ -3,15 +3,20 @@
 namespace SynchWeb\Page\EM;
 
 use SynchWeb\Page\EM\ArgumentValidator;
-use SynchWeb\Page\EM\RelionParameterBuilder;
+use SynchWeb\Page\EM\RelionParameterTransformer;
 use SynchWeb\Page\EM\RelionSchema;
 
 trait Relion
 {
+    /**
+     * Create a data collection and a processing job then enqueue the job
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @SuppressWarnings(PHPMD.LongVariable)
+     */
     public function relionStart()
     {
-        global $visit_directory,
-            $zocalo_mx_reprocess_queue;
+        global $visit_directory, $zocalo_mx_reprocess_queue;
 
         $this->exitIfElectronMicroscopesAreNotConfigured();
         $session = $this->sessionFetch($this->arg('session'));
@@ -30,24 +35,26 @@ trait Relion
             $this->_error($invalid, 400);
         }
 
-        $builder = new RelionParameterBuilder($sessionPath);
-        $workflowParameters = $builder->parameters($validated['valid']);
+        $transformer = new RelionParameterTransformer($sessionPath);
+        $workflowParameters = $transformer->postParameters($this->args);
 
-        // Create a ProcessingJob with ProcessingJobParameters for Zocalo to trigger RELION processing.
-        // This requires a DataCollection which in turn requires a DataCollectionGroup.
+        /* Create a ProcessingJob with ProcessingJobParameters
+           for Zocalo to trigger RELION processing.
+           This requires a DataCollection
+           which in turn requires a DataCollectionGroup. */
 
         $dataCollectionId = $this->findExistingDataCollection(
             $session['sessionId'],
-            $builder->getImageDirectory(),
-            $builder->getFileTemplate()
+            $transformer->getImageDirectory(),
+            $transformer->getFileTemplate()
         );
 
         if (!$dataCollectionId) {
             $dataCollectionId = $this->addDataCollectionForEM(
                 $session,
-                $builder->getImageDirectory(),
-                $builder->getFileTemplate()
+                $transformer->getImageDirectory(),
                 $this->args['import_images_ext'],
+                $transformer->getFileTemplate()
             );
         }
 
