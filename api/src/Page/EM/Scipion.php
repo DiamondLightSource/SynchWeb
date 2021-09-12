@@ -4,7 +4,7 @@ namespace SynchWeb\Page\EM;
 
 trait Scipion
 {
-    function scipionStart()
+    public function scipionStart()
     {
         global $visit_directory,
                $zocalo_scipion_template_path,
