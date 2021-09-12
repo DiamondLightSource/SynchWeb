@@ -1,28 +1,28 @@
 <template>
   <processing-section
     section-title="Processing Parameters"
-    :data-available="parameters.length > 0"
+    :data-available="dataAvailable"
     not-available-message="No processing parameters available"
     default-hidden
   >
     <parameter-list width="100%">
-      <template v-for="parameter in parameters">
+      <template v-for="(value, name) in parameters">
         <parameter-list-item
-          v-if="parameter.value.length < 20"
-          :key="parameter.id"
+          v-if="value.length < 20"
+          :key="name"
           width="20%"
-          :label="parameter.key"
-          :item="parameter.value"
+          :label="schema[name].label"
+          :item="value"
         />
       </template>
 
-      <template v-for="parameter in parameters">
+      <template v-for="(value, name) in parameters">
         <parameter-list-item
-          v-if="parameter.value.length >= 20"
-          :key="parameter.id"
+          v-if="value.length >= 20"
+          :key="name"
           width="100%"
-          :label="parameter.key"
-          :item="parameter.value"
+          :label="schema[name].label"
+          :item="value"
         />
       </template>
     </parameter-list>
@@ -33,6 +33,7 @@
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
+import Schema from 'modules/types/em/relion/schema'
 
 export default {
     'name': 'JobParameters',
@@ -41,6 +42,7 @@ export default {
         'parameter-list': ParameterList,
         'parameter-list-item': ParameterListItem,
     },
+    'mixins': [Schema],
     'props': {
         'processingJobId': {
             'type': Number,
@@ -48,24 +50,24 @@ export default {
         },
     },
     'data': function() {
-        return { 'parameters': [] }
+        return {
+            'parameters': {},
+        }
+    },
+    'computed': {
+        'dataAvailable': function() {
+            return Object.keys(this.parameters).length > 0 &&
+                Object.keys(this.schema).length > 0
+        },
     },
     'mounted': function() {
+        this.fetchSchema()
         this.$store.dispatch('em/fetch', {
-            'url': '/em/process/relion/job/parameters?processingJobId=' +
+            'url': '/em/relion/parameters?processingJobId=' +
                 this.processingJobId,
             'humanName': 'Processing Job Parameters',
         }).then(
-            (response) => {
-                /* TODO: once all Relion screens are updated,
-                   This endpoint can be updated to match */
-                this.parameters = response.data.map(function(parameter) {
-                    return {
-                        'key': parameter.PARAMETERKEY,
-                        'value': parameter.PARAMETERVALUE,
-                    }
-                })
-            }
+            (response) => { this.parameters = response }
         )
     },
 }
