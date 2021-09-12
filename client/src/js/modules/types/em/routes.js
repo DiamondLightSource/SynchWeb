@@ -3,8 +3,6 @@ import vueXModule from 'modules/types/em/store'
 import store from 'app/store/store.js'
 
 // Import style for lazy loading of Vue Single File Component
-const RelionView = () => import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/relion.vue')
-const RelionAddProcessing = () => import(/* webpackChunkName: "em" */ 'modules/types/em/relion/views/add-processing-job.vue')
 const DataCollectionView = () => import(/* webpackChunkName: "em" */ 'modules/types/em/dc/data-collection.vue')
 const ScipionView = import(/* webpackChunkName: "em" */ 'modules/types/em/scipion/views/scipion')
 
