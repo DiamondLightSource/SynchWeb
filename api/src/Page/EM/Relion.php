@@ -115,26 +115,28 @@ trait Relion
         $this->_output($output);
     }
 
+    /**
+     * Request that a currently running job be stopped
+     *
+     * @SuppressWarnings(PHPMD.LongVariable)
+     */
     public function relionStop()
     {
         global $zocalo_mx_reprocess_queue;
 
-        // $session = $this->determineSession($this->arg('session'));
-        // $this->exitIfSessionIsNotActive($session);
-
-        // Finds queued and running ProcessingJobs associated with session
-        // Returns null otherwise
-
         if ($this->arg('processingJobId')) {
-            $result = $this->db->pq("
-                SELECT processingJobId, dataCollectionId
+            $result = $this->db->pq(
+                "SELECT processingJobId, dataCollectionId
                 FROM ProcessingJob
-                WHERE processingJobId = :1", array($this->arg('processingJobId')));
+                WHERE processingJobId = :1",
+                array($this->arg('processingJobId')),
+                false
+            );
 
             if (count($result)) {
                 $message = array(
                     'parameters' => array(
-                        'ispyb_process' => $result[0]['PROCESSINGJOBID']
+                        'ispyb_process' => $result[0]['processingJobId']
                     ),
                     'recipes' => ['relion-stop']
                 );
@@ -148,12 +150,10 @@ trait Relion
             $this->_error($message, 400);
         }
 
-        $output = array(
+        $this->_output(array(
             'timestamp' => gmdate('c', time()),
             'message' => $message
-        );
-
-        $this->_output($output);
+        ));
     }
 
     public function relionParameters()
