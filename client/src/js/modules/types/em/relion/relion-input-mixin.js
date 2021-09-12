@@ -4,28 +4,35 @@ export default {
             'type': Object,
             'required': true,
         },
+        'schema': {
+            'type': Object,
+            'required': true,
+        },
         'name': {
             'type': String,
             'required': true,
         },
-        'extraDescription': {
+        'helpText': {
             'type': Array,
             'default': function() { return [] },
         },
     },
     'computed': {
+        'extraDescription': function() {
+            const extraDescription = this.schema[this.name].extraDescription
+            return typeof extraDescription == 'undefined' ?
+                this.helpText : extraDescription.concat(this.helpText)
+        },
         'value': {
             'get': function() {
-                console.log('get', this.name, this.parameters[this.name].value)
-                return this.parameters[this.name].value
+                return this.parameters[this.name]
             },
             'set': function(newValue) {
-                console.log('set', this.name, newValue)
                 this.$emit('update', { 'name': this.name, 'value': newValue })
             }
         },
         'label': function() {
-            return this.parameters[this.name].label
+            return this.schema[this.name].label
         }
     },
 }

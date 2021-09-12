@@ -4,7 +4,8 @@
       {{ label }}
     </label>
     <div
-      v-for="description in extraDescription"
+      v-for="(description, index) in extraDescription"
+      :key="index"
       class="relion-form-note"
     >
       {{ description }}
@@ -16,7 +17,7 @@
       class="relion-form-input"
     >
       <option
-        v-for="option in baseOptions"
+        v-for="option in selectOptions"
         :key="option['value']"
         :value="option['value']"
       >
@@ -33,11 +34,15 @@ export default {
     'name': 'RelionInputSelect',
     'mixins': [relionInputMixin],
     'computed': {
-        'baseOptions': function() {
-            return this.parameters[this.name].options.map(function(option) {
-                return typeof option == 'string' ?
-                    { 'display': option, 'value': option } :
-                    option
+        'selectOptions': function() {
+            const schema = this.schema[this.name]
+            const displayOptions = schema.displayOptions
+            const simpleOptions = typeof displayOptions == 'undefined'
+            return schema.options.map(function(option, index) {
+                return {
+                    'display': simpleOptions ? option : displayOptions[index],
+                    'value': option
+                }
             })
         },
         'id': function() {

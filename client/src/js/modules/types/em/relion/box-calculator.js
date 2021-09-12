@@ -3,26 +3,25 @@
  * Runs whenever any parameter value is updated.
  *
  * @param {string} name the name of the parameter just updated
- * @param {object} errors a vee validate error bag
  * @param {object} parameters a reference to all of the parameters
  */
-export default function (name, errors, parameters) {
+export default function (name, parameters) {
     const commit = function(diameter, size, sizeSmall) {
-        parameters.particleMaskDiameter = diameter
-        parameters.particleBoxSize = size
-        parameters.particleBoxSizeSmall = sizeSmall
+        parameters.mask_diameter = diameter
+        parameters.extract_boxsize = size
+        parameters.extract_small_boxsize = sizeSmall
     }
 
-    const boxSizeSmall = function(particleBoxSize, pixelSize) {
+    const boxSizeSmall = function(extract_boxsize, angpix) {
         const boxSizes = [
             48, 64, 96, 128, 160, 192, 256, 288, 300, 320, 360, 384,
             400, 420, 450, 480, 512, 640, 768, 896, 1024,
         ];
         for (const boxSize in boxSizes) {
-            if (boxSize > particleBoxSize) {
-                return particleBoxSize
+            if (boxSize > extract_boxsize) {
+                return extract_boxsize
             }
-            if (((pixelSize * particleBoxSize) / boxSize) < 4.25) {
+            if (((angpix * extract_boxsize) / boxSize) < 4.25) {
                 return boxSize
             }
         }
@@ -30,39 +29,38 @@ export default function (name, errors, parameters) {
     }
 
     const applicableParameters = [
-        'particleDiameterMax', 'pixelSize',
-        'particleCalculateForMe', 'pipelineDo1stPass',
+        'autopick_LoG_diam_max',
+        'angpix',
+        'wantCalculate',
+        'stop_after_ctf_estimation',
     ]
 
     if (!(
         applicableParameters.includes(name) &&
-        parameters.particleCalculateForMe.value &&
-        parameters.pipelineDo1stPass.value
+        parameters.wantCalculate &&
+        !parameters.stop_after_ctf_estimation
     )) {
         return
     }
 
-    const pixelSize = errors.has('pixelSize') ? NaN :
-        parseFloat(parameters.pixelSize.value)
+    const angpix = parseFloat(parameters.angpix)
+    const autopick_LoG_diam_max = parseFloat(parameters.autopick_LoG_diam_max)
 
-    const particleDiameterMax = errors.has('particleDiameterMax') ? NaN :
-        parseFloat(parameters.particleDiameterMax.value)
-
-    if (pixelSize == 0.0 || isNaN(pixelSize) || isNaN(particleDiameterMax)) {
+    if (angpix == 0.0 || isNaN(angpix) || isNaN(autopick_LoG_diam_max)) {
         commit('', '', '')
         return
     }
 
-    const particleSizePixels = particleDiameterMax / pixelSize
-    const particleMaskDiameter = Math.round(particleDiameterMax * 1.1)
+    const particleSizePixels = autopick_LoG_diam_max / angpix
+    const mask_diameter = Math.round(autopick_LoG_diam_max * 1.1)
     const boxSizeExact = particleSizePixels * 1.2
     const boxSizeInt = Math.ceil(boxSizeExact)
-    const particleBoxSize = boxSizeInt + (boxSizeInt % 2)
-    const particleBoxSizeSmall = boxSizeSmall(particleBoxSize, pixelSize)
+    const extract_boxsize = boxSizeInt + (boxSizeInt % 2)
+    const extract_small_boxsize = boxSizeSmall(extract_boxsize, angpix)
 
     commit(
-        particleMaskDiameter.toString(),
-        particleBoxSize.toString(),
-        particleBoxSizeSmall.toString()
+        mask_diameter.toString(),
+        extract_boxsize.toString(),
+        extract_small_boxsize.toString()
     )
 }

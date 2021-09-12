@@ -1,11 +1,13 @@
 <template>
   <div class="relion-form-field">
+    <!-- eslint-disable-next-line vue/no-v-html -->
     <label
       :for="id"
       v-html="label"
     />
     <div
-      v-for="description in extraDescription"
+      v-for="(description, index) in extraDescription"
+      :key="index"
       class="relion-form-note"
     >
       {{ description }}

@@ -13,7 +13,8 @@
       {{ label }}
     </label>
     <div
-      v-for="description in extraDescription"
+      v-for="(description, index) in extraDescription"
+      :key="index"
       class="relion-form-note"
     >
       {{ description }}
