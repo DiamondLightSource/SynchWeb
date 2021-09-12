@@ -33,35 +33,29 @@ class EM extends Page
         // Note boolean value true in JSON POST request is cast to to 1, false to nothing.
 
         // RELION
-
-        'projectAcquisitionSoftware' => '\w+', // String
-        'projectMovieRawFolder' => '[\w-]+', // String
-        'projectMovieFileNameExtension' => '[\w]{3,4}', // String (File name extension)
-        'projectGainReferenceFile' => '1?', // Boolean
-        'projectGainReferenceFileName' => '[\w-]+\.[\w]{3,4}', // String (File name + extension)
-
+        'acquisition_software' => '\w+', // String
+        'import_images_dir' => '[\w-]+', // String
+        'import_images_ext' => '[\w]{3,4}', // String (File name extension)
+        'motioncor_gainreference' => '[\w-]+\.[\w]{3,4}', // String (File name + extension)
         'voltage' => '\d+', // Integer
-        'sphericalAberration' => '\d*(\.\d+)?', // Decimal
-        'findPhaseShift' => '1?', // Boolean
-        'pixelSize' => '\d*(\.\d+)?', // Decimal
-        'motionCorrectionBinning' => '\d+', // Integer
-        'dosePerFrame' => '\d*(\.\d+)?', // Decimal
-
-        'pipelineDo1stPass' => '1?', // Boolean
-        'pipelineDo1stPassClassification2d' => '1?', // Boolean
-        'pipelineDo1stPassClassification3d' => '1?', // Boolean
-
-        'particleUseCryolo' => '1?', // Boolean
-        'particleDiameterMin' => '\d+', // Integer
-        'particleDiameterMax' => '\d+', // Integer
-        'particleMaskDiameter' => '\d+', // Integer
-        'particleBoxSize' => '\d+', // Integer
-        'particleBoxSizeSmall' => '\d+', // Integer
-        'particleCalculateForMe' => '1?', // Boolean
-
-        'pipelineDo2ndPass' => '1?', // Boolean
-        'pipelineDo2ndPassClassification2d' => '1?', // Boolean
-        'pipelineDo2ndPassClassification3d' => '1?', // Boolean
+        'Cs' => '\d*(\.\d+)?', // Decimal (Spherical aberration)
+        'ctffind_do_phaseshift' => '1?', // Boolean
+        'angpix' => '\d*(\.\d+)?', // Decimal
+        'eer_grouping' => '\d+', // Integer
+        'motioncor_binning' => '\d+', // Integer
+        'motioncor_doseperframe' => '\d*(\.\d+)?', // Decimal
+        'stop_after_ctf_estimation' => '1?', // Boolean
+        'do_class2d' => '1?', // Boolean
+        'do_class3d' => '1?', // Boolean
+        'use_fsc_criterion' => '1?', // Boolean
+        'autopick_do_cryolo' => '1?', // Boolean
+        'autopick_LoG_diam_min' => '\d+', // Integer
+        'autopick_LoG_diam_max' => '\d+', // Integer
+        'mask_diameter' => '\d+', // Integer
+        'extract_boxsize' => '\d+', // Integer
+        'extract_small_boxsize' => '\d+', // Integer
+        'do_class2d_pass2' => '1?', // Boolean
+        'do_class3d_pass2' => '1?', // Boolean
 
         // SCIPION
 
@@ -72,6 +66,8 @@ class EM extends Page
         'particleSize' => '\d+', // Integer
         'minDist' => '\d+', // Integer
         'windowSize' => '\d+', // Integer
+        'findPhaseShift' => '1?', // Boolean
+        'dosePerFrame' => '\d*(\.\d+)?', // Decimal
     );
 
     public static $dispatch = array(
@@ -112,7 +108,7 @@ class EM extends Page
 
         // See Synchweb\Page\EM\Relion
         array('/relion/schema/', 'get', 'relionSchema'),
-        array('/process/relion/session/:session', 'post', 'relionStart'),
+        array('/relion/start/:session', 'post', 'relionStart'),
         array('/process/relion/session/:session', 'get', 'relionStatus'),
         array('/process/relion/job/:processingJobId', 'patch', 'relionStop'),
         array('/relion/parameters', 'get', 'relionParameters'),
