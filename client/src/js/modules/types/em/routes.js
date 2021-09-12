@@ -30,42 +30,6 @@ const routes = [
         },
     },
     {
-        path: '/em/process/relion/session/:session_str',
-        component: RelionView,
-        props: route => ({
-            session_str: route.params.session_str,
-        }),
-        beforeEnter: (to, from, next) => {
-            // Copying the logic from types/em/relion/controller.js
-            if (to.params.session_str) {
-                app.cookie(to.params.session_str.split('-')[0]);
-                next()
-            } else {
-                // This path should never be entered. If there is no session_str then this path will not match
-                app.message({title: 'Visit not specified', message: 'No visit specified'})
-                next('/notfound')
-            }
-        }
-    },
-    {
-        path: '/em/process/relion/session/:session_str/jobs/add',
-        component: RelionAddProcessing,
-        props: route => ({
-            session_str: route.params.session_str,
-        }),
-        beforeEnter: (to, from, next) => {
-            // Copying the logic from types/em/relion/controller.js
-            if (to.params.session_str) {
-                app.cookie(to.params.session_str.split('-')[0]);
-                next()
-            } else {
-                // This path should never be entered. If there is no session_str then this path will not match
-                app.message({title: 'Visit not specified', message: 'No visit specified'})
-                next('/notfound')
-            }
-        }
-    },
-    {
         path: '/em/process/scipion/visit/:visit_str',
         component: MarionetteView,
         props: route => ({
