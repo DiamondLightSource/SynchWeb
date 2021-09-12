@@ -58,18 +58,11 @@ trait Relion
             );
         }
 
-        $processingJobId = null;
-
-        if ($dataCollectionId) {
-            $processingJobId = $this->addProcessingJobForRelion(
-                $dataCollectionId,
-                $workflowParameters
-            );
-        }
+        $processingJobId = $dataCollectionId ?
+            $this->addProcessingJob($dataCollectionId, $workflowParameters) :
+            null;
 
         // Send job to processing queue
-        // TODO Add provenance
-
         $message = array(
             'parameters' => array('ispyb_process' => $processingJobId)
         );
@@ -283,7 +276,7 @@ trait Relion
         return $dataCollectionId;
     }
 
-    private function addProcessingJobForRelion($dataCollectionId, $workflowParameters)
+    private function addProcessingJob($dataCollectionId, $workflowParameters)
     {
         $processingJobId = null;
 
@@ -293,24 +286,40 @@ trait Relion
             // Add ProcessingJob
 
             $this->db->pq(
-                "INSERT INTO ProcessingJob (dataCollectionId, displayName, comments, recipe, automatic)
-                VALUES (:1, :2, :3, :4, :5) RETURNING processingJobId INTO :id",
-                array($dataCollectionId, 'RELION', 'Submitted via SynchWeb', 'relion', 0)
+                "INSERT INTO ProcessingJob (
+                    dataCollectionId,
+                    displayName,
+                    comments,
+                    recipe,
+                    automatic
+                )
+                VALUES (:1, :2, :3, :4, :5)
+                RETURNING processingJobId INTO :id",
+                array(
+                    $dataCollectionId,
+                    'RELION',
+                    'Submitted via SynchWeb',
+                    'relion',
+                    0
+                )
             );
-
             $processingJobId = $this->db->id();
-
-            // Add ProcessingJobParameters
 
             foreach ($workflowParameters as $key => $value) {
                 $this->db->pq(
-                    "INSERT INTO ProcessingJobParameter (processingJobId, parameterKey, parameterValue)
+                    "INSERT INTO ProcessingJobParameter (
+                        processingJobId,
+                        parameterKey,
+                        parameterValue
+                    )
                     VALUES (:1, :2, :3)",
-                    array($processingJobId, $key, (is_bool($value) ? var_export($value, true) : $value)) // TODO REMOVE QUOTES FROM STRINGS
+                    array(
+                        $processingJobId,
+                        $key,
+                        (is_bool($value) ? var_export($value, true) : $value)
+                    )
                 );
             }
-
-//            array($processingJobId, $key, var_export($value, true)) // TODO REMOVE QUOTES FROM STRINGS
 
             $this->db->end_transaction();
         } catch (Exception $e) {
