@@ -8,6 +8,11 @@ use SynchWeb\Page\EM\RelionSchema;
 
 trait Relion
 {
+    public function relionSchema()
+    {
+        $this->_output(RelionSchema::schema());
+    }
+
     /**
      * Create a data collection and a processing job then enqueue the job
      *

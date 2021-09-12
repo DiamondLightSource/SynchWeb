@@ -111,6 +111,7 @@ class EM extends Page
         array('/classification/image/:id', 'get', 'classificationImage'),
 
         // See Synchweb\Page\EM\Relion
+        array('/relion/schema/', 'get', 'relionSchema'),
         array('/process/relion/session/:session', 'post', 'relionStart'),
         array('/process/relion/session/:session', 'get', 'relionStatus'),
         array('/process/relion/job/:processingJobId', 'patch', 'relionStop'),
