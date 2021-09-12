@@ -4,46 +4,20 @@ namespace SynchWeb\Page\EM;
 
 trait ProcessingJobs
 {
-    public function processingJobsByCollection()
+    public function processingJobs()
     {
         if (!$this->has_arg('id')) {
             $this->_error('No data collection provided');
         }
 
-        $this->_output($this->processingJobsQuery(
-            'WHERE DC.dataCollectionId = :1',
-            array($this->arg('id')),
-            false
-        ));
-    }
-
-    public function processingJobsBySession()
-    {
-        // Finds queued and running ProcessingJobs associated with session
-        // Returns null otherwise
-        $session = $this->determineSession($this->arg('session'));
-
-        if (!$session['SESSIONID']) {
-            $this->_error('No session provided');
-        }
-
-        $this->_output($this->processingJobsQuery(
-            'WHERE BLS.sessionId = :1',
-            array($session['SESSIONID']),
-            true
-        ));
-    }
-
-    private function processingJobsQuery($where, $args, $upperCase)
-    {
         $total = $this->db->pq(
             "SELECT count(PJ.processingJobId) as total
             FROM ProcessingJob PJ
             JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
             JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
             LEFT JOIN AutoProcProgram app ON PJ.processingJobId = app.processingJobId
-            $where",
-            $args,
+            WHERE DC.dataCollectionId = :1",
+            array($this->arg('id')),
             false
         );
 
@@ -57,7 +31,6 @@ trait ProcessingJobs
                 PJ.dataCollectionId,
                 PJ.recordTimestamp,
                 APP.autoProcProgramId,
-                APP.processingStatus,
                 APP.processingStartTime,
                 APP.processingEndTime,
                 CASE
@@ -72,16 +45,15 @@ trait ProcessingJobs
             INNER JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
             INNER JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
             LEFT JOIN AutoProcProgram APP ON PJ.processingJobId = APP.processingJobId
-            $where
+            WHERE DC.dataCollectionId = :1
             LIMIT :2, :3",
-            $this->paginationArguments($args),
-            $upperCase
-        );
+            $this->paginationArguments(array($this->arg('id'))),
+            false
         );
 
-        return array(
+        $this->_output(array(
             'total' => intval($total[0]['total']),
             'data' => $processingJobs,
-        );
+        ));
     }
 }

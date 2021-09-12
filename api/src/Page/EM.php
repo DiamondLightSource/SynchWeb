@@ -74,8 +74,7 @@ class EM extends Page
         array('/aps', 'post', '_ap_status'),
 
         // See Synchweb\Page\EM\ProcessingJobs
-        array('/jobs/:id', 'get', 'processingJobsByCollection'),
-        array('/process/relion/jobs/:session', 'get', 'processingJobsBySession'),
+        array('/jobs/:id', 'get', 'processingJobs'),
 
         array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
         array('/mc/histogram', 'get', '_mc_drift_histogram'),
