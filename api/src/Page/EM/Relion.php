@@ -50,7 +50,7 @@ trait Relion
         );
 
         if (!$dataCollectionId) {
-            $dataCollectionId = $this->addDataCollectionForEM(
+            $dataCollectionId = $this->addDataCollection(
                 $session,
                 $transformer->getImageDirectory(),
                 $this->args['import_images_ext'],
@@ -230,33 +230,64 @@ trait Relion
         return null;
     }
 
-    private function addDataCollectionForEM($session, $imageDirectory, $imageSuffix, $fileTemplate)
-    {
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Add a new data collection for processing jobs that don't yet have one
+     *
+     * @param array $session
+     * @param string $imageDirectory
+     * @param string $imageSuffix
+     * @param string $fileTemplate
+     *
+     * @SuppressWarnings(PHPMD.LongVariable)
+     */
+    private function addDataCollection(
+        $session,
+        $imageDirectory,
+        $imageSuffix,
+        $fileTemplate
+    ) {
         $dataCollectionId = null;
 
         try {
             $this->db->start_transaction();
 
-            // Add DataCollectionGroup
-
             $this->db->pq(
-                "INSERT INTO DataCollectionGroup (sessionId, comments, experimentType)
-                VALUES (:1, :2, :3) RETURNING dataCollectionGroupId INTO :id",
-                array($session['SESSIONID'], 'Created by SynchWeb', 'EM')
+                "INSERT INTO DataCollectionGroup (
+                    sessionId,
+                    comments,
+                    experimentType
+                )
+                VALUES (:1, :2, :3)
+                RETURNING dataCollectionGroupId INTO :id",
+                array(
+                    $session['SessionId'],
+                    'Created by SynchWeb',
+                    'EM'
+                )
             );
-
             $dataCollectionGroupId = $this->db->id();
 
-            // Add DataCollection
-
             $this->db->pq(
-                "INSERT INTO DataCollection (sessionId, dataCollectionGroupId, startTime,
-                    endTime, runStatus, imageDirectory, imageSuffix, fileTemplate, comments)
-                VALUES (:1, :2, NOW(), :3, :4, :5, :6, :7, :8) RETURNING dataCollectionId INTO :id",
+                "INSERT INTO DataCollection (
+                    sessionId,
+                    dataCollectionGroupId,
+                    startTime,
+                    endTime,
+                    runStatus,
+                    imageDirectory,
+                    imageSuffix,
+                    fileTemplate,
+                    comments
+                )
+                VALUES (:1, :2, NOW(), :3, :4, :5, :6, :7, :8)
+                RETURNING dataCollectionId INTO :id",
                 array(
-                    $session['SESSIONID'],
+                    $session['SessionId'],
                     $dataCollectionGroupId,
-                    $session['ENDDATE'],
+                    // now()
+                    $session['EndDate'],
                     'DataCollection Simulated',
                     $imageDirectory,
                     $imageSuffix,
@@ -264,7 +295,6 @@ trait Relion
                     'Created by SynchWeb'
                 )
             );
-
             $dataCollectionId = $this->db->id();
 
             $this->db->end_transaction();
