@@ -3,7 +3,8 @@
     :help-text="helpText"
     :width="width"
   >
-    <strong>{{ label }}:</strong>
+    <!-- eslint-disable-next-line vue/no-v-html -->
+    <strong v-html="label + ':'" />
     <!-- eslint-disable-next-line vue/no-v-html -->
     <span v-html="item" />
     <template v-if="label2">
