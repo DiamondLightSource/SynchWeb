@@ -13,11 +13,13 @@ trait Relion
             $zocalo_mx_reprocess_queue;
 
         $this->exitIfElectronMicroscopesAreNotConfigured();
-        $session = $this->determineSession($this->arg('session'));
-        // TODO Temporary override to make session available for testing after session has ended (JPH)
-        // $this->exitIfSessionIsNotActive($session);
-        $this->exitIfUnfinishedProcessingJobsExist($session);
-        $sessionPath = $this->substituteSessionValuesInPath($session, $visit_directory);
+        $session = $this->sessionFetch($this->arg('session'));
+
+        /* TODO Temporary override to make session available for testing
+           after session has ended (JPH) */
+        // $this->sessionExitIfNotActive($session);
+
+        $sessionPath = $this->sessionSubstituteValuesInPath($session, $visit_directory);
 
         $argumentValidator = new RelionArgumentValidator();
         $validated = $argumentValidator->validate($this->args);
@@ -38,7 +40,7 @@ trait Relion
         // This requires a DataCollection which in turn requires a DataCollectionGroup.
 
         $dataCollectionId = $this->findExistingDataCollection(
-            $session,
+            $session['sessionId'],
             $builder->getImageDirectory(),
             $builder->getFileTemplate()
         );
@@ -86,9 +88,10 @@ trait Relion
         // global $visit_directory;
 
         $this->exitIfElectronMicroscopesAreNotConfigured();
-        $session = $this->determineSession($this->arg('session'));
+        $session = $this->sessionFetch($this->arg('session'));
+
         // TODO RESTORE FOR PRODUCTION
-        // $this->exitIfSessionIsNotActive($session);
+        // $this->sessionExitIfNotActive($session);
 
         $output = array(
             'timestamp' => gmdate('c', time()),

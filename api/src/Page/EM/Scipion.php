@@ -13,13 +13,13 @@ trait Scipion
                $zocalo_scipion_start_queue;
 
         $this->exitIfElectronMicroscopesAreNotConfigured();
-        $session = $this->determineSession($this->arg('session'));
-        $this->exitIfSessionIsNotActive($session);
+        $session = $this->sessionFetch($this->arg('session'));
+        $this->sessionExitIfNotActive($session);
 
-        $session_path = $this->substituteSessionValuesInPath($session, $visit_directory);
-        $template_path = $this->substituteSessionValuesInPath($session, $zocalo_scipion_template_path);
+        $session_path = $this->sessionSubstituteValuesInPath($session, $visit_directory);
+        $template_path = $this->sessionSubstituteValuesInPath($session, $zocalo_scipion_template_path);
         $template_file = $zocalo_scipion_template_file;
-        $workflow_path = $this->substituteSessionValuesInPath($session, $zocalo_scipion_workflow_path);
+        $workflow_path = $this->sessionSubstituteValuesInPath($session, $zocalo_scipion_workflow_path);
 
         // Validate form parameters
 

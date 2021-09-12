@@ -15,6 +15,7 @@ class EM extends Page
     use \SynchWeb\Page\EM\ProcessingJobs;
     use \SynchWeb\Page\EM\Relion;
     use \SynchWeb\Page\EM\Scipion;
+    use \SynchWeb\Page\EM\Session;
 
     public static $arg_list = array(
         'id' => '\d+',
@@ -132,104 +133,7 @@ class EM extends Page
         }
     }
 
-    private function determineSession($session_reference)
-    {
-        if (!$this->has_arg('session')) {
-            $message = 'Session not specified!';
 
-            error_log($message);
-            $this->_error($message, 400);
-        }
-
-        // Lookup session in ISPyB
-        $session = $this->db->pq("
-            SELECT b.SESSIONID,
-                b.beamlinename AS beamlinename,
-                YEAR(b.startDate) AS year,
-                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS session,
-                CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) AS visit,
-                b.startdate AS startdate,
-                b.enddate AS enddate,
-                CURRENT_TIMESTAMP BETWEEN b.startdate AND b.enddate AS active
-            FROM proposal AS p
-                JOIN blsession AS b ON p.proposalid = b.proposalid
-            WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) LIKE :1", array($session_reference));
-
-        if (!sizeof($session)) $this->_error('Session not found');
-
-        $session = $session[0];
-
-        // Temporary fudge until Zocalo and Relion use ISPyB
-
-//        list($processingIsActive, $processingTimestamp) = $this->determineProcessingStatus($session);
-//
-//        $session['processingIsActive'] = $processingIsActive;
-//        $session['processingTimestamp'] = $processingTimestamp;
-
-//        list($processingIsActive, $processingTimestamp) = $this->determineProcessingStatus($session);
-
-        $session['processingIsActive'] = false;
-        $session['processingTimestamp'] = null;
-
-        return $session;
-    }
-
-    // TODO Review Scipion code following Relion implementation e.g. changes to Stomp queue, globals from config.php, etc. (JPH)
-
-    private function determineProcessingStatus($session)
-    {
-//        // Temporary fudge until Zocalo and Relion can update ISPyB
-//        // RUNNING_RELION_IT file indicates Relion is processing
-//
-//        global $visit_directory;
-//
-//        $filename = $this->substituteSessionValuesInPath($session, $visit_directory . '/.ispyb/processed/RUNNING_RELION_IT');
-//
-//        $isActive = false;
-//        $timestamp = null;
-//
-//        clearstatcache();
-//
-//        try {
-//            $isActive = file_exists($filename);
-//
-//            if ($isActive) {
-//                $stat = stat($filename);
-//
-//                if ($stat) $timestamp = $stat['mtime'];
-//            }
-//        } catch (Exception $e) {
-//            error_log("Failed to check status file: {$filename}");
-//            $this->_error('Failed to check status file.', 500);
-//        }
-//
-//        return array($isActive, $timestamp);
-
-        return array(false, null);
-    }
-
-    private function substituteSessionValuesInPath($session, $path)
-    {
-        // Substitute session values in file or directory path i.e. BEAMLINENAME, YEAR, and SESSION / VISIT.
-
-        foreach ($session as $key => $value) {
-            $path = str_replace("<%={$key}%>", $value, $path);
-        }
-
-        return $path;
-    }
-
-    private function exitIfSessionIsNotActive($session)
-    {
-        // Do not permit processing before session has started or after session has ended
-
-        if (!$session['ACTIVE']) {
-            $message = 'This session ended at ' . date('H:i:s \o\n jS F Y', strtotime($session['ENDDATE'])) . '.';
-
-            error_log($message);
-            $this->_error($message, 400);
-        }
-    }
 
     private function enqueue($zocalo_queue, $zocalo_message)
     {
