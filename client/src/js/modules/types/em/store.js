@@ -60,43 +60,36 @@ const module = {
     },
     'actions': {
         'fetch': function(context, {url, humanName}) {
-            const handleResult = function (response) {
-                console.log(humanName, response)
-                context.commit('loading', false, {'root': true })
-                return response
-            }
-
-            const handleError = function(response) {
-                const message = 'Could not retrieve ' + humanName
-                context.commit('notifications/addNotification', {
-                    'title': 'Error',
-                    'message': message,
-                    'level': 'error'
-                }, {'root': true })
-                console.log(response || message)
-                context.commit('loading', false, {'root': true })
-            }
-
+            const fullUrl = context.rootGetters.apiUrl + url
             context.commit('loading', true, {'root': true })
             return new Promise((resolve, reject) => {
                 // Backbone.ajax is overridden in src/js/app/marionette-application.js
                 // to provide additional SynchWeb specific functionality
                 Backbone.ajax({
                     'type': 'GET',
-                    'url': context.rootGetters.apiUrl + url,
+                    'url': fullUrl,
                     'success': function (
-                        response,
-                        status, // eslint-disable-line no-unused-vars
-                        xhr // eslint-disable-line no-unused-vars
+                        data,
+                        textStatus, // eslint-disable-line no-unused-vars
+                        jqXHR       // eslint-disable-line no-unused-vars
                     ) {
-                        resolve(handleResult(response))
+                        console.log(humanName, data)
+                        context.commit('loading', false, {'root': true })
+                        resolve(data)
                     },
-                    'error': function(
-                        model,
-                        response, // eslint-disable-line no-unused-vars
-                        options // eslint-disable-line no-unused-vars
-                    ) {
-                        handleError(JSON.parse(model.responseText).message)
+                    'error': function(jqXHR, textStatus, errorThrown) {
+                        console.log(
+                            'Error fetching ', humanName, fullUrl,
+                            'textStatus: ', textStatus,
+                            'errorThrown: ', errorThrown,
+                            'jqXHR: ', jqXHR
+                        )
+                        context.commit('notifications/addNotification', {
+                            'title': 'Error',
+                            'message': 'Could not retrieve ' + humanName,
+                            'level': 'error'
+                        }, {'root': true })
+                        context.commit('loading', false, {'root': true })
                         reject()
                     }
                 })
