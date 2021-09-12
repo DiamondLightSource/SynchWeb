@@ -2,8 +2,9 @@
 
 namespace SynchWeb\Page\EM;
 
-use SynchWeb\Page\EM\RelionArgumentValidator;
+use SynchWeb\Page\EM\ArgumentValidator;
 use SynchWeb\Page\EM\RelionParameterBuilder;
+use SynchWeb\Page\EM\RelionSchema;
 
 trait Relion
 {
@@ -21,16 +22,12 @@ trait Relion
 
         $sessionPath = $this->sessionSubstituteValuesInPath($session, $visit_directory);
 
-        $argumentValidator = new RelionArgumentValidator();
-        $validated = $argumentValidator->validate($this->args);
+        $argumentValidator = new ArgumentValidator(RelionSchema::schema());
+        $invalid = $argumentValidator->validateArguments($this->args);
 
-        if (count($validated['invalid']) > 0) {
-            $message = 'Invalid parameters: ' . implode(
-                '; ',
-                $validated['invalid']
-            ) . '.';
-            error_log($message);
-            $this->_error($message, 400);
+        if (count($invalid) > 0) {
+            error_log('Invalid parameters: ' . var_export($invalid, true));
+            $this->_error($invalid, 400);
         }
 
         $builder = new RelionParameterBuilder($sessionPath);
@@ -49,8 +46,8 @@ trait Relion
             $dataCollectionId = $this->addDataCollectionForEM(
                 $session,
                 $builder->getImageDirectory(),
-                $validated['valid']['projectMovieFileNameExtension'],
                 $builder->getFileTemplate()
+                $this->args['import_images_ext'],
             );
         }
 

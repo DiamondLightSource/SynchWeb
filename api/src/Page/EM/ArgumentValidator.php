@@ -2,99 +2,145 @@
 
 namespace SynchWeb\Page\EM;
 
-abstract class ArgumentValidator
+/**
+ * Validate the arguments passed for processing job parameters
+ *
+ * Some of this validation is handled by The Slim Framework's
+ * argument pattern matching in api/src/Page/EM.php.
+ * If at some point Slim was abandoned, then that pattern matching would have
+ * to be moved here too.
+ */
+class ArgumentValidator
 {
-    protected $args;
-    protected $validationRules;
-    protected $validArguments;
-    protected $invalidArguments;
+    private $args;
+    private $schema;
 
-    abstract protected function updateRulesFromArguments();
-    abstract protected function defaultRules();
-
-    private function validateArguments()
+    public function __construct($schema)
     {
-        $this->defaultRules();
-        $this->updateRulesFromArguments();
-        $this->validArguments = array();
-        $this->invalidArguments = array();
-
-        foreach ($this->validationRules as $argumentName => $rules) {
-            // Determine whether request includes argument
-            if (!$this->hasArgument($argumentName)) {
-                // Check whether a missing parameter is required.
-                if (array_key_exists('isRequired', $rules) && $rules['isRequired']) {
-                    $this->addError("$argumentName is required");
-                }
-                continue;
-            }
-
-            if ($this->checkArgument($argumentName, '') {
-                $this->addError("$argumentName is not specified");
-                continue;
-            }
-            if (
-                array_key_exists('minValue', $rules) &&
-                $this->args[$argumentName] < $rules['minValue']
-            ) {
-                $this->addError("$argumentName is too small");
-                continue;
-            }
-            if (
-                array_key_exists('maxValue', $rules) &&
-                $this->args[$argumentName] > $rules['maxValue']
-            ) {
-                $this->addError("$argumentName is too large");
-                continue;
-            }
-            if (
-                array_key_exists('inArray', $rules) &&
-                is_array($rules['inArray']) &&
-                !in_array($this->args[$argumentName], $rules['inArray'])
-            ) {
-                $this->addError("$argumentName is not known");
-                continue;
-            }
-            // Argument has passed validation checks so add to list of valid arguments.
-            $this->validArguments[$argumentName] = $this->args[$argumentName];
-            // Set type if outputType is specified, otherwise default to string.
-            // Note json_encode quotes value of type string.
-            $outputType = array_key_exists('outputType', $rules) ?
-                $rules['outputType'] : 'string';
-            settype($validArguments[$argumentName], $outputType);
-
-            return array($invalidArguments, $validArguments);
-        }
+        $this->schema = $schema;
     }
 
-    private function addError($message) {
-        array_push($this->invalidArguments, $message);
-    }
-
-    /**
-     * Add additional required clauses to validation rules
-     *
-     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
-     */
-    protected function updateRequiredArguments(array $requiredArguments)
+    public function validateArguments($args)
     {
-        foreach ($this->validationRules as $argument => $rule) {
-            // Determine whether parameter is in array of required arguments
-            if (in_array($argument, $requiredArguments)) {
-                // Update validation rule
-                $this->validationRules[$argument]['isRequired'] = true;
+        $this->args = $args;
+        $invalid = array();
+
+        foreach ($this->schema as $name => $rules) {
+            $result = $this->validateArgument($name, $rules);
+            if ($result !== true) {
+                array_push($invalid, array(
+                    'field' => $name,
+                    'message' => $result
+                ));
             }
         }
+
+        return $invalid;
     }
 
-    protected function hasArgument($argumentName)
+    protected function validateArgument($name, $rules)
     {
-        return array_key_exists($argumentName, $this->args);
+        $value = $this->getArgumentValue($name);
+
+        if ($this->isRequired($rules) && in_array($value, array('', null))) {
+            return "this value is missing";
+        }
+
+        if (
+            !array_key_exists('validateOptions', $rules) ||
+            $rules['validateOptions']
+        ) {
+            $rule = array_key_exists('options', $rules) ? $rules['options'] : null;
+
+            if ($rule !== null && !in_array($value, $rule)) {
+                return "$value is not known";
+            }
+        }
+
+        $rule = array_key_exists('checkType', $rules) ? $rules['checkType'] : null;
+
+        if ($rule !== null) {
+            if ($this->notType($value, $rule)) {
+                return "should be $rule";
+            }
+
+            $value = $this->setType($value, $rule);
+        }
+
+        $rule = array_key_exists('mustEqual', $rules) ? $rules['mustEqual'] : null;
+
+        if ($rule !== null && $value !== $rule) {
+            return "invalid";
+        }
+
+        $rule = array_key_exists('minValue', $rules) ? $rules['minValue'] : null;
+
+        if ($rule !== null && $value < $rule) {
+            return "too small";
+        }
+
+        $rule = array_key_exists('maxValue', $rules) ? $rules['maxValue'] : null;
+
+        if ($rule !== null && $value > $rule) {
+            return "too large";
+        }
+
+        return true;
     }
 
-    protected function checkArgument($argumentName, $expectedValue = true)
+    private function isRequired($rules)
     {
-        return $this->hasArgument($argumentName) &&
-            $this->args[$argumentName] === $expectedValue;
+        // no array_key_exists because this one must exist on all schema entries
+        $required = $rules['required'];
+        if (gettype($required) == 'boolean') {
+            return $required;
+        }
+
+        foreach ($required as $otherArgument => $expectedValue) {
+            $otherValue = $this->getTypedValue($otherArgument);
+            // all checks must be true for required to be true
+            if ($otherValue !== $expectedValue) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function notType($value, $type)
+    {
+        if ($type == 'boolean') {
+            return !in_array($value, array('true', '1', 1, 'false', '0', '', 0));
+        }
+
+        $check = $value;
+        settype($check, $type);
+        return strval($check) !== $value;
+    }
+
+    private function setType($value, $type)
+    {
+        if ($type == 'boolean') {
+            return in_array($value, array('true', '1'));
+        }
+
+        $new = $value;
+        settype($new, $type);
+        return $new;
+    }
+
+    private function getArgumentValue($name)
+    {
+        return array_key_exists($name, $this->args) ? $this->args[$name] : null;
+    }
+
+    private function getTypedValue($name)
+    {
+        $value = $this->getArgumentValue($name);
+        $rules = $this->schema[$name];
+        if (array_key_exists('checkType', $rules)) {
+            $value = $this->setType($value, $rules['checkType']);
+        }
+        return $value;
     }
 }
