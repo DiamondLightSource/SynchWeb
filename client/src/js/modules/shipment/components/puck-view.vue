@@ -13,7 +13,7 @@ TODO - move the score colour methods to a utility class
 
 
 <script>
-import { select as d3Select } from 'd3-selection'
+import {select as d3Select, selectAll as d3SelectAll} from 'd3-selection'
 import { scaleLinear as d3ScaleLinear} from 'd3-scale'
 import { scaleThreshold as d3ScaleThreshold} from 'd3-scale'
 import { interpolateViridis as d3InterpolateViridis} from 'd3-scale-chromatic'
@@ -21,7 +21,11 @@ export default {
   name: 'PuckView',
   props: {
     'container': Object, // Plate geometry
-    'samples': Array, // Data bound to each cell / location
+    // Data bound to each cell / drop location
+    samples: {
+      type: Array,
+      default: () => ([])
+    },
     'selected': {
       type: Array, // list of locations that should be highlighted
       required: false,
@@ -89,12 +93,10 @@ export default {
     }
   },
   mounted: function() {
+    d3SelectAll("#puck > *").remove()
     this.drawContainer()
     this.updateSelected()
     this.showLabels()
-    // this.updateSampleCells(1, true)
-    // this.updateSampleCells(3, false)
-    // this.updateSampleCells(14, false)
   },
   methods: {
     // Create the svg graphic representation of the puck
@@ -153,12 +155,10 @@ export default {
     // Used to inform the parent that a cell has been clicked
     onCellClicked: function(sampleData) {
       if (sampleData && sampleData.BLSAMPLEID) {
-        console.log("There is data in this cell")
         // Convert to an actual index not string
         this.$emit('cell-clicked', +sampleData.LOCATION)
       } else {
         // All samples should have a location
-        console.log("No data in this cell")
         this.$emit('cell-clicked', +sampleData.LOCATION)
       }
     },

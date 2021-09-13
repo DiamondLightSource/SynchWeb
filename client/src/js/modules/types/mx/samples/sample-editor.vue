@@ -58,9 +58,6 @@ export default {
     proteins: {
       type: Array
     },
-    gproteins: {
-      type: Object
-    },
     containerId: {
       type: Number
     }
@@ -90,29 +87,17 @@ export default {
       if (location < 1 || location > (this.samples.length-1)) return
 
       // Sample to be copied and next index
-      let sampleIndex = location - 1
       let nextSampleIndex = -1
       // Recreate current behaviour - find the next non-zero protein id
       // This means you can click any row icon and it will fill whatever is the next empty link item based on protein id/valid acronym
-      for (var i = location; i < this.samples.length; i++) {
+      for (let i = location; i < this.samples.length; i++) {
         if (+this.samples[i]['PROTEINID'] < 0) {
           nextSampleIndex = i
           break
         }
       }
-      let nextSampleLocation = nextSampleIndex + 1 // LOCATION to be stored in the cloned sample
 
-      if (nextSampleIndex > 0) {
-        this.$store.commit('samples/setSample', {
-          data: {
-            ...this.samples[nextSampleIndex],
-            ...this.samples[sampleIndex],
-            LOCATION: nextSampleLocation.toString(),
-            NAME: this.generateSampleName(this.samples[sampleIndex].NAME, nextSampleLocation)
-          },
-          index: nextSampleIndex
-        })
-      }
+      this.cloneSample(location, nextSampleIndex)
     },
     // Clear row for a single row in the sample table
     onClearSample(sampleLocation) {
@@ -126,13 +111,13 @@ export default {
     },
     // Take first entry (or index) and clone all rows
     onCloneContainer(sampleIndex=0) {
-      for (var i=0; i < this.samples.length; i++) {
+      for (let i=0; i < this.samples.length; i++) {
         this.cloneSample(sampleIndex, i)
       }
     },
     // Remove all sample information from every row
     onClearContainer() {
-      for (var i=0; i<this.samples.length; i++) {
+      for (let i=0; i<this.samples.length; i++) {
         this.$store.commit('samples/clearSample', i)
       }
     },
@@ -151,84 +136,111 @@ export default {
     },
     // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
-    onSaveSample(location) {
-      this.$refs.sampleObserver.validate().then( (result) => {
-        if (result) {
-          this.saveSample(location)
-          this.$refs.samples.closeSampleEditing()
-        }
-        else {
-          this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
-        }
-      })
+    async onSaveSample(location) {
+      const result = await this.$refs.sampleObserver.validate()
+      if (result) {
+        await this.saveSample(location)
+        this.$refs.samples.closeSampleEditing()
+      }
+      else {
+        this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
+      }
     },
     async saveSample(location) {
-      let sampleIndex = +location -1
+      let sampleIndex = +location
       // Create a new Sample Model so it uses the BLSAMPLEID to check for post, update etc
       let sampleModel = new Sample( this.samples[sampleIndex] )
 
-      const result = await this.$store.dispatch('saveModel', {model: sampleModel})
+      const result = await this.$store.dispatch('saveModel', { model: sampleModel })
 
       if (!this.samples[sampleIndex]['BLSAMPLEID'])
-        this.$store.commit('samples/update', {index: sampleIndex, key: 'BLSAMPLEID', value: result.get('BLSAMPLEID')})
+        this.$store.commit('samples/updateSamplesField', {
+          path: `samples/${sampleIndex}/BLSAMPLEID`,
+          value: result.get('BLSAMPLEID')
+        })
     },
     getRowColDrop(pos) {
       let well = this.containerType.WELLDROP > -1 ? 1 : 0
       let dropTotal = (this.containerType.DROPPERWELLX * this.containerType.DROPPERWELLY) - well
-      
-      var wellpos = Math.floor((parseInt(pos)-1) / dropTotal)
-      var drop = ((pos-1) % dropTotal)+1
-      
-      var col = wellpos % this.containerType.WELLPERROW
-      var row = Math.floor(wellpos / this.containerType.WELLPERROW)
+
+      const wellPosition = Math.floor((parseInt(pos) - 1) / dropTotal);
+      const drop = ((pos - 1) % dropTotal) + 1;
+
+      const col = wellPosition % this.containerType.WELLPERROW;
+      const row = Math.floor(wellPosition / this.containerType.WELLPERROW);
 
       return { row: row, col: col, drop: drop, pos: pos }
     },
-    onCloneColumn(location) {
+    // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
+    async onCloneColumn(location) {
       let sampleIndex = +location - 1
       let sourceCoordinates = this.getRowColDrop(location)
 
-      for (let i=0; i<this.samples.length; i++) {
+      for (let i = 0; i < this.samples.length; i++) {
         // We are only cloning samples that come after this one - so skip any with a lower index
         if (i > sampleIndex) {
           let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
 
           if (targetCoordinates['drop'] == sourceCoordinates['drop'] && targetCoordinates['col'] == sourceCoordinates['col']) {
             this.cloneSample(sampleIndex, i)
+            this.$emit('update-location', i)
+
+            await this.$nextTick()
+            const locationValid = await this.$refs.sampleObserver.validate();
+
+            if (!locationValid) {
+              break
+            } else {
+              this.$store.commit('samples/updateSamplesField', {
+                path: `samples/${sampleIndex}/VALID`,
+                value: 1
+              })
+            }
           }
         }
       }
     },
-    onCloneRow(location) {
+    // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
+    async onCloneRow(location) {
       let sampleIndex = +location - 1
-
       let sourceCoordinates = this.getRowColDrop(location)
 
-      for (var i=0; i<this.samples.length; i++) {
+      for (let i = 0; i < this.samples.length; i++) {
         // We are only cloning samples that come after this one - so skip any with a lower index
         if (i > sampleIndex) {
           let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
 
           if (targetCoordinates['drop'] == sourceCoordinates['drop'] && targetCoordinates['row'] == sourceCoordinates['row']) {
             this.cloneSample(sampleIndex, i)
+            this.$emit('update-location', i)
+
+            await this.$nextTick()
+            const locationValid = await this.$refs.sampleObserver.validate();
+
+            if (!locationValid) {
+              break
+            } else {
+              this.$store.commit('samples/updateSamplesField', {
+                path: `samples/${sampleIndex}/VALID`,
+                value: 1
+              })
+            }
           }
         }
       }
     },
     cloneSample(sourceIndex, targetIndex) {
-      if (targetIndex >= this.samples.length) return false
-      if (sourceIndex >= this.samples.length) return false
+      if (targetIndex < 0 || targetIndex >= this.samples.length) return false
+      if (sourceIndex < 0 || sourceIndex >= this.samples.length) return false
 
       let sourceSample = this.samples[sourceIndex]
       if (sourceSample.PROTEINID < 0) return false
 
       let baseName = this.samples[sourceIndex].NAME
-      let sampleClone = Object.assign(this.samples[targetIndex], this.samples[sourceIndex])
-      sampleClone.LOCATION = (targetIndex+1).toString()
+      let sampleClone = { ...this.samples[targetIndex], ...this.samples[sourceIndex] }
+      sampleClone.LOCATION = (targetIndex + 1).toString()
       sampleClone.NAME = this.generateSampleName(baseName, targetIndex+1)
-      this.$store.commit('samples/setSample', {index: targetIndex, data: sampleClone})
-
-      return true
+      this.$store.commit('samples/setSample', { index: targetIndex, data: sampleClone })
     },
     // Reset the validation for the field when an input is edited
     resetFormValidation() {

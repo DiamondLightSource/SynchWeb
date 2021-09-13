@@ -1,14 +1,18 @@
-import Users from "collections/users";
+import Users from 'collections/users'
 import ProcessingPipelines from 'collections/processingpipelines'
 import SpaceGroupList from 'utils/sgs.js'
 import CenteringMethodList from 'utils/centringmethods.js'
 import AnomalousList from 'utils/anoms.js'
 import ExperimentKindsList from 'utils/experimentkinds.js'
-import DistinctProteins from "js/modules/shipment/collections/distinctproteins";
-import ExperimentTypes from "js/modules/shipment/collections/experimenttypes";
-import ContainerRegistry from "js/modules/shipment/collections/containerregistry";
-import ContainerTypes from "js/modules/shipment/collections/containertypes";
-import SampleGroups from "js/collections/samplegroups";
+import DistinctProteins from 'modules/shipment/collections/distinctproteins'
+import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
+import ContainerRegistry from 'modules/shipment/collections/containerregistry'
+import ContainerTypes from 'modules/shipment/collections/containertypes'
+import SampleGroups from 'collections/samplegroups'
+import ImagingImager from 'modules/imaging/collections/imagers'
+import ImagingSchedules from 'modules/imaging/collections/schedules'
+import ImagingScreens from 'modules/imaging/collections/screens'
+import {mapGetters} from "vuex";
 
 const INITIAL_CONTAINER_TYPE = {
   CONTAINERTYPEID: 0,
@@ -31,14 +35,21 @@ export default {
       containerTypes: [],
       containerTypesCollection: null,
       containerRegistryCollection: null,
+      containerRegistry: [],
+      containerRegistryId: '',
       containerState: {},
 
       experimentTypes: [],
       experimentTypesCollection: null,
       experimentKindList: [],
 
-      containerRegistry: [],
-      containerRegistryId: '',
+      imagingImagers: [],
+      imagingCollections: null,
+      imagingSchedules: [],
+      imagingSchedulesCollection: null,
+      imagingScreens: [],
+      imagingScreensCollections: null,
+
       processingPipeline: '',
       processingPipelines: [],
 
@@ -131,12 +142,45 @@ export default {
         value: group.BLSAMPLEGROUPID,
         text: group.NAME || `Sample Group ${index}`
       }))
+    },
+    async getImagingCollections() {
+      this.imagingCollections = new ImagingImager()
+      // If we want to only allow valid samples
+      this.imagingCollections.queryParams.pageSize = 9999
+
+      const result = await this.$store.dispatch('getCollection', this.imagingCollections)
+      this.imagingImagers = result.toJSON()
+    },
+    async getImagingScheduleCollections() {
+      this.imagingSchedulesCollection = new ImagingSchedules()
+      // If we want to only allow valid samples
+      this.imagingSchedulesCollection.queryParams.pageSize = 9999
+
+      const result = await this.$store.dispatch('getCollection', this.imagingSchedulesCollection)
+      this.imagingSchedules = result.toJSON()
+    },
+    async getImagingScreensCollections() {
+      this.imagingScreensCollection = new ImagingScreens()
+      // If we want to only allow valid samples
+      this.imagingScreensCollection.queryParams.pageSize = 9999
+
+      const result = await this.$store.dispatch('getCollection', this.imagingScreensCollection)
+      this.imagingScreens = result.toJSON()
     }
   },
   computed: {
     containerFilter: function() {
       return [this.$store.state.proposal.proposalType]
     },
+    isPuck() {
+      return this.containerType.WELLPERROW == null ? true : false
+    },
+    isPlate() {
+      return this.containerType.WELLPERROW > 0 ? true : false
+    },
+    ...mapGetters({
+      samples: ['samples/samples'],
+    }),
   },
   provide() {
     return {

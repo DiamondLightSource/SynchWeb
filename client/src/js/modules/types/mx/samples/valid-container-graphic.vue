@@ -5,17 +5,16 @@
         <h1 class="tw-text-xl">Container Sample Status</h1>
         <p>{{ containerComponent }}</p>
         <component
-            :key="graphicKey"
-            :is="containerComponent"
-            :container="geometry"
-            :samples="samples"
-            :selected="selected"
-            color-scale="rgb"
-            color-attr="VALID"
-            @cell-clicked="onCellClicked"/>
+          :key="graphicKey"
+          :is="containerComponent"
+          :container="geometry"
+          :samples="samples"
+          :selected="selected"
+          color-scale="rgb"
+          color-attr="VALID"
+          @cell-clicked="onCellClicked"/>
       </div>
     </div>
-    <!-- Have removed :selected=selectedItems -->
   </section>
 </template>
 
@@ -23,7 +22,7 @@
 import PlateView from 'modules/shipment/components/plate-view.vue'
 import PuckView from 'modules/shipment/components/puck-view.vue'
 export default {
-  name:"Valid-Container-Graphic",
+  name:"valid-container-graphic",
   components: {
     'plate-view': PlateView,
     'puck-view': PuckView,
@@ -69,11 +68,6 @@ export default {
       this.graphicKey += 1;
     },
     onCellClicked: function(location) {
-      let index = this.selectedItems.indexOf(location)
-      if ( index < 0) {
-        this.selectedItems.push(+location)
-      }
-      else this.selectedItems.splice(index, 1)
       this.$emit('cell-clicked', location)
     },
   },
@@ -96,7 +90,6 @@ export default {
   },
   data: function() {
     return {
-      selectedItems: [],
       graphicKey: 0,
     }
   }
