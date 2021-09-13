@@ -7,6 +7,7 @@ import Visits from 'collections/visits'
     
 import SelectVisitView from 'modules/assign/views/selectvisit'
 import AssignView from 'modules/assign/views/assign'
+import ScanAssignView from 'modules/assign/views/scanassign'
 
 
 let bc = { title: 'Assign Containers', url: '/assign' }
@@ -93,7 +94,22 @@ const routes = [
                         // In either case we can stop the loading animation
                         app.loading(false)
                     })
-                }
+                },
+            },
+            {
+                path: 'scan/:bl([a-zA-Z0-9_-]+)',
+                name: 'assign-scan',
+                meta: {
+                    permission: 'scan_assign'
+                },
+                component: MarionetteView,
+                props: route => ({
+                    mview: ScanAssignView,
+                    options: {
+                        bl: route.params.bl
+                    },
+                    breadcrumbs: [bc,{ title: 'Assign Containers' }, { title: 'Barcode Scan'}, { title: route.params.bl }]
+                }),
             }
         ]
     }

@@ -46,6 +46,8 @@ const XpdfContainersView = import(/* webpackChunkName: "shipment" */ 'modules/ty
 
 const ContainerRegistryView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/containerregistry')
 const RegisteredContainer = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/registeredcontainer')
+const QueuedContainers = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/queuedcontainers')
+const ReviewContainer = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/containerreview')
 
 const MigrateView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/migrate')
 
@@ -78,6 +80,10 @@ app.addInitializer(function() {
 
   application.on('rcontainer:show', function(crid) {
       application.navigate('/containers/registry/'+crid)
+  })
+
+  application.on('container:review', function(cid) {
+    application.navigate('/containers/review/'+cid)
   })
 })
 
@@ -398,6 +404,47 @@ const routes = [
     component: ContainerQueueWrapper,
     props: route => ({
       cid: +route.params.cid,
+    }),
+  },
+  {
+    path: '/containers/queued(/s/)?:s([a-zA-Z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9]+)?(/pt/)?:pt([a-zA-Z0-9_-]+)?(/bl/)?:bl([a-zA-Z0-9_-]+)?(/sid/)?:sid([0-9]+)?(/page/)?:page([0-9]+)?',
+    name: 'containers-queued',
+    meta: {
+        permission: 'queued_cont'
+    },
+    component: MarionetteView,
+    props: route => ({
+        mview: QueuedContainers,
+        options: {
+          params: { 
+            s: route.params.s, ty: route.params.ty, pt: route.params.pt, 
+            bl: route.params.bl, sid: route.params.sid, page: route.params.page
+          }
+        },
+        breadcrumbs: [bc, { title: 'Queued Containers' }]
+    }),
+  },
+  {
+    path: '/containers/review/:cid([0-9]+)',
+    name: 'container-review',
+    component: MarionetteView,
+    props: route => ({
+        mview: ReviewContainer,
+        options: {
+          model: new Container({ CONTAINERID: route.params.cid })
+        },
+        breadcrumbs: [bc, { title: 'Containers' }, { title: 'Review' }],
+        breadcrumb_tags: ['SHIPMENT', 'NAME'],
+        beforeEnter: (to, from, next) => {
+          store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid } )
+            .then( () => {
+              console.log("Calling next - Success. model will be prefetched in marionette view")
+              next()
+            }, () => {
+              console.log("Calling next - Error, no container found")
+              next('/notfound')
+            })
+        }
     }),
   },
   {
