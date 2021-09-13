@@ -62,6 +62,7 @@
       :proteins="proteins"
       :samplesLength="samples.length"
       :containerId="containerId"
+      v-on="$listeners"
     />
     <portal to="dialog">
       <dialog-box
