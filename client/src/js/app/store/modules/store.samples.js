@@ -40,6 +40,7 @@ const INITIAL_SAMPLE_STATE = {
   SYMBOL: '',
   USERPATH: '',
   VOLUME: '',
+  VALID: 0
 }
 
 // Use Location as idAttribute for this table
@@ -47,12 +48,28 @@ var LocationSample = Sample.extend({
   idAttribute: 'LOCATION',
   defaults: INITIAL_SAMPLE_STATE
 })
+export const createFieldsForSamples = (fields) => {
+  return fields.reduce((prev, key) => {
+    prev[key] = {
+      get() {
+        const path = `samples/${this.sampleIndex}/${key}`
+        return this.$store.getters['samples/getSamplesField'](path)
+      },
+      set(value) {
+        const path = `samples/${this.sampleIndex}/${key}`
+        this.$store.commit('samples/updateSamplesField', { path, value })
+      }
+    }
+
+    return prev
+  }, {})
+}
 
 const samplesModule = {
   namespaced: true,
   state: {
     // Proposal / visit info
-    samples: [],
+    samples: [INITIAL_SAMPLE_STATE],
     samplesCollection: new Samples(), // Backbone model we will use to save,
     containersSamplesGroupData: {
       shipmentId: null,
@@ -68,28 +85,26 @@ const samplesModule = {
       // If capacity is not set, we don't change length just reset the data
       let samplesLength = capacity || state.samples.length
 
-      var samples = Array.from({ length: samplesLength }, (_, i) => new LocationSample({ BLSAMPLEID: null, LOCATION: (i + 1).toString(), PROTEINID: -1, CRYSTALID: -1, new: true }))
+      const  samples = Array.from({ length: samplesLength }, (_, i) => new LocationSample({
+        BLSAMPLEID: null,
+        LOCATION: (i + 1).toString(),
+        PROTEINID: -1,
+        CRYSTALID: -1,
+        new: true
+      }))
 
       state.samplesCollection.reset(samples)
 
       state.samples = state.samplesCollection.toJSON().filter(() => { return true })
     },
     setSample(state, { data, index }) {
-      if (index < state.samples.length) state.samples[index] = data
+      if (index < state.samples.length) state.samples.splice(index, 1, data)
     },
     clearSample(state, index) {
-      if (index < state.samples.length) {
-        let emptySample = INITIAL_SAMPLE_STATE
-        let location = index + 1
-
-        emptySample.LOCATION = location.toString()
-
-        state.samples[index] = Object.assign(state.samples[index], emptySample)
-      }
-    },
-    // Update an individual sample property
-    update(state, { index, key, value }) {
-      if (index < state.samples.length) state.samples[index][key] = value
+      if (index < state.samples.length) state.samples.splice(index, 1, {
+        ...INITIAL_SAMPLE_STATE,
+        LOCATION: index + 1
+      })
     },
     // Set all samples to a passed array - convenient when used with forms and computed properties
     set(state, data) {
@@ -99,6 +114,21 @@ const samplesModule = {
     },
     setContainerSampleGroupData(state, data) {
       state.containersSamplesGroupData = data
+    },
+    updateSamplesField(state, { path, value }) {
+      const propertyPath = path.split(/\//)
+
+      propertyPath.reduce((prev, key, index, array) => {
+        if (array.length === index + 1) {
+          prev[key] = value;
+
+          if (key === 'NAME' || key === 'PROTEINID' && prev.NAME && prev.PROTEINID >= -1) {
+            prev.VALID = 1
+          }
+        }
+
+        return prev[key];
+      }, state);
     }
   },
   actions: {
@@ -120,11 +150,18 @@ const samplesModule = {
       // Finally save the collection to the server
       return dispatch('saveCollection', { collection: samples }, { root: true })
     },
-
   },
   getters: {
     samples: state => state.samples,
-    getContainerSamplesGroupData: state => state.containersSamplesGroupData
+    getContainerSamplesGroupData: state => state.containersSamplesGroupData,
+    getSingleSampleItem: state => sampleIndex => state.samples[sampleIndex],
+    getSamplesField: state => {
+      return path => {
+        const propertyPath = path.split(/\//)
+
+        return propertyPath.reduce((prev, key) => prev[key], state)
+      }
+    }
   }
 }
 

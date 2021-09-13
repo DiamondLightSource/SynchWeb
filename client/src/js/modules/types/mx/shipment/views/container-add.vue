@@ -103,24 +103,43 @@
 
             <!-- VMXi Plates... -->
             <div v-show="isPlate " class="plate tw-mb-2 tw-py-2">
-                <label>Requested Imager
-                    <span class="small">Imager this container should go into</span>
-                </label>
-                <select name="REQUESTEDIMAGERID"></select>
+              <base-input-select
+                v-model="containerState.REQUESTEDIMAGERID"
+                label="Requested Imager"
+                description="Imager this container should go into"
+                name="REQUESTERIMAGER"
+                :options="imagingImagers"
+                optionValueKey="IMAGERID"
+                optionTextKey="NAME"
+              />
             </div>
 
             <div v-show="isPlate" class="plate tw-mb-2 tw-py-2">
-                <label>Imaging Schedule
-                    <span class="small">Requested imaging schedule</span>
-                </label>
-                <select name="SCHEDULEID" class="tw-h-6"></select> <a href="#" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
+              <base-input-select
+                v-model="containerState.SCHEDULEID"
+                label="Imaging Schedule"
+                description="Requested Imaging Schedule"
+                name="IMAGING SCHEDULE"
+                :options="imagingSchedules"
+                optionValueKey="SCHEDULEID"
+                optionTextKey="NAME"
+              >
+                <template v-slot:actions>
+                  <a href="#" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
+                </template>
+              </base-input-select>
             </div>
 
             <div v-show="isPlate" class="plate tw-mb-2 tw-py-2">
-                <label>Crystallisation Screen
-                    <span class="small">Crystallisation screen that was used for this container</span>
-                </label>
-                <select name="SCREENID"></select>
+              <base-input-select
+                v-model="containerState.SCREENID"
+                label="Crystallisation Screen"
+                description="Crystallisation screen that was used for this container"
+                name="CRYSTALLISATION SCREEN"
+                :options="imagingScreens"
+                optionValueKey="SCREENID"
+                optionTextKey="NAME"
+              />
             </div>
 
             <div class="pck tw-mb-2 tw-py-2">
@@ -137,9 +156,10 @@
           <div class="tw-w-1/2">
             <div class="tw-justify-end">
             <valid-container-graphic
-            :containerType="containerType"
-            :samples="validSamples"
-            @cell-clicked="onContainerCellClicked"/>
+              ref="containerGraphic"
+              :containerType="containerType"
+              :samples="samples"
+              @cell-clicked="onContainerCellClicked"/>
             </div>
           </div>
         </form>
@@ -147,12 +167,14 @@
         <div>
           <!-- Sample specific fields -->
           <sample-editor
+            ref="sampleEditor"
             v-if="proteinsLoaded"
             :containerType="containerType"
             :experimentKind="containerState.EXPERIMENTTYPEID"
-            :proteins="proteinsCollection"
+            :proteins="proteins"
             :gproteins="gProteinsCollection"
             :automated="containerState.AUTOMATED"
+            @update-location="updateSampleLocation"
           />
         </div>
         <!--
@@ -305,29 +327,6 @@ export default {
       if (owner && owner.get('EMAILADDRESS')) return true
       else return false
     },
-    isPuck() {
-      return this.containerType.WELLPERROW == null ? true : false
-    },
-    isPlate() {
-      return this.containerType.WELLPERROW > 0 ? true : false
-    },
-
-		validSamples: function() {
-      return this.samples.map((entry) => {
-        let sample = {}
-        sample.LOCATION = entry.LOCATION
-        sample.NAME = entry.NAME
-        sample.VALID = -1
-        if (entry.NAME && entry.PROTEINID > 0) sample.VALID = 1
-        else if ( !entry.NAME && entry.PROTEINID < 0 ) sample.VALID = 0
-
-        return sample
-      })
-    },
-
-    ...mapGetters({
-      samples: ['samples/samples']
-    }),
   },
   watch: {
     // When the container type changes we need to reset the samples list and redraw the container graphic
@@ -357,9 +356,11 @@ export default {
         app.trigger('samples:automated', newVal)
     },
     'containerState.CONTAINERREGISTRYID': function(newVal) {
-      // When a user selects a registered container we should update the name/barcode
-      let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID == newVal)
-      this.containerState.NAME = entry['BARCODE'] || '-'
+      if (this.isPuck && newVal) {
+        // When a user selects a registered container we should update the name/barcode
+        let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID == newVal)
+        this.containerState.NAME = entry['BARCODE'] || '-'
+      }
     },
     'containerState.ALLOWUDC': function(newVal) {
       let samples = []
@@ -411,6 +412,9 @@ export default {
     this.getProcessingPipelines()
     this.formatExperimentKindList()
     this.getSampleGroups()
+    this.getImagingCollections()
+    this.getImagingScheduleCollections()
+    this.getImagingScreensCollections()
   },
   methods: {
     // Called on Add Container
@@ -481,8 +485,22 @@ export default {
     resetSamples(capacity) {
       this.$store.commit('samples/reset', capacity)
     },
-    onContainerCellClicked(location) {
-      this.sampleLocation = location - 1
+    async onContainerCellClicked(location) {
+      // We want to validate each single sample form before they current location is saved.
+      // This is because only one sample form is displayed at a time.
+      if (this.containerType.CAPACITY > 25) {
+        const sampleEditorRef = this.$refs.sampleEditor
+        const validatedForm = await sampleEditorRef.$refs.sampleObserver.validate()
+
+        if (validatedForm) {
+          this.sampleLocation = location - 1
+        }
+      } else {
+        this.sampleLocation = location - 1
+      }
+    },
+    updateSampleLocation(location) {
+      this.sampleLocation = location
     }
   },
   provide() {

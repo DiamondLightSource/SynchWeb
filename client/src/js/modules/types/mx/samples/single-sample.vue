@@ -11,6 +11,8 @@
       @clear-container-sample="onClearSample"
       @clone-container-column="onCloneContainerColumn"
       @clone-container-row="onCloneContainerRow"
+      @clear-container-column="onClearContainerColumn"
+      @clear-container-row="onClearContainerRow"
       @extra-puck="onExtraPuckToggle"
     />
 
@@ -20,32 +22,35 @@
         tag="div"
         :name="`Sample ${sampleLocation + 1} Protein`"
         :vid="`sample ${sampleLocation + 1} protein`"
-        :rules="inputValue[sampleLocation]['NAME'] ? 'required|min_value:1' : ''">
-      <div class="tw-w-1/5">Protein</div>
-      <combo-box
-        class="tw-w-48"
-        :data="proteinsOptionsList"
-        textField="text"
-        valueField="value"
-        :inputIndex="sampleLocation"
-        :selectCount="inputValue[sampleLocation].length"
-        defaultText=""
-        size="small"
-        v-model="inputValue[sampleLocation]['PROTEINID']"
-      >
-        <template slot-scope="{ option }">
-          <span class="tw-flex tw-justify-between tw-w-full">
-            <span class="tw-"><i v-if="option.SAFETYLEVEL == 'GREEN'" class="fa fa-check green"></i></span>
-            {{ option['text'] }}
-          </span>
-        </template>
-      </combo-box>
+        :rules="sample['NAME'] && !containerId ? 'required' : ''">
+        <div class="tw-w-1/5">Protein</div>
+        <combo-box
+          v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
+          class="tw-w-48"
+          :data="proteinsOptionsList"
+          textField="text"
+          valueField="value"
+          :inputIndex="sampleLocation"
+          :selectCount="samples.length"
+          defaultText=""
+          size="small"
+          v-model="PROTEINID"
+        >
+          <template slot-scope="{ option }">
+            <span class="tw-flex tw-justify-between tw-w-full">
+              <span class="tw-"><i v-if="option.SAFETYLEVEL == 'GREEN'" class="fa fa-check green"></i></span>
+              {{ option['text'] }}
+            </span>
+          </template>
+        </combo-box>
+        <div v-else class="tw-text-center">{{ selectDataValue(proteinsOptionsList, sample, 'PROTEINID') }}</div>
+        <span>{{ errors[0] }}</span>
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-py-1"
-        :rules="inputValue[sampleLocation]['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''"
+        :rules="sample['PROTEINID'] > -1 && !containerId? 'required' : ''"
         :name="`Sample ${sampleLocation + 1} Abundance`"
         :vid="`sample ${sampleLocation + 1} abundance`"
         v-slot="{ errors }">
@@ -53,18 +58,19 @@
           inputClass="tw-w-48 tw-h-8"
           outerClass="tw-w-full tw-flex"
           :quiet="true"
+          type="number"
           labelClass="tw-w-1/5"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          v-model="inputValue[sampleLocation]['ABUNDANCE']"
           label="Abundance"
+          v-model="ABUNDANCE"
         />
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-py-1"
-        :rules="inputValue[sampleLocation]['PROTEINID'] > -1 ? 'required|alpha_dash|max:12' : ''"
+        :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:20' : ''"
         :name="`Sample ${sampleLocation + 1} Name`"
         :vid="`sample ${sampleLocation + 1} name`"
         v-slot="{ errors }">
@@ -76,7 +82,8 @@
           :quiet="true"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          v-model="inputValue[sampleLocation]['NAME']"/>
+          v-model="NAME"
+        />
       </validation-provider>
 
       <validation-provider
@@ -94,9 +101,9 @@
           labelClass="tw-w-1/5"
           label="Space Group"
           :quiet="true"
-          v-model="inputValue[sampleLocation]['SPACEGROUP']"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+          v-model="SPACEGROUP"
         />
       </validation-provider>
 
@@ -116,16 +123,16 @@
           labelClass="tw-w-1/5"
           label="Sample Group"
           :quiet="true"
-          v-model="inputValue[sampleLocation]['SAMPLEGROUP']"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           :errorMessage="errors[0]"
+          v-model="SAMPLEGROUP"
         />
       </validation-provider>
 
       <validation-provider
         tag="div"
         class="tw-py-1"
-        :rules="inputValue[sampleLocation]['PROTEINID'] > -1 ? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 && !containerId ? 'required' : ''"
         :name="`Sample ${sampleLocation + 1} Anomalous Scatterer`"
         :vid="`sample ${sampleLocation + 1} anomalous scatterer`"
         v-slot="{ errors }">
@@ -139,8 +146,8 @@
           optionTextKey="text"
           :errorMessage="errors[0]"
           :quiet="true"
-          v-model="inputValue[sampleLocation]['ANOMALOUSSCATTERER']"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+          v-model="ANOMALOUSSCATTERER"
         />
       </validation-provider>
 
@@ -153,7 +160,7 @@
           outerClass="tw-w-full tw-flex"
           labelClass="tw-w-1/5"
           label="Comment"
-          v-model="inputValue[sampleLocation]['COMMENTS']"
+          v-model="COMMENTS"
         />
       </validation-provider>
 
@@ -164,7 +171,7 @@
             <table-component
               class="tw-w-full"
               :headers="sampleCellsHeader"
-              :data=[inputValue[sampleLocation]]
+              :data=[sample]
             >
               <template slot="content" slot-scope="{ row }">
                 <validation-provider tag="td" class="tw-px-1" v-slot="{ errors }" :name="`Sample ${sampleLocation + 1} CELL-A`" :vid="`sample ${sampleLocation + 1} cell-a`">
@@ -173,7 +180,7 @@
                     inputClass="tw-w-12 tw-h-8"
                     :errorMessage="errors[0]"
                     :errorClass="errors[0] ? 'ferror' : ''"
-                    v-model="inputValue[sampleLocation]['CELL_A']"
+                    v-model="CELL_A"
                   />
                 </validation-provider>
 
@@ -183,7 +190,7 @@
                     inputClass="tw-w-12 tw-h-8"
                     :errorMessage="errors[0]"
                     :errorClass="errors[0] ? 'ferror' : ''"
-                    v-model="inputValue[sampleLocation]['CELL_B']"
+                    v-model="CELL_B"
                   />
                 </validation-provider>
 
@@ -194,7 +201,7 @@
                     :errorMessage="errors[0]"
                     :quiet="true"
                     :errorClass="errors[0] ? 'ferror' : ''"
-                    v-model="inputValue[sampleLocation]['CELL_C']"
+                    v-model="CELL_C"
                   />
                 </validation-provider>
 
@@ -205,7 +212,7 @@
                     :quiet="true"
                     :errorMessage="errors[0]"
                     :errorClass="errors[0] ? 'ferror' : ''"
-                    v-model="inputValue[sampleLocation]['CELL_ALPHA']"
+                    v-model="CELL_ALPHA"
                   />
                 </validation-provider>
 
@@ -214,9 +221,9 @@
                     v-on="$listeners"
                     inputClass="tw-w-12 tw-h-8"
                     :errorMessage="errors[0]"
-                    v-model="inputValue[sampleLocation]['CELL_BETA']"
                     :errorClass="errors[0] ? 'ferror' : ''"
                     :quiet="true"
+                    v-model="CELL_BETA"
                   />
                 </validation-provider>
 
@@ -226,8 +233,8 @@
                     inputClass="tw-w-12 tw-h-8"
                     :errorMessage="errors[0]"
                     :errorClass="errors[0] ? 'ferror' : ''"
-                    v-model="inputValue[sampleLocation]['CELL_GAMMA']"
                     :quiet="true"
+                    v-model="CELL_GAMMA"
                   />
                 </validation-provider>
               </template>
@@ -238,7 +245,7 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="inputValue[sampleLocation]['PROTEINID'] > -1 ? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Experiment Kind`"
           :vid="`sample ${sampleLocation + 1} experiment kind`"
           v-slot="{ errors }">
@@ -254,7 +261,7 @@
             :errorMessage="errors[0]"
             :quiet="true"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="inputValue[sampleLocation]['EXPERIMENTKIND']"
+            v-model="EXPERIMENTKIND"
           />
         </validation-provider>
 
@@ -262,11 +269,11 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} Energy`"
-          :rules="`required_if:sample ${sampleLocation + 1} experiment kind,SAD|numeric`"
+          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} experiment kind,SAD|numeric` : ''"
           :vid="`sample ${sampleLocation + 1} energy`"
           v-slot="{ errors }">
           <base-input-text
-            :disabled="inputValue[sampleLocation]['EXPERIMENTKIND'] !== 'SAD'"
+            :disabled="sample['EXPERIMENTKIND'] !== 'SAD'"
             inputClass="tw-w-16 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
@@ -275,14 +282,14 @@
             label="Energy"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="inputValue[sampleLocation]['ENERGY']"
+            v-model="ENERGY"
           />
         </validation-provider>
 
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="inputValue[sampleLocation]['PROTEINID'] > -1 ? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Centering Method`"
           :vid="`sample ${sampleLocation + 1} centering method`"
           v-slot="{ errors }">
@@ -298,14 +305,14 @@
             :quiet="true"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="inputValue[sampleLocation]['CENTRINGMETHOD']"
+            v-model="CENTRINGMETHOD"
           />
         </validation-provider>
 
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="inputValue[sampleLocation]['PROTEINID'] > -1 ? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 && allowUDC? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Screening Method`"
           :vid="`sample ${sampleLocation + 1} screening method`"
           v-slot="{ errors }">
@@ -320,19 +327,19 @@
             label="Screening Method"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="inputValue[sampleLocation]['SCREENINGMETHOD']"
+            v-model="SCREENINGMETHOD"
           />
         </validation-provider>
 
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="`required_if:sample ${sampleLocation + 1} screening method,none`"
+          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,none` : ''"
           :name="`Sample ${sampleLocation + 1} Required Resolution`"
           :vid="`sample ${sampleLocation + 1} required resolution`"
           v-slot="{ errors }">
           <base-input-text
-            :disabled="inputValue[sampleLocation]['SCREENINGMETHOD'] !== 'none' || !allowUDC"
+            :disabled="sample['SCREENINGMETHOD'] !== 'none' || !allowUDC"
             inputClass="tw-w-16 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
@@ -341,7 +348,7 @@
             :errorMessage="errors[0]"
             :quiet="true"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="inputValue[sampleLocation]['SCREENINGMETHOD']"
+            v-model="REQUIREDRESOLUTION"
           />
         </validation-provider>
 
@@ -349,11 +356,11 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} Minimum Resolution`"
-          :rules="`required_if:sample ${sampleLocation + 1} screening method,all`"
+          :rules="sample['PROTEINID'] > - 1 ? `required_if:sample ${sampleLocation + 1} screening method,all`: ''"
           :vid="`sample ${sampleLocation + 1} minimum resolution`"
           v-slot="{ errors }">
           <base-input-text
-            :disabled="inputValue[sampleLocation]['SCREENINGMETHOD'] !== 'all' || !allowUDC"
+            :disabled="sample['SCREENINGMETHOD'] !== 'all' || !allowUDC"
             inputClass="tw-w-16 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
@@ -362,7 +369,7 @@
             :quiet="true"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="inputValue[sampleLocation]['MINIMUMRESOLUTION']"
+            v-model="MINIMUMRESOLUTION"
           />
         </validation-provider>
 
@@ -370,11 +377,11 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} No to Collect`"
-          :rules="`required_if:sample ${sampleLocation + 1} screening method,best`"
+          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,best`: ''"
           :vid="`sample ${sampleLocation + 1} no to collect`"
           v-slot="{ errors }">
           <base-input-text
-            :disabled="inputValue[sampleLocation]['SCREENINGMETHOD'] !== 'best' || !allowUDC"
+            :disabled="sample['SCREENINGMETHOD'] !== 'best' || !allowUDC"
             inputClass="tw-w-16 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
@@ -383,14 +390,14 @@
             :quiet="true"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="inputValue[sampleLocation]['NOTOCOLLECT']"
+            v-model="SCREENINGCOLLECTVALUE"
           />
         </validation-provider>
       </div>
     
       <div v-if="containerId">
-        <button v-if="inputValue[sampleLocation].BLSAMPLEID" class="button submit" @click="onSaveSample">Save Sample</button>
-        <button v-else class="button submit" @click="onSaveSample">Add Sample</button>
+        <button v-if="sample.BLSAMPLEID" class="button submit" @click="saveSample(sampleLocation)">Save Sample</button>
+        <button v-else class="button submit" @click="saveSample(sampleLocation)">Add Sample</button>
       </div>
 
     </div>
@@ -399,7 +406,7 @@
 
 <script>
 
-
+import { mapGetters } from 'vuex'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
@@ -458,16 +465,23 @@ export default {
       let location = this.sampleLocation + 1
       this.$emit('clone-container-row', location)
     },
-    onSaveSample: function() {
-      let location = this.sampleLocation + 1
-      let containerId = this.inputValue[sampleLocation][this.sampleLocation].CONTAINERID
-      if (!containerId) this.inputValue[sampleLocation][this.sampleLocation].CONTAINERID = this.containerId
-
-      this.$emit('save-sample', location)
-    },
     onExtraPuckToggle(value) {
       this.currentTab = value ? 'extraFields' : ''
+    },
+    onClearContainerColumn() {},
+    onClearContainerRow() {
     }
-	}
+  },
+  computed: {
+    sample() {
+      return this.$store.getters['samples/getSingleSampleItem'](this.sampleLocation)
+    },
+    sampleIndex() {
+      return this.sampleLocation
+    },
+    ...mapGetters({
+      samples: ['samples/samples']
+    })
+  }
 }
 </script>

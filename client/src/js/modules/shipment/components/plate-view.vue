@@ -14,20 +14,24 @@ TODO - move the score colour methods to a utility class
 </template>
 
 <script>
-import { select as d3Select } from 'd3-selection'
+import { select as d3Select, selectAll as d3SelectAll } from 'd3-selection'
 import { scaleLinear as d3ScaleLinear} from 'd3-scale'
 import { scaleThreshold as d3ScaleThreshold} from 'd3-scale'
 import { scaleOrdinal as d3ScaleOrdinal} from 'd3-scale'
 import { interpolateViridis as d3InterpolateViridis} from 'd3-scale-chromatic'
 export default {
-  name: 'Plate-View',
+  name: 'plate-view',
   props: {
     'container': Object, // Plate geometry
-    'samples': Array, // Data bound to each cell / drop location
+    // Data bound to each cell / drop location
+    samples: {
+      type: Array,
+      default: () => ([])
+    },
     'selected': {
       type: Array, // list of locations that should be highlighted
       required: false,
-      default: []
+      default: () => ([])
     },
     label: {
       type: String, // Which key within the sample data should be shown (location index if nothing provided)
@@ -48,7 +52,7 @@ export default {
         padding: 4, // Padding within each cell
         margin: 10, // Spacing between wells in graphic
       },
-      graphic: null // Placeholder for main svg graphic area
+      graphic: null, // Placeholder for main svg graphic area
     }
   },
   computed: {
@@ -117,7 +121,7 @@ export default {
       while (wells.length) {
         chunked_rows.push(wells.splice(0, this.container.columns));
       }
-      console.log("Prepared Data = " + JSON.stringify(chunked_rows))
+
       return chunked_rows;
     }
   },
@@ -125,9 +129,15 @@ export default {
     selected: function() {
       this.updateSelected()
     },
-    samples: function() {
-      this.updateData(this.samples)
-      this.updateScores()
+    samples: {
+      handler() {
+        d3SelectAll("#plate > *").remove()
+        this.drawContainer()
+        this.updateLabels()
+        this.updateScores()
+      },
+      deep: true,
+      immediate: true
     }
   },
   mounted: function() {
@@ -286,7 +296,6 @@ export default {
         // Convert to an actual index not string
         this.$emit('cell-clicked', +sampleData.LOCATION)
       } else {
-        console.log("No data in this cell: sampleData = " + JSON.stringify(sampleData))
         this.$emit('cell-clicked', +sampleData.LOCATION)
       }
     },

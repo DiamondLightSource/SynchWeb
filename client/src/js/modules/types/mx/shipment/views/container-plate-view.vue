@@ -38,7 +38,7 @@
               @save="save('OWNERID')"
               optionTextKey="FULLNAME"/>
           </li>
-          <li>
+          <li v-if="isPuck">
             <span class="label">Registered Container</span>
             <span class="tw-relative">{{container.REGISTRY}} <router-link :to="`/containers/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
           </li>
@@ -94,7 +94,7 @@
       <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
         <valid-container-graphic
           :containerType="containerType"
-          :samples="validSamples"
+          :samples="samples"
           @cell-clicked="onContainerCellClicked"/>
       </div>
 
@@ -106,7 +106,7 @@
         :containerType="containerType"
         :experimentKind="container.EXPERIMENTTYPE"
         :containerId="container.CONTAINERID"
-        :proteins="proteinsCollection"
+        :proteins="proteins"
         :gproteins="gProteinsCollection"
         :automated="container.AUTOMATED"
       />
@@ -226,21 +226,6 @@ export default {
     }
   },
   computed: {
-    validSamples: function() {
-      return this.samples.map( (entry) => {
-        let sample = {}
-        sample.LOCATION = entry.LOCATION
-        sample.NAME = entry.NAME
-        sample.VALID = -1
-        if (entry.NAME && entry.PROTEINID > 0) sample.VALID = 1
-        else if ( !entry.NAME && entry.PROTEINID < 0 ) sample.VALID = 0
-
-        return sample
-      })
-    },
-    ...mapGetters({
-      samples: ['samples/samples'],
-    }),
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
     }
@@ -259,6 +244,9 @@ export default {
     this.getProcessingPipelines()
     this.getSampleGroups()
     this.fetchShipments()
+    this.getImagingCollections()
+    this.getImagingScheduleCollections()
+    this.getImagingScreensCollections()
   },
   methods: {
     loadContainerData() {
@@ -322,8 +310,10 @@ export default {
       this.$store.commit('samples/reset', capacity)
 
       this.samplesCollection.each( s => {
-        let i = +(s.get('LOCATION')) - 1
-        this.$store.commit('samples/setSample', {index: i, data: s.toJSON()})
+        this.$store.commit('samples/setSample', {
+          index: Number(s.get('LOCATION')) - 1,
+          data: { ...s.toJSON(), VALID: 1 }
+        })
       })
     },
     onContainerCellClicked: function(location) {

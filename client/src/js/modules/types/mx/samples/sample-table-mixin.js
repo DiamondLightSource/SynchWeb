@@ -1,8 +1,9 @@
+import { createFieldsForSamples } from 'app/store/modules/store.samples'
+
 export default {
   data() {
     return {
-      containerId: null,
-      sample: {},
+      editingSample: {},
       editingRow: null,
       screeningMethodList: [
         {
@@ -29,19 +30,9 @@ export default {
     },
   },
   computed: {
-    inputValue: {
-      get() {
-        return this.$store.state.samples.samples;
-      },
-      set(val) {
-        console.log({ val })
-        this.$store.commit("samples/set", val);
-      },
-    },
     proteinsOptionsList() {
       return this.proteins
-        .toJSON()
-        .map((item) => ({ value: item.PROTEINID, text: item.ACRONYM, SAFETYLEVEL: item.SAFETYLEVEL }));
+        .map(item => ({ value: item.PROTEINID, text: item.ACRONYM, SAFETYLEVEL: item.SAFETYLEVEL }));
     },
     experimentKindList() {
       return this.$experimentKindList;
@@ -98,29 +89,60 @@ export default {
     },
     allowUDC() {
       return this.$allowUDC()
-    }
+    },
+    ...createFieldsForSamples([
+      'ABUNDANCE',
+      'ANOMALOUSSCATTERER',
+      'BLSUBSAMPLEID',
+      'CODE',
+      'CELL_A',
+      'CELL_B',
+      'CELL_C',
+      'CELL_ALPHA',
+      'CELL_BETA',
+      'CELL_GAMMA',
+      'CENTRINGMETHOD',
+      'COMMENTS',
+      'COMPOSITION',
+      'CONTAINERID',
+      'CRYSTALID',
+      'DIMENSION1',
+      'DIMENSION2',
+      'DIMENSION3',
+      'ENERGY',
+      'EXPERIMENTALDENSITY',
+      'EXPERIMENTKIND',
+      'LOCATION',
+      'LOOPTYPE',
+      'MINIMUMRESOLUTION',
+      'NAME',
+      'PACKINGFRACTION',
+      'PROTEINID',
+      'REQUIREDRESOLUTION',
+      'RADIATIONSENSITIVITY',
+      'SCREENCOMPONENTGROUPID',
+      'SCREENINGMETHOD',
+      'SCREENINGCOLLECTVALUE',
+      'THEORETICALDENSITY',
+      'SHAPE',
+      'SPACEGROUP',
+      'SYMBOL',
+      'USERPATH',
+      'VOLUME',
+      'VALID'
+    ])
   },
   methods: {
-    handleProteinSelection(index, data) {
-      this.$store.commit("samples/update", {
-        index,
-        key: "PROTEINID",
-        value: data.value,
-      });
-    },
     editRow(row) {
-      this.sample = row;
-      this.sample.CONTAINERID = this.containerId;
+      this.editingSample = row;
+      this.editingSample.CONTAINERID = this.containerId;
       this.editingRow = row.LOCATION;
     },
     displayInputForm(row) {
-      // console.log({ row })
       return !this.containerId || Number(this.editingRow) === Number(row.LOCATION)
     },
     formatSelectData(selectData, data, property) {
-      const matchedSelectData = selectData.find(
-        (select) => select.value === data[property]
-      );
+      const matchedSelectData = selectData.find(select => select.value === data[property])
 
       if (!matchedSelectData) {
         return { value: "", text: "" };
@@ -139,11 +161,11 @@ export default {
       // The ACRONYM is determined by the PROTEINID
       // To keep our table updated in the UI set the acronym here as well
       // Means we don't need to refresh the table after saving data to the server
-      this.sample.ACRONYM = this.getProteinAcronym(this.sample.PROTEINID);
+      this.editingSample.ACRONYM = this.getProteinAcronym(this.editingSample.PROTEINID);
       // Save the sample data to the store and trigger save to the server
       this.$store.commit("samples/setSample", {
         index: sampleIndex,
-        data: this.sample,
+        data: this.editingSample,
       });
       this.saveSample(location);
       // Reset the local sample data to start clean on next edit
@@ -151,9 +173,9 @@ export default {
     },
 
     onEditSample: function(row) {
-      this.sample = Object.assign(this.sample, row);
+      this.editingSample = Object.assign(this.editingSample, row);
       // Set the sample container id - this will work if we are adding a new sample in the table or editing an existing one
-      this.sample.CONTAINERID = this.containerId;
+      this.editingSample.CONTAINERID = this.containerId;
       this.editRowLocation = row["LOCATION"];
     },
 
@@ -169,7 +191,7 @@ export default {
     resetSampleToEdit: function() {
       this.editRowLocation = "";
       // Reset temporary sample model
-      this.sample = Object.assign({});
+      this.editingSample = Object.assign({});
     },
 
     isEditRowLocation: function(row) {
@@ -188,10 +210,9 @@ export default {
     checkSampleInSampleGroups(proteinId) {
       return this.sampleGroupsAndMembers.some(group => group.MEMBERS.toJSON().find(member => Number(member.PROTEINID) === Number(proteinId)))
     },
-    // checkNoToCollectValidity(screeningMethod, proteinId) {
-    //   if (screeningMethod === 'best' && this.checkSampleInSampleGroups(proteinId))
-    //
-    // }
+    closeSampleEditing() {
+      this.editingRow = null
+    },
   },
   inject: [
     "$spaceGroups",
