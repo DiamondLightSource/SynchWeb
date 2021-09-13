@@ -64,14 +64,6 @@
                 />
             </div>
 
-            <div v-show="isPuck" class="pck tw-mb-2 tw-py-2">
-              <label>Automated Collection</label>
-              <base-input-checkbox
-                name="AUTOMATED"
-                v-model="containerState.AUTOMATED"
-              />
-            </div>
-
             <div class="pck tw-mb-2 tw-py-2">
               <label>Show all spacegroups</label>
               <base-input-checkbox
@@ -404,8 +396,10 @@ export default {
           ...sample,
           CENTRINGMETHOD: 'xray',
           EXPERIMENTKIND: 'SAD',
-          SCREENINGMETHOD: 'none'
+          SCREENINGMETHOD: 'none',
         }))
+
+        this.containerState.AUTOMATED = 1
       } else {
         samples = this.samples.map(sample => ({
           ...sample,
@@ -415,8 +409,10 @@ export default {
           ENERGY: '',
           REQUIREDRESOLUTION: '',
           MINIMUMRESOLUTION: '',
-          SCREENINGCOLLECTVALUE: ''
+          SCREENINGCOLLECTVALUE: '',
         }))
+
+        this.containerState.AUTOMATED = ''
       }
 
       this.$store.commit('samples/set', samples)

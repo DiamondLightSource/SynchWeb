@@ -84,7 +84,7 @@ export default {
       let location = +sampleLocation
       // Take the next sample in the list and copy this data
       // Locations should be in range 1..samples.length-1 (can't clone last sample in list)
-      if (location < 1 || location > (this.samples.length-1)) return
+      if (location < 0 || location > (this.samples.length-1)) return
 
       // Sample to be copied and next index
       let nextSampleIndex = -1
@@ -104,20 +104,19 @@ export default {
       let location = +sampleLocation
       // Clear the row for this location
       // Locations should be in range 1..samples.length
-      if (location < 1 || location > this.samples.length) return
+      if (location < 0 || location > this.samples.length) return
       // The location is one more than the sample index
-      let index = location - 1 
-      this.$store.commit('samples/clearSample', index)
+      this.$store.commit('samples/clearSample', location)
     },
     // Take first entry (or index) and clone all rows
     onCloneContainer(sampleIndex=0) {
-      for (let i=0; i < this.samples.length; i++) {
+      for (let i = 0; i < this.samples.length; i++) {
         this.cloneSample(sampleIndex, i)
       }
     },
     // Remove all sample information from every row
     onClearContainer() {
-      for (let i=0; i<this.samples.length; i++) {
+      for (let i = 0; i < this.samples.length; i++) {
         this.$store.commit('samples/clearSample', i)
       }
     },

@@ -85,21 +85,21 @@
     />
 
     <div class="actions-column tw-py-1 tw-text-right">
-        <span v-if="containerId">
-          <span v-if="editingRow === sample['LOCATION']">
-            <a class="button tw-cursor-pointer  " @click="saveSample(sampleIndex)"><i class="fa fa-check"></i></a>
-            <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
-          </span>
-          <span v-else>
-            <a class="button tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
-            <router-link v-if="sample['BLSAMPLEID']" class="button tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
-            <a class="button tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
-          </span>
+      <span v-if="containerId">
+        <span v-if="editingRow === sample['LOCATION']">
+          <a class="button tw-cursor-pointer  " @click="saveSample(sampleIndex)"><i class="fa fa-check"></i></a>
+          <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
         </span>
+        <span v-else>
+          <a class="button tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
+          <router-link v-if="sample['BLSAMPLEID']" class="button tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
+          <a class="button tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
+        </span>
+      </span>
       <span v-else>
-          <a class="button tw-mx-1" href="" @click.prevent="$emit('clone-sample', sampleIndex)"><i class="fa fa-plus"></i></a>
-          <a class="button tw-mx-1" href="" @click.prevent="$emit('clear-sample', sampleIndex)"><i class="fa fa-times"></i></a>
-        </span>
+        <a class="button tw-mx-1" href="" @click.prevent="$emit('clone-sample', sampleIndex)"><i class="fa fa-plus"></i></a>
+        <a class="button tw-mx-1" href="" @click.prevent="$emit('clear-sample', sampleIndex)"><i class="fa fa-times"></i></a>
+      </span>
     </div>
   </div>
 </template>
