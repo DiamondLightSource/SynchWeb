@@ -125,7 +125,7 @@
                 optionTextKey="NAME"
               >
                 <template v-slot:actions>
-                  <a href="#" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
+                  <a href="#" @click="viewSchedule" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
                 </template>
               </base-input-select>
             </div>
@@ -197,6 +197,33 @@
         </div>
       </validation-observer>
     </div>
+
+    <dialog-box
+      v-if="displayImagerScheduleModal"
+      size="large"
+      :hide-ok-button="true"
+      @close-modal-action="closeModalAction">
+      <template>
+        <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
+          <p>View Schedule</p>
+          <button
+              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+              @click="closeModalAction">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <div class="tw-py-3 tw-px-4 tw-border-b tw-border-content-border">
+          <div class="tw-border-b tw-border-content-border">
+            <h3 class="tw-text-2xl">Schedule for {{ selectedSchedule.NAME }}</h3>
+          </div>
+
+          <div class="tw-w-full">
+            <table-component :data="imagingScheduleComponents" :headers="schedulingComponentHeader"/>
+          </div>
+        </div>
+      </template>
+
+    </dialog-box>
   </div>
 </template>
 
@@ -212,8 +239,8 @@ import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 
 import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
-
-import { mapGetters } from 'vuex'
+import Dialog from 'app/components/dialogbox.vue'
+import TableComponent from 'app/components/table.vue'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
@@ -262,6 +289,8 @@ export default {
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
     'sample-editor': SampleEditor,
+    'dialog-box': Dialog,
+    'table-component': TableComponent
   },
   props: {
     'mview':[Function, Promise], // The marionette view could be lazy loaded or static import
@@ -290,7 +319,13 @@ export default {
 
       selectedSample: null,
       showAllExperimentTypes: false,
-      sampleLocation: 0
+      sampleLocation: 0,
+      displayImagerScheduleModal: false,
+      selectedSchedule: null,
+      schedulingComponentHeader: [
+        {key: 'OFFSET_HOURS', title: 'Offset Hours'},
+        {key: 'INSPECTIONTYPE', title: 'Imaging Type'},
+      ]
     }
   },
   computed: {
@@ -501,6 +536,19 @@ export default {
     },
     updateSampleLocation(location) {
       this.sampleLocation = location
+    },
+    async viewSchedule() {
+      const schedule = this.imagingSchedules.find(schedule => schedule.SCHEDULEID === this.containerState.SCHEDULEID)
+      if (schedule) {
+        this.selectedSchedule = schedule
+        await this.getImagingScheduleComponentsCollection()
+        this.displayImagerScheduleModal = true
+      } else {
+        this.displayImagerScheduleModal = false
+      }
+    },
+    closeModalAction() {
+      this.displayImagerScheduleModal = false
     }
   },
   provide() {

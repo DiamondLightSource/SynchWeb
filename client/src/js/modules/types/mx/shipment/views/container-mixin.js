@@ -12,6 +12,7 @@ import SampleGroups from 'collections/samplegroups'
 import ImagingImager from 'modules/imaging/collections/imagers'
 import ImagingSchedules from 'modules/imaging/collections/schedules'
 import ImagingScreens from 'modules/imaging/collections/screens'
+import ImagingScheduleComponents from 'modules/imaging/collections/schedulecomponents'
 import {mapGetters} from "vuex";
 
 const INITIAL_CONTAINER_TYPE = {
@@ -47,6 +48,8 @@ export default {
       imagingCollections: null,
       imagingSchedules: [],
       imagingSchedulesCollection: null,
+      imagingScheduleComponents: [],
+      imagingScheduleComponentsCollection: null,
       imagingScreens: [],
       imagingScreensCollections: null,
 
@@ -166,6 +169,15 @@ export default {
 
       const result = await this.$store.dispatch('getCollection', this.imagingScreensCollection)
       this.imagingScreens = result.toJSON()
+    },
+    async getImagingScheduleComponentsCollection() {
+      this.imagingScheduleComponentsCollection = new ImagingScheduleComponents()
+      // If we want to only allow valid samples
+      this.imagingScheduleComponentsCollection.queryParams.pageSize = 9999
+      this.imagingScheduleComponentsCollection.queryParams.shid = this.selectedSchedule.SCHEDULEID
+
+      const result = await this.$store.dispatch('getCollection', this.imagingScheduleComponentsCollection)
+      this.imagingScheduleComponents = result.toJSON()
     }
   },
   computed: {
