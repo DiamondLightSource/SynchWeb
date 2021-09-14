@@ -293,7 +293,7 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Experiment Kind`"
           :vid="`sample ${sampleLocation + 1} experiment kind`"
           v-slot="{ errors }">
@@ -316,7 +316,7 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} Energy`"
-          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} experiment kind,SAD|numeric` : ''"
+          :rules="sample['PROTEINID'] > -1 && queueForUDC ? `required_if:sample ${sampleLocation + 1} experiment kind,SAD|numeric` : ''"
           :vid="`sample ${sampleLocation + 1} energy`"
           v-slot="{ errors }">
           <base-input-text
@@ -336,7 +336,7 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Centering Method`"
           :vid="`sample ${sampleLocation + 1} centering method`"
           v-slot="{ errors }">
@@ -358,7 +358,7 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Screening Method`"
           :vid="`sample ${sampleLocation + 1} screening method`"
           v-slot="{ errors }">

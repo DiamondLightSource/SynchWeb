@@ -4,7 +4,7 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-32"
-        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD` : ''"
         :name="`Sample ${sampleIndex + 1} Anomalous Scatterer`"
         :vid="`sample ${sampleIndex + 1} anomalous scatterer`"
         v-slot="{ errors }">
@@ -26,7 +26,6 @@
         tag="div"
         class="tw-px-2 tw-w-32"
         :name="`Sample ${sampleIndex + 1} Barcode`"
-        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
         :vid="`sample ${sampleIndex + 1} code`">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
@@ -230,7 +229,7 @@
         tag="div"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} Centering Method`"
-        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
         :vid="`sample ${sampleIndex + 1} centering method`"
         v-slot="{ errors }"
         >
@@ -253,7 +252,7 @@
         class="tw-px-2 tw-w-32"
         :name="`Sample ${sampleIndex + 1} Experiment Kind`"
         :vid="`sample ${sampleIndex + 1} experiment kind`"
-        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
         v-slot="{ errors }">
         <base-input-select
           v-if="canEditRow(sample['LOCATION'])"
@@ -313,7 +312,7 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
         :name="`Sample ${sampleIndex + 1} Screening Method`"
         :vid="`sample ${sampleIndex + 1} screening method`"
         v-slot="{ errors }">
