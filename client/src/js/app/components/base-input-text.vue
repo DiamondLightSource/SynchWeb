@@ -31,6 +31,7 @@ Component will emit a save event when the value changes
       :placeholder="placeholderText"
       :disabled="disabled"
       :class="classObject"
+      :step="step"
       @keyup="onEnter"
       @input="updateValue"
       @blur="onBlur"
@@ -134,6 +135,10 @@ export default {
     initialText: {
       type: String,
     },
+    step: {
+      type: Number,
+      default: 1
+    }
   },
   data() {
     return {
@@ -143,7 +148,7 @@ export default {
   },
   watch: {
     editable: function(value) {
-      if (value == false) this.showEditIcon = false
+      if (!value) this.showEditIcon = false
     }
   },
   computed: {
@@ -153,7 +158,7 @@ export default {
     },
     inlineText() {
       return this.initialText || this.value
-    }
+    },
   },
   created() {
     // If created with editable = false then we are in inline-edit mode
@@ -185,7 +190,7 @@ export default {
     },
     onEnter(event) {
       // If we are in inline edit mode - save the model on enter (key = 13)
-      if (this.inline && event.keyCode == 13) this.onSave()
+      if (this.inline && event.keyCode === 13) this.onSave()
     },
   },
 };

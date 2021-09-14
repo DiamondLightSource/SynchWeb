@@ -4,113 +4,125 @@
 
     <p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
 
-    <p v-if="container.CONTAINERSTATUS == 'processing'" class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
+    <p v-if="container.CONTAINERSTATUS === 'processing'" class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
 
-    <div class="tw-flex puck_wrap">
+    <validation-observer ref="containerForm" v-slot="{ invalid, errors }">
+      <div class="tw-flex puck_wrap">
 
-      <div class="form vform tw-w-2/3">
-        <ul>
-          <li>
-            <span class="label">Name</span>
-            <base-input-text v-model="container.NAME" :inline="true" @save="save('NAME')"/>
-          </li>
+        <div class="form vform tw-w-2/3">
+          <ul>
+            <li>
+              <span class="label">Name</span>
+              <base-input-text v-model="container.NAME" :inline="true" @save="save('NAME')"/>
+            </li>
 
-          <li>
-            <span class="label">Shipment</span>
-            <span><a class="tw-underline" :href="'/shipments/sid/'+container.SHIPPINGID">{{container.SHIPMENT}}</a></span>
-          </li>
+            <li>
+              <span class="label">Shipment</span>
+              <span><a class="tw-underline" :href="'/shipments/sid/'+container.SHIPPINGID">{{container.SHIPMENT}}</a></span>
+            </li>
 
-          <li>
-            <span class="label">Dewar</span>
-            <span>{{container.DEWAR}}</span>
-          </li>
-          <li>
-            <span class="label">Container Type</span>
-            <span>{{container.CONTAINERTYPE}}</span>
-          </li>
-          <li>
-            <span class="label">Owner</span>
-            <base-input-select
-              v-model="container.OWNER"
-              :options="users"
-              optionValueKey="PERSONID"
-              :inline="true"
-              @save="save('OWNERID')"
-              optionTextKey="FULLNAME"/>
-          </li>
-          <li v-if="isPuck">
-            <span class="label">Registered Container</span>
-            <span class="tw-relative">{{container.REGISTRY}} <router-link :to="`/containers/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
-          </li>
-          <li>
-            <span class="label">Barcode</span>
-            <base-input-text
-              v-model="container.BARCODE"
-              :inline="true"
-              initialText="Click to edit"
-              @save="save('BARCODE')"/>
-          </li>
-          <li v-if="container.PIPELINE">
-            <span class="label">Priority Processing</span>
-            <base-input-select
-              v-model="container.PIPELINE"
-              name="PIPELINE"
-              :options="processingPipelines"
-              optionValueKey="PROCESSINGPIPELINEID"
-              :inline="true"
-              optionTextKey="NAME"
-            />
-          </li>
+            <li>
+              <span class="label">Dewar</span>
+              <span>{{container.DEWAR}}</span>
+            </li>
+            <li>
+              <span class="label">Container Type</span>
+              <span>{{container.CONTAINERTYPE}}</span>
+            </li>
+            <li>
+              <span class="label">Owner</span>
+              <base-input-select
+                v-model="container.OWNER"
+                :options="users"
+                optionValueKey="PERSONID"
+                :inline="true"
+                @save="save('OWNERID')"
+                optionTextKey="FULLNAME"/>
+            </li>
+            <li v-if="isPuck">
+              <span class="label">Registered Container</span>
+              <span class="tw-relative">{{container.REGISTRY}} <router-link :to="`/containers/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
+            </li>
+            <li>
+              <span class="label">Barcode</span>
+              <base-input-text
+                v-model="container.BARCODE"
+                :inline="true"
+                initialText="Click to edit"
+                @save="save('BARCODE')"/>
+            </li>
+            <li v-if="container.PIPELINE">
+              <span class="label">Priority Processing</span>
+              <base-input-select
+                v-model="container.PIPELINE"
+                name="PIPELINE"
+                :options="processingPipelines"
+                optionValueKey="PROCESSINGPIPELINEID"
+                :inline="true"
+                optionTextKey="NAME"
+              />
+            </li>
 
-          <li>
-            <span class="label">Automated Collection</span>
-            <span v-if="containerQueueId">
-              This container was queued for auto collection on {{container['QUEUEDTIMESTAMP']}}
-              <a @click="onUnQueueContainer" class="tw-cursor-pointer button unqueue"><i class="fa fa-times"></i> Unqueue</a>
-            </span>
-            <span v-else>
-              <a @click="onQueueContainer" class="tw-cursor-pointer button queue"><i class="fa fa-plus"></i> Queue</a> this container for Auto Collect
-            </span>
-          </li>
+            <li>
+              <span class="label">Automated Collection</span>
+              <span v-if="containerQueueId">
+                This container was queued for auto collection on {{container['QUEUEDTIMESTAMP']}}
+                <a @click="onUnQueueContainer" class="tw-cursor-pointer button unqueue"><i class="fa fa-times"></i> Unqueue</a>
+              </span>
+              <span v-else>
+                <a @click="onQueueContainer" class="tw-cursor-pointer button queue"><i class="fa fa-plus"></i> Queue</a> this container for Auto Collect
+              </span>
+            </li>
 
-          <li>
-            <span class="label">Comments</span>
-            <base-input-text v-model="container.COMMENTS" :inline="true" @save="save('COMMENTS')" inlineText="Click to edit"/>
-          </li>
+            <li>
+              <span class="label">Comments</span>
+              <base-input-text v-model="container.COMMENTS" :inline="true" @save="save('COMMENTS')" inlineText="Click to edit"/>
+            </li>
 
-          <li class="clearfix">
-            <span class="label">Location History</span>
-            <div class="history tw-inline-block tw-w-2/3">
-              <table-component
-                :headers="containerHistoryHeaders"
-                :data="containerHistory"
-                noDataText="No history available"/>
-              <pagination-component @page-changed="onUpdateHistory" />
-            </div>
-          </li>
-        </ul>
-      </div> <!-- End Container Form Elements -->
+            <li class="clearfix">
+              <span class="label">Location History</span>
+              <div class="history tw-inline-block tw-w-2/3">
+                <table-component
+                  :headers="containerHistoryHeaders"
+                  :data="containerHistory"
+                  noDataText="No history available"/>
+                <pagination-component @page-changed="onUpdateHistory" />
+              </div>
+            </li>
+          </ul>
+        </div> <!-- End Container Form Elements -->
 
-      <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
-        <valid-container-graphic
-          :containerType="containerType"
-          :samples="samples"
-          @cell-clicked="onContainerCellClicked"/>
+        <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
+          <valid-container-graphic
+            :containerType="containerType"
+            :samples="samples"
+            @cell-clicked="onContainerCellClicked"/>
+        </div>
+
+      </div> <!-- End flex puck wrap-->
+
+      <div class="table sample">
+        <component
+          :is="sampleComponent"
+          v-if="proteinsLoaded"
+          :containerId="container.CONTAINERID"
+          @save-sample="onSaveSample"
+          @clone-sample="onCloneSample"
+          @clear-sample="onClearSample"
+          @clone-container="onCloneContainer"
+          @clear-container="onClearContainer"
+          @clone-container-column="onCloneColumn"
+          @clone-container-row="onCloneRow"
+        />
       </div>
 
-    </div> <!-- End flex puck wrap-->
-
-    <div class="table sample">
-      <sample-editor
-        v-if="proteinsLoaded"
-        :containerType="containerType"
-        :experimentKind="container.EXPERIMENTTYPE"
-        :containerId="container.CONTAINERID"
-        :proteins="proteins"
-        :gproteins="gProteinsCollection"
-        :automated="container.AUTOMATED"
-      />
-    </div>
+      <div class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4" v-show="invalid">
+        <p class="tw-font-bold">Please fix the errors on the form</p>
+        <div v-for="(error, index) in errors" :key="index">
+          <p v-show="error.length > 0" class="tw-black">{{error[0]}}</p>
+        </div>
+      </div>
+    </validation-observer>
 
     <portal to="dialog">
       <dialog-box
@@ -130,31 +142,33 @@
         </template>
       </dialog-box>
     </portal>
-
   </div>
 </template>
 
 <script>
+import formatDate from 'date-fns-tz/format'
+import { ValidationObserver }  from 'vee-validate'
+
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
 import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 import Samples from 'collections/samples'
 import Shipments from 'collections/shipments'
 import Containers from 'collections/containers'
 import Dewars from 'collections/dewars'
-import SampleEditor from 'modules/types/mx/samples/sample-editor.vue'
+
+import BaseInputCheckBox from 'app/components/base-input-checkbox.vue'
+import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
-import BaseInputSelect from 'app/components/base-input-select.vue'
-import BaseInputCheckBox from 'app/components/base-input-checkbox.vue'
-
-import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
-import TableComponent from 'app/components/table.vue'
-import PaginationComponent from 'app/components/pagination.vue'
 import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
 import Dialog from 'app/components/dialogbox.vue'
-import formatDate from 'date-fns-tz/format'
+import PaginationComponent from 'app/components/pagination.vue'
+import SingleSample from 'modules/types/mx/samples/single-sample.vue'
+import SamplePlate from 'modules/types/mx/samples/samples-plate.vue'
+import TableComponent from 'app/components/table.vue'
+import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
 
-import { mapGetters } from 'vuex'
+
 export default {
   name: 'mx-container-view',
   mixins: [ContainerMixin],
@@ -162,12 +176,14 @@ export default {
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
     'base-input-select': BaseInputSelect,
-    'sample-editor': SampleEditor,
     'valid-container-graphic': ValidContainerGraphic,
     'table-component': TableComponent,
     'pagination-component': PaginationComponent,
     'base-input-checkbox': BaseInputCheckBox,
-    'dialog-box': Dialog
+    'dialog-box': Dialog,
+    'single-sample-plate': SingleSample,
+    'mx-sample-plate': SamplePlate,
+    'validation-observer': ValidationObserver,
   },
   props: {
     containerModel: {
@@ -228,12 +244,18 @@ export default {
   computed: {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
-    }
+    },
+    sampleComponent() {
+      // Use a table editor unless capacity > 25
+      // If we have been passed a valid container id then we are editing the samples, else new table
+
+      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-sample-plate'
+    },
   },
   created: function() {
     // Get samples for this container id
     this.loadContainerData()
-    this.samplesCollection = new Samples()
+    this.samplesCollection = new Samples(null, { state: { pageSize: 9999 } })
     this.samplesCollection.queryParams.cid = this.containerId
     this.getSamples(this.samplesCollection)
     this.getHistory()
@@ -295,12 +317,12 @@ export default {
       let filteredTypes = []
       // Try to find the experiment Type ID from the group of experiment types
       filteredTypes = experimentTypes.filter( (type) => {
-        if (type.NAME == this.container.EXPERIMENTTYPE && type.PROPOSALTYPE == proposalType) return true
+        if (type.NAME === this.container.EXPERIMENTTYPE && type.PROPOSALTYPE === proposalType) return true
       })
       // Try to find the experiment Type ID from all experiment types
       if (!filteredTypes) {
         filteredTypes = experimentTypes.filter( (type) => {
-          if (type.NAME == this.container.EXPERIMENTTYPE) return true
+          if (type.NAME === this.container.EXPERIMENTTYPE) return true
         })
       }
       return filteredTypes

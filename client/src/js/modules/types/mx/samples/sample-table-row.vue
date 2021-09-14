@@ -2,8 +2,8 @@
   <div
     class="tw-flex tw-w-full tw-items-center"
      :class="{
-      'tw-bg-table-body-background': sampleIndex % 2 == 0,
-      'tw-bg-table-body-background-odd': sampleIndex % 2 == 1
+      'tw-bg-table-body-background': sampleIndex % 2 === 0,
+      'tw-bg-table-body-background-odd': sampleIndex % 2 === 1
     }">
     <div class="location-column tw-text-center tw-py-1">{{ sample.LOCATION || sampleIndex + 1 }}</div>
 
@@ -27,7 +27,7 @@
       >
         <template slot-scope="{ option }">
           <span class="tw-flex tw-justify-between tw-w-full">
-            <span class="tw-"><i v-if="option.SAFETYLEVEL == 'GREEN'" class="fa fa-check green"></i></span>
+            <span class="tw-"><i v-if="option.SAFETYLEVEL === 'GREEN'" class="fa fa-check green"></i></span>
             {{ option['text'] }}
           </span>
         </template>
@@ -87,7 +87,7 @@
     <div class="actions-column tw-py-1 tw-text-right">
       <span v-if="containerId">
         <span v-if="editingRow === sample['LOCATION']">
-          <a class="button tw-cursor-pointer  " @click="saveSample(sampleIndex)"><i class="fa fa-check"></i></a>
+          <a class="button tw-cursor-pointer  " @click="$emit('save-sample', sampleIndex)"><i class="fa fa-check"></i></a>
           <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
         </span>
         <span v-else>
@@ -210,5 +210,16 @@ export default {
 }
 .min-height-8 {
   min-height: 32px;
+}
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }
 </style>

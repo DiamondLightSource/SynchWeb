@@ -1,5 +1,12 @@
 <template>
   <div class="tw-my-4">
+    <div class="tw-flex tw-justify-end tw-mb-2" v-if="!containerId">
+      <button
+        class="button"
+        @click="$emit('clone-container', 0)">
+        Clone all from first row
+      </button>
+    </div>
     <div class="tw-flex tw-justify-end tw-w-full tw-h-auto tw-items-center">
       <a
         v-for="(tabName, tabNameIndex) in tabNames" :key="tabNameIndex"
@@ -137,12 +144,14 @@
 import SampleTableRow from 'modules/types/mx/samples/sample-table-row.vue'
 import Dialog from 'app/components/dialogbox.vue'
 import { mapGetters } from 'vuex'
+import BaseInputSelect from 'app/components/base-input-select.vue'
 
 export default {
   name: 'mx-sample-plate',
   components: {
     'dialog-box': Dialog,
-    'sample-table-row': SampleTableRow
+    'sample-table-row': SampleTableRow,
+    'base-input-select': BaseInputSelect
   },
   data() {
     return {
@@ -258,7 +267,7 @@ export default {
       default: () => ([])
     },
     containerId: {
-      type: [Number, String]
+      type: [Number, String, undefined]
     }
   },
   computed: {
@@ -273,13 +282,11 @@ export default {
       return columnsMap[this.currentTab]
     },
     tabNames() {
-      const tabs = [
+      return [
         { key: 'basic', name: 'Basic' },
         { key: 'extraFields', name: 'Extra Fields' },
         { key: 'unattended', name: 'Unattended (UDC)' }
       ]
-
-      return tabs
     },
     containerSamplesGroupData: {
       get() {
@@ -339,24 +346,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.location-column {
-  width: 30px;
-}
-.protein-column {
-  width: 18%;
-}
-.name-column {
-  width: 10%;
-} 
-.sample-group-column {
-  width: 10%;
-}
-.actions-column {
-  width: calc(12% - 30px);
-}
-.min-height-8 {
-  min-height: 32px;
-}
-</style>

@@ -4,7 +4,7 @@
 
     <div class="tw-flex tw-flex-col">
       <!-- Wrap the form in an observer component so we can check validation state on submission -->
-      <validation-observer ref="observer" v-slot="{ invalid, errors }">
+      <validation-observer ref="containerForm" v-slot="{ invalid, errors }">
 
         <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
         <form class="tw-flex" method="post" id="add_container" @submit.prevent="onSubmit">
@@ -135,10 +135,10 @@
             </div>
 
             <div class="pck tw-mb-2 tw-py-2">
-              <label>Allow UDC</label>
+              <label>Queue For UDC</label>
               <base-input-checkbox
-                name="Allow UDC"
-                v-model="containerState.ALLOWUDC"
+                name="Queue For UDC"
+                v-model="containerState.QUEUEFORUDC"
               />
             </div>
           </div>
@@ -158,15 +158,17 @@
 
         <div>
           <!-- Sample specific fields -->
-          <sample-editor
+          <component
             ref="sampleEditor"
             v-if="proteinsLoaded"
-            :containerType="containerType"
-            :experimentKind="containerState.EXPERIMENTTYPEID"
-            :proteins="proteins"
-            :gproteins="gProteinsCollection"
-            :automated="containerState.AUTOMATED"
-            @update-location="updateSampleLocation"
+            :is="sampleComponent"
+            @save-sample="onSaveSample"
+            @clone-sample="onCloneSample"
+            @clear-sample="onClearSample"
+            @clone-container="onCloneContainer"
+            @clear-container="onClearContainer"
+            @clone-container-column="onCloneColumn"
+            @clone-container-row="onCloneRow"
           />
         </div>
         <!--
@@ -223,16 +225,17 @@
 import Container from 'models/container'
 import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
 
-import SampleEditor from 'modules/types/mx/samples/sample-editor.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
-
-import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
 import Dialog from 'app/components/dialogbox.vue'
 import TableComponent from 'app/components/table.vue'
+import SamplePlate from 'modules/types/mx/samples/samples-plate.vue'
+import SingleSample from 'modules/types/mx/samples/single-sample.vue'
+
+import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
@@ -254,7 +257,8 @@ const initialContainerState = {
   SCHEDULEID: null,
   SCREENID: null,
   EXPERIMENTTYPEID: "",
-  ALLOWUDC: false
+  QUEUEFORUDC: false,
+  SPACEGROUP: false
 }
 
 const INITIAL_CONTAINER_TYPE = {
@@ -280,9 +284,10 @@ export default {
     'valid-container-graphic': ValidContainerGraphic,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
-    'sample-editor': SampleEditor,
     'dialog-box': Dialog,
-    'table-component': TableComponent
+    'table-component': TableComponent,
+    'single-sample-plate': SingleSample,
+    'mx-sample-plate': SamplePlate
   },
   props: {
     'mview':[Function, Promise], // The marionette view could be lazy loaded or static import
@@ -293,22 +298,15 @@ export default {
   data() {
     return {
       containerState: initialContainerState,
-
       // The dewar that this container will belong to
       dewar: null,
-
-      containerGroup: '',
-
-
       plateKey: 0,
       plateType: null,
       proteinCombo: '123540',
-      proteinsLoaded: false,
       proteinsCollection: null,
       gProteinsCollection: null,
       proteins: [],
       proteinSelection: null,
-
       selectedSample: null,
       showAllExperimentTypes: false,
       sampleLocation: 0,
@@ -336,14 +334,12 @@ export default {
     // Build the complete list of proposal types included for each container type
     containerTypesFilter: function() {
       let types = this.containerTypes.map( container => container.PROPOSALTYPE )
-      let unique = types.filter( (value, index, self) => self.indexOf(value) === index )
-      return unique
+      return types.filter( (value, index, self) => self.indexOf(value) === index )
     },
     // Build the complete list of proposal types included for each experiment type
     experimentTypesFilter: function() {
       let types = this.experimentTypes.map( experiment => experiment.PROPOSALTYPE )
-      let unique = types.filter( (value, index, self) => self.indexOf(value) === index )
-      return unique
+      return types.filter( (value, index, self) => self.indexOf(value) === index )
     },
     ownerEmail: function() {
       // Does the selected owner have a valid email?
@@ -351,9 +347,17 @@ export default {
 
       let owner = this.usersCollection.findWhere({PERSONID: this.containerState.PERSONID.toString()})
 
-      if (owner && owner.get('EMAILADDRESS')) return true
-      else return false
+      return (owner && owner.get('EMAILADDRESS'))
     },
+    containerGroup() {
+      return this.$store.getters['proposal/currentProposalType']
+    },
+    sampleComponent() {
+      // Use a table editor unless capacity > 25
+      // If we have been passed a valid container id then we are editing the samples, else new table
+
+      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-sample-plate'
+    }
   },
   watch: {
     // When the container type changes we need to reset the samples list and redraw the container graphic
@@ -364,7 +368,6 @@ export default {
         return
       }
       this.containerState.CONTAINERTYPE = type.get('NAME')
-      this.containerGroup = type.get('PROPOSALTYPE')
       this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
 
       this.resetSamples(type.get('CAPACITY'))
@@ -385,17 +388,17 @@ export default {
     'containerState.CONTAINERREGISTRYID': function(newVal) {
       if (this.isPuck && newVal) {
         // When a user selects a registered container we should update the name/barcode
-        let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID == newVal)
+        let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID === newVal)
         this.containerState.NAME = entry['BARCODE'] || '-'
       }
     },
-    'containerState.ALLOWUDC': function(newVal) {
-      let samples = []
+    'containerState.QUEUEFORUDC': function(newVal) {
+      let samples
       if (newVal) {
         samples = this.samples.map(sample => ({
           ...sample,
           CENTRINGMETHOD: 'xray',
-          EXPERIMENTKIND: 'SAD',
+          EXPERIMENTKIND: 'Ligand binding',
           SCREENINGMETHOD: 'none',
         }))
 
@@ -423,15 +426,15 @@ export default {
         this.containerState.CONTAINERREGISTRYID = firstContainerRegistry.CONTAINERREGISTRYID
         this.containerState.NAME = firstContainerRegistry.BARCODE
       }
-    }
+    },
+    'containerState.SPACEGROUP': function() {
+      this.getSpaceGroupsCollection()
+    },
   },
   created: function() {
     this.containerType = INITIAL_CONTAINER_TYPE
     this.dewar = this.options.dewar.toJSON()
     this.containerState.DEWARID = this.dewar.DEWARID
-
-    // Used to help show/hide fields
-    this.containerGroup = this.$store.state.proposalType
 
     this.resetSamples(this.containerType.CAPACITY)
 
@@ -443,6 +446,7 @@ export default {
     this.getProcessingPipelines()
     this.formatExperimentKindList()
     this.getSampleGroups()
+    this.getSpaceGroupsCollection()
     this.getImagingCollections()
     this.getImagingScheduleCollections()
     this.getImagingScreensCollections()
@@ -451,7 +455,7 @@ export default {
     // Called on Add Container
     // Calls the validation method on our observer component
     async onSubmit() {
-      const validated = await this.$refs.observer.validate()
+      const validated = await this.$refs.containerForm.validate()
 
       if (!validated) return
 
@@ -503,7 +507,7 @@ export default {
         this.containerState.NAME = ''
         this.containerState.CODE = ''
         // Reset state of form
-        this.$refs.observer.reset()
+        this.$refs.containerForm.reset()
       } catch (error) {
         this.$store.commit('notifications/addNotification', {
           message: 'Something went wrong creating this container, please try again',
@@ -515,13 +519,13 @@ export default {
     },
     resetSamples(capacity) {
       this.$store.commit('samples/reset', capacity)
+      // this.$store.commit('samples/set', { data: this.samples.map((sample => {}))})
     },
     async onContainerCellClicked(location) {
       // We want to validate each single sample form before they current location is saved.
       // This is because only one sample form is displayed at a time.
       if (this.containerType.CAPACITY > 25) {
-        const sampleEditorRef = this.$refs.sampleEditor
-        const validatedForm = await sampleEditorRef.$refs.sampleObserver.validate()
+        const validatedForm = await this.$refs.containerForm.validate()
 
         if (validatedForm) {
           this.sampleLocation = location - 1
@@ -529,9 +533,6 @@ export default {
       } else {
         this.sampleLocation = location - 1
       }
-    },
-    updateSampleLocation(location) {
-      this.sampleLocation = location
     },
     async viewSchedule() {
       const schedule = this.imagingSchedules.find(schedule => schedule.SCHEDULEID === this.containerState.SCHEDULEID)
@@ -545,7 +546,7 @@ export default {
     },
     closeModalAction() {
       this.displayImagerScheduleModal = false
-    }
+    },
   },
   provide() {
     return {
