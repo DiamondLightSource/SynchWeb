@@ -1,10 +1,12 @@
 define([
+    'utils/editable',
     'modules/types/spec/dc/dc',
     'modules/dc/views/distl', 
     'modules/types/spec/dc/attplot.js',
     'modules/nexus/views/scalars.js',
     'views/dialog',
     'templates/types/spec/dc/energyscan.html'], function(
+        Editable,
         DCItemView, DCDISTLView, 
         AttachmentPlot, NexusScalarsPlot, 
         DialogView,
@@ -61,6 +63,9 @@ define([
         onShow: function() {
             DCItemView.__super__.onShow.call(this)
             
+            var edit = new Editable({ model: this.model, el: this.$el })
+            edit.create('COMMENTS', 'text')
+
             this.plot = new AttachmentPlot({ id: this.model.get('ID') })
             this.rplot.show(this.plot)
 
