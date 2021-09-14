@@ -40,6 +40,19 @@ define(['marionette',
 
         
     return Marionette.LayoutView.extend({
+        subSampleColumns: [
+            { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
+            { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
+            { name: 'X', label: 'X', cell: 'string', editable: false },
+            { name: 'Y', label: 'Y', cell: 'string', editable: false },
+            { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
+            { name: 'GR', label: 'Grid Scans', cell: 'string', editable: false },
+            { name: 'SC', label: 'SCs', cell: 'string', editable: false },
+            { name: 'DC', label: 'DCs', cell: 'string', editable: false },
+            { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: false },
+            { label: 'Status', cell: table.StatusCell, editable: false },
+        ],
+
         className: 'content',
         template: template,
         
@@ -133,23 +146,9 @@ define(['marionette',
                 select: this.selectGlobalProtein.bind(this)
             })
 
-
-            var columns = [
-                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
-                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
-                        { name: 'X', label: 'X', cell: 'string', editable: false },
-                        { name: 'Y', label: 'Y', cell: 'string', editable: false },
-                        { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
-                        { name: 'GR', label: 'Grid Scans', cell: 'string', editable: true },
-                        { name: 'SC', label: 'SCs', cell: 'string', editable: true },
-                        { name: 'DC', label: 'DCs', cell: 'string', editable: true },
-                        { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: true },
-                        { label: 'Status', cell: table.StatusCell, editable: false },
-            ]
-
             this.subtable = new TableView({
                 collection: this.subsamples, 
-                columns: columns, 
+                columns: this.getOption('subSampleColumns'), 
                 tableClass: 'subsamples', 
                 loading: false, pages: false, 
                 backgrid: { emptyText: 'No subsamples found', row: ClickableRow } 
