@@ -25,6 +25,7 @@ import EMDCList from 'modules/types/em/dc/datacollections'
 import POWDCList from 'modules/types/pow/dc/datacollections'
 import SAXSDCList from 'modules/types/saxs/dc/datacollections'
 import XPDFDCList from 'modules/types/xpdf/dc/datacollections'
+import SpecDCList from 'modules/types/spec/dc/datacollections'
 
 import DCCol from 'collections/datacollections'
 import Proposal from 'models/proposal'
@@ -39,6 +40,7 @@ let dc_views = {
   pow: POWDCList,
   saxs: SAXSDCList,
   xpdf: XPDFDCList,
+  spec: SpecDCList,
 }
 
 
