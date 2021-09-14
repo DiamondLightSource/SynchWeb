@@ -43,7 +43,7 @@ define([
                 parent: this.model, 
                 imagestatuses: this.getOption('imagestatuses'), 
                 xfm: true, 
-                snapshot: 0, 
+                snapshotId: 0, 
                 colormap: 'viridis',
                 padMax: false,
             })
