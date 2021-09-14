@@ -38,7 +38,7 @@
         >
           <template slot-scope="{ option }">
             <span class="tw-flex tw-justify-between tw-w-full">
-              <span class="tw-"><i v-if="option.SAFETYLEVEL == 'GREEN'" class="fa fa-check green"></i></span>
+              <span class="tw-"><i v-if="option.SAFETYLEVEL === 'GREEN'" class="fa fa-check green"></i></span>
               {{ option['text'] }}
             </span>
           </template>
@@ -174,52 +174,92 @@
               :data=[sample]
             >
               <template slot="content" slot-scope="{ row }">
-                <validation-provider tag="td" class="tw-px-1" v-slot="{ errors }" :name="`Sample ${sampleLocation + 1} CELL-A`" :vid="`sample ${sampleLocation + 1} cell-a`">
+                <validation-provider
+                  tag="td"
+                  class="tw-px-1"
+                  v-slot="{ errors }"
+                  :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+                  :name="`Sample ${sampleLocation + 1} CELL-A`"
+                  :vid="`sample ${sampleLocation + 1} cell-a`">
                   <base-input-text
                     :quiet="true"
                     inputClass="tw-w-12 tw-h-8"
+                    type="number"
+                    :step="0.01"
                     :errorMessage="errors[0]"
                     :errorClass="errors[0] ? 'ferror' : ''"
                     v-model="CELL_A"
                   />
                 </validation-provider>
 
-                <validation-provider tag="td" class="tw-px-1"  v-slot="{ errors }" :name="`Sample ${sampleLocation + 1} CELL-B`" :vid="`sample ${sampleLocation + 1} cell-b`">
+                <validation-provider
+                  tag="td"
+                  class="tw-px-1"
+                  v-slot="{ errors }"
+                  :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+                  :name="`Sample ${sampleLocation + 1} CELL-B`"
+                  :vid="`sample ${sampleLocation + 1} cell-b`">
                   <base-input-text
                     :quiet="true"
                     inputClass="tw-w-12 tw-h-8"
                     :errorMessage="errors[0]"
+                    type="number"
+                    :step="0.01"
                     :errorClass="errors[0] ? 'ferror' : ''"
                     v-model="CELL_B"
                   />
                 </validation-provider>
 
-                <validation-provider tag="td" class="tw-px-1" v-slot="{ errors }" :name="`Sample ${sampleLocation + 1} CELL-C`" :vid="`sample ${sampleLocation + 1} cell-c`">
+                <validation-provider
+                  tag="td"
+                  class="tw-px-1"
+                  v-slot="{ errors }"
+                  :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+                  :name="`Sample ${sampleLocation + 1} CELL-C`"
+                  :vid="`sample ${sampleLocation + 1} cell-c`">
                   <base-input-text
                     v-on="$listeners"
                     inputClass="tw-w-12 tw-h-8"
                     :errorMessage="errors[0]"
+                    type="number"
+                    :step="0.01"
                     :quiet="true"
                     :errorClass="errors[0] ? 'ferror' : ''"
                     v-model="CELL_C"
                   />
                 </validation-provider>
 
-                <validation-provider tag="td" class="tw-px-1" v-slot="{ errors }" :name="`Sample ${sampleLocation + 1} CELL-ALPHA`" :vid="`sample ${sampleLocation + 1} cell-alpha`">
+                <validation-provider
+                  tag="td"
+                  class="tw-px-1"
+                  v-slot="{ errors }"
+                  :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+                  :name="`Sample ${sampleLocation + 1} CELL-ALPHA`"
+                  :vid="`sample ${sampleLocation + 1} cell-alpha`">
                   <base-input-text
                     v-on="$listeners"
                     inputClass="tw-w-12 tw-h-8"
                     :quiet="true"
+                    type="number"
+                    :step="0.01"
                     :errorMessage="errors[0]"
                     :errorClass="errors[0] ? 'ferror' : ''"
                     v-model="CELL_ALPHA"
                   />
                 </validation-provider>
 
-                <validation-provider tag="td" class="tw-px-1" :name="`Sample ${sampleLocation + 1} CELL-BETA`" :vid="`sample ${sampleLocation + 1} cell-beta`"v-slot="{ errors }">
+                <validation-provider
+                  tag="td"
+                  class="tw-px-1"
+                  :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+                  :name="`Sample ${sampleLocation + 1} CELL-BETA`"
+                  :vid="`sample ${sampleLocation + 1} cell-beta`"
+                  v-slot="{ errors }">
                   <base-input-text
                     v-on="$listeners"
                     inputClass="tw-w-12 tw-h-8"
+                    type="number"
+                    :step="0.01"
                     :errorMessage="errors[0]"
                     :errorClass="errors[0] ? 'ferror' : ''"
                     :quiet="true"
@@ -227,10 +267,18 @@
                   />
                 </validation-provider>
 
-                <validation-provider tag="td" class="tw-px-1" :name="`Sample ${sampleLocation + 1} CELL-GAMMA`" :vid="`sample ${sampleLocation + 1} cell-gamma`" v-slot="{ errors }">
+                <validation-provider
+                  tag="td"
+                  class="tw-px-1"
+                  :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+                  :name="`Sample ${sampleLocation + 1} CELL-GAMMA`"
+                  :vid="`sample ${sampleLocation + 1} cell-gamma`"
+                  v-slot="{ errors }">
                   <base-input-text
                     v-on="$listeners"
                     inputClass="tw-w-12 tw-h-8"
+                    type="number"
+                    :step="0.01"
                     :errorMessage="errors[0]"
                     :errorClass="errors[0] ? 'ferror' : ''"
                     :quiet="true"
@@ -245,12 +293,11 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="sample['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Experiment Kind`"
           :vid="`sample ${sampleLocation + 1} experiment kind`"
           v-slot="{ errors }">
           <base-input-select
-            :is-disabled="!allowUDC"
             :options="experimentKindList"
             inputClass="tw-w-48 tw-h-8"
             outerClass="tw-w-full tw-flex"
@@ -273,11 +320,11 @@
           :vid="`sample ${sampleLocation + 1} energy`"
           v-slot="{ errors }">
           <base-input-text
-            :disabled="sample['EXPERIMENTKIND'] !== 'SAD'"
             inputClass="tw-w-16 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
             type="number"
+            :step="1"
             :quiet="true"
             label="Energy"
             :errorMessage="errors[0]"
@@ -289,12 +336,11 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="sample['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Centering Method`"
           :vid="`sample ${sampleLocation + 1} centering method`"
           v-slot="{ errors }">
           <base-input-select
-            :is-disabled="!allowUDC"
             :options="centeringMethodList"
             optionValueKey="value"
             optionTextKey="text"
@@ -312,12 +358,11 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="sample['PROTEINID'] > -1 && allowUDC? 'required' : ''"
+          :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
           :name="`Sample ${sampleLocation + 1} Screening Method`"
           :vid="`sample ${sampleLocation + 1} screening method`"
           v-slot="{ errors }">
           <base-input-select
-            :is-disabled="!allowUDC"
             :options="screeningMethodList"
             optionValueKey="value"
             optionTextKey="text"
@@ -334,16 +379,16 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,none` : ''"
+          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,none|decimal:2` : ''"
           :name="`Sample ${sampleLocation + 1} Required Resolution`"
           :vid="`sample ${sampleLocation + 1} required resolution`"
           v-slot="{ errors }">
           <base-input-text
-            :disabled="sample['SCREENINGMETHOD'] !== 'none' || !allowUDC"
             inputClass="tw-w-16 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
             type="number"
+            :step="1"
             label="Required Resolution"
             :errorMessage="errors[0]"
             :quiet="true"
@@ -356,17 +401,17 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} Minimum Resolution`"
-          :rules="sample['PROTEINID'] > - 1 ? `required_if:sample ${sampleLocation + 1} screening method,all`: ''"
+          :rules="sample['PROTEINID'] > - 1 ? `required_if:sample ${sampleLocation + 1} screening method,all|decimal:2`: ''"
           :vid="`sample ${sampleLocation + 1} minimum resolution`"
           v-slot="{ errors }">
           <base-input-text
-            :disabled="sample['SCREENINGMETHOD'] !== 'all' || !allowUDC"
             inputClass="tw-w-16 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
             type="number"
             label="Minimum Resolution"
             :quiet="true"
+            :step="1"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
             v-model="MINIMUMRESOLUTION"
@@ -377,16 +422,16 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} No to Collect`"
-          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,best`: ''"
+          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,best|numeric`: ''"
           :vid="`sample ${sampleLocation + 1} no to collect`"
           v-slot="{ errors }">
           <base-input-text
-            :disabled="sample['SCREENINGMETHOD'] !== 'best' || !allowUDC"
             inputClass="tw-w-16 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
             label="No to Collect"
             type="number"
+            :step="1"
             :quiet="true"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -396,8 +441,8 @@
       </div>
     
       <div v-if="containerId">
-        <button v-if="sample.BLSAMPLEID" class="button submit" @click="saveSample(sampleLocation)">Save Sample</button>
-        <button v-else class="button submit" @click="saveSample(sampleLocation)">Add Sample</button>
+        <button v-if="sample.BLSAMPLEID" class="button submit" @click="$emit('save-sample', sampleLocation)">Save Sample</button>
+        <button v-else class="button submit" @click="$emit('save-sample', sampleLocation)">Add Sample</button>
       </div>
 
     </div>
@@ -445,6 +490,11 @@ export default {
       ]
     }
   },
+  created() {
+    if (this.containerId) {
+      this.onExtraPuckToggle(true)
+    }
+  },
 	methods: {
     onClonePlate: function() {
       this.$emit('clone-container', this.sampleLocation)
@@ -481,7 +531,20 @@ export default {
     },
     ...mapGetters({
       samples: ['samples/samples']
-    })
+    }),
   }
 }
 </script>
+<style>
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>

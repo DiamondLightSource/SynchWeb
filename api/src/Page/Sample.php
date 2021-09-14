@@ -145,7 +145,7 @@ class Sample extends Page
                               'SCREENINGCOLLECTVALUE' => '\d+',
                               'SAMPLEGROUP' => '\d+|\w+',
                               'STRATEGYOPTION' => '',
-                              'MINIMUMRESOLUTION' => '\d+'
+                              'MINIMUMRESOLUTION' => '\d+(.\d+)?'
                                );
 
 

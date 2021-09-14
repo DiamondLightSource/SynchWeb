@@ -25,7 +25,7 @@ define(['backbone', 'collections/components',
 
         updateHasData: function() {
             var hasData = this.get('DC') > 0 || this.get('GR') > 0 || this.get('SC') > 0
-            if (hasData != this.get('HASDATA')) this.set('HASDATA', hasData)
+            if (hasData !== this.get('HASDATA')) this.set('HASDATA', hasData)
         },
 
         updateExpKind: function() {
@@ -37,9 +37,11 @@ define(['backbone', 'collections/components',
             const strategyOption = this.get('STRATEGYOPTION')
             if (strategyOption) {
                 const option = JSON.parse(strategyOption)
-                this.set('SCREENINGMETHOD', option.screen)
-                this.set('SCREENINGCOLLECTVALUE', option.collect_samples)
-                this.set('SAMPLEGROUP', option.sample_group)
+                if (option) {
+                    this.set('SCREENINGMETHOD', option.screen)
+                    this.set('SCREENINGCOLLECTVALUE', option.collect_samples)
+                    this.set('SAMPLEGROUP', option.sample_group)
+                }
             }
         },
 

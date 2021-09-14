@@ -94,6 +94,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
+            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-A`"
             :vid="`sample ${sampleIndex + 1} cell-a`"
             v-slot="{ errors }">
@@ -101,6 +102,8 @@
               v-if="canEditRow(sample['LOCATION'])"
               placeholderText="A"
               :quiet="true"
+              type="number"
+              :step="0.01"
               inputClass="tw-w-12 tw-h-8"
               :errorMessage="errors[0]"
               :errorClass="errors[0] ? 'ferror' : ''"
@@ -112,6 +115,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
+            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-B`"
             :vid="`sample ${sampleIndex + 1} cell-b`"
             v-slot="{ errors }">
@@ -119,6 +123,8 @@
               v-if="canEditRow(sample['LOCATION'])"
               placeholderText="B"
               :quiet="true"
+              type="number"
+              :step="0.01"
               inputClass="tw-w-12 tw-h-8"
               :errorMessage="errors[0]"
               :errorClass="errors[0] ? 'ferror' : ''"
@@ -130,6 +136,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
+            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-C`"
             :vid="`sample ${sampleIndex + 1} cell-c`"
             v-slot="{ errors }"
@@ -138,6 +145,8 @@
               v-if="canEditRow(sample['LOCATION'])"
               placeholderText="C"
               inputClass="tw-w-12 tw-h-8"
+              type="number"
+              :step="0.01"
               :errorMessage="errors[0]"
               :quiet="true"
               :errorClass="errors[0] ? 'ferror' : ''"
@@ -152,6 +161,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
+            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-ALPHA`"
             :vid="`sample ${sampleIndex + 1} cell-alpha`"
             v-slot="{ errors }"
@@ -161,6 +171,8 @@
               placeholderText="α"
               inputClass="tw-w-12 tw-h-8"
               :quiet="true"
+              type="number"
+              :step="0.01"
               :errorMessage="errors[0]"
               :errorClass="errors[0] ? 'ferror' : ''"
               v-model="CELL_ALPHA"
@@ -171,6 +183,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
+            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-BETA`"
             :vid="`sample ${sampleIndex + 1} cell-beta`"
             v-slot="{ errors }"
@@ -179,6 +192,8 @@
               v-if="canEditRow(sample['LOCATION'])"
               placeholderText="β"
               inputClass="tw-w-12 tw-h-8"
+              type="number"
+              :step="0.01"
               :errorMessage="errors[0]"
               :errorClass="errors[0] ? 'ferror' : ''"
               :quiet="true"
@@ -190,6 +205,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
+            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-GAMMA`"
             :vid="`sample ${sampleIndex + 1} cell-gamma`"
             v-slot="{ errors }"
@@ -214,13 +230,12 @@
         tag="div"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} Centering Method`"
-        :rules="sample['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
         :vid="`sample ${sampleIndex + 1} centering method`"
         v-slot="{ errors }"
         >
         <base-input-select
           v-if="canEditRow(sample['LOCATION'])"
-          :is-disabled="!allowUDC"
           :options="centeringMethodList"
           optionValueKey="value"
           optionTextKey="text"
@@ -238,11 +253,10 @@
         class="tw-px-2 tw-w-32"
         :name="`Sample ${sampleIndex + 1} Experiment Kind`"
         :vid="`sample ${sampleIndex + 1} experiment kind`"
-        :rules="sample['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
         v-slot="{ errors }">
         <base-input-select
           v-if="canEditRow(sample['LOCATION'])"
-          :is-disabled="!allowUDC"
           :options="experimentKindList"
           inputClass="tw-w-full tw-h-8"
           optionValueKey="value"
@@ -264,9 +278,9 @@
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
-          :disabled="sample['EXPERIMENTKIND'] !== 'SAD' || !allowUDC"
           inputClass="tw-w-full tw-h-8"
           type="number"
+          :step="1"
           :quiet="true"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -285,7 +299,6 @@
         <base-input-select
           v-if="canEditRow(sample['LOCATION'])"
           :options="anomalousOptionsList"
-          :is-disabled="!allowUDC"
           optionValueKey="value"
           inputClass="tw-w-full tw-h-8"
           optionTextKey="text"
@@ -300,13 +313,12 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 && allowUDC ? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 ? 'required' : ''"
         :name="`Sample ${sampleIndex + 1} Screening Method`"
         :vid="`sample ${sampleIndex + 1} screening method`"
         v-slot="{ errors }">
         <base-input-select
           v-if="canEditRow(sample['LOCATION'])"
-          :is-disabled="!allowUDC"
           :options="screeningMethodList"
           optionValueKey="value"
           optionTextKey="text"
@@ -322,14 +334,14 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,none` : ''"
+        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,none|decimal:2` : ''"
         :name="`Sample ${sampleIndex + 1} Required Resolution`"
         :vid="`sample ${sampleIndex + 1} required resolution`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
-          :disabled="sample['SCREENINGMETHOD'] !== 'none' || !allowUDC"
           type="number"
+          :step="1"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -343,13 +355,13 @@
         tag="div"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} Minimum Resolution`"
-        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,all` : ''"
+        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,all|decimal:2` : ''"
         :vid="`sample ${sampleIndex + 1} minimum resolution`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
-          :disabled="sample['SCREENINGMETHOD'] !== 'all' || !allowUDC"
           type="number"
+          :step="1"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -363,13 +375,13 @@
         tag="div"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} No to Collect`"
-        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,best`: ''"
+        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,best|numeric`: ''"
         :vid="`sample ${sampleIndex + 1} no to collect`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
-          :disabled="sample['SCREENINGMETHOD'] !== 'best' || !allowUDC"
           type="number"
+          :step="1"
           inputClass="tw-w-full tw-h-8"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -427,3 +439,16 @@ export default {
   },
 }
 </script>
+<style>
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>

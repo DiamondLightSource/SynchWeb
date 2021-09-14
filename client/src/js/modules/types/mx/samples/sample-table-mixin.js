@@ -31,41 +31,38 @@ export default {
   },
   computed: {
     proteinsOptionsList() {
-      return this.proteins
+      return this.$proteins()
         .map(item => ({ value: item.PROTEINID, text: item.ACRONYM, SAFETYLEVEL: item.SAFETYLEVEL }));
     },
     experimentKindList() {
-      return this.$experimentKindList;
+      return this.$experimentKindList();
     },
     centeringMethodList() {
-      return this.$centeringMethods.filter(method => method).reduce(
+      return this.$centeringMethods().filter(method => method).reduce(
         (acc, curr) => {
           if (curr) acc.push({ value: curr, text: curr });
 
           return acc;
         },
-        [{ value: "xray", text: "X-Ray" }]
-      );
+        []
+      ).sort(this.sortSelectField);
     },
     spaceGroupList() {
-      return this.$spaceGroups.map((item) => ({ value: item, text: item }));
+      const spaceGroups = this.$spaceGroups().map((item) => ({ value: item.SPACEGROUPSHORTNAME, text: item.SPACEGROUPSHORTNAME }))
+
+      spaceGroups.sort(this.sortSelectField)
+
+      return spaceGroups
     },
     anomalousOptionsList() {
-      const anomalous = this.$anomalousList.map((item) => ({ value: item, text: item }))
-      anomalous.sort((a, b) => {
-        const aText = a.text.toLowerCase()
-        const bText = b.text.toLowerCase()
-
-        if (aText < bText) {
-          return -1
+      const anomalous = this.$anomalousList().reduce((prev, item) => {
+        if (item) {
+          prev.push({ value: item, text: item })
         }
 
-        if (aText > bText) {
-          return 1
-        }
-
-        return 0
-      })
+        return prev
+      }, [])
+      anomalous.sort(this.sortSelectField)
 
       return anomalous
     },
@@ -87,8 +84,8 @@ export default {
     sampleGroupsAndMembers() {
       return this.$sampleGroupsAndMembers()
     },
-    allowUDC() {
-      return this.$allowUDC()
+    queueForUDC() {
+      return this.$queueForUDC()
     },
     ...createFieldsForSamples([
       'ABUNDANCE',
@@ -183,11 +180,6 @@ export default {
       this.resetSampleToEdit();
     },
 
-    saveSample: function(location) {
-      // Delegating the save to the server to parent sample-editor
-      this.$emit("save-sample", location);
-    },
-
     resetSampleToEdit: function() {
       this.editRowLocation = "";
       // Reset temporary sample model
@@ -196,8 +188,8 @@ export default {
 
     isEditRowLocation: function(row) {
       // Used to indicate if the provided row should show in edit mode
-      if (!row["LOCATION"]) return false;
-      return this.editRowLocation == row["LOCATION"] ? true : false;
+      if (!row["LOCATION"]) return false
+      return this.editRowLocation === row["LOCATION"]
     },
 
     // If a proteinId is updated we need to also update the text ACRONYM because its a plan text value
@@ -213,6 +205,20 @@ export default {
     closeSampleEditing() {
       this.editingRow = null
     },
+    sortSelectField(a, b) {
+      const aText = a.text.toLowerCase()
+      const bText = b.text.toLowerCase()
+
+      if (aText < bText) {
+        return -1
+      }
+
+      if (aText > bText) {
+        return 1
+      }
+
+      return 0
+    }
   },
   inject: [
     "$spaceGroups",
@@ -225,6 +231,7 @@ export default {
     "$dewars",
     "$containers",
     "$sampleGroupsAndMembers",
-    "$allowUDC"
+    "$queueForUDC",
+    "$proteins"
   ]
 };

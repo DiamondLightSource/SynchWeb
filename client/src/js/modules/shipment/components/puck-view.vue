@@ -112,11 +112,6 @@ export default {
           .append('svg')
           .attr('viewBox', viewBox.join(','))
           .attr('preserveAspectRatio', 'xMaxYMax meet')
-      // Add the background image
-      svg.append('image')
-          .attr('href', this.puckImage)
-          .attr('width', 470)
-          .attr('height', 470)
       // Chart area
       this.graphic = svg.append('g')
       this.labels = svg.append('g')
@@ -172,7 +167,7 @@ export default {
     updateSampleCells: function(index, valid=true) {
       let color = valid ? '#82d180' : '#f26c4f'
       this.graphic.selectAll('.sample-cell')
-          .filter( (d,i) => i == index)
+          .filter( (d,i) => i === index)
           .style('fill', color)
           .style('stroke', '#666')
     },
@@ -207,7 +202,7 @@ export default {
     },
     // TODO - move these color functions into a separate utility class
     scoreColors: function(d) {
-      let scale = null
+      let scale
       let score = d['data'].SCORE || null
       switch(this.colorScale) {
         case 'rgb':
@@ -227,17 +222,15 @@ export default {
       else return 'none'
     },
     quantScale: function(threshold) {
-      var colorScale = d3ScaleThreshold()
+      return d3ScaleThreshold()
           .domain([0,threshold, 1])
           .range(["lightgray", "lightgray", "green"])
-      return colorScale
     },
     rgbScale: function() {
       // Option 1: give 2 color names
-      var colorScale = d3ScaleLinear()
+      return d3ScaleLinear()
           .domain([0,1])
           .range(["red", "green"])
-      return colorScale
     },
   }
 }
