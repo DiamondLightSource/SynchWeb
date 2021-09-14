@@ -346,3 +346,23 @@ export default {
   }
 }
 </script>
+<style scoped>
+.location-column {
+  width: 30px;
+}
+.protein-column {
+  width: 18%;
+}
+.name-column {
+  width: 10%;
+}
+.sample-group-column {
+  width: 10%;
+}
+.actions-column {
+  width: calc(12% - 30px);
+}
+.min-height-8 {
+  min-height: 32px;
+}
+</style>
