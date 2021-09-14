@@ -99,7 +99,7 @@ const routes = [
     name: 'stats-view',
     children: [
     {
-        path: 'visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)(/from/)?:from?(/to/)?:to?',
+        path: 'visit/:visit([a-zA-Z]+[0-9]+-[0-9]+)(/from/)?:from?(/to/)?:to?',
         name: 'stats-visit-dates',
         component: StatsView,
         props: route => ({

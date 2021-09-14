@@ -8,7 +8,7 @@ var bc = { title: 'Multicrystal Processing', url: '/mc' }
 
 const routes = [
     {
-        path: '/mc/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)(/page/)?:page([0-9]+)?(/s/)?:search([a-zA-z0-9_-]+)?',
+        path: '/mc/visit/:visit([a-zA-Z]+[0-9]+-[0-9]+)(/page/)?:page([0-9]+)?(/s/)?:search([a-zA-z0-9_-]+)?',
         component: MarionetteView,
         props: route => ({
             mview: DataCollectionsView,

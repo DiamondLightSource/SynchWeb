@@ -86,7 +86,7 @@ function lookupVisit(visit) {
 // The DC component handles the prefetching and proposal lookup in a cleaner method than using marionette wrapper directly
 let routes = [
   {
-    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?(/s/)?:search([a-zA-z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9_-]+)?(/id/)?:id([0-9]+)?(/pjid/)?:pjid([0-9]+)?',
+    path: '/dc(/visit/)?:visit([a-zA-Z]+[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?(/s/)?:search([a-zA-z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9_-]+)?(/id/)?:id([0-9]+)?(/pjid/)?:pjid([0-9]+)?',
     name: 'dc-list',
     component: DCWrapper,
     props: route => ({
@@ -125,7 +125,7 @@ let routes = [
     }),
   },
   {
-    path: '/dc/summary/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)',
+    path: '/dc/summary/visit/:visit([a-zA-Z]+[0-9]+-[0-9]+)',
     name: 'dc-summary',
     component: MarionetteView,
     props: route => ({
@@ -157,7 +157,7 @@ let routes = [
   },
   // Ty does not seem to be used in this route?
   {
-    path: '/dc/apstatussummary/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)(/ty/)?:ty?',
+    path: '/dc/apstatussummary/visit/:visit([a-zA-Z]+[0-9]+-[0-9]+)(/ty/)?:ty?',
     name: 'dc-apstatussummary',
     component: MarionetteView,
     props: route => ({
@@ -188,7 +188,7 @@ let routes = [
     }
   },
   {
-    path: '/dc/sc/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)',
+    path: '/dc/sc/visit/:visit([a-zA-Z]+[0-9]+-[0-9]+)',
     name: 'dc-sampleChanger',
     component: MarionetteView,
     props: route => ({
@@ -221,7 +221,7 @@ let routes = [
     }
   },
   {
-    path: '/dc/queue/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)',
+    path: '/dc/queue/visit/:visit([a-zA-Z]+[0-9]+-[0-9]+)',
     name: 'dc-queue',
     component: MarionetteView,
     props: route => ({

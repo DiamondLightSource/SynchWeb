@@ -353,7 +353,7 @@ const routes = [
   // Creates a default dewar added to the visit
   // Then redirects to add container page for the default dewar
   {
-    path: '/containers/add/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)',
+    path: '/containers/add/visit/:visit([a-zA-Z]+[0-9]+-[0-9]+)',
     name: 'container-add-visit',
     component: Page,
     beforeEnter: (to, from, next) => {
