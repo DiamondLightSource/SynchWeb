@@ -36,7 +36,11 @@ export default {
       required: false
     },
     'color-scale': String, // color-scale mapped to colorScale prop
-    'threshold': Number // Threshold used as part of colorScale
+    'threshold': Number, // Threshold used as part of colorScale
+    'colorAttr': {
+      type: String,
+      default: 'SCORE'
+    },
   },
   data: function() {
     return {
@@ -90,6 +94,17 @@ export default {
   watch: {
     selected: function() {
       this.updateSelected()
+    },
+    samples: {
+      handler() {
+        d3SelectAll("#puck > *").remove()
+        this.drawContainer()
+        this.updateSelected()
+        this.showLabels()
+        this.updateSampleCells()
+      },
+      deep: true,
+      immediate: true
     }
   },
   mounted: function() {
@@ -97,6 +112,7 @@ export default {
     this.drawContainer()
     this.updateSelected()
     this.showLabels()
+    this.updateSampleCells()
   },
   methods: {
     // Create the svg graphic representation of the puck
@@ -167,8 +183,7 @@ export default {
     updateSampleCells: function(index, valid=true) {
       let color = valid ? '#82d180' : '#f26c4f'
       this.graphic.selectAll('.sample-cell')
-          .filter( (d,i) => i === index)
-          .style('fill', color)
+          .style('fill', (d) => this.scoreColors(d))
           .style('stroke', '#666')
     },
     // Work out what should be displayed in the cell locations
@@ -203,7 +218,7 @@ export default {
     // TODO - move these color functions into a separate utility class
     scoreColors: function(d) {
       let scale
-      let score = d['data'].SCORE || null
+      let score = (this.colorAttr && d[this.colorAttr]) ? d[this.colorAttr] : null
       switch(this.colorScale) {
         case 'rgb':
           scale = this.rgbScale()
