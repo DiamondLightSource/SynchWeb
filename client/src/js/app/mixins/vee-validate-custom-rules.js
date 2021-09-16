@@ -1,3 +1,9 @@
+const isNullOrUndefined = (...values) => {
+  return values.every(value => {
+    return value === null || value === undefined;
+  });
+};
+
 export default {
   data() {
     return {}
@@ -25,6 +31,34 @@ export default {
       if (otherValue) return true;
     }, {
       hasTarget: true
+    })
+
+    this.$validator.extend('positive_decimal', (value, { decimals = '*', separator = '.' } = {}) => {
+      const validatePositiveDecimalValues = (val) => {
+        if (isNullOrUndefined(val) || val === '') {
+          return false;
+        }
+
+        const regexPart = decimals === '*' ? '+' : `{1,${decimals}}`;
+        const regex = new RegExp(`^\\d*(\\${separator}\\d${regexPart})?([eE]{1}[-]?\\d+)?$`);
+
+        if (! regex.test(val)) {
+          return false;
+        }
+
+        const parsedValue = parseFloat(val);
+
+        // eslint-disable-next-line
+        return parsedValue === parsedValue;
+      }
+
+      if (Array.isArray(value)) {
+        return value.every(val => validatePositiveDecimalValues(val));
+      }
+
+      return validatePositiveDecimalValues(value)
+    }, {
+      paramNames: ['decimals', 'separator']
     })
   }
 }

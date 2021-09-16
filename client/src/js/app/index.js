@@ -13,6 +13,7 @@ import PortalVue from 'portal-vue'
 import MarionetteApp from 'app/marionette-application.js'
 
 import config from 'config.json'
+import VeeValidateCustomRules from "js/app/mixins/vee-validate-custom-rules";
 
 Vue.use(VeeValidate)
 Vue.use(PortalVue)
@@ -36,6 +37,7 @@ const vm = new Vue({
 
     application.start()
   },
+  mixins: [VeeValidateCustomRules]
 }).$mount('#synchweb-app')
 
 
