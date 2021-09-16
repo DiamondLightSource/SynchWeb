@@ -122,8 +122,12 @@ const samplesModule = {
         if (array.length === index + 1) {
           prev[key] = value;
 
-          if (key === 'NAME' || key === 'PROTEINID' && prev.NAME && prev.PROTEINID >= -1) {
+          if ((key === 'NAME' || key === 'PROTEINID') && !value) {
+            prev.VALID = -1
+          } else if ((key === 'NAME' || key === 'PROTEINID') && String(prev.NAME).length > 0 && Number(prev.PROTEINID) > -1) {
             prev.VALID = 1
+          } else if ((key === 'NAME' || key === 'PROTEINID') && (String(prev.NAME).length === 0 || Number(prev.PROTEINID) < 0)) {
+            prev.VALID = -1
           }
         }
 
