@@ -93,7 +93,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-A`"
             :vid="`sample ${sampleIndex + 1} cell-a`"
             v-slot="{ errors }">
@@ -103,7 +103,7 @@
               :quiet="true"
               type="number"
               :step="0.01"
-              inputClass="tw-w-12 tw-h-8"
+              inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
               :errorMessage="errors[0]"
               :errorClass="errors[0] ? 'ferror' : ''"
               v-model="CELL_A"
@@ -114,7 +114,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-B`"
             :vid="`sample ${sampleIndex + 1} cell-b`"
             v-slot="{ errors }">
@@ -124,7 +124,7 @@
               :quiet="true"
               type="number"
               :step="0.01"
-              inputClass="tw-w-12 tw-h-8"
+              inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
               :errorMessage="errors[0]"
               :errorClass="errors[0] ? 'ferror' : ''"
               v-model="CELL_B"
@@ -135,7 +135,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-C`"
             :vid="`sample ${sampleIndex + 1} cell-c`"
             v-slot="{ errors }"
@@ -143,7 +143,7 @@
             <base-input-text
               v-if="canEditRow(sample['LOCATION'])"
               placeholderText="C"
-              inputClass="tw-w-12 tw-h-8"
+              inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
               type="number"
               :step="0.01"
               :errorMessage="errors[0]"
@@ -160,7 +160,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-ALPHA`"
             :vid="`sample ${sampleIndex + 1} cell-alpha`"
             v-slot="{ errors }"
@@ -168,7 +168,7 @@
             <base-input-text
               v-if="canEditRow(sample['LOCATION'])"
               placeholderText="α"
-              inputClass="tw-w-12 tw-h-8"
+              inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
               :quiet="true"
               type="number"
               :step="0.01"
@@ -182,7 +182,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-BETA`"
             :vid="`sample ${sampleIndex + 1} cell-beta`"
             v-slot="{ errors }"
@@ -190,7 +190,7 @@
             <base-input-text
               v-if="canEditRow(sample['LOCATION'])"
               placeholderText="β"
-              inputClass="tw-w-12 tw-h-8"
+              inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
               type="number"
               :step="0.01"
               :errorMessage="errors[0]"
@@ -204,7 +204,7 @@
           <validation-provider
             tag="div"
             class="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-GAMMA`"
             :vid="`sample ${sampleIndex + 1} cell-gamma`"
             v-slot="{ errors }"
@@ -212,7 +212,9 @@
             <base-input-text
               v-if="canEditRow(sample['LOCATION'])"
               placeholderText="γ"
-              inputClass="tw-w-12 tw-h-8"
+              inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
+              type="number"
+              :step="0.01"
               :errorMessage="errors[0]"
               :errorClass="errors[0] ? 'ferror' : ''"
               :quiet="true"
@@ -277,7 +279,7 @@
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
-          inputClass="tw-w-full tw-h-8"
+          inputClass="tw-w-full tw-h-8 tabbed-sample-column"
           type="number"
           :step="1"
           :quiet="true"
@@ -333,15 +335,16 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,none|decimal:2` : ''"
+        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,none|decimal:2|positive_decimal:4` : ''"
         :name="`Sample ${sampleIndex + 1} Required Resolution`"
         :vid="`sample ${sampleIndex + 1} required resolution`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
+          :disabled="sample['SCREENINGMETHOD'] !== 'none'"
           type="number"
           :step="1"
-          inputClass="tw-w-full tw-h-8"
+          inputClass="tw-w-full tw-h-8 tabbed-sample-column"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           :quiet="true"
@@ -354,14 +357,15 @@
         tag="div"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} Minimum Resolution`"
-        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,all|decimal:2` : ''"
+        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,all|positive_decimal:4` : ''"
         :vid="`sample ${sampleIndex + 1} minimum resolution`"
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
+          :disabled="sample['SCREENINGMETHOD'] !== 'all'"
           type="number"
           :step="1"
-          inputClass="tw-w-full tw-h-8"
+          inputClass="tw-w-full tw-h-8 tabbed-sample-column"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           :quiet="true"
@@ -379,9 +383,10 @@
         v-slot="{ errors }">
         <base-input-text
           v-if="canEditRow(sample['LOCATION'])"
+          :disabled="sample['SCREENINGMETHOD'] !== 'best'"
           type="number"
           :step="1"
-          inputClass="tw-w-full tw-h-8"
+          inputClass="tw-w-full tw-h-8 tabbed-sample-column"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           :quiet="true"
@@ -402,7 +407,7 @@ import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
 
 export default {
   name: 'tabbed-columns',
-  mixins: [MxSampleTableMixin, VeeValidateCustomRules],
+  mixins: [MxSampleTableMixin],
   components: {
     'base-input-select': BaseSelectInput,
     'base-input-text': BaseTextInput,
@@ -438,16 +443,19 @@ export default {
   },
 }
 </script>
-<style>
+<style scoped>
 /* Chrome, Safari, Edge, Opera */
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
+>>> input.tabbed-sample-column[type="number"]::-webkit-outer-spin-button,
+>>> input.tabbed-sample-column[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
 /* Firefox */
-input[type=number] {
+>>> input.tabbed-sample-column[type="number"] {
   -moz-appearance: textfield;
+}
+>>> input.tabbed-sample-column[type="number"]:disabled {
+  @apply tw-bg-content-dark-background
 }
 </style>

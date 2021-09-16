@@ -57,7 +57,7 @@
     <validation-provider
       tag="div"
       class="tw-px-2 sample-group-column tw-py-1"
-      :rules="`required_if:sample ${sampleIndex} screening method,best`"
+      :rules="`required_if:sample ${sampleIndex + 1} screening method,best`"
       :name="`Sample ${sampleIndex + 1} Group`"
       :vid="`sample ${sampleIndex + 1} group`"
       v-slot="{ errors }">
@@ -210,16 +210,5 @@ export default {
 }
 .min-height-8 {
   min-height: 32px;
-}
-/* Chrome, Safari, Edge, Opera */
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Firefox */
-input[type=number] {
-  -moz-appearance: textfield;
 }
 </style>
