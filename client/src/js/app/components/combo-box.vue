@@ -32,10 +32,10 @@ The v-closable takes an object as argumnt with properties:
             value === String(option[valueField])
           }"
           class="tw-cursor-pointer tw-flex tw-w-full tw-justify-between"
-          :ref="`selectOption${optionIndex}`"
+          :ref="`selectOption${inputIndex}${optionIndex}`"
           :key="`selectOptionIndex${optionIndex}`"
           :value="option[valueField]"
-          @click.stop="selectOption(option[valueField], $event)">
+          @click.capture="selectOption(option[valueField], optionIndex)">
           <slot :option=option>{{ option[textField] }}</slot>
         </div>
       </div>
@@ -134,12 +134,16 @@ export default {
         this.$refs[`searchInput-${index}`].focus()
       })
     },
-    selectOption(value, event) {
+    selectOption(value, optionIndex) {
+      // The ref element will be stored in an array because of the way Vue 2 handles ref used in a v-for
+      const element = this.$refs[`selectOption${this.inputIndex}${optionIndex}`][0]
+
       this.$emit('input', value)
       this.searching = false
       this.closeComboBox(false)
-      event.target.parentElement.parentElement.classList.add('select-hide')
-      event.target.parentElement.parentElement.previousElementSibling.classList.remove('select-arrow-active')
+
+      element.parentElement.parentElement.classList.add('select-hide')
+      element.parentElement.parentElement.previousElementSibling.classList.remove('select-arrow-active')
       this.searching = false
       this.searchText = ''
     },
