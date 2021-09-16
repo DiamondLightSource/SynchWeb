@@ -55,7 +55,7 @@
         :vid="`sample ${sampleLocation + 1} abundance`"
         v-slot="{ errors }">
         <base-input-text
-          inputClass="tw-w-48 tw-h-8"
+          inputClass="tw-w-48 tw-h-8 single-sample-input"
           outerClass="tw-w-full tw-flex"
           :quiet="true"
           type="number"
@@ -183,7 +183,7 @@
                   :vid="`sample ${sampleLocation + 1} cell-a`">
                   <base-input-text
                     :quiet="true"
-                    inputClass="tw-w-12 tw-h-8"
+                    inputClass="tw-w-12 tw-h-8 single-sample-input"
                     type="number"
                     :step="0.01"
                     :errorMessage="errors[0]"
@@ -201,7 +201,7 @@
                   :vid="`sample ${sampleLocation + 1} cell-b`">
                   <base-input-text
                     :quiet="true"
-                    inputClass="tw-w-12 tw-h-8"
+                    inputClass="tw-w-12 tw-h-8 single-sample-input"
                     :errorMessage="errors[0]"
                     type="number"
                     :step="0.01"
@@ -219,7 +219,7 @@
                   :vid="`sample ${sampleLocation + 1} cell-c`">
                   <base-input-text
                     v-on="$listeners"
-                    inputClass="tw-w-12 tw-h-8"
+                    inputClass="tw-w-12 tw-h-8 single-sample-input"
                     :errorMessage="errors[0]"
                     type="number"
                     :step="0.01"
@@ -238,7 +238,7 @@
                   :vid="`sample ${sampleLocation + 1} cell-alpha`">
                   <base-input-text
                     v-on="$listeners"
-                    inputClass="tw-w-12 tw-h-8"
+                    inputClass="tw-w-12 tw-h-8 single-sample-input"
                     :quiet="true"
                     type="number"
                     :step="0.01"
@@ -257,7 +257,7 @@
                   v-slot="{ errors }">
                   <base-input-text
                     v-on="$listeners"
-                    inputClass="tw-w-12 tw-h-8"
+                    inputClass="tw-w-12 tw-h-8 single-sample-input"
                     type="number"
                     :step="0.01"
                     :errorMessage="errors[0]"
@@ -276,7 +276,7 @@
                   v-slot="{ errors }">
                   <base-input-text
                     v-on="$listeners"
-                    inputClass="tw-w-12 tw-h-8"
+                    inputClass="tw-w-12 tw-h-8 single-sample-input"
                     type="number"
                     :step="0.01"
                     :errorMessage="errors[0]"
@@ -320,7 +320,7 @@
           :vid="`sample ${sampleLocation + 1} energy`"
           v-slot="{ errors }">
           <base-input-text
-            inputClass="tw-w-16 tw-h-8"
+            inputClass="tw-w-16 tw-h-8 single-sample-input"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
             type="number"
@@ -379,12 +379,13 @@
         <validation-provider
           tag="div"
           class="tw-py-1"
-          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,none|decimal:2` : ''"
+          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,none|positive_decimal:4` : ''"
           :name="`Sample ${sampleLocation + 1} Required Resolution`"
           :vid="`sample ${sampleLocation + 1} required resolution`"
           v-slot="{ errors }">
           <base-input-text
-            inputClass="tw-w-16 tw-h-8"
+            :disabled="sample['SCREENINGMETHOD'] !== 'none'"
+            inputClass="tw-w-16 tw-h-8 single-sample-input"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
             type="number"
@@ -401,11 +402,12 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} Minimum Resolution`"
-          :rules="sample['PROTEINID'] > - 1 ? `required_if:sample ${sampleLocation + 1} screening method,all|decimal:2`: ''"
+          :rules="sample['PROTEINID'] > - 1 ? `required_if:sample ${sampleLocation + 1} screening method,all|positive_decimal:4`: ''"
           :vid="`sample ${sampleLocation + 1} minimum resolution`"
           v-slot="{ errors }">
           <base-input-text
-            inputClass="tw-w-16 tw-h-8"
+            :disabled="sample['SCREENINGMETHOD'] !== 'all'"
+            inputClass="tw-w-16 tw-h-8 single-sample-input"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
             type="number"
@@ -426,7 +428,8 @@
           :vid="`sample ${sampleLocation + 1} no to collect`"
           v-slot="{ errors }">
           <base-input-text
-            inputClass="tw-w-16 tw-h-8"
+            :disabled="sample['SCREENINGMETHOD'] !== 'best'"
+            inputClass="tw-w-16 tw-h-8 single-sample-input"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
             label="No to Collect"
@@ -535,16 +538,20 @@ export default {
   }
 }
 </script>
-<style>
+<style scoped>
 /* Chrome, Safari, Edge, Opera */
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
+>>> input.single-sample-input[type=number]::-webkit-outer-spin-button,
+>>> input.single-sample-input[type=number]::-webkit-inner-spin-button{
   -webkit-appearance: none;
   margin: 0;
 }
 
 /* Firefox */
-input[type=number] {
+>>> input.single-sample-input[type=number] {
   -moz-appearance: textfield;
+}
+
+>>> input.single-sample-input[type="number"]:disabled {
+  @apply tw-bg-content-dark-background
 }
 </style>
