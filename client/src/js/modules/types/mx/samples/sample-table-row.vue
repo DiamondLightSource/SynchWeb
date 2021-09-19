@@ -20,7 +20,7 @@
         textField="text"
         valueField="value"
         :inputIndex="sampleIndex"
-        :selectCount="samplesLength"
+        :excludeElementClassList="excludedElementClassList"
         defaultText=""
         size="small"
         v-model="PROTEINID"
@@ -61,18 +61,29 @@
       :name="`Sample ${sampleIndex + 1} Group`"
       :vid="`sample ${sampleIndex + 1} group`"
       v-slot="{ errors }">
-      <base-input-select
-        v-if="!containerId || (!sample['BLSAMPLEID'] && sample['LOCATION'] === editingRow)"
-        :options="sampleGroups"
-        optionValueKey="value"
-        optionTextKey="text"
-        inputClass="tw-w-full tw-h-8"
-        :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-        :quiet="true"
-        :errorMessage="errors[0]"
-        v-model="sample['SAMPLEGROUP']"
-      />
-      <p v-else class="tw-text-center">{{ findSampleGroupsBySample(sample['PROTEINID']) }}</p>
+      <combo-box
+        v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
+        :data="sampleGroups"
+        textField="text"
+        valueField="value"
+        :inputIndex="sampleIndex"
+        :defaultText="SAMPLEGROUP"
+        size="small"
+        :excludeElementClassList="excludedElementClassList"
+        v-model="SAMPLEGROUP">
+        <template slot="custom-add">
+          <div class="tw-w-full add-sample-group">
+            <p class="tw-mb-2">Add new Sample Group</p>
+            <div class="tw-flex tw-w-full" :ref="`add-sample-group-${sampleIndex}`">
+              <base-input-text
+                v-model="SAMPLEGROUP"
+                input-class="tw-w-full tw-h-8 select-search-input"
+                :quiet="true"/>
+            </div>
+          </div>
+        </template>
+      </combo-box>
+      <div v-else class="tw-text-center">{{ findSampleGroupsBySample(sample['PROTEINID']) }}</div>
     </validation-provider>
 
     <tabbed-columns
@@ -156,6 +167,11 @@ export default {
     'validation-provider': ValidationProvider,
     'validation-observer': ValidationObserver
   },
+  data() {
+    return {
+      excludedElementClassList: ['add-sample-group']
+    }
+  },
   computed: {
     selectedColumns() {
       const columnsMap = {
@@ -165,7 +181,7 @@ export default {
       }
 
       return [...this.requiredColumns, ...columnsMap[this.currentTab]]
-    },
+    }
   },
   methods: {
     editRow(row) {

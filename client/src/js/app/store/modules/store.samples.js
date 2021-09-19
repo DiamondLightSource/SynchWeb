@@ -40,7 +40,8 @@ const INITIAL_SAMPLE_STATE = {
   SYMBOL: '',
   USERPATH: '',
   VOLUME: '',
-  VALID: 0
+  VALID: 0,
+  SAMPLEGROUP: ''
 }
 
 // Use Location as idAttribute for this table
@@ -142,7 +143,7 @@ const samplesModule = {
         s.CONTAINERID = containerId
         let locationIndex = +(s.LOCATION - 1)
         let proteinId = +s.PROTEINID
-        if (proteinId > 0 && s.NAME != '') {
+        if (proteinId > 0 && s.NAME !== '') {
           state.samplesCollection.at(locationIndex).set(s)
           return s
         }

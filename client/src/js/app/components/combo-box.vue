@@ -1,18 +1,20 @@
 <!--
 The combobox component combines the functionality of the traditional select input and text input fields to
 allow the user to  select from a list of items and also search from the list.
-The props explains the required items and also what they do in the component. 
-The excludedRefs is for preventing the closing of the combobox when you click on HTML element that is a part of the ref.
+The props explains the required items and also what they do in the component.
 v-closable is a directive that is attached to the html element to listen for click event on the HTML document level.
 The v-closable takes an object as argumnt with properties:
 - excludeElements: An array or refs thatshould not trigger the closing of the combobox
 - handler: A method that will handle the closing of the combobox component
 -->
 <template>
-  <div class="custom-select-input tw-relative" v-closable="{
-    excludeElements: [getExcludedRefs()],
-    handler: 'closeComboBox'
-  }">
+  <div
+    class="custom-select-input tw-relative"
+    :class="`combo-${inputIndex}`"
+    v-closable="{
+      handler: 'closeComboBox'
+    }"
+  >
     <div
       :class="{
         'select-selected': true,
@@ -24,27 +26,27 @@ The v-closable takes an object as argumnt with properties:
       @click="openComboBox(inputIndex, $event)" >
       {{ selectedItemText ? selectedItemText : defaultText }}
     </div>
-    <div class="select-items select-hide" :class="{[`select-${inputIndex}`]: true}">
+    <div class="select-items select-hide" :class="{[`select-${inputIndex}`]: true}" :ref="`select-items-${inputIndex}`">
       <div class="items-list">
         <div
           v-for="(option, optionIndex) in filteredOptions"
           :class="{ 'same-as-selected':
             value === String(option[valueField])
           }"
-          class="tw-cursor-pointer tw-flex tw-w-full tw-justify-between"
+          class="tw-cursor-pointer tw-flex tw-w-full tw-justify-between item"
           :ref="`selectOption${inputIndex}${optionIndex}`"
           :key="`selectOptionIndex${optionIndex}`"
           :value="option[valueField]"
           @click.capture="selectOption(option[valueField], optionIndex)">
           <slot :option=option>{{ option[textField] }}</slot>
         </div>
+        <slot name="custom-add"></slot>
       </div>
 
     </div>
     <div class="search-select" v-show="searching">
       <input
         type="text"
-        :ref="`searchInput-${inputIndex}`"
         class="tw-w-full select-search-input"
         :class="{[size]: true}"
         v-model="searchText"
@@ -89,12 +91,6 @@ export default {
       // It is useful if you want to control how the component behaves when the `closeComboBox` method is called
       type: Number
     },
-    selectCount: {
-      // This is the total number of combo-box component current visible on the page. If they are going to be rendered
-      // dynamically, then set the value to the the total number of select component on the screen. Anytime a new element
-      // is added to the page increase this number
-      type: Number
-    },
     disabled: {
       type: Boolean,
       default: false
@@ -110,28 +106,41 @@ export default {
       // set it to 'small'
       type: String,
       default: ''
+    },
+    excludeElementClassList: {
+      type: Array,
+      default: () => ([])
     }
   },
   data() {
     return {
       searching: false,
       searchText: '',
-      searchInputClassName: 'select-search-input'
+      searchInputClassName: 'select-search-input',
+      excludedElementsClass: []
+    }
+  },
+  watch: {
+    excludeElementClassList: {
+      handler() {
+        this.setExcludedElementClass()
+      },
+      immediate: true
     }
   },
   methods: {
-    getExcludedRefs() {
-      return Array(this.selectCount).fill('').map((item, index) => `searchInput-${index}`)
-    },
     openComboBox(index, event) {
+      const { target } = event
       event.stopPropagation()
       if (this.disabled) { return }
       this.closeComboBox(false)
       this.searching = true
-      event.target.nextElementSibling.classList.toggle('select-hide')
-      event.target.classList.toggle('select-arrow-active')
+      target.nextElementSibling.classList.toggle('select-hide')
+      target.classList.toggle('select-arrow-active')
       this.$nextTick(() => {
-        this.$refs[`searchInput-${index}`].focus()
+        const { parentElement } = target
+        const { lastElementChild } = parentElement
+        lastElementChild.children[0].focus()
       })
     },
     selectOption(value, optionIndex) {
@@ -154,8 +163,7 @@ export default {
       const selectedItemWrapper = document.getElementsByClassName('select-selected') // selected wrapper element
       for (let i = 0; i < selectedItemWrapper.length; i += 1) {
         dropDownList.push(i)
-        var classNames = selectedItemWrapper[i].classList
-        const isSelfTriggered = this.excludedSelectElements.some(element => classNames.contains(element))
+        const isSelfTriggered = this.$refs[`select-items-${this.inputIndex}`].contains(event.target)
         if (!isSelfTriggered || force) {
           selectedItemWrapper[i].classList.remove('select-arrow-active') // Revert the arrow icon when closed
         }
@@ -163,8 +171,7 @@ export default {
 
       for (let j = 0; j < selectItemsWrapper.length; j += 1) {
         if (dropDownList.indexOf(j) > -1) {
-          var classNames = selectItemsWrapper[j].classList
-          const isSelfTriggered = this.excludedSelectElements.some(element => classNames.contains(element))
+          const isSelfTriggered = this.$refs[`select-items-${this.inputIndex}`].contains(event.target)
 
           if (force) {
             this.searching = false
@@ -181,6 +188,9 @@ export default {
       event.target.parentElement.previousElementSibling.classList.remove('select-hide')
       this.searching = true
     },
+    setExcludedElementClass() {
+      this.excludedElementsClass = [this.searchInputClassName].concat(this.excludeElementClassList)
+    }
   },
   computed: {
     filteredOptions() {
@@ -193,16 +203,12 @@ export default {
           }
         })
     },
-    excludedSelectElements() {
-      const selectListIndex = [...this.excludedSelectItemsIndices, this.inputIndex]
-      return selectListIndex.map(index => `select-${index}`)
-    },
     selectedItemText() {
       const selectedItem = this.filteredOptions.find(option => String(option[this.valueField]) === this.value)
 
-      return selectedItem ? selectedItem[this.textField] : ''
+      return selectedItem ? selectedItem[this.textField] : this.defaultText
     }
-  },
+  }
 }
 </script>
 
@@ -254,8 +260,8 @@ export default {
   -moz-transform: skew(0deg, -45deg);
 }
 /* style the items (options), including the selected item: */
-.items-list div {
-  @apply tw-py-3 tw-px-5 tw-cursor-pointer tw-text-black;
+.items-list > div {
+  @apply tw-py-2 tw-px-2 tw-cursor-pointer tw-text-black;
 }
 /* Style items (options): */
 .select-items {
@@ -278,7 +284,7 @@ export default {
 .select-hide {
   display: none;
 }
-.items-list div:hover, .same-as-selected {
+.items-list .item:hover, .same-as-selected {
   @apply tw-bg-content-active tw-text-white;
 }
 .select-search-input.small {
