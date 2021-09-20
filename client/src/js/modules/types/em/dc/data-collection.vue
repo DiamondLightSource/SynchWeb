@@ -67,6 +67,8 @@ export default {
         }
     },
     'computed': {
+        // Before removing this Backbone model, consider that there is still
+        // some Marionette code operating on it in (e.g.) ../dc-toolbar/
         'dataCollectionModel': function() {
             return new DataCollectionModel({ 'ID': this.dataCollectionId })
         },
@@ -107,18 +109,16 @@ export default {
     'methods': {
         'fetchDataCollection': function() {
             this.$store.commit('loading', true)
-            // prevent url mangling by the Backbone model
+            // Set a blank type to prevent url mangling by the Backbone model
             this.dataCollectionModel.set('TYPE', '')
             this.$store.dispatch('getModel', this.dataCollectionModel).then(
                 (model) => {
                     this.dataCollection = model.attributes
-                    console.log('fetched data collection', this.dataCollection, this.dataCollection.ID)
+                    console.log('fetched data collection', this.dataCollection)
                     if (this.dataCollection.ARCHIVED == '0') {
                         this.timeout = setTimeout(
                             this.fetchDataCollection,
-                            /* TODO: this was / should be (???)
-                                     10 seconds, not 30! */
-                            30 * 1000
+                            30000
                         )
                     }
                     this.fetchProcessingJobs()
