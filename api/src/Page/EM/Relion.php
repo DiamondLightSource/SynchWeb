@@ -2,12 +2,17 @@
 
 namespace SynchWeb\Page\EM;
 
-use SynchWeb\Page\EM\ArgumentValidator;
+use SynchWeb\Page\EM\PostDataValidator;
 use SynchWeb\Page\EM\RelionParameterTransformer;
 use SynchWeb\Page\EM\RelionSchema;
 
 trait Relion
 {
+    /**
+     * Output the schema for client-side use
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
     public function relionSchema()
     {
         $this->_output(RelionSchema::schema());
@@ -32,12 +37,12 @@ trait Relion
 
         $sessionPath = $this->sessionSubstituteValuesInPath($session, $visit_directory);
 
-        $argumentValidator = new ArgumentValidator(RelionSchema::schema());
-        $invalid = $argumentValidator->validateArguments($this->args);
-
+        $validator = new PostDataValidator(RelionSchema::schema());
+        list($invalid, $args) = $validator->validateJsonPostData(
+            $this->app->request->getBody()
+        );
         if (count($invalid) > 0) {
-            error_log('Invalid parameters: ' . var_export($invalid, true));
-            $this->_error($invalid, 400);
+            $this->_error(array('invalid' => $invalid), 400);
         }
 
         $transformer = new RelionParameterTransformer($sessionPath);
@@ -156,6 +161,11 @@ trait Relion
         ));
     }
 
+    /**
+     * Output the parameters used for a given processing job
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
     public function relionParameters()
     {
         if (!$this->has_arg('processingJobId')) {

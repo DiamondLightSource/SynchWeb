@@ -1,38 +1,44 @@
 <template>
-  <div class="relion-form-field">
-    <label :for="id">
-      {{ label }}
-    </label>
-    <div
-      v-for="(description, index) in extraDescription"
-      :key="index"
-      class="relion-form-note"
-    >
-      {{ description }}
-    </div>
-    <select
-      :id="id"
-      v-model="value"
-      :name="name"
-      class="relion-form-input"
-    >
-      <option
-        v-for="option in selectOptions"
-        :key="option['value']"
-        :value="option['value']"
+  <relion-input
+    :schema="schema"
+    :name="name"
+    :help-text="helpText"
+    :extra-class="extraClass"
+    :error-messages="errorMessages"
+  >
+    <template #after>
+      <select
+        :id="id"
+        v-model="value"
+        :name="name"
+        class="relion-form-input"
       >
-        {{ option['display'] }}
-      </option>
-    </select>
-  </div>
+        <option
+          v-for="option in selectOptions"
+          :key="option['value']"
+          :value="option['value']"
+        >
+          {{ option['display'] }}
+        </option>
+      </select>
+    </template>
+  </relion-input>
 </template>
 
 <script>
-import relionInputMixin from 'modules/types/em/relion/relion-input-mixin'
+import relionInputProperties from 'modules/types/em/relion/relion-input-properties'
+import relionInputValue from 'modules/types/em/relion/relion-input-value'
+import RelionInput from 'modules/types/em/relion/relion-input.vue'
 
 export default {
     'name': 'RelionInputSelect',
-    'mixins': [relionInputMixin],
+    'components': {
+        'relion-input': RelionInput,
+    },
+    'mixins': [
+        relionInputProperties,
+        relionInputValue,
+    ],
     'computed': {
         'selectOptions': function() {
             const schema = this.schema[this.name]

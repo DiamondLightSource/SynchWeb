@@ -3,16 +3,11 @@
 namespace SynchWeb\Page\EM;
 
 /**
- * Validate the arguments passed for processing job parameters
- *
- * Some of this validation is handled by The Slim Framework's
- * argument pattern matching in api/src/Page/EM.php.
- * If at some point Slim was abandoned, then that pattern matching would have
- * to be moved here too.
+ * Validate data posted in JSON for database insertions, etc.
  */
-class ArgumentValidator
+class PostDataValidator
 {
-    private $args;
+    private $postData;
     private $schema;
 
     public function __construct($schema)
@@ -20,86 +15,284 @@ class ArgumentValidator
         $this->schema = $schema;
     }
 
-    public function validateArguments($args)
+    public function validateJsonPostData($json)
     {
-        $this->args = $args;
+        $this->postData = $this->decodeJson($json);
         $invalid = array();
+        $required = array();
 
         foreach ($this->schema as $name => $rules) {
-            $result = $this->validateArgument($name, $rules);
-            if ($result !== true) {
-                array_push($invalid, array(
-                    'field' => $name,
-                    'message' => $result
-                ));
+            if (!$this->isRequired($name)) {
+                continue;
             }
+
+            $value = $this->postedValue($name);
+            $result = $this->validateArgument($value, $rules);
+            if ($result === true) {
+                $required[$name] = $value;
+                continue;
+            }
+
+            $invalid[$name] = $result;
         }
 
-        return $invalid;
+        return array($invalid, $required);
     }
 
-    protected function validateArgument($name, $rules)
+    private function decodeJson($json)
     {
-        $value = $this->getArgumentValue($name);
+        $data = json_decode($json, true);
+        return gettype($data) == 'array' ? $data : array();
+    }
 
-        if ($this->isRequired($rules) && in_array($value, array('', null))) {
-            return "this value is missing";
-        }
-
-        if (
-            !array_key_exists('validateOptions', $rules) ||
-            $rules['validateOptions']
-        ) {
-            $rule = array_key_exists('options', $rules) ? $rules['options'] : null;
-
-            if ($rule !== null && !in_array($value, $rule)) {
-                return "$value is not known";
+    protected function validateArgument($value, $rules)
+    {
+        foreach ($rules as $ruleName => $rule) {
+            $constraint = 'check' . ucfirst($ruleName);
+            if (method_exists($this, $constraint)) {
+                $valid = call_user_func(
+                    array($this, $constraint),
+                    $rules,
+                    $rule,
+                    $value
+                );
+                if ($valid !== true) {
+                    return $valid;
+                }
             }
         }
-
-        $rule = array_key_exists('checkType', $rules) ? $rules['checkType'] : null;
-
-        if ($rule !== null) {
-            if ($this->notType($value, $rule)) {
-                return "should be $rule";
-            }
-
-            $value = $this->setType($value, $rule);
-        }
-
-        $rule = array_key_exists('mustEqual', $rules) ? $rules['mustEqual'] : null;
-
-        if ($rule !== null && $value !== $rule) {
-            return "invalid";
-        }
-
-        $rule = array_key_exists('minValue', $rules) ? $rules['minValue'] : null;
-
-        if ($rule !== null && $value < $rule) {
-            return "too small";
-        }
-
-        $rule = array_key_exists('maxValue', $rules) ? $rules['maxValue'] : null;
-
-        if ($rule !== null && $value > $rule) {
-            return "too large";
-        }
-
         return true;
     }
 
-    private function isRequired($rules)
+    /**
+     * Check for the 'required' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param boolean|array $required - if an array - other fields and the value that would make this one required
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
+    private function checkRequired($allRules, $required, $value)
     {
-        // no array_key_exists because this one must exist on all schema entries
-        $required = $rules['required'];
-        if (gettype($required) == 'boolean') {
-            return $required;
+        return ($value !== '' && $value !== null) ? true : 'is required';
+    }
+
+    /**
+     * Check for the 'pattern' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param array $patternName - the name of the  pattern that the field must match
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    private function checkPattern($allRules, $patternName, $value)
+    {
+        $patterns = array(
+            'filename' => array(
+                'regex' => '/^[\w\-_]+\.[\w]{3,4}$/',
+                'message' => 'must be a valid filename'
+            ),
+            'directory' => array(
+                'regex' => '/^[\w\-_]+$/',
+                'message' => 'only alphanumerics, "-" and "_" allowed'
+            )
+        );
+        $pattern = $patterns[$patternName];
+
+        return preg_match($pattern['regex'], $value) === 1 ?
+            true : $pattern['message'];
+    }
+
+    /**
+     * Check for the 'options' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param array $options - all possible values the field can have
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
+    private function checkOptions($allRules, $options, $value)
+    {
+        // One field with options - also allows the user to enter their own
+        // value - so we have a flag to ignore validating options.
+        /* TODO: make "raw folder" a free-form text field... why is it even a
+           choice anyway? */
+        if (
+            array_key_exists('validateOptions', $allRules) &&
+            $allRules['validateOptions'] == false
+        ) {
+            return true;
+        }
+
+        return in_array(
+            "$value",
+            $options,
+            true
+        ) ? true : "$value is not known";
+    }
+
+    /**
+     * Assert that a value is of a given type
+     *
+     * @param string $type - the PHP type to assert
+     * @param mixed $value - the value to check
+     *
+     * @return boolean
+     */
+    private function isCorrectType($type, $value)
+    {
+        if ($type == 'boolean') {
+            return in_array($value, array('true', '1', 1, 'false', '0', '', 0));
+        }
+
+        $typedValue = $this->typedValue($type, $value);
+
+        return "$typedValue" == "$value";
+    }
+
+    /**
+     * Check for the 'checkType' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param string $type - the PHP type this field should have
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
+    private function checkCheckType($allRules, $type, $value)
+    {
+        return $this->isCorrectType(
+            $type,
+            $value
+        ) ? true : "should be $type";
+    }
+
+    /**
+     * Check for the 'mustEqual' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param mixed $checkValue - the value this field must have
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
+    private function checkMustEqual($allRules, $checkValue, $value)
+    {
+        return $this->typedValue(
+            $allRules,
+            $value
+        ) === $checkValue ? true : 'invalid';
+    }
+
+    /**
+     * Check for the 'minValue' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param mixed $minimum - the minimum value this field must have
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
+    private function checkMinValue($allRules, $minimum, $value)
+    {
+        return $this->typedValue(
+            $allRules,
+            $value
+        ) >= $minimum ? true : 'too small';
+    }
+
+    /**
+     * Check for the 'maxValue' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param mixed $maximum - the maximum value this field must have
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
+    private function checkMaxValue($allRules, $maximum, $value)
+    {
+        return $this->typedValue(
+            $allRules,
+            $value
+        ) <= $maximum ? true : 'too large';
+    }
+
+    /**
+     * Check for the 'greaterThan' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param mixed $otherArgument - field to compare this one against
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
+    private function checkGreaterThan($allRules, $otherArgument, $value)
+    {
+        return $this->typedValue(
+            $allRules,
+            $value
+        ) > $this->typedPostedValue(
+            $otherArgument
+        ) ? true : "must be greater than $otherArgument";
+    }
+
+    /**
+     * Check for the 'lessThan' validation rule
+     *
+     * @param array $allRules - all the rules applying to the field being checked
+     * @param mixed $otherArgument - field to compare this one against
+     * @param mixed $value - the value of the field being checked
+     *
+     * @return boolean|string - either boolean true or an error message
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
+    private function checkLessThan($allRules, $otherArgument, $value)
+    {
+        return $this->typedValue(
+            $allRules,
+            $value
+        ) < $this->typedPostedValue(
+            $otherArgument
+        ) ? true : "must be less than $otherArgument";
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private function isRequired($name)
+    {
+        $required = $this->schema[$name]['required'];
+
+        if (gettype($required) != 'array') {
+            return $this->typedValue('boolean', $required);
         }
 
         foreach ($required as $otherArgument => $expectedValue) {
-            $otherValue = $this->getTypedValue($otherArgument);
             // all checks must be true for required to be true
-            if ($otherValue !== $expectedValue) {
+            if ($this->typedPostedValue($otherArgument) !== $expectedValue) {
                 return false;
             }
         }
@@ -107,40 +300,56 @@ class ArgumentValidator
         return true;
     }
 
-    private function notType($value, $type)
+    private function requiredType($param)
     {
-        if ($type == 'boolean') {
-            return !in_array($value, array('true', '1', 1, 'false', '0', '', 0));
+        if (gettype($param) == 'array') {
+            if (!array_key_exists('checkType', $param)) {
+                return false;
+            }
+            return $param['checkType'];
         }
 
-        $check = $value;
-        settype($check, $type);
-        return strval($check) !== $value;
+        return $param;
     }
 
-    private function setType($value, $type)
+    /**
+     * Type coerce the given value
+     *
+     * @param mixed $param - either an array of rules including a checkType or a type in a string
+     * @param mixed $value - the value to coerce
+     *
+     * @return mixed - the value coerced into the given type
+     */
+    private function typedValue($param, $value)
     {
+        $type = $this->requiredType($param);
+
+        if ($type == false) {
+            return $value;
+        }
+
         if ($type == 'boolean') {
             return in_array($value, array('true', '1'));
         }
 
+        $phpType = $type == 'real' ? 'double' : $type;
+
         $new = $value;
-        settype($new, $type);
+        settype($new, $phpType);
         return $new;
     }
 
-    private function getArgumentValue($name)
+    private function postedValue($name)
     {
-        return array_key_exists($name, $this->args) ? $this->args[$name] : null;
+        return array_key_exists($name, $this->postData) ?
+            $this->postData[$name] : null;
     }
 
-    private function getTypedValue($name)
+    private function typedPostedValue($name)
     {
-        $value = $this->getArgumentValue($name);
-        $rules = $this->schema[$name];
-        if (array_key_exists('checkType', $rules)) {
-            $value = $this->setType($value, $rules['checkType']);
-        }
-        return $value;
+        return $this->typedValue(
+            $this->schema[$name],
+            $this->postedValue($name)
+        );
     }
 }

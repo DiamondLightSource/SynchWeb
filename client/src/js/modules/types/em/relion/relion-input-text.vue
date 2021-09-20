@@ -1,45 +1,37 @@
 <template>
-  <div class="relion-form-field">
-    <!-- eslint-disable-next-line vue/no-v-html -->
-    <label
-      :for="id"
-      v-html="label"
-    />
-    <div
-      v-for="(description, index) in extraDescription"
-      :key="index"
-      class="relion-form-note"
-    >
-      {{ description }}
-    </div>
-    <input
-      :id="id"
-      v-model="value"
-      type="text"
-      :name="name"
-      :class="error ? 'relion-form-input ferror' : 'relion-form-input'"
-    >
-    <div
-      v-if="error"
-      class="ferror relion-form-error"
-    >
-      {{ error }}
-    </div>
-  </div>
+  <relion-input
+    :schema="schema"
+    :name="name"
+    :help-text="helpText"
+    :extra-class="extraClass"
+    :error-messages="errorMessages"
+  >
+    <template #after>
+      <input
+        :id="id"
+        v-model="value"
+        type="text"
+        :name="name"
+        class="relion-form-input"
+      >
+    </template>
+  </relion-input>
 </template>
 
 <script>
-import relionInputMixin from 'modules/types/em/relion/relion-input-mixin'
+import relionInputProperties from 'modules/types/em/relion/relion-input-properties'
+import relionInputValue from 'modules/types/em/relion/relion-input-value'
+import RelionInput from 'modules/types/em/relion/relion-input.vue'
 
 export default {
     'name': 'RelionInputText',
-    'mixins': [relionInputMixin],
-    'props': {
-        'error': {
-            'type': String,
-            'default': '',
-        },
+    'components': {
+        'relion-input': RelionInput,
     },
+    'mixins': [
+        relionInputProperties,
+        relionInputValue,
+    ],
     'computed': {
         'id': function() {
             return this.name + '-txt'

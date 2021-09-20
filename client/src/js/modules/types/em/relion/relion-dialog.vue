@@ -4,7 +4,7 @@
     title="Relion Processing"
     cancel-label="Cancel"
     confirm-label="Process"
-    @confirm="confirm"
+    @confirm="relionStart"
     @cancel="$store.commit('em/cancelProcessingDialog')"
   >
     <form
@@ -21,6 +21,7 @@
           name="acquisition_software"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           @update="update"
         />
 
@@ -28,17 +29,17 @@
           name="import_images_dir"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           :help-text="['select from list']"
           @update="update"
         />
 
         <relion-input-text
-          v-validate="'required|alpha_dash'"
           name="import_images_dir"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           :help-text="['or enter your own']"
-          :error="errors.first('import_images_dir')"
           @update="update"
         />
 
@@ -46,6 +47,7 @@
           name="import_images_ext"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           @update="update"
         />
 
@@ -54,16 +56,16 @@
           name="wantGainReferenceFile"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           @update="update"
         />
 
         <relion-input-text
           v-if="parameters.wantGainReferenceFile"
-          v-validate="{ required: true, regex: /^[\w-]+\.[\w]{3,4}$/ }"
           name="motioncor_gainreference"
           :parameters="parameters"
           :schema="schema"
-          :error="errors.first('motioncor_gainreference')"
+          :error-messages="errorMessages"
           @update="update"
         />
       </div>
@@ -77,6 +79,7 @@
           name="voltage"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           @update="update"
         />
 
@@ -84,6 +87,7 @@
           name="Cs"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           @update="update"
         />
 
@@ -91,25 +95,24 @@
           name="ctffind_do_phaseshift"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           @update="update"
         />
 
         <relion-input-text
-          v-validate="'required|min_value:0.02|max_value:100'"
           name="angpix"
           :parameters="parameters"
           :schema="schema"
-          :error="errors.first('angpix')"
+          :error-messages="errorMessages"
           @update="update"
         />
 
         <relion-input-text
           v-if="parameters.import_images_ext == 'eer'"
-          v-validate="'integer|required|min_value:1'"
           name="eer_grouping"
           :parameters="parameters"
           :schema="schema"
-          :error="errors.first('eer_grouping')"
+          :error-messages="errorMessages"
           @update="update"
         />
 
@@ -117,19 +120,18 @@
           name="motioncor_binning"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           @update="update"
         />
 
         <relion-input-text
-          v-validate="'required|min_value:0.02|max_value:10'"
           name="motioncor_doseperframe"
           :parameters="parameters"
           :schema="schema"
-          :error="errors.first('motioncor_doseperframe')"
+          :error-messages="errorMessages"
           @update="update"
         />
       </div>
-
 
       <div>
         <!-- TODO strange inverted logic -->
@@ -138,6 +140,7 @@
           extra-class="relion-form-field relion-after-ctf-header"
           :parameters="parameters"
           :schema="schema"
+          :error-messages="errorMessages"
           @update="update"
         />
 
@@ -152,6 +155,7 @@
                 name="do_class2d"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 @update="update"
               />
 
@@ -159,6 +163,7 @@
                 name="do_class3d"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 @update="update"
               />
             </div>
@@ -174,53 +179,49 @@
                 name="autopick_do_cryolo"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 @update="update"
               />
 
               <relion-input-text
-                v-validate="'required|min_value:0.02|max_value:1024'"
                 name="autopick_LoG_diam_min"
                 :parameters="parameters"
                 :schema="schema"
-                :error="errors.first('autopick_LoG_diam_min')"
+                :error-messages="errorMessages"
                 @update="update"
               />
 
               <relion-input-text
-                v-validate="'required|min_value:0.02|max_value:4000'"
                 name="autopick_LoG_diam_max"
-                :error="errors.first('autopick_LoG_diam_max')"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 @update="update"
               />
 
               <relion-input-text
-                v-validate="'required|min_value:0.1|max_value:1024'"
                 name="mask_diameter"
-                :error="errors.first('mask_diameter')"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 :disabled="parameters.wantCalculate"
                 @update="update"
               />
 
               <relion-input-text
-                v-validate="'required|min_value:0.1|max_value:1024'"
                 name="extract_boxsize"
-                :error="errors.first('extract_boxsize')"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 :disabled="parameters.wantCalculate"
                 @update="update"
               />
 
               <relion-input-text
-                v-validate="'required|min_value:0.1|max_value:1024'"
                 name="extract_small_boxsize"
-                :error="errors.first('extract_small_boxsize')"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 :disabled="parameters.wantCalculate"
                 @update="update"
               />
@@ -229,6 +230,7 @@
                 name="wantCalculate"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 @update="update"
               />
             </div>
@@ -244,6 +246,7 @@
                 name="want2ndPass"
                 :parameters="parameters"
                 :schema="schema"
+                :error-messages="errorMessages"
                 @update="update"
               />
 
@@ -252,6 +255,7 @@
                   name="do_class2d_pass2"
                   :parameters="parameters"
                   :schema="schema"
+                  :error-messages="errorMessages"
                   @update="update"
                 />
 
@@ -259,6 +263,7 @@
                   name="do_class3d_pass2"
                   :parameters="parameters"
                   :schema="schema"
+                  :error-messages="errorMessages"
                   @update="update"
                 />
               </template>
@@ -290,19 +295,27 @@ export default {
     },
     'mixins': [Schema],
     'data': function() {
-        return { 'parameters': {} }
+        return {
+            'parameters': {},
+            'errorMessages': {},
+        }
     },
     'computed': {
         ...mapGetters('em', ['processingDialogVisible']),
     },
     'mounted': function() {
-        this.fetchSchema(this.setToDefaults);
+        this.fetchSchema(this.setToDefaults)
     },
     'methods': {
         'setToDefaults': function() {
-            for (const name in this.schema) {
-                this.$set(this.parameters, name, this.schema[name].default)
-            }
+            this.iterateSchema((name) => {
+                const schemaDefault = this.schema[name].default
+                this.$set(
+                    this.parameters,
+                    name,
+                    typeof schemaDefault == 'undefined' ? '' : schemaDefault
+                )
+            })
             console.log('Relion dialog set to defaults', this.parameters)
         },
         'update': function({name, value}) {
@@ -311,15 +324,6 @@ export default {
             }
             this.parameters[name] = value
             boxCalculator(name, this.parameters)
-        },
-        'confirm': function() {
-            /* this.$validator.validate().then(
-                (result) => {
-                    if (result) { */
-                        this.relionStart()
-            /*        }
-                }
-            ) */
         },
         // eslint-disable-next-line no-unused-vars
         'startSuccess': function(data, textStatus, jqXHR) {
@@ -332,27 +336,15 @@ export default {
             })
         },
         'startError': function(jqXHR, textStatus, errorThrown) {
-            var validationErrors
+            var errorMessages
             this.$store.commit('loading', false)
             try {
-                validationErrors = JSON.parse(jqXHR.responseText).message
+                errorMessages = JSON.parse(jqXHR.responseText).message.invalid
             } catch (error) {
-                validationErrors = null
+                errorMessages = undefined
             }
-            if (Array.isArray(validationErrors) && validationErrors.length > 0) {
-                // I can't get vee-validate to display custom messages :(
-                // validationErrors.forEach((error) => {
-                //     this.errors.add(error)
-                // })
-                // This will have to do for a substitute for now
-                const message = validationErrors.map(function (error) {
-                    return error.field + ' - ' + error.message
-                }).join('...\n')
-                this.$store.commit('notifications/addNotification', {
-                    'title': 'Errors',
-                    'message': message,
-                    'level': 'error'
-                })
+            if (typeof errorMessages == 'object') {
+                this.errorMessages = errorMessages
                 return
             }
             console.log(
@@ -369,6 +361,7 @@ export default {
         },
         'relionStart': function() {
             this.$store.commit('loading', true)
+            console.log(this.parameters)
             Backbone.ajax({
                 'url': this.$store.state.apiUrl +
                     '/em/relion/start/' + this.$store.state.proposal.visit,
@@ -405,8 +398,12 @@ export default {
 .relion-form-note {
     font-size: 10px;
 }
-.relion-form-error {
-    padding: 3px;
+.relion-error .relion-error-message,
+.relion-error input {
+    background-color: #f56565;
+}
+.relion-error .relion-error-message {
     margin-top: 3px;
+    padding: 3px;
 }
 </style>

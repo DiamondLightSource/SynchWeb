@@ -28,37 +28,7 @@ class EM extends Page
         'movieNumber' => '\d+',
         'processingJobId' => '\d+',
 
-        // EM PROCESSING
-        // Parameters with user specified values
-        // Note boolean value true in JSON POST request is cast to to 1, false to nothing.
-
-        // RELION
-        'acquisition_software' => '\w+', // String
-        'import_images_dir' => '[\w-]+', // String
-        'import_images_ext' => '[\w]{3,4}', // String (File name extension)
-        'motioncor_gainreference' => '[\w-]+\.[\w]{3,4}', // String (File name + extension)
-        'voltage' => '\d+', // Integer
-        'Cs' => '\d*(\.\d+)?', // Decimal (Spherical aberration)
-        'ctffind_do_phaseshift' => '1?', // Boolean
-        'angpix' => '\d*(\.\d+)?', // Decimal
-        'eer_grouping' => '\d+', // Integer
-        'motioncor_binning' => '\d+', // Integer
-        'motioncor_doseperframe' => '\d*(\.\d+)?', // Decimal
-        'stop_after_ctf_estimation' => '1?', // Boolean
-        'do_class2d' => '1?', // Boolean
-        'do_class3d' => '1?', // Boolean
-        'use_fsc_criterion' => '1?', // Boolean
-        'autopick_do_cryolo' => '1?', // Boolean
-        'autopick_LoG_diam_min' => '\d+', // Integer
-        'autopick_LoG_diam_max' => '\d+', // Integer
-        'mask_diameter' => '\d+', // Integer
-        'extract_boxsize' => '\d+', // Integer
-        'extract_small_boxsize' => '\d+', // Integer
-        'do_class2d_pass2' => '1?', // Boolean
-        'do_class3d_pass2' => '1?', // Boolean
-
         // SCIPION
-
         'numberOfIndividualFrames' => '\d+', // Integer
         'patchX' => '\d+', // Integer
         'patchY' => '\d+', // Integer

@@ -23,6 +23,7 @@ class RelionSchema
                 'label' => 'Raw Folder',
                 'required' => true,
                 'default' => 'raw',
+                'pattern' => 'directory',
                 'options' => array(
                     'raw', 'raw2', 'raw3', 'raw4', 'raw5',
                     'raw6', 'raw7', 'raw8', 'raw9'
@@ -50,6 +51,7 @@ class RelionSchema
             ),
             'motioncor_gainreference' => array(
                 'label' => "Gain Reference File Name",
+                'pattern' => 'filename',
                 'default' => 'gain.mrc',
                 'required' => array (
                     'wantGainReferenceFile' => true
@@ -74,7 +76,7 @@ class RelionSchema
                 'displayOptions' => array('2.7 (Talos/Krios)'),
                 /*
                 'options' => array(1.4, 2.0, 2.7),
-                'checkType' => 'float'
+                'checkType' => 'real'
                 */
             ),
             'ctffind_do_phaseshift' => array(
@@ -88,8 +90,8 @@ class RelionSchema
                 'default' => '',
                 'required' => true,
                 'minValue' => 0.02,
-                'maxValue' => 100,
-                'checkType' => 'float'
+                'maxValue' => 100.0,
+                'checkType' => 'real'
             ),
             'eer_grouping' => array(
                 'label' => 'EER fractionation',
@@ -108,16 +110,16 @@ class RelionSchema
                 'label' => 'Motion Correction Binning',
                 'default' => '1',
                 'required' => true,
-                'options' => array(1, 2),
+                'options' => array('1', '2'),
                 'checkType' => 'integer'
             ),
             'motioncor_doseperframe' => array(
                 'label' => 'Dose per frame (e<span class="super">-</span>/Å<span class="super">2</span>)',
                 'default' => '0.5',
                 'required' => true,
-                'minValue' => 0,
-                'maxValue' => 10,
-                'checkType' => 'float'
+                'minValue' => 0.02,
+                'maxValue' => 10.0,
+                'checkType' => 'real'
             ),
             'stop_after_ctf_estimation' => array(
                 // This field is a bit bonkers.
@@ -173,8 +175,9 @@ class RelionSchema
                     'stop_after_ctf_estimation' => false
                 ),
                 'minValue' => 0.02,
-                'maxValue' => 1024,
-                'checkType' => 'float'
+                'maxValue' => 1024.0,
+                'lessThan' => 'autopick_LoG_diam_max',
+                'checkType' => 'real'
             ),
             'autopick_LoG_diam_max' => array(
                 'label' => 'Maximum Diameter (Å)',
@@ -183,8 +186,9 @@ class RelionSchema
                     'stop_after_ctf_estimation' => false,
                 ),
                 'minValue' => 0.02,
-                'maxValue' => 4000,
-                'checkType' => 'float'
+                'maxValue' => 4000.0,
+                'greaterThan' => 'autopick_LoG_diam_min',
+                'checkType' => 'real'
             ),
             'mask_diameter' => array(
                 'label' => 'Mask Diameter (Å)',
@@ -192,9 +196,9 @@ class RelionSchema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
-                'minValue' => 1,
+                'minValue' => 0.1,
                 'maxValue' => 1024,
-                'checkType' => 'integer'
+                'checkType' => 'real'
             ),
             'extract_downscale' => array(
                 // doesn't exist in form
@@ -208,9 +212,9 @@ class RelionSchema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
-                'minValue' => 1,
-                'maxValue' => 1024,
-                'checkType' => 'integer'
+                'minValue' => 0.1,
+                'maxValue' => 1024.0,
+                'checkType' => 'real'
             ),
             'extract_small_boxsize' => array(
                 'label' => 'Downsample Box Size (pixels)',
@@ -218,9 +222,9 @@ class RelionSchema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
-                'minValue' => 1,
-                'maxValue' => 1024,
-                'checkType' => 'integer'
+                'minValue' => 0.1,
+                'maxValue' => 1024.0,
+                'checkType' => 'real'
             ),
             'want2ndPass' => array(
                 'label' => 'Do Second Pass',

@@ -18,5 +18,8 @@ export default {
                 }
             )
         },
+        'iterateSchema': function(callback) {
+            Object.keys(this.schema).forEach(callback)
+        },
     },
 }
