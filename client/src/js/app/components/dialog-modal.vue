@@ -2,7 +2,6 @@
   <div
     v-if="showDialog"
     class="background"
-    @click.self="$emit('cancel')"
   >
     <div class="dialog-box">
       <header class="header">
