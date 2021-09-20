@@ -7,7 +7,7 @@
       <template v-for="(attachment, key) in attachments">
         <download
           v-if="attachment.chartData === null"
-          :key="attachment.id + 'p'"
+          :key="key + 'p'"
           :attachment="attachment"
         />
       </template>
@@ -15,12 +15,12 @@
 
     <template v-for="(attachment, key) in attachments">
       <dialog-plotly
-        class="ice-breaker-chart"
         v-if="attachment.chartData !== null"
-        :key="attachment.id + 'h'"
+        :key="key + 'h'"
         :title="attachment.chartData.titleText"
         :layout="attachment.chartData.layout"
         :chart-data="attachment.chartData.data"
+        class="ice-breaker-chart"
       />
     </template>
   </processing-section>
@@ -45,25 +45,38 @@ export default {
             'type': Number,
             'required': true,
         },
+        'fetchTrigger': {
+            'type': String,
+            'required': true,
+        },
     },
     'data': function() {
         return { 'attachments': [] }
     },
-    'mounted': function() {
-        // If this job has not yet run, autoProcProgramId "doesn't exist"
-        if (!this.autoProcProgramId) {
-            return
+    'watch': {
+        // eslint-disable-next-line no-unused-vars
+        'fetchTrigger': function(newValue, oldValue) {
+            this.fetch()
         }
-        this.$store.dispatch('em/fetch', {
-            'url': '/em/attachments/' + this.autoProcProgramId,
-            'humanName': 'Ice Breaker attachments',
-        }).then(
-            (response) => {
-                this.attachments = response.map(this.parseSingleAttachment)
-            }
-        )
+    },
+    'mounted': function() {
+        this.fetch()
     },
     'methods': {
+        'fetch': function() {
+            // If this job has not yet run, autoProcProgramId "doesn't exist"
+            if (!this.autoProcProgramId) {
+                return
+            }
+            this.$store.dispatch('em/fetch', {
+                'url': '/em/attachments/' + this.autoProcProgramId,
+                'humanName': 'Ice Breaker attachments',
+            }).then(
+                (response) => {
+                    this.attachments = response.map(this.parseSingleAttachment)
+                }
+            )
+        },
         'parseSingleAttachment': function(attachment) {
             const fileName = attachment.file
             const json = attachment.JSON

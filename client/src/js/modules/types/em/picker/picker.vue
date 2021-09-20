@@ -2,6 +2,7 @@
   <processing-section-movie-list
     section-title="Particle Picking"
     url-prefix="/em/picker/"
+    :fetch-trigger="fetchTrigger"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"
     @loaded="loaded"
@@ -30,6 +31,10 @@ export default {
     'props': {
         'autoProcProgramId': {
             'type': Number,
+            'required': true,
+        },
+        'fetchTrigger': {
+            'type': String,
             'required': true,
         },
     },

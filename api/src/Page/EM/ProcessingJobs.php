@@ -21,10 +21,13 @@ trait ProcessingJobs
             false
         );
 
-        // In the test data, there are a few occurrences of multiple
-        // AutoProcProgram rows on a single ProcessingJob.
-        // Andy Preston didn't know if this was a testing artifact or expected
-        // in normal operation, autoProcProgramId is included here just in case
+        /* In the test data, there are a few occurrences of multiple
+           AutoProcProgram rows on a single ProcessingJob.
+           Andy Preston didn't know if this was a testing artifact or expected
+           in normal operation, autoProcProgramId is included here just in case
+         * FetchTime is to trigger re-fetches of the entities that depend on
+           ProcessingJob
+         */
         $processingJobs = $this->db->pq(
             "SELECT
                 PJ.processingJobId,
@@ -33,6 +36,7 @@ trait ProcessingJobs
                 APP.autoProcProgramId,
                 APP.processingStartTime,
                 APP.processingEndTime,
+                NOW() as fetchTime,
                 CASE
                     WHEN (APP.processingJobId IS NULL) THEN 'submitted'
                     WHEN (APP.processingStartTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'

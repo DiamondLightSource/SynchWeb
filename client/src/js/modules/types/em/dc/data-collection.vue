@@ -23,9 +23,10 @@
       <data-collection-header :data-collection="dataCollection" />
 
       <processing-job
-        v-for="job in processingJobs"
-        :key="job.processingJobId + job.autoProcProgramId"
-        :job="job"
+        v-for="processingJob in processingJobs"
+        :key="processingJob.processingJobId"
+        :processing-job="processingJob"
+        :collection-active="dataCollection.ARCHIVED != '1'"
       />
     </div>
   </section>

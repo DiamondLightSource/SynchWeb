@@ -54,6 +54,10 @@ export default {
             'type': Number,
             'required': true,
         },
+        'fetchTrigger': {
+            'type': String,
+            'required': true,
+        },
     },
     'data': function() {
         return {
@@ -89,6 +93,10 @@ export default {
         },
         // eslint-disable-next-line no-unused-vars
         'page': function(newValue, oldValue) {
+            this.fetch()
+        },
+        // eslint-disable-next-line no-unused-vars
+        'fetchTrigger': function(newValue, oldValue) {
             this.fetch()
         },
     },

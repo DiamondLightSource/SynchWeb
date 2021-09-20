@@ -2,6 +2,7 @@
   <processing-section-movie-list
     section-title="Motion Correction"
     url-prefix="/em/mc/"
+    :fetch-trigger="fetchTrigger"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"
     @loaded="loaded"
@@ -37,6 +38,10 @@ export default {
     'props': {
         'autoProcProgramId': {
             'type': Number,
+            'required': true,
+        },
+        'fetchTrigger': {
+            'type': String,
             'required': true,
         },
     },

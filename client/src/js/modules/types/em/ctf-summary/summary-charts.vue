@@ -48,6 +48,10 @@ export default {
             'type': Number,
             'required': true,
         },
+        'fetchTrigger': {
+            'type': String,
+            'required': true,
+        },
     },
     'data': function() {
         return {
@@ -97,8 +101,14 @@ export default {
             return this.plotlyData(this.yAxes.estimatedResolution)
         },
     },
+    'watch': {
+        // eslint-disable-next-line no-unused-vars
+        'fetchTrigger': function(newValue, oldValue) {
+            this.fetch()
+        },
+    },
     'mounted': function() {
-        this.fetchData()
+        this.fetch()
     },
     'methods': {
         'select': function(selection) {
@@ -136,7 +146,7 @@ export default {
                 'margin': { 't': 10, 'l': 40, 'r': 20, 'b': 30 },
             }
         },
-        'fetchData': function() {
+        'fetch': function() {
             // If this job has not yet run, autoProcProgramId "doesn't exist"
             if (! this.autoProcProgramId) {
                 return

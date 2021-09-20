@@ -3,9 +3,9 @@
     <job-header
       :processing-job-id="processingJobId"
       :auto-proc-program-id="autoProcProgramId"
-      :start-time="job.processingStartTime"
-      :end-time="job.processingEndTime"
-      :status="job.processingStatusDescription"
+      :start-time="processingJob.processingStartTime"
+      :end-time="processingJob.processingEndTime"
+      :status="processingJob.processingStatusDescription"
       @hide="hide"
     />
 
@@ -13,13 +13,37 @@
       v-if="!hidden"
       class="processing"
     >
-      <summary-charts :auto-proc-program-id="autoProcProgramId" />
+      <summary-charts
+        :auto-proc-program-id="autoProcProgramId"
+        :fetch-trigger="fetchTrigger"
+      />
+
       <job-parameters :processing-job-id="processingJobId" />
-      <motion-correction :auto-proc-program-id="autoProcProgramId" />
-      <ctf-estimation :auto-proc-program-id="autoProcProgramId" />
-      <ice-breaker :auto-proc-program-id="autoProcProgramId" />
-      <picker :auto-proc-program-id="autoProcProgramId" />
-      <classification :auto-proc-program-id="autoProcProgramId" />
+
+      <motion-correction
+        :auto-proc-program-id="autoProcProgramId"
+        :fetch-trigger="fetchTrigger"
+      />
+
+      <ctf-estimation
+        :auto-proc-program-id="autoProcProgramId"
+        :fetch-trigger="fetchTrigger"
+      />
+
+      <ice-breaker
+        :auto-proc-program-id="autoProcProgramId"
+        :fetch-trigger="fetchTrigger"
+      />
+
+      <picker
+        :auto-proc-program-id="autoProcProgramId"
+        :fetch-trigger="fetchTrigger"
+      />
+
+      <classification
+        :auto-proc-program-id="autoProcProgramId"
+        :fetch-trigger="fetchTrigger"
+      />
     </div>
   </section>
 </template>
@@ -47,8 +71,12 @@ export default {
         'summary-charts': SummaryCharts,
     },
     'props': {
-        'job': {
+        'processingJob': {
             'type': Object,
+            'required': true,
+        },
+        'collectionActive': {
+            'type': Boolean,
             'required': true,
         },
     },
@@ -58,11 +86,21 @@ export default {
         }
     },
     'computed': {
+        'fetchTrigger': function() {
+            const isRunning = [
+                'submitted',
+                'queued',
+                'running',
+            ].includes(this.processingJob.processingStatusDescription)
+
+            return this.collectionActive && isRunning ?
+                this.processingJob.fetchTime : ''
+        },
         'processingJobId': function() {
-            return parseInt(this.job.processingJobId, 10)
+            return parseInt(this.processingJob.processingJobId, 10)
         },
         'autoProcProgramId': function() {
-            return parseInt(this.job.autoProcProgramId, 10)
+            return parseInt(this.processingJob.autoProcProgramId, 10)
         },
     },
     'methods': {

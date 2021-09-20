@@ -38,6 +38,10 @@ export default {
             'type': String,
             'required': true,
         },
+        'fetchTrigger': {
+            'type': String,
+            'required': true,
+        },
         'autoProcProgramId': {
             'type': Number,
             'required': true,
@@ -62,6 +66,10 @@ export default {
         // eslint-disable-next-line no-unused-vars
         'movieNumber': function(newValue, oldValue) {
             this.fetchDetail()
+        },
+        // eslint-disable-next-line no-unused-vars
+        'fetchTrigger': function(newValue, oldValue) {
+            this.fetchList()
         },
     },
     'mounted': function() {
