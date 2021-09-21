@@ -1,36 +1,36 @@
 <template>
   <div
-    class="relion-form-field"
+    class="form-field"
     :class="extraClasses"
   >
-    <slot name="before" />
     <!-- eslint-disable vue/no-v-html -->
-    <label
-      :for="id"
-      v-html="label"
-    />
+    <label :for="id">
+      <slot name="before" />
+      <span v-html="label" />
+    </label>
+
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
     <!-- eslint-enable vue/no-v-html -->
     <div
       v-for="(description, index) in extraDescription"
       :key="index"
-      class="relion-form-note"
+      class="form-note"
     >
       {{ description }}
     </div>
     <slot name="after" />
-    <div class="relion-error-message">
-      {{ errorMessage }}
-    </div>
   </div>
 </template>
 
 <script>
-import relionInputProperties from 'modules/types/em/relion/relion-input-properties'
+import inputProperties from 'modules/types/em/components/input-properties'
 
 export default {
     'name': 'RelionInput',
     'mixins': [
-        relionInputProperties
+        inputProperties
     ],
     'computed': {
         'id': function() {
@@ -48,7 +48,7 @@ export default {
         'extraClasses': function() {
             return (
                 this.extraClass + ' ' + (
-                    this.errorMessage ? 'relion-error' : ''
+                    this.errorMessage ? 'error' : ''
                 )
             ).trim()
         },
@@ -58,3 +58,29 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+label {
+    display: block;
+}
+label * {
+    vertical-align: middle;
+}
+.form-field {
+    margin-top: 5px;
+    vertical-align: middle;
+}
+.form-input {
+    display: block;
+}
+.form-note {
+    font-size: 10px;
+}
+.error input {
+    background-color: #f56565;
+}
+.error .error-message {
+    color: #f56565;
+    font-weight: bold;
+}
+</style>

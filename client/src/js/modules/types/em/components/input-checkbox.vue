@@ -1,5 +1,5 @@
 <template>
-  <relion-input
+  <input-base
     :schema="schema"
     :name="name"
     :help-text="helpText"
@@ -14,22 +14,22 @@
         type="checkbox"
       >
     </template>
-  </relion-input>
+  </input-base>
 </template>
 
 <script>
-import relionInputProperties from 'modules/types/em/relion/relion-input-properties'
-import relionInputValue from 'modules/types/em/relion/relion-input-value'
-import RelionInput from 'modules/types/em/relion/relion-input.vue'
+import InputBase from 'modules/types/em/components/input-base.vue'
+import inputProperties from 'modules/types/em/components/input-properties'
+import inputValue from 'modules/types/em/components/input-value'
 
 export default {
     'name': 'RelionInputCheckbox',
     'components': {
-        'relion-input': RelionInput,
+        'input-base': InputBase,
     },
     'mixins': [
-        relionInputProperties,
-        relionInputValue,
+        inputProperties,
+        inputValue,
     ],
     'computed': {
         'id': function() {
