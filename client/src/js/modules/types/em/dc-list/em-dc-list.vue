@@ -5,7 +5,7 @@
     </h1>
 
     <refresh
-      v-if="$store.state.proposal.visit != ''"
+      v-if="visit !== ''"
       :collection="collection"
       :model="model"
     />
@@ -48,6 +48,7 @@ import Search from 'modules/types/em/dc-list/search.vue'
 import Table from 'app/components/table.vue'
 import Toolbar from 'modules/types/em/dc-list/toolbar.vue'
 import vueXModule from 'modules/types/em/store'
+import { mapGetters } from 'vuex'
 
 export default {
     'name': 'EmDcList',
@@ -81,7 +82,16 @@ export default {
     },
     'data': function() {
         return {
-            'tableHeaders': [{
+            'tableData': [],
+        }
+    },
+    'computed': {
+        ...mapGetters({
+            'proposal': 'proposal/currentProposal',
+            'visit': 'proposal/currentVisit',
+        }),
+        'tableHeaders': function() {
+            var headers = [{
                 'title': 'Data Collection ID',
                 'key': 'ID'
             }, {
@@ -102,18 +112,20 @@ export default {
             }, {
                 'title': 'Start Time',
                 'key': 'STA'
-            }],
-            'tableData': [],
-        }
-    },
-    'computed': {
-        'heading': function () {
-            const heading = 'Data Collections for '
-            if (this.model.has('VISIT')) {
-                return heading + this.model.get('VISIT') +
-                  ' on ' + this.model.get('BEAMLINENAME')
+            }]
+            if (this.visit === '') {
+                headers.unshift({
+                    'title': 'Visit',
+                    'key': 'VN',
+                })
             }
-            return heading + this.$store.state.proposal.proposal
+            return headers
+        },
+        'heading': function () {
+            return 'Data Collections for ' + (
+                this.visit === '' ? this.proposal :
+                    this.visit +  ' on ' + this.model.get('BEAMLINENAME')
+            )
         },
         'searchUrl': function() {
             // In old Marionette version this was
@@ -161,10 +173,7 @@ export default {
             this.collection.fetch()
         },
         'rowClicked': function(dataCollectionModel) {
-            // This may be a list for all collections in a proposal
-            // without a specific visit number, hence:
-            const visit = this.$store.state.proposal.proposal +
-                '-' + dataCollectionModel.get('VN')
+            const visit = this.proposal + '-' + dataCollectionModel.get('VN')
             this.$router.push(
                 '/dc/visit/' + visit +
                 '/collection/' + dataCollectionModel.get('ID')
