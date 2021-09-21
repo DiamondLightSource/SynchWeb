@@ -17,7 +17,7 @@
           Project
         </h3>
 
-        <relion-input-select
+        <input-select
           name="acquisition_software"
           :parameters="parameters"
           :schema="schema"
@@ -25,7 +25,7 @@
           @update="update"
         />
 
-        <relion-input-select
+        <input-select
           name="import_images_dir"
           :parameters="parameters"
           :schema="schema"
@@ -34,7 +34,7 @@
           @update="update"
         />
 
-        <relion-input-text
+        <input-text
           name="import_images_dir"
           :parameters="parameters"
           :schema="schema"
@@ -43,7 +43,7 @@
           @update="update"
         />
 
-        <relion-input-select
+        <input-select
           name="import_images_ext"
           :parameters="parameters"
           :schema="schema"
@@ -52,7 +52,7 @@
         />
 
         <!-- "Gain Reference File" default: false -->
-        <relion-input-checkbox
+        <input-checkbox
           name="wantGainReferenceFile"
           :parameters="parameters"
           :schema="schema"
@@ -60,7 +60,7 @@
           @update="update"
         />
 
-        <relion-input-text
+        <input-text
           v-if="parameters.wantGainReferenceFile"
           name="motioncor_gainreference"
           :parameters="parameters"
@@ -75,7 +75,7 @@
           Experiment
         </h3>
 
-        <relion-input-select
+        <input-select
           name="voltage"
           :parameters="parameters"
           :schema="schema"
@@ -83,7 +83,7 @@
           @update="update"
         />
 
-        <relion-input-select
+        <input-select
           name="Cs"
           :parameters="parameters"
           :schema="schema"
@@ -91,7 +91,7 @@
           @update="update"
         />
 
-        <relion-input-checkbox
+        <input-checkbox
           name="ctffind_do_phaseshift"
           :parameters="parameters"
           :schema="schema"
@@ -99,7 +99,7 @@
           @update="update"
         />
 
-        <relion-input-text
+        <input-text
           name="angpix"
           :parameters="parameters"
           :schema="schema"
@@ -107,7 +107,7 @@
           @update="update"
         />
 
-        <relion-input-text
+        <input-text
           v-if="parameters.import_images_ext == 'eer'"
           name="eer_grouping"
           :parameters="parameters"
@@ -116,7 +116,7 @@
           @update="update"
         />
 
-        <relion-input-select
+        <input-select
           name="motioncor_binning"
           :parameters="parameters"
           :schema="schema"
@@ -124,7 +124,7 @@
           @update="update"
         />
 
-        <relion-input-text
+        <input-text
           name="motioncor_doseperframe"
           :parameters="parameters"
           :schema="schema"
@@ -135,9 +135,9 @@
 
       <div>
         <!-- TODO strange inverted logic -->
-        <relion-input-checkbox
+        <input-checkbox
           name="stop_after_ctf_estimation"
-          extra-class="relion-form-field relion-after-ctf-header"
+          extra-class="relion-after-ctf-header"
           :parameters="parameters"
           :schema="schema"
           :error-messages="errorMessages"
@@ -151,7 +151,7 @@
             </h3>
 
             <div v-if="!parameters.stop_after_ctf_estimation">
-              <relion-input-checkbox
+              <input-checkbox
                 name="do_class2d"
                 :parameters="parameters"
                 :schema="schema"
@@ -159,7 +159,7 @@
                 @update="update"
               />
 
-              <relion-input-checkbox
+              <input-checkbox
                 name="do_class3d"
                 :parameters="parameters"
                 :schema="schema"
@@ -175,7 +175,7 @@
             </h3>
 
             <div v-if="!parameters.stop_after_ctf_estimation">
-              <relion-input-checkbox
+              <input-checkbox
                 name="autopick_do_cryolo"
                 :parameters="parameters"
                 :schema="schema"
@@ -183,7 +183,7 @@
                 @update="update"
               />
 
-              <relion-input-text
+              <input-text
                 name="autopick_LoG_diam_min"
                 :parameters="parameters"
                 :schema="schema"
@@ -191,7 +191,7 @@
                 @update="update"
               />
 
-              <relion-input-text
+              <input-text
                 name="autopick_LoG_diam_max"
                 :parameters="parameters"
                 :schema="schema"
@@ -199,7 +199,7 @@
                 @update="update"
               />
 
-              <relion-input-text
+              <input-text
                 name="mask_diameter"
                 :parameters="parameters"
                 :schema="schema"
@@ -208,7 +208,7 @@
                 @update="update"
               />
 
-              <relion-input-text
+              <input-text
                 name="extract_boxsize"
                 :parameters="parameters"
                 :schema="schema"
@@ -217,7 +217,7 @@
                 @update="update"
               />
 
-              <relion-input-text
+              <input-text
                 name="extract_small_boxsize"
                 :parameters="parameters"
                 :schema="schema"
@@ -226,7 +226,7 @@
                 @update="update"
               />
 
-              <relion-input-checkbox
+              <input-checkbox
                 name="wantCalculate"
                 :parameters="parameters"
                 :schema="schema"
@@ -242,7 +242,7 @@
             </h3>
 
             <div v-if="!parameters.stop_after_ctf_estimation">
-              <relion-input-checkbox
+              <input-checkbox
                 name="want2ndPass"
                 :parameters="parameters"
                 :schema="schema"
@@ -251,7 +251,7 @@
               />
 
               <template v-if="parameters.want2ndPass">
-                <relion-input-checkbox
+                <input-checkbox
                   name="do_class2d_pass2"
                   :parameters="parameters"
                   :schema="schema"
@@ -259,7 +259,7 @@
                   @update="update"
                 />
 
-                <relion-input-checkbox
+                <input-checkbox
                   name="do_class3d_pass2"
                   :parameters="parameters"
                   :schema="schema"
@@ -280,18 +280,18 @@ import { mapGetters } from 'vuex'
 import Backbone from 'backbone'
 import boxCalculator from 'modules/types/em/relion/box-calculator'
 import DialogModal from 'app/components/dialog-modal.vue'
-import RelionInputCheckbox from 'modules/types/em/relion/relion-input-checkbox.vue'
-import RelionInputSelect from 'modules/types/em/relion/relion-input-select.vue'
-import RelionInputText from 'modules/types/em/relion/relion-input-text.vue'
+import InputCheckbox from 'modules/types/em/components/input-checkbox.vue'
+import InputSelect from 'modules/types/em/components/input-select.vue'
+import InputText from 'modules/types/em/components/input-text.vue'
 import Schema from 'modules/types/em/relion/schema'
 
 export default {
     'name': 'RelionDialog',
     'components': {
         'dialog-modal': DialogModal,
-        'relion-input-checkbox': RelionInputCheckbox,
-        'relion-input-select': RelionInputSelect,
-        'relion-input-text': RelionInputText,
+        'input-checkbox': InputCheckbox,
+        'input-select': InputSelect,
+        'input-text': InputText,
     },
     'mixins': [Schema],
     'data': function() {
@@ -388,22 +388,5 @@ export default {
 }
 .relion-form-section-heading {
     font-weight: bold;
-}
-.relion-form-field {
-    margin-top: 5px;
-}
-.relion-form-input {
-    display: block;
-}
-.relion-form-note {
-    font-size: 10px;
-}
-.relion-error .relion-error-message,
-.relion-error input {
-    background-color: #f56565;
-}
-.relion-error .relion-error-message {
-    margin-top: 3px;
-    padding: 3px;
 }
 </style>
