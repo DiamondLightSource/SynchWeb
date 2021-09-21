@@ -26,20 +26,6 @@ class RelionParameterTransformer
     public function postParameters($input)
     {
         $this->setCommonData($input);
-
-        /*
-            Have to do some shizzle from the schema (some of this in the validator)
-
-
-            'required' => true - use as post data and validate
-
-            'required' => false - don't post it!
-
-            'required' => array - like the old requiredIF
-                                    validate and post if true
-                                    ignore and discard if false
-        */
-
         $this->setImageDirectoryAndFileTemplate();
         $this->parameters['import_images'] = $this->imageDirectory . $this->fileTemplate;
         unset($this->parameters['import_images_dir']);
