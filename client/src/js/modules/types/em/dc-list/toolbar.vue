@@ -1,6 +1,7 @@
 <template>
   <div class="links">
     <toolbar-button
+      v-if="visit != ''"
       :href="statsUrl"
       :show-text="!isMobile"
       button-text="Visit Stats"
@@ -9,6 +10,7 @@
     />
 
     <toolbar-button
+      v-if="visit != ''"
       :show-text="!isMobile"
       button-text="Users"
       icon="fa fa-users"
@@ -38,19 +40,13 @@
 
     <!-- <a class="button"  href="/em/process/visit/<%-VISIT%>" title="Scipion Processing"><i class="fa fa-cog"></i> <span>Processing</span></a> -->
 
-    <!-- toolbar-button
-      :show-text="!isMobile"
-      :href="relionUrl"
-      button-text="Relion Processing"
-      hint="Relion Processing"
-      icon="fa fa-cog"
-    / -->
 
     <reprocess-button :show-text="!isMobile" />
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import DewarsView from 'modules/proposal/views/dewars'
 import MarionetteApplication from 'app/marionette-application'
 import MarionetteWrapper from 'app/views/marionette/marionette-wrapper.vue'
@@ -74,17 +70,21 @@ export default {
         }
     },
     'computed' : {
+        ...mapGetters({
+            'proposal': 'proposal/currentProposal',
+            'visit': 'proposal/currentVisit',
+        }),
         'isMobile': function() {
             return MarionetteApplication.getInstance().mobile()
         },
         'marionetteOptions': function() {
-            return { 'visit': this.$store.state.proposal.visit }
+            return { 'visit': this.visit }
         },
         'statsUrl': function() {
-            return '/stats/visit/' + this.$store.state.proposal.visit
+            return '/stats/visit/' + this.visit
         },
         'relionUrl': function() {
-            return '/em/process/relion/session/' + this.$store.state.proposal.visit
+            return '/em/process/relion/session/' + this.visit
         },
     },
 }
