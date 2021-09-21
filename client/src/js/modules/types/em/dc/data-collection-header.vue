@@ -28,7 +28,7 @@
     />
     <parameter-list-item
       width="20%"
-      label="Obj Aperture"
+      label="Objective Aperture"
       :item="objAperture"
     />
     <parameter-list-item
