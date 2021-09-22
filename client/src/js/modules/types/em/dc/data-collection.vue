@@ -24,7 +24,7 @@
 
       <processing-job
         v-for="processingJob in processingJobs"
-        :key="processingJob.processingJobId"
+        :key="processingJob.autoProcProgramId"
         :processing-job="processingJob"
         :collection-active="dataCollection.ARCHIVED != '1'"
       />
