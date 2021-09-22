@@ -134,7 +134,7 @@ export default {
             return true
         },
     },
-    'mounted': function() {
+    'beforeMount': function() {
         EventBus.$emit('bcChange', this.breadcrumbs)
         this.$store.commit(
             'proposal/setVisit',
