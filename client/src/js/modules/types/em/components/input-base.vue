@@ -25,23 +25,37 @@
 </template>
 
 <script>
-import inputProperties from 'modules/types/em/components/input-properties'
 
 export default {
     'name': 'RelionInput',
-    'mixins': [
-        inputProperties
-    ],
+    'props': {
+        'form': {
+            'type': Object,
+            'required': true,
+        },
+        'name': {
+            'type': String,
+            'required': true,
+        },
+        'helpText': {
+            'type': Array,
+            'default': function() { return [] },
+        },
+        'extraClass': {
+            'type': String,
+            'default': '',
+        },
+    },
     'computed': {
         'id': function() {
             return this.name + '-txt'
         },
         'errorMessage': function() {
-            const errorMessage = this.errorMessages[this.name]
+            const errorMessage = this.form.errorMessages[this.name]
             return errorMessage ? errorMessage : ''
         },
         'extraDescription': function() {
-            const extraDescription = this.schema[this.name].extraDescription
+            const extraDescription = this.form.schema[this.name].extraDescription
             return typeof extraDescription == 'undefined' ?
                 this.helpText : extraDescription.concat(this.helpText)
         },
@@ -53,7 +67,7 @@ export default {
             ).trim()
         },
         'label': function() {
-            return this.schema[this.name].label
+            return this.form.schema[this.name].label
         }
     },
 }

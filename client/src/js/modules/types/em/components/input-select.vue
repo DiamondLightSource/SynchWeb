@@ -1,10 +1,9 @@
 <template>
   <input-base
-    :schema="schema"
+    :form="form"
     :name="name"
     :help-text="helpText"
     :extra-class="extraClass"
-    :error-messages="errorMessages"
   >
     <template #after>
       <select
@@ -27,7 +26,6 @@
 
 <script>
 import InputBase from 'modules/types/em/components/input-base.vue'
-import inputProperties from 'modules/types/em/components/input-properties'
 import inputValue from 'modules/types/em/components/input-value'
 
 export default {
@@ -36,12 +34,29 @@ export default {
         'input-base': InputBase,
     },
     'mixins': [
-        inputProperties,
         inputValue,
     ],
+    'props': {
+        'form': {
+            'type': Object,
+            'required': true,
+        },
+        'name': {
+            'type': String,
+            'required': true,
+        },
+        'helpText': {
+            'type': Array,
+            'default': function() { return [] },
+        },
+        'extraClass': {
+            'type': String,
+            'default': '',
+        },
+    },
     'computed': {
         'selectOptions': function() {
-            const schema = this.schema[this.name]
+            const schema = this.form.schema[this.name]
             const displayOptions = schema.displayOptions
             const simpleOptions = typeof displayOptions == 'undefined'
             return schema.options.map(function(option, index) {

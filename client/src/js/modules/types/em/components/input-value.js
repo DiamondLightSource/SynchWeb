@@ -1,17 +1,11 @@
 export default {
-    'props': {
-        'parameters': {
-            'type': Object,
-            'required': true,
-        },
-    },
     'computed': {
         'value': {
             'get': function() {
-                return this.parameters[this.name]
+                return this.form.fields[this.name]
             },
             'set': function(newValue) {
-                this.$emit('update', { 'name': this.name, 'value': newValue })
+                this.form.update(this.name, newValue)
             }
         },
     },

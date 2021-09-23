@@ -1,10 +1,9 @@
 <template>
   <input-base
-    :schema="schema"
+    :form="form"
     :name="name"
     :help-text="helpText"
     :extra-class="extraClass"
-    :error-messages="errorMessages"
   >
     <template #before>
       <input
@@ -19,7 +18,6 @@
 
 <script>
 import InputBase from 'modules/types/em/components/input-base.vue'
-import inputProperties from 'modules/types/em/components/input-properties'
 import inputValue from 'modules/types/em/components/input-value'
 
 export default {
@@ -28,9 +26,26 @@ export default {
         'input-base': InputBase,
     },
     'mixins': [
-        inputProperties,
         inputValue,
     ],
+    'props': {
+        'form': {
+            'type': Object,
+            'required': true,
+        },
+        'name': {
+            'type': String,
+            'required': true,
+        },
+        'helpText': {
+            'type': Array,
+            'default': function() { return [] },
+        },
+        'extraClass': {
+            'type': String,
+            'default': '',
+        },
+    },
     'computed': {
         'id': function() {
             return this.name + '-ck'

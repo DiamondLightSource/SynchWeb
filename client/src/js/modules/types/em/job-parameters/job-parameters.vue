@@ -33,7 +33,6 @@
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import Schema from 'modules/types/em/relion/schema'
 
 export default {
     'name': 'JobParameters',
@@ -42,7 +41,6 @@ export default {
         'parameter-list': ParameterList,
         'parameter-list-item': ParameterListItem,
     },
-    'mixins': [Schema],
     'props': {
         'processingJobId': {
             'type': Number,
@@ -52,6 +50,7 @@ export default {
     'data': function() {
         return {
             'parameters': {},
+            'schema': {},
         }
     },
     'computed': {
@@ -61,7 +60,12 @@ export default {
         },
     },
     'mounted': function() {
-        this.fetchSchema()
+        this.$store.dispatch('em/fetch', {
+            'url': 'relion/schema/',
+            'humanName': 'Relion Schema',
+        }).then(
+            (response) => { this.schema = response }
+        )
         this.$store.dispatch('em/fetch', {
             'url': 'relion/parameters?processingJobId=' +
                 this.processingJobId,
