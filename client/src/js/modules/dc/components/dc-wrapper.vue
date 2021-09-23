@@ -124,7 +124,12 @@ export default {
 
             // Fetch the model then set the breadcrumbs
             this.$store.dispatch('getModel', this.model).then( () => {
-                this.$store.commit('proposal/setVisit', this.model.get('VISIT'))
+                if (this.model.has('VISIT')) {
+                    this.$store.commit('proposal/setVisit', this.model.get('VISIT'))
+                } else {
+                    this.$store.commit('proposal/clearVisit')
+                }
+
                 // Stop loading animation.
                 // Note - not cancelled in finally block but in success/error blocks
                 // This avoids premature cancelling of mview loading data collections
