@@ -1,7 +1,7 @@
 <template>
   <processing-section-movie-list
     section-title="Particle Picking"
-    url-prefix="/em/picker/"
+    url-prefix="picker"
     :fetch-trigger="fetchTrigger"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"

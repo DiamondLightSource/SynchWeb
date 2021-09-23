@@ -1,7 +1,7 @@
 <template>
   <processing-section-movie-list
     section-title="CTF Estimation"
-    url-prefix="/em/ctf/"
+    url-prefix="ctf"
     :fetch-trigger="fetchTrigger"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"

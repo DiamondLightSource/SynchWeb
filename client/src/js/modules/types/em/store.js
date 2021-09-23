@@ -8,19 +8,42 @@ const module = {
         'selectedMovie': 0,
     },
     'getters': {
-        'processingDialogVisible': function(state) {
+        'apiUrl': function(
+            state, // eslint-disable-line no-unused-vars
+            getters, // eslint-disable-line no-unused-vars
+            rootState
+        ) {
+            return rootState.apiUrl + '/em/';
+        },
+        'processingDialogVisible': function(
+            state,
+            getters, // eslint-disable-line no-unused-vars
+            rootState // eslint-disable-line no-unused-vars
+        ) {
             return state.processingDialog
         },
-        'processingAllowed': function(state) {
+        'processingAllowed': function(
+            state,
+            getters, // eslint-disable-line no-unused-vars
+            rootState // eslint-disable-line no-unused-vars
+        ) {
             return state.processingDisallowedReason == ''
         },
-        'processingDisallowedReason': function(state) {
+        'processingDisallowedReason': function(
+            state,
+            getters, // eslint-disable-line no-unused-vars
+            rootState // eslint-disable-line no-unused-vars
+        ) {
             return state.processingDisallowedReason == '' ?
                 '' :
                 "Relion processing can't be run because " +
                     state.processingDisallowedReason
         },
-        'selectedMovie': function(state) {
+        'selectedMovie': function(
+            state,
+            getters, // eslint-disable-line no-unused-vars
+            rootState // eslint-disable-line no-unused-vars
+        ) {
             return state.selectedMovie
         },
     },
@@ -60,7 +83,7 @@ const module = {
     },
     'actions': {
         'fetch': function(context, {url, humanName}) {
-            const fullUrl = context.rootGetters.apiUrl + url
+            const fullUrl = context.getters.apiUrl + url
             context.commit('loading', true, {'root': true })
             return new Promise((resolve, reject) => {
                 // Backbone.ajax is overridden in src/js/app/marionette-application.js

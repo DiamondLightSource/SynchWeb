@@ -59,7 +59,7 @@ export default {
     },
     'computed': {
         'baseUrl': function() {
-            return this.urlPrefix + this.autoProcProgramId
+            return this.urlPrefix + '/' + this.autoProcProgramId
         },
     },
     'watch': {

@@ -1,7 +1,7 @@
 <template>
   <processing-section-movie-list
     section-title="Motion Correction"
-    url-prefix="/em/mc/"
+    url-prefix="mc"
     :fetch-trigger="fetchTrigger"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"

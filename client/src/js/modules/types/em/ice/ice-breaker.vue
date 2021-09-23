@@ -69,7 +69,7 @@ export default {
                 return
             }
             this.$store.dispatch('em/fetch', {
-                'url': '/em/attachments/' + this.autoProcProgramId,
+                'url': 'attachments/' + this.autoProcProgramId,
                 'humanName': 'Ice Breaker attachments',
             }).then(
                 (response) => {

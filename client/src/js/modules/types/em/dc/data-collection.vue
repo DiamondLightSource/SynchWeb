@@ -138,8 +138,8 @@ export default {
         },
         'fetchProcessingJobs': function() {
             this.$store.dispatch('em/fetch', {
-                'url': '/em/jobs/' + this.dataCollectionId +
-                    '?currentPage=1&pageSize=500',
+                'url': 'jobs/' + this.dataCollectionId +
+                    '?currentPage=1&pageSize=500', // TODO
                 'humanName': 'Processing jobs',
             }).then(
                 (response) => {

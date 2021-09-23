@@ -113,7 +113,7 @@ export default {
         },
         'fetch': function() {
             this.$store.dispatch('em/fetch', {
-                'url': '/em/classification/' + this.autoProcProgramId +
+                'url': 'classification/' + this.autoProcProgramId +
                     '?page=' + this.page +
                     '&per_page=' + this.perPage +
                     '&sort_by=' + this.sortBy,

@@ -152,7 +152,7 @@ export default {
                 return
             }
             this.$store.dispatch('em/fetch', {
-                'url': '/em/ctf/summary/' + this.autoProcProgramId,
+                'url': 'ctf/summary/' + this.autoProcProgramId,
                 'humanName': 'CTF summary data',
             }).then(
                 (response) => {

@@ -63,7 +63,7 @@ export default {
     'mounted': function() {
         this.fetchSchema()
         this.$store.dispatch('em/fetch', {
-            'url': '/em/relion/parameters?processingJobId=' +
+            'url': 'relion/parameters?processingJobId=' +
                 this.processingJobId,
             'humanName': 'Processing Job Parameters',
         }).then(

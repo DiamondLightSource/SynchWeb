@@ -7,7 +7,7 @@ export default {
     'methods': {
         'fetchSchema': function(callback) {
             this.$store.dispatch('em/fetch', {
-                'url': '/em/relion/schema/',
+                'url': 'relion/schema/',
                 'humanName': 'Relion Schema',
             }).then(
                 (response) => {
