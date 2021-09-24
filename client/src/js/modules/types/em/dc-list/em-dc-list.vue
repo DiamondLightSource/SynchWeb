@@ -11,7 +11,7 @@
     />
 
     <div class="toolbar">
-      <toolbar />
+      <toolbar :model="model" />
       <search
         :collection="collection"
         :value="params.search"

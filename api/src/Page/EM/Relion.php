@@ -53,7 +53,7 @@ trait Relion
            This requires a DataCollection
            which in turn requires a DataCollectionGroup. */
 
-        $dataCollectionId = $this->findExistingDataCollection(
+        $dataCollectionId = $this->dataCollectionFindExisting(
             $session['sessionId'],
             $transformer->getImageDirectory(),
             $transformer->getFileTemplate()
@@ -69,10 +69,10 @@ trait Relion
         }
 
         if (!$dataCollectionId) {
-            $dataCollectionId = $this->addDataCollection(
+            $dataCollectionId = $this->dataCollectionAdd(
                 $session,
                 $transformer->getImageDirectory(),
-                $this->args['import_images_ext'],
+                $args['import_images_ext'],
                 $transformer->getFileTemplate()
             );
         }
@@ -200,44 +200,6 @@ trait Relion
 
     ////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Returns dataCollectionId of first DataCollection associated with session
-     *
-     * Also checks for existing imageDirectory
-     *
-     * @param string $sessionId
-     * @param string $imageDirectory
-     * @param string $fileTemplate
-     *
-     * @return array|null
-     */
-    private function findExistingDataCollection(
-        $sessionId,
-        $imageDirectory,
-        $fileTemplate
-    ) {
-        if (!$sessionId) {
-            return null;
-        }
-
-        $rows = $this->db->pq(
-            "SELECT dataCollectionId FROM DataCollection
-                WHERE SESSIONID=:1 AND imageDirectory=:2 AND fileTemplate=:3
-                LIMIT 1",
-            array(
-                $sessionId,
-                $imageDirectory,
-                $fileTemplate
-            ),
-            false
-        );
-
-        if (count($rows) == 0) {
-            return null;
-        }
-
-        return $rows[0]['DataCollectionId'];
-    }
 
     private function unfinishedProcessingJobsExist($dataCollectionId)
     {
@@ -256,80 +218,6 @@ trait Relion
     }
 
     ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Add a new data collection for processing jobs that don't yet have one
-     *
-     * @param array $session
-     * @param string $imageDirectory
-     * @param string $imageSuffix
-     * @param string $fileTemplate
-     *
-     * @SuppressWarnings(PHPMD.LongVariable)
-     */
-    private function addDataCollection(
-        $session,
-        $imageDirectory,
-        $imageSuffix,
-        $fileTemplate
-    ) {
-        $dataCollectionId = null;
-
-        try {
-            $this->db->start_transaction();
-
-            $this->db->pq(
-                "INSERT INTO DataCollectionGroup (
-                    sessionId,
-                    comments,
-                    experimentType
-                )
-                VALUES (:1, :2, :3)
-                RETURNING dataCollectionGroupId INTO :id",
-                array(
-                    $session['SessionId'],
-                    'Created by SynchWeb',
-                    'EM'
-                )
-            );
-            $dataCollectionGroupId = $this->db->id();
-
-            $this->db->pq(
-                "INSERT INTO DataCollection (
-                    sessionId,
-                    dataCollectionGroupId,
-                    startTime,
-                    endTime,
-                    runStatus,
-                    imageDirectory,
-                    imageSuffix,
-                    fileTemplate,
-                    comments
-                )
-                VALUES (:1, :2, NOW(), :3, :4, :5, :6, :7, :8)
-                RETURNING dataCollectionId INTO :id",
-                array(
-                    $session['SessionId'],
-                    $dataCollectionGroupId,
-                    // now()
-                    $session['EndDate'],
-                    'DataCollection Simulated',
-                    $imageDirectory,
-                    $imageSuffix,
-                    $fileTemplate,
-                    'Created by SynchWeb'
-                )
-            );
-            $dataCollectionId = $this->db->id();
-
-            $this->db->end_transaction();
-        } catch (Exception $e) {
-            error_log("Failed to add DataCollection to database.");
-            $this->_error("Failed to add DataCollection to database.", 500);
-        }
-
-        return $dataCollectionId;
-    }
 
     private function addProcessingJob($dataCollectionId, $workflowParameters)
     {

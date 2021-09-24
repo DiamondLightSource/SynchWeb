@@ -40,6 +40,11 @@
 
     <!-- <a class="button"  href="/em/process/visit/<%-VISIT%>" title="Scipion Processing"><i class="fa fa-cog"></i> <span>Processing</span></a> -->
 
+    <new-data-collection
+      v-if="visit != ''"
+      :show-text="!isMobile"
+      :reason="noMoreCollectionsReason"
+    />
 
     <reprocess-button :show-text="!isMobile" />
   </div>
@@ -50,6 +55,7 @@ import { mapGetters } from 'vuex'
 import DewarsView from 'modules/proposal/views/dewars'
 import MarionetteApplication from 'app/marionette-application'
 import MarionetteWrapper from 'app/views/marionette/marionette-wrapper.vue'
+import NewDataCollection from 'modules/types/em/dc-list/new-data-collection.vue'
 import ReprocessButton from 'modules/types/em/components/reprocess-button.vue'
 import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 import UserView from 'modules/proposal/views/users'
@@ -58,8 +64,16 @@ export default {
     'name': 'Toolbar',
     'components': {
         'marionette-wrapper': MarionetteWrapper,
+        'new-data-collection': NewDataCollection,
         'reprocess-button': ReprocessButton,
         'toolbar-button': ToolbarButton,
+    },
+    'props': {
+        // Either models/visit.js or models/proposal.js
+        'model': {
+            'type': Object,
+            'required': true,
+        },
     },
     'data': function () {
         return {
@@ -85,6 +99,12 @@ export default {
         },
         'relionUrl': function() {
             return '/em/process/relion/session/' + this.visit
+        },
+        'noMoreCollectionsReason': function() {
+            if (this.model.get('ARCHIVED') == '1') {
+                return 'This visit is archived'
+            }
+            return ''
         },
     },
 }

@@ -75,7 +75,7 @@ trait Session
     private function sessionExitIfNotActive($session)
     {
         if (!$session['active']) {
-            $message = 'This session ended at ' . date(
+            $message = 'This visit ended at ' . date(
                 'H:i:s \o\n jS F Y',
                 strtotime($session['endDate'])
             ) . '.';

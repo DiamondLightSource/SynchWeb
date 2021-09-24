@@ -10,6 +10,7 @@ class EM extends Page
     use \SynchWeb\Page\EM\Attachments;
     use \SynchWeb\Page\EM\Classification;
     use \SynchWeb\Page\EM\Ctf;
+    use \SynchWeb\Page\EM\DataCollection;
     use \SynchWeb\Page\EM\MotionCorrection;
     use \SynchWeb\Page\EM\Picker;
     use \SynchWeb\Page\EM\ProcessingJobs;
@@ -75,6 +76,9 @@ class EM extends Page
         array('/classification/:id', 'get', 'classificationResult'),
         array('/classification/image/:id', 'get', 'classificationImage'),
 
+        // See Synchweb\Page\EM\DataCollection
+        array('/dc/schema/', 'get', 'dataCollectionSchema'),
+        array('/dc/new/:session', 'post', 'dataCollectionCreate'),
         // See Synchweb\Page\EM\Relion
         array('/relion/schema/', 'get', 'relionSchema'),
         array('/relion/start/:session', 'post', 'relionStart'),

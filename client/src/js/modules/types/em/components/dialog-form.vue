@@ -7,6 +7,9 @@
     @confirm="postIt"
     @cancel="$emit('cancel')"
   >
+    <div class="dialog-form-error-message">
+      {{ errorMessage }}
+    </div>
     <form
       v-if="showDialog && formReady"
       novalidate
@@ -54,6 +57,7 @@ export default {
     },
     'data': function() {
         return {
+            'errorMessage': '',
             'errorMessages': {},
             'schema': {},
             'formFields': {},
@@ -87,7 +91,6 @@ export default {
     },
     'methods': {
         'update': function(name, value) {
-            console.log(this.formFields, this.formFields['wantCalculate'])
             this.formFields[name] = value
             this.$emit('update', {
                 'name': name,
@@ -95,22 +98,23 @@ export default {
             })
         },
         'postIt': function() {
+            this.errorMessages = {}
+            this.errorMessage = ''
             this.$store.dispatch('em/post', {
                 'url': this.postUrl,
                 'requestData': this.formFields,
-                'humanName': 'Relion Job',
-                'errorHandler': (responseText) => {
-                    var errorMessages
-                    try {
-                        errorMessages = JSON.parse(responseText).message.invalid
-                    } catch (error) {
+                'humanName': this.title,
+                'errorHandler': (payload) => {
+                    switch(typeof payload) {
+                    case 'object':
+                        this.errorMessages = payload
+                        return true // handled errors - don't show alert
+                    case 'string':
+                        this.errorMessage = payload
+                        return true // handled errors - don't show alert
+                    default:
                         return false // didn't handle error - show alert
                     }
-                    if (typeof errorMessages == 'object') {
-                        this.errorMessages = errorMessages
-                        return true // handled errors - don't show alert
-                    }
-                    return false // didn't handle error - show alert
                 },
             }).then(
                 (response) => {
@@ -132,6 +136,10 @@ export default {
     padding: 8px;
 }
 .dialog-form-section-heading {
+    font-weight: bold;
+}
+.dialog-form-error-message {
+    color: #f56565;
     font-weight: bold;
 }
 </style>

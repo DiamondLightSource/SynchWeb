@@ -85,7 +85,31 @@ const module = {
         'post': function(context, {url, requestData, humanName, errorHandler}) {
             const fullUrl = context.getters.apiUrl + url
             context.commit('loading', true, {'root': true })
+
             return new Promise((resolve, reject) => {
+                const extractErrorMessage = (jqXHR) => {
+                    var message
+                    try {
+                        message = JSON.parse(jqXHR.responseText).message
+                    } catch (error) {
+                        return false
+                    }
+                    return message ? message : false
+                }
+                const reportError = (jqXHR) => {
+                    const message = extractErrorMessage(jqXHR)
+                    if (message !== false && errorHandler(message) === true) {
+                        return
+                    }
+                    context.commit('notifications/addNotification', {
+                        'title': 'Error',
+                        'message': 'Error posting ' + humanName + ' ' + (
+                            message ? message : ''
+                        ),
+                        'level': 'error'
+                    }, {'root': true })
+                }
+
                 // Backbone.ajax is overridden in src/js/app/marionette-application.js
                 // to provide additional SynchWeb specific functionality
                 Backbone.ajax({
@@ -103,20 +127,16 @@ const module = {
                         resolve(responseData)
                     },
                     'error': function(jqXHR, textStatus, errorThrown) {
-                        if (errorHandler(jqXHR.responseText) !== true) {
-                            console.log(
-                                'Error posting ', humanName, fullUrl, requestData,
-                                'textStatus: ', textStatus,
-                                'errorThrown: ', errorThrown,
-                                'jqXHR: ', jqXHR
-                            )
-                            context.commit('notifications/addNotification', {
-                                'title': 'Error',
-                                'message': 'Could not post to ' + humanName,
-                                'level': 'error'
-                            }, {'root': true })
-                        }
                         context.commit('loading', false, {'root': true })
+                        console.log(
+                            'error',
+                            textStatus,
+                            errorThrown,
+                            jqXHR,
+                            requestData,
+                            fullUrl
+                        );
+                        reportError(jqXHR)
                         reject()
                     },
                 })
