@@ -14,7 +14,8 @@ trait Picker
                     = ParticlePicker.firstMotionCorrectionId
             LEFT JOIN Movie
                 ON Movie.movieId = MotionCorrection.movieId
-            WHERE ParticlePicker.programId = :1",
+            WHERE ParticlePicker.programId = :1
+            ORDER BY Movie.movieNumber",
             array($this->arg('id')),
             false
         );
