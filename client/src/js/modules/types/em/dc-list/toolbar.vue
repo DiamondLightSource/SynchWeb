@@ -109,9 +109,3 @@ export default {
     },
 }
 </script>
-
-<style>
-.marionette-wrapper, .marionette-wrapper div {
-    display: inline;
-}
-</style>

@@ -17,6 +17,7 @@ class EM extends Page
     use \SynchWeb\Page\EM\Relion;
     use \SynchWeb\Page\EM\Scipion;
     use \SynchWeb\Page\EM\Session;
+    use \SynchWeb\Page\EM\Stats;
 
     public static $arg_list = array(
         'id' => '\d+',
@@ -48,8 +49,6 @@ class EM extends Page
         array('/jobs/:id', 'get', 'processingJobs'),
 
         array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
-        array('/mc/histogram', 'get', '_mc_drift_histogram'),
-        array('/ctf/histogram', 'get', '_ctf_histogram'),
 
         // See Synchweb\Page\EM\Attachments
         array('/attachments/:id', 'get', 'attachmentsGetAll'),
@@ -79,6 +78,11 @@ class EM extends Page
         // See Synchweb\Page\EM\DataCollection
         array('/dc/schema/', 'get', 'dataCollectionSchema'),
         array('/dc/new/:session', 'post', 'dataCollectionCreate'),
+
+        // See Synchweb\Page\EM\Stats
+        array('/stats/ctf', 'get', 'statsCtf'),
+        array('/stats/mc', 'get', 'statsMcDrift'),
+
         // See Synchweb\Page\EM\Relion
         array('/relion/schema/', 'get', 'relionSchema'),
         array('/relion/start/:session', 'post', 'relionStart'),
@@ -262,220 +266,7 @@ class EM extends Page
         }
     }
 
-    function _mc_drift_histogram()
-    {
-        $where = '';
-        $args = array();
-
-        if ($this->has_arg('bl')) {
-            $where .= ' AND s.beamlinename=:' . (sizeof($args) + 1);
-            array_push($args, $this->arg('bl'));
-        }
-
-        if ($this->has_arg('visit')) {
-            $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :" . (sizeof($args) + 1);
-            array_push($args, $this->arg('visit'));
-        }
-
-        if ($this->has_arg('runid')) {
-            $where .= ' AND vr.runid=:' . (sizeof($args) + 1);
-            array_push($args, $this->arg('runid'));
-        }
-
-        $bs = 1;
-        $hist = $this->db->pq("SELECT 
-                AVG(diff) as avgdiff, MIN(diff) as mindiff, MAX(diff) as maxdiff, COUNT(diff) as countdiff,
-                framediff, beamlinename FROM (
-                    SELECT SQRT(POW(mcd.deltax - @diffx,2) + POW(mcd.deltay - @diffy, 2)) as diff,
-                        mcd.deltax - @diffx as diffx, @diffx := mcd.deltax as deltax, mcd.deltay - @diffy as diffy, @diffy := mcd.deltay as deltay, 
-                        CONCAT(ABS(mcd.framenumber-1), '-', mcd.framenumber) as framediff, s.beamlinename
-                    FROM motioncorrectiondrift mcd
-                    JOIN (SELECT @diffx := 0) r
-                    JOIN (SELECT @diffy := 0) r2
-                    INNER JOIN motioncorrection mc ON mc.motioncorrectionid = mcd.motioncorrectionid
-                    INNER JOIN movie m ON m.movieid = mc.movieid
-                    INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
-                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                    WHERE 1=1 $where
-                    GROUP BY s.beamlinename,CONCAT(ABS(mcd.framenumber-1), '-', mcd.framenumber), mcd.motioncorrectionid
-                    ORDER BY mcd.motioncorrectionid,mcd.framenumber
-                    ) inr
-                    GROUP BY framediff, beamlinename
-                    ORDER BY framediff+0, beamlinename
-                ", $args);
-
-        // print_r($hist);
-
-        $bls = array();
-        foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
-        if ($this->has_arg('visit')) {
-            if (!sizeof(array_keys($bls))) {
-                $bl_temp = $this->db->pq("SELECT s.beamlinename 
-                        FROM blsession s
-                        INNER JOIN proposal p ON p.proposalid = s.proposalid
-                        WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
-
-                if (sizeof($bl_temp)) $bls[$bl_temp[0]['BEAMLINENAME']] = 1;
-            }
-        }
-
-        $data = array();
-        $ticks = array();
-        foreach ($bls as $bl => $y) {
-            $ha = array();
-            $max = array();
-            $min = array();
-
-            foreach ($hist as $i => &$h) {
-                if ($h['FRAMEDIFF'] == '0-1') continue;
-                if ($h['BEAMLINENAME'] != $bl) continue;
-                $ha[$i - 1] = floatval($h['AVGDIFF']);
-                $min[$i - 1] = floatval($h['MINDIFF']);
-                $max[$i - 1] = floatval($h['MAXDIFF']);
-                $ticks[$h['FRAMEDIFF']] = 1;
-            }
-
-            array_push($data, array('label' => $bl, 'min' => $min, 'max' => $max, 'avg' => $ha));
-        }
-
-        $this->_output(array('data' => $data, 'ticks' => array_keys($ticks)));
-    }
-
     function _ctf_plot()
     {
-
     }
-
-    function _ctf_histogram()
-    {
-        $types = array(
-            'defocus' => array('unit' => 'A', 'st' => 0, 'en' => 60000, 'bin_size' => 1000, 'col' => 'c.estimateddefocus', 'count' => 'c.estimateddefocus'),
-            'astigmatism' => array('unit' => 'Number', 'st' => 0.5, 'en' => 1.5, 'bin_size' => 0.005, 'col' => 'c.astigmatism', 'count' => 'c.astigmatism'),
-            'resolution' => array('unit' => 'A', 'st' => 0, 'en' => 30, 'bin_size' => 1, 'col' => 'c.estimatedresolution', 'count' => 'c.estimatedresolution'),
-        );
-
-        $k = 'defocus';
-        $t = $types[$k];
-        if ($this->has_arg('ty')) {
-            if (array_key_exists($this->arg('ty'), $types)) {
-                $k = $this->arg('ty');
-                $t = $types[$k];
-            }
-        }
-
-        $where = '';
-        $args = array();
-
-        if ($this->has_arg('bl')) {
-            $where .= ' AND s.beamlinename=:' . (sizeof($args) + 1);
-            array_push($args, $this->arg('bl'));
-        }
-
-        if ($this->has_arg('visit')) {
-            $where .= " AND CONCAT(p.proposalcode,p.proposalnumber,'-',s.visit_number) LIKE :" . (sizeof($args) + 1);
-            array_push($args, $this->arg('visit'));
-        }
-
-        if ($this->has_arg('runid')) {
-            $where .= ' AND vr.runid=:' . (sizeof($args) + 1);
-            array_push($args, $this->arg('runid'));
-        }
-
-        $col = $t['col'];
-        $ct = $t['count'];
-        $bs = $t['bin_size'];
-
-        $limits = $this->db->pq("SELECT max($col) as max, min($col) as min, s.beamlinename
-                FROM ctf c
-                INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-                INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN proposal p ON p.proposalid = s.proposalid
-                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                WHERE $col < 1e38 $where
-                GROUP BY s.beamlinename", $args);
-
-        // print_r($limits);
-
-        if (sizeof($limits)) {
-            $limits = $limits[0];
-            $max = floatval(($limits['MAX']));
-            $min = floatval(($limits['MIN']));
-
-            $range = $max - $min;
-
-            if ($range > 0) {
-                $bs = $range / 50;
-
-                if ($bs < 0) {
-                    $zeros = strspn($bs, '0', strpos($bs, '.') + 1);
-                    $bs = round($bs, $zeros);
-                } else if ($bs < 1) {
-                    $bs = round($bs, 3);
-                } else {
-                    $zeros = strlen(number_format($bs, 0, '.', ''));
-                    $mp = pow(1, $zeros);
-                    $bs = ceil($bs / $mp) * $mp;
-                }
-
-                $t['bin_size'] = $bs;
-                $t['st'] = $min - fmod($min, $bs);
-                $t['en'] = $max - fmod($max, $bs) + $bs;
-            }
-        }
-
-        $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
-                FROM ctf c
-                INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-                INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN proposal p ON p.proposalid = s.proposalid
-                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                WHERE $col < 1e38 $where
-                GROUP BY s.beamlinename,x
-                ORDER BY s.beamlinename", $args);
-
-        $bls = array();
-        foreach ($hist as $h) $bls[$h['BEAMLINENAME']] = 1;
-        if ($this->has_arg('visit')) {
-            if (!sizeof(array_keys($bls))) {
-                $bl_temp = $this->db->pq("SELECT s.beamlinename 
-                        FROM blsession s
-                        INNER JOIN proposal p ON p.proposalid = s.proposalid
-                        WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
-
-                if (sizeof($bl_temp)) $bls[$bl_temp[0]['BEAMLINENAME']] = 1;
-            }
-        }
-
-        $data = array();
-        foreach ($bls as $bl => $y) {
-            $ha = array();
-            foreach ($hist as &$h) {
-                if ($h['BEAMLINENAME'] != $bl) continue;
-                $ha[$h['X']] = floatval($h['Y']);
-            }
-
-            $gram = array();
-            for ($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
-                $bin_s = number_format($bin, strlen(substr(strrchr($t['bin_size'], '.'), 1)), '.', '');
-                $gram[$bin_s] = array_key_exists($bin_s, $ha) ? $ha[$bin_s] : 0;
-            }
-
-            $lab = ucfirst($k) . ' (' . $t['unit'] . ')';
-            if (!$this->has_arg('bl')) $lab = $bl . ': ' . $lab;
-
-            array_push($data, array('label' => $lab, 'data' => $gram));
-        }
-
-        $this->_output(array('histograms' => $data));
-    }
-
 }
