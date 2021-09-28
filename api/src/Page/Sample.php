@@ -193,9 +193,12 @@ class Sample extends Page
                               array('/componenttypes', 'get', '_component_types'),
 
                               array('/groups', 'get', '_sample_groups'),
-                              array('/groups', 'post', '_add_sample_to_group'),
-                              array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_group'),
-                              array('/groups/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
+                              array('/groups', 'post', '_add_new_sample_group'),
+                              array('/groups/:BLSAMPLEID', 'get', '_get_sample_groups_by_sample'),
+                              array('/groups/:BLSAMPLEGROUPID/samples', 'post', '_add_sample_to_group'),
+                              array('/groups/:BLSAMPLEGROUPID/samples/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
+                              array('/groups/:BLSAMPLEGROUPID/samples/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
+                              array('/groups/:BLSAMPLEGROUPID/samples', 'get', '_get_sample_group_samples'),
 
                               array('/spacegroups(/:SPACEGROUPID)', 'get', '_get_spacegroups'),
 
@@ -2075,50 +2078,144 @@ class Sample extends Page
         function _sample_groups() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            $where = 'p.proposalid = :1';
+            $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
 
-            if ($this->has_arg('BLSAMPLEGROUPID')) {
-                $where .= ' AND bshg.blsamplegroupid = :'.(sizeof($args)+1);
-                array_push($args, $this->arg('BLSAMPLEGROUPID'));
-            }
+            $tot = $this->db->pq("SELECT count(*) as total
+                FROM (
+                    SELECT count(*) as tot
+                    FROM blsamplegroup bsg
+                    LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                    WHERE $where
+                    GROUP BY bsg.blsamplegroupid
+                ) as total", $args);
 
-            if ($this->has_arg('CONTAINERID')) {
-                $where .= ' AND c.containerid = :'.(sizeof($args)+1);
-                array_push($args, $this->arg('CONTAINERID'));
-            }
-
-
-            // TODO: this is awful
-            if ($this->has_arg('BLSAMPLEID')) {
-                $where .= ' AND bshg.blsamplegroupid IN (SELECT blsamplegroupid FROM blsamplegroup_has_blsample WHERE blsampleid=:'.(sizeof($args)+1).')';
-                array_push($args, $this->arg('BLSAMPLEID'));
-            }
-
-            $tot = $this->db->pq("SELECT count(b.blsampleid) as tot
-                FROM blsample b
-                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
-                INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
-                INNER JOIN protein pr ON pr.proteinid = cr.proteinid
-                INNER JOIN proposal p ON p.proposalid = pr.proposalid
-                INNER JOIN container c ON c.containerid = b.containerid
-                INNER JOIN dewar d ON d.dewarid = c.dewarid
-                INNER JOIN shipping s ON s.shippingid = d.shippingid
-                WHERE $where", $args);
-
-            $tot = intval($tot[0]['TOT']);
+            $tot = intval($tot[0]['TOTAL']);
 
             $start = 0;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
             $end = $pp;
-            
+
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
                 $start = $pg*$pp;
                 $end = $pg*$pp+$pp;
             }
-            
+
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples
+                FROM blsamplegroup bsg
+                LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                LEFT JOIN blsample b ON bshg.blsampleid = b.blsampleid
+                WHERE $where
+                GROUP BY bsg.blsamplegroupid
+            ", $args);
+
+            $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
+        }
+
+        function _add_new_sample_group() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $sgid = $this->_create_sample_group();
+
+            $this->_output($sgid);
+
+            $this->_output(array(
+                'BLSAMPLEGROUPID' => $sgid,
+                'NAME' => $this->has_arg('NAME') ? $this->arg('NAME') : NULL,
+                'SAMPLEGROUPSAMPLES' => 0
+            ));
+        }
+
+        function _create_sample_group() {
+            $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
+            $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid) VALUES(NULL, :1, :2)", array($name, $this->proposalid));
+            return $this->db->id();
+        }
+
+        function _get_sample_groups_by_sample() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $where = 'bsg.proposalid = :1';
+            $args = array($this->proposalid);
+
+            if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
+
+            $where .= ' AND b.blsampleid = :2';
+            array_push($args, $this->arg('BLSAMPLEID'));
+
+            $tot = $this->db->pq("SELECT count(*) as total
+                FROM blsamplegroup bsg
+                INNER JOIN blsamplegroup_has_blsample bshg on bsg.blsamplegroupId = bshg.blsamplegroupid
+                INNER JOIN blsample b on bshg.blsampleId = b.blsampleid
+                WHERE $where", $args);
+
+            $tot = intval($tot[0]['TOTAL']);
+
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name
+                FROM blsamplegroup bsg
+                INNER JOIN blsamplegroup_has_blsample bshg on bsg.blsamplegroupid = bshg.blsamplegroupid
+                INNER JOIN blsample b on bshg.blsampleid = b.blsampleid
+                WHERE $where", $args);
+
+            $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
+        }
+
+        function _get_sample_group_samples() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->error('No sample group specified');
+
+            $where = 'bsg.proposalid = :1';
+            $args = array($this->proposalid);
+
+            $where .= ' AND bsg.blsamplegroupid = :2';
+            array_push($args, $this->arg('BLSAMPLEGROUPID'));
+
+            $tot = $this->db->pq("SELECT count(*) as total
+                FROM blsample b
+                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
+                INNER JOIN blsamplegroup bsg ON bsg.blsamplegroupid = bshg.blsamplegroupid
+                WHERE $where", $args);
+
+            $tot = intval($tot[0]['TOTAL']);
+
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+
             $st = sizeof($args)+1;
             $en = $st + 1;
             array_push($args, $start);
@@ -2130,11 +2227,9 @@ class Sample extends Page
                 INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
                 INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                 INNER JOIN protein pr ON pr.proteinid = cr.proteinid
-                INNER JOIN proposal p ON p.proposalid = pr.proposalid
                 INNER JOIN container c ON c.containerid = b.containerid
-                INNER JOIN dewar d ON d.dewarid = c.dewarid
-                INNER JOIN shipping s ON s.shippingid = d.shippingid
-                WHERE $where", $args);
+                WHERE $where
+            ", $args);
 
             $this->_output(array(
                 'total' => $tot,
@@ -2142,9 +2237,9 @@ class Sample extends Page
             ));
         }
 
-
         function _add_sample_to_group() {
             if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
 
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
@@ -2152,34 +2247,16 @@ class Sample extends Page
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
               WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid,$this->arg('BLSAMPLEID')));
-            
+
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            if (!$this->has_arg('BLSAMPLEGROUPID')) {
-                $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
-                $sgid = $this->db->id();
-            } else {
-                $sgid = $this->arg('BLSAMPLEGROUPID');
-            }
+            $sgid = $this->arg('BLSAMPLEGROUPID');
 
-            $chk2 = $this->db->pq("SELECT count(bshg.blsampleid) as samples
-                FROM blsamplegroup_has_blsample bshg
-                INNER JOIN blsample s ON s.blsampleid = bshg.blsampleid
-                INNER JOIN crystal cr ON cr.crystalid = s.crystalid
-                INNER JOIN protein pr ON pr.proteinid = cr.proteinid
-                INNER JOIN proposal p ON p.proposalid = pr.proposalid
-                WHERE p.proposalid = :1 AND bshg.blsamplegroupid = :2", array($this->proposalid, $sgid));
-            $in_proposal = $chk2[0]['SAMPLES'];
-
-            $chk = $this->db->pq("SELECT bsg.blsamplegroupid, count(bshg.blsampleid) as samples
-                    FROM blsamplegroup bsg
-                    LEFT OUTER JOIN blsamplegroup_has_blsample bshg ON bsg.blsamplegroupid = bshg.blsamplegroupid
-                    WHERE bsg.blsamplegroupid = :1
-                    GROUP BY bsg.blsamplegroupid", array($sgid));
-                if (!sizeof($chk)) $this->_error('No such sample group');
-
-            if ($chk[0]['SAMPLES'] != $in_proposal) $this->_error('No such sample group');
+            $sample_group_exists = $this->db->pq("SELECT bsg.blsamplegroupid
+                FROM blsamplegroup bsg
+                WHERE bsg.blsamplegroupid = :1 AND bsg.proposalid = :2", array($sgid, $this->proposalid));
+            if (!sizeof($sample_group_exists)) $this->_error('No such sample group');
 
             $order = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : 1;
             $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
@@ -2216,10 +2293,13 @@ class Sample extends Page
             return array('BLSAMPLEGROUPSAMPLEID' => $sgid.'-'.$blSampleId, 'BLSAMPLEID' => $blSampleId, 'BLSAMPLEGROUPID' => $sgid);
         }
 
+        function _update_sample_in_group() {
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+            if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No group sample id specified');
 
-        function _update_sample_group() {
-            if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No sample group sample specified');
-            list($gid,$sid) = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
+            $gid = $this->arg('BLSAMPLEGROUPID');
+            $arr = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
+            $sid = end($arr);
 
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
@@ -2242,8 +2322,12 @@ class Sample extends Page
         }
 
         function _remove_sample_from_group() {
-            if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No sample group sample specified');
-            list($gid,$sid) = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+            if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No group sample id specified');
+
+            $gid = $this->arg('BLSAMPLEGROUPID');
+            $arr = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
+            $sid = end($arr);
 
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 

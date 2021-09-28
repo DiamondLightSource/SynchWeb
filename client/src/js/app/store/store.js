@@ -18,6 +18,7 @@ import config from 'config.json'
 import MarionetteApplication from 'app/marionette-application.js'
 import { resolve } from 'promise'
 import { reject } from 'promise'
+import Backbone from "backbone";
 
 Vue.use(Vuex)
 Vue.config.devtools = !config.production
@@ -64,14 +65,14 @@ const store = new Vuex.Store({
       app.options = options
     },
     setHelp(state, helpFlag) {
-      state.help = helpFlag ? true : false
+      state.help = !!helpFlag
       sessionStorage.setItem('ispyb_help', state.help)
     },
     //
     // Loading screen
     //
     loading(state, status) {
-      state.isLoading = status ? true : false
+      state.isLoading = !!status
     },
   },
   actions: {
@@ -177,12 +178,12 @@ const store = new Vuex.Store({
 
       return new Promise((resolve, reject) => {
         model.fetch({
-          success: function(model, response, options) {
+          success: function(model) {
             // Could extend to return the response/options
             resolve(model)
           },
 
-          error: function(model, response, options) {
+          error: function(model, response) {
             let err = response.responseJSON || {status: 400, message: 'Error getting model'}
             reject(err)
           },
@@ -197,7 +198,7 @@ const store = new Vuex.Store({
     // Example: store.dispatch('saveModel', {model: myModel, attributes: myAttributes})
     saveModel(context, {model, attributes}) {
       // If we have attributes, assume a patch request
-      let patch = attributes ? true : false
+      let patch = !!attributes
       let attrs = attributes || {}
 
       return new Promise((resolve, reject) => {
@@ -214,11 +215,32 @@ const store = new Vuex.Store({
         })
       })
     },
+
+    // fetch data from the backend that is not attached to any model
+    async fetchDataFromApi({ state, commit, rootState }, { url, data }) {
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        data,
+
+        success: function(response) {
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error creating default dewar',
+            message: 'The default dewar for this visit could not be created (no session-0?)'
+          }, {
+            root: true
+          })
+        },
+      })
+    }
   },
   getters: {
     sso: state => state.auth.cas_sso,
     sso_url: state => state.auth.cas_url,
-  }
+  },
+
 })
 
 export default store
