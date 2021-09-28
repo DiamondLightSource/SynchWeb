@@ -11,13 +11,16 @@ trait ProcessingJobs
         }
 
         $total = $this->db->pq(
-            "SELECT count(PJ.processingJobId) as total
-            FROM ProcessingJob PJ
-            JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-            JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-            LEFT JOIN AutoProcProgram app ON PJ.processingJobId = app.processingJobId
-            WHERE DC.dataCollectionId = :1",
-            array($this->arg('id')),
+            "SELECT count(pj.processingJobId) as total
+            FROM ProcessingJob pj
+            LEFT JOIN AutoProcProgram app ON pj.processingJobId = app.processingJobId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = pj.dataCollectionId
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND dc.dataCollectionId = :2",
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
 
@@ -30,28 +33,33 @@ trait ProcessingJobs
          */
         $processingJobs = $this->db->pq(
             "SELECT
-                PJ.processingJobId,
-                PJ.dataCollectionId,
-                PJ.recordTimestamp,
-                APP.autoProcProgramId,
-                APP.processingStartTime,
-                APP.processingEndTime,
+                pj.processingJobId,
+                pj.dataCollectionId,
+                pj.recordTimestamp,
+                app.autoProcProgramId,
+                app.processingStartTime,
+                app.processingEndTime,
                 NOW() as fetchTime,
                 CASE
-                    WHEN (APP.processingJobId IS NULL) THEN 'submitted'
-                    WHEN (APP.processingStartTime IS NULL AND APP.processingStatus IS NULL) THEN 'queued'
-                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus IS NULL) THEN 'running'
-                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 0) THEN 'failure'
-                    WHEN (APP.processingStartTime IS NOT NULL AND APP.processingStatus = 1) THEN 'success'
+                    WHEN (app.processingJobId IS NULL) THEN 'submitted'
+                    WHEN (app.processingStartTime IS NULL AND app.processingStatus IS NULL) THEN 'queued'
+                    WHEN (app.processingStartTime IS NOT NULL AND app.processingStatus IS NULL) THEN 'running'
+                    WHEN (app.processingStartTime IS NOT NULL AND app.processingStatus = 0) THEN 'failure'
+                    WHEN (app.processingStartTime IS NOT NULL AND app.processingStatus = 1) THEN 'success'
                     ELSE ''
                 END AS processingStatusDescription
-            FROM ProcessingJob PJ
-            INNER JOIN DataCollection DC ON PJ.dataCollectionId = DC.dataCollectionId
-            INNER JOIN BLSession BLS ON DC.SESSIONID = BLS.sessionId
-            LEFT JOIN AutoProcProgram APP ON PJ.processingJobId = APP.processingJobId
-            WHERE DC.dataCollectionId = :1
-            LIMIT :2, :3",
-            $this->paginationArguments(array($this->arg('id'))),
+            FROM ProcessingJob pj
+            LEFT JOIN AutoProcProgram app ON app.processingJobId = pj.processingJobId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = pj.dataCollectionId
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND dc.dataCollectionId = :2
+            LIMIT :3, :4",
+            $this->paginationArguments(
+                array($this->arg('prop'), $this->arg('id'))
+            ),
             false
         );
 
