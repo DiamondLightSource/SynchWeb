@@ -22,8 +22,17 @@ trait Attachments
                 ON AutoProcProgram.autoProcProgramId = AutoProcProgramAttachment.autoProcProgramId
             INNER JOIN ProcessingJob
                 ON ProcessingJob.processingJobId = AutoProcProgram.processingJobId
-            WHERE AutoProcProgramAttachment.autoProcProgramId = :1",
-            array($this->arg('id')),
+            INNER JOIN DataCollection
+                ON DataCollection.dataCollectionId = ProcessingJob.dataCollectionId
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND AutoProcProgramAttachment.autoProcProgramId = :2",
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
 
@@ -62,8 +71,21 @@ trait Attachments
                 ) AS file,
                 AutoProcProgramAttachment.fileType
             FROM AutoProcProgramAttachment
-            WHERE AutoProcProgramAttachment.autoProcProgramAttachmentId = :1",
-            array($this->arg('id')),
+            INNER JOIN AutoProcProgram
+                ON AutoProcProgram.autoProcProgramId = AutoProcProgramAttachment.autoProcProgramId
+            INNER JOIN ProcessingJob
+                ON ProcessingJob.processingJobId = AutoProcProgram.processingJobId
+            INNER JOIN DataCollection
+                ON DataCollection.dataCollectionId = ProcessingJob.dataCollectionId
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND AutoProcProgramAttachment.autoProcProgramAttachmentId = :2",
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
 
