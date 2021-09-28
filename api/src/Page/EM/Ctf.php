@@ -12,8 +12,12 @@ trait Ctf
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
             INNER JOIN Movie m ON m.movieId = mc.movieId
             INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
-            WHERE c.autoProcProgramId = :1",
-            array($this->arg('id')),
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND c.autoProcProgramId = :2",
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
         $this->_output(
@@ -52,9 +56,15 @@ trait Ctf
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
             INNER JOIN Movie m ON m.movieId = mc.movieId
             INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
-            WHERE c.autoProcProgramId = :1 AND m.movieNumber = :2",
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND c.autoProcProgramId = :2
+            AND m.movieNumber = :3",
             // Maybe c.autoProcProgramId should be mc. ?????
             array(
+                $this->arg('prop'),
                 $this->arg('id'),
                 $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
             ),
@@ -89,8 +99,15 @@ trait Ctf
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
             INNER JOIN Movie m ON m.movieId = mc.movieId
             INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
-            WHERE c.autoProcProgramId = :1 AND m.movieNumber = :2",
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND c.autoProcProgramId = :2
+            AND m.movieNumber = :3",
+            // Maybe c.autoProcProgramId should be mc. ?????
             array(
+                $this->arg('prop'),
                 $this->arg('id'),
                 $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
             ),
@@ -115,21 +132,20 @@ trait Ctf
     public function ctfSummary()
     {
         $rows = $this->db->pq(
-            'SELECT
-                Movie.movieNumber,
-                CTF.astigmatism,
-                CTF.estimatedResolution,
-                CTF.estimatedDefocus
-            FROM CTF
-            INNER JOIN AutoProcProgram
-                ON AutoProcProgram.autoProcProgramId = CTF.autoProcProgramId
-            INNER JOIN MotionCorrection
-                ON MotionCorrection.motionCorrectionId = CTF.motionCorrectionId
-            INNER JOIN Movie
-                ON Movie.movieId = MotionCorrection.movieId
-            WHERE CTF.autoProcProgramId = :1
-            ORDER BY Movie.createdTimeStamp',
-            array($this->arg('id')),
+            "SELECT m.movieNumber, c.astigmatism, c.estimatedResolution, c.estimatedDefocus
+            FROM CTF c
+            INNER JOIN AutoProcProgram app ON app.autoProcProgramId = c.autoProcProgramId
+            INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
+            INNER JOIN Movie m ON m.movieId = mc.movieId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND c.autoProcProgramId = :2
+            ORDER BY m.createdTimeStamp",
+            // Maybe c.autoProcProgramId should be mc. ?????
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
         $this->_output($rows);
