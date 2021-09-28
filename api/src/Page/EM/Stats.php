@@ -8,8 +8,6 @@ trait Stats
     {
         list($where, $args) = $this->statsWhereClause();
 
-        $bs = 1;
-
         $hist = $this->db->pq(
             "SELECT
                 AVG(diff) as avgDiff,
