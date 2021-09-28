@@ -192,32 +192,34 @@
       </validation-observer>
     </div>
 
-    <dialog-box
-      v-if="displayImagerScheduleModal"
-      size="large"
-      :hide-ok-button="true"
-      @close-modal-action="closeModalAction">
-      <template>
-        <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
-          <p>View Schedule</p>
-          <button
-              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
-              @click="closeModalAction">
-            <i class="fa fa-times"></i>
-          </button>
-        </div>
-        <div class="tw-py-3 tw-px-4 tw-border-b tw-border-content-border">
-          <div class="tw-border-b tw-border-content-border">
-            <h3 class="tw-text-2xl">Schedule for {{ selectedSchedule.NAME }}</h3>
+    <portal to="dialog">
+      <custom-dialog-box
+        v-if="displayImagerScheduleModal"
+        size="large"
+        :hide-ok-button="true"
+        @close-modal-action="closeModalAction">
+        <template>
+          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
+            <p>View Schedule</p>
+            <button
+                class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+                @click="closeModalAction">
+              <i class="fa fa-times"></i>
+            </button>
           </div>
+          <div class="tw-py-3 tw-px-4 tw-border-b tw-border-content-border">
+            <div class="tw-border-b tw-border-content-border">
+              <h3 class="tw-text-2xl">Schedule for {{ selectedSchedule.NAME }}</h3>
+            </div>
 
-          <div class="tw-w-full">
-            <table-component :data="imagingScheduleComponents" :headers="schedulingComponentHeader"/>
+            <div class="tw-w-full">
+              <table-component :data="imagingScheduleComponents" :headers="schedulingComponentHeader"/>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-    </dialog-box>
+      </custom-dialog-box>
+    </portal>
   </div>
 </template>
 
@@ -230,7 +232,7 @@ import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
-import Dialog from 'app/components/dialogbox.vue'
+import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import TableComponent from 'app/components/table.vue'
 import SamplePlate from 'modules/types/mx/samples/samples-plate.vue'
 import SingleSample from 'modules/types/mx/samples/single-sample.vue'
@@ -284,7 +286,7 @@ export default {
     'valid-container-graphic': ValidContainerGraphic,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider,
-    'dialog-box': Dialog,
+    'custom-dialog-box': CustomDialogBox,
     'table-component': TableComponent,
     'single-sample-plate': SingleSample,
     'mx-sample-plate': SamplePlate
@@ -397,7 +399,7 @@ export default {
       if (newVal) {
         samples = this.samples.map(sample => ({
           ...sample,
-          CENTRINGMETHOD: 'xray',
+          CENTRINGMETHOD: 'diffraction',
           EXPERIMENTKIND: 'Ligand binding',
           SCREENINGMETHOD: 'none',
         }))
@@ -446,6 +448,7 @@ export default {
     this.getProcessingPipelines()
     this.formatExperimentKindList()
     this.getSampleGroups()
+    this.fetchSampleGroupSamples()
     this.getSpaceGroupsCollection()
     this.getImagingCollections()
     this.getImagingScheduleCollections()

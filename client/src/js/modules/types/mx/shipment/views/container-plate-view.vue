@@ -125,7 +125,7 @@
     </validation-observer>
 
     <portal to="dialog">
-      <dialog-box
+      <custom-dialog-box
         v-if="displayQueueModal"
         @perform-modal-action="performModalAction(modal[currentModal].actions.confirm)"
         @close-modal-action="closeModalAction(modal[currentModal].actions.cancel)">
@@ -140,7 +140,7 @@
           </div>
           <div class="tw-py-3 tw-px-4" v-html="modal[currentModal].message"></div>
         </template>
-      </dialog-box>
+      </custom-dialog-box>
     </portal>
   </div>
 </template>
@@ -161,7 +161,7 @@ import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
-import Dialog from 'app/components/dialogbox.vue'
+import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import PaginationComponent from 'app/components/pagination.vue'
 import SingleSample from 'modules/types/mx/samples/single-sample.vue'
 import SamplePlate from 'modules/types/mx/samples/samples-plate.vue'
@@ -180,7 +180,7 @@ export default {
     'table-component': TableComponent,
     'pagination-component': PaginationComponent,
     'base-input-checkbox': BaseInputCheckBox,
-    'dialog-box': Dialog,
+    'custom-dialog-box': CustomDialogBox,
     'single-sample-plate': SingleSample,
     'mx-sample-plate': SamplePlate,
     'validation-observer': ValidationObserver,
@@ -265,6 +265,7 @@ export default {
     this.getUsers()
     this.getProcessingPipelines()
     this.getSampleGroups()
+    this.fetchSampleGroupSamples()
     this.fetchShipments()
     this.getImagingCollections()
     this.getImagingScheduleCollections()

@@ -4,7 +4,8 @@
             v-if="ready"
             :key="$route.fullPath"
             :options="options"
-            :fetchOnLoad="true"
+            :fetchOnLoad="fetchOnLoad"
+            :pre-loaded="true"
             :mview="mview"
             :breadcrumbs="bc"
         />
@@ -56,6 +57,14 @@ export default {
         },
         proposalType : function() {
             return this.$store.state.proposal.proposalType
+        },
+        fetchOnLoad() {
+            const componentTypes = {
+              'marionette-view': false,
+              'mx-container-add': true
+            }
+
+            return componentTypes[this.componentType]
         }
     },
     created: function() {
@@ -68,7 +77,7 @@ export default {
         // We get the model here because the view we render depends on the container details
         async getDewar() {
             try {
-                await this.$store.dispatch('getModel', this.model)
+                const model = await this.$store.dispatch('getModel', this.model)
                 this.mview = ContainerAddMap[this.proposalType] ? ContainerAddMap[this.proposalType].view : ContainerAddMap['default'].view
                 // USe the legacy components if we have then defined, else use the newer style component
                 if (!this.mview) {
@@ -80,7 +89,7 @@ export default {
                 }
     
                 // Update the breadcrumbs
-                this.bc.push({ title: this.model.get('SHIPPINGNAME'), url: '/shipments/sid/'+this.model.get('SHIPPINGID') })
+                this.bc.push({ title: model.get('SHIPPINGNAME'), url: `/shipments/sid/${model.get('SHIPPINGID')}` })
                 this.bc.push({ title: 'Containers' })
                 this.bc.push({ title: 'Add Container'})
             } catch (error) {

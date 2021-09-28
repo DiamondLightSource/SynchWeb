@@ -15,6 +15,7 @@ import ImagingScreens from 'modules/imaging/collections/screens'
 import ImagingScheduleComponents from 'modules/imaging/collections/schedulecomponents'
 import { mapGetters } from 'vuex'
 import Sample from 'models/sample'
+import SampleGroupSamples from "collections/samplegroupsamples";
 
 const INITIAL_CONTAINER_TYPE = {
   CONTAINERTYPEID: 0,
@@ -65,7 +66,7 @@ export default {
       sampleGroups: [],
       spaceGroups: [],
       spaceGroupsCollection: null,
-      sampleGroupsAndMembers: []
+      sampleGroupSamples: []
     }
   },
   methods: {
@@ -146,10 +147,10 @@ export default {
       this.sampleGroupsCollection = new SampleGroups(null, { state: { pageSize: 9999 }})
 
       const result = await this.$store.dispatch('getCollection', this.sampleGroupsCollection)
-      this.sampleGroupsAndMembers = result.groups().toJSON()
-      this.sampleGroups = result.groups().toJSON().map((group, index) => ({
+
+      this.sampleGroups = result.toJSON().map((group, index) => ({
         value: group.BLSAMPLEGROUPID,
-        text: group.NAME || `Sample Group ${index}`
+        text: group.NAME || `Unknown Sample Group ${index}`
       }))
     },
     async getImagingCollections() {
@@ -359,6 +360,24 @@ export default {
       requestAnimationFrame(() => {
         this.$refs.containerForm.reset()
       })
+    },
+    async fetchSampleGroupSamples() {
+      const sampleGroupCollection = new SampleGroups(null, { state: { pageSize: 9999 } })
+
+      const result = await this.$store.dispatch('getCollection', sampleGroupCollection)
+      const sampleGroups = result.toJSON()
+
+      let sampleGroupSamples = []
+
+      for (let i = 0; i < sampleGroups.length; i++) {
+        const sampleGroupSamplesCollection = new SampleGroupSamples
+        sampleGroupSamplesCollection.sampleGroupId = sampleGroups[i].BLSAMPLEGROUPID
+        const samplesResult = await this.$store.dispatch('getCollection', sampleGroupSamplesCollection)
+
+        sampleGroupSamples = sampleGroupSamples.concat(samplesResult.toJSON())
+      }
+
+      this.sampleGroupSamples = sampleGroupSamples
     }
   },
   computed: {
@@ -373,7 +392,7 @@ export default {
     },
     ...mapGetters({
       samples: ['samples/samples'],
-    }),
+    })
   },
   provide() {
     return {
@@ -383,9 +402,9 @@ export default {
       $experimentKindList: () => this.experimentKindList,
       $sampleLocation: () => this.sampleLocation,
       $sampleGroups: () => this.sampleGroups,
-      $sampleGroupsAndMembers: () => this.sampleGroupsAndMembers,
       $queueForUDC: () => this.containerState.QUEUEFORUDC,
-      $proteins: () => this.proteins
+      $proteins: () => this.proteins,
+      $sampleGroupsSamples: () => this.sampleGroupSamples
     }
   }
 }
