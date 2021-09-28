@@ -27,13 +27,6 @@ define([
     InterFramePlot,
     template
 ) {
-
-    /*
-    var DriftHistogram = Histogram.extend({
-        'urlRoot': '/em/mc/histogram',
-    })
-    */
-
     return Marionette.LayoutView.extend({
         'template': template,
         'className': 'content',
@@ -65,6 +58,11 @@ define([
                 }))
             }
 
+            this.pie = new PieView({
+                'visit': this.model.get('VISIT'),
+                'el': this.$el.find('#visit_pie')
+            })
+
             this.faultsModel = new Faults(null, {
                 'queryParams': {
                     'visit': this.model.get('VISIT')
@@ -80,6 +78,7 @@ define([
             var EMHistogram = Histogram.extend({
                 'urlRoot': '/em/stats/ctf',
             })
+
             this.defocus = new EMHistogram()
             this.defocus.fetch({
                 'data': {
