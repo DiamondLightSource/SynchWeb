@@ -133,6 +133,57 @@ class EM extends Page
         }
     }
 
+    private function paginationArguments($args)
+    {
+        $perPage = $this->has_arg('per_page') ?
+            $this->arg('per_page') : 15;
+        $page = ($this->has_arg('page') && $this->arg('page') > 0) ?
+            $this->arg('page') - 1 : 0;
+
+        array_push($args, $page * $perPage); // Offset
+        array_push($args, $perPage);         // Row Count
+
+        return $args;
+    }
+
+    private function sendImage($file)
+    {
+        $this->browserCache();
+        $this->app->response->headers->set('Content-length', filesize($file));
+        $this->app->contentType('image/' . pathinfo($file, PATHINFO_EXTENSION));
+        readfile($file);
+    }
+
+    private function sendDownload($file)
+    {
+        $this->browserCache();
+        $pathInfo = pathinfo($file);
+        $this->app->response->headers->set('Content-length', filesize($file));
+        $this->app->response->headers->set(
+            'Content-Disposition',
+            'attachment; filename="' . $pathInfo['basename']
+        );
+        $this->app->contentType('application/' . $pathInfo['extension']);
+        readfile($file);
+    }
+
+    private function browserCache()
+    {
+        $expires = 60 * 60 * 24 * 14;
+        $this->app->response->headers->set(
+            'Pragma',
+            'public'
+        );
+        $this->app->response->headers->set(
+            'Cache-Control',
+            'maxage=' . $expires
+        );
+        $this->app->response->headers->set(
+            'Expires',
+            gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT'
+        );
+    }
+
     function _ap_status()
     {
         if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
@@ -182,7 +233,6 @@ class EM extends Page
             $statuses[$m['DATACOLLECTIONID']]['MC'][$m['MOVIENUMBER']] = $m['PROCESSINGSTATUS'];
         }
 
-
         $ctf = $this->db->pq("SELECT app.processingstatus, m.movienumber, dc.datacollectionid
                 FROM ctf c
                 INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
@@ -200,50 +250,6 @@ class EM extends Page
 
         $this->_output(array_values($statuses));
     }
-
-    private function paginationArguments($args)
-    {
-        $perPage = $this->has_arg('per_page') ?
-            $this->arg('per_page') : 15;
-        $page = ($this->has_arg('page') && $this->arg('page') > 0) ?
-            $this->arg('page') - 1 : 0;
-
-        array_push($args, $page * $perPage); // Offset
-        array_push($args, $perPage);         // Row Count
-
-        return $args;
-    }
-
-    private function sendImage($file)
-    {
-        $this->browserCache();
-        $size = filesize($file);
-        $this->app->response->headers->set("Content-length", $size);
-        $this->app->contentType('image/' . pathinfo($file, PATHINFO_EXTENSION));
-        readfile($file);
-    }
-
-    private function sendDownload($file)
-    {
-        $this->browserCache();
-        $pathInfo = pathinfo($file);
-        $this->app->response->headers->set('Content-length', filesize($file));
-        $this->app->response->headers->set(
-            'Content-Disposition',
-            'attachment; filename="' . $pathInfo['basename']
-        );
-        $this->app->contentType('application/' . $pathInfo['extension']);
-        readfile($file);
-    }
-
-    private function browserCache()
-    {
-        $expires = 60 * 60 * 24 * 14;
-        $this->app->response->headers->set('Pragma', 'public');
-        $this->app->response->headers->set('Cache-Control', 'maxage=' . $expires);
-        $this->app->response->headers->set('Expires', gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
-    }
-
     function _mc_fft()
     {
         $im = $this->has_arg('n') ? $this->arg('n') : 1;
