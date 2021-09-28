@@ -11,8 +11,12 @@ trait MotionCorrection
             FROM MotionCorrection mc
             INNER JOIN Movie m ON m.movieId = mc.movieId
             INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
-            WHERE mc.autoProcProgramId = :1",
-            array($this->arg('id')),
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND mc.autoProcProgramId = :2",
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
         $this->_output(
@@ -45,11 +49,17 @@ trait MotionCorrection
                 mc.autoProcProgramId,
                 m.movieNumber
             FROM MotionCorrection mc
+            INNER JOIN AutoProcProgram app ON app.autoProcProgramId = mc.autoProcProgramId
             INNER JOIN Movie m ON m.movieId = mc.movieId
             INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
-            INNER JOIN AutoProcProgram app ON app.autoProcProgramId = mc.autoProcProgramId
-            WHERE mc.autoProcProgramId = :1 AND m.movieNumber = :2",
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND mc.autoProcProgramId = :2
+            AND m.movieNumber = :3",
             array(
+                $this->arg('prop'),
                 $this->arg('id'),
                 $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
             ),
@@ -84,9 +94,14 @@ trait MotionCorrection
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = mcd.motionCorrectionId
             INNER JOIN Movie m ON m.movieId = mc.movieId
             INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
-            WHERE mc.autoProcProgramId = :1 AND m.movieNumber = :2
-            ORDER BY mcd.frameNumber",
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND mc.autoProcProgramId = :2
+            AND m.movieNumber = :3",
             array(
+                $this->arg('prop'),
                 $this->arg('id'),
                 $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
             ),
@@ -106,10 +121,17 @@ trait MotionCorrection
         $rows = $this->db->pq(
             "SELECT mc.{$imageName}
             FROM MotionCorrection mc
-                INNER JOIN Movie m ON m.movieId = mc.movieId
-                INNER JOIN AutoProcProgram ap ON ap.autoProcProgramId = mc.autoProcProgramId
-                WHERE ap.autoProcProgramId = :1 AND m.movieNumber = :2",
+            INNER JOIN AutoProcProgram ap ON ap.autoProcProgramId = mc.autoProcProgramId
+            INNER JOIN Movie m ON m.movieId = mc.movieId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND mc.autoProcProgramId = :2
+            AND m.movieNumber = :3",
             array(
+                $this->arg('prop'),
                 $this->arg('id'),
                 $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
             ),
