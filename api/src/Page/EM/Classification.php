@@ -9,8 +9,30 @@ trait Classification
         $images = $this->db->pq(
             "SELECT ParticleClassification.classImageFullPath
             FROM ParticleClassification
-            WHERE ParticleClassification.particleClassificationId = :1",
-            array($this->arg('id')),
+            INNER JOIN ParticleClassificationGroup
+                ON ParticleClassificationGroup.particleClassificationGroupId
+                    = ParticleClassification.particleClassificationGroupId
+            INNER JOIN AutoProcProgram
+                ON AutoProcProgram.autoProcProgramId
+                    = ParticleClassificationGroup.programId
+            INNER JOIN ProcessingJob
+                ON ProcessingJob.processingJobId
+                    = AutoProcProgram.processingJobId
+            INNER JOIN DataCollection
+                ON DataCollection.dataCollectionId
+                    = ProcessingJob.dataCollectionId
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId
+                    = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId
+                    = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId
+                    = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND ParticleClassification.particleClassificationId = :2",
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
 
@@ -30,7 +52,7 @@ trait Classification
        hence the INNER JOIN (is that wrong?) */
     public function classificationResult()
     {
-        $args = array($this->arg('id'));
+        $args = array($this->arg('prop'), $this->arg('id'));
 
         $total = $this->classificationQuery(
             'COUNT(ParticleClassification.particleClassificationId) AS total',
@@ -69,7 +91,7 @@ trait Classification
                 'CryoemInitialModel.numberOfParticles'
             )),
             $this->paginationArguments($args),
-            "ORDER BY $order LIMIT :2, :3"
+            "ORDER BY $order LIMIT :3, :4"
         );
 
         // No need for an error if no rows found
@@ -85,15 +107,34 @@ trait Classification
             "SELECT $selection
             FROM ParticleClassificationGroup
             LEFT JOIN ParticleClassification
-                ON ParticleClassification.particleClassificationGroupId =
-                    ParticleClassificationGroup.particleClassificationGroupId
+                ON ParticleClassification.particleClassificationGroupId
+                    = ParticleClassificationGroup.particleClassificationGroupId
             LEFT JOIN ParticleClassification_has_CryoemInitialModel
-                ON ParticleClassification_has_CryoemInitialModel.particleClassificationId =
-                    ParticleClassification.particleClassificationId
+                ON ParticleClassification_has_CryoemInitialModel.particleClassificationId
+                    = ParticleClassification.particleClassificationId
             LEFT JOIN CryoemInitialModel
-                ON CryoemInitialModel.cryoemInitialModelId =
-                    ParticleClassification_has_CryoemInitialModel.cryoemInitialModelId
-            WHERE ParticleClassificationGroup.programId = :1
+                ON CryoemInitialModel.cryoemInitialModelId
+                    = ParticleClassification_has_CryoemInitialModel.cryoemInitialModelId
+            INNER JOIN AutoProcProgram
+                ON AutoProcProgram.autoProcProgramId
+                    = ParticleClassificationGroup.programId
+            INNER JOIN ProcessingJob
+                ON ProcessingJob.processingJobId
+                    = AutoProcProgram.processingJobId
+            INNER JOIN DataCollection
+                ON DataCollection.dataCollectionId
+                    = ProcessingJob.dataCollectionId
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId
+                    = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId
+                    = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId
+                    = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND ParticleClassificationGroup.programId = :2
             $options",
             $args,
             false
