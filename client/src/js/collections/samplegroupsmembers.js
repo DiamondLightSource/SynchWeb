@@ -7,12 +7,18 @@ define(['backbone', 'backbone.paginator', 'models/samplegroupsmember'], function
   return PageableCollection.extend({
     blSampleId: null,
     url: function() {
-      return `/sample/groups/${this.blSampleId}`
+      if (blSampleId) {
+        return `/sample/groups/${this.blSampleId}`
+      }
+
+      return '/sample/groups'
     },
     model: SampleGroupsMember,
 
     initialize(models, options) {
-      this.blSampleId = options.blSampleId
+      if (options.blSampleId) {
+        this.blSampleId = options.blSampleId
+      }
     },
 
     state: {

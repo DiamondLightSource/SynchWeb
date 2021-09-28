@@ -72,7 +72,7 @@
       v-on="$listeners"
     />
     <portal to="dialog">
-      <dialog-box
+      <custom-dialog-box
         v-if="displaySampleGroupModal"
         size="small"
         :hide-ok-button="true"
@@ -135,21 +135,21 @@
             </div>
           </div>
         </template>
-      </dialog-box>
+      </custom-dialog-box>
     </portal>
   </div>
 </template>
 
 <script>
 import SampleTableRow from 'modules/types/mx/samples/sample-table-row.vue'
-import Dialog from 'app/components/dialogbox.vue'
+import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import { mapGetters } from 'vuex'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 
 export default {
   name: 'mx-sample-plate',
   components: {
-    'dialog-box': Dialog,
+    'custom-dialog-box': CustomDialogBox,
     'sample-table-row': SampleTableRow,
     'base-input-select': BaseInputSelect
   },
@@ -351,13 +351,13 @@ export default {
   width: 30px;
 }
 .protein-column {
-  width: 18%;
+  width: 15%;
 }
 .name-column {
   width: 10%;
 }
 .sample-group-column {
-  width: 10%;
+  width: 13%;
 }
 .actions-column {
   width: calc(12% - 30px);

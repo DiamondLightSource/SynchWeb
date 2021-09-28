@@ -1220,8 +1220,8 @@ class Sample extends Page
                 array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE']));
             $sid = $this->db->id();
 
-            if ($a['SCREENINGMETHOD'] == 'best' && isset($a['SAMPLEGROUPID'])) {
-                $this->_save_sample_to_group($sid, $a['SAMPLEGROUPID'], null, null);
+            if ($a['SCREENINGMETHOD'] == 'best' && isset($a['BLSAMPLEGROUPID'])) {
+                $this->_save_sample_to_group($sid, $a['BLSAMPLEGROUPID'], null, null);
             }
 
             return $sid;
@@ -1230,16 +1230,18 @@ class Sample extends Page
         function _prepare_strategy_option_for_sample($a) {
             if ($a['SCREENINGMETHOD'] == 'best') {
                 $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => $a['SCREENINGCOLLECTVALUE']);
+                $args = array($this->proposalid);
                 if (is_numeric($a['SAMPLEGROUP'])) {
-                    $check = $this->db->paginate("SELECT bsg.blsamplegroupid FROM blsamplegroup bsg WHERE bsg.proposalid = :1 AND bsg.blsamplegroupid = :2", array($this->proposalid, $a['SAMPLEGROUP']));
+                    array_push($args, $a['SAMPLEGROUP']);
+                    $check = $this->db->pq("SELECT blsamplegroupid FROM blsamplegroup WHERE proposalid = :1 AND blsamplegroupid = :2", $args);
 
                     if (!sizeof($check)) $this->_error('No such sample group for this proposal.');
 
                     $strategyOptionsData['sample_group'] = $a['SAMPLEGROUP'];
                     $a['BLSAMPLEGROUPID'] = $a['SAMPLEGROUP'];
                 } else if (is_string($a['SAMPLEGROUP'])) {
-                    $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid,name,proposalid) VALUES(s_blsamplegroup.nextval,:1,:2) RETURNING blsamplegroupid INTO :id",
-                    array($a['SAMPLEGROUP'], $this->proposalid));
+                    array_push($args, $a['SAMPLEGROUP']);
+                    $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, proposalid, name) VALUES(s_blsamplegroup.nextval,:1,:2) RETURNING blsamplegroupid INTO :id", $args);
                     $blSampleGroupId =  $this->db->id();
 
                     $strategyOptionsData['sample_group'] = $blSampleGroupId;

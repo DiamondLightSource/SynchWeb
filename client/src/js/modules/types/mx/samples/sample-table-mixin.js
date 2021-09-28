@@ -1,4 +1,7 @@
 import { createFieldsForSamples } from 'app/store/modules/store.samples'
+import SampleGroupSamples from 'collections/samplegroupsamples'
+import SampleGroups from 'collections/samplegroups'
+import SampleGroupsWithMembers from 'collections/samplegroupsmembers'
 
 export default {
   data() {
@@ -18,7 +21,7 @@ export default {
           value: "best",
           text: "Collect Best N",
         },
-      ],
+      ]
     };
   },
   props: {
@@ -48,7 +51,14 @@ export default {
       ).sort(this.sortSelectField);
     },
     spaceGroupList() {
-      const spaceGroups = this.$spaceGroups().map((item) => ({ value: item.SPACEGROUPSHORTNAME, text: item.SPACEGROUPSHORTNAME }))
+      const spaceGroups = this.$spaceGroups().reduce((acc, item) => {
+        acc.push({
+          value: item.SPACEGROUPSHORTNAME,
+          text: item.SPACEGROUPSHORTNAME
+        })
+
+        return acc
+      }, [{ value: '', text: '' }])
 
       spaceGroups.sort(this.sortSelectField)
 
@@ -81,11 +91,20 @@ export default {
     containers() {
       return this.$containers()
     },
-    sampleGroupsAndMembers() {
-      return this.$sampleGroupsAndMembers()
-    },
     queueForUDC() {
       return this.$queueForUDC()
+    },
+    sampleGroupSamples() {
+      return this.$sampleGroupsSamples()
+    },
+    sampleGroupName() {
+      if (this.sample['BLSAMPLEID'] && typeof Number(this.SAMPLEGROUP) === 'number') {
+        const selectedSample = this.sampleGroupSamples.find(sample => sample['BLSAMPLEID'] === this.sample['BLSAMPLEID'])
+
+        return selectedSample ? selectedSample['NAME'] : ''
+      }
+
+      return ''
     },
     ...createFieldsForSamples([
       'ABUNDANCE',
@@ -200,9 +219,6 @@ export default {
       if (protein) return protein.get("ACRONYM");
       else return null;
     },
-    checkSampleInSampleGroups(proteinId) {
-      return this.sampleGroupsAndMembers.some(group => group.MEMBERS.toJSON().find(member => Number(member.PROTEINID) === Number(proteinId)))
-    },
     closeSampleEditing() {
       this.editingRow = null
     },
@@ -219,7 +235,10 @@ export default {
       }
 
       return 0
-    }
+    },
+    async checkSampleInGroup() {
+
+    },
   },
   inject: [
     "$spaceGroups",
@@ -231,8 +250,8 @@ export default {
     "$shipments",
     "$dewars",
     "$containers",
-    "$sampleGroupsAndMembers",
     "$queueForUDC",
-    "$proteins"
+    "$proteins",
+    "$sampleGroupsSamples"
   ]
 };

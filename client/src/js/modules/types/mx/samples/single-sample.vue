@@ -26,12 +26,12 @@
         <div class="tw-w-1/5">Protein</div>
         <combo-box
           v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
-          class="tw-w-48"
+          class="tw-w-48 protein-select"
           :data="proteinsOptionsList"
           textField="text"
           valueField="value"
           :inputIndex="sampleLocation"
-          :selectCount="samples.length"
+          :excludeElementClassList="excludedElementClassList"
           defaultText=""
           size="small"
           v-model="PROTEINID"
@@ -50,7 +50,7 @@
       <validation-provider
         tag="div"
         class="tw-py-1"
-        :rules="sample['PROTEINID'] > -1 && !containerId? 'required' : ''"
+        :rules="sample['PROTEINID'] > -1 && !containerId ? 'required' : ''"
         :name="`Sample ${sampleLocation + 1} Abundance`"
         :vid="`sample ${sampleLocation + 1} abundance`"
         v-slot="{ errors }">
@@ -100,33 +100,38 @@
           outerClass="tw-w-full tw-flex"
           labelClass="tw-w-1/5"
           label="Space Group"
-          :quiet="true"
-          :errorMessage="errors[0]"
-          :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="SPACEGROUP"
         />
       </validation-provider>
 
       <validation-provider
         tag="div"
-        class="tw-py-1"
+        class="tw-py-1 tw-flex tw-w-full"
         :rules="`required_if:sample ${sampleLocation + 1} screening method,best`"
         :name="`Sample ${sampleLocation + 1} Group`"
         :vid="`sample ${sampleLocation + 1} group`"
         v-slot="{ errors }">
-        <base-input-select
-          :options="sampleGroups"
-          optionValueKey="value"
-          optionTextKey="text"
-          inputClass="tw-w-48 tw-h-8"
-          outerClass="tw-w-full tw-flex"
-          labelClass="tw-w-1/5"
-          label="Sample Group"
-          :quiet="true"
-          :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          :errorMessage="errors[0]"
-          v-model="SAMPLEGROUP"
-        />
+        <div class="tw-w-1/5">Sample Group</div>
+        <combo-box
+          :data="sampleGroups"
+          class="sample-group-select tw-w-48"
+          textField="text"
+          valueField="value"
+          :inputIndex="sampleIndex"
+          :defaultText="SAMPLEGROUP"
+          size="small"
+          :excludeElementClassList="excludedElementClassList"
+          v-model="SAMPLEGROUP">
+          <template slot="custom-add">
+            <div class="tw-w-full add-sample-group">
+              <base-input-text
+                v-model="SAMPLEGROUP"
+                placeholder-text="create new sample group"
+                input-class="tw-w-full tw-h-8"
+                :quiet="true"/>
+            </div>
+          </template>
+        </combo-box>
       </validation-provider>
 
       <validation-provider
@@ -490,7 +495,8 @@ export default {
         { key: 'CELL_ALPHA', title: 'α' },
         { key: 'CELL_BETA', title: 'β' },
         { key: 'CELL_GAMMA', title: 'γ' },
-      ]
+      ],
+      excludedElementClassList: ['add-sample-group']
     }
   },
   created() {
@@ -553,5 +559,10 @@ export default {
 
 >>> input.single-sample-input[type="number"]:disabled {
   @apply tw-bg-content-dark-background
+}
+
+>>> .sample-group-select .items-list, >>> .protein-select .items-list {
+  height: 100px;
+  overflow-y: auto;
 }
 </style>

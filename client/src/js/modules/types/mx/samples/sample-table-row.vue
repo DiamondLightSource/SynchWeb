@@ -17,6 +17,7 @@
       <combo-box
         v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
         :data="proteinsOptionsList"
+        class="tw-w-full protein-select"
         textField="text"
         valueField="value"
         :inputIndex="sampleIndex"
@@ -68,22 +69,21 @@
         valueField="value"
         :inputIndex="sampleIndex"
         :defaultText="SAMPLEGROUP"
+        class="sample-group-select tw-w-48"
         size="small"
         :excludeElementClassList="excludedElementClassList"
         v-model="SAMPLEGROUP">
         <template slot="custom-add">
           <div class="tw-w-full add-sample-group">
-            <p class="tw-mb-2">Add new Sample Group</p>
-            <div class="tw-flex tw-w-full" :ref="`add-sample-group-${sampleIndex}`">
-              <base-input-text
-                v-model="SAMPLEGROUP"
-                input-class="tw-w-full tw-h-8 select-search-input"
-                :quiet="true"/>
-            </div>
+            <base-input-text
+              v-model="SAMPLEGROUP"
+              placeholder-text="create new sample group"
+              input-class="tw-w-full tw-h-8"
+              :quiet="true"/>
           </div>
         </template>
       </combo-box>
-      <div v-else class="tw-text-center">{{ findSampleGroupsBySample(sample['PROTEINID']) }}</div>
+      <div v-else class="tw-text-center">{{ sampleGroupName }}</div>
     </validation-provider>
 
     <tabbed-columns
@@ -189,19 +189,6 @@ export default {
       this.sample.CONTAINERID = this.containerId
       this.editingRow = row.LOCATION
     },
-    findSampleGroupsBySample(proteinId) {
-      return this.sampleGroups.reduce((acc, curr) => {
-        const hasSample = curr.MEMBERS.toJSON().find(member => Number(member.PROTEINID) === Number(proteinId))
-
-        if (hasSample && curr.toJSON().NAME) {
-          acc += `${curr.toJSON().NAME}, `
-        } else {
-          acc += `${curr.toJSON().BLSAMPLEGROUPID}, `
-        }
-
-        return acc
-      }, '')
-    },
     onAddToSampleGroup() {
       this.displaySampleGroupModal = true
     },
@@ -213,18 +200,22 @@ export default {
   width: 30px;
 }
 .protein-column {
-  width: 18%;
+  width: 15%;
 }
 .name-column {
   width: 10%;
 }
 .sample-group-column {
-  width: 10%;
+  width: 13%;
 }
 .actions-column {
   width: calc(12% - 30px);
 }
 .min-height-8 {
   min-height: 32px;
+}
+>>> .sample-group-select .items-list, >>> .protein-select .items-list {
+  height: 100px;
+  overflow-y: auto;
 }
 </style>
