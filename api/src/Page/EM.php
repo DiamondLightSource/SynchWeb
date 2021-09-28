@@ -5,6 +5,15 @@ namespace SynchWeb\Page;
 use SynchWeb\Page;
 use SynchWeb\Queue;
 
+/**
+ * The "controller" for all EM specific endpoints
+ *
+ * In trying to control the size of this, parts are split into traits
+ * covering specific areas.
+ *
+ * @SuppressWarnings(PHPMD.ShortClassName)
+ * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+ */
 class EM extends Page
 {
     use \SynchWeb\Page\EM\Attachments;
@@ -44,11 +53,10 @@ class EM extends Page
 
     public static $dispatch = array(
         array('/aps', 'post', '_ap_status'),
+        array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
 
         // See Synchweb\Page\EM\ProcessingJobs
         array('/jobs/:id', 'get', 'processingJobs'),
-
-        array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
 
         // See Synchweb\Page\EM\Attachments
         array('/attachments/:id', 'get', 'attachmentsGetAll'),
@@ -90,9 +98,9 @@ class EM extends Page
         array('/process/relion/job/:processingJobId', 'patch', 'relionStop'),
         array('/relion/parameters', 'get', 'relionParameters'),
 
+        // See Synchweb\Page\EM\Scipion
         array('/process/scipion/session/:session', 'post', 'scipionStart')
     );
-
 
     private function exitIfElectronMicroscopesAreNotConfigured()
     {
@@ -107,17 +115,12 @@ class EM extends Page
         }
     }
 
-
-
     private function enqueue($zocalo_queue, $zocalo_message)
     {
-        global $zocalo_server,
-               $zocalo_username,
-               $zocalo_password;
+        global $zocalo_server, $zocalo_username, $zocalo_password;
 
         if (empty($zocalo_server) || empty($zocalo_queue)) {
             $message = 'Zocalo server not specified.';
-
             error_log($message);
             $this->_error($message, 500);
         }
@@ -264,9 +267,5 @@ class EM extends Page
             $this->app->contentType('image/png');
             readfile('assets/images/no_image.png');
         }
-    }
-
-    function _ctf_plot()
-    {
     }
 }
