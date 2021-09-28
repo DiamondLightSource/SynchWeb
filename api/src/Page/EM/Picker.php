@@ -7,16 +7,17 @@ trait Picker
     public function pickerMovies()
     {
         $rows = $this->db->pq(
-            "SELECT Movie.movieNumber
-            FROM ParticlePicker
-            LEFT JOIN MotionCorrection
-                ON MotionCorrection.motionCorrectionId
-                    = ParticlePicker.firstMotionCorrectionId
-            LEFT JOIN Movie
-                ON Movie.movieId = MotionCorrection.movieId
-            WHERE ParticlePicker.programId = :1
-            ORDER BY Movie.movieNumber",
-            array($this->arg('id')),
+            "SELECT m.movieNumber
+            FROM ParticlePicker pp
+            LEFT JOIN MotionCorrection mc ON mc.motionCorrectionId = pp.firstMotionCorrectionId
+            LEFT JOIN Movie m ON m.movieId = mc.movieId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND pp.programId = :2",
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
         $this->_output(
@@ -33,18 +34,22 @@ trait Picker
     {
         $rows = $this->db->pq(
             "SELECT
-                ParticlePicker.particleDiameter,
-                ParticlePicker.numberOfParticles,
-                ParticlePicker.summaryImageFullPath,
-                Movie.movieNumber
-            FROM ParticlePicker
-            LEFT JOIN MotionCorrection
-                ON MotionCorrection.motionCorrectionId
-                    = ParticlePicker.firstMotionCorrectionId
-            LEFT JOIN Movie
-                ON Movie.movieId = MotionCorrection.movieId
-            WHERE ParticlePicker.programId = :1 AND Movie.movieNumber = :2",
+                pp.particleDiameter,
+                pp.numberOfParticles,
+                pp.summaryImageFullPath,
+                m.movieNumber
+            FROM ParticlePicker pp
+            LEFT JOIN MotionCorrection mc ON mc.motionCorrectionId = pp.firstMotionCorrectionId
+            LEFT JOIN Movie m ON m.movieId = mc.movieId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND pp.programId = :2
+            AND m.movieNumber = :3",
             array(
+                $this->arg('prop'),
                 $this->arg('id'),
                 $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
             ),
@@ -52,7 +57,7 @@ trait Picker
         );
 
         if (!sizeof($rows)) {
-            $this->_error('No such ctf correction');
+            $this->_error('No such pick');
         }
         $row = $rows[0];
 
@@ -64,15 +69,19 @@ trait Picker
     public function pickerImage()
     {
         $rows = $this->db->pq(
-            "SELECT ParticlePicker.summaryImageFullPath
-            FROM ParticlePicker
-            LEFT JOIN MotionCorrection
-                ON MotionCorrection.motionCorrectionId
-                    = ParticlePicker.firstMotionCorrectionId
-            LEFT JOIN Movie
-                ON Movie.movieId = MotionCorrection.movieId
-            WHERE ParticlePicker.programId = :1 AND Movie.movieNumber = :2",
+            "SELECT pp.summaryImageFullPath
+            FROM ParticlePicker pp
+            LEFT JOIN MotionCorrection mc ON mc.motionCorrectionId = pp.firstMotionCorrectionId
+            LEFT JOIN Movie m ON m.movieId = mc.movieId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND pp.programId = :2
+            AND m.movieNumber = :3",
             array(
+                $this->arg('prop'),
                 $this->arg('id'),
                 $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
             ),
