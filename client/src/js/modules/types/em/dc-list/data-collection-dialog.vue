@@ -11,7 +11,7 @@
     <template #default="form">
       <div class="dialog-form-section">
         <h3 class="dialog-form-section-heading">
-          Files
+          Movies
         </h3>
 
         <input-select
@@ -27,15 +27,104 @@
           name="imageSuffix"
           :form="form"
         />
+
+        <input-text
+          name="pixelSizeOnImage"
+          :form="form"
+        />
+
+        <input-text
+          name="pixelSizeOnImage"
+          :form="form"
+        />
+
+        <input-text
+          name="imageSizeX"
+          :form="form"
+        />
+
+        <input-text
+          name="imageSizeY"
+          :form="form"
+        />
+
+        <input-text
+          name="numberOfImages"
+          :form="form"
+        />
+
+        <input-text
+          name="numberOfPasses"
+          :form="form"
+        />
+
+        <input-text
+          name="exposureTime"
+          :form="form"
+        />
       </div>
 
       <div class="dialog-form-section">
         <h3 class="dialog-form-section-heading">
-          Other Stuff
+          Optics
+        </h3>
+
+        <input-text
+          name="c1lens"
+          :form="form"
+        />
+        <input-text
+          name="c1aperture"
+          :form="form"
+        />
+        <input-text
+          name="c2lens"
+          :form="form"
+        />
+        <input-text
+          name="c2aperture"
+          :form="form"
+        />
+        <input-text
+          name="c3lens"
+          :form="form"
+        />
+        <input-text
+          name="c3aperture"
+          :form="form"
+        />
+        <input-text
+          name="objAperture"
+          :form="form"
+        />
+        <input-text
+          name="magnification"
+          :form="form"
+        />
+      </div>
+
+      <div class="dialog-form-section">
+        <h3 class="dialog-form-section-heading">
+          Electron Beam &amp; Detector
         </h3>
 
         <input-select
           name="voltage"
+          :form="form"
+        />
+
+        <input-text
+          name="beamSizeAtSampleX"
+          :form="form"
+        />
+
+        <input-text
+          name="beamSizeAtSampleY"
+          :form="form"
+        />
+
+        <input-text
+          name="totalExposedDose"
           :form="form"
         />
 
@@ -45,7 +134,17 @@
         />
 
         <input-text
-          name="pixelSizeOnImage"
+          name="detectorManufacturer"
+          :form="form"
+        />
+
+        <input-text
+          name="detectorModel"
+          :form="form"
+        />
+
+        <input-text
+          name="detectorMode"
           :form="form"
         />
       </div>
@@ -54,6 +153,11 @@
 </template>
 
 <script>
+/*
+ * TODO: Could we make Detector into a drop down
+ * And pre-insert the eBIC "standard" detectors into iSpyB?
+ */
+
 import { mapGetters } from 'vuex'
 import DialogForm from 'modules/types/em/components/dialog-form.vue'
 import InputCheckbox from 'modules/types/em/components/input-checkbox.vue'
