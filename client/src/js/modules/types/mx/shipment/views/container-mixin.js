@@ -368,13 +368,17 @@ export default {
       const sampleGroups = result.toJSON()
 
       let sampleGroupSamples = []
+      let sampleGroupSamplesPromise = []
 
       for (let i = 0; i < sampleGroups.length; i++) {
         const sampleGroupSamplesCollection = new SampleGroupSamples
         sampleGroupSamplesCollection.sampleGroupId = sampleGroups[i].BLSAMPLEGROUPID
-        const samplesResult = await this.$store.dispatch('getCollection', sampleGroupSamplesCollection)
+        sampleGroupSamplesPromise.push(this.$store.dispatch('getCollection', sampleGroupSamplesCollection))
+      }
+      const samplesGroupResult = Promise.allSettled(sampleGroupSamplesPromise)
 
-        sampleGroupSamples = sampleGroupSamples.concat(samplesResult.toJSON())
+      for (let j = 0; j < samplesGroupResult.length; j++) {
+        sampleGroupSamples = sampleGroupSamples.concat(samplesGroupResult[j].toJSON())
       }
 
       this.sampleGroupSamples = sampleGroupSamples
