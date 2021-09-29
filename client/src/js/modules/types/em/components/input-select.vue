@@ -59,7 +59,12 @@ export default {
             const schema = this.form.schema[this.name]
             const displayOptions = schema.displayOptions
             const simpleOptions = typeof displayOptions == 'undefined'
-            return schema.options.map(function(option, index) {
+            const options = schema.options
+            if (typeof options == 'undefined') {
+                throw 'INPUT-SELECT - Schema for ' +
+                    this.name + ' has no options field'
+            }
+            return options.map(function(option, index) {
                 return {
                     'display': simpleOptions ? option : displayOptions[index],
                     'value': option
