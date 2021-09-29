@@ -114,7 +114,7 @@ class RelionSchema
                 'checkType' => 'integer'
             ),
             'motioncor_doseperframe' => array(
-                'label' => 'Dose per frame (e<span class="super">-</span>/Å<span class="super">2</span>)',
+                'label' => 'Dose per frame (e⁻/Å²)',
                 'default' => '0.5',
                 'required' => true,
                 'minValue' => 0.02,
