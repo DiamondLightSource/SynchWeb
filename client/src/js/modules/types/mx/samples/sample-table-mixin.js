@@ -58,7 +58,7 @@ export default {
         })
 
         return acc
-      }, [{ value: '', text: '' }])
+      }, [{ value: null, text: '' }])
 
       spaceGroups.sort(this.sortSelectField)
 
