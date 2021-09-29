@@ -375,7 +375,7 @@ export default {
         sampleGroupSamplesCollection.sampleGroupId = sampleGroups[i].BLSAMPLEGROUPID
         sampleGroupSamplesPromise.push(this.$store.dispatch('getCollection', sampleGroupSamplesCollection))
       }
-      const samplesGroupResult = Promise.allSettled(sampleGroupSamplesPromise)
+      const samplesGroupResult = await Promise.all(sampleGroupSamplesPromise)
 
       for (let j = 0; j < samplesGroupResult.length; j++) {
         sampleGroupSamples = sampleGroupSamples.concat(samplesGroupResult[j].toJSON())

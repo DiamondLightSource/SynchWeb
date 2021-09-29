@@ -22,7 +22,6 @@ const proposalModule = {
         state.proposalModel = model
         app.proposal = state.proposalModel
       } else {
-        console.log("Store.proposal - unsetting proposal model")
         // Ensure proposal model is unset.
         state.proposalModel = null
         app.proposal = null
@@ -100,7 +99,6 @@ const proposalModule = {
               success: function() {
                 // If ok then ProposalLookup has set a new proposal for us
                 // We might need to do other things here - refresh proposal type?
-                console.log(JSON.stringify(lookup))
                 resolve(lookup)
               },
               error: function() {
