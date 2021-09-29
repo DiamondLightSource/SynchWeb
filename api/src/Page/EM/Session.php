@@ -46,8 +46,8 @@ trait Session
     /**
      * Substitute session values in file or directory path
      *
-     * Session keys are expected to be upper case i.e. BEAMLINENAME, YEAR,
-     * and SESSION / VISIT
+     * Session keys are expected to be upper case
+     * i.e. BEAMLINENAME, YEAR, and SESSION / VISIT
      *
      * @param array $session
      * @param string $path

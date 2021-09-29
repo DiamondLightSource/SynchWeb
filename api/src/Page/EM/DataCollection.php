@@ -145,8 +145,6 @@ trait DataCollection
         try {
             $this->db->start_transaction();
 
-            error_log(var_export($session, true));
-
             $this->db->pq(
                 "INSERT INTO DataCollectionGroup (
                     sessionId, comments, experimentType

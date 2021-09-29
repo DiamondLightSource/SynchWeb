@@ -184,6 +184,33 @@ class EM extends Page
         );
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function _mc_fft()
+    {
+        $im = $this->has_arg('n') ? $this->arg('n') : 1;
+        $t = $this->has_arg('t') ? 2 : 1;
+
+        $imgs = $this->db->pq("SELECT mc.fftcorrectedfullpath, mc.fftfullpath
+                FROM motioncorrection mc
+                INNER JOIN movie m ON m.movieid = mc.movieid
+                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
+                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $im));
+
+        if (!sizeof($imgs)) $this->_error('No such fft');
+        $img = $imgs[0];
+
+        $file = $t == 2 ? $img['FFTCORRECTEDFULLPATH'] : $img['FFTFULLPATH'];
+
+        if (file_exists($file)) {
+            $this->sendImage($file);
+
+        } else {
+            $this->app->contentType('image/png');
+            readfile('assets/images/no_image.png');
+        }
+    }
+
     function _ap_status()
     {
         if (!($this->has_arg('visit') || $this->has_arg('prop'))) $this->_error('No visit or proposal specified');
@@ -249,29 +276,5 @@ class EM extends Page
         }
 
         $this->_output(array_values($statuses));
-    }
-    function _mc_fft()
-    {
-        $im = $this->has_arg('n') ? $this->arg('n') : 1;
-        $t = $this->has_arg('t') ? 2 : 1;
-
-        $imgs = $this->db->pq("SELECT mc.fftcorrectedfullpath, mc.fftfullpath 
-                FROM motioncorrection mc
-                INNER JOIN movie m ON m.movieid = mc.movieid
-                INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $im));
-
-        if (!sizeof($imgs)) $this->_error('No such fft');
-        $img = $imgs[0];
-
-        $file = $t == 2 ? $img['FFTCORRECTEDFULLPATH'] : $img['FFTFULLPATH'];
-
-        if (file_exists($file)) {
-            $this->sendImage($file);
-
-        } else {
-            $this->app->contentType('image/png');
-            readfile('assets/images/no_image.png');
-        }
     }
 }
