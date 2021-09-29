@@ -37,11 +37,6 @@
       :item="magnification"
     />
     <parameter-list-item
-      width="20%"
-      label="Magnification"
-      :item="magnification"
-    />
-    <parameter-list-item
       v-if="hasEnergyFilter"
       width="20%"
       label="Energy Filter"
@@ -69,7 +64,7 @@
     />
     <parameter-list-item
       width="20%"
-      label="Sample Pixel Size"
+      label="Pixel Size"
       :item="samplePixelSize"
     />
     <parameter-list-item
@@ -105,7 +100,7 @@
     <parameter-list-item
       v-if="isStopped"
       width="20%"
-      label="Status"
+      label="State"
       item="Stopped"
     />
     <parameter-list-item

@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 import DataCollectionDialog from 'modules/types/em/dc-list/data-collection-dialog.vue'
 
@@ -42,10 +41,6 @@ export default {
         }
     },
     'computed': {
-        ...mapGetters('em', [
-            'processingAllowed',
-            'processingDisallowedReason',
-        ]),
         'hint': function () {
             return this.reason === '' ? 'Add data collection' :
                 this.reason + ' - No more data collections possible'

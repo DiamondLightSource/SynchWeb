@@ -12,6 +12,7 @@
 
     <div class="toolbar">
       <toolbar :model="model" />
+
       <search
         :collection="collection"
         :value="params.search"

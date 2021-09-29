@@ -8,7 +8,6 @@ trait Session
     {
         if (!$this->has_arg('session')) {
             $message = 'Session not specified!';
-
             error_log($message);
             $this->_error($message, 400);
         }
