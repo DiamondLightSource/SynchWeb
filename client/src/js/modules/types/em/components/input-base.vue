@@ -67,7 +67,12 @@ export default {
             ).trim()
         },
         'label': function() {
-            return this.form.schema[this.name].label
+            const schema = this.form.schema[this.name]
+            return (
+                schema.label + (
+                    schema.unit ? ' (' + schema.unit + ')' : ''
+                )
+            ).trim()
         }
     },
 }
