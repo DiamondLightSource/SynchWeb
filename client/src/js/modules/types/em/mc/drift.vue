@@ -32,7 +32,7 @@ export default {
     'computed': {
         'layout': function() {
             return {
-                'margin': { 't': 10, 'l': 30, 'r': 30, 'b': 30 },
+                'margin': { 't': 10, 'l': 54, 'r': 54, 'b': 54 },
                 'xaxis': {
                     'title': 'δx Å',
                     'range': [-20, 20],
@@ -81,6 +81,6 @@ export default {
 
 <style scoped>
 .drift-chart {
-    width: 28%;
+    width: 33%;
 }
 </style>
