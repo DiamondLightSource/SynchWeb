@@ -254,19 +254,21 @@ export default {
   },
   created: function() {
     // Get samples for this container id
+    this.fetchShipments()
     this.loadContainerData()
     this.samplesCollection = new Samples(null, { state: { pageSize: 9999 } })
     this.samplesCollection.queryParams.cid = this.containerId
     this.getSamples(this.samplesCollection)
+    this.getProteins()
     this.getHistory()
     this.getExperimentTypes()
-    this.getProteins()
     this.getContainerTypes()
     this.getUsers()
     this.getProcessingPipelines()
+    this.formatExperimentKindList()
     this.getSampleGroups()
     this.fetchSampleGroupSamples()
-    this.fetchShipments()
+    this.getSpaceGroupsCollection()
     this.getImagingCollections()
     this.getImagingScheduleCollections()
     this.getImagingScreensCollections()
