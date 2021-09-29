@@ -1,7 +1,7 @@
 <template>
   <marionette-wrapper
-    :options="marionetteOptions"
     :mview="searchView"
+    :options="marionetteOptions"
     preloaded
   />
 </template>
@@ -22,10 +22,6 @@ export default {
         },
         'collection': {
             'type': Object,
-            'required': true,
-        },
-        'url': {
-            'type': Boolean,
             'required': true,
         },
     },

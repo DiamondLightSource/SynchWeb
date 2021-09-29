@@ -16,7 +16,6 @@
       <search
         :collection="collection"
         :value="params.search"
-        :url="searchUrl"
       />
     </div>
 
@@ -111,12 +110,6 @@ export default {
                 this.visit === '' ? this.proposal :
                     this.visit +  ' on ' + this.model.get('BEAMLINENAME')
             )
-        },
-        'searchUrl': function() {
-            // In old Marionette version this was
-            // !options.noSearchUrl
-            // But, as far as I can see, options.noSearchUrl doesn't exist
-            return true
         },
     },
     'beforeMount': function() {
