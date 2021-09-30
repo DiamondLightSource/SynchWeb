@@ -62,7 +62,7 @@
     <parameter-list-item
       width="20%"
       label="Phase Plate"
-      :value="phasePlate"
+      :value="dataCollection.PHASEPLATE == 1"
     />
     <parameter-list-item
       width="20%"
@@ -164,9 +164,6 @@ export default {
         'voltage': function() {
             const voltage = KvLambda().l2kV(this.dataCollection.WAVELENGTH)
             return voltage == Infinity ? '∞' : voltage
-        },
-        'phasePlate': function() {
-            return this.dataCollection.PHASEPLATE == 1 ? 'Yes' : 'No'
         },
         'frameLength': function() {
             return parseFloat(this.dataCollection.EXPOSURETIME) /

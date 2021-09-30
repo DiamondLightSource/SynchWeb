@@ -50,6 +50,10 @@ export default {
     },
     'computed': {
         'valueAndUnit': function() {
+            if (typeof this.value == 'boolean') {
+                return this.value ? 'Yes' : 'No'
+            }
+
             if (!this.value) {
                 return ''
             }
