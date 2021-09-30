@@ -189,9 +189,12 @@ export default {
             this.$emit('cancel')
             this.$store.commit('notifications/addNotification', {
                 'title': 'Data Collection Added',
-                'message': 'data collection Added (' + response.id + ') - TODO: redirect to it\'s page',
+                'message': 'data collection Added (' + response.id + ')',
                 'level': 'success'
             })
+            this.$router.push(
+                '/dc/visit/' + this.currentVisit + '/collection/' + response.id
+            )
         },
     },
 }
