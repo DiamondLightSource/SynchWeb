@@ -3,120 +3,150 @@
     <parameter-list-item
       width="20%"
       label="Voltage"
-      :item="voltage"
+      :value="voltage"
+      unit="kV"
     />
     <parameter-list-item
       width="20%"
       label="C1 Lens"
-      :item="c1Lens"
-      label2="Aperture"
-      :item2="c1Aperture"
+      :value="dataCollection.C1LENS"
+      unit="%"
+    />
+    <parameter-list-item
+      width="20%"
+      label="C1 Aperture"
+      :value="dataCollection.C1APERTURE"
+      unit="μm"
     />
     <parameter-list-item
       width="20%"
       label="C2 Lens"
-      :item="c2Lens"
-      label2="Aperture"
-      :item2="c2Aperture"
+      :value="dataCollection.C2LENS"
+      unit="%"
+    />
+    <parameter-list-item
+      width="20%"
+      label="C2 Aperture"
+      :value="dataCollection.C2APERTURE"
+      unit="μm"
     />
     <parameter-list-item
       width="20%"
       label="C3 Lens"
-      :item="c3Lens"
-      label2="Aperture"
-      :item2="c3Aperture"
+      :value="dataCollection.C3LENS"
+      unit="%"
+    />
+    <parameter-list-item
+      width="20%"
+      label="C3 Aperture"
+      :value="dataCollection.C3APERTURE"
+      unit="μm"
     />
     <parameter-list-item
       width="20%"
       label="Objective Aperture"
-      :item="objAperture"
+      :value="dataCollection.OBJAPERTURE"
+      unit="μm"
     />
     <parameter-list-item
       width="20%"
       label="Magnification"
-      :item="magnification"
+      :value="dataCollection.MAGNIFICATION"
+      unit="X"
     />
     <parameter-list-item
-      v-if="hasEnergyFilter"
       width="20%"
       label="Energy Filter"
-      :item="energyFilter"
+      :value="dataCollection.SLITGAPHORIZONTAL"
     />
     <parameter-list-item
       width="20%"
       label="Phase Plate"
-      :item="phasePlate"
+      :value="phasePlate"
     />
     <parameter-list-item
       width="20%"
       label="Beam Size"
-      :item="beamSize"
+      :value="dataCollection.BSX"
+      :value2="dataCollection.BSY"
+      unit="μm"
+      separator="x"
     />
     <parameter-list-item
       width="20%"
-      label="Detector"
-      :item="detector"
+      label="Detector Manufacturer"
+      :value="dataCollection.DETECTORMANUFACTURER"
+    />
+    <parameter-list-item
+      width="20%"
+      label="Detector Model"
+      :value="dataCollection.DETECTORMODEL"
     />
     <parameter-list-item
       width="20%"
       label="Detector Mode"
-      :item="detectorMode"
+      :value="dataCollection.DETECTORMODE"
     />
     <parameter-list-item
       width="20%"
       label="Pixel Size"
-      :item="samplePixelSize"
+      :value="dataCollection.PIXELSIZEONIMAGE"
+      unit="Å/pixel"
     />
     <parameter-list-item
       width="20%"
       label="Binning"
-      :item="binning"
+      :value="dataCollection.BINNING"
+      unit="pixels"
     />
     <parameter-list-item
       width="20%"
       label="Image Size"
-      :item="imageSize"
+      :value="dataCollection.IMAGESIZEX"
+      :value2="dataCollection.IMAGESIZEY"
+      unit="pixels"
+      separator="x"
     />
     <parameter-list-item
       width="20%"
       label="No. Movies"
-      :item="noMovies"
+      :value="dataCollection.NUMIMG"
     />
     <parameter-list-item
       width="20%"
       label="Frames/Movie"
-      :item="framesMovie"
+      :value="dataCollection.NUMBEROFPASSES"
     />
     <parameter-list-item
       width="20%"
       label="Frame Length"
-      :item="frameLength"
+      :value="frameLength"
+      unit="s"
     />
     <parameter-list-item
       width="20%"
       label="Total Dose"
-      :item="totalDose"
+      :value="dataCollection.TOTALDOSE"
+      unit="e⁻/Å²"
     />
     <parameter-list-item
       v-if="isStopped"
       width="20%"
       label="State"
-      item="Stopped"
+      value="Stopped"
     />
     <parameter-list-item
       width="100%"
       label="Comment"
-      :item="dataCollection.COMMENTS"
+      :value="dataCollection.COMMENTS"
     />
   </parameter-list>
 </template>
 
 <script>
 import KvLambda from 'modules/types/em/components/kv-lambda'
-import parameterFormats from 'modules/types/em/components/parameter-formats'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
-import unitsHtml from 'modules/types/em/components/units-html.js'
 
 export default {
     'name': 'DataCollectionHeader',
@@ -124,7 +154,6 @@ export default {
         'parameter-list': ParameterList,
         'parameter-list-item': ParameterListItem,
     },
-    'mixins': [parameterFormats],
     'props': {
         'dataCollection': {
             'type': Object,
@@ -133,96 +162,15 @@ export default {
     },
     'computed': {
         'voltage': function() {
-            const kvLambda = KvLambda()
-            return this.numberWithUnit(
-                kvLambda.l2kV(this.dataCollection.WAVELENGTH),
-                'kV'
-            )
-        },
-        'c1Lens': function() {
-            return this.datumWithUnit(this.dataCollection.C1LENS, '%')
-        },
-        'c2Lens': function() {
-            return this.datumWithUnit(this.dataCollection.C2LENS, '%')
-        },
-        'c3Lens': function() {
-            return this.datumWithUnit(this.dataCollection.C3LENS, '%')
-        },
-        'c1Aperture': function() {
-            return this.datumWithUnit(this.dataCollection.C1APERTURE, '&mu;m')
-        },
-        'c2Aperture': function() {
-            return this.datumWithUnit(this.dataCollection.C2APERTURE, '&mu;m')
-        },
-        'c3Aperture': function() {
-            return this.datumWithUnit(this.dataCollection.C3APERTURE, '&mu;m')
-        },
-        'objAperture': function() {
-            return this.datumWithUnit(this.dataCollection.OBJAPERTURE, '&mu;m')
-        },
-        'hasMagnification': function() {
-            return !(!this.dataCollection.MAGNIFICATION)
-        },
-        'magnification': function() {
-            return this.datumWithUnit(this.dataCollection.MAGNIFICATION, 'x')
-        },
-        'hasEnergyFilter': function() {
-            return !(!this.dataCollection.SLITGAPHORIZONTAL)
-        },
-        'energyFilter': function() {
-            return this.datumOrBlank(this.dataCollection.SLITGAPHORIZONTAL)
+            const voltage = KvLambda().l2kV(this.dataCollection.WAVELENGTH)
+            return voltage == Infinity ? '∞' : voltage
         },
         'phasePlate': function() {
             return this.dataCollection.PHASEPLATE == 1 ? 'Yes' : 'No'
         },
-        'beamSize': function() {
-            return this.dimensions(
-                this.datumWithUnit(this.dataCollection.BSX, '&mu;m'),
-                this.datumWithUnit(this.dataCollection.BSY, '&mu;m')
-            )
-        },
-        'detector': function() {
-            return (
-                this.datumOrBlank(this.dataCollection.DETECTORMANUFACTURER) +
-                ' ' +
-                this.datumOrBlank(this.dataCollection.DETECTORMODEL)
-            ).trim()
-        },
-        'detectorMode': function() {
-            return this.datumOrBlank(this.dataCollection.DETECTORMODE)
-        },
-        'samplePixelSize': function() {
-            return this.datumWithUnit(
-                this.dataCollection.PIXELSIZEONIMAGE, 'Å/pixel'
-            )
-        },
-        'binning': function() {
-            return this.datumWithUnit(this.dataCollection.BINNING, 'pix')
-        },
-        'imageSize': function() {
-            return this.dimensions(
-                this.datumWithUnit(this.dataCollection.IMAGESIZEX, 'pix'),
-                this.datumWithUnit(this.dataCollection.IMAGESIZEY, 'pix')
-            )
-        },
-        'noMovies': function() {
-            return this.datumOrBlank(this.dataCollection.NUMIMG)
-        },
-        'framesMovie': function() {
-            return this.datumOrBlank(this.dataCollection.NUMBEROFPASSES)
-        },
         'frameLength': function() {
-            return this.numberWithUnit(
-                parseFloat(this.dataCollection.EXPOSURETIME) /
-                    parseInt(this.dataCollection.NUMBEROFPASSES, 10),
-                's'
-            )
-        },
-        'totalDose': function() {
-            return this.datumWithUnit(
-                this.dataCollection.TOTALDOSE,
-                unitsHtml.electron + '/' + unitsHtml.angstromSquared
-            )
+            return parseFloat(this.dataCollection.EXPOSURETIME) /
+                parseInt(this.dataCollection.NUMBEROFPASSES, 10)
         },
         'isStopped': function() {
             return this.dataCollection.STATE == false

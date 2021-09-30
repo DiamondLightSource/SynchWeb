@@ -3,15 +3,8 @@
     :help-text="helpText"
     :width="width"
   >
-    <!-- eslint-disable-next-line vue/no-v-html -->
-    <strong v-html="label + ':'" />
-    <!-- eslint-disable-next-line vue/no-v-html -->
-    <span v-html="item" />
-    <template v-if="label2">
-      <strong>{{ label2 }}:</strong>
-      <!-- eslint-disable-next-line vue/no-v-html -->
-      <span v-html="item2" />
-    </template>
+    <strong>{{ label }} :</strong>
+    {{ valueAndUnit }}
   </custom-list-item>
 </template>
 
@@ -32,21 +25,42 @@ export default {
             'type': String,
             'default': '',
         },
-        'item': {
-            'type': String,
+        // eslint-disable-next-line vue/require-prop-types
+        'value': {
             'required': true,
         },
-        'label2': {
+        // value2 is used when we have an X,Y pair or a range
+        // include a separator to separate the 2 values
+        // eslint-disable-next-line vue/require-prop-types
+        'value2': {
+            'default': ''
+        },
+        'unit': {
             'type': String,
             'default': '',
         },
-        'item2': {
+        'separator': {
             'type': String,
             'default': '',
         },
         'helpText': {
             'type': String,
             'default': '',
+        },
+    },
+    'computed': {
+        'valueAndUnit': function() {
+            if (!this.value) {
+                return ''
+            }
+
+            const value1 = this.value.toString().trim() + this.unit
+            if (!this.value2) {
+                return value1
+            }
+
+            const value2 = this.value2.toString().trim() + this.unit
+            return value1 + ' ' + this.separator + ' ' + value2
         },
     },
 }

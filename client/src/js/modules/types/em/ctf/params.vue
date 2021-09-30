@@ -2,58 +2,71 @@
   <parameter-list>
     <parameter-list-item
       label="Movie Number"
-      :item="movieNumber"
+      :value="ctfEstimation.movieNumber"
     />
     <parameter-list-item
       label="Box size"
-      :item="boxSize"
+      :value="ctfEstimation.boxSizeX"
+      :value2="ctfEstimation.boxSizeY"
+      unit="μm"
+      separator="x"
     />
     <parameter-list-item
       label="Resolution"
-      :item="resolution"
+      :value="ctfEstimation.minResolution"
+      :value2="ctfEstimation.maxResolution"
+      unit="Å"
+      separator="-"
     />
     <parameter-list-item
       label="Defocus"
-      :item="defocus"
+      :value="ctfEstimation.minDefocus"
+      :value2="ctfEstimation.maxDefocus"
+      unit="Å"
+      separator="-"
     />
     <parameter-list-item
       label="Defocus Step Size"
-      :item="defocusStepSize"
+      :value="ctfEstimation.defocusStepSize"
+      unit="Å"
     />
     <parameter-list-item
       label="Astigmatism"
-      :item="astigmatism"
+      :value="ctfEstimation.astigmatism"
+      unit="Å"
     />
     <parameter-list-item
       label="Astigmatism Angle"
-      :item="astigmatismAngle"
+      :value="ctfEstimation.astigmatismAngle"
+      unit="°"
     />
     <parameter-list-item
       label="Estimated Resolution"
-      :item="estimatedResolution"
+      :value="ctfEstimation.estimatedResolution"
+      unit="Å"
     />
     <parameter-list-item
       label="Estimated Defocus"
-      :item="estimatedDefocus"
+      :value="ctfEstimation.estimatedDefocus"
+      unit="Å"
     />
     <parameter-list-item
-      label="Estimated Defocus"
-      :item="amplitudeContrast"
+      label="Amplitude Contrast"
+      :value="ctfEstimation.amplitudeContrast"
     />
     <parameter-list-item
       label="CC Value"
-      :item="ccValue"
+      :value="ctfEstimation.ccValue"
     />
     <parameter-list-item
       width="100%"
       label="Comments"
-      :item="comments"
+      :value="ctfEstimation.comments"
     />
   </parameter-list>
 </template>
 
 <script>
-import parameterFormats from 'modules/types/em/components/parameter-formats'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 
@@ -63,58 +76,10 @@ export default {
         'parameter-list-item': ParameterListItem,
         'parameter-list': ParameterList,
     },
-    'mixins': [parameterFormats],
     'props': {
         'ctfEstimation': {
             'type': Object,
             'required': true,
-        },
-    },
-    'computed': {
-        'movieNumber': function() {
-            return this.datumOrBlank(this.ctfEstimation.movieNumber)
-        },
-        'boxSize': function() {
-            return this.dimensions(
-                this.datumWithUnit(this.ctfEstimation.boxSizeX, '&micro;m'),
-                this.datumWithUnit(this.ctfEstimation.boxSizeY, '&micro;m')
-            )
-        },
-        'resolution': function() {
-            return this.range(
-                this.datumWithUnit(this.ctfEstimation.minResolution, 'Å'),
-                this.datumWithUnit(this.ctfEstimation.maxResolution, 'Å')
-            )
-        },
-        'defocus': function() {
-            return this.range(
-                this.datumWithUnit(this.ctfEstimation.minDefocus, 'Å'),
-                this.datumWithUnit(this.ctfEstimation.maxDefocus, 'Å')
-            )
-        },
-        'defocusStepSize': function() {
-            return this.datumWithUnit(this.ctfEstimation.defocusStepSize, 'Å')
-        },
-        'astigmatism': function() {
-            return this.datumWithUnit(this.ctfEstimation.astigmatism, 'Å')
-        },
-        'astigmatismAngle': function() {
-            return this.datumWithUnit(this.ctfEstimation.astigmatismAngle, '&deg;')
-        },
-        'estimatedResolution': function() {
-            return this.datumWithUnit(this.ctfEstimation.estimatedResolution, 'Å')
-        },
-        'estimatedDefocus': function() {
-            return this.datumWithUnit(this.ctfEstimation.estimatedDefocus, 'Å')
-        },
-        'amplitudeContrast': function() {
-            return this.datumOrBlank(this.ctfEstimation.amplitudeContrast)
-        },
-        'ccValue': function() {
-            return this.datumOrBlank(this.ctfEstimation.ccValue)
-        },
-        'comments': function() {
-            return this.datumOrBlank(this.ctfEstimation.comments)
         },
     },
 }

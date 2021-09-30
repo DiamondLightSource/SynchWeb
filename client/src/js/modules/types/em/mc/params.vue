@@ -2,49 +2,53 @@
   <parameter-list>
     <parameter-list-item
       label="Movie Number"
-      :item="movieNumber"
+      :value="motionCorrection.movieNumber"
     />
     <parameter-list-item
       label="First Frame"
-      :item="firstFrame"
+      :value="motionCorrection.firstFrame"
     />
     <parameter-list-item
       label="Last Frame"
-      :item="lastFrame"
+      :value="motionCorrection.lastFrame"
     />
     <parameter-list-item
       label="Dose Per Frame"
-      :item="dosePerFrame"
+      :value="motionCorrection.dosePerFrame"
+      unit="e⁻/Å²"
     />
     <parameter-list-item
       label="Dose Weight"
-      :item="doseWeight"
+      :value="motionCorrection.doseWeight"
+      unit="?"
     />
     <parameter-list-item
       label="Total Motion"
-      :item="totalMotion"
+      :value="motionCorrection.totalMotion"
+      unit="Å"
     />
     <parameter-list-item
       label="Average Motion / Frame"
-      :item="averageMotionPerFrame"
+      :value="motionCorrection.averageMotionPerFrame"
+      unit="Å"
     />
     <parameter-list-item
       label="Patches Used"
-      :item="patchesUsed"
+      :value="motionCorrection.patchesUsedX"
+      :value2="motionCorrection.patchesUsedY"
+      separator="X"
     />
     <parameter-list-item
       width="100%"
       label="Comments"
-      :item="comments"
+      :value="motionCorrection.comments"
     />
   </parameter-list>
 </template>
 
 <script>
-import parameterFormats from 'modules/types/em/components/parameter-formats'
 import ParameterList from 'modules/types/em/components/parameter-list.vue'
 import ParameterListItem from 'modules/types/em/components/parameter-list-item.vue'
-import unitsHtml from 'modules/types/em/components/units-html.js'
 
 export default {
     'name': "Params",
@@ -52,52 +56,10 @@ export default {
         'parameter-list-item': ParameterListItem,
         'parameter-list': ParameterList,
     },
-    'mixins': [parameterFormats],
     'props': {
         'motionCorrection': {
             'type': Object,
             'required': true,
-        },
-    },
-    'computed': {
-        'movieNumber': function() {
-            return this.datumOrBlank(this.motionCorrection.movieNumber)
-        },
-        'firstFrame': function() {
-            return this.datumOrBlank(this.motionCorrection.firstFrame)
-        },
-        'lastFrame': function() {
-            return this.datumOrBlank(this.motionCorrection.lastFrame)
-        },
-        'dosePerFrame': function() {
-            return this.datumWithUnit(
-                this.motionCorrection.dosePerFrame,
-                unitsHtml.electron + '/' + unitsHtml.angstromSquared
-            )
-        },
-        'doseWeight': function() {
-            return this.datumWithUnit(
-                this.motionCorrection.doseWeight, '?'
-            )
-        },
-        'totalMotion': function() {
-            return this.datumWithUnit(
-                this.motionCorrection.totalMotion, 'Å'
-            )
-        },
-        'averageMotionPerFrame': function() {
-            return this.datumWithUnit(
-                this.motionCorrection.averageMotionPerFrame, 'Å'
-            )
-        },
-        'patchesUsed': function() {
-            return this.dimensions(
-                this.motionCorrection.patchesUsedX,
-                this.motionCorrection.patchesUsedY
-            )
-        },
-        'comments': function() {
-            return this.datumOrBlank(this.motionCorrection.comments)
         },
     },
 }

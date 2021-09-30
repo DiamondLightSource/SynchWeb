@@ -12,7 +12,8 @@
           :key="name"
           width="20%"
           :label="schema[name].label"
-          :item="value"
+          :value="value"
+          :unit="schema[name].unit"
         />
       </template>
 
@@ -22,7 +23,8 @@
           :key="name"
           width="100%"
           :label="schema[name].label"
-          :item="value"
+          :value="value"
+          :unit="schema[name].unit"
         />
       </template>
     </parameter-list>
