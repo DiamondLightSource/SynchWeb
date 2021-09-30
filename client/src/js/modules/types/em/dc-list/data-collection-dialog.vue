@@ -34,11 +34,6 @@
         />
 
         <input-text
-          name="pixelSizeOnImage"
-          :form="form"
-        />
-
-        <input-text
           name="imageSizeX"
           :form="form"
         />
@@ -153,11 +148,6 @@
 </template>
 
 <script>
-/*
- * TODO: Could we make Detector into a drop down
- * And pre-insert the eBIC "standard" detectors into iSpyB?
- */
-
 import { mapGetters } from 'vuex'
 import DialogForm from 'modules/types/em/components/dialog-form.vue'
 import InputCheckbox from 'modules/types/em/components/input-checkbox.vue'
