@@ -30,7 +30,6 @@ export default {
             'marionetteOptions': {
                 'value': this.value,
                 'collection': this.collection,
-                'url': this.url,
             },
             'searchView': SearchView,
         }
