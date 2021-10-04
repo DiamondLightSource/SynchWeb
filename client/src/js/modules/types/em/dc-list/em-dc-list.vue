@@ -1,7 +1,8 @@
 <template>
   <section class="content">
-    <h1 class="no_mobile">
-      {{ heading }}
+    <h1 class="no_mobile visitHeader">
+      <div>{{ heading }}</div>
+      <usage-stack />
     </h1>
 
     <refresh
@@ -40,6 +41,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import EventBus from 'app/components/utils/event-bus.js'
 import Pagination from 'app/components/pagination.vue'
 import Refresh from 'modules/types/em/dc-list/refresh.vue'
@@ -47,8 +49,8 @@ import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
 import Search from 'modules/types/em/dc-list/search.vue'
 import Table from 'app/components/table.vue'
 import Toolbar from 'modules/types/em/dc-list/toolbar.vue'
+import UsageStack from 'modules/types/em/dc-list/usage-stack.vue'
 import vueXModule from 'modules/types/em/store'
-import { mapGetters } from 'vuex'
 
 export default {
     'name': 'EmDcList',
@@ -59,6 +61,7 @@ export default {
         'search': Search,
         'table-component': Table,
         'toolbar': Toolbar,
+        'usage-stack': UsageStack,
     },
     'props': {
         // collections/datacollections.js
@@ -162,6 +165,7 @@ export default {
 </script>
 
 <style scoped>
+.visitHeader,
 .toolbar {
     display: flex;
     justify-content: space-between;
