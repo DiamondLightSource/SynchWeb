@@ -156,7 +156,6 @@ export default {
                 'humanName': 'CTF summary data',
             }).then(
                 (response) => {
-                    // TODO: would this be better in the API?
                     this.xAxis = []
                     this.yAxes.astigmatism = []
                     this.yAxes.estimatedDefocus = []
