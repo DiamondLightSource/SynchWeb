@@ -133,7 +133,8 @@ class DC extends Page
                 } else if ($this->arg('t') == 'err') {
                     $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
                     $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
-                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = app.datacollectionid)
+                        LEFT OUTER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = pj.datacollectionid)
                         INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
                 }
             }
