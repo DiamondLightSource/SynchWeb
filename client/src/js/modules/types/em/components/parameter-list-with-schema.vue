@@ -9,7 +9,7 @@
         :key="name"
         width="20%"
         :label="rules.label"
-        :value="parameters[name]"
+        :value="value(name)"
         :unit="rules.unit"
       />
     </template>
@@ -20,7 +20,7 @@
         :key="name"
         width="100%"
         :label="rules.label"
-        :value="parameters[name]"
+        :value="value(name)"
         :unit="rules.unit"
       />
     </template>
@@ -78,6 +78,14 @@ export default {
         'isLong': function(name) {
             return name == 'comments' ||
                 this.parameters[name].length >= 20
+        },
+        'value': function(name) {
+            const value = this.parameters[name]
+            if (this.schema[name].type == 'boolean') {
+                return ['1', 'true'].includes(value.toLowerCase()) ?
+                    'yes' : 'no'
+            }
+            return value
         },
     },
 }
