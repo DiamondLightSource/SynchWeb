@@ -72,7 +72,7 @@ class RelionSchema extends Schema
                 /*
                 'minValue' => 100,
                 'maxValue' => 300,
-                'checkType' => 'integer'
+                'type' => 'integer'
                 */
             ),
             'Cs' => array(
@@ -83,14 +83,14 @@ class RelionSchema extends Schema
                 'displayOptions' => array('2.7 (Talos/Krios)'),
                 /*
                 'options' => array(1.4, 2.0, 2.7),
-                'checkType' => 'real'
+                'type' => 'real'
                 */
             ),
             'ctffind_do_phaseshift' => array(
                 'label' => 'Phase Plate Used',
                 'default' => false,
                 'required' => true,
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             'angpix' => array(
                 'label' => 'Pixel Size (Å/pixel)',
@@ -98,7 +98,7 @@ class RelionSchema extends Schema
                 'required' => true,
                 'minValue' => 0.02,
                 'maxValue' => 100.0,
-                'checkType' => 'real'
+                'type' => 'real'
             ),
             'eer_grouping' => array(
                 'label' => 'EER fractionation',
@@ -111,14 +111,14 @@ class RelionSchema extends Schema
                     'import_images_ext' => 'eer'
                 ),
                 'minValue' => 1,
-                'checkType' => 'integer'
+                'type' => 'integer'
             ),
             'motioncor_binning' => array(
                 'label' => 'Motion Correction Binning',
                 'default' => '1',
                 'required' => true,
                 'options' => array('1', '2'),
-                'checkType' => 'integer'
+                'type' => 'integer'
             ),
             'motioncor_doseperframe' => array(
                 'label' => 'Dose per frame (e⁻/Å²)',
@@ -126,7 +126,7 @@ class RelionSchema extends Schema
                 'required' => true,
                 'minValue' => 0.02,
                 'maxValue' => 10.0,
-                'checkType' => 'real'
+                'type' => 'real'
             ),
             'stop_after_ctf_estimation' => array(
                 // This field is a bit bonkers.
@@ -134,7 +134,7 @@ class RelionSchema extends Schema
                 'label' => 'Stop after CTF estimation',
                 'default' => false,
                 'required' => true,
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             'do_class2d' => array(
                 'label' => 'Do 2D Classification',
@@ -142,7 +142,7 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             'do_class3d' => array(
                 'label' => 'Do 3D Classification',
@@ -150,7 +150,7 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             'use_fsc_criterion' => array(
                 'label' => 'Best initial model from FSC',
@@ -159,7 +159,7 @@ class RelionSchema extends Schema
                     'stop_after_ctf_estimation' => false,
                     'do_class3d' => true
                 ),
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             'autopick_do_cryolo' => array(
                 'label' => 'Use crYOLO',
@@ -171,7 +171,7 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             /* TODO In new validator,
                ensure autopick_LoG_diam_min < autopick_LoG_diam_max. (JPH) */
@@ -184,7 +184,7 @@ class RelionSchema extends Schema
                 'minValue' => 0.02,
                 'maxValue' => 1024.0,
                 'lessThan' => 'autopick_LoG_diam_max',
-                'checkType' => 'real'
+                'type' => 'real'
             ),
             'autopick_LoG_diam_max' => array(
                 'label' => 'Maximum Diameter (Å)',
@@ -195,7 +195,7 @@ class RelionSchema extends Schema
                 'minValue' => 0.02,
                 'maxValue' => 4000.0,
                 'greaterThan' => 'autopick_LoG_diam_min',
-                'checkType' => 'real'
+                'type' => 'real'
             ),
             'mask_diameter' => array(
                 'label' => 'Mask Diameter (Å)',
@@ -205,7 +205,7 @@ class RelionSchema extends Schema
                 ),
                 'minValue' => 0.1,
                 'maxValue' => 1024,
-                'checkType' => 'real'
+                'type' => 'real'
             ),
             'extract_downscale' => array(
                 // doesn't exist in form
@@ -221,7 +221,7 @@ class RelionSchema extends Schema
                 ),
                 'minValue' => 0.1,
                 'maxValue' => 1024.0,
-                'checkType' => 'real'
+                'type' => 'real'
             ),
             'extract_small_boxsize' => array(
                 'label' => 'Downsample Box Size (pixels)',
@@ -231,7 +231,7 @@ class RelionSchema extends Schema
                 ),
                 'minValue' => 0.1,
                 'maxValue' => 1024.0,
-                'checkType' => 'real'
+                'type' => 'real'
             ),
             'want2ndPass' => array(
                 'label' => 'Do Second Pass',
@@ -245,7 +245,7 @@ class RelionSchema extends Schema
                     'stop_after_ctf_estimation' => false,
                     'want2ndPass' => true
                 ),
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             'do_class3d_pass2' => array(
                 'label' => 'Do 3D Classification',
@@ -254,7 +254,7 @@ class RelionSchema extends Schema
                     'stop_after_ctf_estimation' => false,
                     'want2ndPass' => true
                 ),
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             'wantCalculate' => array(
                 // Only a form checkbox - not sent to or retrieved from the server

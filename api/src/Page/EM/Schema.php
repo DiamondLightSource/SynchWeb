@@ -36,7 +36,7 @@ abstract class Schema
      * 'pattern'          => pattern for validation ("filename", "directory"),
      * 'minValue'         => minimum value,
      * 'maxValue'         => maximum value,
-     * 'checkType'        => check value is type ("boolean", "integer", "real")
+     * 'type'             => check value is type ("boolean", "integer", "real")
      * 'lessThan'         => another field that this one must be less than,
      * 'greaterThan'      => another field that this one must be greater than,
      *

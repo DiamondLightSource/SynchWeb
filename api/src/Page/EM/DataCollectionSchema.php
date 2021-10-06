@@ -48,82 +48,82 @@ class DataCollectionSchema extends Schema
                 'required' => true,
                 'minValue' => 0.02,
                 'maxValue' => 100.0,
-                'checkType' => 'real'
+                'type' => 'real'
             ),
             'imageSizeX' => array(
                 'label' => 'Image Size X',
                 'unit' => 'Pixels',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'imageSizeY' => array(
                 'label' => 'Image Size Y',
                 'unit' => 'Pixels',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'numberOfImages' => array(
                 'label' => 'Number of Movies',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'numberOfPasses' => array(
                 'label' => 'Frames Per Movie',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'exposureTime' => array(
                 'label' => 'Exposure Time',
                 'required' => true,
-                'checkType' => 'real',
+                'type' => 'real',
             ),
             // Optics
             'c1lens' => array(
                 'label' => 'C1 Lens',
                 'unit' => '%',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'c1aperture' => array(
                 'label' => 'C1 Aperture',
                 'unit' => 'μm',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'c2lens' => array(
                 'label' => 'C2 Lens',
                 'unit' => '%',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'c2aperture' => array(
                 'label' => 'C2 Aperture',
                 'unit' => 'μm',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'c3lens' => array(
                 'label' => 'C3 Lens',
                 'unit' => '%',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'c3aperture' => array(
                 'label' => 'C3 Aperture',
                 'unit' => 'μm',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'objAperture' => array(
                 'label' => 'Objective Aperture',
                 'unit' => 'μm',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'magnification' => array(
                 'label' => 'Magnification',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             // Electron Beam & Detector
             'voltage' => array(
@@ -137,13 +137,13 @@ class DataCollectionSchema extends Schema
                 'label' => 'Beam Size X',
                 'unit' => 'μm',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'beamSizeAtSampleY' => array(
                 'label' => 'Beam Size Y',
                 'unit' => 'μm',
                 'required' => true,
-                'checkType' => 'integer',
+                'type' => 'integer',
             ),
             'totalExposedDose' => array(
                 'label' => 'Dose per frame',
@@ -152,14 +152,14 @@ class DataCollectionSchema extends Schema
                 'required' => true,
                 'minValue' => 0.02,
                 'maxValue' => 10.0,
-                'checkType' => 'real',
+                'type' => 'real',
             ),
             // TODO Energy Filter ???
             'phasePlate' => array(
                 'label' => 'Phase Plate Used',
                 'default' => false,
                 'required' => true,
-                'checkType' => 'boolean'
+                'type' => 'boolean'
             ),
             'detectorManufacturer' => array(
                 'label' => 'Detector Manufacturer',

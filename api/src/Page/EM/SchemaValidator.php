@@ -167,7 +167,7 @@ class SchemaValidator
     }
 
     /**
-     * Check for the 'checkType' validation rule
+     * Check for the 'type' validation rule
      *
      * @param array $allRules - all the rules applying to the field being checked
      * @param string $type - the PHP type this field should have
@@ -178,7 +178,7 @@ class SchemaValidator
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkCheckType($allRules, $type, $value)
+    private function checkType($allRules, $type, $value)
     {
         return $this->isCorrectType(
             $type,
@@ -316,10 +316,10 @@ class SchemaValidator
     private function requiredType($param)
     {
         if (gettype($param) == 'array') {
-            if (!array_key_exists('checkType', $param)) {
+            if (!array_key_exists('type', $param)) {
                 return false;
             }
-            return $param['checkType'];
+            return $param['type'];
         }
 
         return $param;
@@ -328,7 +328,7 @@ class SchemaValidator
     /**
      * Type coerce the given value
      *
-     * @param mixed $param - either an array of rules including a checkType or a type in a string
+     * @param mixed $param - either an array of rules including a type field or a type in a string
      * @param mixed $value - the value to coerce
      *
      * @return mixed - the value coerced into the given type
