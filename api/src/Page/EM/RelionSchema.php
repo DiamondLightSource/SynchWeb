@@ -2,14 +2,21 @@
 
 namespace SynchWeb\Page\EM;
 
-class RelionSchema
+use SynchWeb\Page\EM\Schema;
+
+class RelionSchema extends Schema
 {
+    protected function defaultTable()
+    {
+        return 'ProcessingJobParameter';
+    }
+
     /**
      * Default validation and conversion rules for Relion processing job parameters
      *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public static function schema()
+    public function schema()
     {
         return array(
             'acquisition_software' => array(

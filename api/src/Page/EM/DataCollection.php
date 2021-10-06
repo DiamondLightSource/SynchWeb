@@ -10,7 +10,7 @@ trait DataCollection
 {
     public function dataCollectionSchema()
     {
-        $this->_output($this->schema());
+        $this->_output($this->schema()->schema());
     }
 
     /**
@@ -21,7 +21,7 @@ trait DataCollection
     {
         global $visit_directory;
 
-        $validator = new PostDataValidator($this->schema());
+        $validator = new PostDataValidator($this->schema()->schema());
         list($invalid, $args) = $validator->validateJsonPostData(
             $this->app->request->getBody()
         );
@@ -79,13 +79,12 @@ trait DataCollection
     /**
      * Get the Data Collection Schema
      *
-     * ...and only get told off once for using a static
-     *
-     * @SuppressWarnings(PHPMD.StaticAccess)
+     * In a sensible world where these traits are classes, this would be a
+     * constructor.
      */
     private function schema()
     {
-        return DataCollectionSchema::schema();
+        return new DataCollectionSchema();
     }
 
     /**
@@ -166,7 +165,7 @@ trait DataCollection
                 'fileTemplate' => $fileTemplate,
                 'comments' => 'Created by SynchWeb',
             );
-            foreach ($this->schema() as $field => $schema) {
+            foreach ($this->schema()->schema() as $field => $schema) {
                 if (
                     array_key_exists($field, $inserts) || (
                         array_key_exists('stored', $schema) &&

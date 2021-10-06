@@ -2,14 +2,21 @@
 
 namespace SynchWeb\Page\EM;
 
-class DataCollectionSchema
+use SynchWeb\Page\EM\Schema;
+
+class DataCollectionSchema extends Schema
 {
+    protected function defaultTable()
+    {
+        return 'DataCollection';
+    }
+
     /**
      * Default validation and conversion rules for EM Data Collection
      *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public static function schema()
+    public function schema()
     {
         return array(
             // Movies
