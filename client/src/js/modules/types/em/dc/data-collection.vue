@@ -21,7 +21,11 @@
         @fetch="fetchDataCollection"
       />
 
-      <data-collection-header :data-collection="dataCollection" />
+      <parameter-list-with-schema
+        schema-name="Data Collection Schema"
+        schema-url="dc/schema/"
+        :parameters="dataCollection"
+      />
 
       <processing-job
         v-for="processingJob in processingJobs"
@@ -34,9 +38,9 @@
 </template>
 
 <script>
-import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import FlatButton from 'app/components/flat-button.vue'
+import ParameterListWithSchema from 'modules/types/em/components/parameter-list-with-schema.vue'
 import ProcessingJob from 'modules/types/em/processing-jobs/processing-job.vue'
 import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
 import Toolbar from 'modules/types/em/dc/toolbar.vue'
@@ -44,8 +48,8 @@ import Toolbar from 'modules/types/em/dc/toolbar.vue'
 export default {
     'name': 'EmDcList',
     'components': {
-        'data-collection-header': DataCollectionHeader,
         'flat-button': FlatButton,
+        'parameter-list-with-schema': ParameterListWithSchema,
         'processing-job': ProcessingJob,
         'relion-dialog': RelionDialog,
         'toolbar': Toolbar,
