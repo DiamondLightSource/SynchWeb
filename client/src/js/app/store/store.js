@@ -214,6 +214,7 @@ const store = new Vuex.Store({
     sso: state => state.auth.cas_sso,
     sso_url: state => state.auth.cas_url,
     apiUrl: state => state.apiUrl,
+    appUrl: state => state.appUrl,
   }
 })
 
