@@ -74,6 +74,41 @@ trait DataCollection
         $this->_output(array('id' => $dataCollectionId));
     }
 
+
+    public function dataCollectionComments()
+    {
+        $rows = $this->db->pq(
+            "SELECT
+                DataCollection.comments
+                FROM DataCollection
+                INNER JOIN DataCollectionGroup
+                    ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+                INNER JOIN BLSession
+                    ON BLSession.sessionId = DataCollectionGroup.sessionId
+                INNER JOIN Proposal
+                    ON Proposal.proposalId = BLSession.proposalId
+                WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+                AND DataCollection.dataCollectionId = :2",
+            array(
+                $this->arg('prop'),
+                $this->arg('id')
+            ),
+            false
+        );
+        if (sizeof($rows) == 0) {
+            $this->_error('No data collection');
+        }
+
+        $this->db->pq(
+            "UPDATE DataCollection SET comments=:1 WHERE DataCollection.dataCollectionId = :2",
+            array(
+                json_decode($this->app->request->getBody(), true)['comments'],
+                $this->arg('id')
+            )
+        );
+        $this->_output(array('updated' => $this->arg('id')));
+    }
+
     ////////////////////////////////////////////////////////////////////////////
 
     /**

@@ -16,8 +16,9 @@
     >
       <relion-dialog />
 
-      <data-collection-toolbar
-        :data-collection-model="dataCollectionModel"
+      <toolbar
+        :data-collection="dataCollection"
+        @fetch="fetchDataCollection"
       />
 
       <data-collection-header :data-collection="dataCollection" />
@@ -34,21 +35,20 @@
 
 <script>
 import DataCollectionHeader from 'modules/types/em/dc/data-collection-header.vue'
-import DataCollectionModel from 'models/datacollection.js'
-import DataCollectionToolbar from 'modules/types/em/dc-toolbar/dc-toolbar.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import FlatButton from 'app/components/flat-button.vue'
 import ProcessingJob from 'modules/types/em/processing-jobs/processing-job.vue'
 import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
+import Toolbar from 'modules/types/em/dc/toolbar.vue'
 
 export default {
     'name': 'EmDcList',
     'components': {
         'data-collection-header': DataCollectionHeader,
-        'data-collection-toolbar': DataCollectionToolbar,
         'flat-button': FlatButton,
         'processing-job': ProcessingJob,
         'relion-dialog': RelionDialog,
+        'toolbar': Toolbar,
     },
     'props': {
         'dataCollectionId': {

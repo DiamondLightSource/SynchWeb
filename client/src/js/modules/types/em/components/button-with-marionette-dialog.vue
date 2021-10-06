@@ -6,15 +6,15 @@
       :button-label="buttonLabel"
       :button-text="buttonText"
       :disabled="disabled"
-      @click="showDialog = true"
+      @click="open"
     />
     <dialog-marionette-view
       :m-view="mView"
       :options="mViewOptions"
       :show-dialog="showDialog"
       :title="dialogTitle"
-      @confirm="showDialog = false"
-      @cancel="showDialog = false"
+      @confirm="close('confirm')"
+      @cancel="close('cancel')"
     />
   </span>
 </template>
@@ -67,6 +67,16 @@ export default {
         return {
             'showDialog': false,
         }
+    },
+    'methods': {
+        'open': function() {
+            this.$emit('open')
+            this.showDialog = true
+        },
+        'close': function(event) {
+            this.showDialog = false
+            this.$emit(event)
+        },
     },
 }
 </script>
