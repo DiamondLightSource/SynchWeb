@@ -5,7 +5,7 @@ namespace SynchWeb\Page\EM;
 /**
  * Validate data posted in JSON for database insertions, etc.
  */
-class PostDataValidator
+class SchemaValidator
 {
     private $postData;
     private $schema;

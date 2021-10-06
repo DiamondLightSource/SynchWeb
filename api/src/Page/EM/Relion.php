@@ -2,7 +2,7 @@
 
 namespace SynchWeb\Page\EM;
 
-use SynchWeb\Page\EM\PostDataValidator;
+use SynchWeb\Page\EM\SchemaValidator;
 use SynchWeb\Page\EM\RelionParameterTransformer;
 use SynchWeb\Page\EM\RelionSchema;
 
@@ -37,7 +37,7 @@ trait Relion
 
         $sessionPath = $this->sessionSubstituteValuesInPath($session, $visit_directory);
 
-        $validator = new PostDataValidator(RelionSchema::schema());
+        $validator = new SchemaValidator(RelionSchema::schema());
         list($invalid, $args) = $validator->validateJsonPostData(
             $this->app->request->getBody()
         );

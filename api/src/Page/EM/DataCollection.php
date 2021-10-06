@@ -4,7 +4,7 @@ namespace SynchWeb\Page\EM;
 
 use DateTime;
 use SynchWeb\Page\EM\DataCollectionSchema;
-use SynchWeb\Page\EM\PostDataValidator;
+use SynchWeb\Page\EM\SchemaValidator;
 
 trait DataCollection
 {
@@ -21,7 +21,7 @@ trait DataCollection
     {
         global $visit_directory;
 
-        $validator = new PostDataValidator($this->schema()->schema());
+        $validator = new SchemaValidator($this->schema()->schema());
         list($invalid, $args) = $validator->validateJsonPostData(
             $this->app->request->getBody()
         );
