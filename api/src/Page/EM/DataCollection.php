@@ -74,6 +74,66 @@ trait DataCollection
         $this->_output(array('id' => $dataCollectionId));
     }
 
+    /**
+     * Fetch the applicable (to EM) fields from the DataCollection
+     *
+     * Once the transfer script is available at eBIC, SynchWeb will no longer
+     * be required to create DataCollections and the use of dataCollectionSchema
+     * will be largely irrelevant and it may be worthwhile to just use an
+     * "ordinary" query here.
+     */
+    public function dataCollectionFetch()
+    {
+        $selections = implode(', ', $this->schema()->selections());
+
+        $rows = $this->db->pq(
+            "SELECT
+                DataCollection.dataCollectionGroupId,
+                DataCollection.dataCollectionId,
+                DATE_FORMAT(DataCollection.startTime, '%d-%m-%Y %k:%i:%s') AS startTime,
+                BLSession.visit_number,
+                BLSession.archived,
+                BLSession.beamLineName,
+                COUNT(DataCollectionFileAttachment.dataCollectionFileAttachmentId) AS attachmentsCount,
+                COUNT(DataCollectionComment.dataCollectionCommentId) AS commentsCount,
+                $selections
+                FROM DataCollection
+                LEFT JOIN DataCollectionFileAttachment
+                    ON DataCollectionFileAttachment.dataCollectionId = DataCollection.dataCollectionId
+                LEFT JOIN DataCollectionComment
+                    ON DataCollectionComment.dataCollectionId = DataCollection.dataCollectionId
+                INNER JOIN DataCollectionGroup
+                    ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+                INNER JOIN BLSession
+                    ON BLSession.sessionId = DataCollectionGroup.sessionId
+                INNER JOIN Proposal
+                    ON Proposal.proposalId = BLSession.proposalId
+                WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+                AND DataCollection.dataCollectionId = :2",
+            array(
+                $this->arg('prop'),
+                $this->arg('id')
+            ),
+            false
+        );
+
+        if (sizeof($rows) == 0) {
+            $this->_error('No data collection');
+        }
+
+        $dataCollection = array_map(function ($item) {
+            return strval($item);
+        }, $rows[0]);
+
+        $visitCode = $this->arg('prop') . '-' . $dataCollection['visit_number'];
+        $dataCollection['shortImageDirectory'] = preg_replace(
+            "#.*/{$visitCode}/#",
+            '',
+            $dataCollection['imageDirectory']
+        );
+
+        $this->_output($dataCollection);
+    }
 
     public function dataCollectionComments()
     {

@@ -98,7 +98,11 @@ const module = {
                 }
                 const reportError = (jqXHR) => {
                     const message = extractErrorMessage(jqXHR)
-                    if (message !== false && errorHandler(message) === true) {
+                    if (
+                        message !== false &&
+                        typeof errorHandler == 'function' &&
+                        errorHandler(message) === true
+                    ) {
                         return
                     }
                     context.commit('notifications/addNotification', {

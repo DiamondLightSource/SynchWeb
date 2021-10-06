@@ -27,7 +27,7 @@
         v-for="processingJob in processingJobs"
         :key="processingJob.autoProcProgramId"
         :processing-job="processingJob"
-        :collection-active="dataCollection.ARCHIVED != '1'"
+        :collection-active="dataCollection.archived != '1'"
       />
     </div>
   </section>
@@ -68,13 +68,8 @@ export default {
         }
     },
     'computed': {
-        // Before removing this Backbone model, consider that there is still
-        // some Marionette code operating on it in (e.g.) ../dc-toolbar/
-        'dataCollectionModel': function() {
-            return new DataCollectionModel({ 'ID': this.dataCollectionId })
-        },
         'beamline': function() {
-            return this.dataCollection ? this.dataCollection.BL : ''
+            return this.dataCollection ? this.dataCollection.beamLineName : ''
         },
     },
     'watch': {
@@ -84,7 +79,7 @@ export default {
             }
             EventBus.$emit('bcChange', [
                 { 'title': 'Data Collections', 'url': '/dc' },
-                { 'title': this.dataCollection.BL },
+                { 'title': this.dataCollection.beamLineName },
                 { 'title': this.visit, 'url': '/dc/visit/' + this.visit },
                 { 'title': 'Data Collection ' + this.dataCollectionId }
             ])
@@ -101,36 +96,32 @@ export default {
         this.fetchDataCollection()
     },
     'beforeDestroy': function() {
-        if (this.timeout !== null) {
-            clearTimeout(this.timeout)
-            this.timeout = null;
-            console.log('cleared dataCollection fetch timer', this.timeout)
-        }
+        this.clearTimeout()
     },
     'methods': {
+        'clearTimeout': function() {
+            if (this.timeout !== null) {
+                clearTimeout(this.timeout)
+                this.timeout = null;
+                console.log('cleared dataCollection fetch timer', this.timeout)
+            }
+        },
         'fetchDataCollection': function() {
+            this.clearTimeout()
             this.$store.commit('loading', true)
-            // Set a blank type to prevent url mangling by the Backbone model
-            this.dataCollectionModel.set('TYPE', '')
-            this.$store.dispatch('getModel', this.dataCollectionModel).then(
-                (model) => {
-                    this.dataCollection = model.attributes
-                    console.log('fetched data collection', this.dataCollection)
-                    if (this.dataCollection.ARCHIVED == '0') {
+            this.$store.dispatch('em/fetch', {
+                'url': 'dc/' + this.dataCollectionId,
+                'humanName': 'Data Collection',
+            }).then(
+                (response) => {
+                    this.dataCollection = response
+                    if (this.dataCollection.archived == '0') {
                         this.timeout = setTimeout(
                             this.fetchDataCollection,
                             30000
                         )
                     }
                     this.fetchProcessingJobs()
-                },
-                (error) => {
-                    console.log('error fetching dataCollection', error)
-                    this.$store.commit('notifications/addNotification', {
-                        'title': 'Error',
-                        'message': 'Could not retrieve data collection',
-                        'level': 'error'
-                    })
                 }
             ).finally(() => {
                 this.$store.commit('loading', false)
