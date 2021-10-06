@@ -88,7 +88,7 @@ trait Picker
             false
         );
 
-        if (!sizeof($rows)) {
+        if (sizeof($rows) == 0) {
             $this->_error('No such particle picking');
         }
 
