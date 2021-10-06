@@ -57,7 +57,7 @@ class RelionSchema extends Schema
                 'required' => false,
             ),
             'motioncor_gainreference' => array(
-                'label' => "Gain Reference File Name",
+                'label' => 'Gain Reference File Name',
                 'pattern' => 'filename',
                 'default' => 'gain.mrc',
                 'required' => array (
@@ -65,7 +65,8 @@ class RelionSchema extends Schema
                 ),
             ),
             'voltage' => array(
-                'label' => "Voltage (kV)",
+                'label' => 'Voltage',
+                'unit' => 'kV',
                 'default' => '300',
                 'required' => true,
                 'options' => array('200', '300'),
@@ -76,7 +77,8 @@ class RelionSchema extends Schema
                 */
             ),
             'Cs' => array(
-                'label' => 'Spherical Aberration (mm)',
+                'label' => 'Spherical Aberration',
+                'unit' => 'mm',
                 'default' => '2.7',
                 'required' => true,
                 'options' => array('2.7'),
@@ -93,7 +95,8 @@ class RelionSchema extends Schema
                 'type' => 'boolean'
             ),
             'angpix' => array(
-                'label' => 'Pixel Size (Å/pixel)',
+                'label' => 'Pixel Size',
+                'unit' => 'Å/pixel',
                 'default' => '',
                 'required' => true,
                 'minValue' => 0.02,
@@ -121,7 +124,8 @@ class RelionSchema extends Schema
                 'type' => 'integer'
             ),
             'motioncor_doseperframe' => array(
-                'label' => 'Dose per frame (e⁻/Å²)',
+                'label' => 'Dose per frame',
+                'unit' => 'e⁻/Å²',
                 'default' => '0.5',
                 'required' => true,
                 'minValue' => 0.02,
@@ -187,7 +191,8 @@ class RelionSchema extends Schema
                 'type' => 'real'
             ),
             'autopick_LoG_diam_max' => array(
-                'label' => 'Maximum Diameter (Å)',
+                'label' => 'Maximum Diameter',
+                'unit' => 'Å',
                 'default' => '',
                 'required' => array(
                     'stop_after_ctf_estimation' => false,
@@ -198,7 +203,8 @@ class RelionSchema extends Schema
                 'type' => 'real'
             ),
             'mask_diameter' => array(
-                'label' => 'Mask Diameter (Å)',
+                'label' => 'Mask Diameter',
+                'unit' => 'Å',
                 'default' => '',
                 'required' => array(
                     'stop_after_ctf_estimation' => false
@@ -214,7 +220,8 @@ class RelionSchema extends Schema
                 'required' => false,
             ),
             'extract_boxsize' => array(
-                'label' => 'Box Size (pixels)',
+                'label' => 'Box Size',
+                'unit' => 'pixels',
                 'default' => '',
                 'required' => array(
                     'stop_after_ctf_estimation' => false
@@ -224,7 +231,8 @@ class RelionSchema extends Schema
                 'type' => 'real'
             ),
             'extract_small_boxsize' => array(
-                'label' => 'Downsample Box Size (pixels)',
+                'label' => 'Downsample Box Size',
+                'unit' => 'pixels',
                 'default' => '',
                 'required' => array(
                     'stop_after_ctf_estimation' => false
