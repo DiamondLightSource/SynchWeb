@@ -22,11 +22,12 @@ class SchemaValidator
         $required = array();
 
         foreach ($this->schema as $name => $rules) {
-            if (!$this->isRequired($name)) {
+            $value = $this->postedValue($name);
+
+            if (!$this->isRequired($rules, $value)) {
                 continue;
             }
 
-            $value = $this->postedValue($name);
             $result = $this->validateArgument($value, $rules);
             if ($result === true) {
                 $required[$name] = $value;
@@ -78,6 +79,10 @@ class SchemaValidator
      */
     private function checkRequired($allRules, $required, $value)
     {
+        if ($required === 'optional') {
+            return true;
+        }
+
         return ($value !== '' && $value !== null) ? true : 'is required';
     }
 
@@ -282,9 +287,17 @@ class SchemaValidator
 
     ////////////////////////////////////////////////////////////////////////////
 
-    private function isRequired($name)
+    private function isRequired($rules, $value)
     {
-        $required = $this->schema[$name]['required'];
+        if (array_key_exists('readOnly', $rules) && $rules['readOnly']) {
+            return false;
+        }
+
+        $required = $rules['required'];
+
+        if ($required === 'optional') {
+            return $this->typedValue('string', $value) != '';
+        }
 
         if (gettype($required) != 'array') {
             return $this->typedValue('boolean', $required);
