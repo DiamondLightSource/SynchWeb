@@ -27,7 +27,7 @@
 <script>
 
 export default {
-    'name': 'RelionInput',
+    'name': 'InputBase',
     'props': {
         'form': {
             'type': Object,

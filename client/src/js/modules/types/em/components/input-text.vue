@@ -23,7 +23,7 @@ import InputBase from 'modules/types/em/components/input-base.vue'
 import inputValue from 'modules/types/em/components/input-value'
 
 export default {
-    'name': 'RelionInputText',
+    'name': 'InputText',
     'components': {
         'input-base': InputBase,
     },
