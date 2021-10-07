@@ -50,27 +50,31 @@ export default {
         'id': function() {
             return this.name + '-txt'
         },
+        'rules': function() {
+            const rules = this.form.schema[this.name]
+            if (typeof rules == 'undefined') {
+                throw 'no schema section available for ' + this.name
+            }
+            return rules
+        },
         'errorMessage': function() {
             const errorMessage = this.form.errorMessages[this.name]
             return errorMessage ? errorMessage : ''
         },
         'extraDescription': function() {
-            const extraDescription = this.form.schema[this.name].extraDescription
-            return typeof extraDescription == 'undefined' ?
-                this.helpText : extraDescription.concat(this.helpText)
+            return typeof this.rules.extraDescription == 'undefined' ?
+                this.helpText :
+                this.rules.extraDescription.concat(this.helpText)
         },
         'extraClasses': function() {
-            return (
-                this.extraClass + ' ' + (
-                    this.errorMessage ? 'error' : ''
-                )
-            ).trim()
+            return (this.extraClass + ' ' + (
+                this.errorMessage ? 'error' : ''
+            )).trim()
         },
         'label': function() {
-            const schema = this.form.schema[this.name]
             return (
-                schema.label + (
-                    schema.unit ? ' (' + schema.unit + ')' : ''
+                this.rules.label + (
+                    this.rules.unit ? ' (' + this.rules.unit + ')' : ''
                 )
             ).trim()
         }
