@@ -65,4 +65,24 @@ abstract class Schema
 
         return $fields;
     }
+
+    /**
+     * A version of the schema useful on client side with some fields redacted
+     */
+    public function clientSchema()
+    {
+        return array_map(
+            function ($field) {
+                // You can't filter on an array key in PHP 5.4
+                $rules = array();
+                foreach ($field as $key => $value) {
+                    if (!in_array($key, array('select', 'stored'))) {
+                        $rules[$key] = $value;
+                    }
+                }
+                return $rules;
+            },
+            $this->schema()
+        );
+    }
 }

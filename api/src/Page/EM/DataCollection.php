@@ -10,7 +10,7 @@ trait DataCollection
 {
     public function dataCollectionSchema()
     {
-        $this->_output($this->schema()->schema());
+        $this->_output($this->schema()->clientSchema());
     }
 
     /**
