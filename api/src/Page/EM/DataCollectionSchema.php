@@ -169,6 +169,7 @@ class DataCollectionSchema extends Schema
             'slitGapHorizontal' => array(
                 'label' => 'Energy Filter / Slit Width',
                  'unit' => 'eV',
+                 'required' => true,
                  'minValue' => 5,
                  'maxValue' => 20,
                  'type' => 'real',
