@@ -32,6 +32,7 @@ class DataCollectionSchema extends Schema
                 'required' => true,
                 'default' => 'raw',
                 'pattern' => 'directory',
+                'display' => false,
             ),
             'imageSuffix' => array(
                 'label' => 'Movie File Name Extension',
@@ -39,8 +40,12 @@ class DataCollectionSchema extends Schema
                 'default' => 'tiff',
                 'options' => array('tif', 'tiff', 'mrc', 'eer'),
                 'displayOptions' => array('.tif', '.tiff', '.mrc', '.eer'),
+                'display' => false,
             ),
-            // TODO Binning
+            'fileTemplate' => array(
+                'required' => false,
+                'display' => false,
+            ),
             'pixelSizeOnImage' => array(
                 'label' => 'Pixel Size',
                 'unit' => 'Å/pixel',
@@ -50,79 +55,69 @@ class DataCollectionSchema extends Schema
                 'maxValue' => 100.0,
                 'type' => 'real'
             ),
-            'imageSizeX' => array(
-                'label' => 'Image Size X',
+            'imageSize' => array(
+                'label' => 'Image Size',
                 'unit' => 'Pixels',
                 'required' => true,
-                'type' => 'integer',
-            ),
-            'imageSizeY' => array(
-                'label' => 'Image Size Y',
-                'unit' => 'Pixels',
-                'required' => true,
-                'type' => 'integer',
+                'options' => array('11520, 8184', '5760, 4092', '4096, 4096'),
+                'select' => 'CONCAT(DataCollection.imageSizeX, " x ", DataCollection.imageSizeY)',
             ),
             'numberOfImages' => array(
                 'label' => 'Number of Movies',
                 'required' => true,
+                'minValue' => 1000,
+                'maxValue' => 50000,
                 'type' => 'integer',
             ),
             'numberOfPasses' => array(
                 'label' => 'Frames Per Movie',
                 'required' => true,
+                'minValue' => 30,
+                'maxValue' => 60,
                 'type' => 'integer',
             ),
             'exposureTime' => array(
-                'label' => 'Exposure Time',
+                'label' => 'Total Exposure Time',
+                'unit' => 'seconds',
                 'required' => true,
+                'minValue' => 1,
+                'maxValue' => 10,
                 'type' => 'real',
             ),
+            'frameLength' => array(
+                'label' => 'Frame Length',
+                'unit' => 'seconds',
+                'required' => false,
+                'select' => 'DataCollection.exposureTime / DataCollection.numberOfPasses'
+            ),
             // Optics
-            'c1lens' => array(
-                'label' => 'C1 Lens',
-                'unit' => '%',
-                'required' => true,
-                'type' => 'integer',
-            ),
-            'c1aperture' => array(
-                'label' => 'C1 Aperture',
-                'unit' => 'μm',
-                'required' => true,
-                'type' => 'integer',
-            ),
             'c2lens' => array(
                 'label' => 'C2 Lens',
                 'unit' => '%',
                 'required' => true,
+                'minValue' => 40,
+                'maxValue' => 65,
                 'type' => 'integer',
             ),
             'c2aperture' => array(
                 'label' => 'C2 Aperture',
                 'unit' => 'μm',
                 'required' => true,
-                'type' => 'integer',
-            ),
-            'c3lens' => array(
-                'label' => 'C3 Lens',
-                'unit' => '%',
-                'required' => true,
-                'type' => 'integer',
-            ),
-            'c3aperture' => array(
-                'label' => 'C3 Aperture',
-                'unit' => 'μm',
-                'required' => true,
+                'options' => array('50', '70'),
                 'type' => 'integer',
             ),
             'objAperture' => array(
                 'label' => 'Objective Aperture',
                 'unit' => 'μm',
                 'required' => true,
+                'options' => array('100', '70'),
                 'type' => 'integer',
             ),
             'magnification' => array(
                 'label' => 'Magnification',
                 'required' => true,
+                'minValue' => 53000,
+                'maxValue' => 215000,
                 'type' => 'integer',
             ),
             // Electron Beam & Detector
@@ -133,17 +128,28 @@ class DataCollectionSchema extends Schema
                 'required' => true,
                 'options' => array('200', '300'),
             ),
+            /* On the input form, beamSizeAtSample will be 2 separate
+              values for X & Y... in the display block, this will be a single
+              value showing X & Y. */
             'beamSizeAtSampleX' => array(
                 'label' => 'Beam Size X',
                 'unit' => 'μm',
                 'required' => true,
                 'type' => 'integer',
+                'display' => false,
             ),
             'beamSizeAtSampleY' => array(
                 'label' => 'Beam Size Y',
                 'unit' => 'μm',
                 'required' => true,
                 'type' => 'integer',
+                'display' => false,
+            ),
+            'beamSizeAtSample' => array(
+                'label' => 'Beam Size',
+                'unit' => 'μm',
+                'required' => false,
+                'select' => 'CONCAT(DataCollection.beamSizeAtSampleX, " X ", DataCollection.beamSizeAtSampleY)',
             ),
             'totalExposedDose' => array(
                 'label' => 'Dose per frame',
@@ -154,7 +160,19 @@ class DataCollectionSchema extends Schema
                 'maxValue' => 10.0,
                 'type' => 'real',
             ),
-            // TODO Energy Filter ???
+            'frameDose' => array(
+                'label' => 'Frame Dose',
+                'unit' => 'e⁻/Å²',
+                'required' => false,
+                'select' => 'DataCollection.totalExposedDose / DataCollection.numberOfPasses'
+            ),
+            'slitGapHorizontal' => array(
+                'label' => 'Energy Filter / Slit Width',
+                 'unit' => 'eV',
+                 'minValue' => 5,
+                 'maxValue' => 20,
+                 'type' => 'real',
+            ),
             'phasePlate' => array(
                 'label' => 'Phase Plate Used',
                 'default' => false,
@@ -163,18 +181,28 @@ class DataCollectionSchema extends Schema
             ),
             'detectorManufacturer' => array(
                 'label' => 'Detector Manufacturer',
+                'readOnly' => true,
+                'stored' => false,
                 'required' => true,
                 // TODO max length 255
             ),
             'detectorModel' => array(
                 'label' => 'Detector Model',
+                'readOnly' => true,
                 'required' => true,
+                'stored' => false,
                 // TODO max length 255
             ),
             'detectorMode' => array(
                 'label' => 'Detector Mode',
                 'required' => true,
-                // TODO max length 255
+                'options' => array('Counted', 'Super Resolution Counted', 'Linear'),
+            ),
+            // Miscellanea
+            'comments' => array(
+                'label' => 'Comments',
+                'required' => 'optional',
+            ),
             'dataCollectionId' => array(
                 'display' => false,
                 'required' => false,
