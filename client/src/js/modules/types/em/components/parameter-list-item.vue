@@ -58,12 +58,14 @@ export default {
                 return ''
             }
 
-            const value1 = this.value.toString().trim() + this.unit
+            const unit = ' ' + this.unit
+
+            const value1 = this.value.toString().trim() + unit
             if (!this.value2) {
                 return value1
             }
 
-            const value2 = this.value2.toString().trim() + this.unit
+            const value2 = this.value2.toString().trim() + unit
             return value1 + ' ' + this.separator + ' ' + value2
         },
     },
