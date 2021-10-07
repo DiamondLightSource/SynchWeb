@@ -221,7 +221,7 @@ class SchemaValidator
         return $this->typedValue(
             $allRules,
             $value
-        ) >= $minimum ? true : 'too small';
+        ) >= $minimum ? true : "should be at least $minimum";
     }
 
     /**
@@ -240,7 +240,7 @@ class SchemaValidator
         return $this->typedValue(
             $allRules,
             $value
-        ) <= $maximum ? true : 'too large';
+        ) <= $maximum ? true : "should be at most $maximum";
     }
 
     /**
