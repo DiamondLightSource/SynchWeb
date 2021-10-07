@@ -41,9 +41,10 @@ abstract class Schema
      * 'greaterThan'      => another field that this one must be greater than,
      *
      * used by API only
+     * 'select'           => select clause to get this field
      * 'stored'           => true = field is stored / false = for info only,
-     * 'table'            => joined table where this field "lives"
      */
+
     abstract public function schema();
 
     /**
@@ -51,16 +52,17 @@ abstract class Schema
      */
     public function selections()
     {
+        $table = $this->defaultTable();
         $fields = array();
-        foreach ($this->schema() as $fieldName => $schema) {
-            if (array_key_exists('stored', $schema) && $schema['stored'] == false) {
+        foreach ($this->schema() as $fieldName => $rules) {
+            if (array_key_exists('stored', $rules) && $rules['stored'] == false) {
                 continue;
             }
 
-            $table = array_key_exists('table', $schema) ?
-                $schema['table'] : $this->defaultTable();
+            $select = array_key_exists('select', $rules) ?
+                $rules['select'] : false;
 
-            $fields[] = "$table.$fieldName";
+            $fields[] = $select ? "$select AS $fieldName" : "$table.$fieldName";
         }
 
         return $fields;
