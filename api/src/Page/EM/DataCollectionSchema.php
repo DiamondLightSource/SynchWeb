@@ -175,6 +175,45 @@ class DataCollectionSchema extends Schema
                 'label' => 'Detector Mode',
                 'required' => true,
                 // TODO max length 255
+            'dataCollectionId' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'DataCollection.dataCollectionId',
+            ),
+            'dataCollectionGroupId' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'DataCollection.dataCollectionGroupId',
+            ),
+            'startTime' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'DATE_FORMAT(DataCollection.startTime, "%d-%m-%Y %k:%i:%s")',
+            ),
+            'visit_number' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'BLSession.visit_number',
+            ),
+            'archived' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'BLSession.archived',
+            ),
+            'beamLineName' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'BLSession.beamLineName',
+            ),
+            'attachmentsCount' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'COUNT(DataCollectionFileAttachment.dataCollectionFileAttachmentId)',
+            ),
+            'commentsCount' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'COUNT(DataCollectionComment.dataCollectionCommentId)',
             ),
         );
     }

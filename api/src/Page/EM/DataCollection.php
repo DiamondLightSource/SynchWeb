@@ -88,14 +88,6 @@ trait DataCollection
 
         $rows = $this->db->pq(
             "SELECT
-                DataCollection.dataCollectionGroupId,
-                DataCollection.dataCollectionId,
-                DATE_FORMAT(DataCollection.startTime, '%d-%m-%Y %k:%i:%s') AS startTime,
-                BLSession.visit_number,
-                BLSession.archived,
-                BLSession.beamLineName,
-                COUNT(DataCollectionFileAttachment.dataCollectionFileAttachmentId) AS attachmentsCount,
-                COUNT(DataCollectionComment.dataCollectionCommentId) AS commentsCount,
                 $selections
                 FROM DataCollection
                 LEFT JOIN DataCollectionFileAttachment
