@@ -35,7 +35,6 @@
           <h3 class="dialog-form-section-heading">
             Optics
           </h3>
-
           <component
             :is="control"
             v-for="(control, name) in inputs.optics"
@@ -49,7 +48,6 @@
           <h3 class="dialog-form-section-heading">
             Electron Beam &amp; Detector
           </h3>
-
           <component
             :is="control"
             v-for="(control, name) in inputs.beamDetector"
@@ -107,19 +105,20 @@ export default {
                 },
                 'optics': {
                     'c2lens': 'input-text',
-                    'c2aperture': 'input-text',
-                    'objAperture': 'input-text',
+                    'c2aperture': 'input-select',
+                    'objAperture': 'input-select',
                     'magnification': 'input-text',
                 },
                 'beamDetector': {
                     'voltage': 'input-select',
                     'beamSizeAtSampleX': 'input-text',
                     'beamSizeAtSampleY': 'input-text',
+                    'slitGapHorizontal': 'input-text',
                     'totalExposedDose': 'input-text',
                     'phasePlate': 'input-checkbox',
                     'detectorManufacturer': 'input-text',
                     'detectorModel': 'input-text',
-                    'detectorMode': 'input-text',
+                    'detectorMode': 'input-select',
                 },
             },
         }
