@@ -3,25 +3,23 @@
     v-if="Object.keys(schema).length > 0"
     width="100%"
   >
-    <template v-for="(rules, name) in schema">
+    <template v-for="(item, name) in displayParameters.short">
       <parameter-list-item
-        v-if="hasData(name) && !isLong(name)"
         :key="name"
         width="20%"
-        :label="rules.label"
-        :value="value(name)"
-        :unit="rules.unit"
+        :label="item.label"
+        :value="item.value"
+        :unit="item.unit"
       />
     </template>
 
-    <template v-for="(rules, name) in schema">
+    <template v-for="(item, name) in displayParameters.long">
       <parameter-list-item
-        v-if="hasData(name) && isLong(name)"
         :key="name"
         width="100%"
-        :label="rules.label"
-        :value="value(name)"
-        :unit="rules.unit"
+        :label="item.label"
+        :value="item.value"
+        :unit="item.unit"
       />
     </template>
   </parameter-list>
@@ -60,6 +58,38 @@ export default {
             'schema': {},
         }
     },
+    'computed': {
+        'displayParameters': function() {
+            var displayParameters = {
+                'long': {},
+                'short': {},
+            }
+            for (const name in this.schema) {
+                var value = this.parameters[name]
+                if (typeof value == 'undefined') {
+                    continue
+                }
+                const rules = this.schema[name]
+                const display = typeof rules.display == 'undefined' ?
+                    true : rules.display
+                if (!display) {
+                    continue;
+                }
+                if (this.schema[name].type == 'boolean') {
+                    value = ['1', 'true'].includes(value.toLowerCase()) ?
+                        'yes' : 'no'
+                }
+                const section = name == 'comments' || value.length >= 20 ?
+                    'long' : 'short'
+                displayParameters[section][name] = {
+                    'label': rules.label,
+                    'unit': rules.unit,
+                    'value': value,
+                }
+            }
+            return displayParameters
+        }
+    },
     'mounted': function() {
         this.$store.dispatch('em/fetch', {
             'url': this.schemaUrl,
@@ -69,24 +99,6 @@ export default {
                 this.schema = response
             }
         )
-    },
-    'methods': {
-        'hasData': function(name) {
-            const value = this.parameters[name]
-            return typeof value != 'undefined'
-        },
-        'isLong': function(name) {
-            return name == 'comments' ||
-                this.parameters[name].length >= 20
-        },
-        'value': function(name) {
-            const value = this.parameters[name]
-            if (this.schema[name].type == 'boolean') {
-                return ['1', 'true'].includes(value.toLowerCase()) ?
-                    'yes' : 'no'
-            }
-            return value
-        },
     },
 }
 </script>
