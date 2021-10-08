@@ -46,6 +46,12 @@ class DataCollectionSchema extends Schema
                 'required' => false,
                 'display' => false,
             ),
+            /* We could include `binning` here but it's something of a can of
+               worms... Sometimes binning is done on the microscope, sometimes
+               during motion correction. If `binning` in the data collection is
+               "1", then `motioncor_binning` in Relion should be "2" and vice-versa.
+               To avoid confusion, we've decided to omit it here because
+               (quote) "it's obvious from the image size" */
             'pixelSizeOnImage' => array(
                 'label' => 'Pixel Size',
                 'unit' => 'Å/pixel',
@@ -59,7 +65,7 @@ class DataCollectionSchema extends Schema
                 'label' => 'Image Size',
                 'unit' => 'Pixels',
                 'required' => true,
-                'options' => array('11520, 8184', '5760, 4092', '4096, 4096'),
+                'options' => array('11520 x 8184', '5760 x 4092', '4096 x 4096'),
                 'select' => 'CONCAT(DataCollection.imageSizeX, " x ", DataCollection.imageSizeY)',
             ),
             'numberOfImages' => array(
@@ -132,24 +138,34 @@ class DataCollectionSchema extends Schema
               values for X & Y... in the display block, this will be a single
               value showing X & Y. */
             'beamSizeAtSampleX' => array(
-                'label' => 'Beam Size X',
-                'unit' => 'μm',
+                'label' => 'Illuminated Area X',
+                'unit' => 'nm', // ISpyB "uses" 'μm',
                 'required' => true,
+                'minValue' => 320,
+                'maxValue' => 1500,
+                'default' => 600,
                 'type' => 'integer',
                 'display' => false,
             ),
             'beamSizeAtSampleY' => array(
-                'label' => 'Beam Size Y',
-                'unit' => 'μm',
+                'label' => 'Illuminated Area Y',
+                'unit' => 'nm', // ISpyB "uses" 'μm',
                 'required' => true,
+                'minValue' => 320,
+                'maxValue' => 1500,
+                'default' => 600,
                 'type' => 'integer',
                 'display' => false,
             ),
             'beamSizeAtSample' => array(
-                'label' => 'Beam Size',
-                'unit' => 'μm',
+                'label' => 'Illuminated Area',
+                'unit' => 'nm',
                 'required' => false,
-                'select' => 'CONCAT(DataCollection.beamSizeAtSampleX, " X ", DataCollection.beamSizeAtSampleY)',
+                'select' => 'CONCAT(
+                    DataCollection.beamSizeAtSampleX,
+                    " X ",
+                    DataCollection.beamSizeAtSampleY
+                )',
             ),
             'totalExposedDose' => array(
                 'label' => 'Dose per frame',
@@ -182,15 +198,15 @@ class DataCollectionSchema extends Schema
             ),
             'detectorManufacturer' => array(
                 'label' => 'Detector Manufacturer',
-                'readOnly' => true,
+                'required' => false,
+                // TODO: store it!
                 'stored' => false,
-                'required' => true,
                 // TODO max length 255
             ),
             'detectorModel' => array(
                 'label' => 'Detector Model',
-                'readOnly' => true,
-                'required' => true,
+                'required' => false,
+                // TODO: store it!
                 'stored' => false,
                 // TODO max length 255
             ),
