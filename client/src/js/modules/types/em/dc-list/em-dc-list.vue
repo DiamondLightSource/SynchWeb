@@ -97,7 +97,6 @@ export default {
             var headers = [
                 { 'title': 'Data Collection ID', 'key': 'ID' },
                 { 'title': 'Comments', 'key': 'COMMENTS' },
-                { 'title': 'Run Status', 'key': 'RUNSTATUS' },
                 { 'title': 'File Directory', 'key': 'DIR' },
                 { 'title': 'Start Time', 'key': 'STA' },
             ]
