@@ -63,13 +63,50 @@ trait DataCollection
             ), 400);
         }
 
-        $dataCollectionId = $this->dataCollectionAdd(
-            $session,
-            $imageDirectory,
-            $args['imageSuffix'],
-            $fileTemplate,
-            $args
-        );
+        $dataCollectionId = null;
+
+        try {
+            $this->db->start_transaction();
+
+            $this->db->pq(
+                "INSERT INTO DataCollectionGroup (
+                    sessionId, comments, experimentType
+                )
+                VALUES (:1, :2, :3)
+                RETURNING dataCollectionGroupId INTO :id",
+                array($session['sessionId'], 'Created by SynchWeb', 'EM')
+            );
+
+            preg_match('/(\d+)\sX\s(\d+)/i', $args['imageSize'], $imageSize);
+
+            $inserts = $this->schema()->inserts(
+                $args,
+                array(
+                    'sessionId' => $session['sessionId'],
+                    'dataCollectionGroupId' => $this->db->id(),
+                    'startTime' => (new DateTime())->format('Y-m-d H:i:s'),
+                    'endTime' => $session['endDate'],
+                    'runStatus' => 'Created by SynchWeb',
+                    'imageDirectory' => $imageDirectory,
+                    'fileTemplate' => $fileTemplate,
+                    'imageSizeX' => $imageSize[1],
+                    'imageSizeY' => $imageSize[2],
+                )
+            );
+
+            $this->db->pq(
+                "INSERT INTO DataCollection ({$inserts['fieldNames']})
+                    VALUES ({$inserts['placeholders']})
+                    RETURNING dataCollectionId INTO :id",
+                $inserts['values']
+            );
+            $dataCollectionId = $this->db->id();
+
+            $this->db->end_transaction();
+        } catch (Exception $e) {
+            error_log("Failed to add DataCollection to database.");
+            $this->_error("Failed to add DataCollection to database.", 500);
+        }
 
         $this->_output(array('id' => $dataCollectionId));
     }
@@ -207,87 +244,5 @@ trait DataCollection
         }
 
         return $rows[0]['dataCollectionId'];
-    }
-
-    /**
-     * Add a new data collection for processing jobs that don't yet have one
-     *
-     * @param array $session
-     * @param string $imageDirectory
-     * @param string $imageSuffix
-     * @param string $fileTemplate
-     *
-     * @SuppressWarnings(PHPMD.LongVariable)
-     */
-    private function dataCollectionAdd(
-        $session,
-        $imageDirectory,
-        $imageSuffix,
-        $fileTemplate,
-        $args = array()
-    ) {
-        $dataCollectionId = null;
-
-        try {
-            $this->db->start_transaction();
-
-            $this->db->pq(
-                "INSERT INTO DataCollectionGroup (
-                    sessionId, comments, experimentType
-                )
-                VALUES (:1, :2, :3)
-                RETURNING dataCollectionGroupId INTO :id",
-                array($session['sessionId'], 'Created by SynchWeb', 'EM')
-            );
-            $dataCollectionGroupId = $this->db->id();
-
-            $inserts = array(
-                'sessionId' => $session['sessionId'],
-                'dataCollectionGroupId' => $dataCollectionGroupId,
-                'startTime' => (new DateTime())->format('Y-m-d H:i:s'),
-                'endTime' => $session['endDate'],
-                'runStatus' => 'DataCollection Simulated',
-                'imageDirectory' => $imageDirectory,
-                'imageSuffix' => $imageSuffix,
-                'fileTemplate' => $fileTemplate,
-                'comments' => 'Created by SynchWeb',
-            );
-            foreach ($this->schema()->schema() as $field => $schema) {
-                if (
-                    array_key_exists($field, $inserts) || (
-                        array_key_exists('stored', $schema) &&
-                        $schema['stored'] == false
-                    )
-                ) {
-                    continue;
-                }
-                $arg = $args[$field];
-                if (gettype($arg) == 'boolean') {
-                    $arg = $arg ? 1 : 0;
-                }
-                $inserts[$field] = $arg;
-            }
-            $fieldNames = implode(',', array_keys($inserts));
-            $values = array_values($inserts);
-            $placeholders = implode(',', array_map(
-                function ($number) {
-                    return ':' . ($number + 1);
-                },
-                array_keys($values)
-            ));
-            $this->db->pq(
-                "INSERT INTO DataCollection ($fieldNames) VALUES ($placeholders)
-                    RETURNING dataCollectionId INTO :id",
-                $values
-            );
-            $dataCollectionId = $this->db->id();
-
-            $this->db->end_transaction();
-        } catch (Exception $e) {
-            error_log("Failed to add DataCollection to database.");
-            $this->_error("Failed to add DataCollection to database.", 500);
-        }
-
-        return $dataCollectionId;
     }
 }
