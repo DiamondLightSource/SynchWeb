@@ -43,33 +43,97 @@ abstract class Schema
      * used by API only
      * 'select'           => select clause to get this field
      * 'stored'           => true = field is stored / false = for info only,
+     *
+     * @return array
      */
 
     abstract public function schema();
 
     /**
-     * List of fields for an SQL select command
+     * List of fields for an SQL SELECT query
+     *
+     * @return string[]
      */
     public function selections()
     {
-        $table = $this->defaultTable();
-        $fields = array();
+        $selections = array();
         foreach ($this->schema() as $fieldName => $rules) {
-            if (array_key_exists('stored', $rules) && $rules['stored'] == false) {
-                continue;
+            $selection = $this->selection($fieldName, $rules);
+            if ($selection) {
+                $selections[] = $selection;
             }
-
-            $select = array_key_exists('select', $rules) ?
-                $rules['select'] : false;
-
-            $fields[] = $select ? "$select AS $fieldName" : "$table.$fieldName";
         }
 
-        return $fields;
+        return $selections;
+    }
+
+    /**
+     * Single field for an SQL SELECT query
+     *
+     * @param string $fieldName
+     * @param array $rules - schema rules for the named field
+     *
+     * @return string - SQL SELECT clause item
+     */
+    private function selection($fieldName, $rules)
+    {
+        if (array_key_exists('select', $rules)) {
+            return $rules['select'] . ' AS ' . $fieldName;
+        }
+        if (array_key_exists('stored', $rules) && !$rules['stored']) {
+            return false;
+        }
+        return $this->defaultTable() . '.' . $fieldName;
+    }
+
+    /**
+     * Provide a list of field names to be inserted, a placeholder string, and an array of values
+     *
+     * @param $data array - data to insert
+     * @param $inserts - any pre-set data already prepared for insert
+     *
+     * @return array
+     */
+    public function inserts($data, $inserts)
+    {
+        $schema = $this->schema();
+        foreach ($data as $fieldName => $value) {
+            if (array_key_exists($fieldName, $inserts)) {
+                continue;
+            }
+            $rules = $schema[$fieldName];
+            if (array_key_exists('select', $rules)) {
+                continue;
+            }
+            if (
+                array_key_exists('stored', $rules) &&
+                !$rules['stored']
+            ) {
+                continue;
+            }
+            if (gettype($value) == 'boolean') {
+                $value = $value ? 1 : 0;
+            }
+            $inserts[$fieldName] = $value;
+        }
+
+        $values = array_values($inserts);
+        return array(
+            'fieldNames' => implode(',', array_keys($inserts)),
+            'values' => $values,
+            'placeholders' => implode(',', array_map(
+                function ($number) {
+                    return ':' . ($number + 1);
+                },
+                array_keys($values)
+            ))
+        );
     }
 
     /**
      * A version of the schema useful on client side with some fields redacted
+     *
+     * @return array
      */
     public function clientSchema()
     {
