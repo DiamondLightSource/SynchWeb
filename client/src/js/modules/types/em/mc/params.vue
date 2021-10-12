@@ -5,6 +5,10 @@
       :value="motionCorrection.movieNumber"
     />
     <parameter-list-item
+      label="Movie Time Stamp"
+      :value="motionCorrection.createdTimeStamp"
+    />
+    <parameter-list-item
       label="First Frame"
       :value="motionCorrection.firstFrame"
     />

@@ -86,7 +86,8 @@ export default {
             }, 0)
         },
         'movieNumber': function() {
-            return this.movieList[this.index]
+            return this.lastIndex >= 0 ?
+                this.movieList[this.index].movieNumber : 0
         },
     },
     'watch': {

@@ -7,7 +7,7 @@ trait MotionCorrection
     public function motionCorrectionMovies()
     {
         $rows = $this->db->pq(
-            "SELECT m.movieNumber
+            "SELECT m.movieNumber, m.createdTimeStamp
             FROM MotionCorrection mc
             INNER JOIN Movie m ON m.movieId = mc.movieId
             INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
@@ -15,18 +15,13 @@ trait MotionCorrection
             INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
-            AND mc.autoProcProgramId = :2",
+            AND mc.autoProcProgramId = :2
+            ORDER BY m.createdTimeStamp, m.movieNumber",
             array($this->arg('prop'), $this->arg('id')),
             false
         );
-        $this->_output(
-            array_map(
-                function ($row) {
-                    return $row['movieNumber'];
-                },
-                $rows
-            )
-        );
+
+        $this->_output($rows);
     }
 
     public function motionCorrectionResult()
@@ -47,7 +42,8 @@ trait MotionCorrection
                 mc.fftCorrectedFullPath,
                 mc.comments,
                 mc.autoProcProgramId,
-                m.movieNumber
+                m.movieNumber,
+                m.createdTimeStamp
             FROM MotionCorrection mc
             INNER JOIN AutoProcProgram app ON app.autoProcProgramId = mc.autoProcProgramId
             INNER JOIN Movie m ON m.movieId = mc.movieId

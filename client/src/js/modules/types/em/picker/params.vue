@@ -5,6 +5,10 @@
       :value="pick.movieNumber"
     />
     <parameter-list-item
+      label="Movie Time Stamp"
+      :value="pick.createdTimeStamp"
+    />
+    <parameter-list-item
       label="Number of Particles"
       :value="pick.numberOfParticles"
     />

@@ -5,6 +5,10 @@
       :value="ctfEstimation.movieNumber"
     />
     <parameter-list-item
+      label="Movie Time Stamp"
+      :value="ctfEstimation.createdTimeStamp"
+    />
+    <parameter-list-item
       label="Box size"
       :value="ctfEstimation.boxSizeX"
       :value2="ctfEstimation.boxSizeY"

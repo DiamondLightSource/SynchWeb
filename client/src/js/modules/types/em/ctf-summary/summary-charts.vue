@@ -136,12 +136,6 @@ export default {
         },
         'plotlyLayout': function(yAxis) {
             return {
-                'xaxis': {
-                    'autotick': false,
-                    'tick0': 0,
-                    'dtick': this.points / 10,
-                    'title': 'movie'
-                },
                 'yaxis': yAxis,
                 'margin': { 't': 10, 'l': 40, 'r': 20, 'b': 30 },
             }
@@ -161,7 +155,7 @@ export default {
                     this.yAxes.estimatedDefocus = []
                     this.yAxes.estimatedResolution = []
                     response.forEach((row) => {
-                        this.xAxis.push(row.movieNumber)
+                        this.xAxis.push(row.createdTimeStamp)
                         for (const chart in this.yAxes) {
                             // the estimatedDefocus chart should be in μm
                             const value = chart == 'estimatedDefocus' ?

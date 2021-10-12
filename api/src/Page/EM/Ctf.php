@@ -7,7 +7,7 @@ trait Ctf
     public function ctfMovies()
     {
         $rows = $this->db->pq(
-            "SELECT m.movieNumber
+            "SELECT m.movieNumber, m.createdTimeStamp
             FROM CTF c
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
             INNER JOIN Movie m ON m.movieId = mc.movieId
@@ -16,18 +16,13 @@ trait Ctf
             INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
-            AND c.autoProcProgramId = :2",
+            AND c.autoProcProgramId = :2
+            ORDER BY m.createdTimeStamp, m.movieNumber",
             array($this->arg('prop'), $this->arg('id')),
             false
         );
-        $this->_output(
-            array_map(
-                function ($row) {
-                    return $row['movieNumber'];
-                },
-                $rows
-            )
-        );
+
+        $this->_output($rows);
     }
 
     public function ctfResult()
@@ -51,6 +46,7 @@ trait Ctf
                 c.fftTheoreticalFullPath,
                 c.comments,
                 c.autoProcProgramId,
+                m.createdTimeStamp,
                 m.movieNumber
             FROM CTF c
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
@@ -132,7 +128,12 @@ trait Ctf
     public function ctfSummary()
     {
         $rows = $this->db->pq(
-            "SELECT m.movieNumber, c.astigmatism, c.estimatedResolution, c.estimatedDefocus
+            "SELECT
+                m.movieNumber,
+                m.createdTimeStamp,
+                c.astigmatism,
+                c.estimatedResolution,
+                c.estimatedDefocus
             FROM CTF c
             INNER JOIN AutoProcProgram app ON app.autoProcProgramId = c.autoProcProgramId
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
