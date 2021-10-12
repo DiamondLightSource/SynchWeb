@@ -95,6 +95,9 @@
     # Crystal alignment programs
     $strat_align = array('XOalign', 'dials.align_crystal');
 
+    # List of enabled container types, all if empty
+    $enabled_container_types = array();
+
     # Active MQ - Set to empty string to disable
     $activemq_server = 'tcp://activemq.server.ac.uk';
     $activemq_rp_queue = '/queue/zocolo.name';
