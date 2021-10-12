@@ -22,9 +22,8 @@
           <h3 class="dialog-form-section-heading">
             Movies
           </h3>
-          <component
-            :is="control"
-            v-for="(control, name) in inputs.movies"
+          <schema-input
+            v-for="name in inputs.movies"
             :key="name"
             :name="name"
             :form="form"
@@ -35,9 +34,8 @@
           <h3 class="dialog-form-section-heading">
             Optics
           </h3>
-          <component
-            :is="control"
-            v-for="(control, name) in inputs.optics"
+          <schema-input
+            v-for="name in inputs.optics"
             :key="name"
             :name="name"
             :form="form"
@@ -48,9 +46,8 @@
           <h3 class="dialog-form-section-heading">
             Electron Beam &amp; Detector
           </h3>
-          <component
-            :is="control"
-            v-for="(control, name) in inputs.beamDetector"
+          <schema-input
+            v-for="name in inputs.beamDetector"
             :key="name"
             :name="name"
             :form="form"
@@ -64,18 +61,14 @@
 <script>
 import { mapGetters } from 'vuex'
 import DialogForm from 'modules/types/em/components/dialog-form.vue'
-import InputCheckbox from 'modules/types/em/components/input-checkbox.vue'
-import InputSelect from 'modules/types/em/components/input-select.vue'
-import InputText from 'modules/types/em/components/input-text.vue'
+import SchemaInput from 'modules/types/em/components/schema-input.vue'
 import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 
 export default {
     'name': 'NewDataCollection',
     'components': {
         'dialog-form': DialogForm,
-        'input-checkbox': InputCheckbox,
-        'input-select': InputSelect,
-        'input-text': InputText,
+        'schema-input': SchemaInput,
         'toolbar-button': ToolbarButton,
     },
     'props': {
@@ -91,35 +84,38 @@ export default {
     'data': function() {
         return {
             'showDialog': false,
-            // This way we can iterate over the inputs to check for errors, etc.
+            /* Hopefully, we can use this to check for errors that don't
+               have an associated input (which is most likely a coding error)
+               But I'm not sure how just yet as all the schema and error related
+               stuff is inside dialog-form */
             'inputs': {
-                'movies': {
-                    'acquisitionSoftware': 'input-select',
-                    'imageDirectory': 'input-text',
-                    'imageSuffix': 'input-select',
-                    'pixelSizeOnImage': 'input-text',
-                    'imageSize': 'input-select',
-                    'numberOfImages': 'input-text',
-                    'numberOfPasses': 'input-text',
-                    'exposureTime': 'input-text',
-                },
-                'optics': {
-                    'c2lens': 'input-text',
-                    'c2aperture': 'input-select',
-                    'objAperture': 'input-select',
-                    'magnification': 'input-text',
-                },
-                'beamDetector': {
-                    'voltage': 'input-select',
-                    'beamSizeAtSampleX': 'input-text',
-                    'beamSizeAtSampleY': 'input-text',
-                    'slitGapHorizontal': 'input-text',
-                    'totalExposedDose': 'input-text',
-                    'phasePlate': 'input-checkbox',
-                    'detectorManufacturer': 'input-text',
-                    'detectorModel': 'input-text',
-                    'detectorMode': 'input-select',
-                },
+                'movies': [
+                    'acquisitionSoftware',
+                    'imageDirectory',
+                    'imageSuffix',
+                    'pixelSizeOnImage',
+                    'imageSize',
+                    'numberOfImages',
+                    'numberOfPasses',
+                    'exposureTime',
+                ],
+                'optics': [
+                    'c2lens',
+                    'c2aperture',
+                    'objAperture',
+                    'magnification',
+                ],
+                'beamDetector': [
+                    'voltage',
+                    'beamSizeAtSampleX',
+                    'beamSizeAtSampleY',
+                    'slitGapHorizontal',
+                    'totalExposedDose',
+                    'phasePlate',
+                    //'detectorManufacturer',
+                    //'detectorModel',
+                    'detectorMode',
+                ],
             },
         }
     },
