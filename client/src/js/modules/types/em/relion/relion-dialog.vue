@@ -1,5 +1,5 @@
 <template>
-  <dialog-form
+  <dialog-schema-form
     title="Relion Processing"
     confirm-label="Process"
     schema-url="relion/schema"
@@ -86,19 +86,19 @@
         </div>
       </div>
     </template>
-  </dialog-form>
+  </dialog-schema-form>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import boxCalculator from 'modules/types/em/relion/box-calculator'
-import DialogForm from 'modules/types/em/components/dialog-form.vue'
+import DialogSchemaForm from 'modules/types/em/components/dialog-schema-form.vue'
 import SchemaInput from 'modules/types/em/components/schema-input.vue'
 
 export default {
     'name': 'RelionDialog',
     'components': {
-        'dialog-form': DialogForm,
+        'dialog-schema-form': DialogSchemaForm,
         'schema-input': SchemaInput,
     },
     'props': {

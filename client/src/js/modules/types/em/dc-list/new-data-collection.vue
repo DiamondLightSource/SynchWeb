@@ -8,7 +8,7 @@
       :disabled="hint !== 'Add data collection'"
       @click="showDialog = true"
     />
-    <dialog-form
+    <dialog-schema-form
       title="New Data Collection"
       confirm-label="Add"
       schema-url="dc/schema"
@@ -54,20 +54,20 @@
           />
         </div>
       </template>
-    </dialog-form>
+    </dialog-schema-form>
   </span>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import DialogForm from 'modules/types/em/components/dialog-form.vue'
+import DialogSchemaForm from 'modules/types/em/components/dialog-schema-form.vue'
 import SchemaInput from 'modules/types/em/components/schema-input.vue'
 import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 
 export default {
     'name': 'NewDataCollection',
     'components': {
-        'dialog-form': DialogForm,
+        'dialog-schema-form': DialogSchemaForm,
         'schema-input': SchemaInput,
         'toolbar-button': ToolbarButton,
     },
@@ -87,7 +87,7 @@ export default {
             /* Hopefully, we can use this to check for errors that don't
                have an associated input (which is most likely a coding error)
                But I'm not sure how just yet as all the schema and error related
-               stuff is inside dialog-form */
+               stuff is inside dialog-schema-form */
             'inputs': {
                 'movies': [
                     'acquisitionSoftware',

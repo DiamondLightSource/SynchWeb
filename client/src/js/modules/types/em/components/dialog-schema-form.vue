@@ -29,7 +29,7 @@
 import DialogModal from 'app/components/dialog-modal.vue'
 
 export default {
-    'name': 'DialogForm',
+    'name': 'DialogSchemaForm',
     'components': {
         'dialog-modal': DialogModal,
     },
