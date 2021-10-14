@@ -27,9 +27,14 @@
           :status="status"
           :processing-job-id="processingJobId"
         />
-        <reprocess-button
-          :status="status"
-        />
+
+        <div
+          v-if="showReprocessButton"
+          class="reprocess-button"
+        >
+          <reprocess-button
+          />
+        </div>
         <hide-button v-model="hidden" />
       </div>
     </div>
@@ -38,8 +43,8 @@
 
 <script>
 import HideButton from 'modules/types/em/components/hide-button.vue'
-import ReprocessButton from 'modules/types/em/processing-jobs/reprocess-button.vue'
 import StatusDescription from 'modules/types/em/processing-jobs/status-description.vue'
+import ReprocessButton from 'modules/types/em/components/reprocess-button.vue'
 import StopButton from 'modules/types/em/processing-jobs/stop-button.vue'
 
 export default {
@@ -71,15 +76,27 @@ export default {
             'type': String,
             'default': '',
         },
+        'processingAllowed': {
+            'type': Boolean,
+            'required': true,
+        },
     },
     'data': function() {
         return { 'hidden': true  }
+    },
+    'computed': {
+        'showReprocessButton': function() {
+            return this.processingAllowed && [
+                'success',
+                'failure',
+            ].includes(this.status)
+        },
     },
     'watch': {
         'hidden': function() {
             this.$emit('hide', this.hidden)
         }
-    }
+    },
 }
 </script>
 
@@ -108,6 +125,9 @@ export default {
     justify-content: flex-end;
 }
 .header-button {
+    margin-right: 5px;
+}
+.reprocess-button {
     margin-right: 5px;
 }
 </style>

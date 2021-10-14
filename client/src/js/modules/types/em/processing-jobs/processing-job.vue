@@ -6,6 +6,7 @@
       :start-time="processingJob.processingStartTime"
       :end-time="processingJob.processingEndTime"
       :status="processingJob.processingStatusDescription"
+      :processing-allowed="processingAllowed"
       @hide="hide"
     />
 
@@ -76,6 +77,10 @@ export default {
             'required': true,
         },
         'collectionActive': {
+            'type': Boolean,
+            'required': true,
+        },
+        'processingAllowed': {
             'type': Boolean,
             'required': true,
         },
