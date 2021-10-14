@@ -43,11 +43,42 @@ abstract class Schema
      * used by API only
      * 'select'           => select clause to get this field
      * 'stored'           => true = field is stored / false = for info only,
+     * 'onSelect'         => PHP function to transform selected data
+     * 'onUpdate'         => PHP function to transform data prior to update/insert
      *
      * @return array
      */
 
     abstract public function schema();
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Post process a row SELECTed from the database
+     *
+     * @param array $row
+     * @param array $extraData
+     *
+     * @return array
+     */
+    public function processRow($row, $extraData = array())
+    {
+        $processedRow = array_map(
+            function ($value) {
+                return strval($value);
+            },
+            $row
+        );
+        foreach ($this->schema() as $fieldName => $rules) {
+            if (array_key_exists('onSelect', $rules)) {
+                $processedRow[$fieldName] = call_user_func(
+                    $rules['onSelect'],
+                    $row
+                );
+            }
+        }
+        return $processedRow;
+    }
 
     /**
      * List of fields for an SQL SELECT query
@@ -86,6 +117,8 @@ abstract class Schema
         return $this->defaultTable() . '.' . $fieldName;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      * Provide a list of field names to be inserted, a placeholder string, and an array of values
      *
@@ -102,9 +135,6 @@ abstract class Schema
                 continue;
             }
             $rules = $schema[$fieldName];
-            if (array_key_exists('select', $rules)) {
-                continue;
-            }
             if (
                 array_key_exists('stored', $rules) &&
                 !$rules['stored']
@@ -116,7 +146,14 @@ abstract class Schema
             }
             $inserts[$fieldName] = $value;
         }
-
+        foreach ($schema as $fieldName => $rules) {
+            if (array_key_exists('onUpdate', $rules)) {
+                $inserts[$fieldName] = call_user_func(
+                    $rules['onUpdate'],
+                    $data
+                );
+            }
+        }
         $values = array_values($inserts);
         return array(
             'fieldNames' => implode(',', array_keys($inserts)),
@@ -130,6 +167,8 @@ abstract class Schema
         );
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      * A version of the schema useful on client side with some fields redacted
      *
@@ -137,18 +176,24 @@ abstract class Schema
      */
     public function clientSchema()
     {
-        return array_map(
-            function ($field) {
-                // You can't filter on an array key in PHP 5.4
-                $rules = array();
-                foreach ($field as $key => $value) {
-                    if (!in_array($key, array('select', 'stored'))) {
-                        $rules[$key] = $value;
-                    }
-                }
-                return $rules;
-            },
-            $this->schema()
+        $hiddenRules = array(
+            'select',
+            'stored',
+            'onSelect',
+            'onUpdate',
         );
+        $clientSchema = array();
+        foreach ($this->schema() as $fieldName => $rules) {
+            $clientRules = array();
+            foreach ($rules as $ruleName => $ruleData) {
+                if (!in_array($ruleName, $hiddenRules)) {
+                    $clientRules[$ruleName] = $ruleData;
+                }
+            }
+            if (count($clientRules) > 0) {
+                $clientSchema[$fieldName] = $clientRules;
+            }
+        }
+        return $clientSchema;
     }
 }

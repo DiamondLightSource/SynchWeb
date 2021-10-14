@@ -12,7 +12,7 @@ class SchemaValidator
 
     public function __construct($schema)
     {
-        $this->schema = $schema;
+        $this->schema = $schema->schema();
     }
 
     public function validateJsonPostData($json)
@@ -289,7 +289,7 @@ class SchemaValidator
 
     private function isRequired($rules, $value)
     {
-        if (array_key_exists('readOnly', $rules) && $rules['readOnly']) {
+        if (array_key_exists('stored', $rules) && !$rules['stored']) {
             return false;
         }
 
