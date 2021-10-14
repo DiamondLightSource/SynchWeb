@@ -6,7 +6,10 @@
       </h2>
 
       <div class="ps-controls">
-        <hide-button v-model="hidden" />
+        <hide-button
+          v-model="hidden"
+          @input="$emit('toggle')"
+        />
       </div>
     </div>
 
