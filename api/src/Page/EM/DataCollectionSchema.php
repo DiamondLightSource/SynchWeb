@@ -2,6 +2,7 @@
 
 namespace SynchWeb\Page\EM;
 
+use DateTime;
 use SynchWeb\Page\EM\Schema;
 
 class DataCollectionSchema extends Schema
@@ -34,6 +35,19 @@ class DataCollectionSchema extends Schema
                 'pattern' => 'directory',
                 'display' => false,
             ),
+            'shortImageDirectory' => array(
+                'required' => false,
+                'display' => false,
+                'stored' => false,
+                'onSelect' => function ($row) {
+                    $visitCode = $row['proposal'] . '-' . $row['visit_number'];
+                    return preg_replace(
+                        "#.*/{$visitCode}/#",
+                        '',
+                        $row['imageDirectory']
+                    );
+                }
+            ),
             'imageSuffix' => array(
                 'label' => 'Movie File Name Extension',
                 'required' => true,
@@ -61,12 +75,52 @@ class DataCollectionSchema extends Schema
                 'maxValue' => 100.0,
                 'type' => 'real'
             ),
+            /**
+             * In SynchWeb, imageSize is displayed as a string, but in ISpyB
+             * it is stored as two integers.
+             */
+            'imageSizeX' => array(
+                'label' => 'Image Size X',
+                'unit' => 'Pixels',
+                'required' => false,
+                'type' => 'integer',
+                'display' => false,
+                'onUpdate' => function ($postData) {
+                    preg_match(
+                        '/(\d+)\sX\s(\d+)/i',
+                        $postData['imageSize'],
+                        $matches
+                    );
+                    return $matches[1];
+                },
+            ),
+            'imageSizeY' => array(
+                'label' => 'Image Size Y',
+                'unit' => 'Pixels',
+                'required' => false,
+                'type' => 'integer',
+                'display' => false,
+                'onUpdate' => function ($postData) {
+                    preg_match(
+                        '/(\d+)\sX\s(\d+)/i',
+                        $postData['imageSize'],
+                        $matches
+                    );
+                    return $matches[2];
+                },
+            ),
             'imageSize' => array(
                 'label' => 'Image Size',
                 'unit' => 'Pixels',
                 'required' => true,
+                'stored' => false,
                 'options' => array('11520 x 8184', '5760 x 4092', '4096 x 4096'),
-                'select' => 'CONCAT(DataCollection.imageSizeX, " x ", DataCollection.imageSizeY)',
+                'default' => '5760 x 4092',
+                'onSelect' => function ($row) {
+                    $isx = $row['imageSizeX'];
+                    $isy = $row['imageSizeY'];
+                    return "$isx x $isy";
+                }
             ),
             'numberOfImages' => array(
                 'label' => 'Number of Movies',
@@ -94,7 +148,11 @@ class DataCollectionSchema extends Schema
                 'label' => 'Frame Length',
                 'unit' => 'seconds',
                 'required' => false,
-                'select' => 'DataCollection.exposureTime / DataCollection.numberOfPasses'
+                'stored' => false,
+                'onSelect' => function ($row) {
+                    return $row['numberOfPasses'] > 0 ?
+                        $row['exposureTime'] / $row['numberOfPasses'] : 0;
+                }
             ),
             // Optics
             'c2lens' => array(
@@ -117,6 +175,7 @@ class DataCollectionSchema extends Schema
                 'unit' => 'μm',
                 'required' => true,
                 'options' => array('100', '70'),
+                'default' => '100',
                 'type' => 'integer',
             ),
             'magnification' => array(
@@ -139,13 +198,17 @@ class DataCollectionSchema extends Schema
               value showing X & Y. */
             'beamSizeAtSampleX' => array(
                 'label' => 'Illuminated Area X',
-                'unit' => 'nm', // ISpyB "uses" 'μm',
+                'unit' => 'nm',
                 'required' => true,
                 'minValue' => 320,
                 'maxValue' => 1500,
                 'default' => 600,
                 'type' => 'integer',
                 'display' => false,
+                'onUpdate' => function ($postData) {
+                    // ISpyB uses 'μm' - SynchWeb uses 'nm'
+                    return $postData['beamSizeAtSampleX'] * 1000.0;
+                },
             ),
             'beamSizeAtSampleY' => array(
                 'label' => 'Illuminated Area Y',
@@ -156,16 +219,22 @@ class DataCollectionSchema extends Schema
                 'default' => 600,
                 'type' => 'integer',
                 'display' => false,
+                'onUpdate' => function ($postData) {
+                    // ISpyB uses 'μm' - SynchWeb uses 'nm'
+                    return $postData['beamSizeAtSampleY'] * 1000.0;
+                },
             ),
             'beamSizeAtSample' => array(
                 'label' => 'Illuminated Area',
                 'unit' => 'nm',
                 'required' => false,
-                'select' => 'CONCAT(
-                    DataCollection.beamSizeAtSampleX,
-                    " X ",
-                    DataCollection.beamSizeAtSampleY
-                )',
+                'stored' => false,
+                'onSelect' => function ($row) {
+                    // ISpyB uses 'μm' - SynchWeb uses 'nm'
+                    $bsx = $row['beamSizeAtSampleX'] / 1000.0;
+                    $bsy = $row['beamSizeAtSampleY'] / 1000.0;
+                    return "$bsx x $bsy";
+                },
             ),
             'totalExposedDose' => array(
                 'label' => 'Dose per frame',
@@ -180,7 +249,11 @@ class DataCollectionSchema extends Schema
                 'label' => 'Frame Dose',
                 'unit' => 'e⁻/Å²',
                 'required' => false,
-                'select' => 'DataCollection.totalExposedDose / DataCollection.numberOfPasses'
+                'stored' => false,
+                'onSelect' => function ($row) {
+                    return $row['numberOfPasses'] > 0 ?
+                        $row['totalExposedDose'] / $row['numberOfPasses'] : 0;
+                }
             ),
             'slitGapHorizontal' => array(
                 'label' => 'Energy Filter / Slit Width',
@@ -214,6 +287,7 @@ class DataCollectionSchema extends Schema
                 'label' => 'Detector Mode',
                 'required' => true,
                 'options' => array('Counted', 'Super Resolution Counted', 'Linear'),
+                'default' => 'Counted',
             ),
             // Miscellanea
             'comments' => array(
@@ -223,41 +297,58 @@ class DataCollectionSchema extends Schema
             'dataCollectionId' => array(
                 'display' => false,
                 'required' => false,
-                'select' => 'DataCollection.dataCollectionId',
             ),
             'dataCollectionGroupId' => array(
                 'display' => false,
                 'required' => false,
-                'select' => 'DataCollection.dataCollectionGroupId',
             ),
             'startTime' => array(
                 'display' => false,
                 'required' => false,
                 'select' => 'DATE_FORMAT(DataCollection.startTime, "%d-%m-%Y %k:%i:%s")',
+                'onUpdate' => function ($postData) {
+                    return (new DateTime())->format('Y-m-d H:i:s');
+                }
+            ),
+            'endTime' => array(
+                'display' => false,
+                'required' => false,
+                'select' => 'DATE_FORMAT(DataCollection.endTime, "%d-%m-%Y %k:%i:%s")',
             ),
             'visit_number' => array(
                 'display' => false,
                 'required' => false,
+                'stored' => false,
                 'select' => 'BLSession.visit_number',
             ),
             'archived' => array(
                 'display' => false,
                 'required' => false,
+                'stored' => false,
                 'select' => 'BLSession.archived',
             ),
             'beamLineName' => array(
                 'display' => false,
                 'required' => false,
+                'stored' => false,
                 'select' => 'BLSession.beamLineName',
+            ),
+            'proposal' => array(
+                'display' => false,
+                'required' => false,
+                'stored' => false,
+                'select' => 'CONCAT(Proposal.proposalCode, Proposal.proposalNumber)',
             ),
             'attachmentsCount' => array(
                 'display' => false,
                 'required' => false,
+                'stored' => false,
                 'select' => 'COUNT(DataCollectionFileAttachment.dataCollectionFileAttachmentId)',
             ),
             'commentsCount' => array(
                 'display' => false,
                 'required' => false,
+                'stored' => false,
                 'select' => 'COUNT(DataCollectionComment.dataCollectionCommentId)',
             ),
         );

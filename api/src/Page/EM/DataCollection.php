@@ -2,7 +2,6 @@
 
 namespace SynchWeb\Page\EM;
 
-use DateTime;
 use SynchWeb\Page\EM\DataCollectionSchema;
 use SynchWeb\Page\EM\SchemaValidator;
 
@@ -10,7 +9,8 @@ trait DataCollection
 {
     public function dataCollectionSchema()
     {
-        $this->_output($this->schema()->clientSchema());
+        $schema = new DataCollectionSchema();
+        $this->_output($schema->clientSchema());
     }
 
     /**
@@ -21,7 +21,8 @@ trait DataCollection
     {
         global $visit_directory;
 
-        $validator = new SchemaValidator($this->schema()->schema());
+        $validator = new SchemaValidator(new DataCollectionSchema());
+
         list($invalid, $args) = $validator->validateJsonPostData(
             $this->app->request->getBody()
         );
@@ -77,20 +78,15 @@ trait DataCollection
                 array($session['sessionId'], 'Created by SynchWeb', 'EM')
             );
 
-            preg_match('/(\d+)\sX\s(\d+)/i', $args['imageSize'], $imageSize);
-
-            $inserts = $this->schema()->inserts(
+            $inserts = $schema->inserts(
                 $args,
                 array(
                     'sessionId' => $session['sessionId'],
                     'dataCollectionGroupId' => $this->db->id(),
-                    'startTime' => (new DateTime())->format('Y-m-d H:i:s'),
                     'endTime' => $session['endDate'],
                     'runStatus' => 'Created by SynchWeb',
                     'imageDirectory' => $imageDirectory,
                     'fileTemplate' => $fileTemplate,
-                    'imageSizeX' => $imageSize[1],
-                    'imageSizeY' => $imageSize[2],
                 )
             );
 
@@ -119,10 +115,10 @@ trait DataCollection
      * will be largely irrelevant and it may be worthwhile to just use an
      * "ordinary" query here.
      */
-    public function dataCollectionFetch()
+    public function dataCollectionGet()
     {
-        $selections = implode(', ', $this->schema()->selections());
-
+        $schema = new DataCollectionSchema();
+        $selections = implode(', ', $schema->selections());
         $rows = $this->db->pq(
             "SELECT
                 $selections
@@ -150,18 +146,7 @@ trait DataCollection
             $this->_error('No data collection');
         }
 
-        $dataCollection = array_map(function ($item) {
-            return strval($item);
-        }, $rows[0]);
-
-        $visitCode = $this->arg('prop') . '-' . $dataCollection['visit_number'];
-        $dataCollection['shortImageDirectory'] = preg_replace(
-            "#.*/{$visitCode}/#",
-            '',
-            $dataCollection['imageDirectory']
-        );
-
-        $this->_output($dataCollection);
+        $this->_output($schema->processRow($rows[0]));
     }
 
     public function dataCollectionComments()
@@ -199,17 +184,6 @@ trait DataCollection
     }
 
     ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Get the Data Collection Schema
-     *
-     * In a sensible world where these traits are classes, this would be a
-     * constructor.
-     */
-    private function schema()
-    {
-        return new DataCollectionSchema();
-    }
 
     /**
      * Returns dataCollectionId of first DataCollection associated with session
