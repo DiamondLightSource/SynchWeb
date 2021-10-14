@@ -14,7 +14,7 @@
       v-if="dataCollection !== null"
       class="data-collection"
     >
-      <relion-dialog />
+      <relion-dialog :data-collection="dataCollection" />
 
       <toolbar
         :data-collection="dataCollection"
