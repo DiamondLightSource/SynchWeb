@@ -18,41 +18,32 @@
       @cancel="showDialog = false"
     >
       <template #default="form">
-        <div class="dialog-form-section">
-          <h3 class="dialog-form-section-heading">
-            Movies
-          </h3>
+        <dialog-schema-form-section heading="Movies">
           <schema-input
             v-for="name in inputs.movies"
             :key="name"
             :name="name"
             :form="form"
           />
-        </div>
+        </dialog-schema-form-section>
 
-        <div class="dialog-form-section">
-          <h3 class="dialog-form-section-heading">
-            Optics
-          </h3>
+        <dialog-schema-form-section heading="Optics">
           <schema-input
             v-for="name in inputs.optics"
             :key="name"
             :name="name"
             :form="form"
           />
-        </div>
+        </dialog-schema-form-section>
 
-        <div class="dialog-form-section">
-          <h3 class="dialog-form-section-heading">
-            Electron Beam &amp; Detector
-          </h3>
+        <dialog-schema-form-section heading="Electron Beam &amp; Detector">
           <schema-input
             v-for="name in inputs.beamDetector"
             :key="name"
             :name="name"
             :form="form"
           />
-        </div>
+        </dialog-schema-form-section>
       </template>
     </dialog-schema-form>
   </span>
@@ -61,6 +52,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import DialogSchemaForm from 'modules/types/em/components/dialog-schema-form.vue'
+import DialogSchemaFormSection from 'modules/types/em/components/dialog-schema-form-section.vue'
 import SchemaInput from 'modules/types/em/components/schema-input.vue'
 import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 
@@ -68,6 +60,7 @@ export default {
     'name': 'NewDataCollection',
     'components': {
         'dialog-schema-form': DialogSchemaForm,
+        'dialog-schema-form-section': DialogSchemaFormSection,
         'schema-input': SchemaInput,
         'toolbar-button': ToolbarButton,
     },

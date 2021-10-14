@@ -10,58 +10,44 @@
     @cancel="$store.commit('em/cancelProcessingDialog')"
   >
     <template #default="form">
-      <div class="dialog-form-section">
-        <h3 class="dialog-form-section-heading">
-          Project
-        </h3>
-
+      <dialog-schema-form-section heading="Project">
         <schema-input
           v-for="name in inputs.project"
           :key="name"
           :name="name"
           :form="form"
         />
-      </div>
+      </dialog-schema-form-section>
 
-      <div class="dialog-form-section">
-        <h3 class="dialog-form-section-heading">
-          Experiment
-        </h3>
-
+      <dialog-schema-form-section heading="Experiment">
         <schema-input
           v-for="name in inputs.experiment"
           :key="name"
           :name="name"
           :form="form"
         />
-      </div>
+      </dialog-schema-form-section>
 
       <div>
-        <schema-input
-          name="stop_after_ctf_estimation"
-          :form="form"
-          extra-class="dialog-form-section"
-        />
+        <dialog-schema-form-section>
+          <schema-input
+            name="stop_after_ctf_estimation"
+            :form="form"
+            extra-class="dialog-form-section"
+          />
+        </dialog-schema-form-section>
 
-        <div class="dialog-form">
-          <div class="dialog-form-section">
-            <h3 class="dialog-form-section-heading">
-              2D &amp; 3D Classification
-            </h3>
-
+        <div style="display: flex;">
+          <dialog-schema-form-section heading="2D &amp; 3D Classification">
             <schema-input
               v-for="name in inputs.classification"
               :key="name"
               :name="name"
               :form="form"
             />
-          </div>
+          </dialog-schema-form-section>
 
-          <div class="dialog-form-section">
-            <h3 class="dialog-form-section-heading">
-              Particle Picking
-            </h3>
-
+          <dialog-schema-form-section heading="Particle Picking">
             <schema-input
               v-for="name in inputs.picking"
               :key="name"
@@ -69,20 +55,16 @@
               :form="form"
               :disabled="wantCalculate(form.fields.wantCalculate, name)"
             />
-          </div>
+          </dialog-schema-form-section>
 
-          <div class="dialog-form-section">
-            <h3 class="dialog-form-section-heading">
-              Second Pass
-            </h3>
-
+          <dialog-schema-form-section heading="Second Pass">
             <schema-input
               v-for="name in inputs.secondPass"
               :key="name"
               :name="name"
               :form="form"
             />
-          </div>
+          </dialog-schema-form-section>
         </div>
       </div>
     </template>
@@ -93,12 +75,14 @@
 import { mapGetters } from 'vuex'
 import boxCalculator from 'modules/types/em/relion/box-calculator'
 import DialogSchemaForm from 'modules/types/em/components/dialog-schema-form.vue'
+import DialogSchemaFormSection from 'modules/types/em/components/dialog-schema-form-section.vue'
 import SchemaInput from 'modules/types/em/components/schema-input.vue'
 
 export default {
     'name': 'RelionDialog',
     'components': {
         'dialog-schema-form': DialogSchemaForm,
+        'dialog-schema-form-section': DialogSchemaFormSection,
         'schema-input': SchemaInput,
     },
     'props': {

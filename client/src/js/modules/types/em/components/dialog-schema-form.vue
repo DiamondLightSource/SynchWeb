@@ -7,13 +7,13 @@
     @confirm="postIt"
     @cancel="$emit('cancel')"
   >
-    <div class="dialog-form-error-message">
+    <div class="dialog-schema-form-error">
       {{ errorMessage }}
     </div>
     <form
       v-if="showDialog && formReady"
       novalidate
-      class="dialog-form"
+      class="dialog-schema-form"
     >
       <slot
         :schema="schema"
@@ -126,19 +126,11 @@ export default {
 }
 </script>
 
-<style>
-.dialog-form {
+<style scoped>
+.dialog-schema-form {
     display: flex;
 }
-.dialog-form-section {
-    margin: 5px;
-    background-color: #e6e6e6;
-    padding: 8px;
-}
-.dialog-form-section-heading {
-    font-weight: bold;
-}
-.dialog-form-error-message {
+.dialog-schema-form-error {
     color: #f56565;
     font-weight: bold;
 }
