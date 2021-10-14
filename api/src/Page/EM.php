@@ -18,6 +18,7 @@ class EM extends Page
 {
     use \SynchWeb\Page\EM\Attachments;
     use \SynchWeb\Page\EM\Classification;
+    use \SynchWeb\Page\EM\Config;
     use \SynchWeb\Page\EM\Ctf;
     use \SynchWeb\Page\EM\DataCollection;
     use \SynchWeb\Page\EM\MotionCorrection;
@@ -103,19 +104,6 @@ class EM extends Page
         // See Synchweb\Page\EM\Scipion
         array('/process/scipion/session/:session', 'post', 'scipionStart')
     );
-
-    private function exitIfElectronMicroscopesAreNotConfigured()
-    {
-        // Check electron microscopes are listed in global variables - see $bl_types in config.php.
-        $bls = $this->_get_beamlines_from_type('em');
-
-        if (empty($bls)) {
-            $message = 'Electron microscopes are not specified';
-
-            error_log($message);
-            $this->_error($message, 500);
-        }
-    }
 
     private function enqueue($zocalo_queue, $zocalo_message)
     {

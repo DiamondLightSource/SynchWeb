@@ -28,7 +28,7 @@ trait Relion
     {
         global $visit_directory, $zocalo_mx_reprocess_queue;
 
-        $this->exitIfElectronMicroscopesAreNotConfigured();
+        $this->configExitIfNoMicroscopes();
         $session = $this->sessionFetch($this->arg('session'));
 
         /* TODO Temporary override to make session available for testing

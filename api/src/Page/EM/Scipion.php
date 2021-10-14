@@ -12,7 +12,7 @@ trait Scipion
                $zocalo_scipion_workflow_path,
                $zocalo_scipion_start_queue;
 
-        $this->exitIfElectronMicroscopesAreNotConfigured();
+        $this->configExitIfNoMicroscopes();
         $session = $this->sessionFetch($this->arg('session'));
         $this->sessionExitIfNotActive($session);
 
