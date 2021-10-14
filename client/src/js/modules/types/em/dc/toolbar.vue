@@ -48,7 +48,9 @@
         :m-view-options="attachmentsOptions"
       />
 
-      <reprocess-button />
+      <reprocess-button
+        :processing-disallowed-reason="processingDisallowedReason"
+      />
     </span>
 
     <!-- if you're using this outside EM you will need to check if
@@ -95,6 +97,10 @@ export default {
     'props': {
         'dataCollection': {
             'type': Object,
+            'required': true,
+        },
+        'processingDisallowedReason': {
+            'type': String,
             'required': true,
         },
     },

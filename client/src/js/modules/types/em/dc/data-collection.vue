@@ -18,6 +18,7 @@
 
       <toolbar
         :data-collection="dataCollection"
+        :processing-disallowed-reason="processingDisallowedReason"
         @fetch="fetchDataCollection"
       />
 
@@ -32,6 +33,7 @@
         :key="processingJob.autoProcProgramId"
         :processing-job="processingJob"
         :collection-active="dataCollection.archived != '1'"
+        :processing-allowed="processingDisallowedReason == ''"
       />
     </div>
   </section>
@@ -74,6 +76,29 @@ export default {
     'computed': {
         'beamline': function() {
             return this.dataCollection ? this.dataCollection.beamLineName : ''
+        },
+        'processingDisallowedReason': function() {
+            const prefix = "Relion processing can't be run because "
+            if (this.dataCollection.archived == '1') {
+                return prefix + 'this data collection is archived'
+            }
+            const blockingStatus = this.processingJobs.reduce(
+                function(result, job) {
+                    const status = job.processingStatusDescription
+                    return [
+                        'submitted',
+                        'queued',
+                        'running'
+                    ].includes(status) ? status : result
+                },
+                ''
+            )
+            if (blockingStatus) {
+                return prefix +
+                    'there is already a job ' + blockingStatus +
+                    ' on this data collection'
+            }
+            return ''
         },
     },
     'watch': {

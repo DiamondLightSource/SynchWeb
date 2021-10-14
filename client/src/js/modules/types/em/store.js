@@ -4,7 +4,6 @@ const module = {
     'namespaced': true,
     'state': {
         'processingDialog': false,
-        'processingDisallowedReason': '',
         'selectedMovie': 0,
     },
     'getters': {
@@ -22,22 +21,11 @@ const module = {
         ) {
             return state.processingDialog
         },
-        'processingAllowed': function(
+        'processingDialogPreviousParameters': function(
             state,
             getters, // eslint-disable-line no-unused-vars
             rootState // eslint-disable-line no-unused-vars
         ) {
-            return state.processingDisallowedReason == ''
-        },
-        'processingDisallowedReason': function(
-            state,
-            getters, // eslint-disable-line no-unused-vars
-            rootState // eslint-disable-line no-unused-vars
-        ) {
-            return state.processingDisallowedReason == '' ?
-                '' :
-                "Relion processing can't be run because " +
-                    state.processingDisallowedReason
         },
         'selectedMovie': function(
             state,
@@ -48,29 +36,6 @@ const module = {
         },
     },
     'mutations': {
-        'processingAllowedCheck': function(state, payload) {
-            if (payload.dataCollection.ARCHIVED == '1') {
-                state.processingDisallowedReason =
-                    'this data collection is archived'
-                return
-            }
-
-            const blockingStatus = payload.processingJobs.reduce(
-                function(result, job) {
-                    const status = job.PROCESSINGSTATUSDESCRIPTION
-                    return ['submitted', 'queued', 'running'].includes(status) ?
-                        status : result
-                },
-                ''
-            )
-            if (blockingStatus) {
-                state.processingDisallowedReason = 'there is already a job ' +
-                    blockingStatus + ' on this data collection'
-                return
-            }
-
-            state.processingDisallowedReason = ''
-        },
         'cancelProcessingDialog': function(state) {
             state.processingDialog = false
         },

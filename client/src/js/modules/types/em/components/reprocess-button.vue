@@ -4,13 +4,12 @@
     button-text="Relion Processing"
     :show-text="showText"
     :hint="hint"
-    :disabled="hint != 'Run Relion processing'"
+    :disabled="processingDisallowed || waiting"
     @click="click"
   />
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 
 export default {
@@ -22,18 +21,21 @@ export default {
         'showText': {
             'type': Boolean,
             'default': false,
+        'processingDisallowedReason': {
+            'type': String,
+            'default': '',
+        }
+    },
         }
     },
     'computed': {
-        ...mapGetters('em', [
-            'processingAllowed',
-            'processingDisallowedReason',
-        ]),
-        'hint': function () {
-            return this.processingAllowed ?
-                'Run Relion processing' :
-                this.processingDisallowedReason
-        }
+        'processingDisallowed': function() {
+            return this.processingDisallowedReason != ''
+        },
+        'hint': function() {
+            return this.processingDisallowed ?
+                this.processingDisallowedReason : 'Run Relion processing'
+        },
     },
     'methods': {
         'click': function() {
