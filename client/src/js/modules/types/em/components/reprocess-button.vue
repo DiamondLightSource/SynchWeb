@@ -68,14 +68,14 @@ export default {
             this.$store.commit('em/showProcessingDialog', payload)
         },
         'click': function() {
-            if (this.previousParameters === null) {
-                this.showDialog(true)
-                return
-            }
-            if (Object.keys(this.previousParameters).length > 0) {
+            if (
+                this.previousParameters === null ||
+                Object.keys(this.previousParameters).length > 0
+            ) {
                 this.showDialog(this.previousParameters)
                 return
             }
+
             this.waiting = true
             this.$emit('fetch')
         },

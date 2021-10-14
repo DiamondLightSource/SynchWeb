@@ -5,6 +5,7 @@
     schema-url="relion/schema"
     :post-url="postUrl"
     :show-dialog="visible"
+    :defaults="defaults"
     @update="update"
     @posted="success"
     @cancel="$store.commit('em/cancelProcessingDialog')"
@@ -135,7 +136,7 @@ export default {
     'computed': {
         ...mapGetters({
             'visible': 'em/processingDialogVisible',
-            'previousParameters': 'em/processingPreviousParameters',
+            'defaults': 'em/processingDialogDefaults',
         }),
         'postUrl': function () {
             return 'relion/start/' + this.dataCollection.id

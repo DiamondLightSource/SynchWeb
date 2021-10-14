@@ -26,7 +26,7 @@
     <template #middleButtons>
       <dialog-button
         level="warning"
-        @click="setDefaults"
+        @click="setToDefaults"
       >
         Clear
       </dialog-button>
@@ -61,6 +61,12 @@ export default {
             'type': String,
             'required': true,
         },
+        /* Normally the default values would come from the schema
+           But those defaults can be overridden with these for edge-cases */
+        'defaults': {
+            'type': Object,
+            'default': function() { return {} },
+        },
         'confirmLabel': {
             'type': String,
             'required': true,
@@ -79,6 +85,11 @@ export default {
             return Object.keys(this.schema).length > 0
         },
     },
+    'watch': {
+        'defaults': function() {
+            this.setToDefaults()
+        }
+    },
     'mounted': function() {
         this.$store.dispatch('em/fetch', {
             'url': this.schemaUrl,
@@ -86,17 +97,7 @@ export default {
         }).then(
             (response) => {
                 this.schema = response
-                Object.keys(this.schema).forEach((name) => {
-                    const schemaDefault = this.schema[name].default
-                    this.$set(
-                        this.formFields,
-                        name,
-                        typeof schemaDefault == 'undefined' ? '' : schemaDefault
-                    )
-                })
-                console.log(
-                    this.title + 'fields set to defaults', this.formFields
-                )
+                this.setToDefaults()
             }
         )
     },
@@ -107,6 +108,24 @@ export default {
                 'name': name,
                 'fields': this.formFields,
             })
+        },
+        'getADefault': function(name) {
+            if (
+                this.defaults !== null &&
+                typeof this.defaults[name] != 'undefined'
+            ) {
+                return this.defaults[name]
+            }
+            if (typeof this.schema[name].default != 'undefined') {
+                return this.schema[name].default
+            }
+            return ''
+        },
+        'setToDefaults': function() {
+            Object.keys(this.schema).forEach((name) => {
+                this.$set(this.formFields, name, this.getADefault(name))
+            })
+            console.log(this.title + 'fields set to defaults', this.formFields)
         },
         'postIt': function() {
             this.errorMessages = {}
