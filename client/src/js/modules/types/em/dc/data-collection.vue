@@ -113,12 +113,6 @@ export default {
                 { 'title': 'Data Collection ' + this.dataCollectionId }
             ])
         },
-        'processingJobs': function() {
-            this.$store.commit('em/processingAllowedCheck', {
-                'dataCollection': this.dataCollection,
-                'processingJobs': this.processingJobs,
-            })
-        },
     },
     'mounted': function() {
         this.$store.commit('proposal/setVisit', this.visit)
