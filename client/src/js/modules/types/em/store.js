@@ -3,6 +3,7 @@ import Backbone from 'backbone'
 const module = {
     'namespaced': true,
     'state': {
+        // processingDialog is either false, true or a ProcessingJob object
         'processingDialog': false,
         'selectedMovie': 0,
     },
@@ -19,13 +20,15 @@ const module = {
             getters, // eslint-disable-line no-unused-vars
             rootState // eslint-disable-line no-unused-vars
         ) {
-            return state.processingDialog
+            return state.processingDialog !== false
         },
         'processingDialogPreviousParameters': function(
             state,
             getters, // eslint-disable-line no-unused-vars
             rootState // eslint-disable-line no-unused-vars
         ) {
+            return typeof state.processingDialog == 'object' ?
+                state.processingDialog : null
         },
         'selectedMovie': function(
             state,
@@ -39,8 +42,10 @@ const module = {
         'cancelProcessingDialog': function(state) {
             state.processingDialog = false
         },
-        'showProcessingDialog': function(state) {
-            state.processingDialog = true
+        // newState can be true or a ProcessingJob
+        'showProcessingDialog': function(state, newState) {
+            state.processingDialog = typeof newState == 'undefined' ?
+                true : newState
         },
         'selectMovies': function(state, selectedMovie) {
             state.selectedMovie = selectedMovie

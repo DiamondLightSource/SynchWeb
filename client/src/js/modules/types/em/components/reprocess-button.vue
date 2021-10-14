@@ -21,11 +21,19 @@ export default {
         'showText': {
             'type': Boolean,
             'default': false,
+        },
+        'previousParameters': {
+            'type': Object,
+            'default': null,
+        },
         'processingDisallowedReason': {
             'type': String,
             'default': '',
         }
     },
+    'data': function() {
+        return {
+            'waiting': false,
         }
     },
     'computed': {
@@ -37,10 +45,40 @@ export default {
                 this.processingDisallowedReason : 'Run Relion processing'
         },
     },
+    'mounted': function() {
+        /* Deal with occasional race-condition where we end up with no
+           previous parameters */
+        this.$watch(
+            function() {
+                return {
+                    'params': this.previousParameters,
+                    'waiting': this.waiting,
+                }
+            },
+            function(newVal) {
+                if (Object.keys(newVal.params).length > 0 && newVal.waiting) {
+                    this.showDialog(newVal.params)
+                }
+            }
+        )
+    },
     'methods': {
+        'showDialog': function(payload) {
+            this.waiting = false
+            this.$store.commit('em/showProcessingDialog', payload)
+        },
         'click': function() {
-            this.$store.commit('em/showProcessingDialog', true)
-        }
+            if (this.previousParameters === null) {
+                this.showDialog(true)
+                return
+            }
+            if (Object.keys(this.previousParameters).length > 0) {
+                this.showDialog(this.previousParameters)
+                return
+            }
+            this.waiting = true
+            this.$emit('fetch')
+        },
     },
 }
 </script>

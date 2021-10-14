@@ -7,7 +7,9 @@
       :end-time="processingJob.processingEndTime"
       :status="processingJob.processingStatusDescription"
       :processing-allowed="processingAllowed"
+      :parameters="parameters"
       @hide="hide"
+      @fetch-parameters="fetchParameters"
     />
 
     <div
@@ -19,7 +21,18 @@
         :fetch-trigger="fetchTrigger"
       />
 
-      <job-parameters :processing-job-id="processingJobId" />
+      <processing-section
+        section-title="Processing Job Parameters"
+        :data-available="Object.keys(parameters).length > 0"
+        default-hidden
+        @toggle="fetchParameters"
+      >
+        <parameter-list-with-schema
+          schema-name="Relion Schema"
+          schema-url="relion/schema/"
+          :parameters="parameters"
+        />
+      </processing-section>
 
       <motion-correction
         :auto-proc-program-id="autoProcProgramId"
@@ -54,9 +67,10 @@ import Classification from 'modules/types/em/classification/classification.vue'
 import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
 import JobHeader from 'modules/types/em/processing-jobs/job-header.vue'
-import JobParameters from 'modules/types/em/job-parameters/job-parameters.vue'
 import MotionCorrection from 'modules/types/em/mc/motion-correction.vue'
+import ParameterListWithSchema from 'modules/types/em/components/parameter-list-with-schema.vue'
 import Picker from 'modules/types/em/picker/picker.vue'
+import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 import SummaryCharts from 'modules/types/em/ctf-summary/summary-charts.vue'
 
 export default {
@@ -66,9 +80,10 @@ export default {
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
         'job-header': JobHeader,
-        'job-parameters': JobParameters,
         'motion-correction': MotionCorrection,
+        'parameter-list-with-schema': ParameterListWithSchema,
         'picker': Picker,
+        'processing-section': ProcessingSection,
         'summary-charts': SummaryCharts,
     },
     'props': {
@@ -88,6 +103,7 @@ export default {
     'data': function() {
         return {
             'hidden': true,
+            'parameters': {},
         }
     },
     'computed': {
@@ -111,8 +127,19 @@ export default {
     'methods': {
         'hide': function(hidden) {
             this.hidden = hidden
-        }
-    }
+        },
+        'fetchParameters': function() {
+            if (Object.keys(this.parameters).length == 0) {
+                this.$store.dispatch('em/fetch', {
+                    'url': 'relion/parameters?processingJobId=' +
+                        this.processingJobId,
+                    'humanName': 'Processing Job Parameters',
+                }).then(
+                    (response) => { this.parameters = response }
+                )
+            }
+        },
+    },
 }
 </script>
 

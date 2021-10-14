@@ -33,8 +33,11 @@
           class="reprocess-button"
         >
           <reprocess-button
+            :previous-parameters="parameters"
+            @fetch="$emit('fetch-parameters')"
           />
         </div>
+
         <hide-button v-model="hidden" />
       </div>
     </div>
@@ -78,6 +81,10 @@ export default {
         },
         'processingAllowed': {
             'type': Boolean,
+            'required': true,
+        },
+        'parameters': {
+            'type': Object,
             'required': true,
         },
     },

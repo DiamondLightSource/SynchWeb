@@ -4,7 +4,7 @@
     confirm-label="Process"
     schema-url="relion/schema"
     :post-url="postUrl"
-    :show-dialog="processingDialogVisible"
+    :show-dialog="visible"
     @update="update"
     @posted="success"
     @cancel="$store.commit('em/cancelProcessingDialog')"
@@ -15,37 +15,10 @@
           Project
         </h3>
 
-        <input-select
-          name="acquisition_software"
-          :form="form"
-        />
-
-        <input-select
-          name="import_images_dir"
-          :form="form"
-          :help-text="['select from list']"
-        />
-
-        <input-text
-          name="import_images_dir"
-          :form="form"
-          :help-text="['or enter your own']"
-        />
-
-        <input-select
-          name="import_images_ext"
-          :form="form"
-        />
-
-        <!-- "Gain Reference File" default: false -->
-        <input-checkbox
-          name="wantGainReferenceFile"
-          :form="form"
-        />
-
-        <input-text
-          v-if="form.fields.wantGainReferenceFile"
-          name="motioncor_gainreference"
+        <schema-input
+          v-for="name in inputs.project"
+          :key="name"
+          :name="name"
           :form="form"
         />
       </div>
@@ -55,48 +28,19 @@
           Experiment
         </h3>
 
-        <input-select
-          name="voltage"
-          :form="form"
-        />
-
-        <input-select
-          name="Cs"
-          :form="form"
-        />
-
-        <input-checkbox
-          name="ctffind_do_phaseshift"
-          :form="form"
-        />
-
-        <input-text
-          name="angpix"
-          :form="form"
-        />
-
-        <input-text
-          v-if="form.fields.import_images_ext == 'eer'"
-          name="eer_grouping"
-          :form="form"
-        />
-
-        <input-select
-          name="motioncor_binning"
-          :form="form"
-        />
-
-        <input-text
-          name="motioncor_doseperframe"
+        <schema-input
+          v-for="name in inputs.experiment"
+          :key="name"
+          :name="name"
           :form="form"
         />
       </div>
 
       <div>
-        <input-checkbox
+        <schema-input
           name="stop_after_ctf_estimation"
-          extra-class="dialog-form-section"
           :form="form"
+          extra-class="dialog-form-section"
         />
 
         <div class="dialog-form">
@@ -105,17 +49,12 @@
               2D &amp; 3D Classification
             </h3>
 
-            <div v-if="!form.fields.stop_after_ctf_estimation">
-              <input-checkbox
-                name="do_class2d"
-                :form="form"
-              />
-
-              <input-checkbox
-                name="do_class3d"
-                :form="form"
-              />
-            </div>
+            <schema-input
+              v-for="name in inputs.classification"
+              :key="name"
+              :name="name"
+              :form="form"
+            />
           </div>
 
           <div class="dialog-form-section">
@@ -123,45 +62,13 @@
               Particle Picking
             </h3>
 
-            <div v-if="!form.fields.stop_after_ctf_estimation">
-              <input-checkbox
-                name="autopick_do_cryolo"
-                :form="form"
-              />
-
-              <input-text
-                name="autopick_LoG_diam_min"
-                :form="form"
-              />
-
-              <input-text
-                name="autopick_LoG_diam_max"
-                :form="form"
-              />
-
-              <input-text
-                name="mask_diameter"
-                :form="form"
-                :disabled="form.fields.wantCalculate"
-              />
-
-              <input-text
-                name="extract_boxsize"
-                :form="form"
-                :disabled="form.fields.wantCalculate"
-              />
-
-              <input-text
-                name="extract_small_boxsize"
-                :form="form"
-                :disabled="form.fields.wantCalculate"
-              />
-
-              <input-checkbox
-                name="wantCalculate"
-                :form="form"
-              />
-            </div>
+            <schema-input
+              v-for="name in inputs.picking"
+              :key="name"
+              :name="name"
+              :form="form"
+              :disabled="wantCalculate(form.fields.wantCalculate, name)"
+            />
           </div>
 
           <div class="dialog-form-section">
@@ -169,24 +76,12 @@
               Second Pass
             </h3>
 
-            <div v-if="!form.fields.stop_after_ctf_estimation">
-              <input-checkbox
-                name="want2ndPass"
-                :form="form"
-              />
-
-              <template v-if="form.fields.want2ndPass">
-                <input-checkbox
-                  name="do_class2d_pass2"
-                  :form="form"
-                />
-
-                <input-checkbox
-                  name="do_class3d_pass2"
-                  :form="form"
-                />
-              </template>
-            </div>
+            <schema-input
+              v-for="name in inputs.secondPass"
+              :key="name"
+              :name="name"
+              :form="form"
+            />
           </div>
         </div>
       </div>
@@ -198,26 +93,78 @@
 import { mapGetters } from 'vuex'
 import boxCalculator from 'modules/types/em/relion/box-calculator'
 import DialogForm from 'modules/types/em/components/dialog-form.vue'
-import InputCheckbox from 'modules/types/em/components/input-checkbox.vue'
-import InputSelect from 'modules/types/em/components/input-select.vue'
-import InputText from 'modules/types/em/components/input-text.vue'
+import SchemaInput from 'modules/types/em/components/schema-input.vue'
 
 export default {
     'name': 'RelionDialog',
     'components': {
         'dialog-form': DialogForm,
-        'input-checkbox': InputCheckbox,
-        'input-select': InputSelect,
-        'input-text': InputText,
+        'schema-input': SchemaInput,
+    },
+    'props': {
+        'dataCollection': {
+            'type': Object,
+            'required': true,
+        },
+    },
+    'data': function () {
+        return {
+            'inputs': {
+                'project': [
+                    'acquisition_software',
+                    'import_images_dir',
+                    'import_images_ext',
+                    'wantGainReferenceFile',
+                    'motioncor_gainreference',
+                ],
+                'experiment': [
+                    'voltage',
+                    'Cs',
+                    'ctffind_do_phaseshift',
+                    'angpix',
+                    'eer_grouping',
+                    'motioncor_binning',
+                    'motioncor_doseperframe',
+                ],
+                'classification': [
+                    'do_class2d',
+                    'do_class3d',
+                    'use_fsc_criterion',
+                ],
+                'picking': [
+                    'autopick_do_cryolo',
+                    'autopick_LoG_diam_min',
+                    'autopick_LoG_diam_max',
+                    'mask_diameter',
+                    'extract_boxsize',
+                    'extract_small_boxsize',
+                    'wantCalculate',
+                ],
+                'secondPass': [
+                    'want2ndPass',
+                    'do_class2d_pass2',
+                    'do_class3d_pass2',
+                ],
+            },
+        }
     },
     'computed': {
-        ...mapGetters('em', ['processingDialogVisible']),
-        ...mapGetters('proposal', ['currentVisit']),
+        ...mapGetters({
+            'visible': 'em/processingDialogVisible',
+            'previousParameters': 'em/processingPreviousParameters',
+        }),
         'postUrl': function () {
-            return 'relion/start/' + this.currentVisit
+            return 'relion/start/' + this.dataCollection.id
         },
     },
     'methods': {
+        'wantCalculate': function(wantCalculate, fieldName) {
+            return [
+                'mask_diameter',
+                'extract_boxsize',
+                'extract_small_boxsize',
+            ].includes (fieldName) && wantCalculate
+        },
         'update': function({name, fields}) {
             boxCalculator(name, fields)
         },
