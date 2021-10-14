@@ -20,8 +20,6 @@
       />
     </div>
 
-    <relion-dialog />
-
     <pagination
       class="page_wrap"
       :total-records="collection.state.totalRecords"
@@ -45,7 +43,6 @@ import { mapGetters } from 'vuex'
 import EventBus from 'app/components/utils/event-bus.js'
 import Pagination from 'app/components/pagination.vue'
 import Refresh from 'modules/types/em/dc-list/refresh.vue'
-import RelionDialog from 'modules/types/em/relion/relion-dialog.vue'
 import Search from 'modules/types/em/dc-list/search.vue'
 import Table from 'app/components/table.vue'
 import Toolbar from 'modules/types/em/dc-list/toolbar.vue'
@@ -57,7 +54,6 @@ export default {
     'components': {
         'pagination': Pagination,
         'refresh': Refresh,
-        'relion-dialog': RelionDialog,
         'search': Search,
         'table-component': Table,
         'toolbar': Toolbar,

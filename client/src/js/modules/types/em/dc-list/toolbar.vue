@@ -45,8 +45,6 @@
       :show-text="!isMobile"
       :reason="noMoreCollectionsReason"
     />
-
-    <reprocess-button :show-text="!isMobile" />
   </div>
 </template>
 
@@ -56,7 +54,6 @@ import DewarsView from 'modules/proposal/views/dewars'
 import MarionetteApplication from 'app/marionette-application'
 import MarionetteWrapper from 'app/views/marionette/marionette-wrapper.vue'
 import NewDataCollection from 'modules/types/em/dc-list/new-data-collection.vue'
-import ReprocessButton from 'modules/types/em/components/reprocess-button.vue'
 import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 import UserView from 'modules/proposal/views/users'
 
@@ -65,7 +62,6 @@ export default {
     'components': {
         'marionette-wrapper': MarionetteWrapper,
         'new-data-collection': NewDataCollection,
-        'reprocess-button': ReprocessButton,
         'toolbar-button': ToolbarButton,
     },
     'props': {
