@@ -1,5 +1,6 @@
 <template>
   <div
+    v-if="required"
     class="form-field"
     :class="extraClasses"
   >
@@ -68,6 +69,10 @@ export default {
             'type': String,
             'required': true,
         },
+        'disabled': {
+            'type': Boolean,
+            'default': false,
+        },
         'helpText': {
             'type': Array,
             'default': function() { return [] },
@@ -96,6 +101,22 @@ export default {
                 return 'select'
             }
             return 'text'
+        },
+        'required': function() {
+            const required = this.rules.required
+            if (required == 'optional') {
+                return true
+            }
+            if (typeof required != 'object') {
+                return required == true
+            }
+            for (const otherName in required) {
+                const expectedValue = required[otherName]
+                if (this.form.fields[otherName] != expectedValue) {
+                    return false
+                }
+            }
+            return true
         },
         'errorMessage': function() {
             const errorMessage = this.form.errorMessages[this.name]
