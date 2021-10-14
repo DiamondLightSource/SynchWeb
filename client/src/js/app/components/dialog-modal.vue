@@ -22,33 +22,39 @@
       </div>
 
       <footer class="footer">
-        <flat-button
+        <slot name="firstButtons" />
+
+        <dialog-button
           v-if="confirmLabel"
           level="success"
           @click="$emit('confirm')"
         >
           {{ confirmLabel }}
-        </flat-button>
+        </dialog-button>
 
-        <flat-button
+        <slot name="middleButtons" />
+
+        <dialog-button
           v-if="cancelLabel"
           level="danger"
           @click="$emit('cancel')"
         >
           {{ cancelLabel }}
-        </flat-button>
+        </dialog-button>
+
+        <slot name="lastButtons" />
       </footer>
     </div>
   </div>
 </template>
 
 <script>
-import FlatButton from 'app/components/flat-button.vue'
+import DialogButton from 'app/components/dialog-button.vue'
 
 export default {
     'name': 'DialogModal',
     'components': {
-        'flat-button': FlatButton,
+        'dialog-button': DialogButton,
     },
     'props': {
         'showDialog': {
@@ -85,10 +91,6 @@ export default {
     height: 100vh;
     width: 100%;
     background-color: rgba(0, 0, 0, 0.75);
-}
-.flat-button {
-    width: 50%;
-    margin: 8px;
 }
 .dialog-box {
     box-shadow:

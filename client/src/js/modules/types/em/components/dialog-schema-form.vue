@@ -22,15 +22,26 @@
         :update="update"
       />
     </form>
+
+    <template #middleButtons>
+      <dialog-button
+        level="warning"
+        @click="setDefaults"
+      >
+        Clear
+      </dialog-button>
+    </template>
   </dialog-modal>
 </template>
 
 <script>
+import DialogButton from 'app/components/dialog-button.vue'
 import DialogModal from 'app/components/dialog-modal.vue'
 
 export default {
     'name': 'DialogSchemaForm',
     'components': {
+        'dialog-button': DialogButton,
         'dialog-modal': DialogModal,
     },
     'props': {
