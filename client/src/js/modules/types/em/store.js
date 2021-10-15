@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-const module = {
+const emModule = {
     'namespaced': true,
     'state': {
         // processingDialog is either false, true or a ProcessingJob object
@@ -158,7 +158,7 @@ const module = {
 export default {
     'register': function(store) {
         if (!store.hasModule('em')) {
-            store.registerModule('em', module)
+            store.registerModule('em', emModule)
             console.log('registered storage module em')
         }
     },
