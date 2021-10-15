@@ -236,8 +236,8 @@ export default {
 
       return 0
     },
-    async checkSampleInGroup() {
-
+    handleSampleGroupSearchInput(value) {
+      this.SAMPLEGROUP = value
     },
   },
   inject: [

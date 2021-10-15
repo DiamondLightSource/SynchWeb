@@ -31,7 +31,6 @@
           textField="text"
           valueField="value"
           :inputIndex="sampleLocation"
-          :excludeElementClassList="excludedElementClassList"
           defaultText=""
           size="small"
           v-model="PROTEINID"
@@ -120,17 +119,8 @@
           :inputIndex="sampleIndex"
           :defaultText="SAMPLEGROUP"
           size="small"
-          :excludeElementClassList="excludedElementClassList"
+          @handle-search-text="handleSampleGroupSearchInput"
           v-model="SAMPLEGROUP">
-          <template slot="custom-add">
-            <div class="tw-w-full add-sample-group">
-              <base-input-text
-                v-model="SAMPLEGROUP"
-                placeholder-text="create new sample group"
-                input-class="tw-w-full tw-h-8"
-                :quiet="true"/>
-            </div>
-          </template>
         </combo-box>
       </validation-provider>
 
@@ -495,8 +485,7 @@ export default {
         { key: 'CELL_ALPHA', title: 'α' },
         { key: 'CELL_BETA', title: 'β' },
         { key: 'CELL_GAMMA', title: 'γ' },
-      ],
-      excludedElementClassList: ['add-sample-group']
+      ]
     }
   },
   created() {

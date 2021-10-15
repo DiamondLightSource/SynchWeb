@@ -160,7 +160,6 @@
           <!-- Sample specific fields -->
           <component
             ref="sampleEditor"
-            v-if="proteinsLoaded"
             :is="sampleComponent"
             @save-sample="onSaveSample"
             @clone-sample="onCloneSample"

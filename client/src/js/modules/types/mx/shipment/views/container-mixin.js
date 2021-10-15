@@ -57,7 +57,6 @@ export default {
 
       processingPipeline: '',
       processingPipelines: [],
-      proteinsLoaded: false,
 
       users: [],
       usersCollection: null,
@@ -99,7 +98,6 @@ export default {
       this.gProteinsCollection = new DistinctProteins()
       const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
       this.proteins = result.toJSON()
-      this.proteinsLoaded = true
     },
     async getExperimentTypes() {
       this.experimentTypesCollection = new ExperimentTypes()
@@ -154,37 +152,33 @@ export default {
       }))
     },
     async getImagingCollections() {
-      this.imagingCollections = new ImagingImager()
-      this.imagingCollections.queryParams.pageSize = 9999
+      this.imagingCollections = new ImagingImager(null, { state: { pageSize: 9999 } })
+
 
       const result = await this.$store.dispatch('getCollection', this.imagingCollections)
       this.imagingImagers = result.toJSON()
     },
     async getImagingScheduleCollections() {
-      this.imagingSchedulesCollection = new ImagingSchedules()
-      this.imagingSchedulesCollection.queryParams.pageSize = 9999
+      this.imagingSchedulesCollection = new ImagingSchedules(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingSchedulesCollection)
       this.imagingSchedules = result.toJSON()
     },
     async getImagingScreensCollections() {
-      this.imagingScreensCollection = new ImagingScreens()
-      this.imagingScreensCollection.queryParams.pageSize = 9999
+      this.imagingScreensCollection = new ImagingScreens(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingScreensCollection)
       this.imagingScreens = result.toJSON()
     },
     async getImagingScheduleComponentsCollection() {
-      this.imagingScheduleComponentsCollection = new ImagingScheduleComponents()
-      this.imagingScheduleComponentsCollection.queryParams.pageSize = 9999
+      this.imagingScheduleComponentsCollection = new ImagingScheduleComponents(null, { state: { pageSize: 9999 } })
       this.imagingScheduleComponentsCollection.queryParams.shid = this.selectedSchedule.SCHEDULEID
 
       const result = await this.$store.dispatch('getCollection', this.imagingScheduleComponentsCollection)
       this.imagingScheduleComponents = result.toJSON()
     },
     async getSpaceGroupsCollection() {
-      this.spaceGroupsCollection = new SpaceGroups()
-      this.spaceGroupsCollection.queryParams.pageSize = 9999
+      this.spaceGroupsCollection = new SpaceGroups(null, { state: { pageSize: 9999 } })
       if (!this.containerState.SPACEGROUP) {
         this.spaceGroupsCollection.queryParams.ty = this.containerGroup
       }
