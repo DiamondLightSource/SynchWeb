@@ -15,7 +15,8 @@ trait Relion
      */
     public function relionSchema()
     {
-        $this->_output(RelionSchema::schema());
+        $schema = new RelionSchema();
+        $this->_output($schema->clientSchema());
     }
 
     /**
@@ -103,7 +104,7 @@ trait Relion
     {
         // global $visit_directory;
 
-        $this->exitIfElectronMicroscopesAreNotConfigured();
+        $this->configExitIfNoMicroscopes();
         $session = $this->sessionFetch($this->arg('session'));
 
         // TODO RESTORE FOR PRODUCTION
