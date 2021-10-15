@@ -87,7 +87,7 @@ class EM extends Page
         // See Synchweb\Page\EM\DataCollection
         array('/dc/schema/', 'get', 'dataCollectionSchema'),
         array('/dc/new/:session', 'post', 'dataCollectionCreate'),
-        array('/dc/:id', 'get', 'dataCollectionFetch'),
+        array('/dc/:id', 'get', 'dataCollectionGet'),
         array('/dc/comments/:id', 'post', 'dataCollectionComments'),
 
         // See Synchweb\Page\EM\Stats
