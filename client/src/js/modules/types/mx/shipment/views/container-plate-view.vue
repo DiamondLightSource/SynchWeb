@@ -104,7 +104,6 @@
       <div class="table sample">
         <component
           :is="sampleComponent"
-          v-if="proteinsLoaded"
           :containerId="container.CONTAINERID"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"

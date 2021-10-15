@@ -126,6 +126,9 @@ export default {
         this.setExcludedElementClass()
       },
       immediate: true
+    },
+    searchText(value) {
+      this.$emit('handle-search-text', value)
     }
   },
   methods: {

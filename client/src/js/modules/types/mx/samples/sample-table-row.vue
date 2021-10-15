@@ -21,7 +21,6 @@
         textField="text"
         valueField="value"
         :inputIndex="sampleIndex"
-        :excludeElementClassList="excludedElementClassList"
         defaultText=""
         size="small"
         v-model="PROTEINID"
@@ -69,19 +68,10 @@
         valueField="value"
         :inputIndex="sampleIndex"
         :defaultText="SAMPLEGROUP"
-        class="sample-group-select tw-w-48"
+        class="sample-group-select tw-w-44"
         size="small"
-        :excludeElementClassList="excludedElementClassList"
+        @handle-search-text="handleSampleGroupSearchInput"
         v-model="SAMPLEGROUP">
-        <template slot="custom-add">
-          <div class="tw-w-full add-sample-group">
-            <base-input-text
-              v-model="SAMPLEGROUP"
-              placeholder-text="create new sample group"
-              input-class="tw-w-full tw-h-8"
-              :quiet="true"/>
-          </div>
-        </template>
       </combo-box>
       <div v-else class="tw-text-center">{{ sampleGroupName }}</div>
     </validation-provider>
@@ -166,11 +156,6 @@ export default {
     'combo-box': ComboBox,
     'validation-provider': ValidationProvider,
     'validation-observer': ValidationObserver
-  },
-  data() {
-    return {
-      excludedElementClassList: ['add-sample-group']
-    }
   },
   computed: {
     selectedColumns() {
