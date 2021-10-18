@@ -107,8 +107,8 @@
         tag="div"
         class="tw-py-1 tw-flex tw-w-full"
         :rules="`required_if:sample ${sampleLocation + 1} screening method,best`"
-        :name="`Sample ${sampleLocation + 1} Group`"
-        :vid="`sample ${sampleLocation + 1} group`"
+        :name="`Sample Group ${sampleLocation + 1} Sample`"
+        :vid="`sample group ${sampleLocation + 1} sample`"
         v-slot="{ errors }">
         <div class="tw-w-1/5">Sample Group</div>
         <combo-box
@@ -453,7 +453,6 @@ import { mapGetters } from 'vuex'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
-import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import Table from 'app/components/table.vue'
 
@@ -469,7 +468,6 @@ export default {
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
-    'base-input-checkbox': BaseInputCheckbox,
     'validation-provider': ValidationProvider,
 		'plate-sample-controls': PlateSampleControls,
     'combo-box': ComboBox,

@@ -6,6 +6,7 @@ Can provide form component or inline (edit on hover) behaviour
 Slots include:
 - description = override sub title for the label placed after the input
 - actions = place to show action buttons
+- Checkboxes use checked attribute to set its state and listens for the change event; according to https://vuejs.org/v2/guide/forms.html
 -->
 <template>
   <div :class="outerClass">
@@ -15,10 +16,8 @@ Slots include:
       :id="id"
       :name="name"
       type="checkbox"
-      :value="value"
       :checked="value"
-      @input="updateValue"
-      @change="changeValue"
+      @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
     >
@@ -89,13 +88,8 @@ export default {
   methods: {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
-      // If not them update value via input event
-      if (!this.inline) this.$emit("input", event.target.checked);
-    },
-    changeValue(event) {
-      // If we are in inline editing mode, only update model on save
       // If not then update value via input event
-      if (!this.inline) this.$emit("change", event.target.checked);
+      if (!this.inline) this.$emit("input", event.target.checked);
     },
     onBlur() {
       // If in inline edit mode cancel edit
@@ -111,7 +105,6 @@ export default {
       this.editable = false
       // In this case we are in inline edit mode so need to explicitly save the input value
       this.$emit("input", this.$refs.inputRef.checked);
-      this.$emit("change", this.$refs.inputRef.checked);
       // Also emit a save event so we can catch this change easily in the parent
       this.$emit("save", this.$refs.inputRef.checked);
     },

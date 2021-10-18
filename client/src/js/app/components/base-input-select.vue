@@ -31,7 +31,6 @@ Slots include:
       :value="localValue"
       :disabled="isDisabled"
       :class="classObject"
-      @input="updateValue"
       @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"

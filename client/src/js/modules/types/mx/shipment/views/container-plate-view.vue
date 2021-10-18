@@ -155,7 +155,6 @@ import Shipments from 'collections/shipments'
 import Containers from 'collections/containers'
 import Dewars from 'collections/dewars'
 
-import BaseInputCheckBox from 'app/components/base-input-checkbox.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
@@ -178,7 +177,6 @@ export default {
     'valid-container-graphic': ValidContainerGraphic,
     'table-component': TableComponent,
     'pagination-component': PaginationComponent,
-    'base-input-checkbox': BaseInputCheckBox,
     'custom-dialog-box': CustomDialogBox,
     'single-sample-plate': SingleSample,
     'mx-sample-plate': SamplePlate,
