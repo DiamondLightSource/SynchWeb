@@ -24,7 +24,7 @@
 
             <div class="tw-mb-2 tw-py-2">
               <base-input-groupselect
-                v-model="containerState.CONTAINERTYPEID"
+                v-model="CONTAINERTYPEID"
                 label="Container Type"
                 :groups="groupedContainerTypes"
                 optionValueKey="CONTAINERTYPEID"
@@ -36,14 +36,14 @@
             <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="name" vid="container-name" v-slot="{ errors }">
               <base-input-text
                 label="Container Name"
-                v-model="containerState.NAME"
+                v-model="NAME"
                 :errorMessage="errors[0]"
               />
             </validation-provider>
 
             <div v-show="isPuck" class="pck tw-mb-2 tw-py-2">
               <base-input-select
-                v-model="containerState.CONTAINERREGISTRYID"
+                v-model="CONTAINERREGISTRYID"
                 label="Registered Container"
                 name="CONTAINERREGISTRYID"
                 :options="containerRegistry"
@@ -54,7 +54,7 @@
 
             <div v-show="isPuck" class="autoprocessing_options tw-mb-2 tw-py-2">
               <base-input-select
-                v-model="containerState.PROCESSINGPIPELINEID"
+                v-model="PROCESSINGPIPELINEID"
                 label="Priority Processing"
                 description="Other data reduction pipelines will run on a lower priority queue"
                 name="PIPELINE"
@@ -68,7 +68,7 @@
               <label>Show all spacegroups</label>
               <base-input-checkbox
                 name="SHOW SPACEGROUP"
-                v-model="containerState.SPACEGROUP"
+                v-model="SPACEGROUP"
               />
             </div>
 
@@ -77,7 +77,7 @@
                 label="Owner"
                   description="This user will be emailed with container updates. Check your email is up to date!"
                   name="PERSONID"
-                  v-model="containerState.PERSONID"
+                  v-model="PERSONID"
                   :options="users"
                   optionValueKey="PERSONID"
                   optionTextKey="FULLNAME"
@@ -86,17 +86,17 @@
                   <span v-show="!ownerEmail" class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6">Please update your email address by clicking view</span>
                 </template>
                 <template v-slot:actions>
-                  <a :href="'/contacts/user/'+containerState.PERSONID" class="button edit_user tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
+                  <a :href="`/contacts/user/${PERSONID}`" class="button edit_user tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
                 </template>
               </base-input-select>
             </validation-provider>
 
-            <base-input-text outerClass="tw-mb-2 tw-py-2" id="comments" v-model="containerState.COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
+            <base-input-text outerClass="tw-mb-2 tw-py-2" id="comments" v-model="COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
 
             <!-- VMXi Plates... -->
             <div v-show="isPlate " class="plate tw-mb-2 tw-py-2">
               <base-input-select
-                v-model="containerState.REQUESTEDIMAGERID"
+                v-model="REQUESTEDIMAGERID"
                 label="Requested Imager"
                 description="Imager this container should go into"
                 name="REQUESTERIMAGER"
@@ -108,7 +108,7 @@
 
             <div v-show="isPlate" class="plate tw-mb-2 tw-py-2">
               <base-input-select
-                v-model="containerState.SCHEDULEID"
+                v-model="SCHEDULEID"
                 label="Imaging Schedule"
                 description="Requested Imaging Schedule"
                 name="IMAGING SCHEDULE"
@@ -124,7 +124,7 @@
 
             <div v-show="isPlate" class="plate tw-mb-2 tw-py-2">
               <base-input-select
-                v-model="containerState.SCREENID"
+                v-model="SCREENID"
                 label="Crystallisation Screen"
                 description="Crystallisation screen that was used for this container"
                 name="CRYSTALLISATION SCREEN"
@@ -138,7 +138,7 @@
               <label>Queue For UDC</label>
               <base-input-checkbox
                 name="Queue For UDC"
-                v-model="containerState.QUEUEFORUDC"
+                v-model="QUEUEFORUDC"
               />
             </div>
           </div>
@@ -241,25 +241,6 @@ import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 const initialContainerState = {
-  DEWARID: "",
-  BARCODECHECK: null,
-  CAPACITY: 0,
-  CONTAINERTYPE: null,
-  CONTAINERTYPEID: "!",
-  PROCESSINGPIPELINEID: null,
-  NAME: "",
-  CONTAINERREGISTRYID: null,
-  AUTOMATED: 0,
-  BARCODE: "",
-  PERSONID: "",
-  EXPERIMENTTYPE: "",
-  COMMENTS: "",
-  REQUESTEDIMAGERID: null,
-  SCHEDULEID: null,
-  SCREENID: null,
-  EXPERIMENTTYPEID: "",
-  QUEUEFORUDC: false,
-  SPACEGROUP: false
 }
 
 const INITIAL_CONTAINER_TYPE = {
@@ -298,15 +279,32 @@ export default {
   },
   data() {
     return {
-      containerState: initialContainerState,
+      // Container State
+      DEWARID: "",
+      BARCODECHECK: null,
+      CAPACITY: 0,
+      CONTAINERTYPE: null,
+      CONTAINERTYPEID: "!",
+      PROCESSINGPIPELINEID: null,
+      NAME: "",
+      CONTAINERREGISTRYID: null,
+      AUTOMATED: 0,
+      BARCODE: "",
+      PERSONID: "",
+      EXPERIMENTTYPE: "",
+      COMMENTS: "",
+      REQUESTEDIMAGERID: null,
+      SCHEDULEID: null,
+      SCREENID: null,
+      EXPERIMENTTYPEID: "",
+      QUEUEFORUDC: false,
+      SPACEGROUP: false,
+
       // The dewar that this container will belong to
       dewar: null,
       plateKey: 0,
       plateType: null,
       proteinCombo: '123540',
-      proteinsCollection: null,
-      gProteinsCollection: null,
-      proteins: [],
       proteinSelection: null,
       selectedSample: null,
       showAllExperimentTypes: false,
@@ -344,9 +342,9 @@ export default {
     },
     ownerEmail: function() {
       // Does the selected owner have a valid email?
-      if (!this.containerState.PERSONID) return false
+      if (!this.PERSONID) return false
 
-      let owner = this.usersCollection.findWhere({PERSONID: this.containerState.PERSONID.toString()})
+      let owner = this.usersCollection.findWhere({PERSONID: this.PERSONID.toString()})
 
       return (owner && owner.get('EMAILADDRESS'))
     },
@@ -362,80 +360,91 @@ export default {
   },
   watch: {
     // When the container type changes we need to reset the samples list and redraw the container graphic
-    'containerState.CONTAINERTYPEID': function(newVal) {
-      let type = this.containerTypesCollection.findWhere({CONTAINERTYPEID: newVal})
+    CONTAINERTYPEID: {
+      immediate: true,
+      handler: function(newVal) {
+        if (newVal) {
+          let type = this.containerTypesCollection.findWhere({CONTAINERTYPEID: newVal})
 
-      if (!type) {
-        return
+          if (!type) {
+            return
+          }
+          this.CONTAINERTYPE = type.get('NAME')
+          this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
+
+          this.resetSamples(type.get('CAPACITY'))
+        }
       }
-      this.containerState.CONTAINERTYPE = type.get('NAME')
-      this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
-
-      this.resetSamples(type.get('CAPACITY'))
     },
-    'containerState.AUTOMATED': function(newVal) {
+    AUTOMATED: {
+      immediate: true,
+      handler: function(newVal) {
         // If now on, add safetylevel to query
         // Automated collections limited to GREEN Low risk samples
         if (newVal) {
-            this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
+          this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
         } else {
-            delete this.proteinsCollection.queryParams.SAFETYLEVEL;
+          delete this.proteinsCollection.queryParams.SAFETYLEVEL;
         }
         this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
           this.proteins = result.toJSON()
         })
         app.trigger('samples:automated', newVal)
-    },
-    'containerState.CONTAINERREGISTRYID': function(newVal) {
-      if (this.isPuck && newVal) {
-        // When a user selects a registered container we should update the name/barcode
-        let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID === newVal)
-        this.containerState.NAME = entry['BARCODE'] || '-'
       }
     },
-    'containerState.QUEUEFORUDC': function(newVal) {
-      let samples
-      if (newVal) {
-        samples = this.samples.map(sample => ({
-          ...sample,
-          CENTRINGMETHOD: 'diffraction',
-          EXPERIMENTKIND: 'Ligand binding',
-          SCREENINGMETHOD: 'none',
-        }))
-
-        this.containerState.AUTOMATED = 1
-      } else {
-        samples = this.samples.map(sample => ({
-          ...sample,
-          CENTRINGMETHOD: '',
-          EXPERIMENTKIND: '',
-          SCREENINGMETHOD: '',
-          ENERGY: '',
-          REQUIREDRESOLUTION: '',
-          MINIMUMRESOLUTION: '',
-          SCREENINGCOLLECTVALUE: '',
-        }))
-
-        this.containerState.AUTOMATED = ''
-      }
-
-      this.$store.commit('samples/set', samples)
-    },
-    containerRegistry(newVal) {
-      if (newVal && newVal.length > 0) {
-        const [firstContainerRegistry] = newVal
-        this.containerState.CONTAINERREGISTRYID = firstContainerRegistry.CONTAINERREGISTRYID
-        this.containerState.NAME = firstContainerRegistry.BARCODE
+    CONTAINERREGISTRYID: {
+      immediate: true,
+      handler: function(newVal) {
+        if (this.isPuck && newVal) {
+          // When a user selects a registered container we should update the name/barcode
+          let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID === newVal)
+          this.NAME = entry['BARCODE'] || '-'
+        }
       }
     },
-    'containerState.SPACEGROUP': function() {
-      this.getSpaceGroupsCollection()
+    QUEUEFORUDC: {
+      immediate: true,
+      handler: function(newVal) {
+        console.log({ QUEUEFORUDC: this.QUEUEFORUDC })
+        let samples
+        if (newVal) {
+          samples = this.samples.map(sample => ({
+            ...sample,
+            CENTRINGMETHOD: 'diffraction',
+            EXPERIMENTKIND: 'Ligand binding',
+            SCREENINGMETHOD: 'none',
+          }))
+
+          this.AUTOMATED = 1
+        } else {
+          samples = this.samples.map(sample => ({
+            ...sample,
+            CENTRINGMETHOD: '',
+            EXPERIMENTKIND: '',
+            SCREENINGMETHOD: '',
+            ENERGY: '',
+            REQUIREDRESOLUTION: '',
+            MINIMUMRESOLUTION: '',
+            SCREENINGCOLLECTVALUE: '',
+          }))
+
+          this.AUTOMATED = ''
+        }
+
+        this.$store.commit('samples/set', samples)
+      }
+    },
+    SPACEGROUP: {
+      immediate: true,
+      handler: function() {
+        this.getSpaceGroupsCollection()
+      }
     },
   },
   created: function() {
     this.containerType = INITIAL_CONTAINER_TYPE
     this.dewar = this.options.dewar.toJSON()
-    this.containerState.DEWARID = this.dewar.DEWARID
+    this.DEWARID = this.dewar.DEWARID
 
     this.resetSamples(this.containerType.CAPACITY)
 
@@ -464,22 +473,21 @@ export default {
       this.addContainer()
     },
     addContainer() {
-      let experimentType = this.experimentTypesCollection.findWhere({EXPERIMENTTYPEID: this.containerState.EXPERIMENTTYPEID})
+      let experimentType = this.experimentTypesCollection.findWhere({EXPERIMENTTYPEID: this.EXPERIMENTTYPEID})
 
       let containerModel = new Container({
-        DEWARID: this.containerState.DEWARID,
+        DEWARID: this.DEWARID,
         BARCODECHECK: null,
         CAPACITY: this.containerType.CAPACITY,
-        CONTAINERTYPE: this.containerState.CONTAINERTYPE,
-        PROCESSINGPIPELINEID: this.containerState.PROCESSINGPIPELINEID,
-        NAME: this.containerState.NAME,
-        CONTAINERREGISTRYID: this.containerState.CONTAINERREGISTRYID,
-        AUTOMATED: this.containerState.AUTOMATED > 0 ? this.containerState.AUTOMATED : null,
-        BARCODE: this.containerState.CODE,
-        PERSONID: this.containerState.PERSONID,
+        CONTAINERTYPE: this.CONTAINERTYPE,
+        PROCESSINGPIPELINEID: this.PROCESSINGPIPELINEID,
+        NAME: this.NAME,
+        CONTAINERREGISTRYID: this.CONTAINERREGISTRYID,
+        AUTOMATED: this.AUTOMATED > 0 ? this.AUTOMATED : null,
+        BARCODE: this.CODE,
+        PERSONID: this.PERSONID,
         EXPERIMENTTYPE: experimentType.get('NAME') || '',
-        STORAGETEMPERATURE: this.containerState.STORAGETEMPERATURE,
-        COMMENTS: this.containerState.COMMENTS,
+        COMMENTS: this.COMMENTS,
         REQUESTEDIMAGERID: "",
         SCHEDULEID: "",
         SCREENID: "",
@@ -506,8 +514,8 @@ export default {
         this.$store.commit('samples/reset')
 
         // Reset container - we may want to add more containers so just reset the name and barcode
-        this.containerState.NAME = ''
-        this.containerState.CODE = ''
+        this.NAME = ''
+        this.CODE = ''
         // Reset state of form
         this.$refs.containerForm.reset()
       } catch (error) {
@@ -537,7 +545,7 @@ export default {
       }
     },
     async viewSchedule() {
-      const schedule = this.imagingSchedules.find(schedule => schedule.SCHEDULEID === this.containerState.SCHEDULEID)
+      const schedule = this.imagingSchedules.find(schedule => schedule.SCHEDULEID === this.SCHEDULEID)
       if (schedule) {
         this.selectedSchedule = schedule
         await this.getImagingScheduleComponentsCollection()

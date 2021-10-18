@@ -58,8 +58,8 @@
       tag="div"
       class="tw-px-2 sample-group-column tw-py-1"
       :rules="`required_if:sample ${sampleIndex + 1} screening method,best`"
-      :name="`Sample ${sampleIndex + 1} Group`"
-      :vid="`sample ${sampleIndex + 1} group`"
+      :name="`Sample Group Sample ${sampleIndex + 1}`"
+      :vid="`sample group sample ${sampleIndex + 1}`"
       v-slot="{ errors }">
       <combo-box
         v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"

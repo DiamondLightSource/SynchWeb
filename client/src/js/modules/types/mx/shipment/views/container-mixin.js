@@ -36,11 +36,10 @@ export default {
       centeringMethods: CenteringMethodList.list,
       containerType: {},
       containerTypes: [],
-      containerTypesCollection: null,
-      containerRegistryCollection: null,
+      containerTypesCollection: new ContainerTypes(),
+      containerRegistryCollection: new ContainerRegistry(),
       containerRegistry: [],
       containerRegistryId: '',
-      containerState: {},
 
       experimentTypes: [],
       experimentTypesCollection: null,
@@ -57,6 +56,9 @@ export default {
 
       processingPipeline: '',
       processingPipelines: [],
+
+      proteins: [],
+      proteinsCollection: new DistinctProteins(),
 
       users: [],
       usersCollection: null,
@@ -77,7 +79,7 @@ export default {
       const result = await this.$store.dispatch('getCollection', this.usersCollection)
       this.users = result.toJSON()
       // Set plate owner to current user
-      this.containerState.PERSONID = this.$store.state.user.personId
+      this.PERSONID = this.$store.state.user.personId
     },
     async getProcessingPipelines() {
       let processingPipelinesCollection = new ProcessingPipelines()
@@ -89,13 +91,11 @@ export default {
       this.processingPipelines = result.toJSON()
     },
     async getProteins() {
-      this.proteinsCollection = new DistinctProteins()
       // If we want to only allow valid samples
       if (app.options.get('valid_components') && !app.staff) {
         this.proteinsCollection.queryParams.external = 1
       }
 
-      this.gProteinsCollection = new DistinctProteins()
       const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
       this.proteins = result.toJSON()
     },
@@ -105,7 +105,7 @@ export default {
       const result = await this.$store.dispatch('getCollection', this.experimentTypesCollection)
       const proposalExperimentTypes = result.where({ PROPOSALTYPE: this.$store.state.proposal.proposalType })
       this.experimentTypes = proposalExperimentTypes.map(type => type.toJSON())
-      this.containerState.EXPERIMENTTYPEID = this.experimentTypes.length > 0 ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
+      this.EXPERIMENTTYPEID = this.experimentTypes.length > 0 ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
     },
     async getContainerRegistry() {
       this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
@@ -113,8 +113,6 @@ export default {
       this.containerRegistry = [{ CONTAINERREGISTRYID: null, BARCODE: ""}, ...result.toJSON()]
     },
     async getContainerTypes() {
-      this.containerTypesCollection = new ContainerTypes()
-
       this.containerFilter = [this.$store.state.proposal.proposalType]
 
       const result = await this.$store.dispatch('getCollection', this.containerTypesCollection)
@@ -122,7 +120,7 @@ export default {
       // Do we have valid start state?
       if (this.containerTypes.length) {
         let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
-        this.containerState.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
+        this.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
       }
 
       if (this.container) {
@@ -179,7 +177,7 @@ export default {
     },
     async getSpaceGroupsCollection() {
       this.spaceGroupsCollection = new SpaceGroups(null, { state: { pageSize: 9999 } })
-      if (!this.containerState.SPACEGROUP) {
+      if (!this.SPACEGROUP) {
         this.spaceGroupsCollection.queryParams.ty = this.containerGroup
       }
 
@@ -400,7 +398,7 @@ export default {
       $experimentKindList: () => this.experimentKindList,
       $sampleLocation: () => this.sampleLocation,
       $sampleGroups: () => this.sampleGroups,
-      $queueForUDC: () => this.containerState.QUEUEFORUDC,
+      $queueForUDC: () => this.QUEUEFORUDC,
       $proteins: () => this.proteins,
       $sampleGroupsSamples: () => this.sampleGroupSamples
     }
