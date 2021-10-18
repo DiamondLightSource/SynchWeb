@@ -95,6 +95,8 @@ define(['backbone',
                 SHIPPINGID: this.dewar.get('SHIPPINGID'),
                 SHIPMENT: this.dewar.get('SHIPPINGNAME'),
                 DEWAR: this.dewar.get('CODE'),
+                ENABLE_EXP_PLAN: app.config.enable_exp_plan,
+                AUTO_LABEL: this.automated_label
             }
         },
         
@@ -115,6 +117,7 @@ define(['backbone',
             auto: 'input[name=AUTOMATED]',
             extrastate: '.extra-state',
             spacegroups: 'input[name=SPACEGROUPS]',
+            dp: '.dp-state',
         },
         
         
@@ -135,6 +138,7 @@ define(['backbone',
             'change @ui.type': 'setType',
 
             'click @ui.ext': 'toggleExtra',
+            'click a.dpinfo': 'toggleDP',
 
             'keypress .ui-combobox input': 'excelNavigate',
             'keypress input.sname': 'excelNavigate',
@@ -288,6 +292,13 @@ define(['backbone',
                 this.table.currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
                                                     : this.ui.extrastate.addClass('fa-plus').removeClass('fa-minus')
             }
+        },
+
+        toggleDP: function(e) {
+            e.preventDefault()
+            this.table.currentView.toggleDP()
+            this.table.currentView.dpState() ? this.ui.dpstate.addClass('fa-minus').removeClass('fa-plus')
+                                             : this.ui.dpstate.addClass('fa-plus').removeClass('fa-minus')
         },
 
         isForImager: function() {
@@ -530,6 +541,8 @@ define(['backbone',
         },
         
         initialize: function(options) {
+            this.automated_label = app.config.auto_collect_label || 'Automated'
+
             this.ready = []
             
             this.dewar = options.dewar

@@ -13,8 +13,16 @@
 
     <% if (LCOUT && LCRET) { %>
     <div class="ra">
+        <% if (QUEUE_SHIPMENT) { %>
+            <a class="button queue" href="#"><i class="fa fa-plus"></i> Queue for <%-AUTO_LABEL%></a>
+        <% } %>
+
         <% if (SHIPPINGSTATUS == 'opened' || SHIPPINGSTATUS == 'awb created' || SHIPPINGSTATUS == 'pickup booked') { %>
             <a class="button send" href="#"><i class="fa fa-plane"></i> Mark as Sent</a>
+        <% } %>
+
+        <% if (SHIPPINGSTATUS != 'returned' && IS_STAFF) { %>
+            <a class="button return" href="#"><i class="fa fa-plane"></i> Mark as Returned</a>
         <% } %>
 
         <% if (DHL_ENABLE) { %>
@@ -32,6 +40,10 @@
         <a href="<%-APIURL%>/pdf/sid/<%-SHIPPINGID%>/prop/<%-PROP%>" class="label button pdf" title="Print Shipment Labels"><i class="fa fa-print"></i> Print Shipment Labels</a>
 
         <a href="<%-APIURL%>/pdf/container/sid/<%-SHIPPINGID%>/prop/<%-PROP%>" class="label button pdf" title="Print Shipment Contents"><i class="fa fa-print"></i> Print Contents</a>
+
+        <% if (app.config.csv_profile) { %>
+            <a href="/shipments/csv/<%-SHIPPINGID%>" class="label button" title="Import/Export Shipment Contents from/to CSV"><i class="fa fa-file-text-o"></i> Import/Export CSV</a>
+        <% } %>
     </div>
     <% } %>
 

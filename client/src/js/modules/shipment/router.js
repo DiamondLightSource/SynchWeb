@@ -9,6 +9,8 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'shipments/awb/sid/:sid': 'create_awb',
       'shipments/pickup/sid/:sid': 'rebook_pickup',
 
+      'shipments/csv/:sid': 'import_csv',
+
       'containers/cid/:cid(/iid/:iid)(/sid/:sid)': 'view_container',
       'containers/queue/:cid': 'queue_container',
       'containers/add/did/:did': 'add_container',
@@ -16,6 +18,9 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'containers(/s/:s)(/ty/:ty)(/page/:page)': 'container_list',
       'containers/registry(/ty/:ty)(/s/:s)(/page/:page)': 'container_registry',
       'containers/registry/:crid': 'view_rcontainer',
+
+      'containers/queued(/s/:s)(/ty/:ty)(/pt/:pt)(/bl/:bl)(/sid/:sid)(/page/:page)': 'queued_containers',
+      'containers/review/:cid': 'container_review',
 
       'dewars(/s/:s)(/page/:page)': 'dewar_list',
       'dewars/dispatch/:did': 'dispatch_dewar',
@@ -32,7 +37,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
       'migrate': 'migrate',
     },
     
-    loadEvents: ['shipments:show', 'shipment:show', 'rcontainer:show', 'rdewar:show'],
+    loadEvents: ['shipments:show', 'shipment:show', 'rcontainer:show', 'rdewar:show', 'container:review'],
 
     loadModule: function(loadedCallback) {
         import(/* webpackChunkName: "shipping" */ 'modules/shipment/controller').then(controller => {

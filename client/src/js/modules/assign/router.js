@@ -6,6 +6,7 @@ define(['marionette', 'modules/assign/controller'], function(Marionette, c) {
         appRoutes: {
             'assign': 'selectVisit',
             'assign/visit/:visit(/page/:page)': 'assignVisit',
+            'assign/scan/:bl': 'scanAssign',
         },
         
         loadEvents: ['assign:visit'],

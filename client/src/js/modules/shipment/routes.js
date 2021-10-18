@@ -11,6 +11,7 @@ import Backbone from 'backbone'
 import Shipments from 'collections/shipments.js'
 import Shipment from 'models/shipment.js'
 
+import Container from 'models/container.js'
 import Containers from 'collections/containers.js'
 import ContainerRegistry from 'modules/shipment/models/containerregistry'
 import ContainersRegistry  from 'modules/shipment/collections/containerregistry'
@@ -35,6 +36,7 @@ const ManifestView = import(/* webpackChunkName: "shipment" */ 'modules/shipment
 const DewarStats = import(/* webpackChunkName: "shipment-stats" */ 'modules/shipment/views/dewarstats')
 const DispatchView = import(/*webpackChunkName: "shipment" */ 'modules/shipment/views/dispatch')
 const TransferView = import(/*webpackChunkName: "shipment" */ 'modules/shipment/views/transfer')
+const ImportFromCSV = import(/*webpackChunkName: "shipment" */ 'modules/shipment/views/fromcsv')
 
 // In future may want to move these into wrapper components
 // Similar approach was used for samples with a samples-map to determine the correct view
@@ -44,6 +46,8 @@ const XpdfContainersView = import(/* webpackChunkName: "shipment" */ 'modules/ty
 
 const ContainerRegistryView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/containerregistry')
 const RegisteredContainer = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/registeredcontainer')
+const QueuedContainers = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/queuedcontainers')
+const ReviewContainer = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/containerreview')
 
 const MigrateView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/migrate')
 
@@ -76,6 +80,10 @@ app.addInitializer(function() {
 
   application.on('rcontainer:show', function(crid) {
       application.navigate('/containers/registry/'+crid)
+  })
+
+  application.on('container:review', function(cid) {
+    application.navigate('/containers/review/'+cid)
   })
 })
 
@@ -310,6 +318,31 @@ const routes = [
           breadcrumbs: [bc, { title: 'Dewar Stats' }]
         }
       },
+      {
+        path: 'csv/:sid',
+        name: 'shipment-import-csv',
+        component: MarionetteView,
+        props: route => ({
+          mview: ImportFromCSV,
+          breadcrumbs: [bc, { title: 'Import from CSV' }],
+          breadcrumb_tags: ['SHIPPINGNAME'], // Append shipment model name to the bc
+          options: {
+            model: new Shipment({ SHIPPINGID: route.params.sid })
+          }
+        }),
+        beforeEnter: (to, from, next) => {
+          // Call the loading state here because we are finding the proposal based on this shipment id
+          // Prop lookup sets the proposal and type via set application.cookie method which we mapped to the store
+          store.dispatch('proposal/proposalLookup', { field: 'SHIPPINGID', value: to.params.sid } )
+            .then( () => {
+              console.log("Calling next - Success, shipment model will be prefetched in marionette view")
+              next()
+            }, () => {
+              console.log("Error, no proposal found from the shipment id")
+              next('/notfound')
+            })
+        }
+      },
     ],
   },
   //
@@ -371,6 +404,47 @@ const routes = [
     component: ContainerQueueWrapper,
     props: route => ({
       cid: +route.params.cid,
+    }),
+  },
+  {
+    path: '/containers/queued(/s/)?:s([a-zA-Z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9]+)?(/pt/)?:pt([a-zA-Z0-9_-]+)?(/bl/)?:bl([a-zA-Z0-9_-]+)?(/sid/)?:sid([0-9]+)?(/page/)?:page([0-9]+)?',
+    name: 'containers-queued',
+    meta: {
+        permission: 'queued_cont'
+    },
+    component: MarionetteView,
+    props: route => ({
+        mview: QueuedContainers,
+        options: {
+          params: { 
+            s: route.params.s, ty: route.params.ty, pt: route.params.pt, 
+            bl: route.params.bl, sid: route.params.sid, page: route.params.page
+          }
+        },
+        breadcrumbs: [bc, { title: 'Queued Containers' }]
+    }),
+  },
+  {
+    path: '/containers/review/:cid([0-9]+)',
+    name: 'container-review',
+    component: MarionetteView,
+    props: route => ({
+        mview: ReviewContainer,
+        options: {
+          model: new Container({ CONTAINERID: route.params.cid })
+        },
+        breadcrumbs: [bc, { title: 'Containers' }, { title: 'Review' }],
+        breadcrumb_tags: ['SHIPMENT', 'NAME'],
+        beforeEnter: (to, from, next) => {
+          store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid } )
+            .then( () => {
+              console.log("Calling next - Success. model will be prefetched in marionette view")
+              next()
+            }, () => {
+              console.log("Calling next - Error, no container found")
+              next('/notfound')
+            })
+        }
     }),
   },
   {

@@ -7,7 +7,8 @@ define(['backbone',
         'modules/shipment/views/shipments',
         'modules/shipment/views/shipment',
         'modules/shipment/views/shipmentadd',
-
+        'modules/shipment/views/fromcsv',
+    
         'models/container',
         'collections/containers',
         'modules/shipment/views/container',
@@ -15,6 +16,9 @@ define(['backbone',
         // 'modules/shipment/views/containeradd',
         'modules/shipment/views/containers',
         'modules/imaging/views/queuecontainer',
+
+        'modules/shipment/views/queuedcontainers',
+        'modules/shipment/views/containerreview',
 
         'modules/shipment/models/containerregistry',
         'modules/shipment/collections/containerregistry',
@@ -46,9 +50,10 @@ define(['backbone',
     
 ], function(Backbone,
     GetView,
-    Dewar, Shipment, Shipments,
-    ShipmentsView, ShipmentView, ShipmentAddView,
-    Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
+    Dewar, Shipment, Shipments, 
+    ShipmentsView, ShipmentView, ShipmentAddView, ImportFromCSV,
+    Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView, 
+    QueuedContainers, ReviewContainer,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
     RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView, DewarRegistryView,
     DispatchView, TransferView, Dewars, DewarOverview, ManifestView, DewarStats, CreateAWBView, RebookPickupView,
@@ -115,6 +120,37 @@ define(['backbone',
             })
         }
     },
+
+    // Import csv based on selected profile
+    import_csv: function(sid) {
+        if (!app.config.csv_profile) {
+            app.message({ title: 'CSV Import Not Enabled', message: 'Shipment CSV import is not currently enabled'})
+            return
+        }
+
+        var lookup = new ProposalLookup({ field: 'SHIPPINGID', value: sid })
+        lookup.find({
+            success: function() {
+                var shipment = new Shipment({ SHIPPINGID: sid })
+                  shipment.fetch({
+                      success: function() {
+                          app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }, { title: 'Import from CSV' }])
+                          app.content.show(new ImportFromCSV({ model: shipment, format: 'imca' }))
+                      },
+                      error: function() {
+                          app.bc.reset([bc])
+                          app.message({ title: 'No such shipment', message: 'The specified shipment could not be found'})
+                      },
+                  })
+            }, 
+
+            error: function() {
+                app.bc.reset([bc, { title: 'No such shipment' }])
+                app.message({ title: 'No such shipment', message: 'The specified shipment could not be found'})
+            }
+        })
+    },
+
 
     create_awb: function(sid) {
         var shipment = new Shipment({ SHIPPINGID: sid })
@@ -325,6 +361,40 @@ define(['backbone',
         })
     },
 
+    queued_containers: function(s, ty, pt, bl, sid, page) {
+        if (!app.staff) {
+            app.message({ title: 'No access', message: 'You do not have access to that page'})
+            return
+        }
+
+        app.bc.reset([bc, { title: 'Queued Containers' }])
+        app.content.show(new QueuedContainers({ params: { s: s, ty: ty, pt: pt, bl: bl, sid: sid, page: page }}))
+    },
+
+    container_review: function(cid) {
+        var lookup = new ProposalLookup({ field: 'CONTAINERID', value: cid })
+        lookup.find({
+            success: function() {
+                var container = new Container({ CONTAINERID: cid })
+                container.fetch({
+                    success: function() {
+                        app.bc.reset([bc, { title: container.get('SHIPMENT'), url: '/shipments/sid/'+container.get('SHIPPINGID') }, { title: 'Containers' }, { title: 'Review' }, { title: container.get('NAME') }])
+                        app.content.show(new ReviewContainer({ model: container }))
+                    },
+                    error: function() {
+                        app.bc.reset([bc, { title: 'No such container' }])
+                        app.message({ title: 'No such container', message: 'The specified container could not be found'})
+                    },
+                })
+            },
+
+            error: function() {
+                app.bc.reset([bc, { title: 'No such container' }])
+                app.message({ title: 'No such container', message: 'The specified container could not be found'})
+            }
+        })
+    },
+
 
     dewar_registry: function(ty, s, page) {
       app.loading()
@@ -487,6 +557,11 @@ define(['backbone',
       app.navigate('containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
       controller.view_container(cid, iid, sid)
     })
+
+    app.on('container:review', function(cid) {
+        app.navigate('containers/review/'+cid)
+        controller.container_review(cid)
+      })
 
     app.on('rdewar:show', function(fc) {
       app.navigate('dewars/registry/'+fc)

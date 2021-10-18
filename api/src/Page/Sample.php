@@ -64,6 +64,8 @@ class Sample extends Page
                               'NAME' => '[\w\s-()]+',
                               'COMMENTS' => '.*',
                               'SPACEGROUP' => '(\w|\s|\-|\/)+|^$', // Any word character (inc spaces bars and slashes) or empty string
+                              'STAFFCOMMENTS' => '.*',
+
                               'CELL_A' => '\d+(.\d+)?',
                               'CELL_B' => '\d+(.\d+)?',
                               'CELL_C' => '\d+(.\d+)?',
@@ -118,6 +120,9 @@ class Sample extends Page
                               'MONOCHROMATOR' => '\w+',
                               'PRESET' => '\d',
                               'BEAMLINENAME' => '[\w-]+',
+                              'AIMEDRESOLUTION' => '\d+(.\d+)?',
+                              'COLLECTIONMODE' => '\w+',
+                              'PRIORITY' => '\d+',
 
                               'queued' => '\d',
                               'UNQUEUE' => '\d',
@@ -139,8 +144,10 @@ class Sample extends Page
                               'TYPE' => '\w+',
                               'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
                               'PLANORDER' => '\d',
+                              'SHIPPINGID' => '\d+',
 
                               'SAMPLEGROUPID' => '\d+',
+                              'QUEUESTATUS' => '\w+',
                                );
         
         
@@ -153,6 +160,8 @@ class Sample extends Page
                               array('/components', 'post', '_add_sample_component'),
                               array('/components/:scid', 'delete', '_remove_sample_component'),
 
+                              array('/queue/:CONTAINERQUEUESAMPLEID', 'patch', '_update_sample_queue'),
+                                                
                               array('/sub(/:ssid)(/sid/:sid)', 'get', '_sub_samples'),
                               array('/sub/:ssid', 'patch', '_update_sub_sample'),
                               array('/sub/:ssid', 'put', '_update_sub_sample_full'),
@@ -828,6 +837,12 @@ class Sample extends Page
                 array_push($args, $this->arg('BLSAMPLEGROUPID'));
             }
 
+            # For a specific shipment
+            if ($this->has_arg('SHIPPINGID')) {
+                $where .= ' AND s.shippingid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('SHIPPINGID'));
+            }
+
             # For a specific container
             if ($this->has_arg('cid')) {
                 $where .= ' AND c.containerid=:'.(sizeof($args)+1);
@@ -915,6 +930,7 @@ class Sample extends Page
               INNER JOIN dewar d ON d.dewarid = c.dewarid 
               LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
               LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
+              INNER JOIN shipping s ON s.shippingid = d.shippingid
               $join WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
 
@@ -944,9 +960,16 @@ class Sample extends Page
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
             
-            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
+            $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,
+                b.staffcomments,
+                b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, 
+                count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es,
+                count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
-                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath
+                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath,
+                                    dp.aimedresolution, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.collectionmode, dp.priority,
+                                    GROUP_CONCAT(distinct a.spacegroup SEPARATOR ', ') as dcspacegroup,
+                                    cqss.status as lastqueuestatus, cq.containerqueueid, cqs.containerqueuesampleid
                                   
                                   FROM blsample b
 
@@ -964,10 +987,16 @@ class Sample extends Page
                                   INNER JOIN proposal p ON p.proposalid = pr.proposalid
 
                                   LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
-                                  
+                                  LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsampleid = b.blsampleid AND cq.containerqueueid = cqs.containerqueueid
+
+                                  LEFT OUTER JOIN containerqueuesample cqss ON cqss.containerqueuesampleid = (
+                                      SELECT MAX(containerqueuesampleid) FROM containerqueuesample _cqs WHERE _cqs.blsampleid = b.blsampleid
+                                  )
+
                                   LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = b.diffractionplanid 
                                   LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
                                   LEFT OUTER JOIN datacollectiongroup dcg ON dc.datacollectiongroupid = dcg.datacollectiongroupid
+                                  LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
                                   LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
                                   LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
                                   
@@ -979,6 +1008,8 @@ class Sample extends Page
                                   LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
                                   LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
                                   LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid AND app.processingstatus = 1
+                                  LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+                                  LEFT OUTER JOIN autoproc a ON aps.autoprocid = a.autoprocid 
 
                                   LEFT OUTER JOIN blsampleimage si ON b.blsampleid = si.blsampleid
 
@@ -1039,14 +1070,15 @@ class Sample extends Page
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10 WHERE blsampleid=:11", 
-              array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$a['PACKINGFRACTION'],$a['DIMENSION1'],$a['DIMENSION2'],$a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE'],$this->arg('sid'))); 
+            $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10,staffcomments=:11 WHERE blsampleid=:12", 
+              array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$a['PACKINGFRACTION'],$a['DIMENSION1'],$a['DIMENSION2'],$a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE'],$a['STAFFCOMMENTS'],$this->arg('sid'))); 
 
             if (array_key_exists('PROTEINID', $a)) {
                 $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10", 
                   array($a['SPACEGROUP'], $a['PROTEINID'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['THEORETICALDENSITY'], $samp['CRYSTALID']));
-                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7 WHERE diffractionplanid=:8", 
-                  array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $samp['DIFFRACTIONPLANID']));
+                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7, aimedresolution=:8, preferredbeamsizex=:9, preferredbeamsizey=:10, exposuretime=:11, axisstart=:12, axisrange=:13, numberofimages=:14, transmission=:15, collectionmode=:16, priority=:17 WHERE diffractionplanid=:18", 
+                  array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['AIMEDRESOLUTION'], $a['PREFERREDBEAMSIZEX'], $a['PREFERREDBEAMSIZEY'], $a['EXPOSURETIME'], $a['AXISSTART'], $a['AXISRANGE'], $a['NUMBEROFIMAGES'], $a['TRANSMISSION'], $a['COLLECTIONMODE'], $a['PRIORITY'], 
+                    $samp['DIFFRACTIONPLANID']));
             }
 
             $init_comps = explode(',', $samp['COMPONENTIDS']);
@@ -1069,6 +1101,35 @@ class Sample extends Page
                     $this->db->pq("UPDATE blsampletype_has_component SET abundance=:1 WHERE blsampletypeid=:2 AND componentid=:3", array($amounts[$i], $crystalid, $f));
                 }
             }
+        }
+
+        // Manually update the status of a sample in the queue
+        function _update_sample_queue() {
+            $statuses = array('completed', 'skipped', 'reinspect', 'failed');
+
+            if (!$this->staff) $this->_error('No access');
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('CONTAINERQUEUESAMPLEID')) $this->_error('No sample container queue id specified');
+            if (!$this->has_arg('QUEUESTATUS') || !in_array($this->arg('QUEUESTATUS'), $statuses)) $this->_error('No status specified');
+
+            $chk = $this->db->pq("SELECT s.blsampleid
+                FROM blsample s
+                INNER JOIN containerqueuesample cqs ON cqs.blsampleid = s.blsampleid
+                INNER JOIN container c ON c.containerid = s.containerid
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                WHERE sh.proposalid=:1 AND cqs.containerqueuesampleid=:2",
+                array($this->proposalid, $this->arg('CONTAINERQUEUESAMPLEID')));
+
+            if (!sizeof($chk)) $this->_error('Sample not queued');
+
+            $this->db->pq('UPDATE containerqueuesample SET endtime=CURRENT_TIMESTAMP, status=:1 WHERE containerqueuesampleid=:2', 
+                array($this->arg('QUEUESTATUS'), $this->arg('CONTAINERQUEUESAMPLEID')));
+
+            $this->_output(array(
+                'CONTAINERQUEUESTATUSID' => $this->arg('CONTAINERQUEUESAMPLEID'),
+                'QUEUESTATUS' => $this->arg('QUEUESTATUS')
+            ));
         }
 
 
@@ -1131,12 +1192,12 @@ class Sample extends Page
             if (!$haskey) $this->_error('One or more fields is missing');
 
 
-            foreach (array('COMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER') as $f) {
+            foreach (array('COMMENTS', 'STAFFCOMMENTS', 'SPACEGROUP', 'CODE', 'ANOMALOUSSCATTERER', 'COLLECTIONMODE') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : '';
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
             }
 
-            foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY', 'USERPATH') as $f) {
+            foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'AIMEDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY', 'USERPATH', 'PRIORITY', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION') as $f) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
             }
@@ -1146,8 +1207,8 @@ class Sample extends Page
 
 
         function _do_add_sample($a) {
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7) RETURNING diffractionplanid INTO :id", 
-                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH']));
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath, aimedresolution, preferredbeamsizex, preferredbeamsizey, exposuretime, axisstart, axisrange, numberofimages, transmission, collectionmode, priority) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17) RETURNING diffractionplanid INTO :id", 
+                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['AIMEDRESOLUTION'], $a['PREFERREDBEAMSIZEX'], $a['PREFERREDBEAMSIZEY'], $a['EXPOSURETIME'], $a['AXISSTART'], $a['AXISRANGE'], $a['NUMBEROFIMAGES'], $a['TRANSMISSION'], $a['COLLECTIONMODE'], $a['PRIORITY']));
             $did = $this->db->id();
 
             if (!array_key_exists('CRYSTALID', $a)) {
@@ -1429,7 +1490,7 @@ class Sample extends Page
             $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
             $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
 
-            $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
+            $sfields = array('CODE', 'NAME', 'COMMENTS', 'STAFFCOMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
             foreach ($sfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE blsample SET $f=:1 WHERE blsampleid=:2", array($this->arg($f), $samp['BLSAMPLEID']));
@@ -1451,7 +1512,7 @@ class Sample extends Page
                 }
             }
 
-            $dfields = array('REQUIREDRESOLUTION', 'ANOMALOUSSCATTERER', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'ENERGY', 'USERPATH');
+            $dfields = array('REQUIREDRESOLUTION', 'ANOMALOUSSCATTERER', 'CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'ENERGY', 'USERPATH', 'AIMEDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'COLLECTIONMODE', 'PRIORITY');
             foreach ($dfields as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq("UPDATE diffractionplan SET $f=:1 WHERE diffractionplanid=:2", array($this->arg($f), $samp['DIFFRACTIONPLANID']));
@@ -1459,7 +1520,20 @@ class Sample extends Page
                 }
             }
 
-            if($this->has_arg('PLANORDER')) {
+            // Deal with special case (xpdf?)
+            // This method is used to update/patch samples so it does not necessarily have a containerid
+            // Isolate the requirement for a container id here because its only important when updating collection plans
+            $maxLocation = null;
+
+            if($this->has_arg('CONTAINERID') && $this->arg('CONTAINERID') == 0) {
+                $defaultContainerLocation = $this->_get_default_sample_container();
+                $this->args['CONTAINERID'] = $defaultContainerLocation['CONTAINERID'];
+                $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
+                $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
+                $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
+            }
+
+            if($this->has_arg('PLANORDER') && $maxLocation != null) {
                 // If we're moving a BLSample to a new container we need to adjust the DCP plan order not to clash with existing plans for samples in the new container
                 $dcps = $this->db->pq("SELECT dataCollectionPlanId FROM BLSample_has_DataCollectionPlan
                                 WHERE blSampleId = :1", array($this->arg('sid')));

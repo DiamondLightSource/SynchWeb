@@ -58,10 +58,12 @@ define(['marionette',
             ext: '.extrainfo',
             auto: '.auto',
             extrastate: '.extra-state',
+            dpstate: '.dp-state',
         },
 
         events: {
             'click @ui.ext': 'toggleExtra',
+            'click a.dpinfo': 'toggleDP',
             'click a.queue': 'confirmQueueContainer',
             'click a.unqueue': 'confirmUnqueueContainer',
         },
@@ -69,6 +71,8 @@ define(['marionette',
         templateHelpers: function() {
             return {
                 IS_STAFF: app.staff,
+                ENABLE_EXP_PLAN: app.config.enable_exp_plan,
+                AUTO_LABEL: this.automated_label
             }
         },
 
@@ -79,11 +83,20 @@ define(['marionette',
                                                 : this.ui.extrastate.addClass('fa-plus').removeClass('fa-minus')
         },
 
+        toggleDP: function(e) {
+            e.preventDefault()
+            this.table.currentView.toggleDP()
+            this.table.currentView.dpState() ? this.ui.dpstate.addClass('fa-minus').removeClass('fa-plus')
+                                             : this.ui.dpstate.addClass('fa-plus').removeClass('fa-minus')
+        },
+
         createSamples: function() {
             this.samples = new Samples(null, { state: { pageSize: 9999 } })
         },
 
         initialize: function(options) {
+            this.automated_label = app.config.auto_collect_label || 'Automated'
+
             var self = this
             this.createSamples()
             this.samples.queryParams.cid = options.model.get('CONTAINERID')
@@ -160,10 +173,10 @@ define(['marionette',
 
         updateAutoCollection: function() {
             if (this.model.get('CONTAINERQUEUEID')) {
-                this.ui.auto.html('This container was queued for auto collection on '+this.model.escape('QUEUEDTIMESTAMP'))
+                this.ui.auto.html('This container was queued for '+this.automated_label.toLowerCase()+' collection on '+this.model.escape('QUEUEDTIMESTAMP'))
                 this.ui.auto.append(' <a href="#" class="button unqueue"><i class="fa fa-times"></i> Unqueue</a>')
             } else {
-                this.ui.auto.html('<a href="#" class="button queue"><i class="fa fa-plus"></i> Queue</a> this container for Auto Collect')
+                this.ui.auto.html('<a href="#" class="button queue"><i class="fa fa-plus"></i> Queue</a> this container for '+this.automated_label.toLowerCase()+' collection')
             }
         },
 
@@ -171,7 +184,7 @@ define(['marionette',
             e.preventDefault()
             utils.confirm({
                 title: 'Queue Container?',
-                content: 'Are you sure you want to queue this container for auto collection?',
+                content: 'Are you sure you want to queue this container for '+this.automated_label.toLowerCase()+' collection?',
                 callback: this.doQueueContainer.bind(this)
             })
         },
