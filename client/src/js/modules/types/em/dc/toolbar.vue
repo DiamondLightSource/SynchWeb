@@ -122,7 +122,7 @@ export default {
         },
         'addToProjectOptions': function() {
             return {
-                'name': this.dataCollection.shortImageDirectory +
+                'name': this.dataCollection.shortImageDirectory + '/' +
                     this.dataCollection.fileTemplate,
                 'type': 'dc',
                 'iid': this.dataCollection.dataCollectionGroupId
@@ -171,7 +171,7 @@ export default {
         'displayPath': function() {
             return this.dataCollection[
                 this.displayPathFull ? 'imageDirectory' : 'shortImageDirectory'
-            ] + this.dataCollection.fileTemplate
+            ] + '/' + this.dataCollection.fileTemplate
         },
         'displayPathClass': function() {
             return 'fa fa-caret-' + (this.displayPathFull ? 'left' : 'right')
