@@ -121,10 +121,34 @@ export default {
             }
             return ''
         },
+        'convertType': function(type, value) {
+            switch(type) {
+            case 'string':
+                return String(value)
+            case 'real':
+                return value ? parseFloat(value) : 0
+            case 'integer':
+                return value ? parseInt(value, 10) : 0
+            case 'boolean':
+                return ['true', '1', 'yes', true, 1].includes(value)
+            default:
+                throw 'type ' + type + ' not defined in convertType'
+            }
+        },
         'setToDefaults': function() {
             Object.keys(this.schema).forEach((name) => {
-                this.$set(this.formFields, name, this.getADefault(name))
-            })
+                const rules = this.schema[name]
+                const schemaType = typeof rules.type == 'undefined' ?
+                    'string' : rules.type
+                this.$set(
+                    this.formFields,
+                    name,
+                    this.convertType(
+                        schemaType,
+                        this.getADefault(name)
+                    )
+                )
+            });
             console.log(this.title + 'fields set to defaults', this.formFields)
         },
         'postIt': function() {
