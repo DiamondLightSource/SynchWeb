@@ -168,6 +168,7 @@ class DataCollectionSchema extends Schema
                 'unit' => 'μm',
                 'required' => true,
                 'options' => array('50', '70'),
+                'default' => '50',
                 'type' => 'integer',
             ),
             'objAperture' => array(
@@ -237,7 +238,7 @@ class DataCollectionSchema extends Schema
                 },
             ),
             'totalExposedDose' => array(
-                'label' => 'Dose per frame',
+                'label' => 'Total Dose',
                 'unit' => 'e⁻/Å²',
                 'default' => '0.5',
                 'required' => true,
