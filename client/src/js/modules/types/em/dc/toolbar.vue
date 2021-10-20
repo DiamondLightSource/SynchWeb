@@ -179,7 +179,7 @@ export default {
     },
     'methods': {
         'favourite': function() {
-            this.$store.dispatch('em/post', {
+            this.$store.dispatch('em/api/post', {
                 'humanName': 'Flag',
                 'url': 'dc/comments/' + this.dataCollectionId,
                 'requestData': {

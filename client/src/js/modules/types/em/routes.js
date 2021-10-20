@@ -1,6 +1,6 @@
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import vueXModule from 'modules/types/em/store'
-import store from 'app/store/store.js'
+import emModule from 'modules/types/em/store/em-module'
+import store from 'app/store/store'
 
 // Import style for lazy loading of Vue Single File Component
 const DataCollectionView = () => import(/* webpackChunkName: "em" */ 'modules/types/em/dc/data-collection.vue')
@@ -16,7 +16,7 @@ const routes = [
         }),
         'beforeEnter': (to, from, next) => {
             if (to.params.collection_id && to.params.visit_str) {
-                vueXModule.register(store)
+                emModule.register(store)
                 next()
             } else {
                 app.message({

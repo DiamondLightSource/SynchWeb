@@ -91,7 +91,7 @@ export default {
         }
     },
     'mounted': function() {
-        this.$store.dispatch('em/fetch', {
+        this.$store.dispatch('em/api/fetch', {
             'url': this.schemaUrl,
             'humanName': this.schemaName,
         }).then(

@@ -91,7 +91,7 @@ export default {
         }
     },
     'mounted': function() {
-        this.$store.dispatch('em/fetch', {
+        this.$store.dispatch('em/api/fetch', {
             'url': this.schemaUrl,
             'humanName': this.title + ' Schema',
         }).then(
@@ -154,7 +154,7 @@ export default {
         'postIt': function() {
             this.errorMessages = {}
             this.errorMessage = ''
-            this.$store.dispatch('em/post', {
+            this.$store.dispatch('em/api/post', {
                 'url': this.postUrl,
                 'requestData': this.formFields,
                 'humanName': this.title,

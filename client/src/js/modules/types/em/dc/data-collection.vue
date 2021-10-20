@@ -132,7 +132,7 @@ export default {
         'fetchDataCollection': function() {
             this.clearTimeout()
             this.$store.commit('loading', true)
-            this.$store.dispatch('em/fetch', {
+            this.$store.dispatch('em/api/fetch', {
                 'url': 'dc/' + this.dataCollectionId,
                 'humanName': 'Data Collection',
             }).then(
@@ -151,7 +151,7 @@ export default {
             })
         },
         'fetchProcessingJobs': function() {
-            this.$store.dispatch('em/fetch', {
+            this.$store.dispatch('em/api/fetch', {
                 'url': 'jobs/' + this.dataCollectionId +
                     '?currentPage=1&pageSize=500', // TODO
                 'humanName': 'Processing jobs',

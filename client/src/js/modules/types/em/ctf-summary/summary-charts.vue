@@ -145,7 +145,7 @@ export default {
             if (! this.autoProcProgramId) {
                 return
             }
-            this.$store.dispatch('em/fetch', {
+            this.$store.dispatch('em/api/fetch', {
                 'url': 'ctf/summary/' + this.autoProcProgramId,
                 'humanName': 'CTF summary data',
             }).then(

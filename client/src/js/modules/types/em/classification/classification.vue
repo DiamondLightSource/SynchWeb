@@ -112,7 +112,7 @@ export default {
             this.selectedSrc = clicked.src
         },
         'fetch': function() {
-            this.$store.dispatch('em/fetch', {
+            this.$store.dispatch('em/api/fetch', {
                 'url': 'classification/' + this.autoProcProgramId +
                     '?page=' + this.page +
                     '&per_page=' + this.perPage +

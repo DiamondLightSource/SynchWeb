@@ -40,6 +40,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import emModule from 'modules/types/em/store/em-module'
 import EventBus from 'app/components/utils/event-bus.js'
 import Pagination from 'app/components/pagination.vue'
 import Refresh from 'modules/types/em/dc-list/refresh.vue'
@@ -47,7 +48,6 @@ import Search from 'modules/types/em/dc-list/search.vue'
 import Table from 'app/components/table.vue'
 import Toolbar from 'modules/types/em/dc-list/toolbar.vue'
 import UsageStack from 'modules/types/em/dc-list/usage-stack.vue'
-import vueXModule from 'modules/types/em/store'
 
 export default {
     'name': 'EmDcList',
@@ -125,7 +125,7 @@ export default {
         this.collection.fetch()
     },
     'beforeCreate': function() {
-        vueXModule.register(this.$store)
+        emModule.register(this.$store)
     },
     'beforeDestroy': function() {
         console.log('stopping Collection fetch')

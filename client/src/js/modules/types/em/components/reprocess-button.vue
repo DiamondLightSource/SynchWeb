@@ -65,7 +65,7 @@ export default {
     'methods': {
         'showDialog': function(payload) {
             this.waiting = false
-            this.$store.commit('em/showProcessingDialog', payload)
+            this.$store.commit('em/processing/showDialog', payload)
         },
         'click': function() {
             if (

@@ -52,7 +52,7 @@ export default {
     },
     'methods': {
         'fetch': function() {
-            this.$store.dispatch('em/fetch', {
+            this.$store.dispatch('em/api/fetch', {
                 'url': 'mc/drift/' + this.autoProcProgramId +
                     '/n/' + this.movieNumber,
                 'humanName': 'MC Drift',

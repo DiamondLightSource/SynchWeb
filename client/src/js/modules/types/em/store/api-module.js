@@ -1,12 +1,7 @@
 import Backbone from 'backbone'
 
-const emModule = {
+export default {
     'namespaced': true,
-    'state': {
-        // processingDialog is either false, true or a ProcessingJob object
-        'processingDialog': false,
-        'selectedMovie': 0,
-    },
     'getters': {
         'apiUrl': function(
             state, // eslint-disable-line no-unused-vars
@@ -14,41 +9,6 @@ const emModule = {
             rootState
         ) {
             return rootState.apiUrl + '/em/';
-        },
-        'processingDialogVisible': function(
-            state,
-            getters, // eslint-disable-line no-unused-vars
-            rootState // eslint-disable-line no-unused-vars
-        ) {
-            return state.processingDialog !== false
-        },
-        'processingDialogPreviousParameters': function(
-            state,
-            getters, // eslint-disable-line no-unused-vars
-            rootState // eslint-disable-line no-unused-vars
-        ) {
-            return typeof state.processingDialog == 'object' ?
-                state.processingDialog : null
-        },
-        'selectedMovie': function(
-            state,
-            getters, // eslint-disable-line no-unused-vars
-            rootState // eslint-disable-line no-unused-vars
-        ) {
-            return state.selectedMovie
-        },
-    },
-    'mutations': {
-        'cancelProcessingDialog': function(state) {
-            state.processingDialog = false
-        },
-        // newState can be true or a ProcessingJob
-        'showProcessingDialog': function(state, newState) {
-            state.processingDialog = typeof newState == 'undefined' ?
-                true : newState
-        },
-        'selectMovies': function(state, selectedMovie) {
-            state.selectedMovie = selectedMovie
         },
     },
     'actions': {
@@ -152,20 +112,5 @@ const emModule = {
                 })
             })
         },
-    },
-}
-
-export default {
-    'register': function(store) {
-        if (!store.hasModule('em')) {
-            store.registerModule('em', emModule)
-            console.log('registered storage module em')
-        }
-    },
-    'unregister': function(store) {
-        if (store.hasModule('em')) {
-            store.unregisterModule('em')
-            console.log('unregistered storage module em')
-        }
     },
 }

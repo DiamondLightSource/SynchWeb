@@ -77,7 +77,7 @@ export default {
     },
     'methods': {
         'fetchList': function() {
-            this.$store.dispatch('em/fetch', {
+            this.$store.dispatch('em/api/fetch', {
                 'url': this.baseUrl,
                 'humanName': this.sectionTitle + ' List',
             }).then(
@@ -95,7 +95,7 @@ export default {
             ) {
                 return
             }
-            this.$store.dispatch('em/fetch', {
+            this.$store.dispatch('em/api/fetch', {
                 'url': this.baseUrl + '/n/' + this.movieNumber,
                 'humanName': this.sectionTitle + ' Details',
             }).then(

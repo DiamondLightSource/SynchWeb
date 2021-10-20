@@ -8,7 +8,7 @@
     :defaults="defaults"
     @update="update"
     @posted="success"
-    @cancel="$store.commit('em/cancelProcessingDialog')"
+    @cancel="$store.commit('em/processing/cancelDialog')"
   >
     <template #default="form">
       <dialog-schema-form-section heading="Project">
@@ -135,8 +135,8 @@ export default {
     },
     'computed': {
         ...mapGetters({
-            'visible': 'em/processingDialogVisible',
-            'defaults': 'em/processingDialogDefaults',
+            'visible': 'em/processing/dialogVisible',
+            'options': 'em/processing/dialogOptions',
         }),
         'postUrl': function () {
             return 'relion/start/' + this.dataCollection.id
@@ -155,7 +155,7 @@ export default {
         },
         // eslint-disable-next-line no-unused-vars
         'success': function(response) {
-            this.$store.commit('em/cancelProcessingDialog', null)
+            this.$store.commit('em/processing/cancelDialog', null)
             this.$store.commit('notifications/addNotification', {
                 'title': 'Job submitted',
                 'message': 'Processing Job submitted OK.',

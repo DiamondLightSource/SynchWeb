@@ -68,7 +68,7 @@ export default {
             if (!this.autoProcProgramId) {
                 return
             }
-            this.$store.dispatch('em/fetch', {
+            this.$store.dispatch('em/api/fetch', {
                 'url': 'attachments/' + this.autoProcProgramId,
                 'humanName': 'Ice Breaker attachments',
             }).then(
