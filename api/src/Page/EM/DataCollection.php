@@ -21,7 +21,8 @@ trait DataCollection
     {
         global $visit_directory;
 
-        $validator = new SchemaValidator(new DataCollectionSchema());
+        $schema = new DataCollectionSchema();
+        $validator = new SchemaValidator($schema);
 
         list($invalid, $args) = $validator->validateJsonPostData(
             $this->app->request->getBody()
