@@ -219,9 +219,12 @@ class DataCollectionSchema extends Schema
                 'default' => 600,
                 'type' => 'integer',
                 'display' => false,
+                // ISpyB uses 'μm' - SynchWeb uses 'nm'
                 'onUpdate' => function ($postData) {
-                    // ISpyB uses 'μm' - SynchWeb uses 'nm'
                     return $postData['beamSizeAtSampleX'] * 1000.0;
+                },
+                'onSelect' => function ($row) {
+                    return $row['beamSizeAtSampleX'] / 1000.0;
                 },
             ),
             'beamSizeAtSampleY' => array(
@@ -233,9 +236,12 @@ class DataCollectionSchema extends Schema
                 'default' => 600,
                 'type' => 'integer',
                 'display' => false,
+                // ISpyB uses 'μm' - SynchWeb uses 'nm'
                 'onUpdate' => function ($postData) {
-                    // ISpyB uses 'μm' - SynchWeb uses 'nm'
                     return $postData['beamSizeAtSampleY'] * 1000.0;
+                },
+                'onSelect' => function ($row) {
+                    return $row['beamSizeAtSampleY'] / 1000.0;
                 },
             ),
             'beamSizeAtSample' => array(
