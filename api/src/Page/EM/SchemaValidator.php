@@ -126,25 +126,12 @@ class SchemaValidator
      * @return boolean|string - either boolean true or an error message
      *
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     private function checkOptions($allRules, $options, $value)
     {
-        // One field with options - also allows the user to enter their own
-        // value - so we have a flag to ignore validating options.
-        /* TODO: make "raw folder" a free-form text field... why is it even a
-           choice anyway? */
-        if (
-            array_key_exists('validateOptions', $allRules) &&
-            $allRules['validateOptions'] == false
-        ) {
-            return true;
-        }
-
-        return in_array(
-            "$value",
-            $options,
-            true
-        ) ? true : "$value is not known";
+        return in_array("$value", $options, true) ?
+            true : "$value is not known";
     }
 
     /**
@@ -289,9 +276,10 @@ class SchemaValidator
 
     private function isRequired($rules, $value)
     {
-        if (array_key_exists('stored', $rules) && !$rules['stored']) {
-            return false;
-        }
+        // even if it's not stored - it still needs validating
+        // if (array_key_exists('stored', $rules) && !$rules['stored']) {
+        //     return false;
+        // }
 
         $required = $rules['required'];
 
