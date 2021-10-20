@@ -137,14 +137,8 @@ trait MotionCorrection
         if (!sizeof($rows)) {
             $this->_error('No such micrograph');
         }
-        $image = $rows[0][$imageName];
-        if (file_exists($image)) {
-            $this->sendImage($image);
-            return;
-        }
 
-        $this->app->contentType('image/png');
-        readfile('assets/images/no_image.png');
+        $this->sendImage($rows[0][$imageName]);
     }
 
     public function motionCorrectionSnapshot()

@@ -36,16 +36,11 @@ trait Classification
             false
         );
 
-        if (sizeof($images) == 1) {
-            $image = $images[0]['classImageFullPath'];
-            if (file_exists($image)) {
-                $this->sendImage($image);
-                return;
-            }
-        }
-
-        $this->app->contentType('image/png');
-        readfile('assets/images/no_image.png');
+        $this->sendImage(
+            sizeof($images) == 1 ?
+                $images[0]['classImageFullPath'] :
+                'assets/images/no_image.png'
+        );
     }
 
     /* ParticleClassificationGroup has load of null filled rows

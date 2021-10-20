@@ -93,11 +93,6 @@ trait Attachments
             $this->_error('No such attachment');
         }
 
-        $file = $rows[0]['file'];
-        if (!file_exists($file)) {
-            $this->_error('No such attachment');
-        }
-
-        $this->sendDownload($file);
+        $this->sendDownload($rows[0]['file']);
     }
 }

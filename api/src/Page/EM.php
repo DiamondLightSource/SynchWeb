@@ -21,6 +21,7 @@ class EM extends Page
     use \SynchWeb\Page\EM\Config;
     use \SynchWeb\Page\EM\Ctf;
     use \SynchWeb\Page\EM\DataCollection;
+    use \SynchWeb\Page\EM\Downloads;
     use \SynchWeb\Page\EM\MotionCorrection;
     use \SynchWeb\Page\EM\Picker;
     use \SynchWeb\Page\EM\ProcessingJobs;
@@ -136,44 +137,6 @@ class EM extends Page
         return $args;
     }
 
-    private function sendImage($file)
-    {
-        $this->browserCache();
-        $this->app->response->headers->set('Content-length', filesize($file));
-        $this->app->contentType('image/' . pathinfo($file, PATHINFO_EXTENSION));
-        readfile($file);
-    }
-
-    private function sendDownload($file)
-    {
-        $this->browserCache();
-        $pathInfo = pathinfo($file);
-        $this->app->response->headers->set('Content-length', filesize($file));
-        $this->app->response->headers->set(
-            'Content-Disposition',
-            'attachment; filename="' . $pathInfo['basename']
-        );
-        $this->app->contentType('application/' . $pathInfo['extension']);
-        readfile($file);
-    }
-
-    private function browserCache()
-    {
-        $expires = 60 * 60 * 24 * 14;
-        $this->app->response->headers->set(
-            'Pragma',
-            'public'
-        );
-        $this->app->response->headers->set(
-            'Cache-Control',
-            'maxage=' . $expires
-        );
-        $this->app->response->headers->set(
-            'Expires',
-            gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT'
-        );
-    }
-
     ////////////////////////////////////////////////////////////////////////////
 
     public function _mc_fft()
@@ -187,18 +150,15 @@ class EM extends Page
                 INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                 WHERE dc.datacollectionid = :1 AND m.movienumber = :2", array($this->arg('id'), $im));
 
-        if (!sizeof($imgs)) $this->_error('No such fft');
+        if (!sizeof($imgs)) {
+            $this->_error('No such fft');
+        }
+
         $img = $imgs[0];
 
-        $file = $t == 2 ? $img['FFTCORRECTEDFULLPATH'] : $img['FFTFULLPATH'];
-
-        if (file_exists($file)) {
-            $this->sendImage($file);
-
-        } else {
-            $this->app->contentType('image/png');
-            readfile('assets/images/no_image.png');
-        }
+        $this->sendImage(
+            $t == 2 ? $img['FFTCORRECTEDFULLPATH'] : $img['FFTFULLPATH']
+        );
     }
 
     function _ap_status()

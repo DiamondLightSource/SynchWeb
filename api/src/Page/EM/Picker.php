@@ -88,14 +88,6 @@ trait Picker
             $this->_error('No such particle picking');
         }
 
-        $image = $rows[0]['summaryImageFullPath'];
-
-        if (file_exists($image)) {
-            $this->sendImage($image);
-            return;
-        }
-
-        $this->app->contentType('image/png');
-        readfile('assets/images/no_image.png');
+        $this->sendImage($rows[0]['summaryImageFullPath']);
     }
 }

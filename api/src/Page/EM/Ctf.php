@@ -114,15 +114,7 @@ trait Ctf
             $this->_error('No such ctf correction');
         }
 
-        $image = $rows[0]['fftTheoreticalFullPath'];
-
-        if (file_exists($image)) {
-            $this->sendImage($image);
-            return;
-        }
-
-        $this->app->contentType('image/png');
-        readfile('assets/images/no_image.png');
+        $this->sendImage($rows[0]['fftTheoreticalFullPath']);
     }
 
     public function ctfSummary()
