@@ -50,6 +50,10 @@ trait DataCollection
                 'GridSquare_*/Data/*.' : 'Frames/*.'
         ) . $args['imageSuffix'];
 
+        if (count(glob($imageDirectory . $fileTemplate, GLOB_NOSORT)) == 0) {
+            $this->dataCollectionFileError("Image files don't exist");
+        }
+
         $existingCollection = $this->dataCollectionFindExisting(
             $session['sessionId'],
             $imageDirectory,
@@ -57,12 +61,7 @@ trait DataCollection
         );
 
         if ($existingCollection !== null) {
-            $message = "Data Collection already exists";
-            $this->_error(array(
-                'acquisitionSoftware' => $message,
-                'imageDirectory' => $message,
-                'imageSuffix' => $message,
-            ), 400);
+            $this->dataCollectionFileError("Data Collection already exists");
         }
 
         $dataCollectionId = null;
@@ -185,6 +184,19 @@ trait DataCollection
     }
 
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns an error message against all fields that make up imageTemplate
+     *
+     * @param $message
+     */
+    private function dataCollectionFileError($message) {
+        $this->_error(array(
+            'acquisitionSoftware' => $message,
+            'imageDirectory' => $message,
+            'imageSuffix' => $message,
+        ), 400);
+    }
 
     /**
      * Returns dataCollectionId of first DataCollection associated with session
