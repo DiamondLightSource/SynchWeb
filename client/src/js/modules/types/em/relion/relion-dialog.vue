@@ -5,7 +5,7 @@
     schema-url="relion/schema"
     :post-url="postUrl"
     :show-dialog="visible"
-    :defaults="defaults"
+    :defaults="computedDefaults"
     @update="update"
     @posted="success"
     @cancel="$store.commit('em/processing/cancelDialog')"
@@ -54,7 +54,7 @@
               :key="name"
               :name="name"
               :form="form"
-              :disabled="wantCalculate(form.fields.wantCalculate, name)"
+              :disabled="disableCalculated(form.fields.wantCalculate, name)"
             />
           </dialog-schema-form-section>
 
@@ -136,19 +136,40 @@ export default {
     'computed': {
         ...mapGetters({
             'visible': 'em/processing/dialogVisible',
-            'options': 'em/processing/dialogOptions',
+            'defaultParameters': 'em/processing/defaultParameters',
         }),
         'postUrl': function () {
             return 'relion/start/' + this.dataCollection.id
         },
+        'computedDefaults': function() {
+            if (this.defaultParameters !== null) {
+                return Object.assign({}, this.defaultParameters, {
+                    'wantCalculate': false,
+                })
+            }
+
+            return {
+                'acquisition_software': this.dataCollection.acquisitionSoftware,
+                'import_images_dir': this.dataCollection.shortImageDirectory.replace(
+                    /[^\w\d_-]/,
+                    ''
+                ),
+                'import_images_ext': this.dataCollection.imageSuffix,
+                'voltage': this.dataCollection.voltage,
+                'ctffind_do_phaseshift': this.dataCollection.phasePlate == '1',
+                'angpix': this.dataCollection.pixelSizeOnImage,
+                'motioncor_doseperframe': this.dataCollection.frameDose,
+                'wantCalculate': true,
+            }
+        },
     },
     'methods': {
-        'wantCalculate': function(wantCalculate, fieldName) {
-            return [
+        'disableCalculated': function(wantCalculate, fieldName) {
+            return wantCalculate && [
                 'mask_diameter',
                 'extract_boxsize',
                 'extract_small_boxsize',
-            ].includes (fieldName) && wantCalculate
+            ].includes (fieldName)
         },
         'update': function({name, fields}) {
             boxCalculator(name, fields)

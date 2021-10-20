@@ -22,7 +22,8 @@ export default {
             'type': Boolean,
             'default': false,
         },
-        'previousParameters': {
+        // see modules/types/em/store/processing-module.js for details
+        'defaultParameters': {
             'type': Object,
             'default': null,
         },
@@ -47,11 +48,11 @@ export default {
     },
     'mounted': function() {
         /* Deal with occasional race-condition where we end up with no
-           previous parameters */
+           defaultParameters */
         this.$watch(
             function() {
                 return {
-                    'params': this.previousParameters,
+                    'params': this.defaultParameters,
                     'waiting': this.waiting,
                 }
             },
@@ -63,16 +64,25 @@ export default {
         )
     },
     'methods': {
-        'showDialog': function(payload) {
+        'showDialog': function() {
             this.waiting = false
-            this.$store.commit('em/processing/showDialog', payload)
+            this.$store.commit(
+                'em/processing/showDialog',
+                this.defaultParameters
+            )
         },
         'click': function() {
+            /*  If defaultParameters is null:
+                    this button isn't attached to a previous job
+                    and has no parameters to use/fetch
+                If it's an object, but empty:
+                    we can use them but they haven't been fetched yet
+            */
             if (
-                this.previousParameters === null ||
-                Object.keys(this.previousParameters).length > 0
+                this.defaultParameters === null ||
+                Object.keys(this.defaultParameters).length > 0
             ) {
-                this.showDialog(this.previousParameters)
+                this.showDialog(this.defaultParameters)
                 return
             }
 

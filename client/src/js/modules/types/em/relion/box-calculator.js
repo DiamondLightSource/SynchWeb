@@ -6,12 +6,6 @@
  * @param {object} parameters a reference to all of the parameters
  */
 export default function (name, parameters) {
-    const commit = function(diameter, size, sizeSmall) {
-        parameters.mask_diameter = diameter
-        parameters.extract_boxsize = size
-        parameters.extract_small_boxsize = sizeSmall
-    }
-
     const boxSizeSmall = function(extract_boxsize, angpix) {
         const boxSizes = [
             48, 64, 96, 128, 160, 192, 256, 288, 300, 320, 360, 384,
@@ -35,11 +29,11 @@ export default function (name, parameters) {
         'stop_after_ctf_estimation',
     ]
 
-    if (!(
-        applicableParameters.includes(name) &&
-        parameters.wantCalculate &&
-        !parameters.stop_after_ctf_estimation
-    )) {
+    if (
+        parameters.stop_after_ctf_estimation ||
+        !parameters.wantCalculate ||
+        !applicableParameters.includes(name)
+    ) {
         return
     }
 
@@ -47,7 +41,9 @@ export default function (name, parameters) {
     const autopick_LoG_diam_max = parseFloat(parameters.autopick_LoG_diam_max)
 
     if (angpix == 0.0 || isNaN(angpix) || isNaN(autopick_LoG_diam_max)) {
-        commit('', '', '')
+        parameters.mask_diameter = ''
+        parameters.extract_boxsize = ''
+        parameters.extract_small_boxsize = ''
         return
     }
 
@@ -58,9 +54,7 @@ export default function (name, parameters) {
     const extract_boxsize = boxSizeInt + (boxSizeInt % 2)
     const extract_small_boxsize = boxSizeSmall(extract_boxsize, angpix)
 
-    commit(
-        mask_diameter.toString(),
-        extract_boxsize.toString(),
-        extract_small_boxsize.toString()
-    )
+    parameters.mask_diameter = mask_diameter.toString()
+    parameters.extract_boxsize = extract_boxsize.toString()
+    parameters.extract_small_boxsize = extract_small_boxsize.toString()
 }

@@ -31,11 +31,6 @@ class RelionSchema extends Schema
                 'required' => true,
                 'default' => 'raw',
                 'pattern' => 'directory',
-                'options' => array(
-                    'raw', 'raw2', 'raw3', 'raw4', 'raw5',
-                    'raw6', 'raw7', 'raw8', 'raw9'
-                ),
-                'validateOptions' => false,
             ),
             'import_images_ext' => array(
                 // exists in form data only - on server see import_images
@@ -54,7 +49,9 @@ class RelionSchema extends Schema
             'wantGainReferenceFile' => array(
                 'label' => 'Gain Reference File',
                 'default' => false,
-                'required' => false,
+                'required' => true,
+                'stored' => false,
+                'type' => 'boolean',
             ),
             'motioncor_gainreference' => array(
                 'label' => 'Gain Reference File Name',
@@ -133,8 +130,6 @@ class RelionSchema extends Schema
                 'type' => 'real'
             ),
             'stop_after_ctf_estimation' => array(
-                // This field is a bit bonkers.
-                // It's displayed in the form as "don't stop" but is used for "stop"
                 'label' => 'Stop after CTF estimation',
                 'default' => false,
                 'required' => true,
@@ -161,9 +156,9 @@ class RelionSchema extends Schema
                 'default' => false,
                 'required' => array(
                     'stop_after_ctf_estimation' => false,
-                    'do_class3d' => true
+                    'do_class3d' => true,
                 ),
-                'type' => 'boolean'
+                'type' => 'boolean',
             ),
             'autopick_do_cryolo' => array(
                 'label' => 'Use crYOLO',
@@ -175,10 +170,14 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
-                'type' => 'boolean'
+                'type' => 'boolean',
+                'onUpdate' => function ($postData) {
+                    if ($postData['stop_after_ctf_estimation']) {
+                        return false;
+                    }
+                    return $postData['autopick_do_cryolo'];
+                }
             ),
-            /* TODO In new validator,
-               ensure autopick_LoG_diam_min < autopick_LoG_diam_max. (JPH) */
             'autopick_LoG_diam_min' => array(
                 'label' => 'Minimum Diameter (Å)',
                 'default' => '',
@@ -239,12 +238,25 @@ class RelionSchema extends Schema
                 ),
                 'minValue' => 0.1,
                 'maxValue' => 1024.0,
-                'type' => 'real'
+                'type' => 'real',
+            ),
+            'wantCalculate' => array(
+                'label' => 'Calculate For Me',
+                'default' => true,
+                'required' => array(
+                    'stop_after_ctf_estimation' => false,
+                ),
+                'stored' => false,
+                'type' => 'boolean'
             ),
             'want2ndPass' => array(
                 'label' => 'Do Second Pass',
                 'default' => false,
-                'required' => false,
+                'required' => array(
+                    'stop_after_ctf_estimation' => false,
+                ),
+                'stored' => false,
+                'type' => 'boolean',
             ),
             'do_class2d_pass2' => array(
                 'label' => 'Do 2D Classification',
@@ -253,7 +265,16 @@ class RelionSchema extends Schema
                     'stop_after_ctf_estimation' => false,
                     'want2ndPass' => true
                 ),
-                'type' => 'boolean'
+                'type' => 'boolean',
+                'onUpdate' => function ($postData) {
+                    if (
+                        $postData['stop_after_ctf_estimation'] ||
+                        !$postData['want2ndPass']
+                    ) {
+                        return false;
+                    }
+                    return $postData['do_class2d_pass2'];
+                }
             ),
             'do_class3d_pass2' => array(
                 'label' => 'Do 3D Classification',
@@ -262,16 +283,17 @@ class RelionSchema extends Schema
                     'stop_after_ctf_estimation' => false,
                     'want2ndPass' => true
                 ),
-                'type' => 'boolean'
+                'type' => 'boolean',
+                'onUpdate' => function ($postData) {
+                    if (
+                        $postData['stop_after_ctf_estimation'] ||
+                        !$postData['want2ndPass']
+                    ) {
+                        return false;
+                    }
+                    return $postData['do_class3d_pass2'];
+                }
             ),
-            'wantCalculate' => array(
-                // Only a form checkbox - not sent to or retrieved from the server
-                // TODO: Should be default true for forms with default data
-                // TODO: Should be default false for forms with "recovered" data
-                'label' => 'Calculate For Me',
-                'default' => true,
-                'required' => false
-            )
         );
     }
 }

@@ -33,7 +33,7 @@
           class="reprocess-button"
         >
           <reprocess-button
-            :previous-parameters="parameters"
+            :default-parameters="parameters"
             @fetch="$emit('fetch-parameters')"
           />
         </div>

@@ -2,34 +2,30 @@ export default {
     'namespaced': true,
     'state': {
         'dialogVisible': false,
-        'dialogOptions': {
-            'defaults' : null,
-            'wantCalculate': false,
-        },
+        'defaultParameters' : null,
     },
     'getters': {
-        'dialogVisible': function(
-            state,
-            getters, // eslint-disable-line no-unused-vars
-            rootState // eslint-disable-line no-unused-vars
-        ) {
+        'dialogVisible': function(state) {
             return state.dialogVisible
         },
-        'dialogOptions': function(
-            state,
-            getters, // eslint-disable-line no-unused-vars
-            rootState // eslint-disable-line no-unused-vars
-        ) {
-            return state.dialogOptions
+        'defaultParameters': function(state) {
+            return state.defaultParameters
         },
     },
     'mutations': {
         'cancelDialog': function(state) {
             state.dialogVisible = false
         },
-        // newState can be true or a ProcessingJob
+        /*  newState is null or a defaultParameters object
+            If null:
+               1. Dialog will get defaults from dataCollection
+               2. With wantCalculate set to true
+            If defaultParameters:
+               1. Dialog will get defaults from defaultParameters
+               2. With wantCalculate set to false
+        */
         'showDialog': function(state, newState) {
-            state.dialogOptions = newState
+            state.defaultParameters = newState
             state.dialogVisible = true
         },
     },
