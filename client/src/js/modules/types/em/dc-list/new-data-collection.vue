@@ -113,7 +113,9 @@ export default {
         }
     },
     'computed': {
-        ...mapGetters('proposal', ['currentVisit']),
+        ...mapGetters({
+            'currentVisit': 'proposal/currentVisit',
+        }),
         'hint': function () {
             return this.reason === '' ? 'Add data collection' :
                 this.reason + ' - No more data collections possible'

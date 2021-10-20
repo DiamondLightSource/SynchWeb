@@ -112,7 +112,7 @@ export default {
     'computed': {
         ...mapGetters({
             'visit': 'proposal/currentVisit',
-            'appUrl': 'appUrl',
+            'appUrl': 'appUrl', // top level appUrl not "EM adjusted"
         }),
         'dataCollectionId': function() {
             return this.dataCollection.dataCollectionId
