@@ -27,6 +27,19 @@ class DataCollectionSchema extends Schema
                 'default' => 'EPU',
                 'options' => array('EPU', 'SerialEM'),
                 'stored' => false,
+                /* [SCI-10082] Nowhere currently to store it.
+                   onSelect, here is a temporary hack for the meantime:
+                */
+                'onSelect' => function ($row) {
+                    $template = $row['fileTemplate'];
+                    if (preg_match('/GridSquare_\*\/Data\/\*/', $template) == 1) {
+                        return 'EPU';
+                    }
+                    if (preg_match('/Frames\/\*/', $template) == 1) {
+                        return 'SerialEM';
+                    }
+                    return '';
+                }
             ),
             'imageDirectory' => array(
                 'label' => 'Movie File Directory',
