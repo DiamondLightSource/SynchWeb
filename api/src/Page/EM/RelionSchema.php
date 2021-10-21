@@ -31,6 +31,17 @@ class RelionSchema extends Schema
                 'required' => true,
                 'default' => 'raw',
                 'pattern' => 'directory',
+                'stored' => false,
+                'onSelect' => function ($row) {
+                    preg_match(
+                        $row['acquisition_software'] == 'EPU' ?
+                            '/\/([\w_-]*)\/GridSquare_\*\/Data\//' :
+                            '/\/([\w_-]*)\/Frames\/\*\./',
+                        $row['import_images'],
+                        $matches
+                    );
+                    return $matches[1];
+                },
             ),
             'import_images_ext' => array(
                 // exists in form data only - on server see import_images
@@ -39,12 +50,24 @@ class RelionSchema extends Schema
                 'default' => 'tiff',
                 'options' => array('tif', 'tiff', 'mrc', 'eer'),
                 'displayOptions' => array('.tif', '.tiff', '.mrc', '.eer'),
+                'stored' => false,
+                'onSelect' => function ($row) {
+                    preg_match('/\.([\w]*)$/', $row['import_images'], $matches);
+                    return $matches[1];
+                },
             ),
             'import_images' => array(
-                // exists in server data only
-                // in form see import_images_dir & import_images_ext
+                // needs BLSession to build it
                 'label' => 'Import Images',
                 'required' => false,
+                'onUpdate' => function ($postData) {
+                    $fileTemplate = $postData['acquisition_software'] == 'EPU' ?
+                        'GridSquare_*/Data/*.' : 'Frames/*.';
+                    return $postData['session_path'] .
+                        '/' . $postData['import_images_dir'] . '/' .
+                        $fileTemplate .
+                        $postData['import_images_ext'];
+                }
             ),
             'wantGainReferenceFile' => array(
                 'label' => 'Gain Reference File',
@@ -60,6 +83,15 @@ class RelionSchema extends Schema
                 'required' => array (
                     'wantGainReferenceFile' => true
                 ),
+                'onSelect' => function ($row) {
+                    return basename($row['motioncor_gainreference']);
+                },
+                'onUpdate' => function ($postData) {
+                    $name = array_key_exists('motioncor_gainreference', $postData) ?
+                        $postData['motioncor_gainreference'] : 'gain.mrc';
+                    return $postData['session_path'] .
+                        "/processing/$name";
+                },
             ),
             'voltage' => array(
                 'label' => 'Voltage',
@@ -293,6 +325,13 @@ class RelionSchema extends Schema
                     }
                     return $postData['do_class3d_pass2'];
                 }
+            ),
+            // session_path is generated server side and is neither posted,
+            // stored or displayed but it needs to "sneak into" the data
+            // So that file names can be prepared for posting
+            'session_path' => array(
+                'required' => false,
+                'stored' => false,
             ),
         );
     }

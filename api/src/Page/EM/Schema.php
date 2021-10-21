@@ -59,11 +59,10 @@ abstract class Schema
      * Post process a row SELECTed from the database
      *
      * @param array $row
-     * @param array $extraData
      *
      * @return array
      */
-    public function processRow($row, $extraData = array())
+    public function processRow($row)
     {
         $processedRow = array_map(
             function ($value) {

@@ -45,8 +45,6 @@ trait Relion
             $this->_error(array('invalid' => $invalid), 400);
         }
 
-        $transformer = new RelionParameterTransformer($sessionPath);
-        $workflowParameters = $transformer->postParameters($this->args);
 
         /* Create a ProcessingJob with ProcessingJobParameters
            for Zocalo to trigger RELION processing.
@@ -68,6 +66,7 @@ trait Relion
             $this->_error($message, 400);
         }
 
+        $schema = new RelionSchema();
         if (!$dataCollectionId) {
             $dataCollectionId = $this->dataCollectionAdd(
                 $session,
@@ -77,6 +76,12 @@ trait Relion
             );
         }
 
+        // "sneak" an extra value into the posted data
+        // which RelionSchema can use to transform file-path items.
+        $args['session_path'] = $this->sessionSubstituteValuesInPath(
+            $session, // keys in the $session array MUST be all upper case
+            $visit_directory
+        );
         $processingJobId = $dataCollectionId ?
             $this->addProcessingJob($dataCollectionId, $workflowParameters) :
             null;
