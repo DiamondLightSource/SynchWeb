@@ -22,7 +22,6 @@ trait Relion
     /**
      * Create a data collection and a processing job then enqueue the job
      *
-     * @SuppressWarnings(PHPMD.StaticAccess)
      * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function relionStart()
@@ -226,8 +225,6 @@ trait Relion
 
         try {
             $this->db->start_transaction();
-
-            // Add ProcessingJob
 
             $this->db->pq(
                 "INSERT INTO ProcessingJob (

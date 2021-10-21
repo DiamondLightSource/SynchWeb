@@ -46,6 +46,8 @@ abstract class Schema
      * 'onSelect'         => PHP function to transform selected data
      * 'onUpdate'         => PHP function to transform data prior to update/insert
      *
+     * https://www.youtube.com/watch?v=1s-BGBA8Nqo
+     *
      * @return array
      */
 
@@ -120,10 +122,10 @@ abstract class Schema
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Provide a list of field names to be inserted, a placeholder string, and an array of values
+     * Provide a list of key value pairs for inserting
      *
-     * @param $data array - data to insert
-     * @param $inserts - any pre-set data already prepared for insert
+     * @param array $raw - data to insert
+     * @param array $prepared - any pre-set data already prepared for insert
      *
      * @return array
      */

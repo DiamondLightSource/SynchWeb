@@ -12,7 +12,6 @@ trait Session
             $this->_error($message, 400);
         }
 
-        // Lookup session in ISPyB
         $rows = $this->db->pq(
             "SELECT
                 b.sessionId,

@@ -188,7 +188,7 @@ trait DataCollection
     /**
      * Returns an error message against all fields that make up imageTemplate
      *
-     * @param $message
+     * @param string $message
      */
     private function dataCollectionFileError($message) {
         $this->_error(array(
