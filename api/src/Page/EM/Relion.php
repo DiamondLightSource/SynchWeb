@@ -29,15 +29,13 @@ trait Relion
         global $visit_directory, $zocalo_mx_reprocess_queue;
 
         $this->configExitIfNoMicroscopes();
-        $session = $this->sessionFetch($this->arg('session'));
 
-        /* TODO Temporary override to make session available for testing
-           after session has ended (JPH) */
+        $session = $this->sessionFromDataCollection(
+            $this->arg('prop'),
+            $this->arg('id')
+        );
+
         // $this->sessionExitIfNotActive($session);
-
-        $sessionPath = $this->sessionSubstituteValuesInPath($session, $visit_directory);
-
-
 
         $dataCollection = $this->dataCollectionForProcessing(
             $this->arg('prop'),
