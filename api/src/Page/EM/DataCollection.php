@@ -24,7 +24,7 @@ trait DataCollection
         $schema = new DataCollectionSchema();
         $validator = new SchemaValidator($schema);
 
-        list($invalid, $args) = $validator->validateJsonPostData(
+        list($invalid, $postData) = $validator->validateJsonPostData(
             $this->app->request->getBody()
         );
         if (count($invalid) > 0) {
@@ -39,16 +39,16 @@ trait DataCollection
 
         $this->sessionExitIfNotActive($session);
 
-        $sessionPath = $this->sessionSubstituteValuesInPath(
+        // keys in the $session array must be all upper case
+        $imageDirectory = $this->sessionSubstituteValuesInPath(
             $session,
             $visit_directory
-        );
+        ) . '/' . $postData['imageDirectory'] . '/';
 
-        $imageDirectory = $sessionPath . '/' . $args['imageDirectory'] . '/';
         $fileTemplate = (
-            $args['acquisitionSoftware'] == 'EPU' ?
+            $postData['acquisitionSoftware'] == 'EPU' ?
                 'GridSquare_*/Data/*.' : 'Frames/*.'
-        ) . $args['imageSuffix'];
+        ) . $postData['imageSuffix'];
 
         if (count(glob($imageDirectory . $fileTemplate, GLOB_NOSORT)) == 0) {
             $this->dataCollectionFileError("Image files don't exist");
