@@ -82,9 +82,11 @@ trait Relion
             $session, // keys in the $session array MUST be all upper case
             $visit_directory
         );
-        $processingJobId = $dataCollectionId ?
-            $this->addProcessingJob($dataCollectionId, $workflowParameters) :
-            null;
+
+        $processingJobId = $this->relionAddJob(
+            $dataCollection['dataCollectionId'],
+            $schema->preparePostData($args)
+        );
 
         // Send job to processing queue
         $message = array(
@@ -224,7 +226,7 @@ trait Relion
 
     ////////////////////////////////////////////////////////////////////////////
 
-    private function addProcessingJob($dataCollectionId, $workflowParameters)
+    private function relionAddJob($dataCollectionId, $workflowParameters)
     {
         $processingJobId = null;
 
@@ -268,9 +270,11 @@ trait Relion
             }
 
             $this->db->end_transaction();
-        } catch (Exception $e) {
-            error_log("Failed to add ProcessingJob to database.");
-            $this->_error("Failed to add ProcessingJob to database.", 500);
+        } catch (Exception $exception) {
+            $message = 'Failed to add ProcessingJob to database.';
+            error_log($message);
+            error_log($exception->getMessage());
+            $this->_error($message, 500);
         }
 
         return $processingJobId;
