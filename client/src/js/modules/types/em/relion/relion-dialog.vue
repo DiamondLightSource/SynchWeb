@@ -147,7 +147,6 @@ export default {
                     'wantCalculate': false,
                 })
             }
-
             return {
                 'acquisition_software': this.dataCollection.acquisitionSoftware,
                 'import_images_dir': this.dataCollection.shortImageDirectory.replace(
