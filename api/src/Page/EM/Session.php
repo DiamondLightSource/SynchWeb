@@ -4,31 +4,60 @@ namespace SynchWeb\Page\EM;
 
 trait Session
 {
-    private function sessionFetch($session_reference)
+    /**
+     * Fetch a session from a dataCollectionId
+     *
+     * Also check the dataCollection and proposal exist and match
+     *
+     * @param string $proposal
+     * @param string $dataCollectionId
+     */
+    private function sessionFromDataCollection($proposal, $dataCollectionId)
     {
-        if (!$this->has_arg('session')) {
-            $message = 'Session not specified!';
-            error_log($message);
-            $this->_error($message, 400);
-        }
+        $selects = $this->sessionSelects();
 
         $rows = $this->db->pq(
-            "SELECT
-                b.sessionId,
-                b.beamLineName,
-                YEAR(b.startDate) AS year,
-                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS session,
-                CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) AS visit,
-                b.startDate,
-                b.endDate,
-                CURRENT_TIMESTAMP BETWEEN b.startDate AND b.endDate AS active
-            FROM Proposal p
-            INNER JOIN BLSession b ON p.proposalId = b.proposalId
-            WHERE CONCAT(p.proposalCode, p.proposalNumber, '-', b.visit_number) LIKE :1",
-            array($session_reference),
-            false
+            "SELECT $selects
+            FROM DataCollection
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND DataCollection.dataCollectionId = :2",
+            array(
+                $proposal,
+                $dataCollectionId
+            )
+        );
+        return $this->sessionRows($rows);
+    }
+
+    private function sessionFetch($sessionReference)
+    {
+        $selects = $this->sessionSelects();
+        $rows = $this->db->pq(
+            "SELECT $selects
+            FROM BLSession
+            INNER JOIN Proposal ON Proposal.proposalId = BLSession.proposalId
+            WHERE CONCAT(
+                Proposal.proposalCode,
+                Proposal.proposalNumber,
+                '-',
+                BLSession.visit_number
+            ) LIKE :1",
+            array($sessionReference)
         );
 
+        return $this->sessionRows($rows);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    private function sessionRows($rows)
+    {
         if (sizeof($rows) == 0) {
             $this->_error('Session not found');
         }
@@ -39,6 +68,30 @@ trait Session
         $session['processingTimestamp'] = null;
 
         return $session;
+    }
+
+    private function sessionSelects()
+    {
+        return implode(', ', array(
+            'BLSession.sessionId',
+            'BLSession.beamLineName',
+            'YEAR(BLSession.startDate) AS year',
+            'CONCAT(
+                Proposal.proposalCode,
+                Proposal.proposalNumber,
+                "-",
+                BLSession.visit_number
+            ) AS session',
+            'CONCAT(
+                Proposal.proposalCode,
+                Proposal.proposalNumber,
+                "-",
+                BLSession.visit_number
+            ) AS visit',
+            'BLSession.startDate',
+            'BLSession.endDate',
+            'CURRENT_TIMESTAMP BETWEEN BLSession.startDate AND BLSession.endDate AS active',
+        ));
     }
 
     /**
