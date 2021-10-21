@@ -46,22 +46,14 @@ trait Relion
         }
 
 
-        /* Create a ProcessingJob with ProcessingJobParameters
-           for Zocalo to trigger RELION processing.
-           This requires a DataCollection
-           which in turn requires a DataCollectionGroup. */
 
-        $dataCollectionId = $this->dataCollectionFindExisting(
-            $session['sessionId'],
-            $transformer->getImageDirectory(),
-            $transformer->getFileTemplate()
+        $dataCollection = $this->dataCollectionForProcessing(
+            $this->arg('prop'),
+            $this->arg('id')
         );
 
-        if (
-            $dataCollectionId &&
-            $this->unfinishedProcessingJobsExist($dataCollectionId)
-        ) {
-            $message = 'Relion processing job already exists for this data collection!';
+        if ($dataCollection['runningJobs'] > 0) {
+            $message = 'A Relion job is already running on this data collection!';
             error_log($message);
             $this->_error($message, 400);
         }
@@ -203,25 +195,8 @@ trait Relion
             RelionSchema::schema()
         );
         $this->_output($transformer->fetchParameters($results));
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
 
 
-    private function unfinishedProcessingJobsExist($dataCollectionId)
-    {
-        $result = $this->db->pq(
-            "SELECT DC.dataCollectionId, APP.processingStatus
-            FROM DataCollection DC
-            INNER JOIN ProcessingJob PJ
-                ON PJ.dataCollectionId = DC.dataCollectionId
-            LEFT JOIN AutoProcProgram APP
-                ON APP.processingJobId = PJ.processingJobId
-            WHERE APP.processingStatus IS NULL AND DC.dataCollectionId = :1",
-            array($dataCollectionId)
-        );
-
-        return count($result) > 0;
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -199,6 +199,48 @@ trait DataCollection
     }
 
     /**
+     * Get enough of a DataCollection to be able to set up processing jobs
+     *
+     * Also check the dataCollection and proposal exist and match
+     *
+     * @param string $proposal
+     * @param string $dataCollectionId
+     */
+    private function dataCollectionForProcessing($proposal, $dataCollectionId)
+    {
+        $rows = $this->db->pq(
+            "SELECT
+                DataCollection.dataCollectionId,
+                COUNT(AutoProcProgram.autoProcProgramId) AS runningJobs
+            FROM DataCollection
+            LEFT JOIN ProcessingJob
+                ON ProcessingJob.dataCollectionId = DataCollection.dataCollectionId
+            LEFT JOIN AutoProcProgram
+                ON AutoProcProgram.processingJobId = ProcessingJob.processingJobId
+                AND AutoProcProgram.processingStatus IS NULL
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND DataCollection.dataCollectionId = :2",
+            array(
+                $proposal,
+                $dataCollectionId
+            ),
+            false
+        );
+
+        if (sizeof($rows) == 0) {
+            $this->_error('No data collection');
+        }
+
+        return $rows[0];
+    }
+
+    /**
      * Returns dataCollectionId of first DataCollection associated with session
      *
      * Also checks for existing imageDirectory
