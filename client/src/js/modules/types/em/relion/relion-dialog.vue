@@ -139,7 +139,7 @@ export default {
             'defaultParameters': 'em/processing/defaultParameters',
         }),
         'postUrl': function () {
-            return 'relion/start/' + this.dataCollection.id
+            return 'relion/start/' + this.dataCollection.dataCollectionId
         },
         'computedDefaults': function() {
             if (this.defaultParameters !== null) {
