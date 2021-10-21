@@ -271,8 +271,10 @@ class DataCollectionSchema extends Schema
                 'required' => false,
                 'stored' => false,
                 'onSelect' => function ($row) {
-                    return $row['numberOfPasses'] > 0 ?
-                        $row['totalExposedDose'] / $row['numberOfPasses'] : 0;
+                    return $row['numberOfPasses'] > 0 ? round(
+                        $row['totalExposedDose'] / $row['numberOfPasses'],
+                        6
+                    ) : 0;
                 }
             ),
             'slitGapHorizontal' => array(
