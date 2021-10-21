@@ -55,13 +55,6 @@ trait Relion
         );
         if (count($invalid) > 0) {
             $this->_error($invalid, 400);
-        if (!$dataCollectionId) {
-            $dataCollectionId = $this->dataCollectionAdd(
-                $session,
-                $transformer->getImageDirectory(),
-                $args['import_images_ext'],
-                $transformer->getFileTemplate()
-            );
         }
 
         // "sneak" an extra value into the posted data
