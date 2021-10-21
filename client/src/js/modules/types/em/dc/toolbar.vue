@@ -50,6 +50,7 @@
 
       <reprocess-button
         :processing-disallowed-reason="processingDisallowedReason"
+        :default-parameters="null"
       />
     </span>
 
