@@ -128,11 +128,11 @@ abstract class Schema
      *
      * @return array
      */
-    public function inserts($data, $inserts)
+    public function preparePostData($raw, $prepared = array())
     {
         $schema = $this->schema();
-        foreach ($data as $fieldName => $value) {
-            if (array_key_exists($fieldName, $inserts)) {
+        foreach ($raw as $fieldName => $value) {
+            if (array_key_exists($fieldName, $prepared)) {
                 continue;
             }
             $rules = $schema[$fieldName];
@@ -145,19 +145,33 @@ abstract class Schema
             if (gettype($value) == 'boolean') {
                 $value = $value ? 1 : 0;
             }
-            $inserts[$fieldName] = $value;
+            $prepared[$fieldName] = $value;
         }
         foreach ($schema as $fieldName => $rules) {
             if (array_key_exists('onUpdate', $rules)) {
-                $inserts[$fieldName] = call_user_func(
+                $prepared[$fieldName] = call_user_func(
                     $rules['onUpdate'],
-                    $data
+                    $raw
                 );
             }
         }
-        $values = array_values($inserts);
+        return $prepared;
+    }
+
+    /**
+     * Provide a list of field names to be inserted, a placeholder string, and an array of values
+     *
+     * @param array $raw - data to insert
+     * @param array $prePrepared - any pre-set data already prepared for insert
+     *
+     * @return array
+     */
+    public function inserts($raw, $prePrepared = array())
+    {
+        $prepared = $this->prepareData($raw, $prePrepared);
+        $values = array_values($prepared);
         return array(
-            'fieldNames' => implode(',', array_keys($inserts)),
+            'fieldNames' => implode(',', array_keys($prepared)),
             'values' => $values,
             'placeholders' => implode(',', array_map(
                 function ($number) {
