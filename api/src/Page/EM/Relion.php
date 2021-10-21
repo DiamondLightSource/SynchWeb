@@ -81,9 +81,7 @@ trait Relion
             'parameters' => array('ispyb_process' => $processingJobId)
         );
 
-        $this->enqueue($zocalo_mx_reprocess_queue, $message);
-
-        // TODO Remove temporary output of message and workflow_parameters
+        // $this->enqueue($zocalo_mx_reprocess_queue, $message);
 
         $output = array(
             'timestamp' => gmdate('c', time()),
@@ -140,8 +138,7 @@ trait Relion
                     ),
                     'recipes' => ['relion-stop']
                 );
-
-                $this->enqueue($zocalo_mx_reprocess_queue, $message);
+                // $this->enqueue($zocalo_mx_reprocess_queue, $message);
                 return;
             }
 
