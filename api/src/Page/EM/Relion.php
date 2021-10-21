@@ -37,14 +37,6 @@ trait Relion
 
         $sessionPath = $this->sessionSubstituteValuesInPath($session, $visit_directory);
 
-        $validator = new SchemaValidator(RelionSchema::schema());
-        list($invalid, $args) = $validator->validateJsonPostData(
-            $this->app->request->getBody()
-        );
-        if (count($invalid) > 0) {
-            $this->_error(array('invalid' => $invalid), 400);
-        }
-
 
 
         $dataCollection = $this->dataCollectionForProcessing(
@@ -59,6 +51,12 @@ trait Relion
         }
 
         $schema = new RelionSchema();
+        $validator = new SchemaValidator($schema);
+        list($invalid, $args) = $validator->validateJsonPostData(
+            $this->app->request->getBody()
+        );
+        if (count($invalid) > 0) {
+            $this->_error($invalid, 400);
         if (!$dataCollectionId) {
             $dataCollectionId = $this->dataCollectionAdd(
                 $session,
