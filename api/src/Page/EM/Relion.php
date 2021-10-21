@@ -190,13 +190,8 @@ trait Relion
             $results[$row['parameterKey']] = $row['parameterValue'];
         }
 
-        $transformer = new RelionParameterTransformer(
-            '',
-            RelionSchema::schema()
-        );
-        $this->_output($transformer->fetchParameters($results));
-
-
+        $schema = new RelionSchema();
+        $this->_output($schema->processRow($results));
     }
 
     ////////////////////////////////////////////////////////////////////////////
