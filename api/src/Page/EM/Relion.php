@@ -48,6 +48,23 @@ trait Relion
             $this->_error($message, 400);
         }
 
+        /*  This comes from BLSession and RelionSchema uses it to
+            pad out the filename for the gain reference file
+        */
+        $args['session_path'] = $this->sessionSubstituteValuesInPath(
+            $session,
+            $visit_directory
+        );
+        /*  This comes from the data collection and Relion will need it
+            to fetch the raw images
+        */
+        $args['import_images'] = $dataCollection['imageDirectory'] .
+            $dataCollection['fileTemplate'];
+        /*  RelionSchema needs this to validate eer_grouping
+        */
+        preg_match('/\.([\w]*)$/', $dataCollection['fileTemplate'], $matches);
+        $args['import_image_ext'] = $matches[1];
+
         $schema = new RelionSchema();
         $validator = new SchemaValidator($schema);
         list($invalid, $args) = $validator->validateJsonPostData(
@@ -56,13 +73,6 @@ trait Relion
         if (count($invalid) > 0) {
             $this->_error($invalid, 400);
         }
-
-        // "sneak" an extra value into the posted data
-        // which RelionSchema can use to transform file-path items.
-        $args['session_path'] = $this->sessionSubstituteValuesInPath(
-            $session, // keys in the $session array MUST be all upper case
-            $visit_directory
-        );
 
         $processingJobId = $this->relionAddJob(
             $dataCollection['dataCollectionId'],
