@@ -11,6 +11,7 @@
     @cancel="$store.commit('em/processing/cancelDialog')"
   >
     <template #default="form">
+      <!--
       <dialog-schema-form-section heading="Project">
         <schema-input
           v-for="name in inputs.project"
@@ -19,6 +20,7 @@
           :form="form"
         />
       </dialog-schema-form-section>
+      -->
 
       <dialog-schema-form-section heading="Experiment">
         <schema-input
@@ -95,6 +97,7 @@ export default {
     'data': function () {
         return {
             'inputs': {
+                /*
                 'project': [
                     'acquisition_software',
                     'import_images_dir',
@@ -102,7 +105,10 @@ export default {
                     'wantGainReferenceFile',
                     'motioncor_gainreference',
                 ],
+                */
                 'experiment': [
+                    'wantGainReferenceFile',
+                    'motioncor_gainreference',
                     'voltage',
                     'Cs',
                     'ctffind_do_phaseshift',
