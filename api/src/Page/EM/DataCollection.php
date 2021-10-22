@@ -211,6 +211,8 @@ trait DataCollection
         $rows = $this->db->pq(
             "SELECT
                 DataCollection.dataCollectionId,
+                DataCollection.imageDirectory,
+                DataCollection.fileTemplate,
                 COUNT(AutoProcProgram.autoProcProgramId) AS runningJobs
             FROM DataCollection
             LEFT JOIN ProcessingJob
