@@ -97,8 +97,10 @@ trait Session
     /**
      * Substitute session values in file or directory path
      *
-     * Session keys are expected to be upper case
+     * Session keys are converted to upper case
      * i.e. BEAMLINENAME, YEAR, and SESSION / VISIT
+     * so it's not required to use "old synchweb style all-upper-case"
+     * query results
      *
      * @param array $session
      * @param string $path

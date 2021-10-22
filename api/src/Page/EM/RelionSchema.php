@@ -57,7 +57,6 @@ class RelionSchema extends Schema
                 },
             ),
             'import_images' => array(
-                // needs BLSession to build it
                 'label' => 'Import Images',
                 'required' => false,
                 'onUpdate' => function ($postData) {

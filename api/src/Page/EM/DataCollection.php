@@ -39,7 +39,6 @@ trait DataCollection
 
         $this->sessionExitIfNotActive($session);
 
-        // keys in the $session array must be all upper case
         $imageDirectory = $this->sessionSubstituteValuesInPath(
             $session,
             $visit_directory
@@ -190,7 +189,8 @@ trait DataCollection
      *
      * @param string $message
      */
-    private function dataCollectionFileError($message) {
+    private function dataCollectionFileError($message)
+    {
         $this->_error(array(
             'acquisitionSoftware' => $message,
             'imageDirectory' => $message,
