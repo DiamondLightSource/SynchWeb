@@ -76,8 +76,9 @@ export default {
                     continue;
                 }
                 if (this.schema[name].type == 'boolean') {
-                    value = ['1', 'true'].includes(value.toLowerCase()) ?
-                        'yes' : 'no'
+                    value = ['1', 'true'].includes(
+                        value.toString().toLowerCase()
+                    ) ? 'yes' : 'no'
                 }
                 const section = name == 'comments' || value.length >= 20 ?
                     'long' : 'short'
