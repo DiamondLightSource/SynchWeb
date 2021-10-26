@@ -55,8 +55,8 @@ export default {
     },
     'data': function() {
         return {
-            'points': 0,
             'xAxis': [],
+            'text': [],
             'yAxes': {
                 'astigmatism': [],
                 'estimatedDefocus': [],
@@ -73,10 +73,14 @@ export default {
         'hasData': function() {
             return this.points > 0
         },
+        'points': function() {
+            return this.xAxis.length
+        },
         'layoutAstigmatism': function() {
             return this.plotlyLayout({
                 'title': 'Å',
                 'rangemode': 'tozero',
+                'fixedrange': true,
             })
         },
         'dataAstigmatism': function() {
@@ -86,6 +90,7 @@ export default {
             return this.plotlyLayout({
                 'title': 'μm',
                 'rangemode': 'tozero',
+                'fixedrange': true,
             })
         },
         'dataEstimatedDefocus': function() {
@@ -95,6 +100,7 @@ export default {
             return this.plotlyLayout({
                 'title': 'Å',
                 'range': [0, 10],
+                'fixedrange': true,
             })
         },
         'dataEstimatedResolution': function() {
@@ -112,30 +118,46 @@ export default {
     },
     'methods': {
         'select': function(selection) {
-            const x = selection.x
-            const point = selection.point
-            const label = x.toString()
+            const ax = selection.point > this.points / 2 ?
+                -40 : 40
             for (const chart in this.annotations) {
-                const y = this.yAxes[chart][point]
+                /*  We don't use selection.y here because that's the Y
+                    coordinate on the chart that was clicked on... but we're
+                    plotting on all 3 charts here, and their whole raison d'être
+                    is to have different Y coordinates to each other */
+                const y = this.yAxes[chart][selection.point]
                 this.annotations[chart] = [{
-                    'text': label,
-                    'x': x,
+                    'text': y + '<br>' + selection.text,
+                    'x': selection.x,
                     'y': y,
+                    'ax': ax,
+                    'ay': -40,
+                    'borderpad': 4,
+                    'align': 'left',
+                    'bgcolor': '#fff',
                 }]
             }
             selection.chart.close();
-            this.$store.commit('em/selectMovies', x)
+            this.$store.commit('em/selectMovies', selection.point)
         },
         'plotlyData': function(yAxis) {
-            return [{
+            const plotlyData = [{
                 'x': this.xAxis,
+                'text': this.text,
                 'y': yAxis,
                 'type': 'scatter',
                 'mode': 'markers',
+                'marker': { 'size': 4 },
             }]
+            Object.freeze(plotlyData)
+            return plotlyData
         },
         'plotlyLayout': function(yAxis) {
             return {
+                'xaxis': {
+                    'autorange': false,
+                    'range': [ 0.75, this.points + 1.25 ],
+                },
                 'yaxis': yAxis,
                 'margin': { 't': 10, 'l': 40, 'r': 20, 'b': 30 },
             }
@@ -150,20 +172,32 @@ export default {
                 'humanName': 'CTF summary data',
             }).then(
                 (response) => {
-                    this.xAxis = []
-                    this.yAxes.astigmatism = []
-                    this.yAxes.estimatedDefocus = []
-                    this.yAxes.estimatedResolution = []
+                    var xAxis = []
+                    var text = []
+                    var yAxes = {}
+                    yAxes.astigmatism = []
+                    yAxes.estimatedDefocus = []
+                    yAxes.estimatedResolution = []
                     response.forEach((row) => {
-                        this.xAxis.push(row.createdTimeStamp)
-                        for (const chart in this.yAxes) {
-                            // the estimatedDefocus chart should be in μm
-                            const value = chart == 'estimatedDefocus' ?
-                                row[chart] / 10000.0 : row[chart]
-                            this.yAxes[chart].push(value)
+                        xAxis.push(row.movieNumber)
+                        text.push(
+                            'Movie ' + row.movieNumber +
+                            '<br>' + row.createdTimeStamp
+                        )
+                        for (const chart in yAxes) {
+                            yAxes[chart].push(
+                                // the estimatedDefocus chart should be in μm
+                                chart == 'estimatedDefocus' ?
+                                    row[chart] / 10000.0 : row[chart]
+                            )
                         }
                     })
-                    this.points = response.length
+                    Object.freeze(xAxis)
+                    Object.freeze(text)
+                    Object.freeze(yAxes)
+                    this.xAxis = xAxis
+                    this.text = text
+                    this.yAxes = yAxes
                 }
             )
         },

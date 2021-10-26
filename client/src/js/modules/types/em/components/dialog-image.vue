@@ -1,9 +1,11 @@
 <template>
-  <dialog-with-preview
-    ref="dialog"
-    :title="title"
-  >
-    <template #dialogContent>
+  <div>
+    <dialog-modal
+      v-if="showDialog"
+      :show-dialog="showDialog"
+      :title="title"
+      @cancel="showDialog = false"
+    >
       <div :class="dialogContainerClass">
         <img
           :src="src"
@@ -12,27 +14,38 @@
           @click="zoom"
         >
       </div>
-    </template>
+    </dialog-modal>
 
-    <template #previewContent>
+    <div
+      class="preview-container"
+      :title="previewHint"
+      @click="showDialog = true"
+    >
+      <!-- v-html is only needed to support current version of ice-breaker.
+           When ice-breaker is moved to ISpyB and is plotted locally,
+           we can do without v-html -->
+      <div
+        class="preview-heading"
+        v-html="title"
+      />
       <vue-xhr-image
         v-model="src"
         :title="title"
         :image-url="imageUrl"
         class="di-preview-image"
       />
-    </template>
-  </dialog-with-preview>
+    </div>
+  </div>
 </template>
 
 <script>
+import DialogModal from 'app/components/dialog-modal.vue'
 import VueXhrImage from 'app/components/vue-xhr-image.vue'
-import DialogWithPreview from 'modules/types/em/components/dialog-with-preview.vue'
 
 export default {
     'name': "DialogImage",
     'components': {
-        'dialog-with-preview': DialogWithPreview,
+        'dialog-modal': DialogModal,
         'vue-xhr-image': VueXhrImage,
     },
     'props': {
@@ -49,9 +62,13 @@ export default {
         return {
             'src': '',
             'zoomed': false,
+            'showDialog': false,
         }
     },
     'computed': {
+        'previewHint': function() {
+            return 'Click to view ' + this.title
+        },
         'dialogImageClass': function() {
             return this.zoomed ? '' : 'dialog-image'
         },
@@ -70,6 +87,16 @@ export default {
 </script>
 
 <style scoped>
+.preview-heading {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.preview-container {
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 6px;
+}
 .dialog-image {
     max-width: 90vw;
     max-height: 80vh;
