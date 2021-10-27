@@ -87,9 +87,13 @@ export default {
             'type': Object,
             'required': true,
         },
+        'defaultHidden': {
+            'type': Boolean,
+            'required': true,
+        }
     },
     'data': function() {
-        return { 'hidden': true  }
+        return { 'hidden': this.defaultHidden  }
     },
     'computed': {
         'showReprocessButton': function() {

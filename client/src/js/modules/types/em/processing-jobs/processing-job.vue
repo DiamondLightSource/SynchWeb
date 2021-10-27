@@ -8,6 +8,7 @@
       :status="processingJob.processingStatusDescription"
       :processing-allowed="processingAllowed"
       :parameters="parameters"
+      :default-hidden="defaultHidden"
       @hide="hide"
       @fetch-parameters="fetchParameters"
     />
@@ -103,7 +104,6 @@ export default {
             'type': Boolean,
             'default': false,
         },
-
     },
     'data': function() {
         return {
