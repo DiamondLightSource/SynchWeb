@@ -23,7 +23,7 @@ export default {
     },
     'computed': {
         'hideIconClass': function() {
-            return 'fa fa-' + (this.value ? 'plus' : 'minus')
+            return 'fa fa-' + (this.value ? 'chevron-down' : 'chevron-up')
         },
     },
     'methods': {
