@@ -4,27 +4,6 @@ namespace SynchWeb\Page\EM;
 
 trait Ctf
 {
-    public function ctfMovies()
-    {
-        $rows = $this->db->pq(
-            "SELECT m.movieNumber, m.createdTimeStamp
-            FROM CTF c
-            INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
-            INNER JOIN Movie m ON m.movieId = mc.movieId
-            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
-            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
-            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
-            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
-            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
-            AND c.autoProcProgramId = :2
-            ORDER BY m.createdTimeStamp, m.movieNumber",
-            array($this->arg('prop'), $this->arg('id')),
-            false
-        );
-
-        $this->_output($rows);
-    }
-
     public function ctfResult()
     {
         $rows = $this->db->pq(

@@ -4,26 +4,6 @@ namespace SynchWeb\Page\EM;
 
 trait MotionCorrection
 {
-    public function motionCorrectionMovies()
-    {
-        $rows = $this->db->pq(
-            "SELECT m.movieNumber, m.createdTimeStamp
-            FROM MotionCorrection mc
-            INNER JOIN Movie m ON m.movieId = mc.movieId
-            INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
-            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
-            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
-            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
-            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
-            AND mc.autoProcProgramId = :2
-            ORDER BY m.createdTimeStamp, m.movieNumber",
-            array($this->arg('prop'), $this->arg('id')),
-            false
-        );
-
-        $this->_output($rows);
-    }
-
     public function motionCorrectionResult()
     {
         $rows = $this->db->pq(

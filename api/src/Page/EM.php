@@ -65,19 +65,16 @@ class EM extends Page
         array('/attachment/:id', 'get', 'attachmentsGetOne'),
 
         // See Synchweb\Page\EM\MotionCorrection
-        array('/mc/:id', 'get', 'motionCorrectionMovies'),
         array('/mc/:id/n/:movieNumber', 'get', 'motionCorrectionResult'),
         array('/mc/drift/:id(/n/:movieNumber)', 'get', 'motionCorrectionDriftPlot'),
         array('/mc/snapshot/:id(/n/:movieNumber)', 'get', 'motionCorrectionSnapshot'),
 
         // See Synchweb\Page\EM\Ctf
-        array('/ctf/:id', 'get', 'ctfMovies'),
         array('/ctf/:id/n/:movieNumber', 'get', 'ctfResult'),
         array('/ctf/image/:id(/n/:movieNumber)', 'get', 'ctfImage'),
         array('/ctf/summary/:id', 'get', 'ctfSummary'),
 
         // See SynchWeb\Page\EM\Picker:
-        array('/picker/:id', 'get', 'pickerMovies'),
         array('/picker/:id/n/:movieNumber', 'get', 'pickerResult'),
         array('/picker/image/:id(/n/:movieNumber)', 'get', 'pickerImage'),
 

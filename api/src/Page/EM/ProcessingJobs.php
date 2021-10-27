@@ -33,29 +33,60 @@ trait ProcessingJobs
          */
         $processingJobs = $this->db->pq(
             "SELECT
-                pj.processingJobId,
-                pj.dataCollectionId,
-                pj.recordTimestamp,
-                app.autoProcProgramId,
-                app.processingStartTime,
-                app.processingEndTime,
+                ProcessingJob.processingJobId,
+                ProcessingJob.dataCollectionId,
+                ProcessingJob.recordTimestamp,
+                AutoProcProgram.autoProcProgramId,
+                AutoProcProgram.processingStartTime,
+                AutoProcProgram.processingEndTime,
+                (SELECT COUNT(MotionCorrection.motionCorrectionId)
+                    FROM MotionCorrection
+                    WHERE MotionCorrection.autoProcProgramId = AutoProcProgram.autoProcProgramId
+                ) AS mcCount,
+                (SELECT COUNT(CTF.ctfId)
+                    FROM CTF
+                    WHERE CTF.autoProcProgramId = AutoProcProgram.autoProcProgramId
+                ) AS ctfCount,
+                (SELECT COUNT(ParticlePicker.particlePickerId)
+                    FROM ParticlePicker
+                    WHERE ParticlePicker.programId = AutoProcProgram.autoProcProgramId
+                ) AS pickCount,
                 NOW() as fetchTime,
                 CASE
-                    WHEN (app.processingJobId IS NULL) THEN 'submitted'
-                    WHEN (app.processingStartTime IS NULL AND app.processingStatus IS NULL) THEN 'queued'
-                    WHEN (app.processingStartTime IS NOT NULL AND app.processingStatus IS NULL) THEN 'running'
-                    WHEN (app.processingStartTime IS NOT NULL AND app.processingStatus = 0) THEN 'failure'
-                    WHEN (app.processingStartTime IS NOT NULL AND app.processingStatus = 1) THEN 'success'
+                    WHEN (
+                        AutoProcProgram.processingJobId IS NULL
+                    ) THEN 'submitted'
+                    WHEN (
+                        AutoProcProgram.processingStartTime IS NULL
+                        AND AutoProcProgram.processingStatus IS NULL
+                    ) THEN 'queued'
+                    WHEN (
+                        AutoProcProgram.processingStartTime IS NOT NULL
+                        AND AutoProcProgram.processingStatus IS NULL
+                    ) THEN 'running'
+                    WHEN (
+                        AutoProcProgram.processingStartTime IS NOT NULL
+                        AND AutoProcProgram.processingStatus = 0
+                    ) THEN 'failure'
+                    WHEN (
+                        AutoProcProgram.processingStartTime IS NOT NULL
+                        AND AutoProcProgram.processingStatus = 1
+                    ) THEN 'success'
                     ELSE ''
                 END AS processingStatusDescription
-            FROM ProcessingJob pj
-            LEFT JOIN AutoProcProgram app ON app.processingJobId = pj.processingJobId
-            INNER JOIN DataCollection dc ON dc.dataCollectionId = pj.dataCollectionId
-            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
-            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
-            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
-            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
-            AND dc.dataCollectionId = :2
+            FROM ProcessingJob
+            LEFT JOIN AutoProcProgram
+                ON AutoProcProgram.processingJobId = ProcessingJob.processingJobId
+            INNER JOIN DataCollection
+                ON DataCollection.dataCollectionId = ProcessingJob.dataCollectionId
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND DataCollection.dataCollectionId = :2
             LIMIT :3, :4",
             $this->paginationArguments(
                 array($this->arg('prop'), $this->arg('id'))
