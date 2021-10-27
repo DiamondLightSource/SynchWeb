@@ -138,7 +138,7 @@ export default {
                 }]
             }
             selection.chart.close();
-            this.$store.commit('em/selectMovies', selection.point)
+            this.$store.commit('em/selectMovies', selection.x)
         },
         'plotlyData': function(yAxis) {
             const plotlyData = [{
