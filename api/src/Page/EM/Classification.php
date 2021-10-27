@@ -130,6 +130,7 @@ trait Classification
                     = BLSession.proposalId
             WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
             AND ParticleClassificationGroup.programId = :2
+            AND ParticleClassificationGroup.type = \"2D\"
             $options",
             $args,
             false

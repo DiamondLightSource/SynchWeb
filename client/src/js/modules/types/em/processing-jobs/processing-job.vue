@@ -54,7 +54,7 @@
         :max="processingJob.pickCount"
       />
 
-      <classification
+      <classification-2d
         :auto-proc-program-id="processingJob.autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import Classification from 'modules/types/em/classification/classification.vue'
+import Classification2D from 'modules/types/em/classification-2d/classification.vue'
 import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
 import JobHeader from 'modules/types/em/processing-jobs/job-header.vue'
@@ -76,7 +76,7 @@ import SummaryCharts from 'modules/types/em/ctf-summary/summary-charts.vue'
 export default {
     'name': 'ProcessingJob',
     'components': {
-        'classification': Classification,
+        'classification-2d': Classification2D,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
         'job-header': JobHeader,
