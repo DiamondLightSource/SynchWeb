@@ -1,5 +1,5 @@
 <template>
-  <processing-section-movie-list
+  <processing-section-movie-select
     section-title="Particle Picking"
     url-prefix="picker"
     :fetch-trigger="fetchTrigger"
@@ -13,20 +13,20 @@
       title="Summary Image"
       :image-url="imageUrl"
     />
-  </processing-section-movie-list>
+  </processing-section-movie-select>
 </template>
 
 <script>
 import DialogImage from 'modules/types/em/components/dialog-image.vue'
-import ProcessingSectionMovieList from 'modules/types/em/components/processing-section-movie-list.vue'
 import Params from 'modules/types/em/picker/params.vue'
+import ProcessingSectionMovieSelect from 'modules/types/em/components/processing-section-movie-select.vue'
 
 export default {
     'name': "Picker",
     'components': {
         'dialog-image': DialogImage,
         'params': Params,
-        'processing-section-movie-list': ProcessingSectionMovieList,
+        'processing-section-movie-select': ProcessingSectionMovieSelect,
     },
     'props': {
         'autoProcProgramId': {

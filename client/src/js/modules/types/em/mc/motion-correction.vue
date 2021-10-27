@@ -1,5 +1,5 @@
 <template>
-  <processing-section-movie-list
+  <processing-section-movie-select
     section-title="Motion Correction"
     url-prefix="mc"
     :fetch-trigger="fetchTrigger"
@@ -18,14 +18,14 @@
       :auto-proc-program-id="autoProcProgramId"
       :movie-number="loadedMovieNumber"
     />
-  </processing-section-movie-list>
+  </processing-section-movie-select>
 </template>
 
 <script>
 import DialogImage from 'modules/types/em/components/dialog-image.vue'
 import Drift from 'modules/types/em/mc/drift.vue'
 import Params from 'modules/types/em/mc/params.vue'
-import ProcessingSectionMovieList from 'modules/types/em/components/processing-section-movie-list.vue'
+import ProcessingSectionMovieSelect from 'modules/types/em/components/processing-section-movie-select.vue'
 
 export default {
     'name': "MotionCorrection",
@@ -33,7 +33,7 @@ export default {
         'dialog-image': DialogImage,
         'drift': Drift,
         'params': Params,
-        'processing-section-movie-list': ProcessingSectionMovieList,
+        'processing-section-movie-select': ProcessingSectionMovieSelect,
     },
     'props': {
         'autoProcProgramId': {
