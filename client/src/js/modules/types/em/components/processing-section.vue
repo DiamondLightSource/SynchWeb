@@ -51,7 +51,7 @@ export default {
         'defaultHidden': {
             'type': Boolean,
             'default': false,
-        }
+        },
     },
     'data': function() {
         return {

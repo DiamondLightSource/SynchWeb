@@ -99,10 +99,15 @@ export default {
             'type': Boolean,
             'required': true,
         },
+        'defaultHidden': {
+            'type': Boolean,
+            'default': false,
+        },
+
     },
     'data': function() {
         return {
-            'hidden': true,
+            'hidden': this.defaultHidden,
             'parameters': {},
         }
     },

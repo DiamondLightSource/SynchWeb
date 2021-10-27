@@ -34,6 +34,7 @@
         :processing-job="processingJob"
         :collection-active="dataCollection.archived != '1'"
         :processing-allowed="processingDisallowedReason == ''"
+        :default-hidden="processingJobs.length > 1"
       />
     </div>
   </section>
