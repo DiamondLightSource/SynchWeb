@@ -20,7 +20,7 @@ import MovieSelect from 'modules/types/em/components/movie-select.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 
 export default {
-    'name': "ProcessingSectionMovieList",
+    'name': "ProcessingSectionMovieSelect",
     'components': {
         'movie-select': MovieSelect,
         'processing-section': ProcessingSection,
