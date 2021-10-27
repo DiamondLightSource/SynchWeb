@@ -4,6 +4,7 @@
     :title="title"
     cancel-label="Cancel"
     :confirm-label="confirmLabel"
+    :block-background-click="true"
     @confirm="postIt"
     @cancel="$emit('cancel')"
   >

@@ -2,6 +2,7 @@
   <div
     v-if="showDialog"
     class="background"
+    @click.self="backgroundClick"
   >
     <div class="dialog-box">
       <header class="header">
@@ -73,6 +74,17 @@ export default {
             'type': String,
             'default': '',
         },
+        'blockBackgroundClick': {
+            'type': Boolean,
+            'default': false,
+        },
+    },
+    'methods': {
+        'backgroundClick': function() {
+            if (!this.blockBackgroundClick) {
+                this.$emit('cancel')
+            }
+        }
     },
 }
 </script>
