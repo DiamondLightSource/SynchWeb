@@ -1,7 +1,7 @@
 <template>
   <processing-section
     ref="previewImages"
-    section-title="Classification"
+    section-title="2D Classification"
     :data-available="particleClasses.length > 0"
   >
     <template #controls>
@@ -34,11 +34,11 @@
 </template>
 
 <script>
-import Parameters from 'modules/types/em/classification/parameters.vue'
-import PreviewImage from 'modules/types/em/classification/preview-image.vue'
+import Parameters from 'modules/types/em/classification-2d/parameters.vue'
+import PreviewImage from 'modules/types/em/classification-2d/preview-image.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import SelectPage from 'modules/types/em/classification/select-page.vue'
-import SelectSort from 'modules/types/em/classification/select-sort.vue'
+import SelectPage from 'modules/types/em/classification-2d/select-page.vue'
+import SelectSort from 'modules/types/em/classification-2d/select-sort.vue'
 
 export default {
     'name': 'Classification',
