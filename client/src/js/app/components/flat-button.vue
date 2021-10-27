@@ -3,7 +3,7 @@
     class="flat-button"
     :class="level"
     :title="hint"
-    @click.prevent="$emit('click')"
+    @click.stop.capture="$emit('click')"
     @mouseover.prevent="$emit('mouseover')"
   >
     <slot />

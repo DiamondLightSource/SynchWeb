@@ -1,5 +1,8 @@
 <template>
-  <h1 class="job-header">
+  <h1
+    class="job-header"
+    @click="hidden = !hidden"
+  >
     <div class="column">
       Processing Job: {{ processingJobId }}
     </div>
