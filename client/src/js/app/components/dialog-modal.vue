@@ -6,16 +6,17 @@
   >
     <div class="dialog-box">
       <header class="header">
-        <h2
-          class="heading"
+        <div
+          class="dialog-heading"
           v-html="title"
         />
-        <button
-          aria-label="close"
-          @click.prevent="$emit('cancel')"
+
+        <flat-button
+          level="danger"
+          @click="$emit('cancel')"
         >
           <i class="fa fa-times" />
-        </button>
+        </flat-button>
       </header>
 
       <div class="body">
@@ -51,11 +52,13 @@
 
 <script>
 import DialogButton from 'app/components/dialog-button.vue'
+import FlatButton from 'app/components/flat-button.vue'
 
 export default {
     'name': 'DialogModal',
     'components': {
         'dialog-button': DialogButton,
+        'flat-button': FlatButton,
     },
     'props': {
         'showDialog': {
@@ -118,7 +121,16 @@ export default {
     display: flex;
     justify-content: flex-end;
 }
-.heading {
+.header {
+    @apply tw-bg-gray-500 tw-text-black;
+    border-radius: 0.25rem;
+    padding-left: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+.dialog-heading {
     flex-grow: 1;
+    padding: 5px;
+    font-weight: bold;
 }
 </style>
