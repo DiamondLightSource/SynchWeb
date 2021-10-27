@@ -1,12 +1,12 @@
 <template>
   <processing-section
     :section-title="sectionTitle"
-    :data-available="movieList.length > 0"
-    :default-hidden="defaultHidden"
+    :data-available="max > 0"
+    :default-hidden="false"
   >
     <template #controls>
       <movie-select
-        :movie-list="movieList"
+        :max="max"
         @changed="selectChanged"
       />
     </template>
@@ -30,15 +30,11 @@ export default {
             'type': String,
             'required': true,
         },
-        'defaultHidden': {
-            'type': Boolean,
-            'default': false,
-        },
         'urlPrefix': {
             'type': String,
             'required': true,
         },
-        'fetchTrigger': {
+        'max': {
             'type': String,
             'required': true,
         },
@@ -54,36 +50,15 @@ export default {
     'data': function() {
         return {
             'movieNumber': 1,
-            'movieList': [],
         }
-    },
-    'computed': {
-        'baseUrl': function() {
-            return this.urlPrefix + '/' + this.autoProcProgramId
-        },
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
         'movieNumber': function(newValue, oldValue) {
             this.fetchDetail()
         },
-        // eslint-disable-next-line no-unused-vars
-        'fetchTrigger': function(newValue, oldValue) {
-            this.fetchList()
-        },
-    },
-    'mounted': function() {
-        this.fetchList()
     },
     'methods': {
-        'fetchList': function() {
-            this.$store.dispatch('em/api/fetch', {
-                'url': this.baseUrl,
-                'humanName': this.sectionTitle + ' List',
-            }).then(
-                (movieList) => { this.movieList = movieList }
-            )
-        },
         'selectChanged': function(movieNumber) {
             this.movieNumber = movieNumber
         },
@@ -96,7 +71,9 @@ export default {
                 return
             }
             this.$store.dispatch('em/api/fetch', {
-                'url': this.baseUrl + '/n/' + this.movieNumber,
+                'url': this.urlPrefix +
+                    '/' + this.autoProcProgramId +
+                    '/n/' + this.movieNumber,
                 'humanName': this.sectionTitle + ' Details',
             }).then(
                 (details) => { this.$emit('loaded', details) }

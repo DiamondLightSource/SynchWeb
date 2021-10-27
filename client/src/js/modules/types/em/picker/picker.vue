@@ -2,7 +2,7 @@
   <processing-section-movie-select
     section-title="Particle Picking"
     url-prefix="picker"
-    :fetch-trigger="fetchTrigger"
+    :max="max"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"
     @loaded="loaded"
@@ -33,7 +33,7 @@ export default {
             'type': String,
             'required': true,
         },
-        'fetchTrigger': {
+        'max': {
             'type': String,
             'required': true,
         },

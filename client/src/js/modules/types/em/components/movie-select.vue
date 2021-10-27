@@ -3,15 +3,15 @@
     Movie:
 
     <flat-button
-      :disabled="index < 1"
-      @click="click(0)"
+      :disabled="movieNumber <= 1"
+      @click="click(1)"
     >
       <i class="fa fa-angle-double-left" />
     </flat-button>
 
     <flat-button
-      :disabled="index < 1"
-      @click="click(index - 1)"
+      :disabled="movieNumber <= 1"
+      @click="click(movieNumber - 1)"
     >
       <i class="fa fa-angle-left" />
     </flat-button>
@@ -26,15 +26,15 @@
     >
 
     <flat-button
-      :disabled="index >= lastIndex"
-      @click="click(index + 1)"
+      :disabled="movieNumber >= max"
+      @click="click(movieNumber + 1)"
     >
       <i class="fa fa-angle-right" />
     </flat-button>
 
     <flat-button
-      :disabled="index >= lastIndex"
-      @click="click(lastIndex)"
+      :disabled="movieNumber >= max"
+      @click="click(max)"
     >
       <i class="fa fa-angle-double-right" />
     </flat-button>
@@ -58,15 +58,15 @@ export default {
         'flat-button': FlatButton,
     },
     'props': {
-        'movieList': {
-            'type': Array,
+        'max': {
+            'type': String,
             'required': true,
         },
     },
     'data': function() {
         return {
-            'inputBoxClass': '',
-            'index': 0,
+            //'inputBoxClass': '',
+            'movieNumber': 0,
             'showMostRecent': true,
             'eventTimeout': null,
             'keyTimeout': null,
@@ -76,28 +76,18 @@ export default {
         ...mapGetters({
             'remoteSelectedMovie': 'em/selectedMovie'
         }),
-        'lastIndex': function() {
-            return this.movieList.length - 1
-        },
         'maxLength': function() {
-            return this.movieList.reduce(function(max, current) {
-                const length = current.toString().length
-                return length > max ? length : max
-            }, 0)
-        },
-        'movieNumber': function() {
-            return this.lastIndex >= 0 ?
-                this.movieList[this.index].movieNumber : 0
+            return this.max.toString().length
         },
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
-        'movieList': function(newValue, oldValue) {
-            this.selectLatest()
+        'max': function(newValue, oldValue) {
+            this.selectMax()
         },
         // eslint-disable-next-line no-unused-vars
         'showMostRecent': function(newValue, oldValue) {
-            this.selectLatest()
+            this.selectMax()
         },
         'remoteSelectedMovie': function() {
             this.click(this.remoteSelectedMovie)
@@ -121,12 +111,12 @@ export default {
         },
     },
     'mounted': function() {
-        this.selectLatest()
+        this.selectMax()
     },
     'methods': {
-        'click': function(newIndex) {
+        'click': function(newMovieNumber) {
             this.showMostRecent = false
-            this.index = newIndex
+            this.movieNumber = newMovieNumber
         },
         'typed': function(inputEvent) {
             // use a timeout so that the user can type multiple digits
@@ -137,22 +127,17 @@ export default {
             this.keyTimeout = setTimeout(
                 () => {
                     this.keyTimeout = null
-                    const newValue = parseInt(
-                        inputEvent.srcElement.value, 10
-                    ).toString()
-                    const newIndex = this.movieList.indexOf(newValue)
-                    const exists = newIndex >= 0
-                    this.inputBoxClass = exists ? '' : 'invalid'
-                    if (exists) {
-                        this.click(newIndex)
+                    const newValue = parseInt(inputEvent.srcElement.value, 10)
+                    if (newValue > 0 && newValue <= this.max) {
+                        this.click(newValue)
                     }
                 },
                 1000
             )
         },
-        'selectLatest': function() {
+        'selectMax': function() {
             if (this.showMostRecent) {
-                this.index = this.lastIndex
+                this.movieNumber = this.max
             }
         },
     },

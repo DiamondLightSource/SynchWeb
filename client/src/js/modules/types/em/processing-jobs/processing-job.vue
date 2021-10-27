@@ -36,12 +36,12 @@
 
       <motion-correction
         :auto-proc-program-id="processingJob.autoProcProgramId"
-        :fetch-trigger="fetchTrigger"
+        :max="processingJob.mcCount"
       />
 
       <ctf-estimation
         :auto-proc-program-id="processingJob.autoProcProgramId"
-        :fetch-trigger="fetchTrigger"
+        :max="processingJob.ctfCount"
       />
 
       <ice-breaker
@@ -51,7 +51,7 @@
 
       <picker
         :auto-proc-program-id="processingJob.autoProcProgramId"
-        :fetch-trigger="fetchTrigger"
+        :max="processingJob.pickCount"
       />
 
       <classification
