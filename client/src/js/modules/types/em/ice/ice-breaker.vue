@@ -42,7 +42,7 @@ export default {
     },
     'props': {
         'autoProcProgramId': {
-            'type': Number,
+            'type': String,
             'required': true,
         },
         'fetchTrigger': {

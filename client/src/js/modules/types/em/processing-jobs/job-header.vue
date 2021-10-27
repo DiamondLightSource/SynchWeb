@@ -64,7 +64,7 @@ export default {
             'required': true,
         },
         'autoProcProgramId': {
-            'type': Number,
+            'type': String,
             'required': true,
         },
         'startTime': {

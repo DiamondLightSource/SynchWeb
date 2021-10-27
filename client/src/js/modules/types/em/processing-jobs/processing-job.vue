@@ -2,7 +2,7 @@
   <section>
     <job-header
       :processing-job-id="processingJobId"
-      :auto-proc-program-id="autoProcProgramId"
+      :auto-proc-program-id="processingJob.autoProcProgramId"
       :start-time="processingJob.processingStartTime"
       :end-time="processingJob.processingEndTime"
       :status="processingJob.processingStatusDescription"
@@ -17,7 +17,7 @@
       class="processing"
     >
       <summary-charts
-        :auto-proc-program-id="autoProcProgramId"
+        :auto-proc-program-id="processingJob.autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
 
@@ -35,27 +35,27 @@
       </processing-section>
 
       <motion-correction
-        :auto-proc-program-id="autoProcProgramId"
+        :auto-proc-program-id="processingJob.autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
 
       <ctf-estimation
-        :auto-proc-program-id="autoProcProgramId"
+        :auto-proc-program-id="processingJob.autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
 
       <ice-breaker
-        :auto-proc-program-id="autoProcProgramId"
+        :auto-proc-program-id="processingJob.autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
 
       <picker
-        :auto-proc-program-id="autoProcProgramId"
+        :auto-proc-program-id="processingJob.autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
 
       <classification
-        :auto-proc-program-id="autoProcProgramId"
+        :auto-proc-program-id="processingJob.autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
     </div>
@@ -119,9 +119,6 @@ export default {
         },
         'processingJobId': function() {
             return parseInt(this.processingJob.processingJobId, 10)
-        },
-        'autoProcProgramId': function() {
-            return parseInt(this.processingJob.autoProcProgramId, 10)
         },
     },
     'methods': {
