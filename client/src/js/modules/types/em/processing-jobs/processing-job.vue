@@ -176,11 +176,16 @@ export default {
             }
             if (messages.length > 0) {
                 messages.unshift('There are only ' + movieCount + ' movies')
+                const message = messages.join(' and ')
                 this.$store.commit('notifications/addNotification', {
                     'title': 'Movie count anomaly',
-                    'message': messages.join(' and '),
+                    'message': message,
                     'level': 'warning'
                 })
+                console.log(
+                    'Processing Job: ' + this.processingJob.processingJobId +
+                    ' Movie count anomaly... ' + message
+                )
             }
         },
     },
