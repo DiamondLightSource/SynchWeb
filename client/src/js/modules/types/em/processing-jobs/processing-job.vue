@@ -158,16 +158,14 @@ export default {
                 'pickCount': 'Picker',
             })) {
                 const count = this.processingJob[field]
-                console.log(field, title, count, movieCount)
                 if (count > movieCount) {
                     messages.push(title + ' has ' + count + ' entries')
                 }
             }
-            console.log(messages)
             if (messages.length > 0) {
                 messages.unshift('There are only ' + movieCount + ' movies')
                 this.$store.commit('notifications/addNotification', {
-                    'title': 'Warning',
+                    'title': 'Movie count anomaly',
                     'message': messages.join(' and '),
                     'level': 'warning'
                 })
