@@ -37,12 +37,12 @@
 
       <motion-correction
         :auto-proc-program-id="processingJob.autoProcProgramId"
-        :max="processingJob.mcCount"
+        :max="mcCount"
       />
 
       <ctf-estimation
         :auto-proc-program-id="processingJob.autoProcProgramId"
-        :max="processingJob.ctfCount"
+        :max="ctfCount"
       />
 
       <ice-breaker
@@ -52,7 +52,7 @@
 
       <picker
         :auto-proc-program-id="processingJob.autoProcProgramId"
-        :max="processingJob.pickCount"
+        :max="pickCount"
       />
 
       <classification-2d
@@ -122,6 +122,18 @@ export default {
             return this.collectionActive && isRunning ?
                 this.processingJob.fetchTime : ''
         },
+        'mcCount': function() {
+            return this.processingJob.mcCount < this.processingJob.movieCount ?
+                this.processingJob.mcCount : this.processingJob.movieCount
+        },
+        'ctfCount': function() {
+            return this.processingJob.ctfCount < this.processingJob.movieCount ?
+                this.processingJob.ctfCount : this.processingJob.movieCount
+        },
+        'pickCount': function() {
+            return this.processingJob.pickCount < this.processingJob.movieCount ?
+                this.processingJob.pickCount : this.processingJob.movieCount
+        },
         'processingJobId': function() {
             return parseInt(this.processingJob.processingJobId, 10)
         },
@@ -131,7 +143,7 @@ export default {
             this.checkAnomalousMovieCounts()
         },
     },
-    'mount': function() {
+    'mounted': function() {
         this.checkAnomalousMovieCounts()
     },
     'methods': {
