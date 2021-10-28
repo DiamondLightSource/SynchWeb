@@ -40,17 +40,20 @@ export default {
         }
     },
     'watch': {
-        'layout': function() {
-            this.showChart()
-        },
-        'chartData': function() {
-            this.showChart()
-        },
         'annotations': function() {
             this.redrawChart()
         },
     },
     'mounted': function () {
+        this.$watch(
+            function() {
+                return {
+                    'layout': this.layout,
+                    'data': this.chartData,
+                }
+            },
+            this.showChart
+        )
         this.showChart()
     },
     'beforeDestroy': function() {
@@ -78,9 +81,7 @@ export default {
                 'staticPlot': true,
             } : {
                 'displaylogo': false,
-                // displayModebar is handy when trying to debug Plotly
-                // modebar issues!
-                // 'displayModeBar': true,
+                'displayModeBar': true,
             }
 
             const layout = this.layout
