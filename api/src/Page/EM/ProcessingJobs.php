@@ -39,6 +39,11 @@ trait ProcessingJobs
                 AutoProcProgram.autoProcProgramId,
                 AutoProcProgram.processingStartTime,
                 AutoProcProgram.processingEndTime,
+                (SELECT COUNT(DISTINCT Movie.movieNumber)
+                    FROM MotionCorrection
+                    LEFT JOIN Movie ON Movie.movieId = MotionCorrection.movieId
+                    WHERE MotionCorrection.autoProcProgramId = AutoProcProgram.autoProcProgramId
+                ) AS movieCount,
                 (SELECT COUNT(MotionCorrection.motionCorrectionId)
                     FROM MotionCorrection
                     WHERE MotionCorrection.autoProcProgramId = AutoProcProgram.autoProcProgramId

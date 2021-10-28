@@ -126,6 +126,14 @@ export default {
             return parseInt(this.processingJob.processingJobId, 10)
         },
     },
+    'watch': {
+        'processingJob': function() {
+            this.checkAnomalousMovieCounts()
+        },
+    },
+    'mount': function() {
+        this.checkAnomalousMovieCounts()
+    },
     'methods': {
         'hide': function(hidden) {
             this.hidden = hidden
@@ -139,6 +147,30 @@ export default {
                 }).then(
                     (response) => { this.parameters = response }
                 )
+            }
+        },
+        'checkAnomalousMovieCounts': function() {
+            var messages = []
+            const movieCount = this.processingJob.movieCount
+            for (const [field, title] of Object.entries({
+                'mcCount': 'Motion Correction',
+                'ctfCount': 'CTF',
+                'pickCount': 'Picker',
+            })) {
+                const count = this.processingJob[field]
+                console.log(field, title, count, movieCount)
+                if (count > movieCount) {
+                    messages.push(title + ' has ' + count + ' entries')
+                }
+            }
+            console.log(messages)
+            if (messages.length > 0) {
+                messages.unshift('There are only ' + movieCount + ' movies')
+                this.$store.commit('notifications/addNotification', {
+                    'title': 'Warning',
+                    'message': messages.join(' and '),
+                    'level': 'warning'
+                })
             }
         },
     },
