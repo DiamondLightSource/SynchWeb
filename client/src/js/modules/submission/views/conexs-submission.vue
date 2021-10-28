@@ -4,7 +4,7 @@
         <button name="fdmnesTabButton" class="button" v-on:click="tabDisplay($event)">FDMNES</button>
         <button name="quantumEspressoTabButton" class="button" v-on:click="tabDisplay($event)">Quantum Espresso</button>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <span>Cluster status: {{ clusterStatus }}</span>&nbsp;&nbsp;&nbsp;<i v-if="clusterStatus != 'Running' && clusterStatus != 'Sleeping'" class="fa icon grey fa-cog fa-spin"></i>
+        <span>Cluster status: {{ clusterStatus }}</span>&nbsp;&nbsp;&nbsp;<i v-if="clusterStatus != 'Running' && clusterStatus != 'Sleeping' && clusterStatus != 'Unavailable'" class="fa icon grey fa-cog fa-spin"></i>
         <br />
 
         <form v-on:submit.prevent="onSubmit" method="post" id="submit-orca" v-bind:class="{loading: isLoading}">
@@ -479,7 +479,11 @@
                     },
                     method: 'POST', //should be a get really
                     success: function(response){
-                        self.clusterStatus = response[app.user].status
+                        if(!response[app.user].status){
+                            self.clusterStatus = 'Unavailable'
+                        } else {
+                            self.clusterStatus = response[app.user].status
+                        }
 
                         if(self.clusterStatus == 'Sleeping' || self.clusterStatus == 'Running'){
                             self.isSubmitDisabled = false
@@ -490,7 +494,7 @@
                     error: function(response){
                         console.log('error getting cluster status: ' + response)
                         //app.alert({ title: 'Error', message: response })
-                        self.clusterStatus = 'Unavailable, please try again later'
+                        self.clusterStatus = 'Unavailable'
                         self.isSubmitDisabled = true
                     }
                 })
