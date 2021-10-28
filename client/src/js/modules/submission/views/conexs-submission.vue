@@ -3,6 +3,8 @@
         <button name="orcaTabButton" class="button" v-on:click="tabDisplay($event)">ORCA</button>
         <button name="fdmnesTabButton" class="button" v-on:click="tabDisplay($event)">FDMNES</button>
         <button name="quantumEspressoTabButton" class="button" v-on:click="tabDisplay($event)">Quantum Espresso</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <span>Cluster status: {{ clusterStatus }}</span>&nbsp;&nbsp;&nbsp;<i v-if="clusterStatus != 'Running' && clusterStatus != 'Sleeping'" class="fa icon grey fa-cog fa-spin"></i>
         <br />
 
         <form v-on:submit.prevent="onSubmit" method="post" id="submit-orca" v-bind:class="{loading: isLoading}">
@@ -267,7 +269,7 @@
                 </li>
                 <li>
                     <label class="left">Save input file:</label>
-                    <button class="button" v-on:click="downloadFileContents()">Download</button>
+                    <button type="button" class="button" v-on:click="downloadFileContents()">Download</button>
                 </li>
                 <li>
                     <label class="left">CPUs: </label>
@@ -275,7 +277,7 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <label class="notLeft">Memory required in Gb:</label>
                     <input type="text" name="memory" v-model="memory" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('memory')}" v-validate="'required|decimal'"/>
-                    <button type="submit" class="button submit" name="orcaSubmit">SUBMIT</button>
+                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled">SUBMIT</button>
                 </li>
                 <li>
                     <button type="button" class="button" name="checkStatus" v-on:click="checkStatus()">CHECK STATUS</button>
@@ -397,10 +399,17 @@
                 mixing_beta: '',
 
                 card: 'control',
+
+                isSubmitDisabled: true,
+                clusterStatus: '',
+                baseURL: '',
+                form: ''
             }
         },
 
         created: function(){
+            this.startCluster()
+
             // orca
             this.element = this.elements[0]['element']
             this.orca_edge = this.orca_abs_edge[0]
@@ -408,6 +417,7 @@
             this.basis = 'def2-SVP'
             this.solvent = this.orca_solvents[0]['name']
             this.technique = 'Xas'
+            this.form = 'orca'
 
             //fdmnes
             this.fdmnes_edge = this.fdmnes_abs_edge[0]
@@ -423,6 +433,69 @@
         },
 
         methods: {
+            startCluster: function(){
+                console.log('startCluster called')
+                let self = this
+                Backbone.ajax({
+                    url: self.baseURL,
+                    data: { login: app.user },
+                    method: 'POST',
+                    success: function(response){
+                        if(response['cluster']){
+                            if(response['cluster'] == 'new'){
+                                console.log('starting new cluster for: ' + app.user)
+                                self.isSubmitEnabled = false
+
+                                setInterval(function(){
+                                    self.pollClusterStatus()
+                                }, 5000)
+
+                            } else {
+                                console.log('cluster already available for: ' + app.user)
+                                self.isSubmitDisabled = false
+                                self.clusterStatus = response['cluster'].status
+
+                                setInterval(function(){
+                                    self.pollClusterStatus()
+                                }, 5000)
+                            }
+                        }
+                    },
+                    error: function(response){
+                        console.log('error starting cluster: ' + response)
+                        //app.alert({ title: 'Error', message: response })
+                        self.clusterStatus = 'Unavailable, please try again later'
+                        self.isSubmitDisabled = true
+                    }
+                })
+            },
+
+            pollClusterStatus: function(){
+                let self = this
+                Backbone.ajax({
+                    url: self.baseURL + 'check_server',
+                    data: {
+                        login: app.user
+                    },
+                    method: 'POST', //should be a get really
+                    success: function(response){
+                        self.clusterStatus = response[app.user].status
+
+                        if(self.clusterStatus == 'Sleeping' || self.clusterStatus == 'Running'){
+                            self.isSubmitDisabled = false
+                        } else {
+                            self.isSubmitDisabled = true
+                        }
+                    },
+                    error: function(response){
+                        console.log('error getting cluster status: ' + response)
+                        //app.alert({ title: 'Error', message: response })
+                        self.clusterStatus = 'Unavailable, please try again later'
+                        self.isSubmitDisabled = true
+                    }
+                })
+            },
+
             tabDisplay: function(event){
                 var name = event.target.name
 
@@ -437,17 +510,20 @@
                         this.orcaDisplay = 'inline'
                         this.fdmnesDisplay = 'none'
                         this.quantumEspressoDisplay = 'none'
+                        this.form = 'orca'
                         break
                     case "fdmnesTabButton":
                         this.orcaDisplay = 'none'
                         this.fdmnesDisplay = 'inline'
                         this.quantumEspressoDisplay = 'none'
+                        this.form = 'fdmnes'
                         break
                     case "quantumEspressoTabButton":
                         this.orcaDisplay = 'none'
                         this.fdmnesDisplay = 'none'
                         this.quantumEspressoDisplay = 'inline'
                         this.controlCardDisplay = true
+                        this.form = 'qe'
                         break
                 }
                 this.overviewBuilder()
@@ -816,8 +892,9 @@
 
                 this.$validator.validateAll().then(function(result){
                     if(result && self.inputFileContents != ''){
+
                         Backbone.ajax({
-                            url: '',
+                            url: self.baseURL + 'upload_' + self.form,
                             data: {
                                 data: self.inputFileContents,
                                 charge: self.charge,
