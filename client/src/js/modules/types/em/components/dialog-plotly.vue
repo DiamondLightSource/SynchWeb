@@ -29,6 +29,7 @@
         v-html="title"
       />
       <plotly-chart
+        ref="preview"
         class="preview-chart"
         static
         :layout="layout"
@@ -88,9 +89,9 @@ export default {
     'watch': {
         'showDialog': function(newValue, oldValue) {
             if (newValue) {
-                this.originalRange = this.layout.xaxis.range
+                this.$refs.preview.saveZoom()
             } else {
-                this.layout.xaxis.range = this.originalRange
+                this.$refs.preview.restoreZoom()
             }
         },
     },

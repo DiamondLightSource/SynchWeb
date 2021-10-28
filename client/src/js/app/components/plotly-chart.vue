@@ -37,6 +37,8 @@ export default {
     'data': function() {
         return {
             'chartActive': false,
+            'originalXAxis': [0, 0],
+            'originalYAxis': [0, 0],
         }
     },
     'watch': {
@@ -89,11 +91,31 @@ export default {
                 layout.annotations = this.annotations
             }
 
+            /*  If you're looking for a massive performance sink,
+                you've come to the right shop */
             Plotly.newPlot(this.$el, this.chartData, layout, options);
 
             if (!this.static) {
                 this.$el.on('plotly_click', (clickEvent) => {
                     this.$emit('select', clickEvent);
+                })
+            }
+        },
+        'saveZoom': function() {
+            this.originalXAxis = [
+                this.layout.xaxis.range[0],
+                this.layout.xaxis.range[1],
+            ]
+            this.originalYAxis = [
+                this.layout.yaxis.range[0],
+                this.layout.yaxis.range[1],
+            ]
+        },
+        'restoreZoom': function() {
+            if (this.chartActive) {
+                Plotly.relayout(this.$el, {
+                    'xaxis.range': this.originalXAxis,
+                    'yaxis.range': this.originalYAxis,
                 })
             }
         },
