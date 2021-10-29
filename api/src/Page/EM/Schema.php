@@ -23,13 +23,9 @@ abstract class Schema
      * 'extraDescription' => Extra human readable description
      *
      * validation options
-     * 'required'         => true = value is required, false = value will be ignored
-     *                       *OR* an array of other field names and given values
-     *                       that, if true, make this field required
-     *                       e.g. ['anotherField' => 10]
-     *                       this field is required if anotherField == 10
-     *                       *OR* "optional" the field can be blank but it will
-     *                       be stored
+     * 'required'         => a boolean field or a string with the value
+     *                       "optional" - the field can be blank but it will
+     *                       still be used
      * 'default'          => default value,
      * 'options'          => list of option values for SELECTs,
      * 'displayOptions'   => alternate option list for display,
