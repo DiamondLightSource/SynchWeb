@@ -126,7 +126,7 @@ export default {
             this.$emit('cancel')
             this.$store.commit('notifications/addNotification', {
                 'title': 'Data Collection Added',
-                'message': 'data collection Added (' + response.id + ')',
+                'message': response.id,
                 'level': 'success'
             })
             this.$router.push(

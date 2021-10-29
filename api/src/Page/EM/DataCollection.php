@@ -50,7 +50,7 @@ trait DataCollection
         ) . $postData['imageSuffix'];
 
         if (count(glob($imageDirectory . $fileTemplate, GLOB_NOSORT)) == 0) {
-            $this->dataCollectionFileError("Image files don't exist");
+            $this->dataCollectionFileError("Movie files don't exist");
         }
 
         $existingCollection = $this->dataCollectionFindExisting(
@@ -78,7 +78,7 @@ trait DataCollection
             );
 
             $inserts = $schema->inserts(
-                $args,
+                $postData,
                 array(
                     'sessionId' => $session['sessionId'],
                     'dataCollectionGroupId' => $this->db->id(),

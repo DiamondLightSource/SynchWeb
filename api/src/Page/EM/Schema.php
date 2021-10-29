@@ -168,7 +168,7 @@ abstract class Schema
      */
     public function inserts($raw, $prePrepared = array())
     {
-        $prepared = $this->prepareData($raw, $prePrepared);
+        $prepared = $this->preparePostData($raw, $prePrepared);
         $values = array_values($prepared);
         return array(
             'fieldNames' => implode(',', array_keys($prepared)),

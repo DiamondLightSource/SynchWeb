@@ -48,7 +48,8 @@ trait Session
                 '-',
                 BLSession.visit_number
             ) LIKE :1",
-            array($sessionReference)
+            array($sessionReference),
+            false
         );
 
         return $this->sessionRows($rows);
