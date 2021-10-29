@@ -32,7 +32,12 @@ trait Session
                 $dataCollectionId
             )
         );
-        return $this->sessionRows($rows);
+
+        if (sizeof($rows) == 0) {
+            $this->_error('Session not found');
+        }
+
+        return $rows[0];
     }
 
     private function sessionFetch($sessionReference)
@@ -52,24 +57,14 @@ trait Session
             false
         );
 
-        return $this->sessionRows($rows);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    private function sessionRows($rows)
-    {
         if (sizeof($rows) == 0) {
             $this->_error('Session not found');
         }
 
-        $session = $rows[0];
-
-        $session['processingIsActive'] = false;
-        $session['processingTimestamp'] = null;
-
-        return $session;
+        return $rows[0];
     }
+
+    ///////////////////////////////////////////////////////////////////////////
 
     private function sessionSelects()
     {

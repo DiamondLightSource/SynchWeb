@@ -12,32 +12,32 @@ class SchemaValidator
 
     public function __construct($schema)
     {
-        $this->schema = $schema->schema();
+        $this->schema = $schema;
     }
 
     public function validateJsonPostData($json)
     {
         $this->postData = $this->decodeJson($json);
         $invalid = array();
-        $required = array();
+        $valid = array();
 
-        foreach ($this->schema as $name => $rules) {
-            $value = $this->postedValue($name);
+        foreach ($this->schema->ruleSet() as $fieldName => $rules) {
+            $value = $this->postData[$fieldName];
 
             if (!$this->isRequired($rules, $value)) {
                 continue;
             }
 
-            $result = $this->validateArgument($value, $rules);
+            $result = $this->validateArgument($fieldName, $value, $rules);
             if ($result === true) {
-                $required[$name] = $value;
+                $valid[$fieldName] = $value;
                 continue;
             }
 
-            $invalid[$name] = $result;
+            $invalid[$fieldName] = $result;
         }
 
-        return array($invalid, $required);
+        return array($invalid, $valid);
     }
 
     private function decodeJson($json)
@@ -46,19 +46,27 @@ class SchemaValidator
         return gettype($data) == 'array' ? $data : array();
     }
 
-    protected function validateArgument($value, $rules)
+    protected function validateArgument($fieldName, $value, $rules)
     {
+        $typedValue = $this->schema->typedParameter(
+            $fieldName,
+            $this->postData
+        );
         foreach ($rules as $ruleName => $rule) {
             $constraint = 'check' . ucfirst($ruleName);
+            /*  Not all fields in a rule set are, strictly speaking, "rules"
+                If there's no checker here, it's probably a label or something
+                else "neutral"
+            */
             if (method_exists($this, $constraint)) {
-                $valid = call_user_func(
+                $flagOrMessage = call_user_func(
                     array($this, $constraint),
-                    $rules,
                     $rule,
-                    $value
+                    $value,
+                    $typedValue
                 );
-                if ($valid !== true) {
-                    return $valid;
+                if ($flagOrMessage !== true) {
+                    return $flagOrMessage;
                 }
             }
         }
@@ -68,16 +76,16 @@ class SchemaValidator
     /**
      * Check for the 'required' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
-     * @param boolean|array $required - if an array - other fields and the value that would make this one required
-     * @param mixed $value - the value of the field being checked
+     * @param boolean|string|array $required
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkRequired($allRules, $required, $value)
+    private function checkRequired($required, $value, $typedValue)
     {
         if ($required === 'optional') {
             return true;
@@ -89,16 +97,16 @@ class SchemaValidator
     /**
      * Check for the 'pattern' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
-     * @param array $patternName - the name of the  pattern that the field must match
-     * @param mixed $value - the value of the field being checked
+     * @param array $patternName
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    private function checkPattern($allRules, $patternName, $value)
+    private function checkPattern($patternName, $value, $typedValue)
     {
         $patterns = array(
             'filename' => array(
@@ -119,16 +127,16 @@ class SchemaValidator
     /**
      * Check for the 'options' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
      * @param array $options - all possible values the field can have
-     * @param mixed $value - the value of the field being checked
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    private function checkOptions($allRules, $options, $value)
+    private function checkOptions($options, $value, $typedValue)
     {
         return in_array("$value", $options, true) ?
             true : "$value is not known";
@@ -142,13 +150,11 @@ class SchemaValidator
      *
      * @return boolean
      */
-    private function isCorrectType($type, $value)
+    private function isCorrectType($type, $value, $typedValue)
     {
         if ($type == 'boolean') {
             return in_array($value, array('true', '1', 1, 'false', '0', '', 0));
         }
-
-        $typedValue = $this->typedValue($type, $value);
 
         return "$typedValue" == "$value";
     }
@@ -156,119 +162,115 @@ class SchemaValidator
     /**
      * Check for the 'type' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
-     * @param string $type - the PHP type this field should have
-     * @param mixed $value - the value of the field being checked
+     * A "Schema type" is almost the same as a PHP type except we have
+     * "real" instead of "double"
+     *
+     * @param string $type - the "schema type" this field should have
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkType($allRules, $type, $value)
+    private function checkType($type, $value, $typedValue)
     {
         return $this->isCorrectType(
             $type,
-            $value
+            $value,
+            $typedValue
         ) ? true : "should be $type";
     }
 
     /**
      * Check for the 'mustEqual' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
      * @param mixed $checkValue - the value this field must have
-     * @param mixed $value - the value of the field being checked
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkMustEqual($allRules, $checkValue, $value)
+    private function checkMustEqual($checkValue, $value, $typedValue)
     {
-        return $this->typedValue(
-            $allRules,
-            $value
-        ) === $checkValue ? true : 'invalid';
+        return $typedValue === $checkValue ? true : 'invalid';
     }
 
     /**
      * Check for the 'minValue' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
      * @param mixed $minimum - the minimum value this field must have
-     * @param mixed $value - the value of the field being checked
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkMinValue($allRules, $minimum, $value)
+    private function checkMinValue($minimum, $value, $typedValue)
     {
-        return $this->typedValue(
-            $allRules,
-            $value
-        ) >= $minimum ? true : "should be at least $minimum";
+        return $typedValue >= $minimum ? true : "should be at least $minimum";
     }
 
     /**
      * Check for the 'maxValue' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
      * @param mixed $maximum - the maximum value this field must have
-     * @param mixed $value - the value of the field being checked
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkMaxValue($allRules, $maximum, $value)
+    private function checkMaxValue($maximum, $typedValue)
     {
-        return $this->typedValue(
-            $allRules,
-            $value
-        ) <= $maximum ? true : "should be at most $maximum";
+        return $typedValue <= $maximum ? true : "should be at most $maximum";
     }
 
     /**
      * Check for the 'greaterThan' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
      * @param mixed $otherArgument - field to compare this one against
-     * @param mixed $value - the value of the field being checked
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkGreaterThan($allRules, $otherArgument, $value)
+    private function checkGreaterThan($otherArgument, $value, $typedValue)
     {
-        return $this->typedValue(
-            $allRules,
-            $value
-        ) > $this->typedPostedValue(
-            $otherArgument
+        return $typedValue > $this->schema->typedParameter(
+            $otherArgument,
+            $this->postData
         ) ? true : "must be greater than $otherArgument";
     }
 
     /**
      * Check for the 'lessThan' validation rule
      *
-     * @param array $allRules - all the rules applying to the field being checked
      * @param mixed $otherArgument - field to compare this one against
-     * @param mixed $value - the value of the field being checked
+     * @param mixed $value
+     * @param mixed $typedValue
      *
      * @return boolean|string - either boolean true or an error message
      *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkLessThan($allRules, $otherArgument, $value)
+    private function checkLessThan($otherArgument, $value, $typedValue)
     {
-        return $this->typedValue(
-            $allRules,
-            $value
-        ) < $this->typedPostedValue(
-            $otherArgument
+        return $typedValue < $this->schema->typedParameter(
+            $otherArgument,
+            $this->postData
         ) ? true : "must be less than $otherArgument";
     }
 
@@ -276,81 +278,12 @@ class SchemaValidator
 
     private function isRequired($rules, $value)
     {
-        // even if it's not stored - it still needs validating
-        // if (array_key_exists('stored', $rules) && !$rules['stored']) {
-        //     return false;
-        // }
-
         $required = $rules['required'];
 
         if ($required === 'optional') {
-            return $this->typedValue('string', $value) != '';
+            return $this->schema->typedValue('string', $value) != '';
         }
 
-        if (gettype($required) != 'array') {
-            return $this->typedValue('boolean', $required);
-        }
-
-        foreach ($required as $otherArgument => $expectedValue) {
-            // all checks must be true for required to be true
-            if ($this->typedPostedValue($otherArgument) !== $expectedValue) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function requiredType($param)
-    {
-        if (gettype($param) == 'array') {
-            if (!array_key_exists('type', $param)) {
-                return false;
-            }
-            return $param['type'];
-        }
-
-        return $param;
-    }
-
-    /**
-     * Type coerce the given value
-     *
-     * @param mixed $param - either an array of rules including a type field or a type in a string
-     * @param mixed $value - the value to coerce
-     *
-     * @return mixed - the value coerced into the given type
-     */
-    private function typedValue($param, $value)
-    {
-        $type = $this->requiredType($param);
-
-        if ($type == false) {
-            return $value;
-        }
-
-        if ($type == 'boolean') {
-            return in_array($value, array('true', '1'));
-        }
-
-        $phpType = $type == 'real' ? 'double' : $type;
-
-        $new = $value;
-        settype($new, $phpType);
-        return $new;
-    }
-
-    private function postedValue($name)
-    {
-        return array_key_exists($name, $this->postData) ?
-            $this->postData[$name] : null;
-    }
-
-    private function typedPostedValue($name)
-    {
-        return $this->typedValue(
-            $this->schema[$name],
-            $this->postedValue($name)
-        );
+        return $this->schema->checkBooleanOption($required, $this->postData);
     }
 }

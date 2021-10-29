@@ -98,6 +98,16 @@ class RelionSchema extends Schema
                         "/processing/$name";
                 },
             ),
+            'session_path' => array(
+                /*  session_path should be "injected" into the posted data
+                    from BLSession
+                    It's used to handle the full path name of the
+                    Gain Reference File
+                */
+                'stored' => false,
+                'display' => false,
+                'required' => false,
+            ),
             'voltage' => array(
                 'label' => 'Voltage',
                 'unit' => 'kV',
@@ -178,6 +188,9 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
+                'stored' => array(
+                    'stop_after_ctf_estimation' => false
+                ),
                 'type' => 'boolean'
             ),
             'do_class3d' => array(
@@ -186,12 +199,19 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
+                'stored' => array(
+                    'stop_after_ctf_estimation' => false
+                ),
                 'type' => 'boolean'
             ),
             'use_fsc_criterion' => array(
                 'label' => 'Best initial model from FSC',
                 'default' => false,
                 'required' => array(
+                    'stop_after_ctf_estimation' => false,
+                    'do_class3d' => true,
+                ),
+                'stored' => array(
                     'stop_after_ctf_estimation' => false,
                     'do_class3d' => true,
                 ),
@@ -207,18 +227,18 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
+                'stored' => array(
+                    'stop_after_ctf_estimation' => false,
+                ),
                 'type' => 'boolean',
-                'onUpdate' => function ($postData) {
-                    if ($postData['stop_after_ctf_estimation']) {
-                        return false;
-                    }
-                    return $postData['autopick_do_cryolo'];
-                }
             ),
             'autopick_LoG_diam_min' => array(
                 'label' => 'Minimum Diameter (Å)',
                 'default' => '',
                 'required' => array(
+                    'stop_after_ctf_estimation' => false
+                ),
+                'stored' => array(
                     'stop_after_ctf_estimation' => false
                 ),
                 'minValue' => 0.02,
@@ -233,6 +253,9 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false,
                 ),
+                'stored' => array(
+                    'stop_after_ctf_estimation' => false,
+                ),
                 'minValue' => 0.02,
                 'maxValue' => 4000.0,
                 'greaterThan' => 'autopick_LoG_diam_min',
@@ -243,6 +266,9 @@ class RelionSchema extends Schema
                 'unit' => 'Å',
                 'default' => '',
                 'required' => array(
+                    'stop_after_ctf_estimation' => false
+                ),
+                'stored' => array(
                     'stop_after_ctf_estimation' => false
                 ),
                 'minValue' => 0.1,
@@ -262,6 +288,9 @@ class RelionSchema extends Schema
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
+                'stored' => array(
+                    'stop_after_ctf_estimation' => false
+                ),
                 'minValue' => 0.1,
                 'maxValue' => 1024.0,
                 'type' => 'real'
@@ -271,6 +300,9 @@ class RelionSchema extends Schema
                 'unit' => 'pixels',
                 'default' => '',
                 'required' => array(
+                    'stop_after_ctf_estimation' => false
+                ),
+                'stored' => array(
                     'stop_after_ctf_estimation' => false
                 ),
                 'minValue' => 0.1,
@@ -302,16 +334,11 @@ class RelionSchema extends Schema
                     'stop_after_ctf_estimation' => false,
                     'want2ndPass' => true
                 ),
+                'stored' => array(
+                    'stop_after_ctf_estimation' => false,
+                    'want2ndPass' => true
+                ),
                 'type' => 'boolean',
-                'onUpdate' => function ($postData) {
-                    if (
-                        $postData['stop_after_ctf_estimation'] ||
-                        !$postData['want2ndPass']
-                    ) {
-                        return false;
-                    }
-                    return $postData['do_class2d_pass2'];
-                }
             ),
             'do_class3d_pass2' => array(
                 'label' => 'Do 3D Classification',
@@ -320,16 +347,11 @@ class RelionSchema extends Schema
                     'stop_after_ctf_estimation' => false,
                     'want2ndPass' => true
                 ),
+                'stored' => array(
+                    'stop_after_ctf_estimation' => false,
+                    'want2ndPass' => true
+                ),
                 'type' => 'boolean',
-                'onUpdate' => function ($postData) {
-                    if (
-                        $postData['stop_after_ctf_estimation'] ||
-                        !$postData['want2ndPass']
-                    ) {
-                        return false;
-                    }
-                    return $postData['do_class3d_pass2'];
-                }
             ),
         );
     }

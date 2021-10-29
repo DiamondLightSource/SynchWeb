@@ -95,7 +95,6 @@ class EM extends Page
         // See Synchweb\Page\EM\Relion
         array('/relion/schema/', 'get', 'relionSchema'),
         array('/relion/start/:id', 'post', 'relionStart'),
-        array('/process/relion/session/:session', 'get', 'relionStatus'),
         array('/process/relion/job/:processingJobId', 'patch', 'relionStop'),
         array('/relion/parameters', 'get', 'relionParameters'),
 

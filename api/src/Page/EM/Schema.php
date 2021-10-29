@@ -4,6 +4,8 @@ namespace SynchWeb\Page\EM;
 
 abstract class Schema
 {
+    protected $allRules;
+
     /**
      * Return the name of the default table for all fields that don't have one
      *
@@ -15,8 +17,6 @@ abstract class Schema
      * Provide the schema for server-side use
      *
      * Array keyed by field name, each containing some or all of the following keys:
-     *
-     * human readable info.
      *
      * 'label'            => human readable label,
      * 'unit'             => (e.g. ),  "Å/pixel", "kV"
@@ -42,11 +42,20 @@ abstract class Schema
      *
      * used by API only
      * 'select'           => select clause to get this field
-     * 'stored'           => true = field is stored / false = for info only,
+     * 'stored'           => a boolean indicating whether the field is stored
+     *                       in the database or not
      * 'onSelect'         => PHP function to transform selected data
      * 'onUpdate'         => PHP function to transform data prior to update/insert
      *
-     * https://www.youtube.com/watch?v=1s-BGBA8Nqo
+     * If a field above is described as having a boolean option, the value can
+     * be either true or false (a boolean or a string) or an array keyed by
+     * other fields with an expected value. e.g.:
+     * 'required' => array(
+     *     'firstField' => 'true',
+     *     'secondField' => 10,
+     * )
+     * indicates the given field is only required if 'firstField' is true and
+     * secondField is 10, otherwise the given field is not required.
      *
      * @return array
      */
@@ -54,6 +63,16 @@ abstract class Schema
     abstract public function schema();
 
     ////////////////////////////////////////////////////////////////////////////
+
+    public function __construct()
+    {
+        $this->allRules = $this->schema();
+    }
+
+    public function ruleSet()
+    {
+        return $this->allRules;
+    }
 
     /**
      * Post process a row SELECTed from the database
@@ -70,7 +89,7 @@ abstract class Schema
             },
             $row
         );
-        foreach ($this->schema() as $fieldName => $rules) {
+        foreach ($this->allRules as $fieldName => $rules) {
             if (array_key_exists('onSelect', $rules)) {
                 $processedRow[$fieldName] = call_user_func(
                     $rules['onSelect'],
@@ -89,7 +108,7 @@ abstract class Schema
     public function selections()
     {
         $selections = array();
-        foreach ($this->schema() as $fieldName => $rules) {
+        foreach ($this->allRules as $fieldName => $rules) {
             $selection = $this->selection($fieldName, $rules);
             if ($selection) {
                 $selections[] = $selection;
@@ -112,10 +131,75 @@ abstract class Schema
         if (array_key_exists('select', $rules)) {
             return $rules['select'] . ' AS ' . $fieldName;
         }
+        /**
+         * TODO: stored isn't just a boolean any more!!
+         */
         if (array_key_exists('stored', $rules) && !$rules['stored']) {
             return false;
         }
         return $this->defaultTable() . '.' . $fieldName;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Options such as required and stored can reference the values of
+     * other fields to determine their boolean value
+     *
+     * @param string|array $rule
+     * @param array $postData
+     *
+     * @return boolean
+     */
+    public function checkBooleanOption($rule, $postData)
+    {
+        if (gettype($rule) != 'array') {
+            return $this->typedValue('boolean', $rule);
+        }
+
+        foreach ($rule as $otherArgument => $expectedValue) {
+            if ($this->typedParameter($otherArgument, $postData) !== $expectedValue) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Type coerce the given value
+     *
+     * @param string $type
+     * @param mixed $value - the value to coerce
+     *
+     * @return mixed - the value coerced into the given type
+     */
+    public function typedValue($type, $value)
+    {
+        if ($type == 'boolean') {
+            return in_array($value, array('true', '1'));
+        }
+
+        $phpType = $type == 'real' ? 'double' : $type;
+
+        $new = $value;
+        settype($new, $phpType);
+        return $new;
+    }
+
+    /**
+     * Get the expected type of a field.
+     *
+     * @param string $fieldName
+     * @param array $theData
+     *
+     * @return mixed
+     */
+    public function typedParameter($fieldName, $theData)
+    {
+        $rules = $this->allRules[$fieldName];
+        $type = array_key_exists('type', $rules) ? $rules['type'] : 'string';
+        return $this->typedValue($type, $theData[$fieldName]);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -128,19 +212,22 @@ abstract class Schema
      *
      * @return array
      */
-    public function preparePostData($raw, $prepared = array())
+    public function prepareDataForInsert($raw, $prepared = array())
     {
-        $schema = $this->schema();
+        $schema = $this->allRules;
         foreach ($raw as $fieldName => $value) {
             if (array_key_exists($fieldName, $prepared)) {
                 continue;
             }
             $rules = $schema[$fieldName];
-            if (
-                array_key_exists('stored', $rules) &&
-                !$rules['stored']
-            ) {
-                continue;
+            if (array_key_exists('stored', $rules)) {
+                $stored = $this->checkBooleanOption(
+                    $rules['stored'],
+                    $raw
+                );
+                if (!$stored) {
+                    continue;
+                }
             }
             if (gettype($value) == 'boolean') {
                 $value = $value ? 1 : 0;
@@ -168,7 +255,7 @@ abstract class Schema
      */
     public function inserts($raw, $prePrepared = array())
     {
-        $prepared = $this->preparePostData($raw, $prePrepared);
+        $prepared = $this->prepareDataForInsert($raw, $prePrepared);
         $values = array_values($prepared);
         return array(
             'fieldNames' => implode(',', array_keys($prepared)),
@@ -198,7 +285,7 @@ abstract class Schema
             'onUpdate',
         );
         $clientSchema = array();
-        foreach ($this->schema() as $fieldName => $rules) {
+        foreach ($this->allRules as $fieldName => $rules) {
             $clientRules = array();
             foreach ($rules as $ruleName => $ruleData) {
                 if (!in_array($ruleName, $hiddenRules)) {

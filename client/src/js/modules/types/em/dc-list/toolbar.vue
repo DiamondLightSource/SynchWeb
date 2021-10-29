@@ -93,9 +93,6 @@ export default {
         'statsUrl': function() {
             return '/stats/visit/' + this.visit
         },
-        'relionUrl': function() {
-            return '/em/process/relion/session/' + this.visit
-        },
         'noMoreCollectionsReason': function() {
             if (this.model.get('ARCHIVED') == '1') {
                 return 'This visit is archived'

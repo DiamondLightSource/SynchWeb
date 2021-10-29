@@ -30,54 +30,57 @@ trait Relion
 
         $this->configExitIfNoMicroscopes();
 
+        $proposalCode = $this->arg('prop');
+        $dataCollectionId = $this->arg('id');
+
         $session = $this->sessionFromDataCollection(
-            $this->arg('prop'),
-            $this->arg('id')
+            $proposalCode,
+            $dataCollectionId
         );
 
         // $this->sessionExitIfNotActive($session);
 
         $dataCollection = $this->dataCollectionForProcessing(
-            $this->arg('prop'),
-            $this->arg('id')
+            $proposalCode,
+            $dataCollectionId
         );
 
         if ($dataCollection['runningJobs'] > 0) {
             $message = 'A Relion job is already running on this data collection!';
-            error_log($message);
+            error_log("$message - $proposalCode $dataCollectionId");
             $this->_error($message, 400);
         }
 
-        /*  This comes from BLSession and RelionSchema uses it to
-            pad out the filename for the gain reference file
+        $schema = new RelionSchema();
+        $validator = new SchemaValidator($schema);
+        list($invalid, $postData) = $validator->validateJsonPostData(
+            $this->app->request->getBody()
+        );
+        /*  This comes from BLSession
+            RelionSchema uses it to get the full path of the gain reference file
         */
-        $args['session_path'] = $this->sessionSubstituteValuesInPath(
+        $postData['session_path'] = $this->sessionSubstituteValuesInPath(
             $session,
             $visit_directory
         );
-        /*  This comes from the data collection and Relion will need it
-            to fetch the raw images
+        /*  This comes from the data collection
+                Relion will need it to fetch the raw images
+                Schema also uses it to check the image extension
         */
-        $args['import_images'] = $dataCollection['imageDirectory'] .
+        $postData['import_images'] = $dataCollection['imageDirectory'] .
             $dataCollection['fileTemplate'];
         /*  RelionSchema needs this to validate eer_grouping
         */
         preg_match('/\.([\w]*)$/', $dataCollection['fileTemplate'], $matches);
-        $args['import_image_ext'] = $matches[1];
+        $postData['import_images_ext'] = $matches[1];
 
-        $schema = new RelionSchema();
-        $validator = new SchemaValidator($schema);
-        list($invalid, $args) = $validator->validateJsonPostData(
-            $this->app->request->getBody()
-        );
         if (count($invalid) > 0) {
             $this->_error($invalid, 400);
         }
 
-        $processingJobId = $this->relionAddJob(
-            $dataCollection['dataCollectionId'],
-            $schema->preparePostData($args)
-        );
+        $preparedData = $schema->prepareDataForInsert($postData);
+
+        $processingJobId = $this->relionAddJob($dataCollectionId, $preparedData);
 
         // Send job to processing queue
         $message = array(
@@ -89,28 +92,6 @@ trait Relion
         $output = array(
             'timestamp' => gmdate('c', time()),
             'message' => $message
-        );
-
-        error_log(var_export($output, true));
-        $this->_output($output);
-    }
-
-    public function relionStatus()
-    {
-        // global $visit_directory;
-
-        $this->configExitIfNoMicroscopes();
-        $session = $this->sessionFetch($this->arg('session'));
-
-        // TODO RESTORE FOR PRODUCTION
-        // $this->sessionExitIfNotActive($session);
-
-        $output = array(
-            'timestamp' => gmdate('c', time()),
-            'processingIsActive' => false, // $session['processingIsActive'],
-            'processingTimestamp' => $session['processingTimestamp'] ?
-                gmdate('c', $session['processingTimestamp']) :
-                null
         );
 
         $this->_output($output);
