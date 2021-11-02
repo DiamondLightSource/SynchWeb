@@ -1390,8 +1390,8 @@ class Sample extends Page
         # Update a particular field for a protein
         function _update_protein() {
             if (!$this->has_arg('pid')) $this->_error('No proteinid specified');
-            
-            $prot = $this->db->pq("SELECT pr.proteinid FROM protein pr 
+
+            $prot = $this->db->pq("SELECT pr.proteinid, pr.sequence FROM protein pr
               WHERE pr.proposalid = :1 AND pr.proteinid = :2", array($this->proposalid,$this->arg('pid')));
             
             if (!sizeof($prot)) $this->_error('No such protein');
@@ -1401,6 +1401,11 @@ class Sample extends Page
                     $this->db->pq('UPDATE protein SET '.$f.'=:1 WHERE proteinid=:2', array($this->arg($f), $this->arg('pid')));
                     $this->_output(array($f => $this->arg($f)));
                 }
+            }
+
+            if ($this->has_arg('SEQUENCE') && empty($prot[0]['SEQUENCE'])) {
+                # Only trigger alphafold if the sequence was previously empty
+                $this->_trigger_alphafold($prot[0]["PROTEINID"]);
             }
         }
         
@@ -1663,36 +1668,39 @@ class Sample extends Page
             $pid = $this->db->id();
 
             if ($seq) {
-
-                global
-                $zocalo_server,
-                $zocalo_username,
-                $zocalo_password,
-                $zocalo_mx_reprocess_queue;
-
-                if (isset($zocalo_server) && isset($zocalo_mx_reprocess_queue)) {
-                    // Send job to processing queue
-                    $message = array(
-                        'recipes' => array(
-                            'trigger-alphafold',
-                        ),
-                        'parameters' => array(
-                            'ispyb_protein_id' => $pid,
-                        ),
-                    );
-
-                    try {
-                        $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-                        $queue->send($zocalo_mx_reprocess_queue, $message, true, $this->user->login);
-                    } catch (Exception $e) {
-                        $this->_error($e->getMessage(), 500);
-                    }
-                }
+                $this->_trigger_alphafold($pid);
             }
 
             $this->_output(array('PROTEINID' => $pid));
         }
 
+
+        function _trigger_alphafold($pid) {
+            global
+            $zocalo_server,
+            $zocalo_username,
+            $zocalo_password,
+            $zocalo_mx_reprocess_queue;
+
+            if (isset($zocalo_server) && isset($zocalo_mx_reprocess_queue)) {
+                // Send job to processing queue
+                $message = array(
+                    'recipes' => array(
+                        'trigger-alphafold',
+                    ),
+                    'parameters' => array(
+                        'ispyb_protein_id' => $pid,
+                    ),
+                );
+
+                try {
+                    $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
+                    $queue->send($zocalo_mx_reprocess_queue, $message, true, $this->user->login);
+                } catch (Exception $e) {
+                    $this->_error($e->getMessage(), 500);
+                }
+            }
+        }
 
 
         # TODO: Consolidate this into clas.exp.php
