@@ -131,7 +131,13 @@ class DataCollectionSchema extends Schema
                 'default' => '5760 x 4092',
                 'onSelect' => function ($row) {
                     $isx = $row['imageSizeX'];
+                    if (!$isx) {
+                        $isx = 0;
+                    }
                     $isy = $row['imageSizeY'];
+                    if (!$isy) {
+                        $isy = 0;
+                    }
                     return "$isx x $isy";
                 }
             ),
