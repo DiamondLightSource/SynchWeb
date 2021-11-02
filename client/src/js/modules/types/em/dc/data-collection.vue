@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import EventBus from 'app/components/utils/event-bus.js'
 import FlatButton from 'app/components/flat-button.vue'
 import ParameterListWithSchema from 'modules/types/em/components/parameter-list-with-schema.vue'
@@ -75,6 +76,9 @@ export default {
         }
     },
     'computed': {
+        ...mapGetters({
+            'processingDialogVisible': 'em/processing/dialogVisible',
+        }),
         'beamline': function() {
             return this.dataCollection ? this.dataCollection.beamLineName : ''
         },
@@ -130,8 +134,29 @@ export default {
                 console.log('cleared dataCollection fetch timer', this.timeout)
             }
         },
+        'setTimeout': function() {
+            if (this.dataCollection.archived == '0') {
+                console.log('set timeout for dataCollection reload')
+                this.timeout = setTimeout(
+                    this.fetchDataCollection,
+                    30000
+                )
+            }
+        },
         'fetchDataCollection': function() {
             this.clearTimeout()
+            if (this.processingDialogVisible) {
+                /*  There's nothing to be gained from updating the
+                    dataCollection whilst the processing dialog is visible.
+                    Quite the reverse, updating the data collection can
+                    update the defaults for the processing dialog, which will
+                    overwrite the user's choices and become rather frustrating
+                */
+                console.log('skipping dataCollection update - processing dialog is visible')
+                this.setTimeout()
+                return
+            }
+
             this.$store.commit('loading', true)
             this.$store.dispatch('em/api/fetch', {
                 'url': 'dc/' + this.dataCollectionId,
@@ -139,13 +164,8 @@ export default {
             }).then(
                 (response) => {
                     this.dataCollection = response
-                    if (this.dataCollection.archived == '0') {
-                        this.timeout = setTimeout(
-                            this.fetchDataCollection,
-                            30000
-                        )
-                    }
                     this.fetchProcessingJobs()
+                    this.setTimeout()
                 }
             ).finally(() => {
                 this.$store.commit('loading', false)

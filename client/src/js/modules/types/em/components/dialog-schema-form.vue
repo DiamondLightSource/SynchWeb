@@ -150,7 +150,7 @@ export default {
                     )
                 )
             });
-            console.log(this.title + 'fields set to defaults', this.formFields)
+            console.log(this.title, 'set to defaults', this.formFields)
         },
         'postIt': function() {
             this.errorMessages = {}
