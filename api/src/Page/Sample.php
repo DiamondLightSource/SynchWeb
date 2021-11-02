@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
+use SynchWeb\Queue;
 
 class Sample extends Page
 {
@@ -1658,9 +1659,37 @@ class Sample extends Page
             $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density,externalid,safetylevel)
               VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9,UNHEX(:10),:11) RETURNING proteinid INTO :id',
               array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density, $externalid, $safetyLevel));
-            
+
             $pid = $this->db->id();
-            
+
+            if ($seq) {
+
+                global
+                $zocalo_server,
+                $zocalo_username,
+                $zocalo_password,
+                $zocalo_mx_reprocess_queue;
+
+                if (isset($zocalo_server) && isset($zocalo_mx_reprocess_queue)) {
+                    // Send job to processing queue
+                    $message = array(
+                        'recipes' => array(
+                            'trigger-alphafold',
+                        ),
+                        'parameters' => array(
+                            'ispyb_protein_id' => $pid,
+                        ),
+                    );
+
+                    try {
+                        $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
+                        $queue->send($zocalo_mx_reprocess_queue, $message, true, $this->user->login);
+                    } catch (Exception $e) {
+                        $this->_error($e->getMessage(), 500);
+                    }
+                }
+            }
+
             $this->_output(array('PROTEINID' => $pid));
         }
 
