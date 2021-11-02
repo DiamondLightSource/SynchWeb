@@ -1,8 +1,8 @@
 <template>
   <section>
     <job-header
-      :processing-job-id="processingJobId"
-      :auto-proc-program-id="processingJob.autoProcProgramId"
+      :processing-job-id="processingJob.processingJobId"
+      :auto-proc-program-id="autoProcProgramId"
       :start-time="processingJob.processingStartTime"
       :end-time="processingJob.processingEndTime"
       :status="processingJob.processingStatusDescription"
@@ -122,6 +122,10 @@ export default {
             return this.collectionActive && isRunning ?
                 this.processingJob.fetchTime : ''
         },
+        'autoProcProgramId': function() {
+            return this.processingJob.autoProcProgramId ?
+                this.processingJob.autoProcProgramId : ''
+        },
         'mcCount': function() {
             return this.processingJob.mcCount < this.processingJob.movieCount ?
                 this.processingJob.mcCount : this.processingJob.movieCount
@@ -133,9 +137,6 @@ export default {
         'pickCount': function() {
             return this.processingJob.pickCount < this.processingJob.movieCount ?
                 this.processingJob.pickCount : this.processingJob.movieCount
-        },
-        'processingJobId': function() {
-            return parseInt(this.processingJob.processingJobId, 10)
         },
     },
     'watch': {
@@ -154,7 +155,7 @@ export default {
             if (Object.keys(this.parameters).length == 0) {
                 this.$store.dispatch('em/api/fetch', {
                     'url': 'relion/parameters?processingJobId=' +
-                        this.processingJobId,
+                        this.processingJob.processingJobId,
                     'humanName': 'Processing Job Parameters',
                 }).then(
                     (response) => { this.parameters = response }

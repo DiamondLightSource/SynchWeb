@@ -63,7 +63,7 @@ export default {
     },
     'props': {
         'processingJobId': {
-            'type': Number,
+            'type': String,
             'required': true,
         },
         'autoProcProgramId': {

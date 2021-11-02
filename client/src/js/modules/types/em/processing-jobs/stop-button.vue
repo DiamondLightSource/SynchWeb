@@ -41,7 +41,7 @@ export default {
             'required': true,
         },
         'processingJobId': {
-            'type': Number,
+            'type': String,
             'required': true,
         },
     },
