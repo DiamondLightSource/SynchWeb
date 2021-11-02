@@ -1405,10 +1405,10 @@ class Sample extends Page
 
             if ($this->has_arg('SEQUENCE') && empty($prot[0]['SEQUENCE'])) {
                 # Only trigger alphafold if the sequence was previously empty
-                $this->_trigger_alphafold($prot[0]["PROTEINID"]);
+                $this->_on_add_protein_sequence($prot[0]["PROTEINID"]);
             }
         }
-        
+
 
         # ------------------------------------------------------------------------
         # Update a particular field for a sample
@@ -1668,36 +1668,19 @@ class Sample extends Page
             $pid = $this->db->id();
 
             if ($seq) {
-                $this->_trigger_alphafold($pid);
+                $this->_on_add_protein_sequence($pid);
             }
 
             $this->_output(array('PROTEINID' => $pid));
         }
 
 
-        function _trigger_alphafold($pid) {
-            global
-            $zocalo_server,
-            $zocalo_username,
-            $zocalo_password,
-            $zocalo_mx_reprocess_queue;
-
-            if (isset($zocalo_server) && isset($zocalo_mx_reprocess_queue)) {
-                // Send job to processing queue
-                $message = array(
-                    'recipes' => array(
-                        'trigger-alphafold',
-                    ),
-                    'parameters' => array(
-                        'ispyb_protein_id' => $pid,
-                    ),
-                );
-
-                try {
-                    $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-                    $queue->send($zocalo_mx_reprocess_queue, $message, true, $this->user->login);
-                } catch (Exception $e) {
-                    $this->_error($e->getMessage(), 500);
+        function _on_add_protein_sequence($pid) {
+            global $on_add_protein_sequence_recipes;
+            if (!empty($on_add_protein_sequence_recipes)) {
+                $parameters = array('ispyb_protein_id' => $pid);
+                foreach($on_add_protein_sequence_recipes as $recipe){
+                    $this->_execute_recipe($recipe, $parameters);
                 }
             }
         }
