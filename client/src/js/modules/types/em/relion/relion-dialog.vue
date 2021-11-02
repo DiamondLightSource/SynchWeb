@@ -141,7 +141,7 @@ export default {
                 ),
                 'import_images_ext': this.dataCollection.imageSuffix,
                 'voltage': this.dataCollection.voltage,
-                'ctffind_do_phaseshift': this.dataCollection.phasePlate == '1',
+                'ctffind_do_phaseshift': this.dataCollection.phasePlate > 0,
                 'angpix': this.dataCollection.pixelSizeOnImage,
                 'motioncor_doseperframe': this.dataCollection.frameDose,
                 'wantCalculate': true,

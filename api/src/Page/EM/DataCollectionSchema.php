@@ -188,6 +188,9 @@ class DataCollectionSchema extends Schema
                     'Ph P6',
                 ),
                 'required' => true,
+                'onSelect' => function ($row) {
+                    return $row['phasePlate'] ? $row['phasePlate'] : '0';
+                },
             ),
             'c2lens' => array(
                 'label' => 'C2 Lens',
