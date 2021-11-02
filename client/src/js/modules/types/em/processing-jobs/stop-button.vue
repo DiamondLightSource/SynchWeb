@@ -11,8 +11,10 @@
       @confirm="confirmed"
       @cancel="showConfirmation = false"
     >
-      Are you sure you want to stop processing job
-      {{ processingJobId }}?
+      <div class="message">
+        Are you sure you want to stop processing job
+        {{ processingJobId }}?
+      </div>
     </dialog-modal>
 
     <flat-button
@@ -103,8 +105,14 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .stop-button {
+    margin-right: 5px;
+}
+.message {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: 10px;
     margin-right: 5px;
 }
 </style>
