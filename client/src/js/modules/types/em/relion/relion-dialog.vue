@@ -11,17 +11,6 @@
     @cancel="$store.commit('em/processing/cancelDialog')"
   >
     <template #default="form">
-      <!--
-      <dialog-schema-form-section heading="Project">
-        <schema-input
-          v-for="name in inputs.project"
-          :key="name"
-          :name="name"
-          :form="form"
-        />
-      </dialog-schema-form-section>
-      -->
-
       <dialog-schema-form-section heading="Experiment">
         <schema-input
           v-for="name in inputs.experiment"
@@ -97,15 +86,6 @@ export default {
     'data': function () {
         return {
             'inputs': {
-                /*
-                'project': [
-                    'acquisition_software',
-                    'import_images_dir',
-                    'import_images_ext',
-                    'wantGainReferenceFile',
-                    'motioncor_gainreference',
-                ],
-                */
                 'experiment': [
                     'wantGainReferenceFile',
                     'motioncor_gainreference',
