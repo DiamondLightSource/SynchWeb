@@ -26,7 +26,7 @@ trait Relion
      */
     public function relionStart()
     {
-        global $visit_directory, $zocalo_mx_reprocess_queue;
+        global $zocalo_mx_reprocess_queue;
 
         $this->configExitIfNoMicroscopes();
 
@@ -51,34 +51,7 @@ trait Relion
             $this->_error($message, 400);
         }
 
-        $schema = new RelionSchema();
-        $validator = new SchemaValidator($schema);
-        list($invalid, $postData) = $validator->validateJsonPostData(
-            $this->app->request->getBody()
-        );
-        /*  This comes from BLSession
-            RelionSchema uses it to get the full path of the gain reference file
-        */
-        $postData['session_path'] = $this->sessionSubstituteValuesInPath(
-            $session,
-            $visit_directory
-        );
-        /*  This comes from the data collection
-                Relion will need it to fetch the raw images
-                Schema also uses it to check the image extension
-        */
-        $postData['import_images'] = $dataCollection['imageDirectory'] .
-            $dataCollection['fileTemplate'];
-        /*  RelionSchema needs this to validate eer_grouping
-        */
-        preg_match('/\.([\w]*)$/', $dataCollection['fileTemplate'], $matches);
-        $postData['import_images_ext'] = $matches[1];
-
-        if (count($invalid) > 0) {
-            $this->_error($invalid, 400);
-        }
-
-        $preparedData = $schema->prepareDataForInsert($postData);
+        $preparedData = $this->relionPreparePostData($dataCollection, $session);
 
         $processingJobId = $this->relionAddJob($dataCollectionId, $preparedData);
 
@@ -172,6 +145,43 @@ trait Relion
     }
 
     ////////////////////////////////////////////////////////////////////////////
+
+    private function relionPreparePostData($dataCollection, $session)
+    {
+        global $visit_directory;
+
+        $schema = new RelionSchema();
+        $validator = new SchemaValidator($schema);
+        list($invalid, $postData) = $validator->validateJsonPostData(
+            $this->app->request->getBody()
+        );
+        /*  This comes from BLSession
+            RelionSchema uses it to get the full path of the gain reference file
+        */
+        $postData['session_path'] = $this->sessionSubstituteValuesInPath(
+            $session,
+            $visit_directory
+        );
+        /*  This comes from the data collection
+                Relion will need it to fetch the raw images
+                Schema also uses it to check the image extension
+        */
+        $postData['import_images'] = $dataCollection['imageDirectory'] .
+            $dataCollection['fileTemplate'];
+        /*  TODO: This is a terrible bodge up
+            But the validator can't see schema generated values
+        */
+        /*  RelionSchema needs this to validate eer_grouping
+        */
+        preg_match('/\.([\w]*)$/', $dataCollection['fileTemplate'], $matches);
+        $postData['import_images_ext'] = $matches[1];
+
+        if (count($invalid) > 0) {
+            $this->_error($invalid, 400);
+        }
+
+        return $schema->prepareDataForInsert($postData);
+    }
 
     private function relionAddJob($dataCollectionId, $workflowParameters)
     {
