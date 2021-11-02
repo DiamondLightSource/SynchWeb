@@ -72,13 +72,18 @@ export default {
                 const rules = this.schema[name]
                 const display = typeof rules.display == 'undefined' ?
                     true : rules.display
-                if (!display) {
+                if ((!display) || (display == 'notBlank' && !value)) {
                     continue;
                 }
-                if (this.schema[name].type == 'boolean') {
+                if (rules.type == 'boolean') {
                     value = ['1', 'true'].includes(
                         value.toString().toLowerCase()
                     ) ? 'yes' : 'no'
+                }
+                if (typeof rules.displayOptions != 'undefined') {
+                    value = rules.displayOptions[
+                        rules.options.indexOf(value)
+                    ];
                 }
                 const section = name == 'comments' || value.length >= 20 ?
                     'long' : 'short'

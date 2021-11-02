@@ -93,6 +93,7 @@ export default {
                     'exposureTime',
                 ],
                 'optics': [
+                    'phasePlate',
                     'c2lens',
                     'c2aperture',
                     'objAperture',
@@ -104,7 +105,6 @@ export default {
                     'beamSizeAtSampleY',
                     'slitGapHorizontal',
                     'totalExposedDose',
-                    'phasePlate',
                     //'detectorManufacturer',
                     //'detectorModel',
                     'detectorMode',

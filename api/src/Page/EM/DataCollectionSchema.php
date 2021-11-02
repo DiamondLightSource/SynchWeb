@@ -174,6 +174,21 @@ class DataCollectionSchema extends Schema
                 }
             ),
             // Optics
+            'phasePlate' => array(
+                'label' => 'Phase Plate Used',
+                'default' => 0,
+                'options' => array('0', '1', '2', '3', '4', '5', '6'),
+                'displayOptions' => array(
+                    'None',
+                    'Ph P1',
+                    'Ph P2',
+                    'Ph P3',
+                    'Ph P4',
+                    'Ph P5',
+                    'Ph P6',
+                ),
+                'required' => true,
+            ),
             'c2lens' => array(
                 'label' => 'C2 Lens',
                 'unit' => '%',
@@ -193,8 +208,11 @@ class DataCollectionSchema extends Schema
             'objAperture' => array(
                 'label' => 'Objective Aperture',
                 'unit' => 'μm',
-                'required' => true,
+                'required' => array(
+                    'phasePlate' => '0',
+                ),
                 'options' => array('100', '70'),
+                'display' => 'notBlank',
                 'default' => '100',
                 'type' => 'integer',
             ),
@@ -290,12 +308,6 @@ class DataCollectionSchema extends Schema
                  'minValue' => 5,
                  'maxValue' => 20,
                  'type' => 'real',
-            ),
-            'phasePlate' => array(
-                'label' => 'Phase Plate Used',
-                'default' => false,
-                'required' => true,
-                'type' => 'boolean'
             ),
             'detectorManufacturer' => array(
                 'label' => 'Detector Manufacturer',

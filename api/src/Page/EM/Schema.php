@@ -23,6 +23,8 @@ abstract class Schema
      * 'extraDescription' => Extra human readable description
      *
      * validation options
+     * 'display'          => true, false or 'notBlank'
+     *                       indicate if the value should be displayed in the UI
      * 'required'         => a boolean field or a string with the value
      *                       "optional" - the field can be blank but it will
      *                       still be used
@@ -127,10 +129,7 @@ abstract class Schema
         if (array_key_exists('select', $rules)) {
             return $rules['select'] . ' AS ' . $fieldName;
         }
-        /**
-         * TODO: stored isn't just a boolean any more!!
-         */
-        if (array_key_exists('stored', $rules) && !$rules['stored']) {
+        if (array_key_exists('stored', $rules) && $rules['stored'] === false) {
             return false;
         }
         return $this->defaultTable() . '.' . $fieldName;
