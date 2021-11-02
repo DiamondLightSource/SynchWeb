@@ -60,7 +60,7 @@ trait Relion
             'parameters' => array('ispyb_process' => $processingJobId)
         );
 
-        // $this->enqueue($zocalo_mx_reprocess_queue, $message);
+        // $this->zocaloEnqueue($zocalo_mx_reprocess_queue, $message);
 
         $output = array(
             'timestamp' => gmdate('c', time()),
@@ -95,7 +95,7 @@ trait Relion
                     ),
                     'recipes' => ['relion-stop']
                 );
-                // $this->enqueue($zocalo_mx_reprocess_queue, $message);
+                // $this->zocaloEnqueue($zocalo_mx_reprocess_queue, $message);
                 return;
             }
 

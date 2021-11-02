@@ -29,6 +29,7 @@ class EM extends Page
     use \SynchWeb\Page\EM\Scipion;
     use \SynchWeb\Page\EM\Session;
     use \SynchWeb\Page\EM\Stats;
+    use \SynchWeb\Page\EM\Zocalo;
 
     public static $arg_list = array(
         'id' => '\d+',
@@ -101,24 +102,6 @@ class EM extends Page
         // See Synchweb\Page\EM\Scipion
         array('/process/scipion/session/:session', 'post', 'scipionStart')
     );
-
-    private function enqueue($zocalo_queue, $zocalo_message)
-    {
-        global $zocalo_server, $zocalo_username, $zocalo_password;
-
-        if (empty($zocalo_server) || empty($zocalo_queue)) {
-            $message = 'Zocalo server not specified.';
-            error_log($message);
-            $this->_error($message, 500);
-        }
-
-        try {
-            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_queue, $zocalo_message, true, $this->user->login);
-        } catch (Exception $e) {
-            $this->_error($e->getMessage(), 500);
-        }
-    }
 
     private function paginationArguments($args)
     {
