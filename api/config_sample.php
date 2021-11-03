@@ -105,9 +105,9 @@
 
     # This is used to trigger Zocalo recipes on adding new Protein sequences
     # Set to empty string to disable
-    $on_add_protein_sequence_recipes = array(
+    $zocalo_recipes_on_add_protein_sequence = array(
         'trigger-alphafold',
-    )
+    );
 
     # Paths
     # - These map files to physical locations on disk

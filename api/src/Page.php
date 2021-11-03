@@ -896,7 +896,7 @@ class Page
             return $root;
         }
 
-        function _execute_recipe($recipe, $parameters) {
+        function _submit_zocalo_recipe($recipe, $parameters) {
             global
             $zocalo_server,
             $zocalo_username,
