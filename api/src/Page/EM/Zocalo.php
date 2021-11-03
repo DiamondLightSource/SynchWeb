@@ -2,6 +2,8 @@
 
 namespace SynchWeb\Page\EM;
 
+use SynchWeb\Queue;
+
 trait Zocalo
 {
     private function zocaloEnqueue($zocalo_queue, $zocalo_message)

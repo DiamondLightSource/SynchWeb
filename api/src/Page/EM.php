@@ -3,7 +3,6 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
-use SynchWeb\Queue;
 
 /**
  * The "controller" for all EM specific endpoints
