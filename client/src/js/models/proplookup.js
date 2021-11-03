@@ -16,7 +16,7 @@ define(['backbone'], function(Backbone) {
             var self = this
             this.fetch({
                 data: data,
-                type: 'GET',
+                type: 'POST',
 
                 success: function() {
                     app.cookie(self.get('PROP'), function() {

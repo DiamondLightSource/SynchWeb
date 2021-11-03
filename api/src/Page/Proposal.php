@@ -84,7 +84,7 @@ class Proposal extends Page
 
                                         array('/bls/:ty', 'get', '_get_beamlines'),
                                         array('/type', 'get', '_get_types'),
-                                        array('/lookup', 'get', '_lookup'),
+                                        array('/lookup', 'post', '_lookup'),
 
                                         array('/auto', 'get', '_auto_visit'),
                                         array('/auto', 'delete', '_close_auto_visit'),
