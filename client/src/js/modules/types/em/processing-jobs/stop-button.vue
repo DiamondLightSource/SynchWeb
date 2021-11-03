@@ -69,12 +69,6 @@ export default {
         'confirmed': function() {
             const vm = this
             vm.showConfirmation = false
-            vm.$store.commit('notifications/addNotification', {
-                'title': 'INFO',
-                'message': 'Requesting stop processing job ' + this.jobId +
-                    ' - processing jobs will refresh in 5 seconds ',
-                'level': 'info'
-            })
             vm.$store.commit('loading', true)
             Backbone.ajax({
                 'type': 'PATCH',
@@ -85,6 +79,12 @@ export default {
                     xhr // eslint-disable-line no-unused-vars
                 ) {
                     vm.$store.commit('loading', false)
+                    vm.$store.commit('notifications/addNotification', {
+                        'title': 'INFO',
+                        'message': 'Requested stop processing job ' +
+                            vm.processingJobId,
+                        'level': 'info'
+                    })
                 },
                 'error': function (
                     model,
