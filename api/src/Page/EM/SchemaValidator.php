@@ -15,9 +15,9 @@ class SchemaValidator
         $this->schema = $schema;
     }
 
-    public function validateJsonPostData($json)
+    public function validatePostData($postData)
     {
-        $this->postData = $this->decodeJson($json);
+        $this->postData = $postData;
         $invalid = array();
         $valid = array();
 
@@ -38,12 +38,6 @@ class SchemaValidator
         }
 
         return array($invalid, $valid);
-    }
-
-    private function decodeJson($json)
-    {
-        $data = json_decode($json, true);
-        return gettype($data) == 'array' ? $data : array();
     }
 
     protected function validateArgument($fieldName, $value, $rules)

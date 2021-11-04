@@ -24,8 +24,8 @@ trait DataCollection
         $schema = new DataCollectionSchema();
         $validator = new SchemaValidator($schema);
 
-        list($invalid, $postData) = $validator->validateJsonPostData(
-            $this->app->request->getBody()
+        list($invalid, $postData) = $validator->validatePostData(
+            json_decode($this->app->request->getBody(), true)
         );
         if (count($invalid) > 0) {
             $this->_error($invalid, 400);
