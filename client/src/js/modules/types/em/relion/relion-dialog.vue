@@ -134,12 +134,6 @@ export default {
                 })
             }
             return {
-                'acquisition_software': this.dataCollection.acquisitionSoftware,
-                'import_images_dir': this.dataCollection.shortImageDirectory.replace(
-                    /[^\w\d_-]/,
-                    ''
-                ),
-                'import_images_ext': this.dataCollection.imageSuffix,
                 'voltage': this.dataCollection.voltage,
                 'ctffind_do_phaseshift': this.dataCollection.phasePlate > 0,
                 'angpix': this.dataCollection.pixelSizeOnImage,
