@@ -135,6 +135,7 @@ export default {
             }
             return {
                 'voltage': this.dataCollection.voltage,
+                // 'Cs' is only a single value at this point in time,
                 'ctffind_do_phaseshift': this.dataCollection.phasePlate > 0,
                 'angpix': this.dataCollection.pixelSizeOnImage,
                 'motioncor_doseperframe': this.dataCollection.frameDose,
