@@ -79,31 +79,36 @@ trait Relion
     {
         global $zocalo_mx_reprocess_queue;
 
-        if ($this->arg('processingJobId')) {
-            $result = $this->db->pq(
-                "SELECT processingJobId, dataCollectionId
-                FROM ProcessingJob
-                WHERE processingJobId = :1",
-                array($this->arg('processingJobId')),
-                false
-            );
+        $result = $this->db->pq(
+            "SELECT ProcessingJob.processingJobId
+            FROM ProcessingJob
+            INNER JOIN DataCollection
+                ON DataCollection.dataCollectionId = ProcessingJob.dataCollectionId
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND processingJobId = :2",
+            array($this->arg('prop'), $this->arg('id')),
+            false
+        );
 
-            if (count($result)) {
-                $message = array(
-                    'parameters' => array(
-                        'ispyb_process' => $result[0]['processingJobId']
-                    ),
-                    'recipes' => ['relion-stop']
-                );
-                $this->zocaloEnqueue($zocalo_mx_reprocess_queue, $message);
-                return;
-            }
-
+        if (count($result) == 0) {
             $message = 'Processing job not found!';
             error_log($message);
             $this->_error($message, 400);
         }
 
+        $message = array(
+            'parameters' => array(
+                'ispyb_process' => $result[0]['processingJobId']
+            ),
+            'recipes' => ['relion-stop']
+        );
+        $this->zocaloEnqueue($zocalo_mx_reprocess_queue, $message);
         $this->_output(array(
             'timestamp' => gmdate('c', time()),
             'message' => $message

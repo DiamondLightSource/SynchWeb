@@ -27,7 +27,6 @@
 </template>
 
 <script>
-import Backbone from 'backbone'
 import FlatButton from 'app/components/flat-button.vue'
 import DialogModal from 'app/components/dialog-modal.vue'
 
@@ -54,52 +53,27 @@ export default {
     },
     'computed': {
         'showButton': function() {
-            return [
-                'submitted',
-                'queued',
-                'running',
-            ].indexOf(this.status) != -1
-        },
-        'stopUrl': function () {
-            return this.$store.state.apiUrl +
-                '/em/process/relion/job/' + this.processingJobId
+            return ['submitted', 'queued', 'running'].includes(this.status)
         },
     },
     'methods': {
         'confirmed': function() {
             const vm = this
+            const humanName = 'Stop Processing Job ' + vm.processingJobId
             vm.showConfirmation = false
-            vm.$store.commit('loading', true)
-            Backbone.ajax({
-                'type': 'PATCH',
-                'url': vm.stopUrl,
-                'success': function (
-                    response, // eslint-disable-line no-unused-vars
-                    status, // eslint-disable-line no-unused-vars
-                    xhr // eslint-disable-line no-unused-vars
-                ) {
-                    vm.$store.commit('loading', false)
+            vm.$store.dispatch('em/api/fetch', {
+                'url': '/relion/stop/' + this.processingJobId,
+                'humanName': humanName
+            }).then(
+                (response) => {
                     vm.$store.commit('notifications/addNotification', {
                         'title': 'INFO',
-                        'message': 'Requested stop processing job ' +
-                            vm.processingJobId,
+                        'message': humanName,
                         'level': 'info'
                     })
-                },
-                'error': function (
-                    model,
-                    response, // eslint-disable-line no-unused-vars
-                    options // eslint-disable-line no-unused-vars
-                ) {
-                    vm.$store.commit('loading', false)
-                    vm.$store.commit('notifications/addNotification', {
-                        'title': 'Error',
-                        'message': 'Failed to stop job: ' +
-                            JSON.parse(model.responseText).message,
-                        'level': 'error'
-                    })
+                    console.log(humanName, response)
                 }
-            })
+            )
         },
     },
 }
