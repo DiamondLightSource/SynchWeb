@@ -86,11 +86,6 @@ class RelionSchema extends Schema
                 'default' => '300',
                 'required' => true,
                 'options' => array('200', '300'),
-                /*
-                'minValue' => 100,
-                'maxValue' => 300,
-                'type' => 'integer'
-                */
             ),
             'Cs' => array(
                 'label' => 'Spherical Aberration',
