@@ -179,7 +179,7 @@ trait Relion
                 Schema also uses it to check the image extension
         */
         $postData['import_images'] = $dataCollection['imageDirectory'] .
-            $dataCollection['fileTemplate'];
+            '/' .  $dataCollection['fileTemplate'];
         /*  TODO: This is a terrible bodge up
             But the validator can't see schema generated values
         */
