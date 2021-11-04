@@ -6,6 +6,9 @@ trait MotionCorrection
 {
     public function motionCorrectionResult()
     {
+        $movie = $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1;
+        $programId = $this->arg('id');
+
         $rows = $this->db->pq(
             "SELECT
                 mc.motionCorrectionId,
@@ -34,17 +37,12 @@ trait MotionCorrection
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND mc.autoProcProgramId = :2
             AND m.movieNumber = :3",
-            array(
-                $this->arg('prop'),
-                $this->arg('id'),
-                $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
-            ),
+            array($this->arg('prop'), $programId, $movie),
             false
         );
 
-        if (!sizeof($rows)) {
-            $this->_error('No such motion correction');
-        }
+        $this->motionControlErrorCheck(sizeof($rows), $movie, $programId);
+
         $row = $rows[0];
 
         $row['fftFullPath'] = file_exists($row['fftFullPath']) ? 1 : 0;
@@ -94,6 +92,9 @@ trait MotionCorrection
 
     private function motionCorrectionImage($imageName)
     {
+        $movie = $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1;
+        $programId = $this->arg('id');
+
         $rows = $this->db->pq(
             "SELECT mc.{$imageName}
             FROM MotionCorrection mc
@@ -106,17 +107,11 @@ trait MotionCorrection
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND mc.autoProcProgramId = :2
             AND m.movieNumber = :3",
-            array(
-                $this->arg('prop'),
-                $this->arg('id'),
-                $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
-            ),
+            array($this->arg('prop'), $programId, $movie),
             false
         );
 
-        if (!sizeof($rows)) {
-            $this->_error('No such micrograph');
-        }
+        $this->motionControlErrorCheck(sizeof($rows), $movie, $programId);
 
         $this->sendImage($rows[0][$imageName]);
     }
@@ -124,5 +119,17 @@ trait MotionCorrection
     public function motionCorrectionSnapshot()
     {
         $this->motionCorrectionImage('micrographSnapshotFullPath');
+    }
+
+    private function motionControlErrorCheck($size, $movie, $programId)
+    {
+        if ($size == 0) {
+            $this->_error('No such micrograph');
+        }
+        if ($size > 1) {
+            error_log(
+                "$size motion correction entries for movie: $movie autoProcProgramId: $programId"
+            );
+        }
     }
 }
