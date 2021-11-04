@@ -19,38 +19,9 @@ class RelionSchema extends Schema
     public function schema()
     {
         return array(
-            /*
-            'acquisition_software' => array(
-                'label' => 'Acquisition Software',
-                'required' => true,
-                'default' => 'EPU',
-                'options' => array('EPU', 'SerialEM'),
-            ),
-            'import_images_dir' => array(
-                'label' => 'Raw Folder',
-                'required' => true,
-                'default' => 'raw',
-                'pattern' => 'directory',
-                'stored' => false,
-                'onSelect' => function ($row) {
-                    preg_match(
-                        $row['acquisition_software'] == 'EPU' ?
-                            '/\/([\w_-]*)\/GridSquare_\*\/Data\//' :
-                            '/\/([\w_-]*)\/Frames\/\*\./',
-                        $row['import_images'],
-                        $matches
-                    );
-                    return $matches[1];
-                },
-            ),
-            */
             'import_images_ext' => array(
-                //'label' => 'Movie File Name Extension',
                 'required' => false, // this is true if it's an on-screen field
                 'display' => false, // this shouldn't be here for an on-screen field
-                //'default' => 'tiff',
-                //'options' => array('tif', 'tiff', 'mrc', 'eer'),
-                //'displayOptions' => array('.tif', '.tiff', '.mrc', '.eer'),
                 'stored' => false,
                 'onSelect' => function ($row) {
                     preg_match('/\.([\w]*)$/', $row['import_images'], $matches);
@@ -60,15 +31,6 @@ class RelionSchema extends Schema
             'import_images' => array(
                 'label' => 'Import Images',
                 'required' => false,
-                // 'onUpdate' => function ($postData) {
-                //     // needs BLSession to build it
-                //     $fileTemplate = $postData['acquisition_software'] == 'EPU' ?
-                //         'GridSquare_*/Data/*.' : 'Frames/*.';
-                //     return $postData['session_path'] .
-                //         '/' . $postData['import_images_dir'] . '/' .
-                //         $fileTemplate .
-                //         $postData['import_images_ext'];
-                // }
             ),
             'wantGainReferenceFile' => array(
                 'label' => 'Gain Reference File',
@@ -127,10 +89,7 @@ class RelionSchema extends Schema
                 'required' => true,
                 'options' => array('2.7'),
                 'displayOptions' => array('2.7 (Talos/Krios)'),
-                /*
-                'options' => array(1.4, 2.0, 2.7),
                 'type' => 'real'
-                */
             ),
             'ctffind_do_phaseshift' => array(
                 'label' => 'Phase Plate Used',
