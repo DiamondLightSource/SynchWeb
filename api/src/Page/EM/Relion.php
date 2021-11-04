@@ -117,17 +117,24 @@ trait Relion
      */
     public function relionParameters()
     {
-        if (!$this->has_arg('processingJobId')) {
-            $this->_error('Processing Job ID not provided');
-        }
-
         $rows = $this->db->pq(
             "SELECT
                 ProcessingJobParameter.parameterKey,
                 ProcessingJobParameter.parameterValue
             FROM ProcessingJobParameter
-            WHERE ProcessingJobParameter.processingJobId = :1",
-            array($this->arg('processingJobId')),
+            INNER JOIN ProcessingJob
+                ON ProcessingJob.processingJobId = ProcessingJobParameter.processingJobId
+            INNER JOIN DataCollection
+                ON DataCollection.dataCollectionId = ProcessingJob.dataCollectionId
+            INNER JOIN DataCollectionGroup
+                ON DataCollectionGroup.dataCollectionGroupId = DataCollection.dataCollectionGroupId
+            INNER JOIN BLSession
+                ON BLSession.sessionId = DataCollectionGroup.sessionId
+            INNER JOIN Proposal
+                ON Proposal.proposalId = BLSession.proposalId
+            WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
+            AND ProcessingJobParameter.processingJobId = :2",
+            array($this->arg('prop'), $this->arg('id')),
             false
         );
 

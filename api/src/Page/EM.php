@@ -39,7 +39,6 @@ class EM extends Page
         't' => '\d+',
         'IMAGENUMBER' => '\d+',
         'movieNumber' => '\d+',
-        'processingJobId' => '\d+',
 
         // SCIPION
         'numberOfIndividualFrames' => '\d+', // Integer
@@ -95,8 +94,8 @@ class EM extends Page
         // See Synchweb\Page\EM\Relion
         array('/relion/schema/', 'get', 'relionSchema'),
         array('/relion/start/:id', 'post', 'relionStart'),
-        array('/process/relion/job/:processingJobId', 'patch', 'relionStop'),
-        array('/relion/parameters', 'get', 'relionParameters'),
+        array('/relion/stop/:id', 'get', 'relionStop'),
+        array('/relion/parameters/:id', 'get', 'relionParameters'),
 
         // See Synchweb\Page\EM\Scipion
         array('/process/scipion/session/:session', 'post', 'scipionStart')

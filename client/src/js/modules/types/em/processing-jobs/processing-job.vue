@@ -154,7 +154,7 @@ export default {
         'fetchParameters': function() {
             if (Object.keys(this.parameters).length == 0) {
                 this.$store.dispatch('em/api/fetch', {
-                    'url': 'relion/parameters?processingJobId=' +
+                    'url': 'relion/parameters/' +
                         this.processingJob.processingJobId,
                     'humanName': 'Processing Job Parameters',
                 }).then(
