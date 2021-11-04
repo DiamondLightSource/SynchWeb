@@ -37,9 +37,7 @@ trait Classification
         );
 
         $this->sendImage(
-            sizeof($images) == 1 ?
-                $images[0]['classImageFullPath'] :
-                'assets/images/no_image.png'
+            sizeof($images) > 0 ? $images[0]['classImageFullPath'] : null
         );
     }
 

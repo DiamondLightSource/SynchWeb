@@ -6,7 +6,7 @@ trait Downloads
 {
     private function sendImage($file)
     {
-        if (!file_exists($file)) {
+        if (!$file || !file_exists($file)) {
             error_log("File: $file not found");
             $this->app->contentType('image/png');
             readfile('assets/images/no_image.png');
