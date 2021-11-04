@@ -79,7 +79,7 @@ trait Relion
     {
         global $zocalo_mx_reprocess_queue;
 
-        $result = $this->db->pq(
+        $rows = $this->db->pq(
             "SELECT ProcessingJob.processingJobId
             FROM ProcessingJob
             INNER JOIN DataCollection
@@ -96,15 +96,17 @@ trait Relion
             false
         );
 
-        if (count($result) == 0) {
+        if (count($rows) == 0) {
             $message = 'Processing job not found!';
             error_log($message);
             $this->_error($message, 400);
         }
 
+        $result = $rows[0];
+
         $message = array(
             'parameters' => array(
-                'ispyb_process' => $result[0]['processingJobId']
+                'ispyb_process' => $result['processingJobId']
             ),
             'recipes' => ['relion-stop']
         );
