@@ -157,7 +157,6 @@ export default {
                 return
             }
 
-            this.$store.commit('loading', true)
             this.$store.dispatch('em/api/fetch', {
                 'url': 'dc/' + this.dataCollectionId,
                 'humanName': 'Data Collection',
@@ -167,9 +166,7 @@ export default {
                     this.fetchProcessingJobs()
                     this.setTimeout()
                 }
-            ).finally(() => {
-                this.$store.commit('loading', false)
-            })
+            )
         },
         'fetchProcessingJobs': function() {
             this.$store.dispatch('em/api/fetch', {
