@@ -62,7 +62,7 @@ export default {
             const humanName = 'Stop Processing Job ' + vm.processingJobId
             vm.showConfirmation = false
             vm.$store.dispatch('em/api/fetch', {
-                'url': '/relion/stop/' + this.processingJobId,
+                'url': 'relion/stop/' + this.processingJobId,
                 'humanName': humanName
             }).then(
                 (response) => {
