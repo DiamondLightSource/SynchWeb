@@ -78,7 +78,7 @@ export default {
         },
         'fetch': function(context, {url, humanName}) {
             const fullUrl = context.getters.apiUrl + url
-            context.commit('loading', true, {'root': true })
+            context.commit('loading', true, { 'root': true })
             return new Promise((resolve, reject) => {
                 // Backbone.ajax is overridden in src/js/app/marionette-application.js
                 // to provide additional SynchWeb specific functionality
@@ -96,14 +96,14 @@ export default {
                     },
                     'error': function(jqXHR, textStatus, errorThrown) {
                         console.log(
-                            'Error fetching ', humanName, fullUrl,
+                            'Error on GET ', humanName, fullUrl,
                             'textStatus: ', textStatus,
                             'errorThrown: ', errorThrown,
                             'jqXHR: ', jqXHR
                         )
                         context.commit('notifications/addNotification', {
                             'title': 'Error',
-                            'message': 'Could not retrieve ' + humanName,
+                            'message': 'Failed to request ' + humanName,
                             'level': 'error'
                         }, {'root': true })
                         context.commit('loading', false, {'root': true })
