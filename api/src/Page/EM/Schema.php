@@ -21,15 +21,15 @@ abstract class Schema
      * 'label'            => human readable label,
      * 'unit'             => (e.g. ),  "Å/pixel", "kV"
      * 'extraDescription' => Extra human readable description
-     *
-     * validation options
      * 'display'          => true, false or 'notBlank'
      *                       indicate if the value should be displayed in the UI
+     * 'default'          => default value,
+     *
+     * validation options
      * 'required'         => a boolean field or a string with the value
      *                       "optional" - the field can be blank but it will
      *                       still be used
-     * 'default'          => default value,
-     * 'options'          => list of option values for SELECTs,
+     * 'options'          => list of option values for option lists,
      * 'displayOptions'   => alternate option list for display,
      * 'pattern'          => pattern for validation ("filename", "directory"),
      * 'minValue'         => minimum value,
@@ -40,10 +40,13 @@ abstract class Schema
      *
      * used by API only
      * 'select'           => select clause to get this field
-     * 'stored'           => a boolean indicating whether the field is stored
-     *                       in the database or not
+     * 'stored'           => a boolean field - if it evaluates to zero
+     *                       the field should not be inserted or selected
+     *                       TODO: how can you use this in a SELECT when the
+     *                       other fields the boolean may depend on aren't
+     *                       available yet?
      * 'onSelect'         => PHP function to transform selected data
-     * 'onUpdate'         => PHP function to transform data prior to update/insert
+     * 'onUpdate'         => PHP function to transform data prior to insert
      *
      * If a field above is described as having a boolean option, the value can
      * be either true or false (a boolean or a string) or an array keyed by
