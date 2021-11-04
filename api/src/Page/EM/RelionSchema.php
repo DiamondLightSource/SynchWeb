@@ -19,6 +19,16 @@ class RelionSchema extends Schema
     public function schema()
     {
         return array(
+            'acquisition_software' => array(
+                'label' => 'Acquisition Software',
+                'required' => false,
+                'onUpdate' => function ($postData) {
+                    return strpos(
+                        $postData['import_images'],
+                        'GridSquare_*/Data/*.'
+                    ) == 'false' ? 'SerialEM' : 'EPU';
+                },
+            ),
             'import_images_ext' => array(
                 'required' => false, // this is true if it's an on-screen field
                 'display' => false, // this shouldn't be here for an on-screen field
