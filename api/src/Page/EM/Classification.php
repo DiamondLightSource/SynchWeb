@@ -45,7 +45,11 @@ trait Classification
        hence the INNER JOIN (is that wrong?) */
     public function classificationResult()
     {
-        $args = array($this->arg('prop'), $this->arg('id'));
+        $args = array(
+            $this->arg('prop'),
+            $this->arg('id'),
+            $this->arg('classification')
+        );
 
         $total = $this->classificationQuery(
             'COUNT(ParticleClassification.particleClassificationId) AS total',
@@ -84,7 +88,7 @@ trait Classification
                 'CryoemInitialModel.numberOfParticles'
             )),
             $this->paginationArguments($args),
-            "ORDER BY $order LIMIT :3, :4"
+            "ORDER BY $order LIMIT :4, :5"
         );
 
         // No need for an error if no rows found
@@ -128,7 +132,7 @@ trait Classification
                     = BLSession.proposalId
             WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
             AND ParticleClassificationGroup.programId = :2
-            AND ParticleClassificationGroup.type = \"2D\"
+            AND ParticleClassificationGroup.type = :3
             $options",
             $args,
             false

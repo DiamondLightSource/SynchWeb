@@ -114,6 +114,7 @@ export default {
         'fetch': function() {
             this.$store.dispatch('em/api/fetch', {
                 'url': 'classification/' + this.autoProcProgramId +
+                    '/type/2D' +
                     '?page=' + this.page +
                     '&per_page=' + this.perPage +
                     '&sort_by=' + this.sortBy,

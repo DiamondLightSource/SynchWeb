@@ -35,6 +35,7 @@ class EM extends Page
         'ids' => '\d+',
         'visit' => '\w+\d+-\d+',
         'session' => '\w+\d+-\d+',
+        'classification' => '[23]D',
         'n' => '\d+',
         't' => '\d+',
         'IMAGENUMBER' => '\d+',
@@ -78,7 +79,7 @@ class EM extends Page
         array('/picker/image/:id(/n/:movieNumber)', 'get', 'pickerImage'),
 
         // See SynchWeb\Page\EM\Classification:
-        array('/classification/:id', 'get', 'classificationResult'),
+        array('/classification/:id/type/:classification', 'get', 'classificationResult'),
         array('/classification/image/:id', 'get', 'classificationImage'),
 
         // See Synchweb\Page\EM\DataCollection
