@@ -1,7 +1,7 @@
 <template>
   <section>
     <job-header
-      :processing-job-id="processingJob.processingJobId"
+      :processing-job-id="processingJobId"
       :auto-proc-program-id="autoProcProgramId"
       :start-time="processingJob.processingStartTime"
       :end-time="processingJob.processingEndTime"
@@ -18,7 +18,7 @@
       class="processing"
     >
       <summary-charts
-        :auto-proc-program-id="processingJob.autoProcProgramId"
+        :auto-proc-program-id="autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
 
@@ -36,27 +36,27 @@
       </processing-section>
 
       <motion-correction
-        :auto-proc-program-id="processingJob.autoProcProgramId"
+        :auto-proc-program-id="autoProcProgramId"
         :max="mcCount"
       />
 
       <ctf-estimation
-        :auto-proc-program-id="processingJob.autoProcProgramId"
+        :auto-proc-program-id="autoProcProgramId"
         :max="ctfCount"
       />
 
       <ice-breaker
-        :auto-proc-program-id="processingJob.autoProcProgramId"
+        :auto-proc-program-id="autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
 
       <picker
-        :auto-proc-program-id="processingJob.autoProcProgramId"
+        :auto-proc-program-id="autoProcProgramId"
         :max="pickCount"
       />
 
       <classification-2d
-        :auto-proc-program-id="processingJob.autoProcProgramId"
+        :auto-proc-program-id="autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
     </div>
@@ -121,6 +121,10 @@ export default {
 
             return this.collectionActive && isRunning ?
                 this.processingJob.fetchTime : ''
+        },
+        'processingJobId': function() {
+            return this.processingJob.processingJobId ?
+                this.processingJob.processingJobId : ''
         },
         'autoProcProgramId': function() {
             return this.processingJob.autoProcProgramId ?

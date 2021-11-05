@@ -112,19 +112,21 @@ export default {
             this.selectedSrc = clicked.src
         },
         'fetch': function() {
-            this.$store.dispatch('em/api/fetch', {
-                'url': 'classification/' + this.autoProcProgramId +
-                    '/type/2D' +
-                    '?page=' + this.page +
-                    '&per_page=' + this.perPage +
-                    '&sort_by=' + this.sortBy,
-                'humanName': 'Particle Classification',
-            }).then(
-                (response) => {
-                    this.pageCount = Math.ceil(response.total / this.perPage)
-                    this.particleClasses = response.classes
-                }
-            )
+            if (this.autoProcProgramId) {
+                this.$store.dispatch('em/api/fetch', {
+                    'url': 'classification/' + this.autoProcProgramId +
+                        '/type/2D' +
+                        '?page=' + this.page +
+                        '&per_page=' + this.perPage +
+                        '&sort_by=' + this.sortBy,
+                    'humanName': 'Particle Classification',
+                }).then(
+                    (response) => {
+                        this.pageCount = Math.ceil(response.total / this.perPage)
+                        this.particleClasses = response.classes
+                    }
+                )
+            }
         },
     },
 }
