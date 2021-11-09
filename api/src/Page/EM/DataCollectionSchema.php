@@ -150,7 +150,10 @@ class DataCollectionSchema extends Schema
             ),
             'numberOfPasses' => array(
                 'label' => 'Frames Per Movie',
-                'required' => true,
+                'required' => array( // everything except eer
+                    'imageSuffix' => array('tif', 'tiff', 'mrc'),
+                ),
+                'display' => 'notBlank',
                 'minValue' => 30,
                 'maxValue' => 60,
                 'type' => 'integer',

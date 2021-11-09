@@ -112,7 +112,11 @@ export default {
             }
             for (const otherName in required) {
                 const expectedValue = required[otherName]
-                if (this.form.fields[otherName] != expectedValue) {
+                const actualValue = this.form.fields[otherName]
+                const matched = Array.isArray(expectedValue) ?
+                    expectedValue.includes(actualValue) :
+                    actualValue === expectedValue
+                if (!matched) {
                     return false
                 }
             }

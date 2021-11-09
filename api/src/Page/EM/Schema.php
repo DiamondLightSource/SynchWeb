@@ -156,7 +156,11 @@ abstract class Schema
         }
 
         foreach ($rule as $otherArgument => $expectedValue) {
-            if ($this->typedParameter($otherArgument, $postData) !== $expectedValue) {
+            $actualValue = $this->typedParameter($otherArgument, $postData);
+            $matched = gettype($expectedValue) == 'array' ?
+                in_array($actualValue, $expectedValue) :
+                $actualValue === $expectedValue;
+            if (!$matched) {
                 return false;
             }
         }
