@@ -64,10 +64,13 @@ export default {
         },
         'fetchDetail': function() {
             if (
-                (!this.autoProcProgramId) ||
-                (!this.movieNumber) ||
-                (this.movieNumber == this.loadedMovieNumber)
+                this.autoProcProgramId == '' ||
+                this.movieNumber == this.loadedMovieNumber
             ) {
+                return;
+            }
+            if (this.movieNumber == '0') {
+                this.$emit('loaded', {})
                 return
             }
             this.$store.dispatch('em/api/fetch', {
