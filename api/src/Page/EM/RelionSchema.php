@@ -134,10 +134,9 @@ class RelionSchema extends Schema
             'motioncor_doseperframe' => array(
                 'label' => 'Dose per frame',
                 'unit' => 'e⁻/Å²',
-                'default' => '0.5',
                 'required' => true,
-                'minValue' => 0.02,
-                'maxValue' => 10.0,
+                'minValue' => 0.003,
+                'maxValue' => 5,
                 'type' => 'real'
             ),
             'stop_after_ctf_estimation' => array(

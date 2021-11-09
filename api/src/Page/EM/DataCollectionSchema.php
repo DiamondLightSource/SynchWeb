@@ -291,8 +291,8 @@ class DataCollectionSchema extends Schema
                 'unit' => 'e⁻/Å²',
                 'default' => '0.5',
                 'required' => true,
-                'minValue' => 0.02,
-                'maxValue' => 10.0,
+                'minValue' => 0.2,
+                'maxValue' => 150.0,
                 'type' => 'real',
             ),
             'frameDose' => array(
