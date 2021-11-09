@@ -30,7 +30,8 @@ trait Session
             array(
                 $proposal,
                 $dataCollectionId
-            )
+            ),
+            false
         );
 
         if (sizeof($rows) == 0) {
