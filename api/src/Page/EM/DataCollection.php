@@ -33,10 +33,6 @@ trait DataCollection
 
         $session = $this->sessionFetch($this->arg('session'));
 
-        /* TODO: Temporary override to make session available for testing
-           after session has ended */
-        $session['active'] = true;
-
         $this->sessionExitIfNotActive($session);
 
         $imageDirectory = $this->sessionSubstituteValuesInPath(

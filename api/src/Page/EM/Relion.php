@@ -38,7 +38,7 @@ trait Relion
             $dataCollectionId
         );
 
-        // $this->sessionExitIfNotActive($session);
+        $this->sessionExitIfNotActive($session);
 
         $dataCollection = $this->dataCollectionForProcessing(
             $proposalCode,
