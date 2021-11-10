@@ -63,11 +63,11 @@
         :fetch-trigger="fetchTrigger"
       />
 
-      <classification
+      <!-- classification
         type="3D"
         :auto-proc-program-id="autoProcProgramId"
         :fetch-trigger="fetchTrigger"
-      />
+      / -->
     </div>
   </section>
 </template>
