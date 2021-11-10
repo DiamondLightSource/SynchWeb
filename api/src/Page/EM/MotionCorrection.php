@@ -41,7 +41,7 @@ trait MotionCorrection
             false
         );
 
-        $this->motionControlErrorCheck(sizeof($rows), $movie, $programId);
+        $this->motionCorrectionErrorCheck(sizeof($rows), $movie, $programId);
 
         $row = $rows[0];
 
@@ -111,7 +111,7 @@ trait MotionCorrection
             false
         );
 
-        $this->motionControlErrorCheck(sizeof($rows), $movie, $programId);
+        $this->motionCorrectionErrorCheck(sizeof($rows), $movie, $programId);
 
         $this->sendImage($rows[0][$imageName]);
     }
@@ -121,7 +121,7 @@ trait MotionCorrection
         $this->motionCorrectionImage('micrographSnapshotFullPath');
     }
 
-    private function motionControlErrorCheck($size, $movie, $programId)
+    private function motionCorrectionErrorCheck($size, $movie, $programId)
     {
         if ($size == 0) {
             $this->_error('No such micrograph');
