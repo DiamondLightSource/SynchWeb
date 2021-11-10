@@ -32,7 +32,6 @@ export default {
 li {
     box-sizing: border-box;
     display: block;
-    white-space: nowrap;
     padding-top: 8px;
     padding-right: 5px;
     padding-bottom: 8px;
