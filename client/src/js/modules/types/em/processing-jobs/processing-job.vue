@@ -17,6 +17,8 @@
       v-if="!hidden"
       class="processing"
     >
+      <anomaly-message :processing-job="processingJob" />
+
       <summary-charts
         :auto-proc-program-id="autoProcProgramId"
         :fetch-trigger="fetchTrigger"
@@ -64,6 +66,7 @@
 </template>
 
 <script>
+import AnomalyMessage from 'modules/types/em/processing-jobs/anomaly-message.vue'
 import Classification2D from 'modules/types/em/classification-2d/classification.vue'
 import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
@@ -77,6 +80,7 @@ import SummaryCharts from 'modules/types/em/ctf-summary/summary-charts.vue'
 export default {
     'name': 'ProcessingJob',
     'components': {
+        'anomaly-message': AnomalyMessage,
         'classification-2d': Classification2D,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
@@ -143,14 +147,6 @@ export default {
                 this.processingJob.pickCount : this.processingJob.movieCount
         },
     },
-    'watch': {
-        'processingJob': function() {
-            this.checkAnomalousMovieCounts()
-        },
-    },
-    'mounted': function() {
-        this.checkAnomalousMovieCounts()
-    },
     'methods': {
         'hide': function(hidden) {
             this.hidden = hidden
@@ -164,31 +160,6 @@ export default {
                 }).then(
                     (response) => { this.parameters = response }
                 )
-            }
-        },
-        'checkAnomalousMovieCounts': function() {
-            var messages = []
-            const movieCount = this.processingJob.movieCount
-            for (const [field, title] of Object.entries({
-                'mcCount': 'Motion Correction',
-                'ctfCount': 'CTF',
-                'pickCount': 'Picker',
-            })) {
-                const count = this.processingJob[field]
-                if (count > movieCount) {
-                    messages.push(title + ' has ' + count + ' entries')
-                }
-            }
-            if (messages.length > 0) {
-                messages.unshift('There are only ' + movieCount + ' movies')
-                const message = messages.join(' and ') +
-                    ' (Job: ' + this.processingJob.processingJobId + ')'
-                this.$store.commit('notifications/addNotification', {
-                    'title': 'Movie count anomaly',
-                    'message': message,
-                    'level': 'warning'
-                })
-                console.log('Movie count anomaly: ' + message)
             }
         },
     },
