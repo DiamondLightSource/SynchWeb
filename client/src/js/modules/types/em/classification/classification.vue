@@ -1,7 +1,7 @@
 <template>
   <processing-section
     ref="previewImages"
-    section-title="2D Classification"
+    :section-title="sectionTitle"
     :data-available="particleClasses.length > 0"
   >
     <template #controls>
@@ -34,11 +34,11 @@
 </template>
 
 <script>
-import Parameters from 'modules/types/em/classification-2d/parameters.vue'
-import PreviewImage from 'modules/types/em/classification-2d/preview-image.vue'
+import Parameters from 'modules/types/em/classification/parameters.vue'
+import PreviewImage from 'modules/types/em/classification/preview-image.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
-import SelectPage from 'modules/types/em/classification-2d/select-page.vue'
-import SelectSort from 'modules/types/em/classification-2d/select-sort.vue'
+import SelectPage from 'modules/types/em/classification/select-page.vue'
+import SelectSort from 'modules/types/em/classification/select-sort.vue'
 
 export default {
     'name': 'Classification',
@@ -57,6 +57,13 @@ export default {
         'fetchTrigger': {
             'type': String,
             'required': true,
+        },
+        'type': {
+            'type': String,
+            'required': true,
+            'validator': function(value) {
+                return ['2D', '3D'].includes(value);
+            },
         },
     },
     'data': function() {
@@ -83,6 +90,9 @@ export default {
             return batchNumber && classNumber ? (
                 batchNumber + ' - ' + classNumber
             ) : 'none selected'
+        },
+        'sectionTitle': function() {
+            return this.type + ' Classification'
         },
     },
     'watch': {
@@ -115,7 +125,7 @@ export default {
             if (this.autoProcProgramId) {
                 this.$store.dispatch('em/api/fetch', {
                     'url': 'classification/' + this.autoProcProgramId +
-                        '/type/2D' +
+                        '/type/' + this.type +
                         '?page=' + this.page +
                         '&per_page=' + this.perPage +
                         '&sort_by=' + this.sortBy,

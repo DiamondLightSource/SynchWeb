@@ -57,7 +57,14 @@
         :max="pickCount"
       />
 
-      <classification-2d
+      <classification
+        type="2D"
+        :auto-proc-program-id="autoProcProgramId"
+        :fetch-trigger="fetchTrigger"
+      />
+
+      <classification
+        type="3D"
         :auto-proc-program-id="autoProcProgramId"
         :fetch-trigger="fetchTrigger"
       />
@@ -67,7 +74,7 @@
 
 <script>
 import AnomalyMessage from 'modules/types/em/processing-jobs/anomaly-message.vue'
-import Classification2D from 'modules/types/em/classification-2d/classification.vue'
+import Classification from 'modules/types/em/classification/classification.vue'
 import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
 import JobHeader from 'modules/types/em/processing-jobs/job-header.vue'
@@ -81,7 +88,7 @@ export default {
     'name': 'ProcessingJob',
     'components': {
         'anomaly-message': AnomalyMessage,
-        'classification-2d': Classification2D,
+        'classification': Classification,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
         'job-header': JobHeader,
