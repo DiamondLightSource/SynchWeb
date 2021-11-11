@@ -68,7 +68,7 @@ trait ProcessingJobs
 
         $this->_output(array(
             'total' => $this->processingJobsTotal(),
-            'data' => $processingJobs,
+            'data' => $this->processingJobsTidy($processingJobs),
         ));
     }
 
@@ -91,6 +91,31 @@ trait ProcessingJobs
         );
         return intval($total[0]['total']);
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private function processingJobsTidy($rows)
+    {
+        $noNullFields = array (
+            'ctfLatest', 'ctfMax',
+            'mcLatest', 'mcMax',
+            'pickLatest', 'pickMax',
+        );
+        return array_map(
+            function ($row) use ($noNullFields) {
+                $result = array();
+                foreach ($row as $key => $value) {
+                    $result[$key] = in_array(
+                        $key,
+                        $noNullFields
+                    ) && $value == null ? '' : $value;
+                }
+                return $result;
+            },
+            $rows
+        );
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////
 
