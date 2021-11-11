@@ -21,7 +21,7 @@ export default {
             'type': String,
             'required': true,
         },
-        'movieNumber': {
+        'imageNumber': {
             'type': String,
             'required': true,
         },
@@ -46,7 +46,7 @@ export default {
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
-        'movieNumber': function(newValue, oldValue) {
+        'imageNumber': function(newValue, oldValue) {
             this.fetch();
         },
     },
@@ -54,7 +54,7 @@ export default {
         'fetch': function() {
             this.$store.dispatch('em/api/fetch', {
                 'url': 'mc/drift/' + this.autoProcProgramId +
-                    '/n/' + this.movieNumber,
+                    '/n/' + this.imageNumber,
                 'humanName': 'MC Drift',
             }).then(
                 (response) => {
