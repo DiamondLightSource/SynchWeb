@@ -1,39 +1,39 @@
 <template>
   <div>
-    Movie:
+    Image:
 
     <flat-button
-      :disabled="movieNumber <= 1"
+      :disabled="imageNumber <= 1"
       @click="click(1)"
     >
       <i class="fa fa-angle-double-left" />
     </flat-button>
 
     <flat-button
-      :disabled="movieNumber <= 1"
-      @click="click(movieNumber - 1)"
+      :disabled="imageNumber <= 1"
+      @click="click(imageNumber - 1)"
     >
       <i class="fa fa-angle-left" />
     </flat-button>
 
     <input
       type="text"
-      name="movie"
+      name="image"
       :maxlength="maxLength"
       :size="maxLength"
-      :value="movieNumber"
+      :value="imageNumber"
       @input.prevent="typed"
     >
 
     <flat-button
-      :disabled="movieNumber >= max"
-      @click="click(movieNumber + 1)"
+      :disabled="imageNumber >= max"
+      @click="click(imageNumber + 1)"
     >
       <i class="fa fa-angle-right" />
     </flat-button>
 
     <flat-button
-      :disabled="movieNumber >= max"
+      :disabled="imageNumber >= max"
       @click="click(max)"
     >
       <i class="fa fa-angle-double-right" />
@@ -53,7 +53,7 @@ import FlatButton from 'app/components/flat-button.vue'
 import { mapGetters } from 'vuex'
 
 export default {
-    'name': "MovieSelect",
+    'name': "ImageSelect",
     'components': {
         'flat-button': FlatButton,
     },
@@ -66,7 +66,7 @@ export default {
     'data': function() {
         return {
             //'inputBoxClass': '',
-            'movieNumber': 0,
+            'imageNumber': 0,
             'showMostRecent': true,
             'eventTimeout': null,
             'keyTimeout': null,
@@ -74,7 +74,7 @@ export default {
     },
     'computed': {
         ...mapGetters({
-            'remoteSelectedMovie': 'em/selectedMovie'
+            'remoteSelectedImage': 'em/selectedImage'
         }),
         'maxLength': function() {
             return this.max.toString().length
@@ -89,10 +89,10 @@ export default {
         'showMostRecent': function(newValue, oldValue) {
             this.selectMax()
         },
-        'remoteSelectedMovie': function() {
-            this.click(this.remoteSelectedMovie)
+        'remoteSelectedImage': function() {
+            this.click(this.remoteSelectedImage)
         },
-        'movieNumber': function(
+        'imageNumber': function(
             newValue,
             oldValue  // eslint-disable-line no-unused-vars
         ) {
@@ -114,9 +114,9 @@ export default {
         this.selectMax()
     },
     'methods': {
-        'click': function(newMovieNumber) {
+        'click': function(newImageNumber) {
             this.showMostRecent = false
-            this.movieNumber = newMovieNumber
+            this.imageNumber = newImageNumber
         },
         'typed': function(inputEvent) {
             // use a timeout so that the user can type multiple digits
@@ -137,7 +137,7 @@ export default {
         },
         'selectMax': function() {
             if (this.showMostRecent) {
-                this.movieNumber = this.max
+                this.imageNumber = this.max
             }
         },
     },
