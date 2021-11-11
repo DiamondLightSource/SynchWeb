@@ -2,6 +2,7 @@
   <processing-section-movie-select
     section-title="Particle Picking"
     url-prefix="picker"
+    :latest="latest"
     :max="max"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"
@@ -34,6 +35,10 @@ export default {
             'required': true,
         },
         'max': {
+            'type': String,
+            'required': true,
+        },
+        'latest': {
             'type': String,
             'required': true,
         },
