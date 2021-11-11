@@ -5,7 +5,7 @@
     :latest="latest"
     :max="max"
     :auto-proc-program-id="autoProcProgramId"
-    :loaded-movie-number="loadedMovieNumber"
+    :loaded-image-number="loadedImageNumber"
     @loaded="loaded"
   >
     <params :pick="pick" />
@@ -49,16 +49,16 @@ export default {
         }
     },
     'computed': {
-        'loadedMovieNumber': function() {
-            return 'movieNumber' in this.pick ? this.pick.movieNumber : ''
+        'loadedImageNumber': function() {
+            return 'imageNumber' in this.pick ? this.pick.imageNumber : ''
         },
         'imageUrl': function() {
-            const movie = this.loadedMovieNumber
-            if (movie == '') {
+            const image = this.loadedImageNumber
+            if (image == '') {
                 return '#'
             }
             return this.$store.state.apiUrl +
-                '/em/picker/image/' + this.autoProcProgramId + '/n/' + movie
+                '/em/picker/image/' + this.autoProcProgramId + '/n/' + image
         },
     },
     'methods': {

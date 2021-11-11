@@ -5,7 +5,7 @@
     :latest="latest"
     :max="max"
     :auto-proc-program-id="autoProcProgramId"
-    :loaded-movie-number="loadedMovieNumber"
+    :loaded-image-number="loadedImageNumber"
     @loaded="loaded"
   >
     <params :motion-correction="motionCorrection" />
@@ -56,17 +56,17 @@ export default {
         }
     },
     'computed': {
-        'loadedMovieNumber': function() {
-            return 'movieNumber' in this.motionCorrection ?
-                this.motionCorrection.movieNumber : ''
+        'loadedImageNumber': function() {
+            return 'imageNumber' in this.motionCorrection ?
+                this.motionCorrection.imageNumber : ''
         },
         'snapshotUrl': function() {
-            const movie = this.loadedMovieNumber
-            if (movie == '') {
+            const image = this.loadedImageNumber
+            if (image == '') {
                 return '#'
             }
             return this.$store.state.apiUrl +
-                '/em/mc/snapshot/' + this.autoProcProgramId + '/n/' + movie
+                '/em/mc/snapshot/' + this.autoProcProgramId + '/n/' + image
         },
     },
     'methods': {

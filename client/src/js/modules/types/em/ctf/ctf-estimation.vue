@@ -5,7 +5,7 @@
     :latest="latest"
     :max="max"
     :auto-proc-program-id="autoProcProgramId"
-    :loaded-movie-number="loadedMovieNumber"
+    :loaded-image-number="loadedImageNumber"
     @loaded="loaded"
   >
     <params :ctf-estimation="ctfEstimation" />
@@ -49,17 +49,17 @@ export default {
         }
     },
     'computed': {
-        'loadedMovieNumber': function() {
-            return 'movieNumber' in this.ctfEstimation ?
-                this.ctfEstimation.movieNumber : ''
+        'loadedImageNumber': function() {
+            return 'imageNumber' in this.ctfEstimation ?
+                this.ctfEstimation.imageNumber : ''
         },
         'imageUrl': function() {
-            const movie = this.loadedMovieNumber
-            if (movie == '') {
+            const image = this.loadedImageNumber
+            if (image == '') {
                 return '#'
             }
             return this.$store.state.apiUrl +
-                '/em/ctf/image/' + this.autoProcProgramId + '/n/' + movie
+                '/em/ctf/image/' + this.autoProcProgramId + '/n/' + image
         },
     },
     'methods': {
