@@ -96,6 +96,8 @@ export default {
         this.proteinsCollection.queryParams.external = 1
       }
 
+      this.proteinsCollection.queryParams.SAFETYLEVEL = 'ALL'
+
       const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
       this.proteins = result.toJSON()
     },

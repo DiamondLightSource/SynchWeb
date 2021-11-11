@@ -384,7 +384,7 @@ export default {
         if (newVal) {
           this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
         } else {
-          delete this.proteinsCollection.queryParams.SAFETYLEVEL;
+          this.proteinsCollection.queryParams.SAFETYLEVEL = 'ALL';
         }
         this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
           this.proteins = result.toJSON()
