@@ -179,9 +179,9 @@ export default {
                     yAxes.estimatedDefocus = []
                     yAxes.estimatedResolution = []
                     response.forEach((row) => {
-                        xAxis.push(row.movieNumber)
+                        xAxis.push(row.imageNumber)
                         text.push(
-                            'Movie ' + row.movieNumber +
+                            'Image number ' + row.imageNumber +
                             '<br>' + row.createdTimeStamp
                         )
                         for (const chart in yAxes) {
