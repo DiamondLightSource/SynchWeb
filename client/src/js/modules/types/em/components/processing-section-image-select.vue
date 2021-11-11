@@ -5,7 +5,7 @@
     :default-hidden="false"
   >
     <template #controls>
-      <movie-select
+      <image-select
         :max="max"
         @changed="selectChanged"
       />
@@ -16,13 +16,13 @@
 </template>
 
 <script>
-import MovieSelect from 'modules/types/em/components/movie-select.vue'
+import ImageSelect from 'modules/types/em/components/image-select.vue'
 import ProcessingSection from 'modules/types/em/components/processing-section.vue'
 
 export default {
-    'name': "ProcessingSectionMovieSelect",
+    'name': "ProcessingSectionImageSelect",
     'components': {
-        'movie-select': MovieSelect,
+        'image-select': ImageSelect,
         'processing-section': ProcessingSection,
     },
     'props': {
@@ -42,41 +42,41 @@ export default {
             'type': String,
             'required': true,
         },
-        'loadedMovieNumber': {
+        'loadedImageNumber': {
             'type': String,
             'required': true,
         },
     },
     'data': function() {
         return {
-            'movieNumber': 1,
+            'imageNumber': 1,
         }
     },
     'watch': {
         // eslint-disable-next-line no-unused-vars
-        'movieNumber': function(newValue, oldValue) {
+        'imageNumber': function(newValue, oldValue) {
             this.fetchDetail()
         },
     },
     'methods': {
-        'selectChanged': function(movieNumber) {
-            this.movieNumber = movieNumber
+        'selectChanged': function(imageNumber) {
+            this.imageNumber = imageNumber
         },
         'fetchDetail': function() {
             if (
                 this.autoProcProgramId == '' ||
-                this.movieNumber == this.loadedMovieNumber
+                this.imageNumber == this.loadedImageNumber
             ) {
                 return;
             }
-            if (this.movieNumber == '0') {
+            if (this.imageNumber == '0') {
                 this.$emit('loaded', {})
                 return
             }
             this.$store.dispatch('em/api/fetch', {
                 'url': this.urlPrefix +
                     '/' + this.autoProcProgramId +
-                    '/n/' + this.movieNumber,
+                    '/n/' + this.imageNumber,
                 'humanName': this.sectionTitle + ' Details',
             }).then(
                 (details) => { this.$emit('loaded', details) }
