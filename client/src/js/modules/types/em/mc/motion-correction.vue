@@ -2,6 +2,7 @@
   <processing-section-movie-select
     section-title="Motion Correction"
     url-prefix="mc"
+    :latest="latest"
     :max="max"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"
@@ -41,6 +42,10 @@ export default {
             'required': true,
         },
         'max': {
+            'type': String,
+            'required': true,
+        },
+        'latest': {
             'type': String,
             'required': true,
         },
