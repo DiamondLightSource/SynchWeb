@@ -17,8 +17,6 @@
       v-if="!hidden"
       class="processing"
     >
-      <anomaly-message :processing-job="processingJob" />
-
       <summary-charts
         :auto-proc-program-id="autoProcProgramId"
         :fetch-trigger="fetchTrigger"
@@ -73,7 +71,6 @@
 </template>
 
 <script>
-import AnomalyMessage from 'modules/types/em/processing-jobs/anomaly-message.vue'
 import Classification from 'modules/types/em/classification/classification.vue'
 import CtfEstimation from 'modules/types/em/ctf/ctf-estimation.vue'
 import IceBreaker from 'modules/types/em/ice/ice-breaker.vue'
@@ -87,7 +84,6 @@ import SummaryCharts from 'modules/types/em/ctf-summary/summary-charts.vue'
 export default {
     'name': 'ProcessingJob',
     'components': {
-        'anomaly-message': AnomalyMessage,
         'classification': Classification,
         'ctf-estimation': CtfEstimation,
         'ice-breaker': IceBreaker,
