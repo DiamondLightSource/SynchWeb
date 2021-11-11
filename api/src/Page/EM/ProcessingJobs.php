@@ -10,27 +10,10 @@ trait ProcessingJobs
             $this->_error('No data collection provided');
         }
 
-        $total = $this->db->pq(
-            "SELECT count(pj.processingJobId) as total
-            FROM ProcessingJob pj
-            LEFT JOIN AutoProcProgram app ON pj.processingJobId = app.processingJobId
-            INNER JOIN DataCollection dc ON dc.dataCollectionId = pj.dataCollectionId
-            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
-            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
-            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
-            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
-            AND dc.dataCollectionId = :2",
-            array($this->arg('prop'), $this->arg('id')),
-            false
-        );
+        $subqueries = $this->processingJobsSubQueries();
 
-        /* In the test data, there are a few occurrences of multiple
-           AutoProcProgram rows on a single ProcessingJob.
-           Andy Preston didn't know if this was a testing artifact or expected
-           in normal operation, autoProcProgramId is included here just in case
-         * FetchTime is to trigger re-fetches of the entities that depend on
-           ProcessingJob
-         */
+        /* FetchTime is to trigger re-fetches of the entities that depend on
+           ProcessingJob */
         $processingJobs = $this->db->pq(
             "SELECT
                 ProcessingJob.processingJobId,
@@ -39,23 +22,7 @@ trait ProcessingJobs
                 AutoProcProgram.autoProcProgramId,
                 AutoProcProgram.processingStartTime,
                 AutoProcProgram.processingEndTime,
-                (SELECT COUNT(DISTINCT Movie.movieNumber)
-                    FROM MotionCorrection
-                    LEFT JOIN Movie ON Movie.movieId = MotionCorrection.movieId
-                    WHERE MotionCorrection.autoProcProgramId = AutoProcProgram.autoProcProgramId
-                ) AS movieCount,
-                (SELECT COUNT(MotionCorrection.motionCorrectionId)
-                    FROM MotionCorrection
-                    WHERE MotionCorrection.autoProcProgramId = AutoProcProgram.autoProcProgramId
-                ) AS mcCount,
-                (SELECT COUNT(CTF.ctfId)
-                    FROM CTF
-                    WHERE CTF.autoProcProgramId = AutoProcProgram.autoProcProgramId
-                ) AS ctfCount,
-                (SELECT COUNT(ParticlePicker.particlePickerId)
-                    FROM ParticlePicker
-                    WHERE ParticlePicker.programId = AutoProcProgram.autoProcProgramId
-                ) AS pickCount,
+                $subqueries
                 NOW() as fetchTime,
                 CASE
                     WHEN (
@@ -100,8 +67,68 @@ trait ProcessingJobs
         );
 
         $this->_output(array(
-            'total' => intval($total[0]['total']),
+            'total' => $this->processingJobsTotal(),
             'data' => $processingJobs,
         ));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private function processingJobsTotal()
+    {
+        $total = $this->db->pq(
+            "SELECT count(pj.processingJobId) as total
+            FROM ProcessingJob pj
+            LEFT JOIN AutoProcProgram app ON pj.processingJobId = app.processingJobId
+            INNER JOIN DataCollection dc ON dc.dataCollectionId = pj.dataCollectionId
+            INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
+            INNER JOIN BLSession bls ON bls.sessionId = dcg.sessionId
+            INNER JOIN Proposal p ON p.proposalId = bls.proposalId
+            WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
+            AND dc.dataCollectionId = :2",
+            array($this->arg('prop'), $this->arg('id')),
+            false
+        );
+        return intval($total[0]['total']);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private function processingJobsLatestQuery($tables, $key)
+    {
+        return "(SELECT MotionCorrection.imageNumber FROM $tables
+        INNER JOIN Movie ON Movie.movieId = MotionCorrection.movieId
+        WHERE MotionCorrection.autoProcProgramId = AutoProcProgram.autoProcProgramId
+        ORDER BY Movie.createdTimeStamp DESC, MotionCorrection.imageNumber DESC
+        LIMIT 1) AS {$key}Latest,";
+    }
+
+    private function processingJobsMaxQuery($tables, $key)
+    {
+        return "(SELECT MAX(MotionCorrection.imageNumber) FROM $tables
+        WHERE MotionCorrection.autoProcProgramId = AutoProcProgram.autoProcProgramId) as {$key}Max,";
+    }
+
+    private function processingJobsSubQueries()
+    {
+        $specs = array(
+            'mc' => 'MotionCorrection',
+            'ctf' => 'CTF INNER JOIN MotionCorrection
+                ON MotionCorrection.motionCorrectionId = CTF.motionCorrectionId',
+            'pick' => 'ParticlePicker INNER JOIN MotionCorrection
+                ON MotionCorrection.motionCorrectionId = ParticlePicker.firstMotionCorrectionId',
+        );
+        $subqueries = array();
+        foreach ($specs as $key => $tables) {
+            array_push(
+                $subqueries,
+                $this->processingJobsLatestQuery($tables, $key)
+            );
+            array_push(
+                $subqueries,
+                $this->processingJobsMaxQuery($tables, $key)
+            );
+        }
+        return implode("\n", $subqueries);
     }
 }
