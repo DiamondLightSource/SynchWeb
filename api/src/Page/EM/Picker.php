@@ -46,7 +46,7 @@ trait Picker
         $rows = $this->db->pq(
             "SELECT pp.summaryImageFullPath
             FROM ParticlePicker pp
-            LEFT JOIN MotionCorrection mc ON mc.motionCorrectionId = pp.firstMotionCorrectionId
+            INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = pp.firstMotionCorrectionId
             LEFT JOIN Movie m ON m.movieId = mc.movieId
             INNER JOIN DataCollection dc ON dc.dataCollectionId = m.dataCollectionId
             INNER JOIN DataCollectionGroup dcg ON dcg.dataCollectionGroupId = dc.dataCollectionGroupId
