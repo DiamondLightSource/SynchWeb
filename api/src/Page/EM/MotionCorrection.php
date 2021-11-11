@@ -11,20 +11,15 @@ trait MotionCorrection
 
         $rows = $this->db->pq(
             "SELECT
-                mc.motionCorrectionId,
                 mc.firstFrame,
                 mc.lastFrame,
                 mc.dosePerFrame,
                 mc.doseWeight,
                 mc.totalMotion,
                 mc.averageMotionPerFrame,
-                mc.micrographSnapshotFullPath,
                 mc.patchesUsedX,
                 mc.patchesUsedY,
-                mc.fftFullPath,
-                mc.fftCorrectedFullPath,
                 mc.comments,
-                mc.autoProcProgramId,
                 mc.imageNumber,
                 m.createdTimeStamp
             FROM MotionCorrection mc
@@ -41,13 +36,11 @@ trait MotionCorrection
             false
         );
 
-        $this->motionCorrectionErrorCheck(sizeof($rows), $image, $programId);
+        if (sizeof($rows) == 0) {
+            $this->_error('No such micrograph');
+        }
 
         $row = $rows[0];
-
-        $row['fftFullPath'] = file_exists($row['fftFullPath']) ? 1 : 0;
-        $row['fftCorrectedFullPath'] = file_exists($row['fftCorrectedFullPath']) ? 1 : 0;
-        $row['micrographSnapshotFullPath'] = file_exists($row['micrographSnapshotFullPath']) ? 1 : 0;
 
         $formatColumns = array(
             'totalMotion' => 1,
@@ -111,7 +104,9 @@ trait MotionCorrection
             false
         );
 
-        $this->motionCorrectionErrorCheck(sizeof($rows), $image, $programId);
+        if (sizeof($rows) == 0) {
+            $this->_error('No such micrograph');
+        }
 
         $this->sendImage($rows[0][$imageName]);
     }
@@ -119,17 +114,5 @@ trait MotionCorrection
     public function motionCorrectionSnapshot()
     {
         $this->motionCorrectionImage('micrographSnapshotFullPath');
-    }
-
-    private function motionCorrectionErrorCheck($size, $image, $programId)
-    {
-        if ($size == 0) {
-            $this->_error('No such micrograph');
-        }
-        if ($size > 1) {
-            error_log(
-                "$size motion correction entries for image: $image autoProcProgramId: $programId"
-            );
-        }
     }
 }
