@@ -53,12 +53,12 @@ export default {
             return 'imageNumber' in this.pick ? this.pick.imageNumber : ''
         },
         'imageUrl': function() {
-            const image = this.loadedImageNumber
-            if (image == '') {
-                return '#'
+            if (this.loadedImageNumber == '') {
+                return ''
             }
             return this.$store.state.apiUrl +
-                '/em/picker/image/' + this.autoProcProgramId + '/n/' + image
+                '/em/picker/image/' + this.autoProcProgramId +
+                '/n/' + this.loadedImageNumber
         },
     },
     'methods': {

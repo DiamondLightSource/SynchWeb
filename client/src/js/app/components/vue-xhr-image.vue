@@ -1,6 +1,6 @@
 <template>
   <img
-    v-if="src"
+    v-if="src && imageUrl"
     :alt="title"
     :src="src"
     @click="$emit('click')"

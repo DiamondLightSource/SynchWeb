@@ -54,12 +54,12 @@ export default {
                 this.ctfEstimation.imageNumber : ''
         },
         'imageUrl': function() {
-            const image = this.loadedImageNumber
-            if (image == '') {
-                return '#'
+            if (this.loadedImageNumber == '') {
+                return ''
             }
             return this.$store.state.apiUrl +
-                '/em/ctf/image/' + this.autoProcProgramId + '/n/' + image
+                '/em/ctf/image/' + this.autoProcProgramId +
+                '/n/' + this.loadedImageNumber
         },
     },
     'methods': {

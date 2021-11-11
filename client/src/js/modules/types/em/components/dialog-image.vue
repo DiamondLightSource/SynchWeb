@@ -21,13 +21,9 @@
       :title="previewHint"
       @click="showDialog = true"
     >
-      <!-- v-html is only needed to support current version of ice-breaker.
-           When ice-breaker is moved to ISpyB and is plotted locally,
-           we can do without v-html -->
-      <div
-        class="preview-heading"
-        v-html="title"
-      />
+      <div class="preview-heading">
+        {{ title }}
+      </div>
       <vue-xhr-image
         v-model="src"
         :title="title"

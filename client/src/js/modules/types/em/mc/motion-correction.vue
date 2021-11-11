@@ -61,12 +61,13 @@ export default {
                 this.motionCorrection.imageNumber : ''
         },
         'snapshotUrl': function() {
-            const image = this.loadedImageNumber
-            if (image == '') {
-                return '#'
+            if (this.loadedImageNumber == '') {
+                return ''
             }
-            return this.$store.state.apiUrl +
-                '/em/mc/snapshot/' + this.autoProcProgramId + '/n/' + image
+            const url = this.$store.state.apiUrl +
+                '/em/mc/snapshot/' + this.autoProcProgramId +
+                '/n/' + this.loadedImageNumber
+            return url
         },
     },
     'methods': {
