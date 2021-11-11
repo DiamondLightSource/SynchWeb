@@ -4,20 +4,20 @@ import processingModule from 'modules/types/em/store/processing-module'
 const emModule = {
     'namespaced': true,
     'state': {
-        'selectedMovie': 0,
+        'selectedImage': 0,
     },
     'getters': {
-        'selectedMovie': function(
+        'selectedImage': function(
             state,
             getters, // eslint-disable-line no-unused-vars
             rootState // eslint-disable-line no-unused-vars
         ) {
-            return state.selectedMovie
+            return state.selectedImage
         },
     },
     'mutations': {
-        'selectMovies': function(state, selectedMovie) {
-            state.selectedMovie = selectedMovie
+        'selectImages': function(state, selectedImage) {
+            state.selectedImage = selectedImage
         },
     },
 }
