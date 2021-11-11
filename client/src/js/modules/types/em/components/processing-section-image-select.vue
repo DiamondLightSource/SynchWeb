@@ -74,7 +74,12 @@ export default {
                     this.autoProcProgramId + '/n/' + newValue,
                 'humanName': this.sectionTitle + ' Details',
             }).then(
-                (details) => { this.$emit('loaded', details) }
+                (details) => {
+                    this.$emit('loaded', details)
+                },
+                () => {
+                    this.$emit('loaded', {})
+                }
             )
         },
     },

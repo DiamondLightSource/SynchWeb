@@ -61,6 +61,10 @@ export default {
                     const state = this.buildModel(response.xAxis, response.yAxis)
                     this.chartData = state.chartData
                     this.points = state.points
+                },
+                () => {
+                    this.points = 0
+                    this.chartData = {}
                 }
             )
         },
