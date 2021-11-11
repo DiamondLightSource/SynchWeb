@@ -1,8 +1,8 @@
 <template>
   <parameter-list>
     <parameter-list-item
-      label="Movie Number"
-      :value="pick.movieNumber"
+      label="Image Number"
+      :value="pick.imageNumber"
     />
     <parameter-list-item
       label="Movie Time Stamp"

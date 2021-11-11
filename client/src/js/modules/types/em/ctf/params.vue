@@ -1,8 +1,8 @@
 <template>
   <parameter-list>
     <parameter-list-item
-      label="Movie Number"
-      :value="ctfEstimation.movieNumber"
+      label="Image Number"
+      :value="ctfEstimation.imageNumber"
     />
     <parameter-list-item
       label="Movie Time Stamp"

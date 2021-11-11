@@ -1,8 +1,8 @@
 <template>
   <parameter-list>
     <parameter-list-item
-      label="Movie Number"
-      :value="motionCorrection.movieNumber"
+      label="Image Number"
+      :value="motionCorrection.imageNumber"
     />
     <parameter-list-item
       label="Movie Time Stamp"
