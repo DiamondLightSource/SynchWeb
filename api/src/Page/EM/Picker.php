@@ -11,7 +11,7 @@ trait Picker
                 pp.particleDiameter,
                 pp.numberOfParticles,
                 pp.summaryImageFullPath,
-                m.movieNumber,
+                mc.imageNumber,
                 m.createdTimeStamp
             FROM ParticlePicker pp
             LEFT JOIN MotionCorrection mc ON mc.motionCorrectionId = pp.firstMotionCorrectionId
@@ -22,11 +22,11 @@ trait Picker
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND pp.programId = :2
-            AND m.movieNumber = :3",
+            AND mc.imageNumber = :3",
             array(
                 $this->arg('prop'),
                 $this->arg('id'),
-                $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
+                $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
         );
@@ -54,11 +54,11 @@ trait Picker
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND pp.programId = :2
-            AND m.movieNumber = :3",
+            AND mc.imageNumber = :3",
             array(
                 $this->arg('prop'),
                 $this->arg('id'),
-                $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
+                $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
         );

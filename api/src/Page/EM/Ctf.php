@@ -26,7 +26,7 @@ trait Ctf
                 c.comments,
                 c.autoProcProgramId,
                 m.createdTimeStamp,
-                m.movieNumber
+                mc.imageNumber
             FROM CTF c
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
             INNER JOIN Movie m ON m.movieId = mc.movieId
@@ -36,12 +36,12 @@ trait Ctf
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND c.autoProcProgramId = :2
-            AND m.movieNumber = :3",
+            AND mc.imageNumber = :3",
             // Maybe c.autoProcProgramId should be mc. ?????
             array(
                 $this->arg('prop'),
                 $this->arg('id'),
-                $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
+                $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
         );
@@ -79,12 +79,12 @@ trait Ctf
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND c.autoProcProgramId = :2
-            AND m.movieNumber = :3",
+            AND mc.imageNumber = :3",
             // Maybe c.autoProcProgramId should be mc. ?????
             array(
                 $this->arg('prop'),
                 $this->arg('id'),
-                $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
+                $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
         );
@@ -100,7 +100,7 @@ trait Ctf
     {
         $rows = $this->db->pq(
             "SELECT
-                m.movieNumber,
+                mc.imageNumber,
                 m.createdTimeStamp,
                 c.astigmatism,
                 c.estimatedResolution,

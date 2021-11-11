@@ -6,7 +6,7 @@ trait MotionCorrection
 {
     public function motionCorrectionResult()
     {
-        $movie = $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1;
+        $image = $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1;
         $programId = $this->arg('id');
 
         $rows = $this->db->pq(
@@ -25,7 +25,7 @@ trait MotionCorrection
                 mc.fftCorrectedFullPath,
                 mc.comments,
                 mc.autoProcProgramId,
-                m.movieNumber,
+                mc.imageNumber,
                 m.createdTimeStamp
             FROM MotionCorrection mc
             INNER JOIN AutoProcProgram app ON app.autoProcProgramId = mc.autoProcProgramId
@@ -36,12 +36,12 @@ trait MotionCorrection
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND mc.autoProcProgramId = :2
-            AND m.movieNumber = :3",
-            array($this->arg('prop'), $programId, $movie),
+            AND mc.imageNumber = :3",
+            array($this->arg('prop'), $programId, $image),
             false
         );
 
-        $this->motionCorrectionErrorCheck(sizeof($rows), $movie, $programId);
+        $this->motionCorrectionErrorCheck(sizeof($rows), $image, $programId);
 
         $row = $rows[0];
 
@@ -73,11 +73,11 @@ trait MotionCorrection
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND mc.autoProcProgramId = :2
-            AND m.movieNumber = :3",
+            AND mc.imageNumber = :3",
             array(
                 $this->arg('prop'),
                 $this->arg('id'),
-                $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1
+                $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
         );
@@ -92,7 +92,7 @@ trait MotionCorrection
 
     private function motionCorrectionImage($imageName)
     {
-        $movie = $this->has_arg('movieNumber') ? $this->arg('movieNumber') : 1;
+        $image = $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1;
         $programId = $this->arg('id');
 
         $rows = $this->db->pq(
@@ -106,12 +106,12 @@ trait MotionCorrection
             INNER JOIN Proposal p ON p.proposalId = bls.proposalId
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND mc.autoProcProgramId = :2
-            AND m.movieNumber = :3",
-            array($this->arg('prop'), $programId, $movie),
+            AND mc.imageNumber = :3",
+            array($this->arg('prop'), $programId, $image),
             false
         );
 
-        $this->motionCorrectionErrorCheck(sizeof($rows), $movie, $programId);
+        $this->motionCorrectionErrorCheck(sizeof($rows), $image, $programId);
 
         $this->sendImage($rows[0][$imageName]);
     }
@@ -121,14 +121,14 @@ trait MotionCorrection
         $this->motionCorrectionImage('micrographSnapshotFullPath');
     }
 
-    private function motionCorrectionErrorCheck($size, $movie, $programId)
+    private function motionCorrectionErrorCheck($size, $image, $programId)
     {
         if ($size == 0) {
             $this->_error('No such micrograph');
         }
         if ($size > 1) {
             error_log(
-                "$size motion correction entries for movie: $movie autoProcProgramId: $programId"
+                "$size motion correction entries for image: $image autoProcProgramId: $programId"
             );
         }
     }

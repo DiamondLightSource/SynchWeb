@@ -38,8 +38,7 @@ class EM extends Page
         'classification' => '[23]D',
         'n' => '\d+',
         't' => '\d+',
-        'IMAGENUMBER' => '\d+',
-        'movieNumber' => '\d+',
+        'imageNumber' => '\d+',
 
         // SCIPION
         'numberOfIndividualFrames' => '\d+', // Integer
@@ -55,7 +54,7 @@ class EM extends Page
 
     public static $dispatch = array(
         array('/aps', 'post', '_ap_status'),
-        array('/mc/fft/image/:id(/n/:IMAGENUMBER)(/t/:t)', 'get', '_mc_fft'),
+        array('/mc/fft/image/:id(/n/:ImageNumber)(/t/:t)', 'get', '_mc_fft'),
 
         // See Synchweb\Page\EM\ProcessingJobs
         array('/jobs/:id', 'get', 'processingJobs'),
@@ -65,18 +64,18 @@ class EM extends Page
         array('/attachment/:id', 'get', 'attachmentsGetOne'),
 
         // See Synchweb\Page\EM\MotionCorrection
-        array('/mc/:id/n/:movieNumber', 'get', 'motionCorrectionResult'),
-        array('/mc/drift/:id(/n/:movieNumber)', 'get', 'motionCorrectionDriftPlot'),
-        array('/mc/snapshot/:id(/n/:movieNumber)', 'get', 'motionCorrectionSnapshot'),
+        array('/mc/:id/n/:imageNumber', 'get', 'motionCorrectionResult'),
+        array('/mc/drift/:id(/n/:imageNumber)', 'get', 'motionCorrectionDriftPlot'),
+        array('/mc/snapshot/:id(/n/:imageNumber)', 'get', 'motionCorrectionSnapshot'),
 
         // See Synchweb\Page\EM\Ctf
-        array('/ctf/:id/n/:movieNumber', 'get', 'ctfResult'),
-        array('/ctf/image/:id(/n/:movieNumber)', 'get', 'ctfImage'),
+        array('/ctf/:id/n/:imageNumber', 'get', 'ctfResult'),
+        array('/ctf/image/:id(/n/:imageNumber)', 'get', 'ctfImage'),
         array('/ctf/summary/:id', 'get', 'ctfSummary'),
 
         // See SynchWeb\Page\EM\Picker:
-        array('/picker/:id/n/:movieNumber', 'get', 'pickerResult'),
-        array('/picker/image/:id(/n/:movieNumber)', 'get', 'pickerImage'),
+        array('/picker/:id/n/:imageNumber', 'get', 'pickerResult'),
+        array('/picker/image/:id(/n/:imageNumber)', 'get', 'pickerImage'),
 
         // See SynchWeb\Page\EM\Classification:
         array('/classification/:id/type/:classification', 'get', 'classificationResult'),
