@@ -2,6 +2,7 @@
   <processing-section-movie-select
     section-title="CTF Estimation"
     url-prefix="ctf"
+    :latest="latest"
     :max="max"
     :auto-proc-program-id="autoProcProgramId"
     :loaded-movie-number="loadedMovieNumber"
@@ -30,6 +31,10 @@ export default {
     },
     'props': {
         'autoProcProgramId': {
+            'type': String,
+            'required': true,
+        },
+        'latest': {
             'type': String,
             'required': true,
         },
