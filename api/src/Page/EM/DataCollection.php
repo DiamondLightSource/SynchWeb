@@ -46,7 +46,7 @@ trait DataCollection
         ) . $postData['imageSuffix'];
 
         if (count(glob($imageDirectory . $fileTemplate, GLOB_NOSORT)) == 0) {
-            $this->dataCollectionFileError("Movie files don't exist");
+            $this->dataCollectionFileError("Raw files don't exist");
         }
 
         $existingCollection = $this->dataCollectionFindExisting(
