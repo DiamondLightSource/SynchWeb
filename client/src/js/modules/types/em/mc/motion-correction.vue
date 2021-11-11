@@ -17,7 +17,7 @@
 
     <drift
       :auto-proc-program-id="autoProcProgramId"
-      :movie-number="loadedMovieNumber"
+      :image-number="loadedImageNumber"
     />
   </processing-section-image-select>
 </template>
