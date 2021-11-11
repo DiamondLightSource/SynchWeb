@@ -1437,12 +1437,15 @@ class Sample extends Page
             if ($this->has_arg('external')) {
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
-            
-            if ($this->has_arg('SAFETYLEVEL')) {
+
+            $has_safety_level = $this->has_arg('SAFETYLEVEL');
+            if ($has_safety_level && $this->arg('SAFETYLEVEL')  === 'ALL') {
+                $where .= ' AND pr.safetyLevel IS NOT NULL';
+            } else if ($has_safety_level && $this->arg('SAFETYLEVEL')  !== 'ALL') {
                 $where .= ' AND pr.safetyLevel=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('SAFETYLEVEL'));
             }
-            
+
             if ($this->has_arg('term')) {
                 $where .= " AND (lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+1)."), '%')) OR lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+2)."), '%')))";
                 array_push($args, $this->arg('term'));
