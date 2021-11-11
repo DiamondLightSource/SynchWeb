@@ -1,5 +1,5 @@
 <template>
-  <processing-section-movie-select
+  <processing-section-image-select
     section-title="CTF Estimation"
     url-prefix="ctf"
     :latest="latest"
@@ -14,20 +14,20 @@
       title="FFT Theoretical"
       :image-url="imageUrl"
     />
-  </processing-section-movie-select>
+  </processing-section-image-select>
 </template>
 
 <script>
 import DialogImage from 'modules/types/em/components/dialog-image.vue'
 import Params from 'modules/types/em/ctf/params.vue'
-import ProcessingSectionMovieSelect from 'modules/types/em/components/processing-section-movie-select.vue'
+import ProcessingSectionImageSelect from 'modules/types/em/components/processing-section-image-select.vue'
 
 export default {
     'name': "CtfEstimation",
     'components': {
         'dialog-image': DialogImage,
         'params': Params,
-        'processing-section-movie-select': ProcessingSectionMovieSelect,
+        'processing-section-image-select': ProcessingSectionImageSelect,
     },
     'props': {
         'autoProcProgramId': {
