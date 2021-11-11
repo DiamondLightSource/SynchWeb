@@ -3,7 +3,6 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
-use SynchWeb\Queue;
 
 class Process extends Page
 {
@@ -356,17 +355,7 @@ class Process extends Page
 
     function _enqueue()
     {
-        global $zocalo_server,
-               $zocalo_username,
-               $zocalo_password,
-               $zocalo_mx_reprocess_queue;
-
-        if (empty($zocalo_server) || empty($zocalo_mx_reprocess_queue)) {
-            $message = 'Zocalo server not specified.';
-
-            error_log($message);
-            $this->_error($message, 500);
-        }
+        global $zocalo_mx_reprocess_queue;
 
         if (!$this->has_arg('PROCESSINGJOBID')) $this->_error('No processing job specified');
 
@@ -385,19 +374,12 @@ class Process extends Page
         if (!sizeof($chk)) $this->_error('No such processing job');
 
         // Send job to processing queue
-
         $message = array(
             'parameters' => array(
                 'ispyb_process' => intval($this->arg('PROCESSINGJOBID')),
             )
         );
-
-        try {
-            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_mx_reprocess_queue, $message, true, $this->user->login);
-        } catch (Exception $e) {
-            $this->_error($e->getMessage(), 500);
-        }
+        $this->_send_zocalo_message($zocalo_mx_reprocess_queue, $message);
 
         $this->_output(new \stdClass);
     }

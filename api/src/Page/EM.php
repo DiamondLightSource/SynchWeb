@@ -3,7 +3,6 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
-use SynchWeb\Queue;
 
 class EM extends Page
 {
@@ -265,7 +264,7 @@ class EM extends Page
             )
         );
 
-         $this->enqueue($zocalo_mx_reprocess_queue, $message);
+        $this->_send_zocalo_message($zocalo_mx_reprocess_queue, $message);
 
         // TODO Remove temporary output of message and workflow_parameters
 
@@ -667,17 +666,13 @@ class EM extends Page
                 WHERE processingJobId = :1", array($this->arg('processingJobId')));
 
             if (count($result)) {
-                $message = array(
-                    'parameters' => array(
-                        'ispyb_process' => $result[0]['PROCESSINGJOBID']
-                    ),
-                    'recipes' => ['relion-stop']
+                $parameters = array(
+                    'ispyb_process' => $result[0]['PROCESSINGJOBID']
                 );
-
-                 $this->enqueue($zocalo_mx_reprocess_queue, $message);
+                $recipe = ['relion-stop'];
+                $this->_submit_zocalo_recipe($recipe, $parameters);
             } else {
                 $message = 'Processing job not found!';
-
                 error_log($message);
                 $this->_error($message, 400);
             }
@@ -841,7 +836,7 @@ class EM extends Page
             'scipion_workflow' => "{$workflow_path}/{$workflow_file}"
         );
 
-        $this->enqueue($zocalo_scipion_start_queue, $message);
+        $this->_send_zocalo_message($zocalo_scipion_start_queue, $message);
 
         $output = array(
             'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
@@ -852,27 +847,6 @@ class EM extends Page
         );
 
         $this->_output($output);
-    }
-
-    private function enqueue($zocalo_queue, $zocalo_message)
-    {
-        global $zocalo_server,
-               $zocalo_username,
-               $zocalo_password;
-
-        if (empty($zocalo_server) || empty($zocalo_queue)) {
-            $message = 'Zocalo server not specified.';
-
-            error_log($message);
-            $this->_error($message, 500);
-        }
-
-        try {
-            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_queue, $zocalo_message, true, $this->user->login);
-        } catch (Exception $e) {
-            $this->_error($e->getMessage(), 500);
-        }
     }
 
     function _ap_status()

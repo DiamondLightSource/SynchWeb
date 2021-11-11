@@ -1680,7 +1680,7 @@ class Sample extends Page
             if (!empty($zocalo_recipes_on_add_protein_sequence)) {
                 $parameters = array('ispyb_protein_id' => $pid);
                 foreach($zocalo_recipes_on_add_protein_sequence as $recipe){
-                    $this->_submit_zocalo_recipe($recipe, $parameters);
+                    $this->_submit_zocalo_recipe($recipe, $parameters, 500);
                 }
             }
         }
