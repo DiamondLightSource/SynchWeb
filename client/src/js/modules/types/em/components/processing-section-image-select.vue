@@ -7,6 +7,7 @@
     <template #controls>
       <image-select
         :max="max"
+        :latest="latest"
         @changed="selectChanged"
       />
     </template>
@@ -38,6 +39,10 @@ export default {
             'type': String,
             'required': true,
         },
+        'latest': {
+            'type': String,
+            'required': true,
+        },
         'autoProcProgramId': {
             'type': String,
             'required': true,
@@ -49,38 +54,33 @@ export default {
     },
     'data': function() {
         return {
-            'imageNumber': 1,
+            'imageNumber': 0,
         }
     },
     'watch': {
-        // eslint-disable-next-line no-unused-vars
-        'imageNumber': function(newValue, oldValue) {
-            this.fetchDetail()
+        'imageNumber': function(newValue) {
+            if (
+                this.autoProcProgramId == '' ||
+                newValue == this.loadedImageNumber
+            ) {
+                return;
+            }
+            if (newValue == '0') {
+                this.$emit('loaded', {})
+                return
+            }
+            this.$store.dispatch('em/api/fetch', {
+                'url': this.urlPrefix + '/' +
+                    this.autoProcProgramId + '/n/' + newValue,
+                'humanName': this.sectionTitle + ' Details',
+            }).then(
+                (details) => { this.$emit('loaded', details) }
+            )
         },
     },
     'methods': {
         'selectChanged': function(imageNumber) {
             this.imageNumber = imageNumber
-        },
-        'fetchDetail': function() {
-            if (
-                this.autoProcProgramId == '' ||
-                this.imageNumber == this.loadedImageNumber
-            ) {
-                return;
-            }
-            if (this.imageNumber == '0') {
-                this.$emit('loaded', {})
-                return
-            }
-            this.$store.dispatch('em/api/fetch', {
-                'url': this.urlPrefix +
-                    '/' + this.autoProcProgramId +
-                    '/n/' + this.imageNumber,
-                'humanName': this.sectionTitle + ' Details',
-            }).then(
-                (details) => { this.$emit('loaded', details) }
-            )
         },
     },
 }

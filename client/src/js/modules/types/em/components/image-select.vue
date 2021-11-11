@@ -4,14 +4,14 @@
 
     <flat-button
       :disabled="imageNumber <= 1"
-      @click="click(1)"
+      @click="imageNumber = 1"
     >
       <i class="fa fa-angle-double-left" />
     </flat-button>
 
     <flat-button
       :disabled="imageNumber <= 1"
-      @click="click(imageNumber - 1)"
+      @click="imageNumber = imageNumber - 1"
     >
       <i class="fa fa-angle-left" />
     </flat-button>
@@ -27,21 +27,21 @@
 
     <flat-button
       :disabled="imageNumber >= max"
-      @click="click(imageNumber + 1)"
+      @click="imageNumber = imageNumber + 1"
     >
       <i class="fa fa-angle-right" />
     </flat-button>
 
     <flat-button
       :disabled="imageNumber >= max"
-      @click="click(max)"
+      @click="imageNumber = max"
     >
       <i class="fa fa-angle-double-right" />
     </flat-button>
 
     <label>Show most recent
       <input
-        v-model="showMostRecent"
+        v-model="showLatest"
         type="checkbox"
       >
     </label>
@@ -49,8 +49,8 @@
 </template>
 
 <script>
-import FlatButton from 'app/components/flat-button.vue'
 import { mapGetters } from 'vuex'
+import FlatButton from 'app/components/flat-button.vue'
 
 export default {
     'name': "ImageSelect",
@@ -62,12 +62,15 @@ export default {
             'type': String,
             'required': true,
         },
+        'latest': {
+            'type': String,
+            'required': true,
+        },
     },
     'data': function() {
         return {
-            //'inputBoxClass': '',
-            'imageNumber': 0,
-            'showMostRecent': true,
+            'imageNumber': this.latest,
+            'showLatest': true,
             'eventTimeout': null,
             'keyTimeout': null,
         }
@@ -81,21 +84,14 @@ export default {
         },
     },
     'watch': {
-        // eslint-disable-next-line no-unused-vars
-        'max': function(newValue, oldValue) {
-            this.selectMax()
+        'remoteSelectedImage': function(newValue) {
+            this.imageNumber = newValue
         },
-        // eslint-disable-next-line no-unused-vars
-        'showMostRecent': function(newValue, oldValue) {
-            this.selectMax()
-        },
-        'remoteSelectedImage': function() {
-            this.click(this.remoteSelectedImage)
-        },
-        'imageNumber': function(
-            newValue,
-            oldValue  // eslint-disable-line no-unused-vars
-        ) {
+        'imageNumber': function(newValue) {
+            if (newValue != this.latest) {
+                this.showLatest = false
+            }
+
             // use a timeout so that the user can "hammer" the button
             // without submitting "a million" server requests
             if (this.eventTimeout !== null) {
@@ -111,13 +107,22 @@ export default {
         },
     },
     'mounted': function() {
-        this.selectMax()
+        this.$watch(
+            () => {
+                return {
+                    'latest': this.latest,
+                    'showLatest': this.showLatest,
+                }
+            },
+            (newValue) => {
+                if (newValue.showLatest) {
+                    this.imageNumber = newValue.latest
+                }
+            }
+        )
+        this.$emit('changed', this.imageNumber)
     },
     'methods': {
-        'click': function(newImageNumber) {
-            this.showMostRecent = false
-            this.imageNumber = newImageNumber
-        },
         'typed': function(inputEvent) {
             // use a timeout so that the user can type multiple digits
             // without submitting pointless server requests
@@ -129,16 +134,11 @@ export default {
                     this.keyTimeout = null
                     const newValue = parseInt(inputEvent.srcElement.value, 10)
                     if (newValue > 0 && newValue <= this.max) {
-                        this.click(newValue)
+                        this.imageNumber = newValue
                     }
                 },
                 1000
             )
-        },
-        'selectMax': function() {
-            if (this.showMostRecent) {
-                this.imageNumber = this.max
-            }
         },
     },
 }
