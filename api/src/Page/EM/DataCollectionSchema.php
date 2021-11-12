@@ -55,7 +55,7 @@ class DataCollectionSchema extends Schema
                 'onSelect' => function ($row) {
                     $visitCode = $row['proposal'] . '-' . $row['visit_number'];
                     return preg_replace(
-                        "#.*/{$visitCode}/#",
+                        "/.*\/{$visitCode}\//",
                         '',
                         $row['imageDirectory']
                     );
@@ -82,11 +82,13 @@ class DataCollectionSchema extends Schema
             'pixelSizeOnImage' => array(
                 'label' => 'Pixel Size',
                 'unit' => 'Å/pixel',
+                'required' => false,
+                /*
                 'default' => '',
-                'required' => true,
                 'minValue' => 0.02,
                 'maxValue' => 100.0,
                 'type' => 'real'
+                */
             ),
             /**
              * In SynchWeb, imageSize is displayed as a string, but in ISpyB
@@ -96,8 +98,9 @@ class DataCollectionSchema extends Schema
                 'label' => 'Image Size X',
                 'unit' => 'Pixels',
                 'required' => false,
-                'type' => 'integer',
                 'display' => false,
+                /*
+                'type' => 'integer',
                 'onUpdate' => function ($postData) {
                     preg_match(
                         '/(\d+)\sX\s(\d+)/i',
@@ -106,13 +109,15 @@ class DataCollectionSchema extends Schema
                     );
                     return $matches[1];
                 },
+                */
             ),
             'imageSizeY' => array(
                 'label' => 'Image Size Y',
                 'unit' => 'Pixels',
                 'required' => false,
-                'type' => 'integer',
                 'display' => false,
+                /*
+                'type' => 'integer',
                 'onUpdate' => function ($postData) {
                     preg_match(
                         '/(\d+)\sX\s(\d+)/i',
@@ -121,14 +126,17 @@ class DataCollectionSchema extends Schema
                     );
                     return $matches[2];
                 },
+                */
             ),
             'imageSize' => array(
                 'label' => 'Image Size',
                 'unit' => 'Pixels',
-                'required' => true,
+                'required' => false,
                 'stored' => false,
+                /*
                 'options' => array('11520 x 8184', '5760 x 4092', '4096 x 4096'),
                 'default' => '5760 x 4092',
+                */
                 'onSelect' => function ($row) {
                     $isx = $row['imageSizeX'];
                     if (!$isx) {
@@ -143,28 +151,35 @@ class DataCollectionSchema extends Schema
             ),
             'numberOfImages' => array(
                 'label' => 'Number of Movies',
-                'required' => true,
+                'required' => false,
+                /*
                 'minValue' => 1000,
                 'maxValue' => 50000,
                 'type' => 'integer',
+                */
             ),
             'numberOfPasses' => array(
                 'label' => 'Frames Per Movie',
+                'display' => 'notBlank',
+                'required' => false,
+                /*
                 'required' => array( // everything except eer
                     'imageSuffix' => array('tif', 'tiff', 'mrc'),
                 ),
-                'display' => 'notBlank',
                 'minValue' => 30,
                 'maxValue' => 60,
                 'type' => 'integer',
+                */
             ),
             'exposureTime' => array(
                 'label' => 'Total Exposure Time',
                 'unit' => 'seconds',
-                'required' => true,
+                'required' => false,
+                /*
                 'minValue' => 1,
                 'maxValue' => 10,
                 'type' => 'real',
+                */
             ),
             'frameLength' => array(
                 'label' => 'Frame Length',
@@ -179,6 +194,8 @@ class DataCollectionSchema extends Schema
             // Optics
             'phasePlate' => array(
                 'label' => 'Phase Plate Used',
+                'required' => false,
+                /*
                 'default' => 0,
                 'options' => array('0', '1', '2', '3', '4', '5', '6'),
                 'displayOptions' => array(
@@ -190,7 +207,7 @@ class DataCollectionSchema extends Schema
                     'Ph P5',
                     'Ph P6',
                 ),
-                'required' => true,
+                */
                 'onSelect' => function ($row) {
                     return $row['phasePlate'] ? $row['phasePlate'] : '0';
                 },
@@ -198,61 +215,73 @@ class DataCollectionSchema extends Schema
             'c2lens' => array(
                 'label' => 'C2 Lens',
                 'unit' => '%',
-                'required' => true,
+                'required' => false,
+                /*
                 'minValue' => 40,
                 'maxValue' => 65,
                 'type' => 'integer',
+                */
             ),
             'c2aperture' => array(
                 'label' => 'C2 Aperture',
                 'unit' => 'μm',
-                'required' => true,
+                'required' => false,
+                /*
                 'options' => array('50', '70'),
                 'default' => '50',
                 'type' => 'integer',
+                */
             ),
             'objAperture' => array(
                 'label' => 'Objective Aperture',
                 'unit' => 'μm',
+                'display' => 'notBlank',
+                'required' => false,
+                /*
                 'required' => array(
                     'phasePlate' => '0',
                 ),
                 'options' => array('100', '70'),
-                'display' => 'notBlank',
                 'default' => '100',
                 'type' => 'integer',
+                */
             ),
             'magnification' => array(
                 'label' => 'Magnification',
-                'required' => true,
+                'required' => false,
+                /*
                 'minValue' => 53000,
                 'maxValue' => 215000,
                 'type' => 'integer',
+                */
             ),
             // Electron Beam & Detector
             'voltage' => array(
                 'label' => 'Voltage',
                 'unit' => 'kV',
+                'required' => false,
+                /*
                 'default' => '300',
-                'required' => true,
                 'options' => array('200', '300'),
+                */
             ),
-            /* On the input form, beamSizeAtSample will be 2 separate
-              values for X & Y... in the display block, this will be a single
-              value showing X & Y. */
             'beamSizeAtSampleX' => array(
                 'label' => 'Illuminated Area X',
                 'unit' => 'nm',
-                'required' => true,
+                'display' => false,
+                'required' => false,
+                /*
                 'minValue' => 320,
                 'maxValue' => 1500,
                 'default' => 600,
                 'type' => 'integer',
-                'display' => false,
+                */
                 // ISpyB uses 'μm' - SynchWeb uses 'nm'
+                /*
                 'onUpdate' => function ($postData) {
                     return $postData['beamSizeAtSampleX'] * 1000.0;
                 },
+                */
                 'onSelect' => function ($row) {
                     return $row['beamSizeAtSampleX'] / 1000.0;
                 },
@@ -260,16 +289,20 @@ class DataCollectionSchema extends Schema
             'beamSizeAtSampleY' => array(
                 'label' => 'Illuminated Area Y',
                 'unit' => 'nm', // ISpyB "uses" 'μm',
-                'required' => true,
+                'display' => false,
+                'required' => false,
+                /*
                 'minValue' => 320,
                 'maxValue' => 1500,
                 'default' => 600,
                 'type' => 'integer',
-                'display' => false,
+                */
                 // ISpyB uses 'μm' - SynchWeb uses 'nm'
+                /*
                 'onUpdate' => function ($postData) {
                     return $postData['beamSizeAtSampleY'] * 1000.0;
                 },
+                */
                 'onSelect' => function ($row) {
                     return $row['beamSizeAtSampleY'] / 1000.0;
                 },
@@ -289,11 +322,13 @@ class DataCollectionSchema extends Schema
             'totalExposedDose' => array(
                 'label' => 'Total Dose',
                 'unit' => 'e⁻/Å²',
+                'required' => false,
+                /*
                 'default' => '0.5',
-                'required' => true,
                 'minValue' => 0.2,
                 'maxValue' => 150.0,
                 'type' => 'real',
+                */
             ),
             'frameDose' => array(
                 'label' => 'Frame Dose',
@@ -310,30 +345,30 @@ class DataCollectionSchema extends Schema
             'slitGapHorizontal' => array(
                 'label' => 'Energy Filter / Slit Width',
                  'unit' => 'eV',
-                 'required' => true,
+                 'required' => false,
+                 /*
                  'minValue' => 5,
                  'maxValue' => 20,
                  'type' => 'real',
+                 */
             ),
             'detectorManufacturer' => array(
                 'label' => 'Detector Manufacturer',
                 'required' => false,
-                // TODO: store it!
                 'stored' => false,
-                // TODO max length 255
             ),
             'detectorModel' => array(
                 'label' => 'Detector Model',
                 'required' => false,
-                // TODO: store it!
                 'stored' => false,
-                // TODO max length 255
             ),
             'detectorMode' => array(
                 'label' => 'Detector Mode',
-                'required' => true,
+                'required' => false,
+                /*
                 'options' => array('Counted', 'Super Resolution Counted', 'Linear'),
                 'default' => 'Counted',
+                */
             ),
             // Miscellanea
             'comments' => array(

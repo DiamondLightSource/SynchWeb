@@ -18,7 +18,7 @@
       @cancel="showDialog = false"
     >
       <template #default="form">
-        <dialog-schema-form-section heading="Movies">
+        <dialog-schema-form-section heading="Raw Images">
           <schema-input
             v-for="name in inputs.movies"
             :key="name"
@@ -27,23 +27,23 @@
           />
         </dialog-schema-form-section>
 
-        <dialog-schema-form-section heading="Optics">
+        <!-- dialog-schema-form-section heading="Optics">
           <schema-input
             v-for="name in inputs.optics"
             :key="name"
             :name="name"
             :form="form"
           />
-        </dialog-schema-form-section>
+        </dialog-schema-form-section -->
 
-        <dialog-schema-form-section heading="Electron Beam &amp; Detector">
+        <!-- dialog-schema-form-section heading="Electron Beam &amp; Detector">
           <schema-input
             v-for="name in inputs.beamDetector"
             :key="name"
             :name="name"
             :form="form"
           />
-        </dialog-schema-form-section>
+        </dialog-schema-form-section -->
       </template>
     </dialog-schema-form>
   </span>
@@ -77,21 +77,20 @@ export default {
     'data': function() {
         return {
             'showDialog': false,
-            /* Hopefully, we can use this to check for errors that don't
-               have an associated input (which is most likely a coding error)
-               But I'm not sure how just yet as all the schema and error related
-               stuff is inside dialog-schema-form */
             'inputs': {
                 'movies': [
                     'acquisitionSoftware',
                     'imageDirectory',
                     'imageSuffix',
+                    /*
                     'pixelSizeOnImage',
                     'imageSize',
                     'numberOfImages',
                     'numberOfPasses',
                     'exposureTime',
+                    */
                 ],
+                /*
                 'optics': [
                     'phasePlate',
                     'c2lens',
@@ -109,6 +108,7 @@ export default {
                     //'detectorModel',
                     'detectorMode',
                 ],
+                */
             },
         }
     },
