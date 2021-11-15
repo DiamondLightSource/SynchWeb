@@ -1,24 +1,24 @@
 <template>
   <div class="content">
-    <h1 v-if="gid">Edit Sample Group</h1>
-    <h1 v-else>Add Sample Group</h1>
-
     <help-banner level='notify' message='To save the sample group, edit the name and click OK. To add samples to the group, select the relevant container and add sample locations to the group, then click "Save Sample Group" at the foot of the page.'/>
 
-    <base-input-text
-      outerClass="tw-mb-4 tw-py-4"
-      labelClass="tw-mr-3 tw-py-8 tw-font-bold"
-      inputClass="tw-rounded tw-border tw-w-64 tw-py-1 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-border-blue-500"
-      :value="groupName"
-      id="name"
-      label="Group Name"
-      :inline="true"
-      @input="changeGroupName"
-      @save="saveSampleGroupName(true)"
-    />
+    <div class="tw-flex tw-flex-row tw-w-full tw-items-center">
+      <base-input-text
+        outerClass="tw-py-4 group-name maven-pro-font tw-mr-3"
+        labelClass="tw-mr-3 tw-py-8 name-label maven-pro-font"
+        inputClass="tw-rounded tw-border tw-w-64 tw-py-1 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-border-blue-500"
+        :value="groupName"
+        id="name"
+        :label="gid ? 'Editing Sample Group' : 'Create Sample Group'"
+        :inline="true"
+        @input="changeGroupName"
+        @save="saveSampleGroupName(true)"
+      />
+      <p class="tw-text-lg maven-pro-font">(Click to edit and save name)</p>
+    </div>
 
     <div v-if="objectKeys(selectedSamplesInGroups).length > 0" class="content">
-      <h1>Sample Group {{ sampleGroupName }}</h1>
+      <h1>Sample Group Containers</h1>
       <table-panel
         :headers="sampleGroupHeaders"
         :data="formatSamplesInGroups()"
@@ -387,6 +387,23 @@ export default {
     return {
       $tableActions: 'Action'
     }
+  },
+  beforeRouteLeave(to, from , next) {
+    this.$store.commit('sampleGroups/resetSelectedSampleGroups')
+    next()
   }
 };
 </script>
+<style scoped>
+>>> .name-label {
+  @apply tw-font-normal tw-text-2xl ;
+}
+>>> .group-name {
+  .btn-edit {
+    @apply tw-font-normal tw-text-2xl ;
+  }
+}
+.maven-pro-font {
+  font-family: 'Maven Pro', sans-serif;
+}
+</style>

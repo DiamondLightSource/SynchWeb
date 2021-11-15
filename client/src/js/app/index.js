@@ -1,5 +1,5 @@
-var Styles = require('css/main.scss')
-var FontAwesome = require('font-awesome/css/font-awesome.css')
+const Styles = require('css/main.scss');
+const FontAwesome = require('font-awesome/css/font-awesome.css');
 
 import Vue from 'vue'
 import VeeValidate from 'vee-validate'

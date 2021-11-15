@@ -9,7 +9,7 @@
     "build:dev": "./node_modules/.bin/webpack --config webpack.config.js --mode development",
     "build:stats": "NODE_ENV=production ./node_modules/.bin/webpack --config webpack.config.js --mode production --profile --json > stats.json",
     "analyze": "./node_modules/.bin/webpack-bundle-analyzer stats.json",
-    "serve": "./node_modules/.bin/webpack-dev-server"
+    "serve": "./node_modules/.bin/webpack-dev-server --hot"
   },
   "keywords": [
     "SynchWeb",

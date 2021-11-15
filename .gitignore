@@ -31,3 +31,5 @@ client/.env
 api/config.php
 api/vendor
 api/src/MockUAS.php
+
+.idea/
