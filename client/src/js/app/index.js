@@ -1,6 +1,3 @@
-const Styles = require('css/main.scss');
-const FontAwesome = require('font-awesome/css/font-awesome.css');
-
 import Vue from 'vue'
 import VeeValidate from 'vee-validate'
 import PortalVue from 'portal-vue'
@@ -17,6 +14,8 @@ import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
 
 Vue.use(VeeValidate)
 Vue.use(PortalVue)
+
+Vue.use(VeeValidate)
 
 Vue.config.productionTip = false
 Vue.config.devtools = !config.production

@@ -149,6 +149,10 @@ export default {
 
             const result = await this.$store.dispatch('getCollection', this.collection)
             this.containers = result.toJSON()
+
+            if (this.containers.length > 0) {
+              this.$emit('row-clicked', this.containers[0])
+            }
             this.containersListState = result.state
 
             this.$store.commit('loading', false)

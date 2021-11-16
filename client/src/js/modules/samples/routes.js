@@ -16,8 +16,8 @@ const CrystalListWrapper = () => import(/* webpackChunkName: "samples" */ 'modul
 const CrystalViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-view-wrapper.vue')
 const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-add-wrapper.vue')
 
-const SampleGroups = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleGroups.vue')
-const SampleGroupEdit = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/SampleGroupEdit.vue')
+const SampleGroups = () => import(/* webpackChunkName: "samples" */ 'js/modules/samples/components/sample-groups.vue')
+const SampleGroupEdit = () => import(/* webpackChunkName: "samples" */ 'js/modules/samples/components/sample-group-edit.vue')
 
 app.addInitializer(function() {
   app.on('samples:show', function() {

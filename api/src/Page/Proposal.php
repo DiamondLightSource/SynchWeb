@@ -19,7 +19,6 @@ class Proposal extends Page
                               'bl' => '[\w-]+',
                               'ty' => '\w+',
                               'cm' => '\d',
-                              'ty' => '\w+',
                               'next' => '\d',
                               'prev' => '\d',
                               'started' => '\d',
@@ -163,46 +162,45 @@ class Proposal extends Page
                 $where .= " AND shp.personid=:".(sizeof($args)+1);
                 array_push($args, $this->user->personid);
             }
-            
+
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
                 $where .= " AND (lower(s.beamlinename) LIKE lower(:".$st.") OR lower(p.title) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."),'%')) OR lower(CONCAT(p.proposalcode, p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
                 for ($i = 0; $i < 3; $i++) array_push($args, $this->arg('s'));
             }
 
-            $tot = $this->db->pq("SELECT count(distinct p.proposalid) as tot FROM proposal p 
-                LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid $where", $args);
+            $tot = $this->db->pq("SELECT count(distinct p.proposalid) as tot FROM proposal p LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid $where", $args);
             $tot = intval($tot[0]['TOT']);
-            
+
             $start = 0;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
             $end = $pp;
-            
+
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
                 $start = $pg*$pp;
                 $end = $pg*$pp+$pp;
             }
-            
+//
             $st = sizeof($args)+1;
             array_push($args, $start);
             array_push($args, $end);
-            
+
             $order = 'p.proposalid DESC';
-            
+
             if ($this->has_arg('sort_by')) {
                 $cols = array('ST' => 'p.bltimestamp', 'PROPOSALCODE' => 'p.proposalcode', 'PROPOSALNUMBER' => 'p.proposalnumber', 'VCOUNT' => 'vcount', 'TITLE' => 'lower(p.title)');
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-            
-            $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname, pe.personid, p.state, IF(p.state = 'Open', 1, 0) as active, CONCAT(p.proposalcode,p.proposalnumber) as prop
-                    FROM proposal p 
-                    LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid 
+
+            $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname, pe.personid, p.state, IF(p.state = 'Open', 1, 0) as active, CONCAT(p.proposalcode,p.proposalnumber) as prop, s.beamlinename
+                    FROM proposal p
+                    LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid
                     LEFT OUTER JOIN person pe ON pe.personid = p.personid
-                    $where 
+                    $where
                     GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order", $args);
-            
+
 
             foreach ($rows as &$r) {
                 // See if proposal code matches list in config
@@ -214,11 +212,11 @@ class Proposal extends Page
                         $found = True;
                     }
                 }
-                
+
                 // Proposal code didnt match, work out what beamline the visits are on
                 if (!$found) {
                     $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s WHERE s.proposalid=:1", array($r['PROPOSALID']));
-                    
+
                     if (sizeof($bls)) {
                         foreach ($bls as $bl) {
                             $b = $bl['BEAMLINENAME'];
@@ -227,12 +225,12 @@ class Proposal extends Page
                         }
                     }
                 }
-                
+
                 if (!$ty) $ty = 'gen';
                 $r['TYPE'] = $ty;
-                
+
             }
-            
+
             if ($id) {
                 if (sizeof($rows)) $this->_output($rows[0]);
                 else $this->_error('No such proposal');
