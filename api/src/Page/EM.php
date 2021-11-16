@@ -28,7 +28,6 @@ class EM extends Page
     use \SynchWeb\Page\EM\Scipion;
     use \SynchWeb\Page\EM\Session;
     use \SynchWeb\Page\EM\Stats;
-    use \SynchWeb\Page\EM\Zocalo;
 
     public static $arg_list = array(
         'id' => '\d+',
@@ -103,13 +102,18 @@ class EM extends Page
 
     private function paginationArguments($args)
     {
-        $perPage = $this->has_arg('per_page') ?
-            $this->arg('per_page') : 15;
-        $page = ($this->has_arg('page') && $this->arg('page') > 0) ?
-            $this->arg('page') - 1 : 0;
-
-        array_push($args, $page * $perPage); // Offset
-        array_push($args, $perPage);         // Row Count
+        $perPage = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+        $start = 0;
+        $end = $perPage;
+            
+        if ($this->has_arg('page') && $this->arg('page') > 0) {
+            $page = $this->arg('page') - 1;
+            $start = $page*$perPage;
+            $end = $page*$perPage+$perPage;
+        }
+            
+        array_push($args, $start);
+        array_push($args, $end);
 
         return $args;
     }
