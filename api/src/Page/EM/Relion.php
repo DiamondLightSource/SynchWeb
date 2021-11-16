@@ -60,7 +60,7 @@ trait Relion
             'parameters' => array('ispyb_process' => $processingJobId)
         );
 
-        $this->zocaloEnqueue($zocalo_mx_reprocess_queue, $message);
+        $this->_send_zocalo_message($zocalo_mx_reprocess_queue, $message);
 
         $output = array(
             'timestamp' => gmdate('c', time()),
@@ -104,16 +104,18 @@ trait Relion
 
         $result = $rows[0];
 
-        $message = array(
-            'parameters' => array(
-                'ispyb_process' => $result['processingJobId']
-            ),
-            'recipes' => ['relion-stop']
+        $parameters = array(
+            'ispyb_process' => $result['processingJobId'],
         );
-        $this->zocaloEnqueue($zocalo_mx_reprocess_queue, $message);
+        $recipe = ['relion-stop'];
+        $this->_submit_zocalo_recipe($recipe, $parameters);
+
         $this->_output(array(
             'timestamp' => gmdate('c', time()),
-            'message' => $message
+            'message' => array(
+                'recipe' => $recipe,
+                'parameters' => $parameters,
+            )
         ));
     }
 

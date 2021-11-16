@@ -125,7 +125,7 @@ trait Scipion
             'scipion_workflow' => "{$workflow_path}/{$workflow_file}"
         );
 
-        //$this->zocaloEnqueue($zocalo_scipion_start_queue, $message);
+        // $this->_send_zocalo_message($zocalo_scipion_start_queue, $message);
 
         $output = array(
             'timestamp_iso8601' => gmdate('c', $timestamp_epoch),
