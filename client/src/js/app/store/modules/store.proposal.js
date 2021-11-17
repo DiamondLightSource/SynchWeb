@@ -47,7 +47,10 @@ const proposalModule = {
     },
     // Set current visit / session number
     setVisit(state, visit) {
-      state.visit = visit
+      if (visit) {
+        this.dispatch('proposal/setProposal', visit.split('-')[0])
+        state.visit = visit
+      }
     },
     clearVisit(state) {
       state.visit = ''
@@ -63,6 +66,7 @@ const proposalModule = {
             commit('setProposal', null)
             commit('setProposalType', rootState.user.defaultType)
             commit('setProposalModel', null)
+            commit('clearVisit')
             resolve()
             return
           }
@@ -126,7 +130,8 @@ const proposalModule = {
       return state.proposal
     },
     currentProposalType: state => state.proposalType,
-    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null
+    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null,
+    currentVisit: state => state.visit,
   }
 }
 

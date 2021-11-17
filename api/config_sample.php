@@ -98,9 +98,19 @@
     # List of enabled container types, all if empty
     $enabled_container_types = array();
 
-    # Active MQ - Set to empty string to disable
-    $activemq_server = 'tcp://activemq.server.ac.uk';
-    $activemq_rp_queue = '/queue/zocolo.name';
+    # Zocalo message broker credentials - Set to empty string to disable
+    $zocalo_server = 'tcp://activemq.server.ac.uk';
+    $zocalo_username = 'foo';
+    $zocalo_password = 'bar';
+
+    # Primary Zocalo entry point for recipe submission
+    $zocalo_mx_reprocess_queue = '/queue/zocolo.name';
+
+    # This is used to trigger Zocalo recipes on adding new Protein sequences
+    # Set to empty string to disable
+    $zocalo_recipes_on_add_protein_sequence = array(
+        'trigger-alphafold',
+    );
 
     # Paths
     # - These map files to physical locations on disk

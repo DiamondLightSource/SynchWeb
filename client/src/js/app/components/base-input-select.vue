@@ -14,7 +14,6 @@ Slots include:
 -->
 <template>
   <div :class="outerClass">
-
     <!-- The label which includes an optional subtitle -->
     <label v-if="label" :for="id">{{label}}
       <slot name="description">
@@ -31,7 +30,6 @@ Slots include:
       :value="localValue"
       :disabled="disabled"
       :class="classObject"
-      @input="updateValue"
       @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
@@ -59,11 +57,11 @@ export default {
   props: {
     value: { // Passed in automatically if v-model used
       type: String,
-      required: true
+      required: true,
     },
     options: {
       type: Array,
-      required:true
+      required: true,
     },
     optionValueKey: {
       type: String,
@@ -108,6 +106,14 @@ export default {
     },
     errorMessage: {
       type: String,
+    },
+    outerClass: {
+      type: String,
+      default: '',
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
     // Default behaviour is to act as normal input
     // Set inline to enable edit/save behaviour
@@ -176,7 +182,7 @@ export default {
       this.$emit("input", this.localValue);
       this.$emit("save", this.localValue);
     },
-  }
+  },
 };
 </script>
 
