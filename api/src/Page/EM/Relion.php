@@ -107,7 +107,7 @@ trait Relion
         $parameters = array(
             'ispyb_process' => $result['processingJobId'],
         );
-        $recipe = ['relion-stop'];
+        $recipe = 'relion-stop';
         $this->_submit_zocalo_recipe($recipe, $parameters);
 
         $this->_output(array(
