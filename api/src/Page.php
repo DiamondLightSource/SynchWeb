@@ -931,7 +931,7 @@ class Page
             }
 
             try {
-                error_log("Sending message"+$zocalo_message);
+                error_log("Sending message" . var_export($zocalo_message, true));
                 $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
                 $queue->send($zocalo_queue, $zocalo_message, true, $this->user->login);
             } catch (Exception $e) {
