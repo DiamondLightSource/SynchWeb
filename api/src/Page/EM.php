@@ -38,6 +38,7 @@ class EM extends Page
         'n' => '\d+',
         't' => '\d+',
         'programId' => '\d+',
+        'attachId' => '\d+',
         'imageNumber' => '\d+',
 
         // SCIPION
@@ -61,7 +62,7 @@ class EM extends Page
 
         // See Synchweb\Page\EM\Attachments
         array('/attachments/:programId', 'get', 'attachmentsGetAll'),
-        array('/attachment/:id', 'get', 'attachmentsGetOne'),
+        array('/attachment/:attachId', 'get', 'attachmentsGetOne'),
 
         // See Synchweb\Page\EM\MotionCorrection
         array('/mc/:programId/n/:imageNumber', 'get', 'motionCorrectionResult'),

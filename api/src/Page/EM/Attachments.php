@@ -85,7 +85,7 @@ trait Attachments
                 ON Proposal.proposalId = BLSession.proposalId
             WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
             AND AutoProcProgramAttachment.autoProcProgramAttachmentId = :2",
-            array($this->arg('prop'), $this->arg('id')),
+            array($this->arg('prop'), $this->arg('attachId')),
             false
         );
 
