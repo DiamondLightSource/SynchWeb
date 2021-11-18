@@ -25,7 +25,7 @@ trait Picker
             AND mc.imageNumber = :3",
             array(
                 $this->arg('prop'),
-                $this->arg('id'),
+                $this->arg('programId'),
                 $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
@@ -57,7 +57,7 @@ trait Picker
             AND mc.imageNumber = :3",
             array(
                 $this->arg('prop'),
-                $this->arg('id'),
+                $this->arg('programId'),
                 $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false

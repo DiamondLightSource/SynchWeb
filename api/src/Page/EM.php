@@ -37,6 +37,7 @@ class EM extends Page
         'classification' => '[23]D',
         'n' => '\d+',
         't' => '\d+',
+        'programId' => '\d+',
         'imageNumber' => '\d+',
 
         // SCIPION
@@ -59,25 +60,25 @@ class EM extends Page
         array('/jobs/:id', 'get', 'processingJobs'),
 
         // See Synchweb\Page\EM\Attachments
-        array('/attachments/:id', 'get', 'attachmentsGetAll'),
+        array('/attachments/:programId', 'get', 'attachmentsGetAll'),
         array('/attachment/:id', 'get', 'attachmentsGetOne'),
 
         // See Synchweb\Page\EM\MotionCorrection
-        array('/mc/:id/n/:imageNumber', 'get', 'motionCorrectionResult'),
-        array('/mc/drift/:id(/n/:imageNumber)', 'get', 'motionCorrectionDriftPlot'),
-        array('/mc/snapshot/:id(/n/:imageNumber)', 'get', 'motionCorrectionSnapshot'),
+        array('/mc/:programId/n/:imageNumber', 'get', 'motionCorrectionResult'),
+        array('/mc/drift/:programId(/n/:imageNumber)', 'get', 'motionCorrectionDriftPlot'),
+        array('/mc/snapshot/:programId(/n/:imageNumber)', 'get', 'motionCorrectionSnapshot'),
 
         // See Synchweb\Page\EM\Ctf
-        array('/ctf/:id/n/:imageNumber', 'get', 'ctfResult'),
-        array('/ctf/image/:id(/n/:imageNumber)', 'get', 'ctfImage'),
-        array('/ctf/summary/:id', 'get', 'ctfSummary'),
+        array('/ctf/:programId/n/:imageNumber', 'get', 'ctfResult'),
+        array('/ctf/image/:programId(/n/:imageNumber)', 'get', 'ctfImage'),
+        array('/ctf/summary/:programId', 'get', 'ctfSummary'),
 
         // See SynchWeb\Page\EM\Picker:
-        array('/picker/:id/n/:imageNumber', 'get', 'pickerResult'),
-        array('/picker/image/:id(/n/:imageNumber)', 'get', 'pickerImage'),
+        array('/picker/:programId/n/:imageNumber', 'get', 'pickerResult'),
+        array('/picker/image/:programId(/n/:imageNumber)', 'get', 'pickerImage'),
 
         // See SynchWeb\Page\EM\Classification:
-        array('/classification/:id/type/:classification', 'get', 'classificationResult'),
+        array('/classification/:programId/type/:classification', 'get', 'classificationResult'),
         array('/classification/image/:id', 'get', 'classificationImage'),
 
         // See Synchweb\Page\EM\DataCollection

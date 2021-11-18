@@ -7,7 +7,6 @@ trait MotionCorrection
     public function motionCorrectionResult()
     {
         $image = $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1;
-        $programId = $this->arg('id');
 
         $rows = $this->db->pq(
             "SELECT
@@ -32,7 +31,7 @@ trait MotionCorrection
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND mc.autoProcProgramId = :2
             AND mc.imageNumber = :3",
-            array($this->arg('prop'), $programId, $image),
+            array($this->arg('prop'), $this->arg('programId'), $image),
             false
         );
 
@@ -69,7 +68,7 @@ trait MotionCorrection
             AND mc.imageNumber = :3",
             array(
                 $this->arg('prop'),
-                $this->arg('id'),
+                $this->arg('programId'),
                 $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
@@ -86,7 +85,6 @@ trait MotionCorrection
     private function motionCorrectionImage($imageName)
     {
         $image = $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1;
-        $programId = $this->arg('id');
 
         $rows = $this->db->pq(
             "SELECT mc.{$imageName}
@@ -100,7 +98,7 @@ trait MotionCorrection
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND mc.autoProcProgramId = :2
             AND mc.imageNumber = :3",
-            array($this->arg('prop'), $programId, $image),
+            array($this->arg('prop'), $this->arg('programId'), $image),
             false
         );
 

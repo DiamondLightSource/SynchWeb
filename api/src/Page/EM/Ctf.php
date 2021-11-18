@@ -40,7 +40,7 @@ trait Ctf
             // Maybe c.autoProcProgramId should be mc. ?????
             array(
                 $this->arg('prop'),
-                $this->arg('id'),
+                $this->arg('programId'),
                 $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
@@ -83,7 +83,7 @@ trait Ctf
             // Maybe c.autoProcProgramId should be mc. ?????
             array(
                 $this->arg('prop'),
-                $this->arg('id'),
+                $this->arg('programId'),
                 $this->has_arg('imageNumber') ? $this->arg('imageNumber') : 1
             ),
             false
@@ -117,7 +117,7 @@ trait Ctf
             AND c.autoProcProgramId = :2
             ORDER BY m.createdTimeStamp",
             // Maybe c.autoProcProgramId should be mc. ?????
-            array($this->arg('prop'), $this->arg('id')),
+            array($this->arg('prop'), $this->arg('programId')),
             false
         );
         $this->_output($rows);
