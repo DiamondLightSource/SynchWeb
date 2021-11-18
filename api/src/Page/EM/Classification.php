@@ -32,7 +32,7 @@ trait Classification
                     = BLSession.proposalId
             WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
             AND ParticleClassification.particleClassificationId = :2",
-            array($this->arg('prop'), $this->arg('id')),
+            array($this->arg('prop'), $this->arg('classificationId')),
             false
         );
 

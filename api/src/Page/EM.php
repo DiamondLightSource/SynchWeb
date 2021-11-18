@@ -39,6 +39,7 @@ class EM extends Page
         't' => '\d+',
         'programId' => '\d+',
         'attachId' => '\d+',
+        'classificationId' => '\d+',
         'imageNumber' => '\d+',
 
         // SCIPION
@@ -80,7 +81,7 @@ class EM extends Page
 
         // See SynchWeb\Page\EM\Classification:
         array('/classification/:programId/type/:classification', 'get', 'classificationResult'),
-        array('/classification/image/:id', 'get', 'classificationImage'),
+        array('/classification/image/:classificationId', 'get', 'classificationImage'),
 
         // See Synchweb\Page\EM\DataCollection
         array('/dc/schema/', 'get', 'dataCollectionSchema'),
