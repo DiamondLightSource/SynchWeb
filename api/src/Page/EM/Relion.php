@@ -92,7 +92,7 @@ trait Relion
                 ON Proposal.proposalId = BLSession.proposalId
             WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
             AND processingJobId = :2",
-            array($this->arg('prop'), $this->arg('id')),
+            array($this->arg('prop'), $this->arg('jobId')),
             false
         );
 
@@ -143,7 +143,7 @@ trait Relion
                 ON Proposal.proposalId = BLSession.proposalId
             WHERE CONCAT(Proposal.proposalCode, Proposal.proposalNumber) = :1
             AND ProcessingJobParameter.processingJobId = :2",
-            array($this->arg('prop'), $this->arg('id')),
+            array($this->arg('prop'), $this->arg('jobId')),
             false
         );
 
