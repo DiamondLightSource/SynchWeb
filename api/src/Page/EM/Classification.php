@@ -47,7 +47,7 @@ trait Classification
     {
         $args = array(
             $this->arg('prop'),
-            $this->arg('id'),
+            $this->arg('programId'),
             $this->arg('classification')
         );
 
