@@ -128,6 +128,9 @@ export default {
     margin-left: 5px;
     margin-right: 5px;
 }
+.body {
+    margin: 5px;
+}
 .dialog-heading {
     flex-grow: 1;
     padding: 5px;
