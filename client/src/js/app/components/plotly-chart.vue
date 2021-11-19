@@ -81,9 +81,11 @@ export default {
 
             const options = this.static ? {
                 'staticPlot': true,
+                'responsive': true,
             } : {
                 'displaylogo': false,
                 'displayModeBar': true,
+                'responsive': true,
             }
 
             const layout = this.layout
