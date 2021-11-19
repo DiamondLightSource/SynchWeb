@@ -33,7 +33,8 @@ trait DataCollection
 
         $session = $this->sessionFetch($this->arg('session'));
 
-        $this->sessionExitIfNotActive($session);
+        // See: https://jira.diamond.ac.uk/browse/SCI-10138
+        // $this->sessionExitIfNotActive($session);
 
         $imageDirectory = $this->sessionSubstituteValuesInPath(
             $session,

@@ -38,7 +38,8 @@ trait Relion
             $dataCollectionId
         );
 
-        $this->sessionExitIfNotActive($session);
+        // See: https://jira.diamond.ac.uk/browse/SCI-10138
+        // $this->sessionExitIfNotActive($session);
 
         $dataCollection = $this->dataCollectionForProcessing(
             $proposalCode,
