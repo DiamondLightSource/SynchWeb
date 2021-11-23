@@ -2,6 +2,9 @@
 
 namespace SynchWeb\Page\EM;
 
+use DateTime;
+use DateInterval;
+
 trait Session
 {
     /**
@@ -124,12 +127,14 @@ trait Session
      */
     private function sessionExitIfNotActive($session)
     {
-        if (!$session['active']) {
-            $message = 'This visit ended at ' . date(
-                'H:i:s \o\n jS F Y',
-                strtotime($session['endDate'])
-            ) . '.';
-            error_log($message);
+        $endDate = new DateTime($session['endDate']);
+        $gracePeriod = new DateTime();
+        $gracePeriod->sub(new DateInterval('PT24H'));
+
+        if ($endDate < $gracePeriod) {
+            $message = 'This visit ended over 24 hours ago, at ' .
+                $endDate->format('H:i:s \o\n jS F Y');
+            error_log("{$session['session']} $message");
             $this->_error($message, 400);
         }
     }
