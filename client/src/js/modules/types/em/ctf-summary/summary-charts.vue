@@ -78,7 +78,7 @@ export default {
         },
         'layoutAstigmatism': function() {
             return this.plotlyLayout({
-                'title': 'Å',
+                'title': 'nm',
                 'rangemode': 'tozero',
                 'fixedrange': true,
             })
@@ -185,11 +185,7 @@ export default {
                             '<br>' + row.createdTimeStamp
                         )
                         for (const chart in yAxes) {
-                            yAxes[chart].push(
-                                // the estimatedDefocus chart should be in μm
-                                chart == 'estimatedDefocus' ?
-                                    row[chart] / 10000.0 : row[chart]
-                            )
+                            yAxes[chart].push(row[chart])
                         }
                     })
                     Object.freeze(xAxis)

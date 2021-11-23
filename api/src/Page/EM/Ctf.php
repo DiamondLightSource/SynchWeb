@@ -16,15 +16,13 @@ trait Ctf
                 c.minDefocus,
                 c.maxDefocus,
                 c.defocusStepSize,
-                c.astigmatism,
+                c.astigmatism / 10.0 as astigmatism,
                 c.astigmatismAngle,
                 c.estimatedResolution,
-                c.estimatedDefocus,
+                c.estimatedDefocus / 10000.0 as estimatedDefocus,
                 c.amplitudeContrast,
                 c.ccValue,
-                c.fftTheoreticalFullPath,
                 c.comments,
-                c.autoProcProgramId,
                 m.createdTimeStamp,
                 mc.imageNumber
             FROM CTF c
@@ -37,7 +35,6 @@ trait Ctf
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND c.autoProcProgramId = :2
             AND mc.imageNumber = :3",
-            // Maybe c.autoProcProgramId should be mc. ?????
             array(
                 $this->arg('prop'),
                 $this->arg('programId'),
@@ -51,17 +48,14 @@ trait Ctf
         }
         $row = $rows[0];
 
-        $row['fftTheoreticalFullPath'] = file_exists($row['fftTheoreticalFullPath']) ? 1 : 0;
-
-        $formatColumns = array(
-            'astigmatism' => 2,
-            'astigmatismAngle' => 1,
-            'estimatedResolution' => 2,
-            'estimatedDefocus' => 0
-        );
-        foreach ($formatColumns as $column => $decimals) {
-            $row[$column] = number_format($row[$column], $decimals, '.', '');
-        }
+        $row['estimatedResolution'] =
+            number_format($row['estimatedResolution'], 2, '.', '');
+        $row['astigmatismAngle'] =
+            number_format($row['astigmatismAngle'], 1, '.', '');
+        $row['astigmatism'] =
+            number_format($row['astigmatism'], 4, '.', '');
+        $row['estimatedDefocus'] =
+            number_format($row['estimatedDefocus'], 5, '.', '');
 
         $this->_output($row);
     }
@@ -80,7 +74,6 @@ trait Ctf
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND c.autoProcProgramId = :2
             AND mc.imageNumber = :3",
-            // Maybe c.autoProcProgramId should be mc. ?????
             array(
                 $this->arg('prop'),
                 $this->arg('programId'),
@@ -102,9 +95,9 @@ trait Ctf
             "SELECT
                 mc.imageNumber,
                 m.createdTimeStamp,
-                c.astigmatism,
+                c.astigmatism / 10.0 as astigmatism,
                 c.estimatedResolution,
-                c.estimatedDefocus
+                c.estimatedDefocus / 10000.0 as estimatedDefocus
             FROM CTF c
             INNER JOIN AutoProcProgram app ON app.autoProcProgramId = c.autoProcProgramId
             INNER JOIN MotionCorrection mc ON mc.motionCorrectionId = c.motionCorrectionId
@@ -116,7 +109,6 @@ trait Ctf
             WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1
             AND c.autoProcProgramId = :2
             ORDER BY m.createdTimeStamp",
-            // Maybe c.autoProcProgramId should be mc. ?????
             array($this->arg('prop'), $this->arg('programId')),
             false
         );

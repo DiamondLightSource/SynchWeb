@@ -37,7 +37,7 @@
     <parameter-list-item
       label="Astigmatism"
       :value="ctfEstimation.astigmatism"
-      unit="Å"
+      unit="nm"
     />
     <parameter-list-item
       label="Astigmatism Angle"
@@ -52,7 +52,7 @@
     <parameter-list-item
       label="Estimated Defocus"
       :value="ctfEstimation.estimatedDefocus"
-      unit="Å"
+      unit="μm"
     />
     <parameter-list-item
       label="Amplitude Contrast"
