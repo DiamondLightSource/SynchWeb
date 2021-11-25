@@ -132,6 +132,8 @@ define(['marionette', 'views/form',
                     } else {
                         self.ui.dispatchState.text("Please note, dewars are not topped up with LN2 after a return is requested.")
                     }
+                } else {
+                    self.ui.dispatchState.text("Please note, dewars are not topped up with LN2 after a return is requested.")
                 }
             })
             // Shipping option should be a backbone model
