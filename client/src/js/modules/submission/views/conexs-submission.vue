@@ -1,13 +1,13 @@
 <template>
     <div>
-        <button name="orcaTabButton" class="button" v-on:click="tabDisplay($event)">ORCA</button>
-        <button name="fdmnesTabButton" class="button" v-on:click="tabDisplay($event)">FDMNES</button>
-        <button name="quantumEspressoTabButton" class="button" v-on:click="tabDisplay($event)">Quantum Espresso</button>
+        <button name="orcaTabButton" ref="orcaTabButton" class="button" v-on:click="tabDisplay($event)">ORCA</button>
+        <button name="fdmnesTabButton" ref="fdmnesTabButton" class="button" v-on:click="tabDisplay($event)">FDMNES</button>
+        <button name="quantumEspressoTabButton" ref="quantumEspressoTabButton" class="button" v-on:click="tabDisplay($event)">Quantum Espresso</button>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <span>Cluster status: {{ clusterStatus }}</span>&nbsp;&nbsp;&nbsp;<i v-if="clusterStatus != 'Running' && clusterStatus != 'Sleeping' && clusterStatus != 'Unavailable'" class="fa icon grey fa-cog fa-spin"></i>
         <br />
 
-        <form v-on:submit.prevent="onSubmit" method="post" id="submit-orca" v-bind:class="{loading: isLoading}">
+        <form v-on:submit.prevent="onSubmit" method="post" id="submit-orca" v-bind:class="{loading: isLoading}" style="border:1px solid #ccc">
 
             <br />
             <label class="left">Input file already exists (*.inp)?</label>
@@ -123,10 +123,10 @@
                 <br /><br />
                 <label>Cards</label>
                 <br /><br />
-                <button type="button" name="controlCardBtn" class="button" v-on:click="cardDisplay($event)">CONTROL</button>
-                <button type="button" name="systemCardBtn" class="button" v-on:click="cardDisplay($event)">SYSTEM</button>
-                <button type="button" name="electronsCardBtn" class="button" v-on:click="cardDisplay($event)">ELECTRONS</button>
-                <button type="button" name="atomicSpeciesCardBtn" class="button" v-on:click="cardDisplay($event)">ATOMIC_SPECIES</button>
+                <button type="button" name="controlCardBtn" ref="controlCardBtn" class="button" v-on:click="cardDisplay($event)">CONTROL</button>
+                <button type="button" name="systemCardBtn" ref="systemCardBtn" class="button" v-on:click="cardDisplay($event)">SYSTEM</button>
+                <button type="button" name="electronsCardBtn" ref="electronsCardBtn" class="button" v-on:click="cardDisplay($event)">ELECTRONS</button>
+                <button type="button" name="atomicSpeciesCardBtn" ref="atomicSpeciesCardBtn" class="button" v-on:click="cardDisplay($event)">ATOMIC_SPECIES</button>
 
                 <br /><br />
 
@@ -432,6 +432,11 @@
             this.overviewBuilder()
         },
 
+        mounted: function(){
+            this.$refs.orcaTabButton.classList.add('active')
+            this.$refs.controlCardBtn.classList.add('active')
+        },
+
         methods: {
             startCluster: function(){
                 console.log('startCluster called')
@@ -506,6 +511,11 @@
                 this.$refs.inputFile.value = ''
                 this.$refs.orcaStructureFile.value = ''
                 this.$refs.fdmnesStructureFile.value = ''
+
+                this.$refs.orcaTabButton.classList.remove('active')
+                this.$refs.fdmnesTabButton.classList.remove('active')
+                this.$refs.quantumEspressoTabButton.classList.remove('active')
+                this.$refs[name].classList.add('active')
                 
                 // We could use the card logic here, but the input file clearing above will need refactoring too
                 // With v-if == false the section is not rendered to the DOM at all so we get undefined var errors
@@ -538,6 +548,12 @@
              */
             cardDisplay: function(event){
                 var name = event.target.name
+
+                this.$refs.controlCardBtn.classList.remove('active')
+                this.$refs.systemCardBtn.classList.remove('active')
+                this.$refs.electronsCardBtn.classList.remove('active')
+                this.$refs.atomicSpeciesCardBtn.classList.remove('active')
+                this.$refs[name].classList.add('active')
 
                 switch(name){
                     case "controlCardBtn":
@@ -970,5 +986,8 @@
     }
     li {
         padding: 5px;
+    }
+    button.active {
+        background-color: #cccccc;
     }
 </style>
