@@ -710,12 +710,12 @@
                 this.output += 'Range' + "\n"
                 this.output += '-10. 0.25 50' + '       !E_min, step, E_intermediate, step ...' + "\n\n"
                 this.output += 'Edge' + "\n"
-                this.output += this.fdmnes_edge
+                this.output += this.fdmnes_edge + "\n\n"
                 this.output += 'Z_absorber' + "\n"
 
                 for(var i=0; i<this.elements.length; i++){
-                    if(this.element == this.elements[i]['name']){
-                        this.output += this.elements[i]['number']
+                    if(this.element == this.elements[i]['element']){
+                        this.output += this.elements[i]['number'] + "\n\n"
                     }
                 }
 
