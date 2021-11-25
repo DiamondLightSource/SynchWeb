@@ -129,11 +129,7 @@ define(['marionette', 'views/form',
                         (!historyComment || (typeof historyComment === 'object' && !historyComment.checked))
                     ) {
                         self.ui.dispatchState.text("Warning: This dewar has not had it's contents checked. We recommend asking your local contact to check the dewar's contents before requesting it's return. Dewars are not topped up with LN2 after a return is requested.")
-                    } else {
-                        self.ui.dispatchState.text("Please note, dewars are not topped up with LN2 after a return is requested.")
                     }
-                } else {
-                    self.ui.dispatchState.text("Please note, dewars are not topped up with LN2 after a return is requested.")
                 }
             })
             // Shipping option should be a backbone model
