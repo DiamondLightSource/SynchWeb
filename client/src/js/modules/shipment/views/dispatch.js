@@ -46,7 +46,8 @@ define(['marionette', 'views/form',
 
             accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
             courier: 'input[name=DELIVERYAGENT_AGENTNAME]',
-            useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]'
+            useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]',
+            dispatchState: '.dispatch-state'
         },
 
 
@@ -113,8 +114,22 @@ define(['marionette', 'views/form',
 
             this.history = new DewarHistory(null, { queryParams: { did: this.getOption('dewar').get('DEWARID') }})
             this.history.fetch().done(function() {
-                var h = self.history.at(0)
-                if (h) self.ui.loc.val(h.get('STORAGELOCATION'))
+                const history = self.history.at(0)
+                console.log({ history })
+                const location = history ? history.get('STORAGELOCATION') : null
+                const historyComment = history ? history.get('COMMENTS') : null
+                const restrictedLocations = ['i03', 'i04', 'i04-1', 'i024']
+
+                if (location) {
+                    self.ui.loc.val(location)
+                    if (restrictedLocations.includes(location.toLowerCase())) {
+                        self.ui.dispatchState.text('Warning: This dewar is still on the beamline. We recommend waiting until the dewar returns to storage before requesting it\'s return. Dewars are not topped up with LN2 after a return is requested.')
+                    } else if (location.startsWith('tray-') && historyComment && historyComment.checked) {
+                        self.ui.dispatchState.text('Warning: This dewar has not had it\'s contents checked. We recommend asking your local contact to check the dewar\'s contents before requesting it\'s return. Dewars are not topped up with LN2 after a return is requested.')
+                    } else {
+                        self.ui.dispatchState.text('Please note, dewars are not topped up with LN2 after a return is requested.')
+                    }
+                }
             })
             // Shipping option should be a backbone model
             this.shipping = options.shipping
