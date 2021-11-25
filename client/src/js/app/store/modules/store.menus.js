@@ -6,6 +6,7 @@ import SaxsMenu from 'modules/types/saxs/menu.js'
 import SmMenu from 'modules/types/sm/menu.js'
 import TomoMenu from 'modules/types/tomo/menu.js'
 import XpdfMenu from 'modules/types/xpdf/menu.js'
+import SpMenu from 'modules/types/sp/menu.js'
 
 const menuStore = {
     namespaced: true,
@@ -19,6 +20,7 @@ const menuStore = {
         'sm': SmMenu,
         'tomo': TomoMenu,
         'xpdf': XpdfMenu,
+        'sp': SpMenu,
       }
     }),
 
