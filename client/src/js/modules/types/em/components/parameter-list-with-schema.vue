@@ -10,6 +10,7 @@
         :label="item.label"
         :value="item.value"
         :unit="item.unit"
+        :help-text="name"
       />
     </template>
 
@@ -20,6 +21,7 @@
         :label="item.label"
         :value="item.value"
         :unit="item.unit"
+        :help-text="name"
       />
     </template>
   </parameter-list>
