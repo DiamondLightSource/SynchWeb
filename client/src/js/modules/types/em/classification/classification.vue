@@ -5,12 +5,13 @@
     :data-available="particleClasses.length > 0"
   >
     <template #controls>
-      <select-sort v-model="sortBy" />
-
-      <select-page
-        v-model="page"
-        :max="pageCount"
-      />
+      <span v-if="pageCount > 0">
+        <select-sort v-model="sortBy" />
+        <select-page
+          v-model="page"
+          :max="pageCount"
+        />
+      </span>
     </template>
 
     <div class="preview-images">
@@ -62,7 +63,7 @@ export default {
             'type': String,
             'required': true,
             'validator': function(value) {
-                return ['2D', '3D'].includes(value);
+                return ['2D', '3D'].includes(value)
             },
         },
     },
