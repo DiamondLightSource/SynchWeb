@@ -129,7 +129,7 @@ export default {
                         '?page=' + this.page +
                         '&per_page=' + this.perPage +
                         '&sort_by=' + this.sortBy,
-                    'humanName': 'Particle Classification',
+                    'humanName': this.type + ' Particle Classification',
                 }).then(
                     (response) => {
                         this.pageCount = Math.ceil(response.total / this.perPage)
