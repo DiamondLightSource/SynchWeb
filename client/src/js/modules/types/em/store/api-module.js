@@ -2,6 +2,9 @@ import Backbone from 'backbone'
 
 export default {
     'namespaced': true,
+    'state': {
+        'loadingCount': 0,
+    },
     'getters': {
         'apiUrl': function(
             state, // eslint-disable-line no-unused-vars
@@ -12,9 +15,20 @@ export default {
         },
     },
     'actions': {
+        'loading': function(context, loading) {
+            if (loading) {
+                context.commit('loading', true, {'root': true })
+                context.state.loadingCount++
+                return
+            }
+            context.state.loadingCount--
+            if (context.state.loadingCount == 0) {
+                context.commit('loading', false, {'root': true })
+            }
+        },
         'post': function(context, {url, requestData, humanName, errorHandler}) {
             const fullUrl = context.getters.apiUrl + url
-            context.commit('loading', true, {'root': true })
+            context.dispatch('loading', true)
 
             return new Promise((resolve, reject) => {
                 const extractErrorMessage = (jqXHR) => {
@@ -57,11 +71,11 @@ export default {
                         jqXHR       // eslint-disable-line no-unused-vars
                     ) {
                         console.log('post', humanName, requestData, responseData)
-                        context.commit('loading', false, {'root': true })
+                        context.dispatch('loading', false)
                         resolve(responseData)
                     },
                     'error': function(jqXHR, textStatus, errorThrown) {
-                        context.commit('loading', false, {'root': true })
+                        context.dispatch('loading', false)
                         console.log(
                             'error',
                             textStatus,
@@ -78,7 +92,7 @@ export default {
         },
         'fetch': function(context, {url, humanName}) {
             const fullUrl = context.getters.apiUrl + url
-            context.commit('loading', true, { 'root': true })
+            context.dispatch('loading', true)
             return new Promise((resolve, reject) => {
                 // Backbone.ajax is overridden in src/js/app/marionette-application.js
                 // to provide additional SynchWeb specific functionality
@@ -91,7 +105,7 @@ export default {
                         jqXHR       // eslint-disable-line no-unused-vars
                     ) {
                         console.log('fetch', humanName, responseData)
-                        context.commit('loading', false, {'root': true })
+                        context.dispatch('loading', false)
                         resolve(responseData)
                     },
                     'error': function(jqXHR, textStatus, errorThrown) {
@@ -106,7 +120,7 @@ export default {
                             'message': 'Failed to request ' + humanName,
                             'level': 'error'
                         }, {'root': true })
-                        context.commit('loading', false, {'root': true })
+                        context.dispatch('loading', false)
                         reject()
                     }
                 })
