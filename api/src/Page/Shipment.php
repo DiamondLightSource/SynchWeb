@@ -747,18 +747,18 @@ class Shipment extends Page
             global $transfer_email;
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
-            $dew = $this->db->pq("SELECT d.dewarid,s.shippingid 
-              FROM dewar d 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
+            $dew = $this->db->pq("SELECT d.dewarid,s.shippingid
+              FROM dewar d
+              INNER JOIN shipping s ON s.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
 
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            
+
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
-              VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+              VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
               array($dew['DEWARID'], $this->arg('LOCATION')));
 
             // Update dewar status to transfer-requested to keep consistent with history
@@ -768,13 +768,16 @@ class Shipment extends Page
                 $sessions = $this->db->pq("SELECT s.sessionid
                   FROM blsession s
                   INNER JOIN proposal p ON p.proposalid = s.proposalid
-                  WHERE p.proposalid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2", 
+                  WHERE p.proposalid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2",
                     array($this->proposalid, $this->arg('NEXTVISIT')));
 
+                $sessionId = null;
+
                 if (sizeof($sessions)) {
-                    $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", 
-                      array($sessions[0]['SESSIONID'], $dew['DEWARID']));
+                    $sessionId = $sessions[0]['SESSIONID'];
                 }
+
+                $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", array($sessionId, $dew['DEWARID']));
             }
 
             $email = new Email('dewar-transfer', '*** Dewar ready for internal transfer ***');
@@ -784,7 +787,7 @@ class Shipment extends Page
 
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
-            $email->data = $data;            
+            $email->data = $data;
 
             $recpts = $transfer_email.', '.$this->arg('EMAILADDRESS');
             if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
@@ -1144,32 +1147,36 @@ class Shipment extends Page
             if (!sizeof($dewar)) $this->_error('No such dewar');
 
             if ($this->has_arg('FIRSTEXPERIMENTID')) {
+                $sessionId = $this->arg('FIRSTEXPERIMENTID') || null;
                 $chk = $this->db->pq("SELECT 1
                   FROM shippinghassession
-                  WHERE shippingid=:1 AND sessionid=:2", array($dewar[0]['SHIPPINGID'], $this->arg('FIRSTEXPERIMENTID')));
+                  WHERE shippingid=:1 AND sessionid=:2", array($dewar[0]['SHIPPINGID'], $sessionId));
 
                 if (!sizeof($chk)) {
                   $this->db->pq("INSERT INTO shippinghassession (shippingid, sessionid) 
-                            VALUES (:1,:2)", array($dewar[0]['SHIPPINGID'], $this->arg('FIRSTEXPERIMENTID')));
+                            VALUES (:1,:2)", array($dewar[0]['SHIPPINGID'], $sessionId));
                 }
             }
             
             $fields = array('CODE', 'TRACKINGNUMBERTOSYNCHROTRON', 'TRACKINGNUMBERFROMSYNCHROTRON', 'FIRSTEXPERIMENTID', 'FACILITYCODE', 'WEIGHT');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
+                    if ($f === 'FIRSTEXPERIMENTID') {
+                        $sessionId = $this->arg('FIRSTEXPERIMENTID') || null;
+                        $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
 
-                    if ($f == 'FIRSTEXPERIMENTID') {
                         $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit 
                           FROM blsession s 
                           INNER JOIN proposal p ON p.proposalid = s.proposalid 
-                          WHERE s.sessionid=:1", array($this->arg($f)));
+                          WHERE s.sessionid=:1", array($sessionId));
 
                         if (sizeof($visit)) {
-                            $this->_output(array($f => $this->arg($f), 'EXP' => $visit[0]['VISIT']));
+                            $this->_output(array($f => $sessionId, 'EXP' => $visit[0]['VISIT']));
                         }
-
-                    } else $this->_output(array($f => $this->arg($f)));
+                    } else {
+                        $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
+                        $this->_output(array($f => $this->arg($f)));
+                    }
                 }
             }
         }
