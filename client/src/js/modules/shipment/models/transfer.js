@@ -54,8 +54,8 @@ define(['backbone'], function(Backbone) {
             },
 
             NEXTVISIT: {
-                required: true,
-                pattern: 'visit',
+                required: false,
+                pattern: 'visitornull',
             },
 
             NEXTLOCALCONTACT: {
