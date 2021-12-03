@@ -247,6 +247,9 @@ class RelionSchema extends Schema
             'extract_boxsize' => array(
                 'label' => 'Box Size',
                 'unit' => 'pixels',
+                'extraDescription' => array(
+                    'Box size before binning.'
+                ),
                 'default' => '',
                 'required' => array(
                     'stop_after_ctf_estimation' => false
@@ -262,6 +265,9 @@ class RelionSchema extends Schema
                 'label' => 'Downsample Box Size',
                 'unit' => 'pixels',
                 'default' => '',
+                'extraDescription' => array(
+                    'Box size before binning.'
+                ),
                 'required' => array(
                     'stop_after_ctf_estimation' => false
                 ),
