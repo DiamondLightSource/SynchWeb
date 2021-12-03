@@ -223,7 +223,7 @@ class SchemaValidator
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private function checkMaxValue($maximum, $typedValue)
+    private function checkMaxValue($maximum, $value, $typedValue)
     {
         return $typedValue <= $maximum ? true : "should be at most $maximum";
     }
