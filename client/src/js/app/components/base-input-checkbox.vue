@@ -17,7 +17,9 @@ Slots include:
       :name="name"
       type="checkbox"
       :checked="value"
-      @change="updateValue"
+      :disabled="disabled"
+      @input="updateValue"
+      @change="changeValue"
       @blur="onBlur"
       @focus="$emit('focus')"
     >
@@ -40,8 +42,8 @@ export default {
   name: "BaseInputCheckbox",
   props: {
     value: { // Passed in automatically if v-model used
-      type: String,
-      required: true
+      type: Boolean,
+      required: true,
     },
     id: {
       type: String,
@@ -57,13 +59,17 @@ export default {
     },
     description: {
       type: String,
-      required: false
+      required: false,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
     // Default behaviour is to act as normal input
     // Set inline to enable edit/save behaviour
     inline: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // Class styling for outer div of this component
     outerClass: {

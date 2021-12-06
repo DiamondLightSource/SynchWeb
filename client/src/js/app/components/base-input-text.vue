@@ -9,14 +9,16 @@ Can be used as inline edit - by default acts as normal input
 Set inline = true to initially show as span with button to change the input
 Component will emit a save event when the value changes
 
+the label property may contain HTML... beware:
+https://eslint.vuejs.org/rules/no-v-html.html
 -->
 <template>
   <div :class="outerClass">
-
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id" :class="labelClass">{{label}}
+    <label v-if="label" :for="id" :class="labelClass">
+      <span v-html="label"></span>
       <slot name="description">
-        <span v-if="description" class="small">{{description}}</span>
+        <span v-if="description" class="small">{{ description }}</span>
       </slot>
     </label>
 
@@ -48,12 +50,7 @@ Component will emit a save event when the value changes
         <i :class="['fa', 'fa-edit']"></i> Edit
       </span>
     </span>
-    <button
-      v-if="inline && editable"
-      class="button tw-px-2 tw-py-1"
-      @mousedown="onSave">
-      OK
-    </button>
+    <button v-if="inline && editable" class="button tw-px-2 tw-py-1" @mousedown="onSave">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
@@ -100,7 +97,6 @@ export default {
     },
     errorClass: {
       type: String,
-      required: false,
       default: 'ferror'
     },
     errorMessage: {
@@ -164,7 +160,6 @@ export default {
     // If created with editable = false then we are in inline-edit mode
     this.editable = !this.inline
   },
-
   methods: {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
