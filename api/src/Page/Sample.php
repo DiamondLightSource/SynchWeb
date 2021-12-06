@@ -53,7 +53,7 @@ class Sample extends Page
                               'CRYSTALID' => '\d+',
                               'CONTAINERID' => '\d+',
                               'LOCATION' => '\d+',
-                              'CODE' => '\w+',
+                              'CODE' => '(\w|\s|\-)+|^$', // Change validation to work for dashes as well as numbers
                               // 'NAME' => '.*',
                               'ACRONYM' => '([\w-])+',
                               'SEQUENCE' => '[\s\w\(\)\.>\|;\n]+',
@@ -142,9 +142,14 @@ class Sample extends Page
                               'PLANORDER' => '\d',
 
                               'SAMPLEGROUPID' => '\d+',
+                              'SCREENINGMETHOD' => '\w+',
+                              'SCREENINGCOLLECTVALUE' => '\d+',
+                              'SAMPLEGROUP' => '\d+|\w+',
+                              'STRATEGYOPTION' => '',
+                              'MINIMUMRESOLUTION' => '\d+(.\d+)?'
                                );
-        
-        
+
+
         public static $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
                               array('/:sid', 'patch', '_update_sample'),
                               array('/:sid', 'put', '_update_sample_full'),
@@ -189,9 +194,12 @@ class Sample extends Page
                               array('/componenttypes', 'get', '_component_types'),
 
                               array('/groups', 'get', '_sample_groups'),
-                              array('/groups', 'post', '_add_sample_to_group'),
-                              array('/groups/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_group'),
-                              array('/groups/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
+                              array('/groups', 'post', '_add_new_sample_group'),
+                              array('/groups/:BLSAMPLEID', 'get', '_get_sample_groups_by_sample'),
+                              array('/groups/:BLSAMPLEGROUPID/samples', 'post', '_add_sample_to_group'),
+                              array('/groups/:BLSAMPLEGROUPID/samples/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
+                              array('/groups/:BLSAMPLEGROUPID/samples/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
+                              array('/groups/:BLSAMPLEGROUPID/samples', 'get', '_get_sample_group_samples'),
 
                               array('/spacegroups(/:SPACEGROUPID)', 'get', '_get_spacegroups'),
 
@@ -288,7 +296,7 @@ class Sample extends Page
                         $phaseMass = array_key_exists('MOLECULARMASS', $protein) ? $protein->MOLECULARMASS : null;
                         $phaseDensity = array_key_exists('DENSITY', $protein) ? $protein->DENSITY : null;
                         $externalid = array_key_exists('EXTERNALID', $protein) ? $protein->EXTERNALID : null;
-                        
+
                         $chk = $this->db->pq("SELECT proteinid FROM protein
                             WHERE proposalid=:1 AND acronym=:2", array($this->proposalid, $protein->ACRONYM));
                             if (sizeof($chk)) $this->_error('Protein acronym ' . $protein->ACRONYM . ' already exists in this proposal');
@@ -919,35 +927,35 @@ class Sample extends Page
               $join WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
 
-            
-            
+
+
             $start = 0;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
             $end = $pp;
-            
+
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
                 $start = $pg*$pp;
                 $end = $pg*$pp+$pp;
             }
-            
+
             $st = sizeof($args)+1;
             $en = $st + 1;
             array_push($args, $start);
             array_push($args, $end);
-            
+
             $order = 'b.blsampleid DESC';
-            
-            
+
+
             if ($this->has_arg('sort_by')) {
                 $cols = array('SAMPLEID' => 'b.blsampleid', 'NAME' => 'b.name', 'ACRONYM' => 'pr.acronym', 'SPACEGROUP' => 'cr.spacegroup', 'COMMENTS' => 'b.comments', 'SHIPMENT' => 'shipment', 'DEWAR' => 'dewar', 'CONTAINER' => 'container', 'b.blsampleid', 'SC' => 'sc', 'SCRESOLUTION' => 'scresolution', 'DC' => 'ap', 'DCRESOLUTION' => 'dcresolution', 'POSITION' => 'TO_NUMBER(b.location)', 'RECORDTIMESTAMP' => 'b.recordtimestamp');
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-            
+
             $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
-                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath
+                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
                                   
                                   FROM blsample b
 
@@ -1046,7 +1054,7 @@ class Sample extends Page
             if (array_key_exists('PROTEINID', $a)) {
                 $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10", 
                   array($a['SPACEGROUP'], $a['PROTEINID'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['THEORETICALDENSITY'], $samp['CRYSTALID']));
-                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7 WHERE diffractionplanid=:8", 
+                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7 WHERE diffractionplanid=:8",
                   array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $samp['DIFFRACTIONPLANID']));
             }
 
@@ -1137,7 +1145,40 @@ class Sample extends Page
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : '';
             }
 
-            foreach (array('CENTRINGMETHOD', 'EXPERIMENTKIND', 'RADIATIONSENSITIVITY', 'SCREENCOMPONENTGROUPID', 'BLSUBSAMPLEID', 'COMPONENTIDS', 'COMPONENTAMOUNTS', 'REQUIREDRESOLUTION', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'VOLUME', 'ABUNDANCE', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'THEORETICALDENSITY', 'LOOPTYPE', 'ENERGY', 'USERPATH') as $f) {
+            foreach (
+                array(
+                    'CENTRINGMETHOD',
+                    'EXPERIMENTKIND',
+                    'RADIATIONSENSITIVITY',
+                    'SCREENCOMPONENTGROUPID',
+                    'BLSUBSAMPLEID',
+                    'COMPONENTIDS',
+                    'COMPONENTAMOUNTS',
+                    'REQUIREDRESOLUTION',
+                    'CELL_A',
+                    'CELL_B',
+                    'CELL_C',
+                    'CELL_ALPHA',
+                    'CELL_BETA',
+                    'CELL_GAMMA',
+                    'VOLUME',
+                    'ABUNDANCE',
+                    'PACKINGFRACTION',
+                    'DIMENSION1',
+                    'DIMENSION2',
+                    'DIMENSION3',
+                    'SHAPE',
+                    'THEORETICALDENSITY',
+                    'LOOPTYPE',
+                    'ENERGY',
+                    'USERPATH',
+                    'SCREENINGMETHOD',
+                    'SCREENINGCOLLECTVALUE',
+                    'SAMPLEGROUP',
+                    'STRATEGYOPTION',
+                    'MINIMUMRESOLUTION'
+                ) as $f
+            ) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
                 else $a[$f] = $this->has_arg($f) ? $this->arg($f) : null;
             }
@@ -1146,9 +1187,11 @@ class Sample extends Page
         }
 
 
-        function _do_add_sample($a) {
-            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7) RETURNING diffractionplanid INTO :id", 
-                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH']));
+        function _do_add_sample($s) {
+            $a = $this->_prepare_strategy_option_for_sample($s);
+
+            $this->db->pq("INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath, strategyoption, minimalresolution) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9) RETURNING diffractionplanid INTO :id",
+                array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['STRATEGYOPTION'], $a['MINIMUMRESOLUTION']));
             $did = $this->db->id();
 
             if (!array_key_exists('CRYSTALID', $a)) {
@@ -1158,7 +1201,7 @@ class Sample extends Page
                     WHERE p.proposalid = :1 AND pr.proteinid = :2", array($this->proposalid, $a['PROTEINID']));
                 if (!sizeof($chk)) $this->_error('No such crystal');
 
-                $this->db->pq("INSERT INTO crystal (crystalid,proteinid,spacegroup,cell_a,cell_b,cell_c,cell_alpha,cell_beta,cell_gamma,abundance,theoreticaldensity) VALUES (s_crystal.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10) RETURNING crystalid INTO :id", 
+                $this->db->pq("INSERT INTO crystal (crystalid,proteinid,spacegroup,cell_a,cell_b,cell_c,cell_alpha,cell_beta,cell_gamma,abundance,theoreticaldensity) VALUES (s_crystal.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10) RETURNING crystalid INTO :id",
                 array($a['PROTEINID'], $a['SPACEGROUP'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['ABUNDANCE'], $a['THEORETICALDENSITY']));
                 $crysid = $this->db->id();
 
@@ -1173,12 +1216,49 @@ class Sample extends Page
 
                 $crysid = $a['CRYSTALID'];
             }
-                             
-            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16) RETURNING blsampleid INTO :id", 
+
+            $this->db->pq("INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16) RETURNING blsampleid INTO :id",
                 array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE']));
             $sid = $this->db->id();
 
+            if ($a['SCREENINGMETHOD'] == 'best' && isset($a['BLSAMPLEGROUPID'])) {
+                $this->_save_sample_to_group($sid, $a['BLSAMPLEGROUPID'], null, null);
+            }
+
             return $sid;
+        }
+
+        function _prepare_strategy_option_for_sample($a) {
+            if ($a['SCREENINGMETHOD'] == 'best') {
+                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => $a['SCREENINGCOLLECTVALUE']);
+                $args = array($this->proposalid);
+                if (is_numeric($a['SAMPLEGROUP'])) {
+                    array_push($args, $a['SAMPLEGROUP']);
+                    $check = $this->db->pq("SELECT blsamplegroupid FROM blsamplegroup WHERE proposalid = :1 AND blsamplegroupid = :2", $args);
+
+                    if (!sizeof($check)) $this->_error('No such sample group for this proposal.');
+
+                    $strategyOptionsData['sample_group'] = $a['SAMPLEGROUP'];
+                    $a['BLSAMPLEGROUPID'] = $a['SAMPLEGROUP'];
+                } else if (is_string($a['SAMPLEGROUP'])) {
+                    array_push($args, $a['SAMPLEGROUP']);
+                    $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, proposalid, name) VALUES(s_blsamplegroup.nextval,:1,:2) RETURNING blsamplegroupid INTO :id", $args);
+                    $blSampleGroupId =  $this->db->id();
+
+                    $strategyOptionsData['sample_group'] = $blSampleGroupId;
+                    $a['BLSAMPLEGROUPID'] = $blSampleGroupId;
+                }
+            }
+            elseif ($a['SCREENINGMETHOD'] == 'all') {
+                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => null, "sample_group"=> null);
+            }
+            else {
+                $strategyOptionsData = null;
+            }
+
+            $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
+
+            return $a;
         }
         
         
@@ -1358,12 +1438,15 @@ class Sample extends Page
             if ($this->has_arg('external')) {
                 $where .= ' AND pr.externalid IS NOT NULL';
             }
-            
-            if ($this->has_arg('SAFETYLEVEL')) {
+
+            $has_safety_level = $this->has_arg('SAFETYLEVEL');
+            if ($has_safety_level && $this->arg('SAFETYLEVEL')  === 'ALL') {
+                $where .= ' AND pr.safetyLevel IS NOT NULL';
+            } else if ($has_safety_level && $this->arg('SAFETYLEVEL')  !== 'ALL') {
                 $where .= ' AND pr.safetyLevel=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('SAFETYLEVEL'));
             }
-            
+
             if ($this->has_arg('term')) {
                 $where .= " AND (lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+1)."), '%')) OR lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:".(sizeof($args)+2)."), '%')))";
                 array_push($args, $this->arg('term'));
@@ -2020,63 +2103,107 @@ class Sample extends Page
         function _sample_groups() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            $where = 'p.proposalid = :1';
+            $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
 
-            if ($this->has_arg('BLSAMPLEGROUPID')) {
-                $where .= ' AND bshg.blsamplegroupid = :'.(sizeof($args)+1);
-                array_push($args, $this->arg('BLSAMPLEGROUPID'));
-            }
+            $tot = $this->db->pq("SELECT count(*) as total
+                FROM (
+                    SELECT count(*) as tot
+                    FROM blsamplegroup bsg
+                    LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                    WHERE $where
+                    GROUP BY bsg.blsamplegroupid
+                ) as total", $args);
 
-            if ($this->has_arg('CONTAINERID')) {
-                $where .= ' AND c.containerid = :'.(sizeof($args)+1);
-                array_push($args, $this->arg('CONTAINERID'));
-            }
-
-
-            // TODO: this is awful
-            if ($this->has_arg('BLSAMPLEID')) {
-                $where .= ' AND bshg.blsamplegroupid IN (SELECT blsamplegroupid FROM blsamplegroup_has_blsample WHERE blsampleid=:'.(sizeof($args)+1).')';
-                array_push($args, $this->arg('BLSAMPLEID'));
-            }
-
-            $tot = $this->db->pq("SELECT count(b.blsampleid) as tot
-                FROM blsample b
-                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
-                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
-                INNER JOIN protein pr ON pr.proteinid = cr.proteinid
-                INNER JOIN proposal p ON p.proposalid = pr.proposalid
-                INNER JOIN container c ON c.containerid = b.containerid
-                INNER JOIN dewar d ON d.dewarid = c.dewarid
-                INNER JOIN shipping s ON s.shippingid = d.shippingid
-                WHERE $where", $args);
-
-            $tot = intval($tot[0]['TOT']);
+            $tot = intval($tot[0]['TOTAL']);
 
             $start = 0;
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
             $end = $pp;
-            
+
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
                 $start = $pg*$pp;
                 $end = $pg*$pp+$pp;
             }
-            
+
             $st = sizeof($args)+1;
             $en = $st + 1;
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->paginate("SELECT b.blsampleid, bshg.blsamplegroupid, bshg.grouporder, bshg.type, CONCAT(bshg.blsamplegroupid, '-', b.blsampleid) as blsamplegroupsampleid, b.name as sample, b.dimension1, b.dimension2, b.dimension3, b.shape, b.packingfraction, cr.theoreticaldensity, b.blsampleid, cr.crystalid, cr.name as crystal
-                FROM blsample b
-                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
-                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
-                INNER JOIN protein pr ON pr.proteinid = cr.proteinid
-                INNER JOIN proposal p ON p.proposalid = pr.proposalid
-                INNER JOIN container c ON c.containerid = b.containerid
-                INNER JOIN dewar d ON d.dewarid = c.dewarid
-                INNER JOIN shipping s ON s.shippingid = d.shippingid
+            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples
+                FROM blsamplegroup bsg
+                LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                LEFT JOIN blsample b ON bshg.blsampleid = b.blsampleid
+                WHERE $where
+                GROUP BY bsg.blsamplegroupid
+            ", $args);
+
+            $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
+        }
+
+        function _add_new_sample_group() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $sgid = $this->_create_sample_group();
+
+            $this->_output($sgid);
+
+            $this->_output(array(
+                'BLSAMPLEGROUPID' => $sgid,
+                'NAME' => $this->has_arg('NAME') ? $this->arg('NAME') : NULL,
+                'SAMPLEGROUPSAMPLES' => 0
+            ));
+        }
+
+        function _create_sample_group() {
+            $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
+            $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid) VALUES(NULL, :1, :2)", array($name, $this->proposalid));
+            return $this->db->id();
+        }
+
+        function _get_sample_groups_by_sample() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $where = 'bsg.proposalid = :1';
+            $args = array($this->proposalid);
+
+            if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
+
+            $where .= ' AND b.blsampleid = :2';
+            array_push($args, $this->arg('BLSAMPLEID'));
+
+            $tot = $this->db->pq("SELECT count(*) as total
+                FROM blsamplegroup bsg
+                INNER JOIN blsamplegroup_has_blsample bshg on bsg.blsamplegroupId = bshg.blsamplegroupid
+                INNER JOIN blsample b on bshg.blsampleId = b.blsampleid
+                WHERE $where", $args);
+
+            $tot = intval($tot[0]['TOTAL']);
+
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name
+                FROM blsamplegroup bsg
+                INNER JOIN blsamplegroup_has_blsample bshg on bsg.blsamplegroupid = bshg.blsamplegroupid
+                INNER JOIN blsample b on bshg.blsampleid = b.blsampleid
                 WHERE $where", $args);
 
             $this->_output(array(
@@ -2085,9 +2212,59 @@ class Sample extends Page
             ));
         }
 
+        function _get_sample_group_samples() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->error('No sample group specified');
+
+            $where = 'bsg.proposalid = :1';
+            $args = array($this->proposalid);
+
+            $where .= ' AND bsg.blsamplegroupid = :2';
+            array_push($args, $this->arg('BLSAMPLEGROUPID'));
+
+            $tot = $this->db->pq("SELECT count(*) as total
+                FROM blsample b
+                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
+                INNER JOIN blsamplegroup bsg ON bsg.blsamplegroupid = bshg.blsamplegroupid
+                WHERE $where", $args);
+
+            $tot = intval($tot[0]['TOTAL']);
+
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg*$pp;
+                $end = $pg*$pp+$pp;
+            }
+
+            $st = sizeof($args)+1;
+            $en = $st + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT b.blsampleid, bshg.blsamplegroupid, bshg.grouporder, bshg.type, CONCAT(bshg.blsamplegroupid, '-', b.blsampleid) as blsamplegroupsampleid, b.name as sample, b.dimension1, b.dimension2, b.dimension3, b.shape, b.packingfraction, cr.theoreticaldensity, b.blsampleid, cr.crystalid, cr.name as crystal, c.code as container, pr.name as protein, bsg.name, pr.proteinid
+                FROM blsample b
+                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
+                INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+                INNER JOIN container c ON c.containerid = b.containerid
+                WHERE $where
+            ", $args);
+
+            $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
+        }
 
         function _add_sample_to_group() {
             if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
 
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
@@ -2095,34 +2272,16 @@ class Sample extends Page
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
               WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid,$this->arg('BLSAMPLEID')));
-            
+
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
-            if (!$this->has_arg('BLSAMPLEGROUPID')) {
-                $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
-                $sgid = $this->db->id();
-            } else {
-                $sgid = $this->arg('BLSAMPLEGROUPID');
-            }
+            $sgid = $this->arg('BLSAMPLEGROUPID');
 
-            $chk2 = $this->db->pq("SELECT count(bshg.blsampleid) as samples
-                FROM blsamplegroup_has_blsample bshg
-                INNER JOIN blsample s ON s.blsampleid = bshg.blsampleid
-                INNER JOIN crystal cr ON cr.crystalid = s.crystalid
-                INNER JOIN protein pr ON pr.proteinid = cr.proteinid
-                INNER JOIN proposal p ON p.proposalid = pr.proposalid
-                WHERE p.proposalid = :1 AND bshg.blsamplegroupid = :2", array($this->proposalid, $sgid));
-            $in_proposal = $chk2[0]['SAMPLES'];
-
-            $chk = $this->db->pq("SELECT bsg.blsamplegroupid, count(bshg.blsampleid) as samples
-                    FROM blsamplegroup bsg
-                    LEFT OUTER JOIN blsamplegroup_has_blsample bshg ON bsg.blsamplegroupid = bshg.blsamplegroupid
-                    WHERE bsg.blsamplegroupid = :1
-                    GROUP BY bsg.blsamplegroupid", array($sgid));
-                if (!sizeof($chk)) $this->_error('No such sample group');
-
-            if ($chk[0]['SAMPLES'] != $in_proposal) $this->_error('No such sample group');
+            $sample_group_exists = $this->db->pq("SELECT bsg.blsamplegroupid
+                FROM blsamplegroup bsg
+                WHERE bsg.blsamplegroupid = :1 AND bsg.proposalid = :2", array($sgid, $this->proposalid));
+            if (!sizeof($sample_group_exists)) $this->_error('No such sample group');
 
             $order = $this->has_arg('GROUPORDER') ? $this->arg('GROUPORDER') : 1;
             $type = $this->has_arg('TYPE') ? $this->arg('TYPE') : null;
@@ -2133,10 +2292,39 @@ class Sample extends Page
             $this->_output(array('BLSAMPLEGROUPSAMPLEID' => $sgid.'-'.$this->arg('BLSAMPLEID'), 'BLSAMPLEID' => $this->arg('BLSAMPLEID'), 'BLSAMPLEGROUPID' => $sgid));
         }
 
+        function _save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type) {
+            if (!isset($blSampleId)) return 'No sample specified';
 
-        function _update_sample_group() {
-            if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No sample group sample specified');
-            list($gid,$sid) = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
+            if (!isset($blSampleGroupId)) return 'No sample group specified. Create one before adding samples to group.';
+
+            $sgid = $blSampleGroupId;
+
+            $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid
+                  FROM blsample b
+                  INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                  INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+                  LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid
+                  WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid, $blSampleId));
+
+            if (!sizeof($samp)) return 'No such sample';
+            else $samp = $samp[0];
+
+            $order = isset($groupOrder) ? $groupOrder: 1;
+            $type = isset($type) ? $type : null;
+
+            $this->db->pq("INSERT INTO blsamplegroup_has_blsample (blsampleid, blsamplegroupid, grouporder, type)
+                    VALUES (:1,:2, :3, :4)", array($blSampleId, $sgid, $order, $type));
+
+            return array('BLSAMPLEGROUPSAMPLEID' => $sgid.'-'.$blSampleId, 'BLSAMPLEID' => $blSampleId, 'BLSAMPLEGROUPID' => $sgid);
+        }
+
+        function _update_sample_in_group() {
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+            if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No group sample id specified');
+
+            $gid = $this->arg('BLSAMPLEGROUPID');
+            $arr = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
+            $sid = end($arr);
 
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
@@ -2159,8 +2347,12 @@ class Sample extends Page
         }
 
         function _remove_sample_from_group() {
-            if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No sample group sample specified');
-            list($gid,$sid) = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+            if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No group sample id specified');
+
+            $gid = $this->arg('BLSAMPLEGROUPID');
+            $arr = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
+            $sid = end($arr);
 
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 

@@ -38,6 +38,7 @@
 
     <!-- Show logos, links etc. -->
     <footer-panel />
+    <portal-target name="dialog"></portal-target>
   </div>
 </template>
 

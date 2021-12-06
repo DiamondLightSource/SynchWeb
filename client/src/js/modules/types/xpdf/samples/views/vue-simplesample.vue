@@ -137,7 +137,6 @@
 </template>
 
 <script>
-    import Backbone from 'backbone'
     import Phase from 'models/protein'
     import Crystal from 'models/crystal'
     import Container from 'models/container'
@@ -145,12 +144,13 @@
     import phaseCompositor from 'modules/types/xpdf/utils/phasecompositor'
     import Capillaries from 'modules/types/xpdf/collections/capillaries'
     import SampleGroups from 'collections/samplegroups'
+    import SampleGroupSamples from 'collections/samplegroupsamples'
     import CSVFileValidator from 'csv-file-validator'
 
     const requiredError = (headerName, rowNumber, columnNumber) => {
         return `${headerName} is required in row ${rowNumber} / column ${columnNumber}`
     }
-    const headerError = (headerName, rowNumber, columnNumber) => {
+    const headerError = (headerName) => {
         return `Please add a column header for ${headerName}`
     }
 
@@ -184,10 +184,7 @@
                                 count--
                         }
                     }
-                    if(count === 0)
-                        return true
-                    else
-                        return false
+                    return count === 0;
                 },
                 validateError: function(headerName, rowNumber, columnNumber){
                     return `${headerName} cannot have [] or {} and any () must be correctly closed in row ${rowNumber} / column ${columnNumber}`
@@ -266,75 +263,80 @@
                 duplicateAcronymRows: [],
                 proteinid: null,
                 externalid: null,
+                sampleGroupCollection: null,
+                sampleGroups: [],
+                lastestSampleGroup: {},
+                sampleGroupSamplesCollection: null,
+                sampleGroupSamples: []
             }
         },
 
         created: function(){
-            // async:false probably not the best way (locks UI thread) but it seems to work well
-            let existingGroups = new SampleGroups().fetch({async:false})
-
-            let self = this
-
-            var groups = JSON.parse(existingGroups.responseText)
-
-            var exists = new Set()
-            var count = 0
-            var lastCapillaryId = 0
-            // Populate existing capillaries added from this visit
-            for(var i=0; i<groups.data.length; i++){
-                if(groups.data[i].TYPE == 'container' || groups.data[i].TYPE == 'capillary'){
-                    // Get the latest capillary that had a sample instance added to it (latest BLSampleGroup_has_BLSample entry)
-                    if(groups.data[i].BLSAMPLEGROUPID > lastCapillaryId){
-                        lastCapillaryId = groups.data[i].CRYSTALID
-                    }
-                    exists.add(groups.data[i].CRYSTALID + ':' + groups.data[i].CRYSTAL)
-                }
-            }
-            
-            exists = Array.from(exists)
-            if(exists.length > 0){
-                this.hasExistingCapillaries = true;
-
-                exists.forEach(function(item, index){
-                    if(item.startsWith(lastCapillaryId))
-                        self.type = item;
-                })
-            }
-
-            var stored = []
-            for(var i=0;i<this.capillaries.length;i++){
-                stored[i] = this.capillaries[i].name
-            }
-
-            this.containers = stored.concat(exists);
-
-            // Try to retrieve the default dewar for this proposal/visit
-            // Uses the special session-0 because at this point we are not necesarily on a session
-            Backbone.ajax({
-                url: app.apiurl+'/shipment/dewars/default',
-                data: { visit: app.prop + '-0'},
-
-                success: function(did) {
-                    console.log("Retrieved Default Dewar for this visit " + did)
-                    self.defaultDewarId = did
-                },
-                error: function() {
-                    app.alert({ title: 'Error', message: 'The default dewar for this visit could not be created (no session-0?)' })
-                },
-            })
-
-            // We should have arrived with an existing Phase to base the new simple samples on
-            // pre-populate fields with useful information
-            var protein = this.$props.protein
-            this.name = protein.get('NAME')
-            this.acronym = protein.get('ACRONYM')
-            this.seq = protein.get('SEQUENCE')
-            this.density = protein.get('DENSITY')
-            this.proteinid = protein.get('PROTEINID')
-            this.externalid = protein.get('EXTERNALID')
+            this.setDewarInformation()
+            this.fetchSampleGroupsAndAssignContainers()
+            this.setProteinData()
         },
 
         methods: {
+            async setDewarInformation() {
+              // Try to retrieve the default dewar for this proposal/visit
+              // Uses the special session-0 because at this point we are not necesarily on a session
+              this.defaultDewarId = await this.$store.dispatch('fetchDataFromApi', {
+                url: '/shipment/dewars/default',
+                data: { visit: `${this.$store.getters['proposal/currentProposal']}-0`}
+              })
+            },
+            setProteinData() {
+              // We should have arrived with an existing Phase to base the new simple samples on
+              // pre-populate fields with useful information
+              const protein = this.protein.toJSON()
+              this.name = protein.NAME
+              this.acronym = protein.ACRONYM
+              this.seq = protein.SEQUENCE
+              this.density = protein.DENSITY
+              this.proteinid = protein.PROTEINID
+              this.externalid = protein.EXTERNALID
+            },
+            async fetchSampleGroupsAndAssignContainers() {
+                this.sampleGroupCollection = new SampleGroups()
+
+                let result = await this.$store.dispatch('getCollection', this.sampleGroupCollection)
+                console.log({ result })
+                this.sampleGroupCollection.queryParams.page = Math.ceil(result.state.totalRecords / result.state.pageSize)
+                this.sampleGroupCollection.queryParams.per_page = result.state.pageSize
+                result = await this.$store.dispatch('getCollection', this.sampleGroupCollection)
+
+                this.sampleGroups = result.toJSON().sort((a, b) => this.sortItemsByField(a, b)('BLSAMPLEGROUPID'))
+                this.latestSampleGroup = this.sampleGroups[this.sampleGroups.length - 1]
+                this.sampleGroupSamplesCollection = new SampleGroupSamples(null, { state: { pageSize: 9999 } })
+                this.sampleGroupSamplesCollection.sampleGroupId = this.latestSampleGroup.BLSAMPLEGROUPID
+                const sampleGroupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamplesCollection)
+                this.sampleGroupSamples = sampleGroupSamples.toJSON()
+                const existingSamples = new Set()
+
+
+                this.sampleGroupSamples.forEach(sample => {
+                    if (sample.TYPE === 'container' || sample.TYPE === 'capillary') {
+                        existingSamples.add(this.latestSampleGroup.BLSAMPLEGROUPID + ':' + groups.data[i].CRYSTAL)
+                    }
+                })
+
+                const existingSamplesArray = Array.from(existingSamples)
+
+                if (existingSamplesArray.length > 0) {
+                    this.hasExistingCapillaries = true
+                    existingSamplesArray.forEach(sample => {
+                        if (sample.startsWith(this.latestSampleGroup.BLSAMPLEGROUPID))
+                          this.type = sample
+                    })
+                }
+
+                this.capillaries.forEach(capillary => {
+                  this.containers.push(capillary.name)
+                })
+
+                this.containers.concat(existingSamplesArray)
+            },
             onSubmit: function(e){
                 e.preventDefault()
                 let self = this
@@ -378,7 +380,7 @@
                     if(self.type.endsWith('_CP') || self.type.endsWith('_Capillary'))
                         self.existingCapillaryID = self.type.substring(0, self.type.indexOf(':'))
                     else
-                        shortName = '_' + self.capillaries.find(cap => cap.name == self.type).short_name
+                        shortName = '_' + self.capillaries.find(cap => cap.name === self.type).short_name
                     
                     let capillaryPhase = new Phase({
                         NAME: self.name + '_CPM',
@@ -456,7 +458,7 @@
                 if(this.type.endsWith('_CP') || this.type.endsWith('_Capillary'))
                     this.existingCapillaryID = this.type.substring(0, this.type.indexOf(':'))
                 else
-                    shortName = '_' + this.capillaries.find(cap => cap.name == this.type).short_name
+                    shortName = '_' + this.capillaries.find(cap => cap.name === this.type).short_name
 
                 let capillaryPhase = new Phase({
                     NAME: this.name + '_CPM',
@@ -541,7 +543,7 @@
                             app.trigger('phases:view', response.sample_1.PHASEID)
                         }
                     },
-                    error: function(model, response, options){
+                    error: function(model, response){
                         let alertMessage = "Failed to add Simple Sample information"
 
                         let responseObj = JSON.parse(response.responseText)
@@ -558,7 +560,7 @@
 
             getCapillaryInfo: function(field) {
                 for(var i=0;i<this.capillaries.length;i++){
-                    if(this.capillaries[i].name == this.type){
+                    if(this.capillaries[i].name === this.type){
                         return this.capillaries[i][field];
                     }
                 }
@@ -641,7 +643,6 @@
                         if(cells.length > 5){
                             self.commaInComments = true
                             ready = true
-                            return
                         }
                     })
 
@@ -655,17 +656,17 @@
 
                         for(var j=0; j<cells.length; j++){
                             // if first row check which column is the Acronym
-                            if(i==0){
-                                if(cells[j] == 'Acronym'){
+                            if(i === 0){
+                                if(cells[j] === 'Acronym'){
                                     acronymIndex = j
                                     break
                                 }
                             }
                             // ignore any non acronym columns
-                            if(j!=acronymIndex) break
+                            if(j !== acronymIndex) break
 
-                            for(var k=0; k < acronyms.length; k++){
-                                if(acronyms[k] == cells[j]){
+                            for(let k=0; k < acronyms.length; k++){
+                                if(acronyms[k] === cells[j]){
                                     var currentRow = i
                                     self.duplicateAcronym = true
                                     self.duplicateAcronymRows.push(cells[j] + ' is a duplicate acronym on row ' + ++currentRow)
@@ -685,7 +686,7 @@
                         cells.forEach(function(cell, index){
                             i = index + 1
                             trimmed += cell.trim()
-                            if(cells.length != i){
+                            if(cells.length !== i){
                                 trimmed += ','
                             } else {
                                 if(trimmed.endsWith(','))
@@ -702,6 +703,18 @@
                 }
                 reader.readAsText(this.csvFile)
             },
+
+            sortItemsByField(a, b) {
+              return (field) => {
+                if (Number(a[field]) > Number(b[field])) {
+                  return 1
+                } else if (Number(a[field]) < Number(b[field])) {
+                  return -1
+                }
+
+                return 0
+              }
+            }
         }
     }
 </script>

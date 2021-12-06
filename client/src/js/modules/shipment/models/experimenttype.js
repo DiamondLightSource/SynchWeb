@@ -1,13 +1,14 @@
 define(['backbone'], function(Backbone) {
+
   return Backbone.Model.extend({
-    idAttribute: 'BLSAMPLEGROUPID',
-    urlRoot: '/sample/groups',
+    idAttribute: 'EXPERIMENTTYPEID',
+    urlRoot: '/exp/experiment/types',
 
     validation: {
       NAME: {
-        required: false,
+        required: true,
         pattern: 'wwdash',
-      }
+      },
     }
   })
 })
