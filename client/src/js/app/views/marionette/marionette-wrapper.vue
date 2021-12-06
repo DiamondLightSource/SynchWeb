@@ -1,10 +1,11 @@
 <template>
-
-        <div class="marionette-wrapper">
-            <!-- This is the element we attach the marionette view to -->
-            <div id="marionette-view" class="content"></div>
-        </div>
-    
+  <div class="marionette-wrapper">
+    <!-- This is the element we attach the marionette view to -->
+    <div
+      ref="marionetteView"
+      class="content"
+    />
+  </div>
 </template>
 
 <script>
@@ -55,17 +56,15 @@ export default {
             }
         },
     },
-    created: function() {
+    mounted: function() {
         console.log("MarionetteViewWrapper::created " + this.$router.currentRoute.path )
 
         this.marionetteRegion = new Marionette.Region({
-            el: "#marionette-view"
+            el: this.$refs.marionetteView
         });
         // If we have been passed breadcrumbs, send the update event
         // We will update the breadcrumbs again if the model loads and tags are present
         if (this.breadcrumbs) EventBus.$emit('bcChange', this.breadcrumbs)
-    },
-    mounted: function() {
         // Intercept any 'a' tag links from within marionette views and delegate relative links to vue-router
         this.handleHTMLAnchorEvents()
 

@@ -60,6 +60,8 @@
     text-align: right;
 }
 
+/* TODO: If we can ever get rid of this class, we can also remove the
+   work-around in plotly support which needs to circumvent it */
 .active {
     background: $content-active;
 }
@@ -102,12 +104,14 @@
 .loading {
     opacity: 0.4;
     position: relative;
+    z-index: 10;
+    height: 0;
 
     &:after {
         margin: auto;
-        top: 50%;
+        top: 15%;
         left: 47%;
-        position: absolute;
+        position: fixed;
         font-family: 'FontAwesome';
         font-size: 60px;
         content: '\f110';

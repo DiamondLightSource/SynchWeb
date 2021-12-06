@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
+use SynchWeb\Queue;
 
 class Sample extends Page
 {
@@ -1472,8 +1473,8 @@ class Sample extends Page
         # Update a particular field for a protein
         function _update_protein() {
             if (!$this->has_arg('pid')) $this->_error('No proteinid specified');
-            
-            $prot = $this->db->pq("SELECT pr.proteinid FROM protein pr 
+
+            $prot = $this->db->pq("SELECT pr.proteinid, pr.sequence FROM protein pr
               WHERE pr.proposalid = :1 AND pr.proteinid = :2", array($this->proposalid,$this->arg('pid')));
             
             if (!sizeof($prot)) $this->_error('No such protein');
@@ -1484,8 +1485,13 @@ class Sample extends Page
                     $this->_output(array($f => $this->arg($f)));
                 }
             }
+
+            if ($this->has_arg('SEQUENCE') && empty($prot[0]['SEQUENCE'])) {
+                # Only trigger alphafold if the sequence was previously empty
+                $this->_on_add_protein_sequence($prot[0]["PROTEINID"]);
+            }
         }
-        
+
 
         # ------------------------------------------------------------------------
         # Update a particular field for a sample
@@ -1741,12 +1747,26 @@ class Sample extends Page
             $this->db->pq('INSERT INTO protein (proteinid,proposalid,name,acronym,sequence,molecularmass,bltimestamp,concentrationtypeid,componenttypeid,global,density,externalid,safetylevel)
               VALUES (s_protein.nextval,:1,:2,:3,:4,:5,CURRENT_TIMESTAMP,:6,:7,:8,:9,UNHEX(:10),:11) RETURNING proteinid INTO :id',
               array($this->proposalid, $name, $this->arg('ACRONYM'), $seq, $mass, $ct, $cmt, $global, $density, $externalid, $safetyLevel));
-            
+
             $pid = $this->db->id();
-            
+
+            if ($seq) {
+                $this->_on_add_protein_sequence($pid);
+            }
+
             $this->_output(array('PROTEINID' => $pid));
         }
 
+
+        function _on_add_protein_sequence($pid) {
+            global $zocalo_recipes_on_add_protein_sequence;
+            if (!empty($zocalo_recipes_on_add_protein_sequence)) {
+                $parameters = array('ispyb_protein_id' => $pid);
+                foreach($zocalo_recipes_on_add_protein_sequence as $recipe){
+                    $this->_submit_zocalo_recipe($recipe, $parameters, 500);
+                }
+            }
+        }
 
 
         # TODO: Consolidate this into clas.exp.php
