@@ -546,7 +546,7 @@ class Processing extends Page {
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE api.autoprocintegrationid IS NULL AND p.proposalid=:1 $where
                     AND app.processingprograms NOT IN ('$filter')
-                GROUP BY pj.processingjobid",
+                GROUP BY app.autoprocprogramid",
             $args
         );
 
