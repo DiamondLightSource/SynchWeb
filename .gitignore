@@ -19,11 +19,13 @@ sftp-config.json
 
 /api/composer.lock
 /api/composer.phar
+/api/src/MockUAS.php
 
 client/node_modules
 client/assets
 client/index.php
 client/dist
+client/index.html
 
 api/config.php
 api/vendor
