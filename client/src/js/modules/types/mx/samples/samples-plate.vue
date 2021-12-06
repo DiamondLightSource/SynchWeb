@@ -26,7 +26,7 @@
     </div>
     <div class="list-header tw-flex tw-items-center tw-w-full tw-bg-table-header-background tw-text-table-header-color">
       <div
-        v-for="(column, columnIndex) in tableColumns"
+        v-for="(column, columnIndex) in requiredColumns"
         :key="columnIndex"
         :class="{
           'tw-flex': true,
@@ -191,24 +191,24 @@ export default {
         {
           key: 'COMMENT',
           title: 'Comment',
-          className: 'comment-column'
+          className: 'tw-w-1/2'
         }
       ],
       extraFieldsColumns: [
         {
           key: 'USERPATH',
           title: 'User Path',
-          className: 'user-path-column'
+          className: 'tw-w-3/12'
         },
         {
           key: 'SPACEGROUP',
           title: 'Spacegroup',
-          className: 'space-group-column'
+          className: 'tw-w-3/12'
         },
         {
           key: 'CELLS',
           title: 'Unit Cell',
-          className: 'cell-column'
+          className: 'tw-w-4/12'
         }
       ],
       udcColumns: [
@@ -355,3 +355,23 @@ export default {
   }
 }
 </script>
+<style scoped>
+.location-column {
+  width: 30px;
+}
+.protein-column {
+  width: 15%;
+}
+.name-column {
+  width: 10%;
+}
+.sample-group-column {
+  width: 13%;
+}
+.actions-column {
+  width: calc(12% - 30px);
+}
+.min-height-8 {
+  min-height: 32px;
+}
+</style>
