@@ -403,7 +403,6 @@ import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 import BaseSelectInput from 'app/components/base-input-select.vue'
 import BaseTextInput from 'app/components/base-input-text.vue'
 import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
-import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
 
 export default {
   name: 'tabbed-columns',

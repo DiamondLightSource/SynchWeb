@@ -1,7 +1,4 @@
 import { createFieldsForSamples } from 'app/store/modules/store.samples'
-import SampleGroupSamples from 'collections/samplegroupsamples'
-import SampleGroups from 'collections/samplegroups'
-import SampleGroupsWithMembers from 'collections/samplegroupsmembers'
 
 export default {
   data() {
