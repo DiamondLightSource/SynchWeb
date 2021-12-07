@@ -1166,7 +1166,9 @@ class Shipment extends Page
                           WHERE s.sessionid=:1", array($sessionId));
 
                         if (sizeof($visit)) {
-                            $this->_output(array($f => $this->arg('FIRSTEXPERIMENTID'), 'EXP' => $visit[0]['VISIT']));
+                            $this->_output(array($f => $sessionId, 'EXP' => $visit[0]['VISIT']));
+                        } else {
+                            $this->_output(1);
                         }
                     } else {
                         $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
