@@ -16,7 +16,11 @@ define(['backbone'], function(Backbone) {
                 return `<option class="${cl}" value="${m.escape(this.valueAttribute)}">${m.escape(this.keyAttribute)}</option>`
             }, this).join('\n')
 
-            return `${initialList}\n${formattedList}`
+
+            return `
+                ${initialList}
+                ${formattedList}
+            `
         },
 
         kv: function(options) {
