@@ -15,7 +15,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         array: /^[\d+(.\d+)?),]+$/,
         country: /^(\w|\s|\-|,|\(|\)|')+$/,
         visit: /^\w+\d+-\d+$/,
-        visitornull: /^\w+\d+-\d+$|^\w/,
+        visitornull: /^\w+\d+-\d+$|^(?![\s\S])/,
         twopath: /^(\w|-)+\/?(\w|-)+$/,
         numberorword: /(^\w+$)|(^\d+$)/
     })

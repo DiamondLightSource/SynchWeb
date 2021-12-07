@@ -117,7 +117,7 @@ define(['marionette', 'backbone',
             this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 5 } })
             this.visits.fetch().done(function() {
                 self.ui.first.html(self.visits.opts({ empty: true }))
-                edit.create('FIRSTEXPERIMENTID', 'select', { data: self.visits.kv() }, true)
+                edit.create('FIRSTEXPERIMENTID', 'select', { data: self.visits.kv({ empty: true }) }, true)
             })
 
             this.ui.fc.html(this.getOption('regdewars').opts({ empty: true }))
