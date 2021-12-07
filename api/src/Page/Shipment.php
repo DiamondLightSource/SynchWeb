@@ -64,7 +64,7 @@ class Shipment extends Page
                               'NEXTLOCALCONTACT' => '[\w|\s+|-]+',
                               'PHONENUMBER' => '.*',
                               'VISIT' => '\w+\d+-\d+',
-                              'NEXTVISIT' => '\w+\d+-\d+',
+                              'NEXTVISIT' => '\w+\d+-\d+|^(?![\s\S])',
                               'AWBNUMBER' => '\w+',
                               'WEIGHT' => '\d+',
                               
