@@ -1,92 +1,93 @@
 %message_template {
-  padding: 1%;
-  margin-bottom: 1%;
-  border-radius: 5px;
-  color: $content-help-color;
-  background: $content-help-background;
+    padding: 1%;
+    margin-bottom: 1%;
+    border-radius: 5px;
+    color: $content-help-color;
+    background: $content-help-background;
 
-  &.alert {
-    background: $content-inactive;
-    color: $body-color;
-  }
+    &.alert {
+        background: $content-inactive;
+        color: $body-color;
+    }
 
-  &.notify {
-    background: $content-active;
-    color: $body-color;
-  }
+    &.notify {
+        background: $content-active;
+        color: $body-color;
+    }
 }
 // Main Content Holder
 .content {
-  padding-bottom: 1%;
+    padding-bottom: 1%;
 
-  & > h1 {
-    padding: 10px 0;
-    margin-bottom: 15px;
-    word-wrap: break-word;
-    font-size: $page-header-size;
-    font-family: $page-header-font;
-    border-bottom: 1px solid grey;
+    & > h1 {
+        padding: 10px 0;
+        margin-bottom: 15px;
+        word-wrap: break-word;
+        font-size: $page-header-size;
+        font-family: $page-header-font;
+        border-bottom: 1px solid grey;
 
-    &.nou {
-      border-bottom: 0;
+        &.nou {
+            border-bottom: 0;
+        }
+
+        &.center {
+            text-align: center;
+        }
     }
 
-    &.center {
-      text-align: center;
+    h2 {
+        padding: 3px 0;
+        margin-bottom: 5px;
+        word-wrap: break-word;
+        font-size: 16px;
+        font-family: $page-header-font;
+        border-bottom: 1px solid grey;
+
+        a {
+            text-decoration: none;
+        }
     }
-  }
 
-  h2 {
-    padding: 3px 0;
-    margin-bottom: 5px;
-    word-wrap: break-word;
-    font-size: 16px;
-    font-family: $page-header-font;
-    border-bottom: 1px solid grey;
+    .border {
+        border: 1px solid $content-border;
 
-    a {
-      text-decoration: none;
+        p {
+            padding: 10px;
+        }
     }
-  }
 
-  .border {
-    border: 1px solid $content-border;
-
-    p {
-      padding: 10px;
+    p.message {
+        @extend %message_template;
     }
-  }
+    // p.help {
+    //     // Needed to move this because two extends at the same level did not work with postcss-extend rule!
+    //     @extend %message_template;
+    //     display: none;
+    // }
 
-  p.message {
-    @extend %message_template;
-  }
-  // p.help {
-  //     // Needed to move this because two extends at the same level did not work with postcss-extend rule!
-  //     @extend %message_template;
-  //     display: none;
-  // }
 
-  p.inset {
-    width: 70%;
-    display: block;
-    margin: auto;
+    p.inset {
+        width: 70%;
+        display: block;
+        margin: auto;
 
-    img {
-      width: 100%;
-      box-shadow: 3px 3px 3px 1px grey;
-      margin: 5px;
+        img {
+            width: 100%;
+            box-shadow: 3px 3px 3px 1px grey;
+            margin: 5px;
 
-      &.match {
-        width: auto;
-      }
+            &.match {
+                width: auto;
+            }
+        }
     }
-  }
 
-  .padded_button {
-    .ui-widget {
-      font-size: 0.6em;
+    .padded_button {
+        .ui-widget {
+            font-size: 0.6em;
+        }
     }
-  }
 }
 
 /*
@@ -94,430 +95,436 @@ Moved here with postcss extend.
 Seems bit arbitrary what works and what doesn't when using with nested
 */
 .content p.help {
-  @extend %message_template;
-  display: none;
+    @extend %message_template;
+    display: none;
 }
 
 // Block like lists
 .block {
-  list-style: none;
+    list-style: none;
 
-  li {
-    padding: 2%;
-    margin: 0 0 1% 0;
-    border-radius: 6px;
-    background: $content-search-background;
-    height: 20px;
-    /* fix for tailwind */
-    box-sizing: content-box;
-  }
+    li {
+        padding: 2%;
+        margin: 0 0 1% 0;
+        border-radius: 6px;
+        background: $content-search-background;
+        height: 20px;
+        /* fix for tailwind */
+        box-sizing: content-box;
+    }
 }
 
 .containers {
-  @extend .block;
+    @extend .block;
 }
 
 div.container {
-  /* fix for tailwind - assign containers page*/
-  box-sizing: content-box;
+    /* fix for tailwind - assign containers page*/
+    box-sizing: content-box;
 }
 
 // Log Panel
 .status,
 .log {
-  padding: 5px;
-  margin-bottom: 10px;
+    padding: 5px;
+    margin-bottom: 10px;
 }
 
 div.log {
-  margin-top: 5px;
+    margin-top: 5px;
 }
 
 .status,
 .log h1 {
-  font-size: 14px;
-  padding: 5px;
+    font-size: 14px;
+    padding: 5px;
 }
 
 .log ul {
-  height: 70px;
-  overflow: auto;
-  overflow-x: hidden;
-  padding: 5px;
-  background: $content-light-background;
-  border-radius: 6px;
+    height: 70px;
+    overflow: auto;
+    overflow-x: hidden;
+    padding: 5px;
+    background: $content-light-background;
+    border-radius: 6px;
 }
 
 .log ul li {
-  display: block;
-  padding: 2px;
-  color: $link-color;
+    display: block;
+    padding: 2px;
+    color: $link-color;
 }
 
 .log ul li span.title {
-  color: $body-color;
+    color: $body-color;
 }
+
 
 // Search Box
 .search {
-  float: right;
-  padding: 5px;
-  margin-left: 5px;
-  background: $content-search-background;
-  margin-top: 4px;
-  border-radius: 5px;
-  box-shadow: 0 1px 1px rgba(100, 100, 100, 0.4) inset,
-    0 1px 0 rgba(255, 255, 255, 0.2);
-  white-space: nowrap;
+    float:right;
+    padding: 5px;
+    margin-left: 5px;
+    background: $content-search-background;
+    margin-top: 4px;
+    border-radius: 5px;
+    box-shadow: 0 1px 1px rgba(100,100,100,.4) inset, 0 1px 0 rgba(255,255,255,.2);
+    white-space: nowrap;
 
-  input {
-    font-family: $icon-font;
-    width: 160px;
-    padding: 1%;
+    input {
+        font-family: $icon-font;
+        width: 160px;
+        padding: 1%;
 
-    &:focus {
-      outline: 0;
+        &:focus {
+            outline: 0;
+        }
     }
-  }
 
-  @media (max-width: $breakpoint-small) {
-    width: 100%;
-  }
-
-  &.hide {
     @media (max-width: $breakpoint-small) {
-      display: none;
+        width: 100%;
     }
-  }
+
+    &.hide {
+        @media (max-width: $breakpoint-small) {
+            display: none;
+        }
+    }
 }
 
 /* Moved this so it is defined before being extended */
 // Block numbered list
 .block-nos {
-  white-space: nowrap;
+    white-space: nowrap;
 
-  ul {
-    list-style: none;
+    ul {
+        list-style: none;
 
-    li {
-      display: inline-block;
+        li {
+            display: inline-block;
 
-      a {
-        text-decoration: none;
-        display: block;
-        width: 25px;
-        padding: 3px 0;
-        text-align: center;
-        background: $content-page-background;
-        color: $content-page-color;
-        margin: 2px;
+            a {
+                text-decoration: none;
+                display: block;
+                width: 25px;
+                padding: 3px 0;
+                text-align: center;
+                background: $content-page-background;
+                color: $content-page-color;
+                margin: 2px;
 
-        &:hover {
-          color: $content-page-hover-color;
+                &:hover {
+                    color: $content-page-hover-color;
+                }
+
+                @media (max-width: $breakpoint-vsmall) {
+                    padding: 8px 5px;
+                }
+            }
+
+            &.selected a {
+                background: $content-page-selected-background;
+            }
         }
-
-        @media (max-width: $breakpoint-vsmall) {
-          padding: 8px 5px;
-        }
-      }
-
-      &.selected a {
-        background: $content-page-selected-background;
-      }
     }
-  }
 }
 
 // Paging
 .page_wrap {
-  overflow: auto;
-  margin: 5px;
-  padding: 0 0 10px 0;
+    overflow: auto;
+    margin: 5px;
+    padding: 0 0 10px 0;
 
-  .per_page {
-    float: left;
-    padding: 3px 3px 3px 0;
-    position: absolute;
-
-    @media (max-width: $breakpoint-vsmall) {
-      display: none;
-    }
-  }
-
-  .pages {
-    @extend .block-nos;
-
-    &.pp {
-      margin-left: 60px;
-
-      @media (max-width: $breakpoint-vsmall) {
-        margin-left: 0;
-      }
-    }
-
-    ul {
-      &:before {
-        content: "Page";
-        background: $content-page-background;
-        color: $content-page-color-tint;
-        display: inline-block;
-        padding: 3px 5px;
-        margin-right: 2px;
+    .per_page {
+        float: left;
+        padding: 3px 3px 3px 0;
+        position: absolute;
 
         @media (max-width: $breakpoint-vsmall) {
-          padding: 8px;
+            display: none;
         }
-      }
     }
-  }
+
+    .pages {
+        @extend .block-nos;
+
+        &.pp {
+            margin-left: 60px;
+
+            @media (max-width: $breakpoint-vsmall) {
+                margin-left: 0;
+            }
+        }
+
+        ul {
+            &:before {
+                content: 'Page';
+                background: $content-page-background;
+                color: $content-page-color-tint;
+                display: inline-block;
+                padding: 3px 5px;
+                margin-right: 2px;
+
+                @media (max-width: $breakpoint-vsmall) {
+                    padding: 8px;
+                }
+            }
+
+        }
+    }
 }
 
 // Time filter
 .time_wrap {
-  overflow: auto;
-  margin: 5px;
+    overflow: auto;
+    margin: 5px;
 
-  .times {
-    @extend .block-nos;
-    ul > li > a {
-      width: 40px !important;
+    .times {
+        @extend .block-nos;
+        ul > li > a {
+            width: 40px !important;
+        }
     }
-  }
 }
 
 /* Moved this so it is defined before being extended */
 // List arranged as horizontal arrows
 .list-arrow {
-  overflow: hidden;
-  width: 100%;
+    overflow: hidden;
+    width: 100%;
 
-  li {
-    cursor: pointer;
-    float: left;
-    text-decoration: none;
-    color: $content-filter-color;
-    background: $content-filter-background;
-    position: relative;
-    z-index: 1;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-    border-radius: 0.4em;
-    padding: 0.5em 0.6em 0.5em 0.6em;
-    margin: 0 0.5em 0 0;
-    transition: background 0.3s ease-out;
+    li {
+        cursor: pointer;
+        float: left;
+        text-decoration: none;
+        color: $content-filter-color;
+        background: $content-filter-background;
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 1px 0 rgba(255,255,255,.5);
+        border-radius: .4em;
+        padding: .5em 0.6em .5em 0.6em;
+        margin: 0 0.5em 0 0;
+        transition: background .3s ease-out;
 
-    &:hover,
-    &:hover:after,
-    &.current,
-    &.current:after {
-      background: $content-filter-current-background;
+        &:hover, &:hover:after, &.current, &.current:after {
+            background: $content-filter-current-background;
+        }
     }
-  }
 
-  .fixed li {
-    @mixin cols 12, 2% 3%, 0.2%;
-    margin-bottom: 0.5%;
-  }
+    .fixed li {
+        @mixin cols 12,2% 3%, 0.2%;
+        margin-bottom: 0.5%;
+    }
 }
+
 
 // Page Filters
 .filter {
-  @extend .list-arrow;
-  margin-bottom: 5px;
+    @extend .list-arrow;
+    margin-bottom: 5px;
 
-  @media (max-width: $breakpoint-small) {
-    &:not(.filter-nohide) {
-      display: none;
+    @media (max-width: $breakpoint-small) {
+        &:not(.filter-nohide) {
+            display: none;
+        }
     }
-  }
 }
+
+
+
 
 // Rounded numbered lists
 ol.rounded {
-  @util clearfix;
-  counter-reset: li;
-  list-style: none;
-  *list-style: decimal;
-  font: 18px $content-header-font;
-  padding: 0;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-  /* Tailwind adjustment */
-  margin-bottom: 0.5em;
-  li {
-    float: left;
-    position: relative;
-    display: block;
+    @util clearfix;
+    counter-reset: li;
+    list-style: none;
+    *list-style: decimal;
+    font: 18px $content-header-font;
+    padding: 0;
+    text-shadow: 0 1px 0 rgba(255,255,255,.5);
     /* Tailwind adjustment */
-    padding: 0.5em 1em 0.5em 1em;
-    margin-left: 2rem;
+    margin-bottom: 0.5em;
+    li {
+        float:left;
+        position: relative;
+        display: block;
+        /* Tailwind adjustment */
+        padding: 0.5em 1em 0.5em 1em;
+        margin-left: 2rem;
 
-    color: $content-filter-color;
-    background: $content-filter-background;
-    text-decoration: none;
-    border-radius: 0.3em;
-    transition: all 0.3s ease-out;
+        color: $content-filter-color;
+        background: $content-filter-background;
+        text-decoration: none;
+        border-radius: .3em;
+        transition: all .3s ease-out;
 
-    &:before {
-      content: counter(li);
-      counter-increment: li;
-      position: absolute;
-      background: $content-active;
-      border: 0.3em solid $content-background;
-      text-align: center;
-      border-radius: 2em;
-      transition: all 0.3s ease-out;
-      /* Tailwind adjustment */
-      top: -0.1em;
-      left: -1.75em;
-      padding-top: 0.4em;
-      height: 2.5em;
-      width: 2.5em;
+        &:before{
+            content: counter(li);
+            counter-increment: li;
+            position: absolute;
+            background: $content-active;
+            border: .3em solid $content-background;
+            text-align: center;
+            border-radius: 2em;
+            transition: all .3s ease-out;
+            /* Tailwind adjustment */
+            top: -0.1em;
+            left: -1.75em;
+            padding-top: 0.4em;
+            height: 2.5em;
+            width: 2.5em;
+        }
+
+        &:hover{
+            background: $content-filter-current-background;
+
+            &:before{
+                transform: rotate(360deg);
+            }
+        }
+
     }
 
-    &:hover {
-      background: $content-filter-current-background;
-
-      &:before {
-        transform: rotate(360deg);
-      }
-    }
-  }
 }
+
+
 
 // List Styling
 .ul {
-  width: 34%;
-  list-style: none;
-
-  @media (max-width: $breakpoint-small) {
-    width: 100%;
-  }
-
-  &.single {
-    width: 17%;
-
-    > li {
-      width: 93%;
-      width: calc(95.5% - 15px);
-      padding: 2.5% 2%;
-    }
+    width: 34%;
+    list-style: none;
 
     @media (max-width: $breakpoint-small) {
-      width: 100%;
+        width: 100%;
+    }
 
-      > li {
+    &.single {
+        width: 17%;
+
+        > li {
+            width: 93%;
+            width: calc(95.5% - 15px);
+            padding: 2.5% 2%;
+        }
+
+        @media (max-width: $breakpoint-small) {
+            width: 100%;
+
+            > li {
+                width: 43%;
+                width: calc(47.5% - 15px);
+                padding: 1.5% 1%;
+            }
+        }
+    }
+
+    &.half {
+        width: 49%;
+
+        @media (max-width: $breakpoint-small) {
+            width: 100%;
+        }
+    }
+
+    > li {
+        float: left;
         width: 43%;
         width: calc(47.5% - 15px);
         padding: 1.5% 1%;
-      }
-    }
-  }
+        margin: 0.5%;
+        background: $content-light-background-shade;
+        margin-left: 15px;
+        position: relative;
+        transition: background .3s ease-out;
 
-  &.half {
-    width: 49%;
-
-    @media (max-width: $breakpoint-small) {
-      width: 100%;
-    }
-  }
-
-  > li {
-    float: left;
-    width: 43%;
-    width: calc(47.5% - 15px);
-    padding: 1.5% 1%;
-    margin: 0.5%;
-    background: $content-light-background-shade;
-    margin-left: 15px;
-    position: relative;
-    transition: background 0.3s ease-out;
-
-    &.active {
-      box-shadow: 0 0 2px #82d180 inset;
-    }
-
-    &:hover {
-      background: $content-light-background;
-    }
-
-    &:before {
-      content: "";
-      position: absolute;
-      background: $content-dark-background;
-      padding: 0;
-      top: 0;
-      left: -15px;
-      width: 10px;
-      height: 100%;
-    }
-
-    &:after {
-      position: absolute;
-      content: "";
-      border: 0.5em solid transparent;
-      left: -1em;
-      top: 50%;
-      margin-top: -0.5em;
-      transition: all 0.3s ease-out;
-    }
-
-    &:hover:after {
-      left: -0.5em;
-      border-left-color: $content-dark-background;
-    }
-
-    &.comment {
-      margin: 0.5%;
-      width: 95%;
-      width: calc(97.5% - 15px);
-      margin-left: 15px;
-    }
-
-    &.sample {
-      white-space: nowrap;
-
-      .wrap {
-        overflow-x: hidden;
-        text-overflow: ellipsis;
-        display: block;
+        &.active {
+            box-shadow: 0 0 2px #82d180 inset;
+        }
 
         &:hover {
-          overflow-x: visible;
+            background: $content-light-background;
         }
-      }
+
+        &:before {
+            content: "";
+            position: absolute;
+            background: $content-dark-background;
+            padding: 0;
+            top: 0;
+            left: -15px;
+            width: 10px;
+            height: 100%;
+        }
+
+        &:after{
+            position: absolute;
+            content: '';
+            border: .5em solid transparent;
+            left: -1em;
+            top: 50%;
+            margin-top: -.5em;
+            transition: all .3s ease-out;
+        }
+
+        &:hover:after{
+            left: -.5em;
+            border-left-color: $content-dark-background;
+        }
+
+        &.comment {
+            margin: 0.5%;
+            width: 95%;
+            width: calc(97.5% - 15px);
+            margin-left: 15px;
+        }
+
+        &.sample {
+            white-space: nowrap;
+
+            .wrap {
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+                display: block;
+
+                &:hover {
+                    overflow-x: visible;
+                }
+            }
+        }
+
+        h1 {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 
-    h1 {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    &.full {
+        width: 100%;
+
+        > li {
+            margin: 0.5%;
+            padding: 1%;
+            width: 16%;
+            width: calc(17.5% - 15px);
+            margin-left: 15px;
+
+            @media (max-width: $breakpoint-small) {
+                margin: 0.5%;
+                padding: 1%;
+                width: 45%;
+                width: calc(47.5% - 15px);
+                margin-left: 15px;
+            }
+        }
     }
-  }
 
-  &.full {
-    width: 100%;
-
-    > li {
-      margin: 0.5%;
-      padding: 1%;
-      width: 16%;
-      width: calc(17.5% - 15px);
-      margin-left: 15px;
-
-      @media (max-width: $breakpoint-small) {
-        margin: 0.5%;
-        padding: 1%;
-        width: 45%;
-        width: calc(47.5% - 15px);
-        margin-left: 15px;
-      }
+    &.hover {
+        > li:hover {
+            cursor: pointer;
+        }
     }
-  }
-
-  &.hover {
-    > li:hover {
-      cursor: pointer;
-    }
-  }
 }
 
 /*
@@ -527,241 +534,223 @@ Using a selector with no 'root' properties does not work because css-nested will
 ul.comments was extending ul.bubbles. So in this case ul.bubbles won't exist while "ul.bubbles li" will.
 */
 %ul_bubbles_container {
-  li {
-    border-radius: 5px;
-    border: 1px solid $content-border;
-    padding: 1%;
-    margin-bottom: 5px;
+    li {
+        border-radius: 5px;
+        border: 1px solid $content-border;
+        padding: 1%;
+        margin-bottom: 5px;
 
-    h1 {
-      border-radius: 3px;
-      padding: 0.7%;
-      background: $content-main-background;
+        h1 {
+            border-radius: 3px;
+            padding: 0.7%;
+            background: $content-main-background;
+        }
     }
-  }
 }
 ul.bubbles {
-  @extend %ul_bubbles_container;
+    @extend %ul_bubbles_container;
 }
 
 ul.comments {
-  @extend %ul_bubbles_container;
+    @extend %ul_bubbles_container;
 }
 
+
+
+
 ul.status {
-  font-size: 10px;
-  white-space: nowrap;
-  margin-bottom: 0;
+    font-size: 10px;
+    white-space: nowrap;
+    margin-bottom: 0;
 
-  li {
-    padding: 2px 5px;
-    border-radius: 2px;
-    margin-bottom: 1px;
+    li {
+        padding: 2px 5px;
+        border-radius: 2px;
+        margin-bottom: 1px;
 
-    &.R {
-      &:before {
-        content: "Loaded by Robot";
-      }
-      background-color: #ff6961;
+        &.R {
+            &:before {
+                content: 'Loaded by Robot'
+            }
+            background-color: #ff6961;
+        }
+
+        &.GR {
+            &:before {
+                content: 'Grid Scanned'
+            }
+            background-color: #fdfd96;
+        }
+
+        &.SC {
+            &:before {
+                content: 'Screened'
+            }
+            background-color: #fdfd96;
+        }
+
+        &.AI {
+            &:before {
+                content: 'Auto Indexed'
+            }
+            background-color: #ffb347;
+        }
+
+        &.DC {
+            &:before {
+                content: 'Data Collected'
+            }
+            background-color: #87ceeb;
+        }
+
+        &.AP {
+            &:before {
+                content: 'Auto Integrated'
+            }
+
+            background-color: #77dd77;
+        }
+
+
+        &.COMP {
+            &:before {
+                content: 'Completed'
+            }
+
+            background-color: #87ceeb;
+        }
     }
-
-    &.GR {
-      &:before {
-        content: "Grid Scanned";
-      }
-      background-color: #fdfd96;
-    }
-
-    &.SC {
-      &:before {
-        content: "Screened";
-      }
-      background-color: #fdfd96;
-    }
-
-    &.AI {
-      &:before {
-        content: "Auto Indexed";
-      }
-      background-color: #ffb347;
-    }
-
-    &.DC {
-      &:before {
-        content: "Data Collected";
-      }
-      background-color: #87ceeb;
-    }
-
-    &.AP {
-      &:before {
-        content: "Auto Integrated";
-      }
-
-      background-color: #77dd77;
-    }
-
-    &.COMP {
-      &:before {
-        content: "Completed";
-      }
-
-      background-color: #87ceeb;
-    }
-
-    &.XS {
-      &:before {
-        content: "XRF Spectrum";
-      }
-
-      background-color: #d287eb;
-    }
-
-    &.XM {
-      &:before {
-        content: "XRF Map";
-      }
-
-      background-color: #d287eb;
-    }
-
-    &.ES {
-      &:before {
-        content: "Energy Scan";
-      }
-
-      background-color: #a087eb;
-    }
-  }
 }
 
 li:last-child .visit_users {
-  right: 2%;
+    right: 2%
 }
+
 
 /* Moved data collection class to here so it follows the ul definition */
 // Main data collections layout
 .data_collections {
-  @util clearfix;
+    @util clearfix;
 }
 
 .data_collection {
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  background: $content-main-background;
-  border: 1px solid $content-border;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    background: $content-main-background;
+    border: 1px solid $content-border;
 
-  > h1 {
-    font-family: $content-header-font;
-    font-size: $content-header-size;
-    padding: 5px 5px 0px 0px;
-    margin-bottom: 5px;
-  }
+    > h1 {
+        font-family: $content-header-font;
+        font-size: $content-header-size;
+        padding: 5px 5px 0px 0px;
+        margin-bottom: 5px;
+    }
 
-  > h2 {
-    font-size: 12px;
-    padding: 3px 3px 3px 3px;
-    text-decoration: underline;
-    margin-bottom: 5px;
-    word-wrap: break-word;
-    width: 49%;
+    > h2 {
+        font-size: 12px;
+        padding: 3px 3px 3px 3px;
+        text-decoration: underline;
+        margin-bottom: 5px;
+        word-wrap: break-word;
+        width: 49%;
+
+        @media (max-width: $breakpoint-small) {
+            width: 100%;
+        }
+    }
+
+
+    p {
+        padding: 5px;
+    }
+
+    .links {
+        display: none;
+        text-align: center;
+        background: $content-light-background-shade;
+        padding: 3%;
+        margin: 5px 0;
+        border-radius: 5px;
+
+        @media (max-width: $breakpoint-vsmall) {
+            display: block;
+        }
+
+        a {
+            text-decoration: none;
+            display: inline-block;
+            padding: 0 1.5%;
+        }
+    }
 
     @media (max-width: $breakpoint-small) {
-      width: 100%;
+        .aborted {
+            float: none;
+            text-align: center;
+            padding: 5px;
+            font-weight: bold;
+            background: $content-light-background-shade;
+        }
+
+        .downloads {
+            float: none;
+        }
     }
-  }
 
-  p {
-    padding: 5px;
-  }
-
-  .links {
-    display: none;
-    text-align: center;
-    background: $content-light-background-shade;
-    padding: 3%;
-    margin: 5px 0;
-    border-radius: 5px;
 
     @media (max-width: $breakpoint-vsmall) {
-      display: block;
+        .temp {
+            display: block;
+            margin: 3px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &:hover {
+                overflow-x: visible;
+            }
+        }
+
+        .date {
+            display: block;
+            font-size: 10px;
+        }
+        .spacer, i.expand {
+                display: none;
+        }
+
+        > h1 > button, > h1 > a {
+            float: right;
+        }
     }
 
-    a {
-      text-decoration: none;
-      display: inline-block;
-      padding: 0 1.5%;
-    }
-  }
 
-  @media (max-width: $breakpoint-small) {
-    .aborted {
-      float: none;
-      text-align: center;
-      padding: 5px;
-      font-weight: bold;
-      background: $content-light-background-shade;
-    }
+    // Sub contents
+    .holder {
+        .downstream-item {
+            .downloads {
+                padding: 0;
+            }
 
-    .downloads {
-      float: none;
-    }
-  }
+            .dpmessages .content {
+                padding-bottom: 0;
+            }
 
-  @media (max-width: $breakpoint-vsmall) {
-    .temp {
-      display: block;
-      margin: 3px 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
+            &:not(:last-child) {
+                margin-bottom: 5px;
+            }
+        }
 
-      &:hover {
-        overflow-x: visible;
-      }
-    }
+        .separator {
+            margin: 0 5px;
+            color: #ccc
+        }
 
-    .date {
-      display: block;
-      font-size: 10px;
-    }
-    .spacer,
-    i.expand {
-      display: none;
-    }
-
-    > h1 > button,
-    > h1 > a {
-      float: right;
-    }
-  }
-
-  // Sub contents
-  .holder {
-    .downstream-item {
-      .downloads {
-        padding: 0;
-      }
-
-      .dpmessages .content {
-        padding-bottom: 0;
-      }
-
-      &:not(:last-child) {
-        margin-bottom: 5px;
-      }
-    }
-
-    .separator {
-      margin: 0 5px;
-      color: #ccc;
-    }
-
-    .count {
-      color: $body-color-tint35;
-    }
-
-    /*
+        .count {
+            color: $body-color-tint35;
+        }
+                        
+        /*
         > span {
             float: right;
             padding: 7px;
@@ -771,660 +760,684 @@ li:last-child .visit_users {
             }
         }*/
 
-    > h1 {
-      @util clearfix;
-      cursor: pointer;
-      background: $content-sub-header-background;
-      padding: 8px;
-      font-size: 12px;
-      margin-top: 2px;
+        > h1 {
+            @util clearfix;
+            cursor: pointer;
+            background: $content-sub-header-background;
+            padding: 8px;
+            font-size: 12px;
+            margin-top: 2px;
 
-      &:hover {
-        background: $content-sub-header-hover-background;
-      }
-
-      > span {
-        float: right;
-
-        img {
-          vertical-align: middle;
-        }
-      }
-    }
-
-    > div {
-      background: $content-sub-background;
-      display: none;
-      overflow: auto;
-
-      .dcap {
-        padding: 1% 1% 0 1%;
-
-        .data_collection {
-          margin-bottom: 0;
-        }
-      }
-
-      > h1 {
-        border-bottom: 1px solid;
-        margin-bottom: 5px;
-        padding: 5px 0 0 0;
-        font-size: 12px;
-      }
-
-      > div > table.atoms,
-      .ui-tabs-panel table.atoms {
-        width: 50%;
-
-        @media (max-width: $breakpoint-vsmall) {
-          width: 100%;
-        }
-      }
-
-      > div > table.rstats,
-      .ui-tabs-panel table.rstats {
-        width: 68%;
-        margin-top: 5px;
-
-        @media (max-width: $breakpoint-vsmall) {
-          width: 100%;
-        }
-      }
-
-      > table,
-      > div > table,
-      .ui-tabs-panel table {
-        font-size: 10px;
-        width: 100%;
-
-        &.cell,
-        &.xo,
-        &.bc {
-          width: auto;
-          @media (max-width: $breakpoint-vsmall) {
-            width: 100%;
-          }
-        }
-
-        &.reflow {
-          @extend .reflow;
-          @media (max-width: $breakpoint-vsmall) {
-            td {
-              padding-left: 50%;
+            &:hover {
+                background: $content-sub-header-hover-background;
             }
-          }
+
+            > span {
+                float: right;
+
+                img {
+                    vertical-align: middle;
+                }
+            }
         }
-      }
 
-      .ui-widget-content {
-        border-top: none;
-      }
+        > div {
+            background: $content-sub-background;
+            display: none;
+            overflow: auto;
 
-      .ui-tabs.summary {
-        border: 1px solid #aaaaaa;
-      }
+            .dcap {
+                padding: 1% 1% 0 1%;
+
+                .data_collection {
+                    margin-bottom: 0;
+                }
+            }
+
+            > h1 {
+                border-bottom: 1px solid;
+                margin-bottom: 5px;
+                padding: 5px 0 0 0;
+                font-size: 12px;
+            }
+
+            > div > table.atoms,
+            .ui-tabs-panel table.atoms {
+                width: 50%;
+
+                @media (max-width: $breakpoint-vsmall) {
+                    width: 100%;
+                }
+            }
+
+            > div > table.rstats,
+            .ui-tabs-panel table.rstats {
+                width: 68%;
+                margin-top: 5px;
+
+                @media (max-width: $breakpoint-vsmall) {
+                    width: 100%;
+                }
+            }
+
+
+            > table,
+            > div > table,
+            .ui-tabs-panel table {
+                font-size: 10px;
+                width: 100%;
+
+                &.cell, &.xo, &.bc {
+                    width: auto;
+                    @media (max-width: $breakpoint-vsmall) {
+                        width: 100%;
+                    }
+                }
+
+                &.reflow {
+                    @extend .reflow;
+                    @media (max-width: $breakpoint-vsmall) {
+                        td {
+                            padding-left: 50%;
+                        }
+                    }
+                }
+
+            }
+
+            .ui-widget-content {
+                border-top: none;
+            }
+
+            .ui-tabs.summary {
+                border: 1px solid #aaaaaa;
+            }
+        }
+
+
+        table {
+            tr {
+                cursor: pointer;
+                &:hover {
+                    background: $content-sub-hover-background;
+                }
+
+                th {
+                    font-weight: bold;
+                    background: $content-filter-current-background;
+                    padding: 5px;
+                    text-align: center;
+                }
+            }
+
+            td {
+                padding: 5px;
+            }
+
+            &.rstats tr:first-child td {
+                font-weight: bold;
+                background: $content-filter-current-background;
+            }
+
+            &.bepm_stats td {
+                padding: 5px;
+                text-align: center;
+            }
+
+            @media (max-width: $breakpoint-vsmall) {
+                &.bepm_stats td,
+                &.bepm_sets td {
+                    text-align: left;
+                }
+            }
+
+        }
+
+
+        // Inset Content
+        .plot_fastep {
+            margin: 0 1%;
+            width: 48%;
+            height: 150px;
+            float: right;
+
+            @media (max-width: $breakpoint-vsmall) {
+                height: 100px;
+                float: none;
+            }
+
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+
+        .plot_bigep {
+            margin: 0 1%;
+            height: 170px;
+
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+
+        .bigep-settings {
+            padding: 0.5%;
+
+            td {
+                text-align: center;
+            }
+
+
+            .bepm-seq {
+                white-space: pre;
+                font-family: Courier;
+                font-size: 10px;
+                text-align: left;
+            }
+        }
+
+        .bigep-stats {
+            padding: 0.5%;
+        }
+
+        .bigep-models {
+            padding: 0.5%;
+
+            @media (max-width: $breakpoint-vsmall) {
+                float: none;
+                width: auto;
+            }
+        }
+
+        .bigep-seq {
+
+            li {
+                span.label {
+                    width: 20%;
+                }
+             }
+         }
+
+        .bigep-images figure {
+            background: rgb(241, 241, 241);
+            position: relative;
+            margin: 0.5em;
+
+            &.pending:before {
+                color: #ccc;
+                position: absolute;
+                top: 40%;
+                left: 50%;
+                transform: translate(-50%);
+                font-size: 20px;
+                content: 'No Image';
+            }
+
+            &.loaded {
+                border: 1px solid #ccc;
+                background: #fff;
+            }
+
+            @media (max-width: $breakpoint-vsmall) {
+                float: none;
+                width: auto;
+            }
+        }
+        
+        .bigep-images img {
+            width: 100%;
+            height: auto;
+        }
+
+        .plot_dimple {
+            width: 70%;
+            float: right;
+
+            @media (max-width: $breakpoint-vsmall) {
+                height: 100px;
+                float: none;
+            }
+
+            .legend {
+                > table {
+                    width: auto;
+                }
+            }
+        }
+
+        .blobs {
+            position: relative;
+            background: rgb(241, 241, 241);
+            float: right;
+            padding-left: 10px;
+            width: 30%;
+            
+            &:before {
+                color: #ccc;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%);
+                font-size: 24px;
+                content: 'No Image';
+            }
+
+            &.pending {
+                &:before {
+                    content: 'Loading'
+                }
+            }
+
+            &.loaded {
+                &:before {
+                    display: none
+                }
+            }
+
+            @media (max-width: $breakpoint-vsmall) {
+                float: none;
+                width: 100%;
+                margin-left: 0;
+                padding-left: 0;
+            }
+        }
+
+        .blobs img {
+            width: 100%;
+            height: auto;
+        }
+
+
+        #dimple a img {
+            opacity: 1;
+        }
+
+        #dimple a:hover img {
+            opacity: 0.5;
+        }
     }
 
-    table {
-      tr {
-        cursor: pointer;
-        &:hover {
-          background: $content-sub-hover-background;
-        }
-
-        th {
-          font-weight: bold;
-          background: $content-filter-current-background;
-          padding: 5px;
-          text-align: center;
-        }
-      }
-
-      td {
-        padding: 5px;
-      }
-
-      &.rstats tr:first-child td {
-        font-weight: bold;
-        background: $content-filter-current-background;
-      }
-
-      &.bepm_stats td {
-        padding: 5px;
-        text-align: center;
-      }
-
-      @media (max-width: $breakpoint-vsmall) {
-        &.bepm_stats td,
-        &.bepm_sets td {
-          text-align: left;
-        }
-      }
-    }
 
     // Inset Content
-    .plot_fastep {
-      margin: 0 1%;
-      width: 48%;
-      height: 150px;
-      float: right;
+    .diffraction,
+    .snapshots,
+    .image,
+    .diviewer {
+        float: right;
+        background: $content-inlay-background;
+        padding: 0;
+        margin: 0.25%;
+        overflow: hidden;
+    }
 
-      @media (max-width: $breakpoint-vsmall) {
-        height: 100px;
-        float: none;
-      }
+    .image, .diviewer {
+        width: 40.5%;
+        height: 300px;
 
-      .legend {
-        > table {
-          width: auto;
+        &.image-third {
+            width: 32.4%;
+
+            @media (max-width: $breakpoint-small) {
+                width: 49.5%;
+            }
+
+            @media (max-width: $breakpoint-vsmall) {
+                width: auto;
+                float: none;
+                height: 150px;
+            }
         }
-      }
-    }
 
-    .plot_bigep {
-      margin: 0 1%;
-      height: 170px;
-
-      .legend {
-        > table {
-          width: auto;
+        @media (max-width: $breakpoint-small) {
+            width: 49.5%;
         }
-      }
-    }
 
-    .bigep-settings {
-      padding: 0.5%;
-
-      td {
-        text-align: center;
-      }
-
-      .bepm-seq {
-        white-space: pre;
-        font-family: Courier;
-        font-size: 10px;
-        text-align: left;
-      }
-    }
-
-    .bigep-stats {
-      padding: 0.5%;
-    }
-
-    .bigep-models {
-      padding: 0.5%;
-
-      @media (max-width: $breakpoint-vsmall) {
-        float: none;
-        width: auto;
-      }
-    }
-
-    .bigep-seq {
-      li {
-        span.label {
-          width: 20%;
+        @media (max-width: $breakpoint-vsmall) {
+            width: auto;
+            float: none;
+            height: 150px;
         }
-      }
-    }
 
-    .bigep-images figure {
-      background: rgb(241, 241, 241);
-      position: relative;
-      margin: 0.5em;
+        &.mg, &.ov {
+            width: auto;
+            min-width: 22%;
 
-      &.pending:before {
-        color: #ccc;
-        position: absolute;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%);
-        font-size: 20px;
-        content: "No Image";
-      }
+            figcaption {
+                position: absolute;
+                margin: 3px 0 0 4px;
+            }
 
-      &.loaded {
-        border: 1px solid #ccc;
-        background: #fff;
-      }
+            img {
+                transition: opacity 0.2s ease-in-out;
+                opacity: 0;
 
-      @media (max-width: $breakpoint-vsmall) {
-        float: none;
-        width: auto;
-      }
-    }
+                width: auto;
+                height: 100%;
 
-    .bigep-images img {
-      width: 100%;
-      height: auto;
-    }
-
-    .plot_dimple {
-      width: 70%;
-      float: right;
-
-      @media (max-width: $breakpoint-vsmall) {
-        height: 100px;
-        float: none;
-      }
-
-      .legend {
-        > table {
-          width: auto;
+                &.show {
+                    opacity: 1;
+                }
+            }
         }
-      }
     }
 
-    .blobs {
-      position: relative;
-      background: rgb(241, 241, 241);
-      float: right;
-      padding-left: 10px;
-      width: 30%;
+    .diffraction.spectrum-small {
+        width: 34%;
+    }
 
-      &:before {
-        color: #ccc;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%);
-        font-size: 24px;
-        content: "No Image";
-      }
+    .image {
+        cursor: pointer;
 
-      &.pending {
-        &:before {
-          content: "Loading";
+        .controls {
+            position: absolute;
+            z-index: 99;
         }
-      }
+    }
 
-      &.loaded {
-        &:before {
-          display: none;
+    .snapshots {
+        width: 23%;
+
+        @media (max-width: $breakpoint-small) {
+            width: 38.0%;
         }
-      }
 
-      @media (max-width: $breakpoint-vsmall) {
-        float: none;
+        @media (max-width: $breakpoint-vsmall) {
+            display: none;
+        }
+    }
+
+    .diffraction {
+        width: 18%;
+
+        @media (max-width: $breakpoint-small) {
+            width: 29.5%;
+        }
+
+        @media (max-width: $breakpoint-vsmall) {
+            display: none;
+        }
+    }
+
+    .diffraction img,
+    .snapshots img {
         width: 100%;
-        margin-left: 0;
-        padding-left: 0;
-      }
-    }
-
-    .blobs img {
-      width: 100%;
-      height: auto;
-    }
-
-    #dimple a img {
-      opacity: 1;
-    }
-
-    #dimple a:hover img {
-      opacity: 0.5;
-    }
-  }
-
-  // Inset Content
-  .diffraction,
-  .snapshots,
-  .image,
-  .diviewer {
-    float: right;
-    background: $content-inlay-background;
-    padding: 0;
-    margin: 0.25%;
-    overflow: hidden;
-  }
-
-  .image,
-  .diviewer {
-    width: 40.5%;
-    height: 300px;
-
-    &.image-third {
-      width: 32.4%;
-
-      @media (max-width: $breakpoint-small) {
-        width: 49.5%;
-      }
-
-      @media (max-width: $breakpoint-vsmall) {
-        width: auto;
-        float: none;
-        height: 150px;
-      }
-    }
-
-    @media (max-width: $breakpoint-small) {
-      width: 49.5%;
-    }
-
-    @media (max-width: $breakpoint-vsmall) {
-      width: auto;
-      float: none;
-      height: 150px;
-    }
-
-    &.mg,
-    &.ov {
-      width: auto;
-      min-width: 22%;
-
-      figcaption {
-        position: absolute;
-        margin: 3px 0 0 4px;
-      }
-
-      img {
-        transition: opacity 0.2s ease-in-out;
+        height: auto;
         opacity: 0;
 
-        width: auto;
-        height: 100%;
+        transition: opacity 0.25s ease-in-out;
 
         &.show {
-          opacity: 1;
+            opacity: 1;
         }
-      }
-    }
-  }
-
-  .diffraction.spectrum-small {
-    width: 34%;
-  }
-
-  .image {
-    cursor: pointer;
-
-    .controls {
-      position: absolute;
-      z-index: 99;
-    }
-  }
-
-  .snapshots {
-    width: 23%;
-
-    @media (max-width: $breakpoint-small) {
-      width: 38%;
     }
 
-    @media (max-width: $breakpoint-vsmall) {
-      display: none;
+    .diffraction a:hover img,
+    .snapshots a:hover img {
+        &.show {
+            opacity: 0.5;
+        }
     }
 
-    &.large {
-      width: 40%;
-    }
-  }
-
-  .diffraction {
-    width: 18%;
-
-    @media (max-width: $breakpoint-small) {
-      width: 29.5%;
+    .rp .data_collection.selected {
+        background: #cdcdcd;
     }
 
-    @media (max-width: $breakpoint-vsmall) {
-      display: none;
-    }
-  }
+    .distl {
+        transition: opacity 0.25s ease-in-out;
 
-  .diffraction img,
-  .snapshots img {
-    width: 100%;
-    height: auto;
-    opacity: 0;
+        .rp & {
+            width: 48%;
+        }
 
-    transition: opacity 0.25s ease-in-out;
+        width: 23.5%;
+        float: right;
+        margin: 0.25%;
+        padding: 0;
+        border-radius: 5px;
+        cursor: pointer;
+        opacity: 1;
 
-    &.show {
-      opacity: 1;
-    }
-  }
+        @media (max-width: $breakpoint-small) {
+            width: 30%;
+        }
 
-  .diffraction a:hover img,
-  .snapshots a:hover img {
-    &.show {
-      opacity: 0.5;
-    }
-  }
-
-  .rp .data_collection.selected {
-    background: #cdcdcd;
-  }
-
-  .distl {
-    transition: opacity 0.25s ease-in-out;
-
-    .rp & {
-      width: 48%;
+        @media (max-width: $breakpoint-vsmall) {
+            display: none;
+        }
     }
 
-    width: 23.5%;
-    float: right;
-    margin: 0.25%;
-    padding: 0;
-    border-radius: 5px;
-    cursor: pointer;
-    opacity: 1;
+    .edge,
+    .mca {
+        transition: opacity 0.25s ease-in-out;
+        height: 160px;
+        width: 50%;
+        float: right;
 
-    @media (max-width: $breakpoint-small) {
-      width: 30%;
+        @media (max-width: $breakpoint-small) {
+            width: 100%;
+        }
     }
 
-    @media (max-width: $breakpoint-vsmall) {
-      display: none;
+    .elements {
+        float: right;
+        margin: 0.5% 1% 2% 0.5%;
+
+        @media (max-width: $breakpoint-small) {
+            float: none;
+        }
+
+        table tr td {
+            font-size: 10px;
+            padding: 4px;
+            white-space: nowrap;
+        }
+
+        &.XS {
+            &:before {
+                content: 'XRF Spectrum'
+            }
+            
+            background-color: #d287eb;
+        }
+
+        &.XM {
+            &:before {
+                content: 'XRF Map'
+            }
+            
+            background-color: #d287eb;
+        }
+
+        &.ES {
+            &:before {
+                content: 'Energy Scan'
+            }
+            
+            background-color: #a087eb;
+        }
     }
-  }
-
-  .edge,
-  .mca {
-    transition: opacity 0.25s ease-in-out;
-    height: 160px;
-    width: 50%;
-    float: right;
-
-    @media (max-width: $breakpoint-small) {
-      width: 100%;
-    }
-  }
-
-  .elements {
-    float: right;
-    margin: 0.5% 1% 2% 0.5%;
-
-    @media (max-width: $breakpoint-small) {
-      float: none;
-    }
-
-    table tr td {
-      font-size: 10px;
-      padding: 4px;
-      white-space: nowrap;
-    }
-  }
-  /* Postcss - not working here - move to separate declaration below */
-  // > ul {
-  //     @extend .ul;
-  // }
+    /* Postcss - not working here - move to separate declaration below */
+    // > ul {
+    //     @extend .ul;
+    // }
 }
 
 .data_collection > ul {
-  @extend .ul;
+    @extend .ul;
 }
 
 .visit_users {
-  position: absolute;
-  background: #efefef;
-  z-index: 100;
-  padding: 5px;
-  width: 350px;
-  border-radius: 5px;
+    position: absolute;
+    background: #efefef;
+    z-index: 100;
+    padding: 5px;
+    width: 350px;
+    border-radius: 5px;
 
-  .new {
-    background-color: red;
-  }
-
-  li:last-child &,
-  li:nth-last-child(2) & {
-    right: 2%;
-  }
-
-  @media (max-width: $breakpoint-vsmall) {
-    right: auto;
-    left: 1%;
-    width: 280px;
-
-    li:nth-child(even) & {
-      right: 1%;
-      left: auto;
+    .new {
+        background-color: red;
     }
-  }
+
+    li:last-child &, li:nth-last-child(2) & {
+        right: 2%;
+    }
+
+    @media (max-width: $breakpoint-vsmall) {
+        right: auto;
+        left: 1%;
+        width: 280px;
+
+        li:nth-child(even) & {
+            right: 1%;
+            left: auto;
+        }
+    }
 }
+
 
 // Sample status
 .sample_status {
-  /* Default with tailwind preset is box-border, so reset to content-box to maintain legacy style */
-  box-sizing: content-box;
-  padding: 5px;
-  border-radius: 6px 0 0 6px;
-  background: #efefef;
-  border: 1px solid #e2e2e2;
-  position: fixed;
-  right: -221px;
-  top: 25%;
-  z-index: 100;
-  width: 235px;
-  display: none;
-  transition: right 0.5s ease-in-out 0.5s;
-
-  &.wide {
-    width: 465px;
-    right: -451px;
-  }
-
-  &.in,
-  &:hover {
-    right: 0 !important;
-  }
-
-  &.in {
-    .handle {
-      background: #bdbdbd;
-    }
-  }
-
-  canvas {
-    cursor: pointer;
-  }
-
-  .key_holder {
-    position: absolute;
-    padding: 0 5px 5px 5px;
-
-    i {
-      padding-top: 5px;
-    }
-
-    &:hover {
-      .key {
-        display: block;
-      }
-    }
-  }
-
-  .handle {
-    cursor: pointer;
-    float: left;
-    width: 20px;
-    height: 250px;
-    background: #cdcdcd;
+    /* Default with tailwind preset is box-border, so reset to content-box to maintain legacy style */
+    box-sizing: content-box;
+    padding: 5px;
     border-radius: 6px 0 0 6px;
-
-    .text {
-      transform: translate(0, 230px) rotate(270deg);
-      white-space: nowrap;
-      display: block;
-
-      .controls {
-        display: inline-block;
-        margin-left: 60px;
-
-        a {
-          text-decoration: none;
-        }
-      }
-    }
-    .clearf {
-      visibility: hidden;
-    }
-  }
-
-  .form,
-  .ranking {
-    padding: 0 5px;
-    margin-left: 20px;
-
-    li {
-      span.label {
-        width: 32%;
-      }
-
-      span:not(.label) {
-        overflow-x: hidden;
-        white-space: nowrap;
-        width: 60%;
-        display: inline-block;
-        text-overflow: ellipsis;
-      }
-    }
-  }
-
-  @media (max-width: $breakpoint-vsmall) {
+    background: #efefef;
+    border: 1px solid #e2e2e2;
+    position: fixed;
+    right: -221px;
+    top: 25%;
+    z-index: 100;
+    width: 235px;
     display: none;
-  }
+    transition: right 0.5s ease-in-out 0.5s;
+
+    &.wide {
+        width: 465px;
+        right: -451px;
+    }
+
+    &.in, &:hover {
+        right: 0 !important;
+    }
+
+    &.in {
+        .handle {
+            background: #bdbdbd;
+        }
+    }
+
+    canvas {
+        cursor: pointer;
+    }
+
+    .key_holder {
+        position: absolute;
+        padding: 0 5px 5px 5px;
+
+        i {
+            padding-top: 5px;
+        }
+
+        &:hover {
+            .key {
+                display: block
+            }
+        }
+    }
+
+    .handle {
+        cursor: pointer;
+        float: left;
+        width: 20px;
+        height: 250px;
+        background: #cdcdcd;
+        border-radius: 6px 0 0 6px;
+
+        .text {
+            transform: translate(0, 230px) rotate(270deg);
+            white-space: nowrap;
+            display: block;
+
+            .controls {
+                display: inline-block;
+                margin-left: 60px;
+
+                a {
+                    text-decoration: none;
+                }
+            }
+        }
+        .clearf {
+            visibility: hidden;
+        }
+    }
+
+    .form, .ranking {
+        padding: 0 5px;
+        margin-left: 20px;
+
+        li {
+            span.label {
+                width: 32%;
+            }
+
+            span:not(.label) {
+                overflow-x: hidden;
+                white-space: nowrap;
+                width: 60%;
+                display: inline-block;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+
+    @media (max-width: $breakpoint-vsmall) {
+        display: none;
+    }
 }
 
 .key {
-  background: #cdcdcd;
-  border-radius: 6px;
-  display: none;
-  float: right;
-  padding: 5px;
+    background: #cdcdcd;
+    border-radius: 6px;
+    display: none;
+    float: right;
+    padding: 5px;
 
-  li:before {
-    content: "";
-    line-height: 1em;
-    width: 0.5em;
-    height: 0.5em;
-    float: left;
-    margin: 0.25em 0.25em 0;
-    border-radius: 50%;
-  }
+    li:before {
+        content: "";
+        line-height: 1em;
+        width: .5em;
+        height: .5em;
+        float: left;
+        margin: .25em .25em 0;
+        border-radius: 50%;
+    }
 
-  li:nth-child(1):before {
-    background-color: #ff6961;
-  }
+    li:nth-child(1):before {
+        background-color: #ff6961;
+    }
 
-  li:nth-child(2):before {
-    background-color: #fdfd96;
-  }
+    li:nth-child(2):before {
+        background-color: #fdfd96;
+    }
 
-  li:nth-child(3):before {
-    background-color: #ffb347;
-  }
+    li:nth-child(3):before {
+        background-color: #ffb347;
+    }
 
-  li:nth-child(4):before {
-    background-color: #87ceeb;
-  }
+    li:nth-child(4):before {
+        background-color: #87ceeb;
+    }
 
-  li:nth-child(5):before {
-    background-color: #77dd77;
-  }
+    li:nth-child(5):before {
+        background-color: #77dd77;
+    }
 }
+
 
 /*
 .data_collection[type=data] {
@@ -1438,591 +1451,632 @@ li:last-child .visit_users {
 }*/
 
 .fixedwidth {
-  font-family: $fixed-font;
+    font-family: $fixed-font;
 }
 
 #distl_full .distl {
-  height: 250px;
+    height: 250px;
 }
 
+
 .ui-tabs .ui-tabs-panel {
-  padding: 8px !important;
+    padding: 8px !important;
 }
 
 .ui-tabs {
-  padding: 2px !important;
+    padding: 2px !important;
 }
 
-[draggable="true"] {
-  -khtml-user-drag: element;
-  -webkit-user-drag: element;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
+
+
+
+[draggable=true] {
+    -khtml-user-drag: element;
+    -webkit-user-drag: element;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
 }
 
 .dragged td {
-  background: $content-page-background;
+    background: $content-page-background;
 }
 
+
+
+
+
 h1.status {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 div.status {
-  @util clearfix;
-  display: none;
+    @util clearfix;
+    display: none;
 }
+
+
 
 .oav,
 .webcam {
-  @mixin cols 2, 0, 0.5%;
-  float: left;
+    @mixin cols 2,0,0.5%;
+    float: left;
 
-  @media (max-width: $breakpoint-small) {
-    @mixin cols 1, 0, 0.5%;
-  }
+    @media (max-width: $breakpoint-small) {
+        @mixin cols 1,0,0.5%;
+    }
 }
 
 .status.three {
-  .webcam {
-    @mixin cols 3, 0, 0.5%;
-    float: left;
-  }
+    .webcam {
+        @mixin cols 3,0,0.5%;
+        float: left;
+    }
 }
 
 .oav {
-  display: block;
-  margin: auto;
+    display: block;
+    margin: auto;
 }
 
 div.status.oavs {
-  display: none;
+    display: none;
 }
 
 .oav img,
 .webcam img {
-  width: 100%;
-  float: none;
+    width: 100%;
+    float: none;
 }
 
 .pvs {
-  padding: 0.2%;
+    padding: 0.2%;
 
-  .pv {
-    display: inline-block;
-    @mixin cols 8, 0.5%, 0.2%;
-    background: $content-inlay-background;
-    border-radius: 5px;
-    text-align: center;
+    .pv {
+        display: inline-block;
+        @mixin cols 8, 0.5%, 0.2%;
+        background: $content-inlay-background;
+        border-radius: 5px;
+        text-align: center;
 
-    @media (max-width: $breakpoint-small) {
-      @mixin cols 4, 1%, 1%;
+        @media (max-width: $breakpoint-small) {
+            @mixin cols 4, 1%, 1%;
+        }
+
+        @media (max-width: $breakpoint-vsmall) {
+            @mixin cols 2, 1.5%, 1.5%;
+        }
+
+        &.on {
+            background: $content-active;
+        }
+
+        &.off {
+            background: $content-inactive;
+        }
     }
-
-    @media (max-width: $breakpoint-vsmall) {
-      @mixin cols 2, 1.5%, 1.5%;
-    }
-
-    &.on {
-      background: $content-active;
-    }
-
-    &.off {
-      background: $content-inactive;
-    }
-  }
 }
 
+
 .log.gda ul {
-  height: 250px;
-  overflow-x: none;
+    height: 250px;
+    overflow-x: none;
 }
 
 .log.gda ul li {
-  white-space: nowrap;
+    white-space: nowrap;
 }
+
+
 
 // Diffraction Image Viewer
 .image_controls {
-  padding: 10px;
-  margin-bottom: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
 
-  .im_num {
-    @media (max-width: $breakpoint-vsmall) {
-      text-align: center;
+    .im_num {
+        @media (max-width: $breakpoint-vsmall) {
+            text-align: center;
+        }
+
+        input[name="num"] {
+            width: 40px;
+        }
     }
 
-    input[name="num"] {
-      width: 40px;
+    .im_col {
+        width: 17%;
+        float: right;
+        padding: 0 1%;
+
+        &.toggles {
+            width: 28%;
+
+            @media (max-width: $breakpoint-small) {
+                width: 98%;
+                padding: 2% 0 0 0;
+            }
+        }
+
+
+        @media (max-width: $breakpoint-small) {
+            padding: 0 2%;
+            width: 23%;
+        }
+
+        @media (max-width: $breakpoint-vsmall) {
+            float: left;
+            width: 46%;
+            margin-bottom: 5px;
+        }
     }
-  }
 
-  .im_col {
-    width: 17%;
-    float: right;
-    padding: 0 1%;
-
-    &.toggles {
-      width: 28%;
-
-      @media (max-width: $breakpoint-small) {
-        width: 98%;
-        padding: 2% 0 0 0;
-      }
+    .im_size {
+        @media (max-width: $breakpoint-vsmall) {
+            width: 98%;
+        }
     }
 
-    @media (max-width: $breakpoint-small) {
-      padding: 0 2%;
-      width: 23%;
+    .zoom, .brightness, .contrast {
+        width: 100%;
     }
 
-    @media (max-width: $breakpoint-vsmall) {
-      float: left;
-      width: 46%;
-      margin-bottom: 5px;
+
+    abbr {
+        text-decoration: underline;
+        cursor: help;
     }
-  }
 
-  .im_size {
-    @media (max-width: $breakpoint-vsmall) {
-      width: 98%;
-    }
-  }
-
-  .zoom,
-  .brightness,
-  .contrast {
-    width: 100%;
-  }
-
-  abbr {
-    text-decoration: underline;
-    cursor: help;
-  }
 }
 
-@media (max-width: $breakpoint-vsmall) {
-  .dc_params {
-    display: none;
-  }
 
-  h1.no_mobile,
-  button.no_mobile {
-    display: none;
-  }
+@media (max-width: $breakpoint-vsmall) {
+    .dc_params {
+        display: none;
+    }
+
+    h1.no_mobile, button.no_mobile {
+        display: none;
+    }
 }
 
 .image_container {
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 
-  .embed & {
-    position: relative;
-  }
-
-  @media (max-width: $breakpoint-vsmall) {
-    height: 75%;
-  }
-
-  .embed_control {
-    position: absolute;
-    right: 0;
-  }
-
-  .image {
-    width: 100%;
-    overflow: auto;
-    background: $content-fill-color;
-
-    .img {
-      display: none;
-
-      &:hover {
-        cursor: pointer;
-      }
+    .embed & {
+        position: relative;
     }
-  }
 
-  .im_zoom {
-    position: absolute;
-    margin: 10px;
-    border: 1px solid $content-border;
-    background: $content-light-background;
-    box-shadow: 1px 1px 2px $content-dark-background;
-    border-radius: 2px;
-    height: 100px;
+    @media (max-width: $breakpoint-vsmall) {
+        height: 75%;
+    }
 
-    @media (max-width: $breakpoint-small) {
-      height: 50px;
+    .embed_control {
+        position: absolute;
+        right: 0;
+    }
 
-      .im_zoomc {
-        height: 50px;
+    .image {
+        width: 100%;
+        overflow: auto;
+        background: $content-fill-color;
+
+        .img {
+            display: none;
+
+            &:hover {
+                cursor: pointer;
+            }
+        }
+    }
+
+    .im_zoom {
+        position: absolute;
+        margin: 10px;
+        border: 1px solid $content-border;
+        background: $content-light-background;
+        box-shadow: 1px 1px 2px $content-dark-background;
+        border-radius: 2px;
+        height: 100px;
+
+        @media (max-width: $breakpoint-small) {
+            height: 50px;
+
+            .im_zoomc {
+                height: 50px;
+                width: 50px;
+            }
+        }
+
+        .embed & {
+            height: 50px;
+
+            .im_zoomc {
+                height: 50px;
+                width: 50px;
+            }
+        }
+    }
+
+    .im_profile {
+        float: right;
+    }
+
+
+    .yprofile {
         width: 50px;
-      }
+        height: 100px;
+        position: absolute;
+        margin: 10px 0 0 215px;
+
+        @media (max-width: $breakpoint-small) {
+            width: 25px;
+            height: 50px;
+            margin-left: 60px;
+        }
+
+        .embed & {
+            width: 25px;
+            height: 50px;
+            margin-left: 60px;
+        }
     }
 
-    .embed & {
-      height: 50px;
-
-      .im_zoomc {
+    .xprofile {
+        width: 200px;
         height: 50px;
-        width: 50px;
-      }
-    }
-  }
+        position: absolute;
+        margin: 110px 0 0 10px;
 
-  .im_profile {
-    float: right;
-  }
+        @media (max-width: $breakpoint-small) {
+            width: 50px;
+            height: 25px;
+            margin-top: 60px;
+        }
 
-  .yprofile {
-    width: 50px;
-    height: 100px;
-    position: absolute;
-    margin: 10px 0 0 215px;
-
-    @media (max-width: $breakpoint-small) {
-      width: 25px;
-      height: 50px;
-      margin-left: 60px;
+        .embed & {
+            width: 50px;
+            height: 25px;
+            margin-top: 60px;
+        }
     }
 
-    .embed & {
-      width: 25px;
-      height: 50px;
-      margin-left: 60px;
-    }
-  }
+    .im_cur {
+        position: absolute;
+        margin: 170px 0 0 10px;
 
-  .xprofile {
-    width: 200px;
-    height: 50px;
-    position: absolute;
-    margin: 110px 0 0 10px;
+        @media (max-width: $breakpoint-small) {
+            margin: 90px 0 0 10px;
+        }
 
-    @media (max-width: $breakpoint-small) {
-      width: 50px;
-      height: 25px;
-      margin-top: 60px;
-    }
+        .embed & {
+            margin: 90px 0 0 10px;
+        }
 
-    .embed & {
-      width: 50px;
-      height: 25px;
-      margin-top: 60px;
-    }
-  }
-
-  .im_cur {
-    position: absolute;
-    margin: 170px 0 0 10px;
-
-    @media (max-width: $breakpoint-small) {
-      margin: 90px 0 0 10px;
+        p {
+            margin: 0;
+            padding: 0;
+        }
     }
 
-    .embed & {
-      margin: 90px 0 0 10px;
+
+    .im_highlight {
+        width: 40px;
+        height: 20px;
+        position: absolute;
+        border: 1px solid blue;
+
+        @media (max-width: $breakpoint-small) {
+            width: 20px;
+            height: 20px;
+        }
+
+        .embed & {
+            width: 20px;
+            height: 20px;
+        }
     }
 
-    p {
-      margin: 0;
-      padding: 0;
-    }
-  }
-
-  .im_highlight {
-    width: 40px;
-    height: 20px;
-    position: absolute;
-    border: 1px solid blue;
-
-    @media (max-width: $breakpoint-small) {
-      width: 20px;
-      height: 20px;
+    .im_progress {
+        display: none;
+        position: absolute;
+        width: 250px;
+        height: 20px;
     }
 
-    .embed & {
-      width: 20px;
-      height: 20px;
-    }
-  }
-
-  .im_progress {
-    display: none;
-    position: absolute;
-    width: 250px;
-    height: 20px;
-  }
 }
+
+
+
+
+
 
 // Misc - need homes!
 table.samples .img {
-  width: 45%;
+    width: 45%;
 }
 
 span.snapshots.sample img {
-  width: 15%;
+    width: 15%;
 }
 
 .seq {
-  word-break: break-all;
+    word-break: break-all;
 }
 
 .rd_plot {
-  height: 200px;
+    height: 200px;
 }
 
-textarea[name="pasted"] {
-  width: 100%;
-  height: 250px;
+textarea[name=pasted] {
+    width: 100%;
+    height: 250px;
 }
+
+
 
 @media (max-width: $breakpoint-small) {
-  span.snapshots.sample img {
-    width: 48%;
-  }
 
-  table.samples .img {
-    width: 100%;
-  }
+    span.snapshots.sample img {
+        width: 48%;
+    }
+
+    table.samples .img {
+        width: 100%;
+    }
+
+
 }
+
+
 
 // EPICS
 .motor {
-  float: left;
-  @mixin cols 2, 2%, 0.5%;
-  background: #cdcdcd;
-  border-radius: 5px;
-
-  .button {
-    padding: 0 !important;
-    width: 11%;
-    background: #000000;
-    border-radius: 2px;
-    overflow: hidden;
-    border: 1px solid;
-    text-align: center;
-
-    &.active {
-      background: $content-active;
-    }
-
-    &.inactive {
-      background: $content-inactive;
-    }
-
-    &.minor {
-      background: $content-minor;
-    }
-  }
-
-  .buttons {
-    margin: 2% 0;
-    position: absolute;
-    background: #fff;
-    width: 40%;
-    padding: 1% 2% 1% 1%;
-    white-space: nowrap;
-    display: none;
+    float: left;
+    @mixin cols 2,2%,0.5%;
+    background: #cdcdcd;
     border-radius: 5px;
 
     .button {
-      margin: 0.5%;
-      display: inline-block;
+        padding: 0 !important;
+        width: 11%;
+        background: #000000;
+        border-radius: 2px;
+        overflow: hidden;
+        border: 1px solid;
+        text-align: center;
+
+        &.active {
+            background: $content-active;
+        }
+
+        &.inactive {
+            background: $content-inactive;
+        }
+
+        &.minor {
+            background: $content-minor;
+        }
     }
-  }
 
-  .main:hover ~ .buttons {
-    display: block;
-  }
+    .buttons {
+        margin: 2% 0;
+        position: absolute;
+        background: #fff;
+        width: 40%;
+        padding: 1% 2% 1% 1%;
+        white-space: nowrap;
+        display: none;
+        border-radius: 5px;
 
-  .value {
-    float: right;
-    padding: 2%;
-    background: #bcbcbc;
-  }
-
-  .l {
-    float: left;
-  }
-
-  .r {
-    float: right;
-  }
-
-  h1 {
-    background: #eeeeee;
-    margin: 1% 0 2% 0;
-    padding: 1% 1%;
-  }
-
-  .below {
-    text-align: center;
-
-    .readback {
-      color: green;
-      display: inline-block;
-      border: 1px solid #000000;
-      border-radius: 2px;
-      width: 67%;
+        .button {
+            margin: 0.5%;
+            display: inline-block;
+        }
     }
-  }
+
+    .main:hover ~ .buttons {
+        display: block;
+    }
+
+    .value {
+        float: right;
+        padding: 2%;
+        background: #bcbcbc;
+    }
+
+    .l {
+        float: left;
+    }
+
+    .r {
+        float: right;
+    }
+
+    h1 {
+        background: #eeeeee;
+        margin: 1% 0 2% 0;
+        padding: 1% 1%;
+    }
+
+    .below {
+        text-align: center;
+
+        .readback {
+            color: green;
+            display: inline-block;
+            border: 1px solid #000000;
+            border-radius: 2px;
+            width: 67%;
+        }
+    }
 }
+
 
 // Dialog contents
 .ui-dialog-content {
-  ol {
-    list-style: decimal;
-    margin-left: 15px;
-  }
 
-  ol ul {
-    list-style: lower-roman;
-    margin-left: 30px;
-  }
-
-  li {
-    /*padding: 0 0 1px 0;*/
-  }
-
-  h1 {
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-
-  p {
-    margin-bottom: 5px;
-  }
-
-  .bold {
-    font-weight: bold;
-  }
-
-  .ul {
-    text-decoration: underline;
-  }
-}
-
-// Map Viewer
-#map_model {
-  position: relative;
-
-  .controls {
-    z-index: 9;
-    top: 10px;
-    left: 10px;
-    position: fixed;
-    margin: 5px;
-
-    div.peaks {
-      height: 150px;
-      overflow-y: auto;
-    }
-  }
-
-  #viewer {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-  }
-
-  #hud {
-    font-size: 15px;
-    color: #ddd;
-    background-color: rgba(0, 0, 0, 0.6);
-    text-align: center;
-    position: fixed;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 2px 8px;
-    border-radius: 5px;
-    z-index: 9;
-    white-space: pre-line;
-  }
-
-  #help {
-    display: none;
-    font-size: 16px;
-    color: #eee;
-    background-color: rgba(0, 0, 0, 0.7);
-    position: fixed;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: default;
-    padding: 5px;
-    border-radius: 5px;
-    z-index: 9;
-    white-space: pre-line;
-  }
-}
-
-.fixed {
-  &.xtalpreview {
-    position: fixed;
-    bottom: 5px;
-    width: 80%;
-    @media (max-width: $breakpoint-large) {
-      width: 96%;
-    }
-    background: #ccc;
-    border-radius: 5px;
-    z-index: 99;
-    padding: 10px;
-
-    canvas {
-      height: 340px;
-    }
-  }
-
-  &.content {
-    margin-bottom: 220px;
-  }
-}
-
-ul.messages {
-  li {
-    margin: 5px;
-    border-radius: 5px;
-    padding: 10px;
-
-    h3 {
-      cursor: pointer;
-      transition: color 0.25s ease-in-out;
-
-      &:hover {
-        color: #666;
-      }
+    ol {
+        list-style: decimal;
+        margin-left: 15px
     }
 
-    pre {
-      font-family: monospace;
-      border-top: 1px solid;
-      margin-top: 5px;
-      padding-top: 5px;
+    ol ul {
+        list-style: lower-roman;
+        margin-left: 30px
+    }
+
+    li {
+        /*padding: 0 0 1px 0;*/
+    }
+
+    h1 {
+        font-weight: bold;
+        margin-bottom: 5px;
     }
 
     p {
-      font-size: 11px;
-      margin-bottom: 0;
+        margin-bottom: 5px;
     }
 
-    &.ERROR {
-      border: 1px solid #ff0000;
-      background: color(#ff0000 tint(80%));
+    .bold {
+        font-weight: bold;
     }
 
-    &.WARNING {
-      border: 1px solid #ffa500;
-      background: color(#ffa500 tint(80%));
+    .ul {
+        text-decoration: underline;
     }
 
-    &.INFO {
-      border: 1px solid #00ff00;
-      background: color(#00ff00 tint(80%));
+}
+
+
+
+// Map Viewer
+#map_model {
+    position: relative;
+
+    .controls {
+        z-index: 9;
+        top: 10px;
+        left: 10px;
+        position: fixed;
+        margin: 5px;
+
+        div.peaks {
+            height: 150px;
+            overflow-y: auto;
+        }
     }
-  }
+
+    #viewer {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+    }
+
+    #hud {
+        font-size: 15px;
+        color: #ddd;
+        background-color: rgba(0,0,0,0.6);
+        text-align: center;
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 2px 8px;
+        border-radius: 5px;
+        z-index: 9;
+        white-space: pre-line;
+    }
+
+    #help {
+        display: none;
+        font-size: 16px;
+        color: #eee;
+        background-color: rgba(0,0,0,0.7);
+        position: fixed;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: default;
+        padding: 5px;
+        border-radius: 5px;
+        z-index: 9;
+        white-space: pre-line;
+    }
+}
+
+
+.fixed {
+
+    &.xtalpreview {
+        position: fixed;
+        bottom: 5px;
+        width: 80%;
+        @media (max-width: $breakpoint-large) {
+            width: 96%;
+        }
+        background: #ccc;
+        border-radius: 5px;
+        z-index: 99;
+        padding: 10px;
+
+        canvas {
+            height: 340px;
+        }
+    }
+
+
+    &.content {
+        margin-bottom: 220px;
+    }
+
+}
+
+
+
+ul.messages {
+    li {
+        margin: 5px;
+        border-radius: 5px;
+        padding: 10px;
+
+        h3 {
+            cursor: pointer;
+            transition: color 0.25s ease-in-out;
+
+            &:hover {
+                color: #666;
+            }
+        }
+
+        pre {
+            font-family: monospace;
+            border-top: 1px solid;
+            margin-top: 5px;
+            padding-top: 5px;
+        }
+
+        p {
+            font-size: 11px;
+            margin-bottom: 0;
+        }
+
+        &.ERROR {
+            border: 1px solid #ff0000;
+            background: color(#ff0000 tint(80%));
+        }
+
+        &.WARNING {
+            border: 1px solid #ffa500;
+            background: color(#ffa500 tint(80%));
+        }
+
+        &.INFO {
+            border: 1px solid #00ff00;
+            background: color(#00ff00 tint(80%));
+        }
+    }
+
 }
