@@ -26,7 +26,7 @@ TODO - move relevant styles to this component style section
         </thead>
 
         <!-- Change row[header.key] to row.get(header.key) if using Backbone models -->
-        <tbody v-if="data && data.length > 0">
+        <tbody v-if="data && data.length > 0 || addRow">
           <tr
             v-for="(row, index) in data"
             :key="index"
@@ -38,6 +38,10 @@ TODO - move relevant styles to this component style section
             </slot>
 
             <td v-if="actions"><slot name="actions" v-bind:row="row"></slot></td>
+          </tr>
+          <!-- Optional row to continuously add new items to an otherwise readonly table -->
+          <tr v-if="addRow">
+            <slot name="addRow" v-bind:row="row"></slot>
           </tr>
         </tbody>
 
@@ -70,6 +74,10 @@ export default {
     },
     // Text title for action column - indicates there are action buttons to display
     'actions': {
+      type: String,
+      default: ''
+    },
+    'addRow': {
       type: String,
       default: ''
     }
