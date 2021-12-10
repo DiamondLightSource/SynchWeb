@@ -1073,8 +1073,12 @@ class Shipment extends Page
             $from = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : '';
             $fc = $this->has_arg('FACILITYCODE') ? $this->arg('FACILITYCODE') : '';
             $wg = $this->has_arg('WEIGHT') ? $this->arg('WEIGHT') : $dewar_weight;
-            
-            $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : null;
+            $exp = null;
+
+            if ($this->has_arg('FIRSTEXPERIMENTID')) {
+                $experimentId = $this->arg('FIRSTEXPERIMENTID');
+                $exp = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
+            }
             
             $this->db->pq("INSERT INTO dewar (dewarid,code,trackingnumbertosynchrotron,trackingnumberfromsynchrotron,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight) 
               VALUES (s_dewar.nextval,:1,:2,:3,:4,CURRENT_TIMESTAMP,'opened',:5,:6,:7) RETURNING dewarid INTO :id", 
