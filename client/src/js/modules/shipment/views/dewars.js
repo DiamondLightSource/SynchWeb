@@ -122,7 +122,10 @@ define(['marionette', 'backbone',
 
             this.ui.fc.html(this.getOption('regdewars').opts({ empty: true }))
         },
-        
+
+        modelEvents: {
+            change: 'render'
+        }
     }))
     
 
