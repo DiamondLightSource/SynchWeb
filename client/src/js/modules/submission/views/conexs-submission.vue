@@ -17,7 +17,7 @@
             <button type="button" ref="clearInputFile" name="clearInputFile" class="button" v-on:click="clearFile($event)">Clear </button>
 
             <section id="orcaTab" v-bind:style="{display: orcaDisplay}">
-                <div style="float:right; width:30%; height:30%">
+                <div style="float:right; width:40%; height:30%">
                     <p>ORCA is an ab initio, DFT, and semi-empirical SCF-MO package developed by Frank Neese et al. at the Max Planck Institut für Kohlenforschung.</p>
                     <br/>
 
@@ -28,44 +28,65 @@
                     <span>ORCA input library website: <a href="https://sites.google.com/site/orcainputlibrary/home">https://sites.google.com/site/orcainputlibrary/home</a></span>
                     <br/><br/>
 
-                    <p>In general, the input file is a free format ASCII file and can contain one or more keyword lines that start
-                    with a "!" sign, one or more input blocks enclosed between an \%" sign and \end" that provide finer control
-                    over specific aspects of the calculation, and finally the specification of the coordinates for the system along
-                    with the charge and multiplicity provided either with a %coords block, or more usually enclosed within two
-                    "*" symbols. Here is an example of a simple input file that contains all three input elements:</p>
+                    <p>
+                        In general, the input file is a free format ASCII file and can contain one or more keyword lines that start with a
+                        "!" sign, one or more input blocks enclosed between an "%" sign and "end" that provide finer control over specific
+                        aspects of the calculation, and finally the specification of the coordinates for the system along with the charge and
+                        multiplicity provided either with a %coords block, or more usually enclosed within two "*" symbols. Here is an
+                        example of a simple input file that contains all three input elements:
+                    </p>
                     <br/>
 
-                    <p>! HF def2-TZVP</p>
+                    <p>! BLYP DKH2 def2-SVP def2/J SlowConv NoFinalGrid # This is a comment</p>
                     <br/>
 
-                    <span>%scf</span>
-                    <br/>
-                    <span>convergence tight</span>
-                    <br/>
+                    <p>%maxcore 5024 # global scratch memory limit (in MB) per processing core.</p>
+                    <br />
+
+                    <p>%pal nprocs 4 # requested number of CPUs</p>
                     <span>end</span>
                     <br/><br/>
 
                     <span>* xyz 0 1</span>
                     <br/>
-                    <span>C 0.0 0.0 0.0</span>
+                    <span>C &nbsp; 0.0 &nbsp; 0.0 &nbsp; 0.0</span>
                     <br/>
-                    <span>O 0.0 0.0 1.13</span>
+                    <span>O &nbsp; 0.0 &nbsp; 0.0 &nbsp; 1.13</span>
                     <br/>
                     <span>*</span>
                     <br/><br/>
 
+                    <p>
+                        The input may contain several blocks, which consist of logically related data that can be user controlled. The program tries to choose sensible default values for all of these variables.
+                        However, it is impossible to give defaults that are equally sensible for all systems. In general the defaults are slightly on the conservative side and more aggressive cutoffs etc. can
+                        be chosen by the user and may help to speed things up for actual systems or give higher accuracy if desired. One-liner explanation (starts with !, order of the keywords is not important)
+                    </p>
+                    <br />
 
-                    <p>Comments in the file start by a \#". For example:</p>
+                    <p>!Keywords Functional Hamiltonian BasisSet AuxBasisSet</p>
+                    <br />
+
+                    <p>BLYP &nbsp; - generalized gradient approximation (GGA) DFT functional; see Table 6.2: Density functionals available in ORCA.</p>
+                    <p>DKH2 &nbsp; - scalar relativistic Douglas-Kroll-Hess Hamiltonian of 2nd order; see Table 6.2: Density functionals available in ORCA.</p>
+                    <p>def2-SVP &nbsp; - basis set for H-Rn; see Table 9.8: Basis sets availability.</p>
+                    <p>def2/J &nbsp; - Coulomb-fitting auxiliary basis sets (AuxJ); see Table 9.8: Basis sets availability.</p>
+                    <p>UKS &nbsp; - selects spin unrestricted SCF method; Table 6.1: Main keywords that can be used in the simple input of ORCA.</p>
+                    <p>RKS &nbsp; - selects restricted closed-shell SCF method.</p>
+                    <p>SlowConv &nbsp; - selects appropriate SCF converger criteria for difficult cases. Most transition metal complexes fall into this category.</p>
+                    <p>NoFinalGrid &nbsp; - turns the final integration grid feature off.</p>
+                    <br />
+
+
+                    <p>Reading geometry from file.xyz in XMol format with coordinates in Ångström and a 2-line header that contains the number of atoms and a description line:</p>
                     <br/>
 
-                    <p># This is a comment. Continues until the end of the line</p>
+                    <p>4</p>
+                    <p>description line</p>
+                    <p>C &nbsp; 0.000000000 &nbsp; 0.000000000 &nbsp; 0.000000000</p>
+                    <p>O &nbsp; 2.362157486 &nbsp; 0.000000000 &nbsp; 0.000000000</p>
+                    <p>H &nbsp; -1.109548835 &nbsp; 1.774545300 &nbsp; 0.000000000</p>
+                    <p>H &nbsp; -1.109548835 &nbsp; -1.774545300 &nbsp; 0.000000000</p>
                     <br/>
-
-                    <p>The input may contain several blocks, which consist of logically related data that can be user controlled. The
-                    program tries to choose sensible default values for all of these variables. However, it is impossible to give
-                    defaults that are equally sensible for all systems. In general the defaults are slightly on the conservative
-                    side and more aggressive cutoffs etc. can be chosen by the user and may help to speed things up for actual
-                    systems or give higher accuracy if desired.</p>
                 </div>
                 <ul>
                     <li>
@@ -1248,11 +1269,12 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             },
 
             onSubmit: function(e){
-                this.isLoading = true
                 e.preventDefault()
                 let self = this
 
                 this.$validator.validateAll().then(function(result){
+                    self.isLoading = true
+
                     if(result && self.inputFileContents != ''){
 
                         let data = {
@@ -1317,7 +1339,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                             success: function(response) {
                                 self.isLoading = false
-                                console.log('success!' + response)
                                 app.alert({className: 'message notify', message: "Successfully submitted conexs file contents!"})
                                 
                             },
@@ -1327,8 +1348,8 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                             },
                         })
                     } else {
-                        this.isLoading = false
-                        app.alert({ title: 'Error', message: 'No file provided, or the selected file is empty!'})
+                        self.isLoading = false
+                        app.alert({ title: 'Error', message: 'No file provided, selected file is empty, or form elements are invalid.'})
                     }
                 })
             },
@@ -1345,7 +1366,21 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     }
                     this.atomData[this.atomData.length] = newAtom
 
-                    this.atom = ''
+                    // Select the next available element or loop back to the first
+                    // Works around problem described below
+                    for(var i = 0; i<this.elements.length; i++){
+                        if(this.elements[i].element == this.atom){
+                            if(i == this.elements.length -1){
+                                this.atom = 'H'
+                            } else {
+                                this.atom = this.elements[++i].element
+                            }
+                        }
+                    }
+
+                    // We want to reset this back to an element, but if it's the same element we just added the table doesn't transition properly
+                    // Need to either debug the table component (somehow) to see why. Above code is a work around
+                    //this.atom = ''
                     this.atomX = 0
                     this.atomY = 0
                     this.atomZ = 0
