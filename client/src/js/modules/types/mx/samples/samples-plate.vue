@@ -57,6 +57,7 @@
       </div>
     </div>
     <sample-table-row
+      :ref="`sample-row-${sampleIndex}`"
       v-for="(sample, sampleIndex) in samples"
       :key="sampleIndex"
       :basic-columns="basicColumns"
@@ -214,7 +215,7 @@ export default {
       udcColumns: [
         {
           key: 'CENTRINGMETHOD',
-          title: 'Centering Method',
+          title: 'Centring Method',
           className: 'tw-w-24'
         },
         {

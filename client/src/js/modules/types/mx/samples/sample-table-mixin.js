@@ -1,4 +1,5 @@
 import { createFieldsForSamples } from 'app/store/modules/store.samples'
+import SampleGroup from 'models/samplegroup'
 
 export default {
   data() {
@@ -18,13 +19,10 @@ export default {
           value: "best",
           text: "Collect Best N",
         },
-      ]
+      ],
     };
   },
   props: {
-    proteins: {
-      type: Array,
-    },
     containerId: {
       type: Number,
     },
@@ -37,8 +35,8 @@ export default {
     experimentKindList() {
       return this.$experimentKindList();
     },
-    centeringMethodList() {
-      return this.$centeringMethods().filter(method => method).reduce(
+    centringMethodList() {
+      return this.$centringMethods().filter(method => method).reduce(
         (acc, curr) => {
           if (curr) acc.push({ value: curr, text: curr });
 
@@ -68,7 +66,7 @@ export default {
         }
 
         return prev
-      }, [])
+      }, [{ value: null, text: '' }])
       anomalous.sort(this.sortSelectField)
 
       return anomalous
@@ -144,16 +142,16 @@ export default {
       'USERPATH',
       'VOLUME',
       'VALID'
-    ])
+    ]),
+    sampleGroupInputDisabled() {
+      return this.$sampleGroupInputDisabled()
+    }
   },
   methods: {
     editRow(row) {
       this.editingSample = row;
       this.editingSample.CONTAINERID = this.containerId;
       this.editingRow = row.LOCATION;
-    },
-    displayInputForm(row) {
-      return !this.containerId || Number(this.editingRow) === Number(row.LOCATION)
     },
     formatSelectData(selectData, data, property) {
       const matchedSelectData = selectData.find(select => select.value === data[property])
@@ -185,30 +183,20 @@ export default {
       // Reset the local sample data to start clean on next edit
       this.resetSampleToEdit();
     },
-
     onEditSample: function(row) {
       this.editingSample = Object.assign(this.editingSample, row);
       // Set the sample container id - this will work if we are adding a new sample in the table or editing an existing one
       this.editingSample.CONTAINERID = this.containerId;
       this.editRowLocation = row["LOCATION"];
     },
-
     onCancelEdit: function() {
       this.resetSampleToEdit();
     },
-
     resetSampleToEdit: function() {
       this.editRowLocation = "";
       // Reset temporary sample model
       this.editingSample = Object.assign({});
     },
-
-    isEditRowLocation: function(row) {
-      // Used to indicate if the provided row should show in edit mode
-      if (!row["LOCATION"]) return false
-      return this.editRowLocation === row["LOCATION"]
-    },
-
     // If a proteinId is updated we need to also update the text ACRONYM because its a plan text value
     // and not linked directly to the protein id value for each sample
     getProteinAcronym: function(id) {
@@ -233,13 +221,19 @@ export default {
 
       return 0
     },
-    handleSampleGroupSearchInput(value) {
-      this.SAMPLEGROUP = value
+    async createNewSampleGroup(value) {
+      this.$emit('update-sample-group-input-disabled', true)
+      const sampleGroupModel = new SampleGroup({ NAME: value })
+      await this.$store.dispatch('saveModel', { model: sampleGroupModel })
+      this.$emit('update-sample-group-list')
     },
+    canEditRow(location, editingRow) {
+      return !this.containerId || location === editingRow
+    }
   },
   inject: [
     "$spaceGroups",
-    "$centeringMethods",
+    "$centringMethods",
     "$anomalousList",
     "$experimentKindList",
     "$sampleLocation",
@@ -249,6 +243,7 @@ export default {
     "$containers",
     "$queueForUDC",
     "$proteins",
-    "$sampleGroupsSamples"
+    "$sampleGroupsSamples",
+    "$sampleGroupInputDisabled"
   ]
 };

@@ -39,9 +39,16 @@
                 @save="save('OWNERID')"
                 optionTextKey="FULLNAME"/>
             </li>
-            <li v-if="isPuck">
+            <li v-if="isPuck" class="tw-flex tw-flex-row tw-w-full">
               <span class="label">Registered Container</span>
-              <span class="tw-relative">{{container.REGISTRY}} <router-link :to="`/containers/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
+              <base-input-select
+                v-model="container.CONTAINERREGISTRYID"
+                name="CONTAINERREGISTRYID"
+                :options="containerRegistry"
+                optionValueKey="CONTAINERREGISTRYID"
+                optionTextKey="BARCODE"
+              />
+              <span class="tw-relative"><router-link :to="`/containers/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
             </li>
             <li>
               <span class="label">Barcode</span>
@@ -90,6 +97,13 @@
               </div>
             </li>
           </ul>
+
+          <div class="tw-w-full">
+            <button name="submit" type="submit" @click.prevent="onUpdateContainer" :class="['button tw-text-base tw-px-4 tw-py-2 tw-w-64 tw-h-12', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
+              Update Container
+            </button>
+          </div>
+
         </div> <!-- End Container Form Elements -->
 
         <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
@@ -104,6 +118,7 @@
       <div class="table sample">
         <component
           :is="sampleComponent"
+          ref="samples"
           :containerId="container.CONTAINERID"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"
@@ -146,10 +161,9 @@
 
 <script>
 import formatDate from 'date-fns-tz/format'
-import { ValidationObserver }  from 'vee-validate'
+import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
-import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 import Samples from 'collections/samples'
 import Shipments from 'collections/shipments'
 import Containers from 'collections/containers'
@@ -181,6 +195,7 @@ export default {
     'single-sample-plate': SingleSample,
     'mx-sample-plate': SamplePlate,
     'validation-observer': ValidationObserver,
+    'validation-provider': ValidationProvider
   },
   props: {
     containerModel: {
@@ -257,8 +272,8 @@ export default {
     this.samplesCollection.queryParams.cid = this.containerId
     this.getSamples(this.samplesCollection)
     this.getProteins()
+    this.getContainerRegistry()
     this.getHistory()
-    this.getExperimentTypes()
     this.getContainerTypes()
     this.getUsers()
     this.getProcessingPipelines()
@@ -304,12 +319,6 @@ export default {
       if (result) {
         this.resetSamples(this.container.CAPACITY)
       }
-    },
-    async getExperimentTypes() {
-      let experimentTypesCollection = new ExperimentTypes()
-      const result = await this.$store.dispatch('getCollection', experimentTypesCollection)
-      let experimentType = this.findExperimentType(result)
-      this.experimentKind = experimentType.length > 0 ? experimentType[0].EXPERIMENTTYPEID : 0
     },
     findExperimentType(collection) {
       let proposalType = this.$store.state.proposal.proposalType
@@ -363,9 +372,10 @@ export default {
     async queueContainer() {
       try {
         this.displayQueueModal = false
-        const response = await this.$store.dispatch('shipment/queueContainer', { CONTAINERID: this.containerId })
+        const response = await this.toggleContainerQueue(true, this.containerId)
+        console.log({ response })
         this.$emit('update-container-state', {
-          CONTAINERQUEUEID: response.CONTAINERQUEUEID,
+          CONTAINERQUEUEID: response.get('CONTAINERQUEUEID'),
           QUEUEDTIMESTAMP: formatDate(new Date(), 'dd-MM-yyyy HH:mm')
         })
         this.$nextTick(() => {
@@ -385,7 +395,7 @@ export default {
     async unQueueContainer() {
       try {
         this.displayQueueModal = false
-        await this.$store.dispatch('shipment/unQueueContainer', { CONTAINERID: this.containerId })
+        await this.toggleContainerQueue(false, this.containerId)
         this.$emit('update-container-state', { CONTAINERQUEUEID: null })
         this.$nextTick(() => {
           this.loadContainerData()
@@ -438,19 +448,16 @@ export default {
       if (newData.dewarId !== null) {
         await this.fetchContainers()
       }
+    },
+    async onUpdateContainer() {
+      await this.$store.dispatch('saveModel', { model: this.containerModel, attributes: this.container })
+      this.$emit('update-container-state', this.container)
     }
   },
   watch: {
     containersSamplesGroupData(newValues) {
       this.updateContainerSampleGroupsData(newValues)
     },
-  },
-  provide() {
-    return {
-      $shipments: () => this.shipments,
-      $dewars: () => this.dewars,
-      $containers: () => this.containers
-    }
   }
 }
 </script>

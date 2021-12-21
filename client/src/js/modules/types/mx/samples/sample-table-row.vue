@@ -15,7 +15,7 @@
       :vid="`sample ${sampleIndex + 1} protein`"
       v-slot="{ errors }">
       <combo-box
-        v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
+        v-if="canEditRow(sample['LOCATION'], editingRow)"
         :data="proteinsOptionsList"
         class="tw-w-full protein-select"
         textField="text"
@@ -24,6 +24,7 @@
         defaultText=""
         size="small"
         v-model="PROTEINID"
+        :exclude-element-class-list="['custom-add']"
       >
         <template slot-scope="{ option }">
           <span class="tw-flex tw-justify-between tw-w-full">
@@ -44,7 +45,7 @@
       :vid="`sample ${sampleIndex + 1} name`"
       v-slot="{ errors }">
       <base-input-text
-        v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
+        v-if="canEditRow(sample['LOCATION'], editingRow)"
         inputClass="tw-w-full tw-h-8"
         v-model="NAME"
         :errorMessage="errors[0]"
@@ -62,7 +63,7 @@
       :vid="`sample group sample ${sampleIndex + 1}`"
       v-slot="{ errors }">
       <combo-box
-        v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
+        v-if="canEditRow(sample['LOCATION'], editingRow)"
         :data="sampleGroups"
         textField="text"
         valueField="value"
@@ -70,7 +71,8 @@
         :defaultText="SAMPLEGROUP"
         class="sample-group-select tw-w-44"
         size="small"
-        @handle-search-text="handleSampleGroupSearchInput"
+        :is-disabled="sampleGroupInputDisabled"
+        @create-new-option="createNewSampleGroup"
         v-model="SAMPLEGROUP">
       </combo-box>
       <div v-else class="tw-text-center">{{ sampleGroupName }}</div>
@@ -200,7 +202,8 @@ export default {
   min-height: 32px;
 }
 >>> .sample-group-select .items-list, >>> .protein-select .items-list {
-  height: 100px;
+  min-height: 40px;
+  max-height: 100px;
   overflow-y: auto;
 }
 </style>

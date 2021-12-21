@@ -40,7 +40,13 @@ The v-closable takes an object as argumnt with properties:
           @click.capture="selectOption(option[valueField], optionIndex)">
           <slot :option=option>{{ option[textField] }}</slot>
         </div>
-        <slot name="custom-add"></slot>
+        <div class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add" v-if="filteredOptions.length > 0">
+          <button class="button custom-add" @click.stop="handleMoreData" v-if="loadMore">Load More...</button>
+          <p class="tw-text-sm" v-else>No more data</p>
+        </div>
+        <div class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add" v-if="filteredOptions.length < 1 && searchText.length > 0">
+          <button class="button custom-add" @click.stop="createNewOption">Create New</button>
+        </div>
       </div>
 
     </div>
@@ -48,6 +54,7 @@ The v-closable takes an object as argumnt with properties:
       <input
         type="text"
         class="tw-w-full select-search-input"
+        :disabled="isDisabled"
         :class="{[size]: true}"
         v-model="searchText"
         @focus="openOptionsList($event)"/>
@@ -110,6 +117,10 @@ export default {
     excludeElementClassList: {
       type: Array,
       default: () => ([])
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -117,7 +128,12 @@ export default {
       searching: false,
       searchText: '',
       searchInputClassName: 'select-search-input',
-      excludedElementsClass: []
+      excludedElementsClass: [],
+      dataPagination: {
+        total: 0,
+        page: 1,
+        perPage: 25
+      }
     }
   },
   watch: {
@@ -129,6 +145,10 @@ export default {
     },
     searchText(value) {
       this.$emit('handle-search-text', value)
+      this.$emit('watch-list-change', {
+        value: event.target.value,
+        addNew: this.filteredOptions.length < 1
+      })
     }
   },
   methods: {
@@ -166,7 +186,7 @@ export default {
       const selectedItemWrapper = document.getElementsByClassName('select-selected') // selected wrapper element
       for (let i = 0; i < selectedItemWrapper.length; i += 1) {
         dropDownList.push(i)
-        const isSelfTriggered = this.$refs[`select-items-${this.inputIndex}`].contains(event.target)
+        const isSelfTriggered = this.$refs[`select-items-${this.inputIndex}`] && this.$refs[`select-items-${this.inputIndex}`].contains(event.target)
         if (!isSelfTriggered || force) {
           selectedItemWrapper[i].classList.remove('select-arrow-active') // Revert the arrow icon when closed
         }
@@ -193,24 +213,43 @@ export default {
     },
     setExcludedElementClass() {
       this.excludedElementsClass = [this.searchInputClassName].concat(this.excludeElementClassList)
+    },
+    handleMoreData() {
+      const hasNextPage = this.dataPagination.total - (this.dataPagination.perPage * this.dataPagination.page)
+
+      if (hasNextPage) {
+        this.dataPagination.page += 1
+      }
+    },
+    createNewOption() {
+      this.$emit('create-new-option', this.searchText)
     }
   },
   computed: {
+    clonedData() {
+      return cloneDeep(this.data)
+    },
     filteredOptions() {
       const regex = new RegExp(this.searchText, 'i')
-      return cloneDeep(this.data)
-        .filter((option) => {
-          const hasSearchText = option[this.textField].match(regex)
-          if (hasSearchText && hasSearchText.length > 0) {
-            return option
-          }
-        })
+
+      const totalResults = this.clonedData.filter(option => {
+        if (this.searchText.length < 1) return true
+
+        const hasSearchText = option[this.textField].match(regex)
+        return hasSearchText && hasSearchText.length > 0
+      })
+
+      this.dataPagination.total = totalResults.length
+      return totalResults.slice(0, this.dataPagination.page * this.dataPagination.perPage)
     },
     selectedItemText() {
-      const selectedItem = this.filteredOptions.find(option => String(option[this.valueField]) === this.value)
+      const selectedItem = this.data.find(option => String(option[this.valueField]) === String(this.value))
 
       return selectedItem ? selectedItem[this.textField] : this.defaultText
-    }
+    },
+    loadMore() {
+      return this.dataPagination.total > this.dataPagination.page * this.dataPagination.perPage
+    },
   }
 }
 </script>

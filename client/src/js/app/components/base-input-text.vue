@@ -45,7 +45,7 @@ https://eslint.vuejs.org/rules/no-v-html.html
       @click="onEdit"
       @mouseover="showEditIcon = true"
       @mouseleave="showEditIcon = false">
-      {{ value }}
+      {{ inlineText }}
       <span v-show="showEditIcon">
         <i :class="['fa', 'fa-edit']"></i> Edit
       </span>
@@ -130,6 +130,7 @@ export default {
     // For cases where the value is null but you want to display a custom text telling the user what to do
     initialText: {
       type: String,
+      default: 'Enter value here'
     },
     step: {
       type: Number,
@@ -153,7 +154,7 @@ export default {
       return [ this.inputClass, this.errorMessage ? this.errorClass : '']
     },
     inlineText() {
-      return this.initialText || this.value
+      return this.value || this.initialText
     },
   },
   created() {

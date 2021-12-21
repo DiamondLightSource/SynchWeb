@@ -19,7 +19,7 @@ Slots include:
       :checked="value"
       :disabled="disabled"
       @input="updateValue"
-      @change="changeValue"
+      @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
     >
@@ -84,7 +84,7 @@ export default {
   },
   watch: {
     editable: function(value) {
-      if (value == false) this.showEditIcon = false
+      if (value === false) this.showEditIcon = false
     }
   },
   created() {
@@ -116,7 +116,7 @@ export default {
     },
     onEnter(event) {
       // If we are in inline edit mode - save the model on enter (key = 13)
-      if (this.inline && event.keyCode == 13) this.onSave()
+      if (this.inline && event.keyCode === 13) this.onSave()
     },
   },
 };

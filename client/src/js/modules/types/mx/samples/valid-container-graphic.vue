@@ -9,7 +9,6 @@
           :is="containerComponent"
           :container="geometry"
           :samples="samples"
-          :selected="selected"
           color-scale="rgb"
           color-attr="VALID"
           @cell-clicked="onCellClicked"/>
@@ -31,10 +30,6 @@ export default {
     containerType: {
       type: Object,
       required: true
-    },
-    selected: {
-      type: Array,
-      default: []
     },
     samples: {
       type: Array,
@@ -78,10 +73,10 @@ export default {
     colorScale: function() {
       this.updateGraphicView()
     },
-    geometry: function(newVal) {
+    geometry: function() {
       this.updateGraphicView()
     },
-    containerComponent: function(newVal) {
+    containerComponent: function() {
       this.updateGraphicView()
     },
     samples: function() {
