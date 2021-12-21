@@ -16,21 +16,17 @@ const notification = {
 
       // Should this persist or be transient?
       if (notification.persist) {
-        console.log("Store creating persistent notification " + JSON.stringify(notification))
         state.persist = notification
       }
       else state.notifications.push(notification)
     },
     clearNotifications(state) {
-      console.log("Clearing notifications")
       state.notifications = []
     },
     clearNotification(state, id) {
-      console.log("Store Clearing notification for id " + id)
       state.notifications = state.notifications.filter(notification => notification.id !== id)
     },
     clearPersistNotification(state) {
-      console.log("Store Clearing persist notification ")
       state.persist = {}
     },
   },

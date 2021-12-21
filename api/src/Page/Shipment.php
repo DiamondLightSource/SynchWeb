@@ -166,7 +166,7 @@ class Shipment extends Page
                               array('/containers/', 'post', '_add_container'),
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
-                              array('/containers/queue', 'get', '_queue_container'),
+                              array('/containers/queue(/:cid)', 'patch', '_queue_container'),
                               array('/containers/barcode/:BARCODE', 'get', '_check_container'),
 
 
@@ -1526,11 +1526,14 @@ class Shipment extends Page
                 $this->_output();
 
             } else {
-                $chkq = $this->db->pq("SELECT containerid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
-                if (sizeof($chkq)) $this->_error('That container is already queued');
+                $chkq = $this->db->pq("SELECT containerid, containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
+                if (!sizeof($chkq)) {
+                    $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
+                    $qid = $this->db->id();
+                } else {
+                    $qid = $chkq[0]['CONTAINERQUEUEID'];
+                }
 
-                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
-                $qid = $this->db->id();
 
                 $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
                   INNER JOIN blsample s ON s.blsampleid = ss.blsampleid

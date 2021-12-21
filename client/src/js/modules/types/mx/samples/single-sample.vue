@@ -25,9 +25,9 @@
         :rules="sample['NAME'] && !containerId ? 'required' : ''">
         <div class="tw-w-1/5">Protein</div>
         <combo-box
-          v-if="!containerId || (!sample['BLSAMPLEID'] && editingRow === sample['LOCATION'])"
+          v-if="canEditRow(sample['LOCATION'], editingRow)"
           class="tw-w-48 protein-select"
-          :data="proteinsOptionsList"
+          :data="proteinsList"
           textField="text"
           valueField="value"
           :inputIndex="sampleLocation"
@@ -35,12 +35,6 @@
           size="small"
           v-model="PROTEINID"
         >
-          <template slot-scope="{ option }">
-            <span class="tw-flex tw-justify-between tw-w-full">
-              <span class="tw-"><i v-if="option.SAFETYLEVEL === 'GREEN'" class="fa fa-check green"></i></span>
-              {{ option['text'] }}
-            </span>
-          </template>
         </combo-box>
         <div v-else class="tw-text-center">{{ selectDataValue(proteinsOptionsList, sample, 'PROTEINID') }}</div>
         <span>{{ errors[0] }}</span>
@@ -119,7 +113,7 @@
           :inputIndex="sampleIndex"
           :defaultText="SAMPLEGROUP"
           size="small"
-          @handle-search-text="handleSampleGroupSearchInput"
+          :is-disabled="sampleGroupInputDisabled"
           v-model="SAMPLEGROUP">
         </combo-box>
       </validation-provider>
@@ -332,17 +326,17 @@
           tag="div"
           class="tw-py-1"
           :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
-          :name="`Sample ${sampleLocation + 1} Centering Method`"
-          :vid="`sample ${sampleLocation + 1} centering method`"
+          :name="`Sample ${sampleLocation + 1} Centring Method`"
+          :vid="`sample ${sampleLocation + 1} centring method`"
           v-slot="{ errors }">
           <base-input-select
-            :options="centeringMethodList"
+            :options="centringMethodList"
             optionValueKey="value"
             optionTextKey="text"
             inputClass="tw-w-48 tw-h-8"
             outerClass="tw-w-full tw-flex"
             labelClass="tw-w-1/5"
-            label="Centering Method"
+            label="Centring Method"
             :quiet="true"
             :errorMessage="errors[0]"
             :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"

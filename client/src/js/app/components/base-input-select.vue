@@ -35,7 +35,13 @@ Slots include:
       @focus="$emit('focus')"
     >
       <option v-show="defaultText" disabled :value="defaultValue">{{defaultText}}</option>
-      <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
+      <option
+        v-for="option in options"
+        :key="option[optionValueKey]"
+        :value="option[optionValueKey]"
+        :selected="option[optionValueKey] === localValue">
+        {{option[optionTextKey]}}
+      </option>
     </select>
 
     <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ inlineText }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
@@ -138,12 +144,6 @@ export default {
       type: Boolean,
       default: false
     },
-    // If using the input within a table, set quiet mode to suppress error messages
-    // Keeps the styling around input fields
-    quiet: {
-      type: Boolean,
-      default: false
-    },
     isDisabled: {
       type: Boolean,
       default: false
@@ -162,7 +162,7 @@ export default {
       this.localValue = newVal
     },
     editable: function(value) {
-      if (value == false) this.showEditIcon = false
+      if (value === false) this.showEditIcon = false
     }
   },
   computed: {

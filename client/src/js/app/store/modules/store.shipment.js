@@ -1,6 +1,5 @@
 import Backbone from 'backbone'
 import ContainerModel from 'models/container'
-import formatDate from 'date-fns/format'
 
 
 const shipmentModule = {
@@ -17,13 +16,14 @@ const shipmentModule = {
       return new Promise( (resolve) => {
         Backbone.ajax({
           url: rootState.apiUrl + '/shipment/containers/queue',
+          type: 'PATCH',
           data: {
             CONTAINERID
           },
           success: function (resp) {
             resolve(resp)
           },
-          error: function (resp) {
+          error: function () {
             throw new Error('Something went wrong queuing this container')
           }
         })
@@ -34,6 +34,7 @@ const shipmentModule = {
       return new Promise( (resolve) => {
         Backbone.ajax({
           url: rootState.apiurl+'/shipment/containers/queue',
+          type: 'PATCH',
           data: {
             CONTAINERID,
             UNQUEUE: 1,
@@ -41,7 +42,7 @@ const shipmentModule = {
           success: function(resp) {
             resolve(resp)
           },
-          error: function(resp) {
+          error: function() {
             throw new Error('Something went wrong unqueuing this container')
           }
         })

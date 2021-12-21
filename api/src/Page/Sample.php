@@ -1230,33 +1230,26 @@ class Sample extends Page
 
         function _prepare_strategy_option_for_sample($a) {
             if ($a['SCREENINGMETHOD'] == 'best') {
-                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => $a['SCREENINGCOLLECTVALUE']);
+                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => intval($a['SCREENINGCOLLECTVALUE']));
                 $args = array($this->proposalid);
-                if (is_numeric($a['SAMPLEGROUP'])) {
-                    array_push($args, $a['SAMPLEGROUP']);
-                    $check = $this->db->pq("SELECT blsamplegroupid FROM blsamplegroup WHERE proposalid = :1 AND blsamplegroupid = :2", $args);
+                array_push($args, $a['SAMPLEGROUP']);
+                $check = $this->db->pq("SELECT blsamplegroupid FROM blsamplegroup WHERE proposalid = :1 AND blsamplegroupid = :2", $args);
 
-                    if (!sizeof($check)) $this->_error('No such sample group for this proposal.');
+                if (!sizeof($check)) $this->_error('No such sample group for this proposal.');
 
-                    $strategyOptionsData['sample_group'] = $a['SAMPLEGROUP'];
-                    $a['BLSAMPLEGROUPID'] = $a['SAMPLEGROUP'];
-                } else if (is_string($a['SAMPLEGROUP'])) {
-                    array_push($args, $a['SAMPLEGROUP']);
-                    $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, proposalid, name) VALUES(s_blsamplegroup.nextval,:1,:2) RETURNING blsamplegroupid INTO :id", $args);
-                    $blSampleGroupId =  $this->db->id();
-
-                    $strategyOptionsData['sample_group'] = $blSampleGroupId;
-                    $a['BLSAMPLEGROUPID'] = $blSampleGroupId;
-                }
+                $a['SAMPLEGROUP'] = intval($a['SAMPLEGROUP']);
+                $strategyOptionsData['sample_group'] = $a['SAMPLEGROUP'];
+                $a['BLSAMPLEGROUPID'] = $a['SAMPLEGROUP'];
+                $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
             }
             elseif ($a['SCREENINGMETHOD'] == 'all') {
                 $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => null, "sample_group"=> null);
+                $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
             }
             else {
-                $strategyOptionsData = null;
+                $a['SAMPLEGROUP'] = null;
             }
 
-            $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
 
             return $a;
         }
@@ -1452,19 +1445,44 @@ class Sample extends Page
                 array_push($args, $this->arg('term'));
                 array_push($args, $this->arg('term'));
             }
-            
-            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, pr.safetylevel,
+
+            $total = $this->db->pq("SELECT count(*) as total
+                FROM (
+                    SELECT count(*) as total
+                    FROM protein pr
+                    LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
+                    WHERE pr.acronym is not null AND $where
+                    GROUP BY ct.symbol, pr.acronym, pr.name, pr.global
+            ) as total", $args);
+
+            $total = isset($total[0]) ? intval($total[0]['TOTAL']) : 0;
+            $start = 0;
+            $end = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+
+            if ($this->has_arg('page')) {
+                $page = $this->arg('page') - 1;
+                $start = $page * $end;
+                $end = $start + $end;
+            }
+
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $rows = $this->db->paginate("SELECT distinct pr.global, pr.name, pr.acronym, pr.safetylevel,
               max(pr.proteinid) as proteinid,
               ct.symbol as concentrationtype,
               1 as hasph,
               IF(pr.externalid IS NOT NULL, 1, 0) as external
-              FROM protein pr 
+              FROM protein pr
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
-              WHERE pr.acronym is not null AND $where 
+              WHERE pr.acronym is not null AND $where
               GROUP BY ct.symbol, pr.acronym, pr.name, pr.global
               ORDER BY lower(pr.acronym)", $args);
                                  
-            $this->_output($rows);
+            $this->_output(array(
+                'total' => $total,
+                'data' => $rows,
+            ));
         }
 
 

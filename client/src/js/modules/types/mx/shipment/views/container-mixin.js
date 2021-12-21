@@ -1,11 +1,10 @@
 import Users from 'collections/users'
 import ProcessingPipelines from 'collections/processingpipelines'
 import SpaceGroups from 'collections/spacegroups.js'
-import CenteringMethodList from 'utils/centringmethods.js'
+import CentringMethodList from 'utils/centringmethods.js'
 import AnomalousList from 'utils/anoms.js'
 import ExperimentKindsList from 'utils/experimentkinds.js'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
-import ExperimentTypes from 'modules/shipment/collections/experimenttypes'
 import ContainerRegistry from 'modules/shipment/collections/containerregistry'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import SampleGroups from 'collections/samplegroups'
@@ -16,6 +15,7 @@ import ImagingScheduleComponents from 'modules/imaging/collections/schedulecompo
 import { mapGetters } from 'vuex'
 import Sample from 'models/sample'
 import SampleGroupSamples from "collections/samplegroupsamples";
+import ContainerQueue from "modules/shipment/models/containerqueue";
 
 const INITIAL_CONTAINER_TYPE = {
   CONTAINERTYPEID: 0,
@@ -33,7 +33,7 @@ export default {
     return {
       anomalousList: AnomalousList.list,
 
-      centeringMethods: CenteringMethodList.list,
+      centringMethods: CentringMethodList.list,
       containerType: {},
       containerTypes: [],
       containerTypesCollection: new ContainerTypes(),
@@ -58,7 +58,7 @@ export default {
       processingPipelines: [],
 
       proteins: [],
-      proteinsCollection: new DistinctProteins(),
+      proteinsCollection: new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } }),
 
       users: [],
       usersCollection: null,
@@ -67,7 +67,8 @@ export default {
       sampleGroups: [],
       spaceGroups: [],
       spaceGroupsCollection: null,
-      sampleGroupSamples: []
+      sampleGroupSamples: [],
+      sampleGroupInputDisabled: false
     }
   },
   methods: {
@@ -100,14 +101,6 @@ export default {
 
       const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
       this.proteins = result.toJSON()
-    },
-    async getExperimentTypes() {
-      this.experimentTypesCollection = new ExperimentTypes()
-
-      const result = await this.$store.dispatch('getCollection', this.experimentTypesCollection)
-      const proposalExperimentTypes = result.where({ PROPOSALTYPE: this.$store.state.proposal.proposalType })
-      this.experimentTypes = proposalExperimentTypes.map(type => type.toJSON())
-      this.EXPERIMENTTYPEID = this.experimentTypes.length > 0 ? this.experimentTypes[0]['EXPERIMENTTYPEID'] : ''
     },
     async getContainerRegistry() {
       this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
@@ -150,6 +143,7 @@ export default {
         value: group.BLSAMPLEGROUPID,
         text: group.NAME || `Unknown Sample Group ${index}`
       }))
+      this.sampleGroupInputDisabled = false
     },
     async getImagingCollections() {
       this.imagingCollections = new ImagingImager(null, { state: { pageSize: 9999 } })
@@ -186,8 +180,6 @@ export default {
       const result = await this.$store.dispatch('getCollection', this.spaceGroupsCollection)
       this.spaceGroups = result.toJSON()
     },
-
-
     // Clone the next free row based on the current row
     onCloneSample(sampleLocation) {
       // Make sure we are using numbers for locations
@@ -247,7 +239,8 @@ export default {
       const result = await this.$refs.containerForm.validate()
       if (result) {
         await this.saveSample(location)
-        this.$refs.samples.closeSampleEditing()
+        const samplesRef = this.$refs.samples
+        samplesRef.$refs[`sample-row-${location}`][0].closeSampleEditing()
       }
       else {
         this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
@@ -376,6 +369,18 @@ export default {
       }
 
       this.sampleGroupSamples = sampleGroupSamples
+    },
+    updateSampleGroupInputDisabled(value) {
+      this.sampleGroupInputDisabled = value
+    },
+    async toggleContainerQueue(queue, containerId) {
+      const containerQueue = new ContainerQueue()
+      const attributes = { CONTAINERID: containerId }
+
+      if (!queue) {
+        attributes.UNQUEUE = 1
+      }
+      return await this.$store.dispatch('saveModel', { model: containerQueue, attributes })
     }
   },
   computed: {
@@ -395,14 +400,15 @@ export default {
   provide() {
     return {
       $spaceGroups: () => this.spaceGroups,
-      $centeringMethods: () => this.centeringMethods,
+      $centringMethods: () => this.centringMethods,
       $anomalousList: () => this.anomalousList,
       $experimentKindList: () => this.experimentKindList,
       $sampleLocation: () => this.sampleLocation,
       $sampleGroups: () => this.sampleGroups,
       $queueForUDC: () => this.QUEUEFORUDC,
       $proteins: () => this.proteins,
-      $sampleGroupsSamples: () => this.sampleGroupSamples
+      $sampleGroupsSamples: () => this.sampleGroupSamples,
+      $sampleGroupInputDisabled: () => this.sampleGroupInputDisabled
     }
   }
 }

@@ -168,6 +168,8 @@
             @clear-container="onClearContainer"
             @clone-container-column="onCloneColumn"
             @clone-container-row="onCloneRow"
+            @update-sample-group-input-disabled="updateSampleGroupInputDisabled"
+            @update-sample-group-list="getSampleGroups"
           />
         </div>
         <!--
@@ -240,9 +242,6 @@ import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
 
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
-const initialContainerState = {
-}
-
 const INITIAL_CONTAINER_TYPE = {
   CONTAINERTYPEID: 0,
   CAPACITY: 0,
@@ -296,7 +295,7 @@ export default {
       REQUESTEDIMAGERID: null,
       SCHEDULEID: null,
       SCREENID: null,
-      EXPERIMENTTYPEID: "",
+      EXPERIMENTTYPEID: null,
       QUEUEFORUDC: false,
       SPACEGROUP: false,
 
@@ -409,7 +408,6 @@ export default {
     QUEUEFORUDC: {
       immediate: true,
       handler: function(newVal) {
-        console.log({ QUEUEFORUDC: this.QUEUEFORUDC })
         let samples
         if (newVal) {
           samples = this.samples.map(sample => ({
@@ -453,7 +451,6 @@ export default {
     this.resetSamples(this.containerType.CAPACITY)
 
     this.getProteins()
-    this.getExperimentTypes()
     this.getContainerTypes()
     this.getContainerRegistry()
     this.getUsers()
@@ -478,8 +475,6 @@ export default {
       this.addContainer()
     },
     addContainer() {
-      let experimentType = this.experimentTypesCollection.findWhere({EXPERIMENTTYPEID: this.EXPERIMENTTYPEID})
-
       let containerModel = new Container({
         DEWARID: this.DEWARID,
         BARCODECHECK: null,
@@ -491,7 +486,7 @@ export default {
         AUTOMATED: this.AUTOMATED > 0 ? this.AUTOMATED : null,
         BARCODE: this.CODE,
         PERSONID: this.PERSONID,
-        EXPERIMENTTYPE: experimentType.get('NAME') || '',
+        EXPERIMENTTYPE: null,
         COMMENTS: this.COMMENTS,
         REQUESTEDIMAGERID: "",
         SCHEDULEID: "",
@@ -507,6 +502,14 @@ export default {
 
         // Save samples added in the container
         if (!containerId) return
+
+        const containerModel = new Container({ CONTAINERID: containerId })
+        const container = await this.$store.dispatch('getModel', containerModel)
+        const containerQueueId = container.get('CONTAINERQUEUEID')
+
+        if (containerQueueId) {
+          await this.toggleContainerQueue(true, containerId)
+        }
 
         await this.$store.dispatch('samples/save', containerId)
         this.$store.commit('notifications/addNotification', {

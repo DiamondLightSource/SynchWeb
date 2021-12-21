@@ -26,11 +26,6 @@ export default {
       type: Array,
       default: () => ([])
     },
-    'selected': {
-      type: Array, // list of locations that should be highlighted
-      required: false,
-      default: []
-    },
     label: {
       type: String, // Which key within the sample data should be shown (location index if nothing provided)
       required: false
@@ -78,13 +73,13 @@ export default {
   computed: {
     preparedData: function() {
       // Firstly create an array of length == capacity of container
-      let samplesArray = Array.from({length: this.centres.length}, (_,i) => { return {LOCATION: i+1} })
+      let samplesArray = Array.from({length: this.centres.length}, (_,i) => { return { LOCATION: i + 1 } })
       // Now fill in location with sample data at that location
-      for (var i=0; i<this.samples.length; i++) {
+      for (var i = 0; i < this.samples.length; i++) {
         // Only looking at first 16 samples passed into us
-        let location = this.samples[i].LOCATION || null
+        let location = Number(this.samples[i].LOCATION) || null
         // Not quite right - need to add as an array for consistency
-        if (location && location < samplesArray.length) {
+        if (location && location <= samplesArray.length) {
           samplesArray[location-1] = this.samples[i]
         }
       }
@@ -92,9 +87,6 @@ export default {
     }
   },
   watch: {
-    selected: function() {
-      this.updateSelected()
-    },
     samples: {
       handler() {
         d3SelectAll("#puck > *").remove()
@@ -173,15 +165,15 @@ export default {
         this.$emit('cell-clicked', +sampleData.LOCATION)
       }
     },
-    // Visualise the cells that are currently selected
     updateSelected: function() {
       this.graphic.selectAll('.sample-cell')
-          .style('stroke', (d,i) => { return this.selected.indexOf(i+1) < 0 ? '#666' : 'steelblue'} )
+          .style('stroke', (d,i) => {
+            return this.samples.indexOf(i) < 0 ? '#666' : 'steelblue'}
+          )
     },
     // Visualise which cells are valid or invalid
     // When using backbone models we need to check if the sample model is valid via a method.
-    updateSampleCells: function(index, valid=true) {
-      let color = valid ? '#82d180' : '#f26c4f'
+    updateSampleCells: function() {
       this.graphic.selectAll('.sample-cell')
           .style('fill', (d) => this.scoreColors(d))
           .style('stroke', '#666')
