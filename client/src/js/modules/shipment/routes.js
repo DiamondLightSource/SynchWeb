@@ -407,7 +407,7 @@ const routes = [
     }),
   },
   {
-    path: '/containers/queued(/s/)?:s([a-zA-Z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9]+)?(/pt/)?:pt([a-zA-Z0-9_-]+)?(/bl/)?:bl([a-zA-Z0-9_-]+)?(/sid/)?:sid([0-9]+)?(/page/)?:page([0-9]+)?',
+    path: '/containers/queued(/ty/)?:ty([a-zA-Z0-9]+)?(/s/)?:s([a-zA-Z0-9_-]+)?(/pt/)?:pt([a-zA-Z0-9_-]+)?(/bl/)?:bl([a-zA-Z0-9_-]+)?(/sid/)?:sid([0-9]+)?(/page/)?:page([0-9]+)?',
     name: 'containers-queued',
     meta: {
         permission: 'auto_dash'
