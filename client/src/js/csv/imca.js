@@ -58,7 +58,7 @@ define([], function() {
             STATUS: function(m) {
                 var status = 'skipped'
                 if (m.QUEUEDTIMESTAMP) status = 'queued';
-                if (m.R > 0) status = 'recieved'
+                if (m.R > 0) status = 'received'
                 if (m.DC > 0) status = 'collected'
 
                 return status
