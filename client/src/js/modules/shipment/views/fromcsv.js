@@ -504,6 +504,29 @@ define(['backbone',
         parseCSVContents: function(raw) {
             var samples = this.createObjects(raw)
             console.log('parseCSVContents', samples)
+
+            var valid = true
+            var existingContainers = this.containers.pluck('NAME')
+            _.each(_.unique(_.pluck(samples, 'CONTAINER')), function(name) {
+                if (existingContainers.indexOf(name) > -1) {
+                    app.alert({ message: 'Container ' + name + ' already exists' })
+                    valid = false
+                }
+            })
+
+            var existingSamples = this.samples.pluck('NAME')
+            _.each(samples, function(sample) {
+                if (existingSamples.indexOf(sample.NAME) > -1) {
+                    app.alert({ message: 'Sample ' + sample.NAME + ' already exists' })
+                    valid = false
+                }
+            })
+
+            if (!valid) {
+                app.alert({ message: 'Duplicate containers and/or samples, aborting' })
+                return
+            }
+
             this.samples.reset(samples)
 
             this.containers.reset(_.map(_.unique(_.pluck(samples, 'CONTAINER')), function(name) {
