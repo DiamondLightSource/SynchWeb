@@ -66,6 +66,14 @@ define(['marionette',
             type: 'autocomplete',
             onblur: 'ignore',
         },
+
+        combobox: {
+            type: 'combobox',
+            onblur: 'ignore',
+            callback: function(value, settings) {
+                $(this).html(_.result(settings, 'data')[value])
+            }
+        },
         
         datetime: {
             type: 'datetime',
@@ -116,7 +124,13 @@ define(['marionette',
              
               },
             })
-            
+
+            // Combobox
+            // This is just a select with a plugin on top
+            $.editable.types['combobox'] = _.clone($.editable.types['select']);
+            $.editable.types['combobox'].plugin = function(settings, original) {
+                $('select', this).combobox();
+            }
             
             // Datetimepicker
             $.editable.addInputType('datetime', {

@@ -240,7 +240,7 @@ define(['marionette',
                 this.containerregistry.fetch().done(function() {
                     var opts = self.containerregistry.kv()
                     opts[''] = '-'
-                    self.edit.create('CONTAINERREGISTRYID', 'select', { data: opts })
+                    self.edit.create('CONTAINERREGISTRYID', 'combobox', { data: opts })
                 })
             }
 
