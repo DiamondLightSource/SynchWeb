@@ -3714,6 +3714,11 @@
           "description": "Sample comments",
           "example": "in 25% PEG4000 50um"
         },
+        "STAFFCOMMENTS": {
+          "type": "string",
+          "description": "Sample staff comments",
+          "example": "no crystal in loop"
+        },
         "SPACEGROUP": {
           "type": "string",
           "description": "Spacegroup",
@@ -4017,6 +4022,11 @@
               "type": "string",
               "description": "Sample comments",
               "example": "in 25% PEG4000 50um"
+            },
+            "STAFFCOMMENTS": {
+              "type": "string",
+              "description": "Sample staff comments",
+              "example": "no crystal in loop"
             },
             "SPACEGROUP": {
               "type": "string",
