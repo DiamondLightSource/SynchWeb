@@ -1453,6 +1453,7 @@ class Shipment extends Page
                 LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
                 LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
                 LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
+                LEFT OUTER JOIN person pe ON c.ownerid = pe.personid
                 $join 
                 WHERE $where
                 $having", $args);
@@ -1460,7 +1461,8 @@ class Shipment extends Page
             
             if ($this->has_arg('s')) {
                 $st = sizeof($args) + 1;
-                $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')))";
+                $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(pe.login) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
+                array_push($args, $this->arg('s'));
                 array_push($args, $this->arg('s'));
                 array_push($args, $this->arg('s'));
             }
