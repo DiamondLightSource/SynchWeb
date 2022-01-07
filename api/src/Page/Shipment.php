@@ -1440,6 +1440,14 @@ class Shipment extends Page
                 array_push($args, $this->user->personid);
             }
 
+            if ($this->has_arg('s')) {
+                $st = sizeof($args) + 1;
+                $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(pe.login) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
+                array_push($args, $this->arg('s'));
+                array_push($args, $this->arg('s'));
+                array_push($args, $this->arg('s'));
+            }
+
             $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
                 FROM container c 
                 INNER JOIN dewar d ON d.dewarid = c.dewarid 
@@ -1457,16 +1465,7 @@ class Shipment extends Page
                 $join 
                 WHERE $where
                 $having", $args);
-            $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
-            
-            if ($this->has_arg('s')) {
-                $st = sizeof($args) + 1;
-                $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:".$st."), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:".($st+1)."), '%')) OR lower(pe.login) LIKE lower(CONCAT(CONCAT('%',:".($st+2)."), '%')))";
-                array_push($args, $this->arg('s'));
-                array_push($args, $this->arg('s'));
-                array_push($args, $this->arg('s'));
-            }
-            
+            $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;    
             
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
             $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
