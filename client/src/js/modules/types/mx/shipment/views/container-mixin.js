@@ -252,8 +252,6 @@ export default {
       // Create a new Sample Model, so it uses the BLSAMPLEID to check for post, update etc
       let sampleModel = new Sample(omit(this.samples[sampleIndex], 'STRATEGYOPTION'))
 
-      console.log({ sampleModel, sampleData: this.samples[sampleIndex] })
-
       const result = await this.$store.dispatch('saveModel', { model: sampleModel })
 
       if (!this.samples[sampleIndex]['BLSAMPLEID'])
