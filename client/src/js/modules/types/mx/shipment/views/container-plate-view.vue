@@ -373,7 +373,6 @@ export default {
       try {
         this.displayQueueModal = false
         const response = await this.toggleContainerQueue(true, this.containerId)
-        console.log({ response })
         this.$emit('update-container-state', {
           CONTAINERQUEUEID: response.get('CONTAINERQUEUEID'),
           QUEUEDTIMESTAMP: formatDate(new Date(), 'dd-MM-yyyy HH:mm')

@@ -16,6 +16,7 @@ import { mapGetters } from 'vuex'
 import Sample from 'models/sample'
 import SampleGroupSamples from "collections/samplegroupsamples";
 import ContainerQueue from "modules/shipment/models/containerqueue";
+import { omit } from 'lodash'
 
 const INITIAL_CONTAINER_TYPE = {
   CONTAINERTYPEID: 0,
@@ -248,8 +249,8 @@ export default {
     },
     async saveSample(location) {
       let sampleIndex = +location
-      // Create a new Sample Model so it uses the BLSAMPLEID to check for post, update etc
-      let sampleModel = new Sample( this.samples[sampleIndex] )
+      // Create a new Sample Model, so it uses the BLSAMPLEID to check for post, update etc
+      let sampleModel = new Sample(omit(this.samples[sampleIndex], 'STRATEGYOPTION'))
 
       const result = await this.$store.dispatch('saveModel', { model: sampleModel })
 
@@ -408,7 +409,8 @@ export default {
       $queueForUDC: () => this.QUEUEFORUDC,
       $proteins: () => this.proteins,
       $sampleGroupsSamples: () => this.sampleGroupSamples,
-      $sampleGroupInputDisabled: () => this.sampleGroupInputDisabled
+      $sampleGroupInputDisabled: () => this.sampleGroupInputDisabled,
+      $containerStatus: () => this.container ? this.container['CONTAINERSTATUS'] : null
     }
   }
 }

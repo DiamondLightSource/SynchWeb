@@ -410,26 +410,24 @@ export default {
       handler: function(newVal) {
         let samples
         if (newVal) {
-          samples = this.samples.map(sample => ({
-            ...sample,
-            CENTRINGMETHOD: 'diffraction',
-            EXPERIMENTKIND: 'Ligand binding',
-            SCREENINGMETHOD: 'none',
-          }))
+          samples = this.samples.map(sample => {
+            if (!sample.CENTRINGMETHOD) {
+              sample.CENTRINGMETHOD = 'diffraction'
+            }
+
+            if (!sample.EXPERIMENTKIND) {
+              sample.EXPERIMENTKIND = 'Ligand binding'
+            }
+
+            if (!sample.SCREENINGMETHOD) {
+              sample.SCREENINGMETHOD = 'none'
+            }
+
+            return sample
+          })
 
           this.AUTOMATED = 1
         } else {
-          samples = this.samples.map(sample => ({
-            ...sample,
-            CENTRINGMETHOD: '',
-            EXPERIMENTKIND: '',
-            SCREENINGMETHOD: '',
-            ENERGY: '',
-            REQUIREDRESOLUTION: '',
-            MINIMUMRESOLUTION: '',
-            SCREENINGCOLLECTVALUE: '',
-          }))
-
           this.AUTOMATED = ''
         }
 

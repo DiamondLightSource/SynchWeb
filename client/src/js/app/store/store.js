@@ -196,7 +196,7 @@ const store = new Vuex.Store({
     // If the backbone model has an "ID" (as defined in it's Model class) and there are no attributes provided,
     // then save will be a PUT request rather than POST request
     // Example: store.dispatch('saveModel', {model: myModel, attributes: myAttributes})
-    saveModel(context, {model, attributes}) {
+    saveModel(context, { model, attributes }) {
       // If we have attributes, assume a patch request
       let patch = !!attributes
       let attrs = attributes || {}

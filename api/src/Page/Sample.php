@@ -956,6 +956,8 @@ class Sample extends Page
             $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
+                                    ,count(distinct dc.dataCollectionId) as dcc            
+                
                                   
                                   FROM blsample b
 
@@ -1031,8 +1033,8 @@ class Sample extends Page
         }
         
 
-        function _update_sample_full() {           
-            $a = $this->_prepare_sample_args();
+        function _update_sample_full() {
+            $a = $this->_prepare_strategy_option_for_sample($this->_prepare_sample_args());
 
             $samp = $this->db->pq("SELECT sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid, string_agg(chc.componentid) as componentids
               FROM blsample sp 
@@ -1054,8 +1056,12 @@ class Sample extends Page
             if (array_key_exists('PROTEINID', $a)) {
                 $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10", 
                   array($a['SPACEGROUP'], $a['PROTEINID'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['THEORETICALDENSITY'], $samp['CRYSTALID']));
-                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7 WHERE diffractionplanid=:8",
-                  array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $samp['DIFFRACTIONPLANID']));
+                $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7, strategyoption=:8, minimalresolution=:9 WHERE diffractionplanid=:10",
+                  array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['STRATEGYOPTION'], $a['MINIMUMRESOLUTION'], $samp['DIFFRACTIONPLANID']));
+
+                if ($a['SCREENINGMETHOD'] == 'best' && isset($a['BLSAMPLEGROUPID'])) {
+                    $this->_save_sample_to_group($this->arg('sid'), $a['BLSAMPLEGROUPID'], null, null);
+                }
             }
 
             $init_comps = explode(',', $samp['COMPONENTIDS']);
@@ -1103,8 +1109,7 @@ class Sample extends Page
 
             // Register single sample
             } else {
-                $a = $this->_prepare_sample_args();
-                $id = $this->_do_add_sample($a);
+                $id = $this->_do_add_sample($this->_prepare_sample_args());
                 $this->_output(array('BLSAMPLEID' => $id));
             }
         }
@@ -1249,7 +1254,6 @@ class Sample extends Page
             else {
                 $a['SAMPLEGROUP'] = null;
             }
-
 
             return $a;
         }
@@ -1564,6 +1568,17 @@ class Sample extends Page
                     $this->db->pq("UPDATE diffractionplan SET $f=:1 WHERE diffractionplanid=:2", array($this->arg($f), $samp['DIFFRACTIONPLANID']));
                     $this->_output(array($f => $this->arg($f)));
                 }
+            }
+
+            if ($this->has_arg('SCREENINGMETHOD')) {
+                $sample_data = array(
+                    "SCREENINGMETHOD" => $this->arg("SCREENINGMETHOD"),
+                    "SCREENINGCOLLECTVALUE" => $this->arg("SCREENINGCOLLECTVALUE"),
+                    "SAMPLEGROUP" => $this->arg("SAMPLEGROUP")
+                );
+                $strategyOptionsData = $this->_prepare_strategy_option_for_sample($sample_data);
+                $this->db->pq("UPDATE diffractionplan SET STRATEGYOPTION = :1 WHERE diffractionplanid = :2", array($strategyOptionsData, $samp['DIFFRACTIONPLANID']));
+                $this->_output(array($f => $this->arg($f)));
             }
 
             if($this->has_arg('PLANORDER')) {
@@ -2326,6 +2341,12 @@ class Sample extends Page
 
             if (!sizeof($samp)) return 'No such sample';
             else $samp = $samp[0];
+
+            $sample_exists = $this->db->pq("SELECT blsampleid FROM blsamplegroup_has_blsample WHERE blsampleid = :1 AND blsamplegroupid = :2", array($blSampleId, $sgid));
+
+            if (count($sample_exists) > 0) {
+                return array('BLSAMPLEGROUPSAMPLEID' => $sgid.'-'.$blSampleId, 'BLSAMPLEID' => $blSampleId, 'BLSAMPLEGROUPID' => $sgid);
+            }
 
             $order = isset($groupOrder) ? $groupOrder: 1;
             $type = isset($type) ? $type : null;
