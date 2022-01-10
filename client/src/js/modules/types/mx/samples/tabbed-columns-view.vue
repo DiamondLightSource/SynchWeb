@@ -268,7 +268,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="EXPERIMENTKIND"
         />
-        <p v-else class="tw-text-center">{{ sample['EXPERIMENTKIND'] }}</p>
+        <p v-else class="tw-text-center">{{ experimentKindText }}</p>
       </validation-provider>
 
       <validation-provider
@@ -330,7 +330,7 @@
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="SCREENINGMETHOD"
         />
-        <p v-else class="tw-text-center">{{ sample['SCREENINGMETHOD'] }}</p>
+        <p v-else class="tw-text-center">{{ screeningMethodText }}</p>
       </validation-provider>
 
       <validation-provider

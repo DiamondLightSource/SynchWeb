@@ -145,6 +145,26 @@ export default {
     ]),
     sampleGroupInputDisabled() {
       return this.$sampleGroupInputDisabled()
+    },
+    screeningMethodText() {
+      if (this.sample['PROTEINID'] > 0) {
+        const selectedScreeningMethod = this.screeningMethodList.find(item => item.value === this.sample['SCREENINGMETHOD'])
+
+        return selectedScreeningMethod ? selectedScreeningMethod.text : 'None'
+      }
+    },
+    experimentKindText() {
+      if (this.sample['PROTEINID'] > 0) {
+        const selectedExperimentKind = this.experimentKindList.find(item => item.value === this.sample['EXPERIMENTKIND'])
+
+        return selectedExperimentKind ? selectedExperimentKind.text : ''
+      }
+    },
+    containerStatus() {
+      return this.$containerStatus()
+    },
+    canEditSample() {
+      return this.containerStatus !== 'processing' || this.sample['DCC'] ? Number(this.sample['DCC']) < 1 : false
     }
   },
   methods: {
@@ -244,6 +264,7 @@ export default {
     "$queueForUDC",
     "$proteins",
     "$sampleGroupsSamples",
-    "$sampleGroupInputDisabled"
+    "$sampleGroupInputDisabled",
+    "$containerStatus"
   ]
 };
