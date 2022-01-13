@@ -225,15 +225,6 @@ export default {
     },
     // When cloning, take the last digits and pad the new samples names
     // So if 1: sample-01, 2: will equal sample-02 etc.
-    generateSampleName(name, startAtIndex) {
-      if (!name) return null
-
-      let name_base = name.replace(/([\d]+)$/, '')
-      let digits = name.match(/([\d]+)$/)
-      let number_pad = (digits && digits.length > 1) ? digits[1].length : 0
-
-      return name_base+((startAtIndex).toString().padStart(number_pad, '0'))
-    },
     // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
     async onSaveSample(location) {
@@ -340,7 +331,7 @@ export default {
       let baseName = this.samples[sourceIndex].NAME
       let sampleClone = { ...this.samples[targetIndex], ...this.samples[sourceIndex] }
       sampleClone.LOCATION = (targetIndex + 1).toString()
-      sampleClone.NAME = this.generateSampleName(baseName, targetIndex+1)
+      sampleClone.NAME = this.generateSampleName(baseName)
       this.$store.commit('samples/setSample', { index: targetIndex, data: sampleClone })
     },
     // Reset the validation for the field when an input is edited
@@ -382,6 +373,23 @@ export default {
         attributes.UNQUEUE = 1
       }
       return await this.$store.dispatch('saveModel', { model: containerQueue, attributes })
+    },
+    generateSampleName(sourceName) {
+      const samplesNameDictionary = {}
+      const sourceNameKey = sourceName.replace(/([\d]+)$/, '')
+
+      this.samples.forEach(sample => {
+        const baseName = sample['NAME'].replace(/([\d]+)$/, '')
+        const digitMatch = sample['NAME'].match(/([\d]+)$/)
+        const digitValue = digitMatch && digitMatch.length > 0 ? Number(digitMatch[0]) : 0
+        if (!samplesNameDictionary[baseName]) {
+          samplesNameDictionary[baseName] = Number(digitValue)
+        } else {
+          const currentBaseNameNumber = samplesNameDictionary[baseName]
+          samplesNameDictionary[baseName] = currentBaseNameNumber < digitValue ? digitValue : currentBaseNameNumber
+        }
+      })
+      return `${sourceNameKey}${samplesNameDictionary[sourceNameKey] + 1}`
     }
   },
   computed: {
@@ -396,7 +404,7 @@ export default {
     },
     ...mapGetters({
       samples: ['samples/samples'],
-    })
+    }),
   },
   provide() {
     return {

@@ -275,7 +275,7 @@
         tag="div"
         class="tw-px-2 tw-w-20"
         :name="`Sample ${sampleIndex + 1} Energy`"
-        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD|numeric` : ''"
+        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD|non_zero_numeric` : ''"
         :vid="`sample ${sampleIndex + 1} energy`"
         v-slot="{ errors }">
         <base-input-text
@@ -336,7 +336,7 @@
       <validation-provider
         tag="div"
         class="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,none|decimal:2|positive_decimal:4` : ''"
+        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,none|positive_decimal:4` : ''"
         :name="`Sample ${sampleIndex + 1} Required Resolution`"
         :vid="`sample ${sampleIndex + 1} required resolution`"
         v-slot="{ errors }">
@@ -379,7 +379,7 @@
         tag="div"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} No to Collect`"
-        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,best|numeric|max_value:5`: ''"
+        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,best|non_zero_numeric|min_value:1|max_value:5`: ''"
         :vid="`sample ${sampleIndex + 1} no to collect`"
         v-slot="{ errors }">
         <base-input-text

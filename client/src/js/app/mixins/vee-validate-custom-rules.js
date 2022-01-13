@@ -35,7 +35,7 @@ export default {
 
     this.$validator.extend('positive_decimal', (value, { decimals = '*', separator = '.' } = {}) => {
       const validatePositiveDecimalValues = (val) => {
-        if (isNullOrUndefined(val) || val === '') {
+        if (isNullOrUndefined(val) || val === '' || val <= 0) {
           return false;
         }
 
@@ -59,6 +59,25 @@ export default {
       return validatePositiveDecimalValues(value)
     }, {
       paramNames: ['decimals', 'separator']
+    })
+
+    this.$validator.extend('non_zero_numeric', (value) => {
+      const validateNonZeroNumericValues = (val) => {
+        if (isNullOrUndefined(val) || val === '' || val <= 0) {
+          return false;
+        }
+
+        const parsedValue = parseInt(val);
+
+        // eslint-disable-next-line
+        return parsedValue === parsedValue;
+      }
+
+      if (Array.isArray(value)) {
+        return value.every(val => validateNonZeroNumericValues(val));
+      }
+
+      return validateNonZeroNumericValues(value)
     })
   }
 }

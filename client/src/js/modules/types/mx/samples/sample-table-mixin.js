@@ -163,8 +163,11 @@ export default {
     containerStatus() {
       return this.$containerStatus()
     },
-    canEditSample() {
-      return this.containerStatus !== 'processing' || this.sample['DCC'] ? Number(this.sample['DCC']) < 1 : false
+    isContainerProcessing() {
+      return this.containerStatus === 'processing'
+    },
+    sampleHasDataCollection() {
+      return this.sample['DCC'] ? Number(this.sample['DCC']) > 0 : false
     }
   },
   methods: {
