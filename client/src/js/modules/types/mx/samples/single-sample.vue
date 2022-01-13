@@ -305,7 +305,7 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} Energy`"
-          :rules="sample['PROTEINID'] > -1 && queueForUDC ? `required_if:sample ${sampleLocation + 1} experiment kind,SAD|numeric` : ''"
+          :rules="sample['PROTEINID'] > -1 && queueForUDC ? `required_if:sample ${sampleLocation + 1} experiment kind,SAD|non_zero_numeric` : ''"
           :vid="`sample ${sampleLocation + 1} energy`"
           v-slot="{ errors }">
           <base-input-text
@@ -413,7 +413,7 @@
           tag="div"
           class="tw-py-1"
           :name="`Sample ${sampleLocation + 1} No to Collect`"
-          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,best|numeric`: ''"
+          :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleLocation + 1} screening method,best|non_zero_numeric`: ''"
           :vid="`sample ${sampleLocation + 1} no to collect`"
           v-slot="{ errors }">
           <base-input-text
