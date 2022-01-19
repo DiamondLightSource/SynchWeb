@@ -47,7 +47,7 @@ class Shipment extends Page
 
                               'BARCODE' => '([\w-])+',
                               'LOCATION' => '[\w|\s|-]+',
-                              'NEXTLOCATION' => '[\w|\s|-]+',
+                              'NEXTLOCATION' => '\w+|^(?![\s\S])',
                               'STATUS' => '[\w|\s|-]+',
 
                               'PURCHASEDATE' => '\d+-\d+-\d+',
@@ -61,7 +61,7 @@ class Shipment extends Page
                               'GIVENNAME' => '.*',
                               'LABNAME' => '.*',
                               'LOCALCONTACT' => '[\w|\s+|-]+',
-                              'NEXTLOCALCONTACT' => '[\w|\s+|-]+',
+                              'NEXTLOCALCONTACT' => '\w+|^(?![\s\S])',
                               'PHONENUMBER' => '.*',
                               'VISIT' => '\w+\d+-\d+',
                               'NEXTVISIT' => '\w+\d+-\d+|^(?![\s\S])',
@@ -776,10 +776,16 @@ class Shipment extends Page
                 $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", array($sessionId, $dew['DEWARID']));
             }
 
+
             $email = new Email('dewar-transfer', '*** Dewar ready for internal transfer ***');
 
+            $nextLocalContact = $this->arg('NEXTLOCALCONTACT');
+            $newContact = !empty($nextLocalContact) ? $nextLocalContact : $this->arg('LOCALCONTACT');
+            $nextLocation = $this->arg('NEXTLOCATION');
+
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
-            $this->args['LCNEXTEMAIL'] = $this->_get_email_fn($this->arg('NEXTLOCALCONTACT'));
+            $this->args['LCNEXTEMAIL'] = $this->_get_email_fn($newContact);
+            $this->args['NEXTLOCATION'] = !empty($nextLocation) ? $nextLocation : $this->arg('LOCATION');
 
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
