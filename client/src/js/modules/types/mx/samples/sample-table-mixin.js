@@ -93,7 +93,7 @@ export default {
       return this.$sampleGroupsSamples()
     },
     sampleGroupName() {
-      if (this.sample['BLSAMPLEID'] && typeof Number(this.SAMPLEGROUP) === 'number') {
+      if (this.sample['BLSAMPLEID'] && Number(this.SAMPLEGROUP)) {
         const selectedSample = this.sampleGroupSamples.find(sample => sample['BLSAMPLEID'] === this.sample['BLSAMPLEID'])
 
         return selectedSample ? selectedSample['NAME'] : ''

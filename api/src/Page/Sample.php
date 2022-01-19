@@ -144,7 +144,8 @@ class Sample extends Page
                               'SAMPLEGROUPID' => '\d+',
                               'SCREENINGMETHOD' => '\w+',
                               'SCREENINGCOLLECTVALUE' => '\d+',
-                              'SAMPLEGROUP' => '\d+|\w+',
+                              'SAMPLEGROUP' => '\d+',
+                              'INITIALSAMPLEGROUP' => '\d+',
                               'STRATEGYOPTION' => '',
                               'MINIMUMRESOLUTION' => '\d+(.\d+)?'
                                );
@@ -1045,13 +1046,15 @@ class Sample extends Page
               LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = sp.diffractionplanid 
               WHERE p.proposalid = :1 AND sp.blsampleid=:2
               GROUP BY sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid", 
-              array($this->proposalid,$this->arg('sid')));
+              array($this->proposalid, $this->arg('sid')));
                 
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
+            $blSampleId = $samp['BLSAMPLEID'];
+
             $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10 WHERE blsampleid=:11", 
-              array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$a['PACKINGFRACTION'],$a['DIMENSION1'],$a['DIMENSION2'],$a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE'],$this->arg('sid'))); 
+              array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$a['PACKINGFRACTION'],$a['DIMENSION1'],$a['DIMENSION2'],$a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE'], $blSampleId));
 
             if (array_key_exists('PROTEINID', $a)) {
                 $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10", 
@@ -1061,6 +1064,8 @@ class Sample extends Page
 
                 if ($a['SCREENINGMETHOD'] == 'best' && isset($a['BLSAMPLEGROUPID'])) {
                     $this->_save_sample_to_group($this->arg('sid'), $a['BLSAMPLEGROUPID'], null, null);
+                } else if (isset($a['INITIALSAMPLEGROUP']) && !isset($a['BLSAMPLEGROUPID']) && isset($blSampleId)) {
+                    $this->_delete_sample_from_group($a['INITIALSAMPLEGROUP'], $blSampleId);
                 }
             }
 
@@ -1181,7 +1186,8 @@ class Sample extends Page
                     'SCREENINGCOLLECTVALUE',
                     'SAMPLEGROUP',
                     'STRATEGYOPTION',
-                    'MINIMUMRESOLUTION'
+                    'MINIMUMRESOLUTION',
+                    'INITIALSAMPLEGROUP'
                 ) as $f
             ) {
                 if ($s) $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
@@ -1253,6 +1259,7 @@ class Sample extends Page
             }
             else {
                 $a['SAMPLEGROUP'] = null;
+                $a['STRATEGYOPTION'] = null;
             }
 
             return $a;
@@ -2393,21 +2400,24 @@ class Sample extends Page
             $arr = explode('-', $this->arg('BLSAMPLEGROUPSAMPLEID'));
             $sid = end($arr);
 
+            $this->_delete_sample_from_group($gid, $sid);
+
+            $this->_output(new \stdClass);
+        }
+
+        function _delete_sample_from_group($blSampleGroupId, $blSampleGroupSampleId) {
             $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
               FROM blsample b 
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
-              WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid,$sid));
-            
+              WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid, $blSampleGroupSampleId));
+
             if (!sizeof($samp)) $this->_error('No such sample');
-            else $samp = $samp[0];
 
-            $this->db->pq("DELETE FROM blsamplegroup_has_blsample 
-                WHERE blsampleid=:1 AND blsamplegroupid=:2", array($sid, $gid));
-
-            $this->_output(new \stdClass);
+            $this->db->pq("DELETE FROM blsamplegroup_has_blsample WHERE blsampleid = :1 AND blsamplegroupid = :2", array($blSampleGroupSampleId, $blSampleGroupId));
         }
+
         // Get spacegroups from database
         // Could extend this to filter on spacegroupshortname (also unique)
         // Also extend to take mx used flag to return a filtered list

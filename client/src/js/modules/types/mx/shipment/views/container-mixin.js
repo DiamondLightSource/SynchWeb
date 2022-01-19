@@ -140,10 +140,14 @@ export default {
 
       const result = await this.$store.dispatch('getCollection', this.sampleGroupsCollection)
 
-      this.sampleGroups = result.toJSON().map((group, index) => ({
-        value: group.BLSAMPLEGROUPID,
-        text: group.NAME || `Unknown Sample Group ${index}`
-      }))
+      this.sampleGroups = result.toJSON().reduce((acc, curr, index) => {
+        acc.push({
+          value: curr.BLSAMPLEGROUPID,
+          text: curr.NAME || `Unknown Sample Group ${index}`
+        })
+
+        return acc
+      }, [{ text: '-', value: '' }])
       this.sampleGroupInputDisabled = false
     },
     async getImagingCollections() {
@@ -245,11 +249,13 @@ export default {
 
       const result = await this.$store.dispatch('saveModel', { model: sampleModel })
 
-      if (!this.samples[sampleIndex]['BLSAMPLEID'])
+      if (!this.samples[sampleIndex]['BLSAMPLEID']) {
         this.$store.commit('samples/updateSamplesField', {
           path: `samples/${sampleIndex}/BLSAMPLEID`,
           value: result.get('BLSAMPLEID')
         })
+      }
+      await this.fetchSampleGroupSamples()
     },
     getRowColDrop(pos) {
       let well = this.containerType.WELLDROP > -1 ? 1 : 0
