@@ -19,7 +19,7 @@
 * Then displays the addcontainer view specific to a proposal type
 */
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import MxContainerAdd from 'modules/types/mx/shipment/views/container-add.vue'
+import MxContainerAdd from 'modules/types/mx/shipment/views/mx-container-add.vue'
 
 import { ContainerAddMap } from 'modules/shipment/components/container-map'
 import Dewar from 'models/dewar'

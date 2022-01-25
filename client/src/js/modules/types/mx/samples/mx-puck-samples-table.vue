@@ -148,7 +148,7 @@ import { mapGetters } from 'vuex'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 
 export default {
-  name: 'mx-sample-plate',
+  name: 'mx-puck-samples-table',
   components: {
     'custom-dialog-box': CustomDialogBox,
     'sample-table-row': SampleTableRow,
@@ -192,8 +192,13 @@ export default {
         {
           key: 'COMMENT',
           title: 'Comment',
-          className: 'tw-w-1/2'
-        }
+          className: 'tw-w-1/4'
+        },
+        {
+          key: 'STATUS',
+          title: 'Status',
+          className: 'tw-w-1/4'
+        },
       ],
       extraFieldsColumns: [
         {

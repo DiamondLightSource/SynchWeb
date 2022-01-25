@@ -33,7 +33,7 @@
               />
             </div>
 
-            <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="name" vid="container-name" v-slot="{ errors }">
+            <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
               <base-input-text
                 label="Container Name"
                 v-model="NAME"
@@ -235,7 +235,7 @@ import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import TableComponent from 'app/components/table.vue'
-import SamplePlate from 'modules/types/mx/samples/samples-plate.vue'
+import MxPuckSamplesTable from 'js/modules/types/mx/samples/mx-puck-samples-table.vue'
 import SingleSample from 'modules/types/mx/samples/single-sample.vue'
 
 import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
@@ -268,7 +268,7 @@ export default {
     'custom-dialog-box': CustomDialogBox,
     'table-component': TableComponent,
     'single-sample-plate': SingleSample,
-    'mx-sample-plate': SamplePlate
+    'mx-puck-samples-table': MxPuckSamplesTable
   },
   props: {
     'mview':[Function, Promise], // The marionette view could be lazy loaded or static import
@@ -354,12 +354,6 @@ export default {
     containerGroup() {
       return this.$store.getters['proposal/currentProposalType']
     },
-    sampleComponent() {
-      // Use a table editor unless capacity > 25
-      // If we have been passed a valid container id then we are editing the samples, else new table
-
-      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-sample-plate'
-    }
   },
   watch: {
     // When the container type changes we need to reset the samples list and redraw the container graphic

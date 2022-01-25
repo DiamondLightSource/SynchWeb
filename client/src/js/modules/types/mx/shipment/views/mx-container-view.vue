@@ -176,7 +176,7 @@ import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
 import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import PaginationComponent from 'app/components/pagination.vue'
 import SingleSample from 'modules/types/mx/samples/single-sample.vue'
-import SamplePlate from 'modules/types/mx/samples/samples-plate.vue'
+import MxPuckSamplesTable from 'modules/types/mx/samples/mx-puck-samples-table.vue'
 import TableComponent from 'app/components/table.vue'
 import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
 
@@ -193,7 +193,7 @@ export default {
     'pagination-component': PaginationComponent,
     'custom-dialog-box': CustomDialogBox,
     'single-sample-plate': SingleSample,
-    'mx-sample-plate': SamplePlate,
+    'mx-puck-samples-table': MxPuckSamplesTable,
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider
   },
@@ -256,12 +256,6 @@ export default {
   computed: {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
-    },
-    sampleComponent() {
-      // Use a table editor unless capacity > 25
-      // If we have been passed a valid container id then we are editing the samples, else new table
-
-      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-sample-plate'
     },
   },
   created: function() {

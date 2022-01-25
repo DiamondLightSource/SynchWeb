@@ -92,14 +92,23 @@ export default {
     sampleGroupSamples() {
       return this.$sampleGroupsSamples()
     },
+    sampleGroupsWithSample() {
+      return this.sampleGroupSamples.filter(sample => sample['BLSAMPLEID'] === this.sample['BLSAMPLEID'])
+    },
+    // Based on the requirements of UDC sample creations we want to return the
+    // sample group that is saved in the strategyOption if the screening method is "Collect Best N";
+    // otherwise, we want to return the first sample group that the sample belongs to
+    // If the sample belongs to more than one group, we want to return the first matching name and how many other groups it belongs to
     sampleGroupName() {
-      if (this.sample['BLSAMPLEID'] && Number(this.SAMPLEGROUP)) {
-        const selectedSample = this.sampleGroupSamples.find(sample => sample['BLSAMPLEID'] === this.sample['BLSAMPLEID'])
-
-        return selectedSample ? selectedSample['NAME'] : ''
+      let matchingSampleGroup = {}
+      if (this.sample['SAMPLEGROUP']) {
+        matchingSampleGroup = this.sampleGroupsWithSample.find(sample => Number(sample['BLSAMPLEGROUPID']) === Number(this.sample['SAMPLEGROUP']))
+      } else {
+        matchingSampleGroup = this.sampleGroupsWithSample[0]
       }
 
-      return ''
+      this.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
+      return this.generateSampleGroupNameText(matchingSampleGroup)
     },
     ...createFieldsForSamples([
       'ABUNDANCE',
@@ -141,7 +150,8 @@ export default {
       'THEORETICALDENSITY',
       'USERPATH',
       'VOLUME',
-      'VALID'
+      'VALID',
+      'INITIALSAMPLEGROUP'
     ]),
     sampleGroupInputDisabled() {
       return this.$sampleGroupInputDisabled()
@@ -252,6 +262,15 @@ export default {
     },
     canEditRow(location, editingRow) {
       return !this.containerId || location === editingRow
+    },
+    generateSampleGroupNameText(matchingSampleGroup) {
+      if (matchingSampleGroup && this.sampleGroupsWithSample.length > 1)  {
+        return `${matchingSampleGroup['NAME']} and ${this.sampleGroupsWithSample.length - 1} other(s)`
+      } else if (matchingSampleGroup && this.sampleGroupsWithSample.length <= 1) {
+        return matchingSampleGroup['NAME']
+      } else if (!matchingSampleGroup) {
+        return ''
+      }
     }
   },
   inject: [

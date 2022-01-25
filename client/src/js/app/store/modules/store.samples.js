@@ -41,7 +41,8 @@ const INITIAL_SAMPLE_STATE = {
   USERPATH: '',
   VOLUME: '',
   VALID: 0,
-  SAMPLEGROUP: ''
+  SAMPLEGROUP: '',
+  INITIALSAMPLEGROUP: ''
 }
 
 // Use Location as idAttribute for this table

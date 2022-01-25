@@ -411,6 +411,12 @@ export default {
     ...mapGetters({
       samples: ['samples/samples'],
     }),
+    sampleComponent() {
+      // Use a table editor unless capacity > 25
+      // If we have been passed a valid container id then we are editing the samples, else new table
+
+      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-puck-samples-table'
+    },
   },
   provide() {
     return {

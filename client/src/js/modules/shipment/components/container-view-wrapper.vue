@@ -23,7 +23,7 @@
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import { ContainerViewMap, ContainerPlateViewMap } from 'modules/shipment/components/container-map'
 import Container from 'models/container'
-import MxContainerView from 'modules/types/mx/shipment/views/container-plate-view.vue'
+import MxContainerView from 'modules/types/mx/shipment/views/mx-container-view.vue'
 
 import store from 'app/store/store'
 
@@ -100,7 +100,6 @@ export default {
         this.bc.push({ title: 'Containers' })
         this.bc.push({ title: this.model.get('NAME') })
       } catch (error) {
-        console.log("Error getting container model " + error.msg)
         app.alert({ title: 'No such container', message: error.msg})
       } finally {
         this.ready = true
@@ -126,7 +125,6 @@ export default {
     // Lookup the proposal first to make sure we can still add to it
     store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
     .then(() => {
-      console.log("Proposal Lookup OK - type = " + store.state.proposalType)
       next()
     }, (error) => {
       store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})

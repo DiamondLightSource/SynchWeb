@@ -11,7 +11,6 @@ define(['backbone', 'collections/components',
             var addPrimary = (options && options.addPrimary) || (this.collection && this.collection.state.addPrimary)
             this.set('components', new Components(null, { pmodel: this, addPrimary: addPrimary }))
             this.updateScreeningOptions()
-            this.setInitialSampleGroup()
 
             this.listenTo(this, 'change:EXPERIMENTKIND', this.updateExpKind)
             this.updateExpKind()
@@ -49,13 +48,6 @@ define(['backbone', 'collections/components',
         updateRadSen: function() {
             var val = RS.key(this.get('RADIATIONSENSITIVITY'))
             this.set('RADIATIONSENSITIVITYNAME', val)
-        },
-
-        setInitialSampleGroup() {
-            const initialSampleGroup = this.get('SAMPLEGROUP')
-            if (initialSampleGroup) {
-                this.set('INITIALSAMPLEGROUP', initialSampleGroup)
-            }
         },
 
         defaults: {
