@@ -50,7 +50,8 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-1/4"
+        class="tw-px-2 tw-py-1 tw-w-1/4"
+        :class="sampleStatusDetails.className"
         :name="`Sample ${sampleIndex + 1} Status`"
         :vid="`sample ${sampleIndex + 1} status`">
         <base-input-text
@@ -59,7 +60,7 @@
           v-model="STATUS"
           :disabled="true"
         />
-        <p v-else class="tw-text-center">{{ sample['STATUS'] }}</p>
+        <p v-else class="tw-text-center py-2 tw-w-full">{{ sampleStatusDetails.name }}</p>
       </validation-provider>
     </div>
 

@@ -20,6 +20,20 @@ export default {
           text: "Collect Best N",
         },
       ],
+      sampleStatusMappings: [
+        { id: 'dc', name: 'Data Collections', className: 'tw-bg-data-collected' },
+        { id: 'gr', name: 'Grid Scans', className: 'tw-bg-grid-scanned' },
+        { id: 'fc', name: 'Full Collections', className: '' },
+        { id: 'ap', name: 'Auto Integrated', className: 'tw-bg-auto-integrated' },
+        { id: 'err', name: 'Processing Errors', className: '' },
+        { id: 'sc', name: 'Screenings', className: 'tw-bg-screened' },
+        { id: 'edge', name: 'Edge Scans', className: '' },
+        { id: 'mca', name: 'MCA Spectra', className: '' },
+        { id: 'rb', name: 'Robot Actions', className: 'tw-bg-loaded-by-robot' },
+        { id: 'ac', name: 'Sample Actions', className: '' },
+        { id: 'flag', name: 'Favourites', className: '' },
+        { id: '', name: '', className: ''}
+      ]
     };
   },
   props: {
@@ -151,7 +165,8 @@ export default {
       'USERPATH',
       'VOLUME',
       'VALID',
-      'INITIALSAMPLEGROUP'
+      'INITIALSAMPLEGROUP',
+      'STATUS'
     ]),
     sampleGroupInputDisabled() {
       return this.$sampleGroupInputDisabled()
@@ -178,6 +193,9 @@ export default {
     },
     sampleHasDataCollection() {
       return this.sample['DCC'] ? Number(this.sample['DCC']) > 0 : false
+    },
+    sampleStatusDetails() {
+      return this.sampleStatusMappings.find(status => String(status.id.toLowerCase()) === String(this.sample.STATUS.toLowerCase()))
     }
   },
   methods: {

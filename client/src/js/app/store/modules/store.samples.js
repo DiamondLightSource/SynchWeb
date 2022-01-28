@@ -42,7 +42,8 @@ const INITIAL_SAMPLE_STATE = {
   VOLUME: '',
   VALID: 0,
   SAMPLEGROUP: '',
-  INITIALSAMPLEGROUP: ''
+  INITIALSAMPLEGROUP: '',
+  STATUS: ''
 }
 
 // Use Location as idAttribute for this table
@@ -156,6 +157,18 @@ const samplesModule = {
       // Finally save the collection to the server
       return dispatch('saveCollection', { collection: samples }, { root: true })
     },
+    async update({ state, dispatch }) {
+      const oldSamplesCollection = new Samples()
+
+      state.samples.forEach(sample => {
+        // const locationIndex = +sample['LOCATION'] - 1
+        if (sample['PROTEINID'] && sample['NAME'] && sample['BLSAMPLEID']) {
+          oldSamplesCollection.add(sample)
+        }
+      })
+
+      await dispatch('updateCollection', { collection: oldSamplesCollection }, { root: true })
+    }
   },
   getters: {
     samples: state => state.samples,

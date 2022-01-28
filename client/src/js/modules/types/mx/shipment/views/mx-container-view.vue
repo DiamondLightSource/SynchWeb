@@ -130,11 +130,19 @@
         />
       </div>
 
+
+
       <div class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4" v-show="invalid">
         <p class="tw-font-bold">Please fix the errors on the form</p>
         <div v-for="(error, index) in errors" :key="index">
           <p v-show="error.length > 0" class="tw-black">{{error[0]}}</p>
         </div>
+      </div>
+
+      <div class="">
+        <button name="submit" type="submit" @click.prevent="onUpdateSamples" :class="['button submit tw-text-base tw-px-4 tw-py-2', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
+          Update Samples
+        </button>
       </div>
     </validation-observer>
 
@@ -334,7 +342,14 @@ export default {
     resetSamples(capacity) {
       this.$store.commit('samples/reset', capacity)
 
-      this.samplesCollection.each( s => {
+      this.samplesCollection.each((s) => {
+        let status = '';
+        // Setting the status of the sample based on one of the following values
+        const statusList = ['R', 'SC', 'AI', 'GR', 'ES', 'XM', 'XS', 'DC', 'AP']
+        statusList.forEach(t => {
+          if (Number(s.get(t)) > 0) status = t
+        })
+        s.set({ STATUS: status })
         this.$store.commit('samples/setSample', {
           index: Number(s.get('LOCATION')) - 1,
           data: { ...s.toJSON(), VALID: 1 }
@@ -445,6 +460,10 @@ export default {
     async onUpdateContainer() {
       await this.$store.dispatch('saveModel', { model: this.containerModel, attributes: this.container })
       this.$emit('update-container-state', this.container)
+    },
+    async onUpdateSamples() {
+      await this.$store.dispatch('samples/update', this.containerId)
+      await this.getSamples(this.samplesCollection)
     }
   },
   watch: {

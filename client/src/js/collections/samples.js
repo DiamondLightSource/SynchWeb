@@ -71,5 +71,18 @@ define(['backbone', 'underscore', 'backbone.paginator', 'models/sample'], functi
             
             return Backbone.sync('create', this, options)
         },
+
+        update: function(options) {
+            options = _.extend({}, options)
+
+            var col = this
+            var success = options.success;
+            options.success = function(resp) {
+                col.reset(resp, { silent: true })
+                if (success) success(col, resp, options)
+            }
+
+            return Backbone.sync('update', this, options)
+        }
     })
 })

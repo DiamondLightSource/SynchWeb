@@ -152,6 +152,7 @@ class Sample extends Page
         
         
         public static $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
+                              array('', 'put', '_bulk_update_sample_full'),
                               array('/:sid', 'patch', '_update_sample'),
                               array('/:sid', 'put', '_update_sample_full'),
                               array('', 'post', '_add_sample'),
@@ -1032,10 +1033,17 @@ class Sample extends Page
                                  'data' => $rows,
                            ));   
         }
-        
 
         function _update_sample_full() {
             $a = $this->_prepare_strategy_option_for_sample($this->_prepare_sample_args());
+            $result = $this->_handle_update_sample_full($a, $this->arg('sid'));
+
+            $this->_output($result);
+        }
+        
+
+        function _handle_update_sample_full($a, $sid) {
+            if (empty($sid)) $this->_error('No sampleid provided');
 
             $samp = $this->db->pq("SELECT sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid, string_agg(chc.componentid) as componentids
               FROM blsample sp
@@ -1046,7 +1054,7 @@ class Sample extends Page
               LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = sp.diffractionplanid
               WHERE p.proposalid = :1 AND sp.blsampleid=:2
               GROUP BY sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid",
-              array($this->proposalid, $this->arg('sid')));
+              array($this->proposalid, $sid));
 
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
@@ -1062,8 +1070,8 @@ class Sample extends Page
                 $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7, strategyoption=:8, minimalresolution=:9 WHERE diffractionplanid=:10",
                   array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['STRATEGYOPTION'], $a['MINIMUMRESOLUTION'], $samp['DIFFRACTIONPLANID']));
 
-                if (!isset($a['INITIALSAMPLEGROUP']) && $a['VALID_SAMPLE_GROUP']) {
-                    $this->_save_sample_to_group($this->arg('sid'), $a['SAMPLEGROUP'], null, null);
+                if (!isset($a['INITIALSAMPLEGROUP']) && $a['VALID_SAMPLE_GROUP'] && $sid) {
+                    $this->_save_sample_to_group($sid, $a['SAMPLEGROUP'], null, null);
                 } else if (isset($a['INITIALSAMPLEGROUP']) && !$a['SAMPLEGROUP'] && isset($blSampleId)) {
                     $this->_delete_sample_from_group($a['INITIALSAMPLEGROUP'], $blSampleId);
                 }
@@ -1074,7 +1082,7 @@ class Sample extends Page
             $amounts = $a['COMPONENTAMOUNTS'] ? $a['COMPONENTAMOUNTS'] : null;
             $this->_update_sample_components($init_comps, $fin_comps, $amounts, $samp['CRYSTALID']);
 
-            $this->_output(array('BLSAMPLEID' => $samp['BLSAMPLEID']));
+            return array('BLSAMPLEID' => $samp['BLSAMPLEID']);
         }
 
         function _update_sample_components($initial, $final, $amounts, $crystalid) {
@@ -1117,6 +1125,25 @@ class Sample extends Page
                 $id = $this->_do_add_sample($this->_prepare_sample_args());
                 $this->_output(array('BLSAMPLEID' => $id));
             }
+        }
+
+        function _bulk_update_sample_full() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            // Register entire container
+            $this->db->start_transaction();
+            $col = array();
+            foreach ($this->arg('collection') as $s) {
+                $sample = $this->_prepare_strategy_option_for_sample($this->_prepare_sample_args($s));
+                $result = $this->_handle_update_sample_full($sample, $s['BLSAMPLEID']);
+
+                if ($result) {
+                    array_push($col, $result);
+                }
+            }
+
+            $this->db->end_transaction();
+            $this->_output($col);
         }
 
 

@@ -1,11 +1,32 @@
 <template>
-  <div class="tw-my-4">
+  <div class="tw-mt-12 tw-mb-4">
     <div class="tw-flex tw-justify-end tw-mb-2" v-if="!containerId">
       <button
         class="button"
         @click="$emit('clone-container', 0)">
         Clone all from first row
       </button>
+    </div>
+    <div class="tw-w-full tw-flex tw-flex-col tw-items-end" v-if="containerId">
+      <p class="tw-w-full tw-mb-2">Select a field and enter a value to bulk populate in all samples</p>
+      <div class="tw-flex tw-w-full">
+        <base-input-select
+          option-text-key="title"
+          option-value-key="key"
+          :options="mappedEditableColumns"
+          :value="selectedEditableColumn.key"
+          outer-class="tw-mr-2"
+          @input="resetSelectedEditableColumn"
+        />
+        <component
+          :is="selectedEditableColumn.componentType"
+          v-model="selectedFieldValue"
+          :options="selectedEditableColumn.data"
+          outer-class="tw-mx-2"
+          option-text-key="text"
+          option-value-key="value"
+        />
+      </div>
     </div>
     <div class="tw-flex tw-justify-end tw-w-full tw-h-auto tw-items-center">
       <a
@@ -146,14 +167,19 @@ import SampleTableRow from 'modules/types/mx/samples/sample-table-row.vue'
 import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import { mapGetters } from 'vuex'
 import BaseInputSelect from 'app/components/base-input-select.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
+import { sortBy, uniqBy, debounce } from 'lodash'
+import sampleTableMixin from "modules/types/mx/samples/sample-table-mixin";
 
 export default {
   name: 'mx-puck-samples-table',
   components: {
     'custom-dialog-box': CustomDialogBox,
     'sample-table-row': SampleTableRow,
-    'base-input-select': BaseInputSelect
+    'base-input-select': BaseInputSelect,
+    'base-input-text': BaseInputText
   },
+  mixins: [sampleTableMixin],
   data() {
     return {
       requiredColumns: [
@@ -178,89 +204,18 @@ export default {
           className: 'sample-group-column'
         }
       ],
-      basicColumns: [
-        {
-          key: 'ANOLAMLOUS',
-          title: 'Anomalous',
-          className: 'tw-w-32'
-        },
-        {
-          key: 'BARCODE',
-          title: 'Barcode',
-          className: 'tw-w-32'
-        },
-        {
-          key: 'COMMENT',
-          title: 'Comment',
-          className: 'tw-w-1/4'
-        },
-        {
-          key: 'STATUS',
-          title: 'Status',
-          className: 'tw-w-1/4'
-        },
-      ],
-      extraFieldsColumns: [
-        {
-          key: 'USERPATH',
-          title: 'User Path',
-          className: 'tw-w-3/12'
-        },
-        {
-          key: 'SPACEGROUP',
-          title: 'Spacegroup',
-          className: 'tw-w-3/12'
-        },
-        {
-          key: 'CELLS',
-          title: 'Unit Cell',
-          className: 'tw-w-4/12'
-        }
-      ],
-      udcColumns: [
-        {
-          key: 'CENTRINGMETHOD',
-          title: 'Centring Method',
-          className: 'tw-w-24'
-        },
-        {
-          key: 'EXPERIMENTKIND',
-          title: 'Experiment Kind',
-          className: 'tw-w-32'
-        },
-        {
-          key: 'ENERGY',
-          title: 'Energy (eV)',
-          className: 'tw-w-20'
-        },
-        {
-          key: 'ANOMALOUSSCATTERER',
-          title: 'Anomalous',
-          className: 'tw-w-24'
-        },
-        {
-          key: 'SCREENINGMETHOD',
-          title: 'Screening Method',
-          className: 'tw-w-24'
-        },
-        {
-          key: 'REQUIREDRESOLUTION',
-          title: 'Reqd Res',
-          className: 'tw-w-24'
-        },
-        {
-          key: 'MINRES',
-          title: 'Min Res',
-          className: 'tw-w-24'
-        },
-        {
-          key: 'NUMTOCOLLECT',
-          title: 'No to collect',
-          className: 'tw-w-24'
-        }
-      ],
       currentTab: 'basic',
-      displaySampleGroupModal: false
+      displaySampleGroupModal: false,
+      selectedFieldValue: '',
+      selectedEditableColumn: {
+        key: '',
+        title: '',
+        className: '',
+        componentType: 'base-input-text',
+        data: '',
+        inputType: 'text'
+      },
+      updateSamplesFieldWithData: debounce(searchText => this.updateSelectedFieldValue(searchText), 1000)
     }
   },
   props: {
@@ -287,6 +242,138 @@ export default {
       return [...this.requiredColumns, ...columnsMap[this.currentTab]]
     },
     ...mapGetters({ samples: 'samples/samples' }),
+    basicColumns() {
+      return [
+        {
+          key: 'ANOMALOUSSCATTERER',
+          title: 'Anomalous',
+          className: 'tw-w-32',
+          componentType: 'base-input-select',
+          data: this.anomalousOptionsList,
+          inputType: 'select'
+        },
+        {
+          key: 'CODE',
+          title: 'Barcode',
+          className: 'tw-w-32',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'text'
+        },
+        {
+          key: 'COMMENTS',
+          title: 'Comment',
+          className: 'tw-w-1/4',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'text'
+        },
+        {
+          key: 'STATUS',
+          title: 'Status',
+          className: 'tw-w-1/4',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'text'
+        }
+      ]
+    },
+    extraFieldsColumns() {
+      return [
+        {
+          key: 'USERPATH',
+          title: 'User Path',
+          className: 'tw-w-3/12',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'text'
+        },
+        {
+          key: 'SPACEGROUP',
+          title: 'Spacegroup',
+          className: 'tw-w-3/12',
+          componentType: 'base-input-select',
+          data: this.spaceGroupList,
+          inputType: 'select'
+        },
+        {
+          key: 'CELLS',
+          title: 'Unit Cell',
+          className: 'tw-w-4/12',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'number'
+        }
+      ]
+    },
+    udcColumns() {
+      return [
+        {
+          key: 'CENTRINGMETHOD',
+          title: 'Centring Method',
+          className: 'tw-w-24',
+          componentType: 'base-input-select',
+          data: this.centringMethodList,
+          inputType: 'select'
+        },
+        {
+          key: 'EXPERIMENTKIND',
+          title: 'Experiment Kind',
+          className: 'tw-w-32',
+          componentType: 'base-input-select',
+          data: this.experimentKindList,
+          inputType: 'select'
+        },
+        {
+          key: 'ENERGY',
+          title: 'Energy (eV)',
+          className: 'tw-w-20',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'number'
+        },
+        {
+          key: 'ANOMALOUSSCATTERER',
+          title: 'Anomalous',
+          className: 'tw-w-24',
+          componentType: 'base-input-select',
+          data: this.anomalousOptionsList,
+          inputType: 'select'
+        },
+        {
+          key: 'SCREENINGMETHOD',
+          title: 'Screening Method',
+          className: 'tw-w-24',
+          componentType: 'base-input-select',
+          data: this.screeningMethodList,
+          inputType: 'select'
+        },
+        {
+          key: 'REQUIREDRESOLUTION',
+          title: 'Reqd Res',
+          className: 'tw-w-24',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'number'
+        },
+        {
+          key: 'MINIMUMRESOLUTION',
+          title: 'Min Res',
+          className: 'tw-w-24',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'number'
+        },
+        {
+          key: 'SCREENINGCOLLECTVALUE',
+          title: 'No to collect',
+          className: 'tw-w-24',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'number'
+        }
+      ]
+    },
     dynamicColumns() {
       const columnsMap = {
         basic: this.basicColumns,
@@ -310,7 +397,68 @@ export default {
       set(data) {
         this.$store.commit('samples/setContainerSampleGroupData', data)
       }
-    }
+    },
+    mappedEditableColumns() {
+      const list = [...this.basicColumns, ...this.extraFieldsColumns, ...this.udcColumns].filter(column => !['STATUS', 'CELLS'].includes(column.key))
+      list.push({
+        title: 'Cell A',
+        key: 'CELL_A',
+        className: '',
+        componentType: 'base-input-text',
+        data: '',
+        inputType: 'number'
+      },
+      {
+        title: 'Cell B',
+        key: 'CELL_B',
+        className: '',
+        componentType: 'base-input-text',
+        data: '',
+        inputType: 'number'
+      },
+      {
+        title: 'Cell C',
+        key: 'CELL_C',
+        className: '',
+        componentType: 'base-input-text',
+        data: '',
+        inputType: 'number'
+      },
+      {
+        title: 'Cell Alpha',
+        key: 'CELL_ALPHA',
+        className: '',
+        componentType: 'base-input-text',
+        data: '',
+        inputType: 'number'
+      },
+      {
+        title: 'Cell Beta',
+        key: 'CELL_BETA',
+        className: '',
+        componentType: 'base-input-text',
+        data: '',
+        inputType: 'number'
+      },
+      {
+        title: 'Cell Gamma',
+        key: 'CELL_GAMMA',
+        className: '',
+        componentType: 'base-input-text',
+        data: '',
+        inputType: 'number'
+      },
+      {
+        title: '',
+        key: '',
+        className: '',
+        componentType: 'base-input-text',
+        data: '',
+        inputType: 'text'
+      })
+
+      return sortBy(uniqBy(list, 'key'), 'key')
+    },
   },
   methods: {
     switchTabColumn(name) {
@@ -352,13 +500,30 @@ export default {
           break
       }
       this.containerSamplesGroupData = changedSampleGroupsData
+    },
+    resetSelectedEditableColumn(value) {
+      this.selectedEditableColumn = this.mappedEditableColumns.find(column => column.key === value)
+      this.selectedFieldValue = ''
+    },
+    updateSelectedFieldValue(newValue) {
+      if (newValue && this.selectedEditableColumn.key) {
+        this.samples.forEach((sample, index) => {
+          if (sample['BLSAMPLEID']) {
+            const path = `samples/${index}/${this.selectedEditableColumn.key}`
+            this.$store.commit('samples/updateSamplesField', { path, value: newValue } )
+          }
+        })
+      }
     }
   },
   watch: {
     currentlyEditingRow(newValue) {
       this.editingRow = newValue
+    },
+    selectedFieldValue: {
+      handler: 'updateSamplesFieldWithData',
     }
-  }
+  },
 }
 </script>
 <style scoped>

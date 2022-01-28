@@ -130,7 +130,15 @@ module.exports = {
         'plot-legend-background': '#dddddd',
 
 // Modal
-        'modal-header-background': '#e9e9e9'
+        'modal-header-background': '#e9e9e9',
+
+// Sample Status
+        'auto-integrated': '#77dd77',
+        'data-collected': '#87ceeb',
+        'auto-indexed': '#ffb347',
+        'screened': '#fdfd96',
+        'grid-scanned': '#fdfd96',
+        'loaded-by-robot': '#ff6961'
       }
     }
   },
