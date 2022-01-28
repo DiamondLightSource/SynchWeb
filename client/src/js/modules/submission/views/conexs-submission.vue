@@ -5,8 +5,6 @@
         <button name="quantumEspressoTabButton" ref="quantumEspressoTabButton" class="button" v-on:click="tabDisplay($event)">Quantum Espresso</button>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <span>Cluster status: {{ clusterStatus }}</span>&nbsp;&nbsp;&nbsp;<i v-if="clusterStatus != 'Running' && clusterStatus != 'Sleeping' && clusterStatus != 'Unavailable'" class="fa icon grey fa-cog fa-spin"></i>
-        <!--THIS IS TO EASILY SWAP BETWEEN K8S AND WS ENDPOINTS AND SHOULD BE REMOVED BEFORE GOING TO PRODUCTION!!-->
-        <span>IP:Port:<input type="text" v-model="baseURL" style="width:200px"/></span>
         <br />
 
         <form v-on:submit.prevent="onSubmit" method="post" id="submit-orca" v-bind:class="{loading: isLoading}" style="border:1px solid #ccc">
@@ -15,6 +13,25 @@
             <label class="left">Input file already exists (*.inp)?</label>
             <input type="file" ref="inputFile" v-on:change="setInputFile($event)"/>
             <button type="button" ref="clearInputFile" name="clearInputFile" class="button" v-on:click="clearFile($event)">Clear </button>
+
+            <br /><br />
+
+            <div v-if="form != 'orca'">
+                <label class="left">Element:</label>
+                <select name="element" v-model="element" v-on:change="overviewBuilder()">
+                    <option v-for="e in elements">{{ e['element'] }}</option>
+                </select>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                <label class="notLeft">Absorption edge:</label>
+                <select name="absorbEdge" v-if="form == 'fdmnes'" v-model="edge" v-on:change="overviewBuilder()">
+                    <option v-for="edge in fdmnes_abs_edge">{{ edge }}</option>
+                </select>
+                <select name="absorbEdge" v-if="form == 'qe'" v-model="edge" v-on:change="overviewBuilder()">
+                    <option v-for="edge in qe_abs_edge">{{ edge }}</option>
+                </select>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
 
             <section id="orcaTab" v-bind:style="{display: orcaDisplay}">
                 <div style="float:right; width:40%; height:30%">
@@ -92,10 +109,10 @@
                     <li>
                         <label class="left" >Which technique?</label>
                         <input type="radio" id="Xas" name="technique" value="Xas" checked="checked" v-model="technique" v-on:change="overviewBuilder()">
-                        <label class="notLeft" style="margin-left:5px" for="Xas">Xas</label>
+                        <label class="notLeft" style="margin-left:5px" for="Xas">XAS</label>
                         &nbsp;&nbsp;&nbsp;
                         <input type="radio" id="Xes" name="technique" value="Xes" v-model="technique" v-on:change="overviewBuilder()">
-                        <label class="notLeft" style="margin-left:5px" for="Xes">Xes</label>
+                        <label class="notLeft" style="margin-left:5px" for="Xes">XES</label>
                     </li>
                     <li>
                         <label class="left">Functional:</label>
@@ -150,7 +167,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         <span v-if="errors.has('orbWin1Stop')" class="errormessage ferror">{{ errors.first('orbWin1Stop') }}</span>
                     </li>
                     <li>
-                        <label class="left">Load structure (*xyz, *txt, *dat):</label>
+                        <label class="left">Load structure (.xyz, .gmnt):</label>
                         <input type="file" ref="orcaStructureFile" v-on:change="setStructureFile($event); overviewBuilder($event)" title="Use file for structure (must be in correct format) or manually add structure using Atoms"/>
                         <button type="button" ref="clearStructureFile" name="clearStructureFile" class="button" v-on:click="clearFile($event)">Clear</button>
                     </li>
@@ -158,24 +175,16 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             </section>
 
             <section id="fdmnesTab" v-bind:style="{display: fdmnesDisplay}">
+                <div style="float:right; width:40%; height:30%">
+                    <span><a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
+
+                    <p>FDMNES, for Finite Difference Method Near Edge Structure, uses the density functional theory (DFT). It is thus specially devoted to the simulation of the K edges of all the chemical elements and of the L23 edges of the heavy ones.</p>
+                </div>
+                <br />
                 <ul>
                     <li>
                         <label class="left">Result filename (no extension) </label>
                         <input type="text" name="fdemnes_result_file" v-model="fdmnes_result_file" v-on:change="overviewBuilder()">
-                    </li>
-
-                    <li>
-                        <label class="left">Element:</label>
-                        <select name="element" v-model="element" v-on:change="overviewBuilder()">
-                            <option v-for="e in elements">{{ e['element'] }}</option>
-                        </select>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-                        <label class="notLeft">Absorption edge:</label>
-                        <select name="absorbEdge" v-model="fdmnes_edge" v-on:change="overviewBuilder()">
-                            <option v-for="edge in fdmnes_abs_edge">{{ edge }}</option>
-                        </select>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     </li>
 
                     <li>
@@ -192,7 +201,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         </select>
                     </li>
                     <li>
-                        <label class="left">Load structure (*xyz, *txt, *dat):</label>
+                        <label class="left">Load structure (.cif, .pdb):</label>
                         <input type="file" ref="fdmnesStructureFile" v-on:change="setStructureFile($event); overviewBuilder($event)"/>
                         <button type="button" ref="clearStructureFile" name="clearStructureFile" class="button" v-on:click="clearFile($event)">Clear</button>
                     </li>
@@ -203,182 +212,25 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 <br /><br />
                 <label>Cards</label>
                 <br /><br />
-                <button type="button" name="controlCardBtn" ref="controlCardBtn" class="button" v-on:click="cardDisplay($event)">CONTROL</button>
                 <button type="button" name="systemCardBtn" ref="systemCardBtn" class="button" v-on:click="cardDisplay($event)">SYSTEM</button>
-                <button type="button" name="electronsCardBtn" ref="electronsCardBtn" class="button" v-on:click="cardDisplay($event)">ELECTRONS</button>
-                <button type="button" name="atomicSpeciesCardBtn" ref="atomicSpeciesCardBtn" class="button" v-on:click="cardDisplay($event)">ATOMIC_SPECIES</button>
                 <button type="button" name="atomicPositionCardBtn" ref="atomicPositionCardBtn" class="button" v-on:click="cardDisplay($event)">ATOMIC_POSITION</button>
                 <button type="button" name="cellParamsCardBtn" ref="cellParamsCardBtn" class="button" v-on:click="cardDisplay($event)">CELL_PARAMETERS</button>
 
                 <br /><br />
 
-                <section id="controlCard" name="controlCard" v-if="card == 'control' && quantumEspressoDisplay == 'inline'">
-                    <ul>
-                        <li>
-                            <label class="left">Title:</label>
-                            <input type="text" name="title" v-model="title" v-on:change="overviewBuilder()"/>
-                        </li>
-                        <li>
-                            <label class="left">Calculation type:</label>
-                            <select name="calculationType" v-model="calculation" v-on:change="overviewBuilder()">
-                                <option>scf</option>
-                                <option>nscf</option>
-                                <option>bands</option>
-                                <option>relax</option>
-                                <option>md</option>
-                                <option>vc-relax</option>
-                                <option>vc-md</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label class="left">Verbosity:</label>
-                            <select name="verbosity" v-model="verbosity" v-on:change="overviewBuilder()">
-                                <option>low</option>
-                                <option>high</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label class="left">Restart mode:</label>
-                            <select name="restartMode" v-model="restart_mode" v-on:change="overviewBuilder()">
-                                <option>from_scratch</option>
-                                <option>restart</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label class="left">N of optimisation steps</label>
-                            <input type="text" name="nsteps" v-model="nstep" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('nsteps')}" v-validate="'required|decimal'"/>
-                            <span v-if="errors.has('nsteps')" class="errormessage ferror">{{ errors.first('nsteps') }}</span>
-                        </li>
-                        <li>
-                            <label class="left">Calculate forces?</label>
-                            <input type="radio" id="no" name="forces" value=".FALSE." checked="checked" v-model="forces" v-on:change="overviewBuilder()">
-                            <label class="notLeft" style="margin-left:5px" for="no">.false.</label>
-                            &nbsp;&nbsp;&nbsp;
-                            <input type="radio" id="yes" name="forces" value=".TRUE." v-model="forces" v-on:change="overviewBuilder()">
-                            <label class="notLeft" style="margin-left:5px" for="yes">.true.</label>
-                        </li>
-                        <li>
-                            <label class="left">Total E conv. threshold (a.u.):</label>
-                            <input type="text" name="threshold" v-model="etot_conv_thr" v-on:change="overviewBuilder()"/>
-                        </li>
-                        <li>
-                            <label class="left">Prefix</label>
-                            <input type="text" name="prefix" v-model="prefix" v-on:change="overviewBuilder()"/>
-                        </li>
-                    </ul>
-                </section>
-
                 <section id="systemCard" name="systemCard" v-if="card == 'system' && quantumEspressoDisplay == 'inline'">
                     <ul>
                         <li>
-                            <label class="left">nat:</label>
-                            <input type="text" name="nat" v-model="nat" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('nat')}" v-validate="'required|numeric|min_value:1|max_value:100'"/>
-                            <span v-if="errors.has('nat')" class="errormessage ferror">{{ errors.first('nat') }}</span>
-                        </li>
-                        <li>
-                            <label class="left">ntyp:</label>
-                            <input type="text" name="ntyp" v-model="ntyp" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('ntyp')}" v-validate="'required|numeric|min_value:1|max_value:100'"/>
-                            <span v-if="errors.has('ntyp')" class="errormessage ferror">{{ errors.first('ntyp') }}</span>
-                        </li>
-                        <li>
-                            <label class="left">ecutwfc:</label>
-                            <input type="text" name="ecutwfc" v-model="ecutwfc" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('ecutwfc')}" v-validate="'required|decimal'"/>
-                            <span v-if="errors.has('ecutwfc')" class="errormessage ferror">{{ errors.first('ecutwfc') }}</span>
-                        </li>
-
-                        <!--
-                            This is crazy.
-                            The above 3 fields should be underneath the 4 below but:
-                            The 'nat' field validation rules don't work like this but the others do.
-                            If I comment out occupations, smearing and degauss (but keep ibrav) then it all works
-                            If I uncomment one of the 3 fields then the non working field validation moves to the next field (ntyp or ecutwfc)
-                            If I move nat, ntyp & ecutwfc to the top of this list and keep all fields then everything works (current solution for now)
-
-                            WHAT IS GOING ON?!?!?
-                        -->
-
-                        <li>
-                            <label class="left">Cc ibrav:</label>
-                            <input type="text" name="ibrav" v-model="ibrav" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('ibrav')}" v-validate="'required|decimal'"/>
-                            <span v-if="errors.has('ibrav')" class="errormessage ferror">{{ errors.first('ibrav') }}</span>
-                        </li>
-                        <li>
-                            <label class="left">Cc occupations qq:</label>
-                            <select name="occupations" v-model="occupations" v-on:change="overviewBuilder()">
-                                <option>smearing</option>
-                                <option>tetrahedra</option>
-                                <option>tetrahedra_lin</option>
-                                <option>tetrahedra_opt</option>
-                                <option>fixed</option>
-                                <option>form_input</option>
+                            <label class="left">Conductivity:</label>
+                            <select name="conductivity" v-model="conductivity" v-on:change="overviewBuilder()">
+                                <option>metallic</option>
+                                <option>semiconductor</option>
+                                <option>insulator</option>
                             </select>
-                        </li>
-                        <li>
-                            <label class="left">Cc smearing qq:</label>
-                            <select name="smearing" v-model="smearing" v-on:change="overviewBuilder()">
-                                <option>gaussian</option>
-                                <option>methfezzel-paxton</option>
-                                <option>marzari-vanderbilt</option>
-                                <option>fermi-dirac</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label class="left">Cc degauss:</label>
-                            <input type="text" name="degauss" v-model="degauss" v-on:change="overviewBuilder()"/>
                         </li>
                     </ul>
                 </section>
 
-                <section id="electronsCard" name="electronsCard" v-if="card == 'electrons' && quantumEspressoDisplay == 'inline'">
-                    <ul>
-                        <li>
-                            <label class="left">Cc diagonalization qq:</label>
-                            <select name="diagonilization" v-model="disagonalization" v-on:change="overviewBuilder()">
-                                <option>david</option>
-                                <option>cg</option>
-                                <option>ppcg</option>
-                                <option>paro</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label class="left">Cc electrion maxstep:</label>
-                            <input type="text" name="electronMaxstep" v-model="electron_maxstep" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('electronMaxstep')}" v-validate="'required|decimal'"/>
-                            <span v-if="errors.has('electronMaxstep')" class="errormessage ferror">{{ errors.first('electronMaxstep') }}</span>
-                        </li>
-                        <li>
-                            <label class="left">Cc mixing beta:</label>
-                            <input type="text" name="mixingBeta" v-model="mixing_beta" v-on:change="overviewBuilder()"/>
-                        </li>
-                    </ul>
-                </section>
-
-                <section id="atomicSpeciesCard" name="atomicSpeciesCard" v-if="card == 'atomic' && quantumEspressoDisplay == 'inline'">
-                    <ul>
-                        <li>
-                            <label class="left">Pseudopotentials:</label>
-                            <table-component
-                                :headers="[{key: 'Element', title: 'Element'}, {key: 'Filename', title: 'Filename'}]"
-                                :data="qePseudos"
-                                actions="Actions"
-                                addRow="addRow"
-                                style="width:40%"
-                            >
-                                <template slot="actions" slot-scope="{ row }">
-                                    <button type="button" class="button" v-on:click="removePseudo(row.ID); overviewBuilder()">Remove</button>
-                                </template>
-                                <template slot="addRow" slot-scope="{ row }">
-                                    <td>
-                                        <select name="atom" v-model="atom">
-                                            <option v-for="e in elements">{{ e['element'] }}</option>
-                                        </select>
-                                    </td>
-                                    <td><input type="file" ref="pseudoFile" name="pseudoFile" v-on:change="setPseudoFile($event)"/></td>
-                                    <td><button class="button" type="button" v-on:click="addPseudo(); overviewBuilder()">Add</button></td>
-                                </template>
-                            </table-component>
-                        </li>
-                    </ul>
-                </section>
                 <section id="atomicPositionCard" name="atomicPositionCard" v-if="card == 'position' && quantumEspressoDisplay == 'inline'">
                     <ul>
                         <li>
@@ -404,7 +256,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                                 <template slot="addRow" slot-scope="{ row }">
                                     <td>
                                         <select name="atom" v-model="atom">
-                                            <option v-for="e in elements">{{ e['element'] }}</option>
+                                            <option v-for="e in ppElements">{{ e['element'] }}</option>
                                         </select>
                                     </td>
                                     <td><input type="text" v-model="atomX" name="atomX" v-bind:class="{ferror: errors.has('atomX')}" v-validate="'required|decimal|min_value:-100|max_value:100'"/></td>
@@ -451,29 +303,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 <!-- This gets pushed out of alignment because li tags inside a form are considered flex containers. This means the helper text floating right is in the way and pushes it out
                     We can fix it by adding display: block but the same will happen to other elements if the page is resized. -->
                 <li>
-                    <label class="left">Overview (cannot edit!):</label>
-                    <textarea id="fileContents" v-bind:value="inputFileContents" v-bind:rows="textAreaRows" v-bind:cols="textAreaColumns" style="width:auto;height:auto" title="Job overview to be submitted to the calculation cluster" readonly>
-                    </textarea>
-                </li>
-
-                <li v-if="fdmnesDisplay == 'inline'">
-                    <label class="left">Params:</label>
-                    <table-component
-                        :headers="fdmnesParameterHeaders"
-                        :data="fdmnesParams"
-                    >
-                        <template slot="content" slot-scope="{ row }">
-                            <td><input type="text" v-model="fdmnesParams[0].A" name="fdmnesParamA" v-bind:class="{ferror: errors.has('fdmnesParamA')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].B" name="fdmnesParamB" v-bind:class="{ferror: errors.has('fdmnesParamB')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].C" name="fdmnesParamC" v-bind:class="{ferror: errors.has('fdmnesParamC')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].Alpha" name="fdmnesParamAlpha" v-bind:class="{ferror: errors.has('fdmnesParamAlpha')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].Beta" name="fdmnesParamBeta" v-bind:class="{ferror: errors.has('fdmnesParamBeta')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].Gamma" name="fdmnesParamGamma" v-bind:class="{ferror: errors.has('fdmnesParamGamma')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
-                        </template>
-                    </table-component>
-                </li>
-
-                <li>
                     <label v-if="quantumEspressoDisplay != 'inline'" class="left">Atoms:</label>
                     <table-component
                         :headers="atomHeaders"
@@ -482,6 +311,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         addRow="addRow"
                         v-if="orcaDisplay == 'inline' || fdmnesDisplay == 'inline'"
                         title="Define system structure as atom and position (Angstrom)"
+                        style="padding-bottom: 0px"
                     >
                         <template slot="actions" slot-scope="{ row }">
                             <button type="button" class="button" v-on:click="removeAtom(row.ID); overviewBuilder()">Remove</button> 
@@ -499,21 +329,47 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         </template>
                     </table-component>
                 </li>
+
+                <li v-if="fdmnesDisplay == 'inline'">
+                    <label class="left">Params:</label>
+                    <table-component
+                        :headers="fdmnesParameterHeaders"
+                        :data="fdmnesParams"
+                        style="padding-bottom: 0px"
+                    >
+                        <template slot="content" slot-scope="{ row }">
+                            <td><input type="text" v-model="fdmnesParams[0].A" name="fdmnesParamA" v-bind:class="{ferror: errors.has('fdmnesParamA')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
+                            <td><input type="text" v-model="fdmnesParams[0].B" name="fdmnesParamB" v-bind:class="{ferror: errors.has('fdmnesParamB')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
+                            <td><input type="text" v-model="fdmnesParams[0].C" name="fdmnesParamC" v-bind:class="{ferror: errors.has('fdmnesParamC')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
+                            <td><input type="text" v-model="fdmnesParams[0].Alpha" name="fdmnesParamAlpha" v-bind:class="{ferror: errors.has('fdmnesParamAlpha')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
+                            <td><input type="text" v-model="fdmnesParams[0].Beta" name="fdmnesParamBeta" v-bind:class="{ferror: errors.has('fdmnesParamBeta')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
+                            <td><input type="text" v-model="fdmnesParams[0].Gamma" name="fdmnesParamGamma" v-bind:class="{ferror: errors.has('fdmnesParamGamma')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
+                        </template>
+                    </table-component>
+                </li>
+
+                <li>
+                    <label class="left">Overview (cannot edit!):</label>
+                    <textarea id="fileContents" v-bind:value="inputFileContents" v-bind:rows="textAreaRows" v-bind:cols="textAreaColumns" style="width:auto;height:auto" title="Job overview to be submitted to the calculation cluster" readonly>
+                    </textarea>
+                </li>
+
                 <li>
                     <label class="left">Save input file:</label>
                     <button type="button" class="button" v-on:click="downloadFileContents()">Download</button>
                 </li>
                 <li>
                     <label class="left">CPUs: </label>
-                    <input type="text" name="cpus" v-model="cpus" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('cpus')}" v-validate="'required|decimal'"/>
+                    <input type="text" name="cpus" v-model="cpus" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('cpus')}" v-validate="'required|numeric|min_value:1|max_value:10'"/>
                     <span v-if="errors.has('cpus')" class="errormessage ferror">{{ errors.first('cpus') }}</span>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <label class="notLeft">Memory required in Gb:</label>
-                    <input type="text" name="memory" v-model="memory" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('memory')}" v-validate="'required|decimal'"/>
+                    <input type="text" name="memory" v-model="memory" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('memory')}" v-validate="'required|numeric|min_value:1|max_value:32'"/>
                     <span v-if="errors.has('memory')" class="errormessage ferror">{{ errors.first('memory') }}</span>
-                    <!-- SWAP THE TWO BUTTONS BELOW FOR PRODUCTION (Will disable submit if cluster not ready) -->
-                    <!--<button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled">SUBMIT</button>-->
-                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)">SUBMIT</button>
+                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled">SUBMIT</button>
+                </li>
+                <li>
+                    <span style="font-size:14px">On successful submission, your results will be sent to the e-mail address associated with your fedid</span>
                 </li>
 
                 <hr style="border:1px solid #ccc"/>
@@ -561,41 +417,41 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 memory: 16,
                 output: '',
                 elements: [
-                    {'element': 'H', 'number': 1, 'mass': 1.0078}, {'element': 'He', 'number': 2, 'mass': 4.0026}, {'element': 'Li', 'number': 3, 'mass': 6.94},
-                    {'element': 'Be', 'number': 4, 'mass': 9.0122}, {'element': 'B', 'number': 5, 'mass': 10.81}, {'element': 'C', 'number': 6, 'mass': 12.011},
-                    {'element': 'N', 'number': 7, 'mass': 14.007}, {'element': 'O', 'number': 8, 'mass': 15.999}, {'element': 'F', 'number': 9, 'mass': 18.9984},
-                    {'element': 'Ne', 'number': 10, 'mass': 20.1797}, {'element': 'Na', 'number': 11, 'mass': 22.9898}, {'element': 'Mg', 'number': 12, 'mass': 24.305},
-                    {'element': 'Al', 'number': 13, 'mass': 26.9815}, {'element': 'Si', 'number': 14, 'mass': 28.085}, {'element': 'P', 'number': 15, 'mass': 30.9738},
-                    {'element': 'S', 'number': 16, 'mass': 32.06}, {'element': 'Cl', 'number': 17, 'mass': 35.453}, {'element': 'Ar', 'number': 18, 'mass': 39.948},
-                    {'element': 'K', 'number': 19, 'mass': 39.0983}, {'element': 'Ca', 'number': 20, 'mass': 40.078}, {'element': 'Sc', 'number': 21, 'mass': 44.9559},
-                    {'element': 'Ti', 'number': 22, 'mass': 47.867}, {'element': 'V', 'number': 23, 'mass': 50.9415}, {'element': 'Cr', 'number': 24, 'mass': 51.996},
-                    {'element': 'Mn', 'number': 25, 'mass': 54.938}, {'element': 'Fe', 'number': 26, 'mass': 55.845}, {'element': 'Co', 'number': 27, 'mass': 58.9332},
-                    {'element': 'Ni', 'number': 28, 'mass': 58.6934}, {'element': 'Cu', 'number': 29, 'mass': 63.546}, {'element': 'Zn', 'number': 30, 'mass': 65.38},
-                    {'element': 'Ga', 'number': 31, 'mass': 69.72}, {'element': 'Ge', 'number': 32, 'mass': 72.63}, {'element': 'As', 'number': 33, 'mass': 74.9216},
-                    {'element': 'Se', 'number': 34, 'mass': 78.971}, {'element': 'Br', 'number': 35, 'mass': 79.904}, {'element': 'Kr', 'number': 36, 'mass': 83.798},
-                    {'element': 'Rb', 'number': 37, 'mass': 85.4678}, {'element': 'Sr', 'number': 38, 'mass': 87.62}, {'element': 'Y', 'number': 39, 'mass': 88.9058},
-                    {'element': 'Zr', 'number': 40, 'mass': 91.224}, {'element': 'Nb', 'number': 41, 'mass': 92.9064}, {'element': 'Mo', 'number': 42, 'mass': 95.95},
-                    {'element': 'Tc', 'number': 43, 'mass': 97.907}, {'element': 'Ru', 'number': 44, 'mass': 101.07}, {'element': 'Rh', 'number': 45, 'mass': 102.906},
-                    {'element': 'Pd', 'number': 46, 'mass': 106.42}, {'element': 'Ag', 'number': 47, 'mass': 107.868}, {'element': 'Cd', 'number': 48, 'mass': 112.414},
-                    {'element': 'In', 'number': 49, 'mass': 114.818}, {'element': 'Sn', 'number': 50, 'mass': 118.71}, {'element': 'Sb', 'number': 51, 'mass': 121.76},
-                    {'element': 'Te', 'number': 52, 'mass': 127.6}, {'element': 'I', 'number': 53, 'mass': 126.905}, {'element': 'Xe', 'number': 54, 'mass': 131.293},
-                    {'element': 'Cs', 'number': 55, 'mass': 132.905}, {'element': 'Ba', 'number': 56, 'mass': 137.327}, {'element': 'La', 'number': 57, 'mass': 138.905},
-                    {'element': 'Ce', 'number': 58, 'mass': 140.116}, {'element': 'Pr', 'number': 59, 'mass': 140.908}, {'element': 'Nd', 'number': 60, 'mass': 144.242},
-                    {'element': 'Pm', 'number': 61, 'mass': 145.0}, {'element': 'Sm', 'number': 62, 'mass': 150.36}, {'element': 'Eu', 'number': 63, 'mass': 151.96},
-                    {'element': 'Gd', 'number': 64, 'mass': 157.25}, {'element': 'Tb', 'number': 65, 'mass': 158.925}, {'element': 'Dy', 'number': 66, 'mass': 162.5},
-                    {'element': 'Ho', 'number': 67, 'mass': 164.93}, {'element': 'Er', 'number': 68, 'mass': 167.259}, {'element': 'Tm', 'number': 69, 'mass': 168.934},
-                    {'element': 'Yb', 'number': 70, 'mass': 173.045}, {'element': 'Lu', 'number': 71, 'mass': 174.967}, {'element': 'Hf', 'number': 72, 'mass': 178.49},
-                    {'element': 'Ta', 'number': 73, 'mass': 180.948}, {'element': 'W', 'number': 74, 'mass': 183.84}, {'element': 'Re', 'number': 75, 'mass': 186.207},
-                    {'element': 'Os', 'number': 76, 'mass': 190.23}, {'element': 'Ir', 'number': 77, 'mass': 192.217}, {'element': 'Pt', 'number': 78, 'mass': 195.084},
-                    {'element': 'Au', 'number': 79, 'mass': 196.967}, {'element': 'Hg', 'number': 80, 'mass': 200.592}, {'element': 'Tl', 'number': 81, 'mass': 204.383},
-                    {'element': 'Pb', 'number': 82, 'mass': 207.2}, {'element': 'Bi', 'number': 83, 'mass': 208.98}, {'element': 'Po', 'number': 84, 'mass': 209.0},
-                    {'element': 'At', 'number': 85, 'mass': 210.0}, {'element': 'Rn', 'number': 86, 'mass': 222.0}, {'element': 'Fr', 'number': 87, 'mass': 223.0},
-                    {'element': 'Ra', 'number': 88, 'mass': 226.0}, {'element': 'Ac', 'number': 89, 'mass': 227.0}, {'element': 'Th', 'number': 90, 'mass': 232.038},
-                    {'element': 'Pa', 'number': 91, 'mass': 231.036}, {'element': 'U', 'number': 92, 'mass': 238.029}, {'element': 'Np', 'number': 93, 'mass': 237.048},
-                    {'element': 'Pu', 'number': 94, 'mass': 239.052}, {'element': 'Am', 'number': 95, 'mass': 243.0}, {'element': 'Cm', 'number': 96, 'mass': 247.0},
-                    {'element': 'Bk', 'number': 97, 'mass': 247.0}, {'element': 'Cf', 'number': 98, 'mass': 251.0}
+                    {'element': 'H', 'number': 1, 'mass': 1.0078, 'pseudopotential': 'H.pbe-rrkjus_gipaw.UPF'}, {'element': 'He', 'number': 2, 'mass': 4.0026, 'pseudopotential': 'He.pbe-rrkjus_gipaw.UPF'}, {'element': 'Li', 'number': 3, 'mass': 6.94, 'pseudopotential': 'Li.pbe-s-rrkjus_gipaw.UPF'},
+                    {'element': 'Be', 'number': 4, 'mass': 9.0122, 'pseudopotential': 'Be.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'B', 'number': 5, 'mass': 10.81, 'pseudopotential': 'B.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'C', 'number': 6, 'mass': 12.011, 'pseudopotential': 'C.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'N', 'number': 7, 'mass': 14.007, 'pseudopotential': 'N.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'O', 'number': 8, 'mass': 15.999, 'pseudopotential': 'O.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'F', 'number': 9, 'mass': 18.9984, 'pseudopotential': 'F.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'Ne', 'number': 10, 'mass': 20.1797, 'pseudopotential': 'Ne.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Na', 'number': 11, 'mass': 22.9898, 'pseudopotential': 'Na.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Mg', 'number': 12, 'mass': 24.305, 'pseudopotential': 'Mg.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Al', 'number': 13, 'mass': 26.9815, 'pseudopotential': 'Al.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Si', 'number': 14, 'mass': 28.085, 'pseudopotential': 'Si.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'P', 'number': 15, 'mass': 30.9738, 'pseudopotential': 'P.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'S', 'number': 16, 'mass': 32.06, 'pseudopotential': 'S.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Cl', 'number': 17, 'mass': 35.453, 'pseudopotential': 'Cl.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Ar', 'number': 18, 'mass': 39.948, 'pseudopotential': 'Ar.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'K', 'number': 19, 'mass': 39.0983, 'pseudopotential': 'K.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Ca', 'number': 20, 'mass': 40.078, 'pseudopotential': 'Ca.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Sc', 'number': 21, 'mass': 44.9559, 'pseudopotential': 'Sc.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Ti', 'number': 22, 'mass': 47.867, 'pseudopotential': 'Ti.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'V', 'number': 23, 'mass': 50.9415, 'pseudopotential': 'V.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Cr', 'number': 24, 'mass': 51.996, 'pseudopotential': 'Cr.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Mn', 'number': 25, 'mass': 54.938, 'pseudopotential': 'Mn.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Fe', 'number': 26, 'mass': 55.845, 'pseudopotential': 'Fe.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Co', 'number': 27, 'mass': 58.9332, 'pseudopotential': 'Co.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'Ni', 'number': 28, 'mass': 58.6934, 'pseudopotential': 'Ni.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Cu', 'number': 29, 'mass': 63.546, 'pseudopotential': 'Cu.pbe-dn-rrkjus_gipaw.UPF'}, {'element': 'Zn', 'number': 30, 'mass': 65.38, 'pseudopotential': 'Zn.pbe-dn-rrkjus_gipaw.UPF'},
+                    {'element': 'Ga', 'number': 31, 'mass': 69.72, 'pseudopotential': 'Ga.pbe-dn-rrkjus_gipaw.UPF'}, {'element': 'Ge', 'number': 32, 'mass': 72.63, 'pseudopotential': 'Ge.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'As', 'number': 33, 'mass': 74.9216, 'pseudopotential': 'As.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'Se', 'number': 34, 'mass': 78.971, 'pseudopotential': 'Se.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Br', 'number': 35, 'mass': 79.904, 'pseudopotential': 'Br.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Kr', 'number': 36, 'mass': 83.798, 'pseudopotential': 'Kr.pbe-dn-rrkjus_gipaw.UPF'},
+                    {'element': 'Rb', 'number': 37, 'mass': 85.4678, 'pseudopotential': 'Rb.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Sr', 'number': 38, 'mass': 87.62, 'pseudopotential': 'Sr.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Y', 'number': 39, 'mass': 88.9058, 'pseudopotential': 'Y.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Zr', 'number': 40, 'mass': 91.224, 'pseudopotential': 'Zr.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Nb', 'number': 41, 'mass': 92.9064, 'pseudopotential': 'Nb.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Mo', 'number': 42, 'mass': 95.95, 'pseudopotential': 'Mo.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Tc', 'number': 43, 'mass': 97.907, 'pseudopotential': 'Tc.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Ru', 'number': 44, 'mass': 101.07, 'pseudopotential': 'Ru.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Rh', 'number': 45, 'mass': 102.906, 'pseudopotential': 'Rh.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Pd', 'number': 46, 'mass': 106.42, 'pseudopotential': 'Pd.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Ag', 'number': 47, 'mass': 107.868, 'pseudopotential': 'Ag.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Cd', 'number': 48, 'mass': 112.414, 'pseudopotential': 'Cd.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'In', 'number': 49, 'mass': 114.818, 'pseudopotential': 'In.pbe-dn-rrkjus_gipaw.UPF'}, {'element': 'Sn', 'number': 50, 'mass': 118.71, 'pseudopotential': 'Sn.pbe-dn-rrkjus_gipaw.UPF'}, {'element': 'Sb', 'number': 51, 'mass': 121.76, 'pseudopotential': 'Sb.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'Te', 'number': 52, 'mass': 127.6, 'pseudopotential': 'Te.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'I', 'number': 53, 'mass': 126.905, 'pseudopotential': 'I.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Xe', 'number': 54, 'mass': 131.293, 'pseudopotential': 'Xe.pbe-dn-rrkjus_gipaw.UPF'},
+                    {'element': 'Cs', 'number': 55, 'mass': 132.905, 'pseudopotential': 'Cs.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Ba', 'number': 56, 'mass': 137.327, 'pseudopotential': 'Ba.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'La', 'number': 57, 'mass': 138.905, 'pseudopotential': 'La.pbe-spfn-rrkjus_gipaw.UPF'},
+                    {'element': 'Ce', 'number': 58, 'mass': 140.116, 'pseudopotential': 'Ce.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Pr', 'number': 59, 'mass': 140.908, 'pseudopotential': 'Pr.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Nd', 'number': 60, 'mass': 144.242, 'pseudopotential': 'Nd.pbe-spdn-rrkjus_gipaw.UPF'},
+                    {'element': 'Pm', 'number': 61, 'mass': 145.0, 'pseudopotential': 'Pm.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Sm', 'number': 62, 'mass': 150.36, 'pseudopotential': 'Sm.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Eu', 'number': 63, 'mass': 151.96, 'pseudopotential': 'Eu.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Gd', 'number': 64, 'mass': 157.25, 'pseudopotential': 'Gd.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Tb', 'number': 65, 'mass': 158.925, 'pseudopotential': 'Tb.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Dy', 'number': 66, 'mass': 162.5, 'pseudopotential': 'Dy.pbe-spdn-rrkjus_gipaw.UPF'},
+                    {'element': 'Ho', 'number': 67, 'mass': 164.93, 'pseudopotential': 'Ho.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Er', 'number': 68, 'mass': 167.259, 'pseudopotential': 'Er.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Tm', 'number': 69, 'mass': 168.934, 'pseudopotential': 'Tm.pbe-spdn-rrkjus_gipaw.UPF'},
+                    {'element': 'Yb', 'number': 70, 'mass': 173.045, 'pseudopotential': 'Yb.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Lu', 'number': 71, 'mass': 174.967, 'pseudopotential': 'Lu.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Hf', 'number': 72, 'mass': 178.49, 'pseudopotential': 'Hf.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Ta', 'number': 73, 'mass': 180.948, 'pseudopotential': 'Ta.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'W', 'number': 74, 'mass': 183.84, 'pseudopotential': 'W.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Re', 'number': 75, 'mass': 186.207, 'pseudopotential': 'Re.pbe-spn-rrkjus_gipaw.UPF'},
+                    {'element': 'Os', 'number': 76, 'mass': 190.23, 'pseudopotential': 'Os.pbe-spn-rrkjus_gipaw.UPF'}, {'element': 'Ir', 'number': 77, 'mass': 192.217, 'pseudopotential': 'Ir.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Pt', 'number': 78, 'mass': 195.084, 'pseudopotential': 'Pt.pbe-n-rrkjus_gipaw.UPF'},
+                    {'element': 'Au', 'number': 79, 'mass': 196.967, 'pseudopotential': 'Au.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Hg', 'number': 80, 'mass': 200.592, 'pseudopotential': 'Hg.pbe-n-rrkjus_gipaw.UPF'}, {'element': 'Tl', 'number': 81, 'mass': 204.383, 'pseudopotential': 'Tl.pbe-dn-rrkjus_gipaw.UPF'},
+                    {'element': 'Pb', 'number': 82, 'mass': 207.2, 'pseudopotential': 'Pb.pbe-dn-rrkjus_gipaw.UPF'}, {'element': 'Bi', 'number': 83, 'mass': 208.98, 'pseudopotential': 'Bi.pbe-dn-rrkjus_gipaw.UPF'}, {'element': 'Po', 'number': 84, 'mass': 209.0, 'pseudopotential': 'Po.pbe-dn-rrkjus_gipaw.UPF'},
+                    {'element': 'At', 'number': 85, 'mass': 210.0, 'pseudopotential': 'At.pbe-dn-rrkjus_gipaw.UPF'}, {'element': 'Rn', 'number': 86, 'mass': 222.0, 'pseudopotential': 'Rn.pbe-dn-rrkjus_gipaw.UPF'}, {'element': 'Fr', 'number': 87, 'mass': 223.0, 'pseudopotential': 'Fr.pbe-spdn-rrkjus_gipaw.UPF'},
+                    {'element': 'Ra', 'number': 88, 'mass': 226.0, 'pseudopotential': 'Ra.pbe-spdn-rrkjus_gipaw.UPF'}, {'element': 'Ac', 'number': 89, 'mass': 227.0, 'pseudopotential': 'Ac.pbe-spfn-rrkjus_gipaw.UPF'}, {'element': 'Th', 'number': 90, 'mass': 232.038, 'pseudopotential': 'Th.pbe-spfn-rrkjus_gipaw.UPF'},
+                    {'element': 'Pa', 'number': 91, 'mass': 231.036, 'pseudopotential': 'Pa.pbe-spfn-rrkjus_gipaw.UPF'}, {'element': 'U', 'number': 92, 'mass': 238.029, 'pseudopotential': 'U.pbe-spfn-rrkjus_gipaw.UPF'}, {'element': 'Np', 'number': 93, 'mass': 237.048, 'pseudopotential': 'Np.pbe-spfn-rrkjus_gipaw.UPF'},
+                    {'element': 'Pu', 'number': 94, 'mass': 239.052, 'pseudopotential': 'Pu.pbe-spfn-rrkjus_gipaw.UPF'}, {'element': 'Am', 'number': 95, 'mass': 243.0, 'pseudopotential': 'Am.pbe-spfn-rrkjus_gipaw.UPF'}
                 ],
                 element: '',
+                edge: '',
                 structureFile: null,
                 atomHeaders: [{key: 'Atom', title: 'Atom'}, {key: 'X', title: 'X'}, {key: 'Y', title: 'Y'}, {key: 'Z', title: 'Z'}],
                 atomData: [],
@@ -654,42 +510,41 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                          'M1', 'M2', 'M3', 'M4', 'M5',
                 ],
                 fdmnes_method: '',
-                fdmnes_edge: '',
                 crystal: '',
                 fdmnesParameterHeaders: [{key: 'A', title: 'A'}, {key: 'B', title: 'B'}, {key: 'C', title: 'C'}, {key: 'Alpha', title: 'Alpha'}, {key: 'Beta', title: 'Beta'}, {key: 'Gamma', title: 'Gamma'}],
                 fdmnesParams: [{A: 0, B: 0, C: 0, Alpha: 90, Beta: 90, Gamma: 90}],
 
 
                 // QUANTUM ESPRESSO
+                qe_abs_edge: ['K', 'L1', 'L2'],
+
                 // Control
                 quantumEspressoDisplay: 'none',
-                card: 'control',
+                card: 'system',
                 title: '',
                 calculation: 'scf',
                 verbosity: 'low',
                 restart_mode: 'from_scratch',
-                nstep: 0,
                 forces: '',
-                etot_conv_thr: '',
+                etot_conv_thr: '1.0000000000d-05',
                 prefix: '',
+                forc_conv_thr: '1.0000000000d-04',
 
                 // System
-                nat: 1,
-                ntyp: 1,
-                ecutwfc: 0,
+                nat: 0,
+                ntyp: 0,
+                ecutwfc: 50,
                 ibrav: 0,
+                conductivity: 'metallic',
                 occupations: '',
                 smearing: '',
                 degauss: '',
+                electronCount: 0,
 
                 // Electrons
-                disagonalization: '',
-                electron_maxstep: 0,
-                mixing_beta: '',
-
-                // Atomic_Species
-                qePseudos: [],
-                psudoFile: null,
+                disagonalization: 'david',
+                electron_maxstep: 50,
+                mixing_beta: 0.2,
 
                 // Atomic_Position
                 atomicPositionType: '',
@@ -708,6 +563,17 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             }
         },
 
+        computed: {
+            // Elements with pseudopotential files - may be deprecated since last set of PP changes
+            ppElements: function(){
+                return this.elements.filter(function(e){
+                    if(e.pseudopotential) {
+                        return e.pseudopotential
+                    }
+                })
+            }
+        },
+
         created: function(){
             this.startCluster()
 
@@ -720,7 +586,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             this.form = 'orca'
 
             //fdmnes
-            this.fdmnes_edge = this.fdmnes_abs_edge[0]
+            this.edge = this.fdmnes_abs_edge[0]
             this.fdmnes_method = 'Green'
             this.crystal = 'Crystal'
 
@@ -734,7 +600,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
         mounted: function(){
             this.$refs.orcaTabButton.classList.add('active')
-            this.$refs.controlCardBtn.classList.add('active')
+            this.$refs.systemCardBtn.classList.add('active')
         },
 
         methods: {
@@ -832,6 +698,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.$refs.inputFile.value = ''
                 this.$refs.orcaStructureFile.value = ''
                 this.$refs.fdmnesStructureFile.value = ''
+                this.structureFile = null
 
                 this.$refs.orcaTabButton.classList.remove('active')
                 this.$refs.fdmnesTabButton.classList.remove('active')
@@ -876,26 +743,14 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             cardDisplay: function(event){
                 var name = event.target.name
 
-                this.$refs.controlCardBtn.classList.remove('active')
                 this.$refs.systemCardBtn.classList.remove('active')
-                this.$refs.electronsCardBtn.classList.remove('active')
-                this.$refs.atomicSpeciesCardBtn.classList.remove('active')
                 this.$refs.atomicPositionCardBtn.classList.remove('active')
                 this.$refs.cellParamsCardBtn.classList.remove('active')
                 this.$refs[name].classList.add('active')
 
                 switch(name){
-                    case "controlCardBtn":
-                        this.card = 'control'
-                        break
                     case "systemCardBtn":
                         this.card = 'system'
-                        break
-                    case "electronsCardBtn":
-                        this.card = 'electrons'
-                        break
-                    case "atomicSpeciesCardBtn":
-                        this.card = 'atomic'
                         break
                     case "atomicPositionCardBtn":
                         this.card = 'position'
@@ -988,8 +843,8 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     this.output += 'end' + "\n\n"
                 }
 
-                if (event && event.target.files[0]) {
-                    var structureFileName = event.target.files[0].name
+                if (event && event.target.files[0] || this.structureFile) {
+                    var structureFileName = this.structureFile ? this.structureFile.name : event.target.files[0].name
 
                     if(structureFileName.endsWith('.xyz')){
                         this.output += "* xyzfile " + this.charge + " " + this.multiplicity + " " + structureFileName + "\n"
@@ -1005,10 +860,10 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     }
                 } else {
                     this.output += '*xyz ' + this.charge + ' ' + this.multiplicity + "\n"
-                }
 
-                for(var i=0; i<this.atomData.length; i++){
-                    this.output += this.atomData[i].Atom + ' ' + this.atomData[i].X + ' ' + this.atomData[i].Y + ' ' + this.atomData[i].Z + "\n"
+                    for(var i=0; i<this.atomData.length; i++){
+                        this.output += this.atomData[i].Atom + ' ' + this.atomData[i].X + ' ' + this.atomData[i].Y + ' ' + this.atomData[i].Z + "\n"
+                    }
                 }
 
                 if(!this.structureFile){
@@ -1026,7 +881,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.output += 'Range' + "\n"
                 this.output += '-10. 0.25 50' + '       !E_min, step, E_intermediate, step ...' + "\n\n"
                 this.output += 'Edge' + "\n"
-                this.output += this.fdmnes_edge + "\n\n"
+                this.output += this.edge + "\n\n"
                 this.output += 'Z_absorber' + "\n"
 
                 for(var i=0; i<this.elements.length; i++){
@@ -1040,7 +895,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.output += this.fdmnes_method + "\n"
                 this.output += 'Quadrupole' + "\n"
 
-                if(this.fdmnes_edge.includes('L'))
+                if(this.edge.includes('L'))
                     this.output += 'Spinorbit' + "\n\n"
                 else
                     this.output += "\n"
@@ -1064,15 +919,15 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 }
                 check()
 
-                if (event && event.target.files[0]) {
-                    var structureFileName = event.target.files[0].name
+                if (event && event.target.files[0] || this.structureFile) {
+                    var structureFileName = this.structureFile ? this.structureFile.name : event.target.files[0].name
 
                     if(structureFileName.endsWith('.cif')){
-                        this.output += 'Cif_file (or Film_Cif_file, when working with a 2D film)' + "\n"
+                        this.output += 'Cif_file' + "\n"
                         this.output += structureFileName
                     }
                     else if(structureFileName.endsWith('.pdb')){
-                        this.output += 'Pdb_file (or Film_Pdb_file, when working with a 2D film)' + "\n"
+                        this.output += 'Pdb_file' + "\n"
                         this.output += structureFileName
                     }
                     else {
@@ -1099,7 +954,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                     ready = true
                 }
-
             },
 
             // Build Quantum Espresso overview file/string based on form inputs or files uploaded
@@ -1109,7 +963,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.output = "&CONTROL \n"
                 this.output += " calculation = \'" + this.calculation + "\'\n"
                 this.output += " etot_conv_thr = " + this.etot_conv_thr + "\n"
-                this.output += " nstep = " + this.nstep + "\n"
                 this.output += " outdir = \'.\/\' \n"
                 this.output += " prefix = \'" + this.prefix + "\' \n"
                 this.output += " pseudo_dir = \'.\/\' \n"
@@ -1117,13 +970,30 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.output += " title = \'" + this.title + "\' \n"
                 this.output += " tprnfor = " + this.forces + "\n"
                 this.output += " verbosity = \'" + this.verbosity + "\' \n"
+                this.output += " forc_conv_thr = " + this.forc_conv_thr + "\n"
                 this.output += "/ \n\n"
 
                 this.output += "&SYSTEM \n"
-                this.output += " degauss = " + this.degauss + "\n"
                 this.output += " ibrav = " + this.ibrav + "\n"
-                this.output += " occupations = " + this.occupations + "\n"
-                this.output += " smearing = " + this.smearing + "\n"
+
+                if(this.conductivity == 'metallic'){
+                    this.occupations = 'smearing'
+                    this.smearing = 'fermi-dirac'
+                    this.degauss = '5.0000000000d-03'
+                    this.output += " occupations = \'" + this.occupations + "\'\n"
+                    this.output += " smearing = \'" + this.smearing + "\'\n"
+                    this.output += " degauss = " + this.degauss + "\n"
+                } else {
+                    this.occupations = ''
+                    this.smearing = ''
+                    this.degauss = ''
+                }
+
+                if((this.electronCount % 2) == 1){
+                    this.output += " nspin = 2 \n"
+                    this.output += " tot_magnetization = 1.0000000000d+00 \n"
+                }
+
                 this.output += " nat = " + this.nat + "\n"
                 this.output += " ntyp = " + this.ntyp + "\n"
                 this.output += " ecutwfc = " + this.ecutwfc + "\n"
@@ -1137,8 +1007,15 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                 this.output += "ATOMIC_SPECIES \n"
 
-                this.qePseudos.forEach(function(item, index){
-                    self.output += item.Element + " " + item.mass + " " + item.Filename + "\n"
+                var ppe = []
+
+                this.atomData.forEach(function(item, index){
+                    self.ppElements.forEach(function(el, idx){
+                        if(el.element == item.Atom && !ppe.includes(el.element)){
+                            self.output += el.element + " " + el.mass + " " + el.pseudopotential + "\n"
+                            ppe.push(el.element)
+                        }
+                    })
                 })
                 this.output += "\n\n"
 
@@ -1150,7 +1027,8 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 })
                 this.output += "\n\n"
 
-                this.output += "K_POINTS gamma\n"
+                this.output += "K_POINTS automatic\n"
+                this.output += "1 1 1 0 0 0\n"
                 this.output += "\n\n"
 
                 this.output += "CELL_PARAMETERS { " + this.cellParamsType + " }\n"
@@ -1225,49 +1103,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.overviewBuilder()
             },
 
-            setPseudoFile: function(event){
-                this.pseudoFile = event.target.files[0]
-            },
-
-            addPseudo: function(){
-                if(!this.pseudoFile || !this.atom){
-                    app.alert({title: 'error', message: 'You must select an element and pseudopotential file!'})
-                    return
-                }
-
-                for(var i=0; i<this.elements.length; i++){
-                    if(this.atom == this.elements[i]['element']){
-
-                        let newPseudo = {
-                            ID: this.qePseudos.length,
-                            Element: this.atom,
-                            mass: this.elements[i]['mass'],
-                            Filename: this.pseudoFile.name,
-                            file: this.pseudoFile
-                        }
-
-                        this.qePseudos[this.qePseudos.length] = newPseudo
-
-                        this.atom = '' //UI isn't great when resetting
-                        this.pseudoFile = null
-                        this.$refs.pseudoFile.value = ''
-                        break
-                    }
-                }
-                this.overviewBuilder()
-            },
-
-            removePseudo: function(pseudoID){
-                var pseudoIndex
-                for(var i = 0; i< this.qePseudos.length; i++){
-                    if(this.qePseudos[i].ID == pseudoID){
-                        pseudoIndex = i
-                        break
-                    }
-                }
-                this.qePseudos.splice(pseudoIndex, 1)
-            },
-
             onSubmit: function(e){
                 e.preventDefault()
                 let self = this
@@ -1283,14 +1118,14 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                             multiplicity: self.multiplicity,
                             memory: self.memory,
                             fedid: app.user,
+                            element: self.element,
 
                             fdmnes_method: self.method,
-                            fdmnes_edge: self.fdmnes_edge,
+                            edge: self.edge,
                             crystal: self.crystal,
 
                             calculation: self.calculation,
                             etot_conv_thr: self.etot_conv_thr,
-                            nstep: self.nstep,
                             prefix: self.prefix,
                             restart_mode: self.restart_mode,
                             title: self.title,
@@ -1323,11 +1158,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                             formData.append('fdmnesStructureFile', self.structureFile)
                         }
 
-                        // Add pseudo files
-                        self.qePseudos.forEach(function(item, index){
-                            formData.append(item.Filename, item.file)
-                        })
-
                         Backbone.ajax({
                             url: self.baseURL + 'upload_' + self.form,
                             data: formData,
@@ -1357,6 +1187,26 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             addAtom: function(){
                 var newAtom
                 if(this.atom){
+
+                    if(this.form == 'qe') {
+                        let self = this
+                        let exists = false
+                        this.atomData.forEach(function(item, index){
+                            if(item.Atom == self.atom){
+                                exists = true
+                            }
+                        })
+                        if(!exists) {
+                            this.ntyp = this.ntyp+1
+                        }
+
+                        this.elements.forEach(function(item, index){
+                            if(item.element == self.atom){
+                                self.electronCount += item.number
+                            }
+                        })
+                    }
+
                     newAtom = {
                         ID: this.atomData.length,
                         Atom: this.atom,
@@ -1366,14 +1216,33 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     }
                     this.atomData[this.atomData.length] = newAtom
 
+                    if(this.structureFile) {
+                        this.structureFile = null
+                        this.$refs.orcaStructureFile.value = ''
+                        this.$refs.fdmnesStructureFile.value = ''
+                    }
+
                     // Select the next available element or loop back to the first
                     // Works around problem described below
-                    for(var i = 0; i<this.elements.length; i++){
-                        if(this.elements[i].element == this.atom){
-                            if(i == this.elements.length -1){
-                                this.atom = 'H'
-                            } else {
-                                this.atom = this.elements[++i].element
+                    // QE uses a computed subset of elements
+                    if(this.form == 'qe'){
+                        for(var i = 0; i<this.ppElements.length; i++){
+                            if(this.ppElements[i].element == this.atom){
+                                if(i == this.ppElements.length -1){
+                                    this.atom = 'H'
+                                } else {
+                                    this.atom = this.ppElements[++i].element
+                                }
+                            }
+                        }
+                    } else {
+                        for(var i = 0; i<this.elements.length; i++){
+                            if(this.elements[i].element == this.atom){
+                                if(i == this.elements.length -1){
+                                    this.atom = 'H'
+                                } else {
+                                    this.atom = this.elements[++i].element
+                                }
                             }
                         }
                     }
@@ -1387,17 +1256,44 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 } else {
                     app.alert({title: 'Error', message: "Invalid atom data!"})
                 }
+
+                if(this.form == 'qe'){
+                    this.nat = this.atomData.length
+                }
             },
 
             removeAtom: function(atomID){
                 var atomIndex
+                var atomName
                 for(var i = 0; i< this.atomData.length; i++){
                     if(this.atomData[i].ID == atomID){
                         atomIndex = i
+                        atomName = this.atomData[i].Atom
                         break
                     }
                 }
                 this.atomData.splice(atomIndex, 1)
+
+                if(this.form == 'qe') {
+                    this.nat = this.atomData.length
+
+                    var exists = false
+                    this.atomData.forEach(function(item, index){
+                        if(item.Atom == atomName){
+                            exists = true
+                        }
+                    })
+                    if(!exists) {
+                        this.ntyp = this.ntyp-1
+                    }
+
+                    let self = this
+                    this.elements.forEach(function(item, index){
+                        if(item.element == atomName){
+                            self.electronCount -= item.number
+                        }
+                    })
+                }
             },
 
             setStructureFile: function(event){
