@@ -153,7 +153,6 @@ export default {
     async getImagingCollections() {
       this.imagingCollections = new ImagingImager(null, { state: { pageSize: 9999 } })
 
-
       const result = await this.$store.dispatch('getCollection', this.imagingCollections)
       this.imagingImagers = result.toJSON()
     },
@@ -245,7 +244,7 @@ export default {
     async saveSample(location) {
       let sampleIndex = +location
       // Create a new Sample Model, so it uses the BLSAMPLEID to check for post, update etc
-      let sampleModel = new Sample(omit(this.samples[sampleIndex], 'STRATEGYOPTION'))
+      let sampleModel = new Sample(omit(this.samples[sampleIndex], ['STRATEGYOPTION', 'STATUS']))
 
       const result = await this.$store.dispatch('saveModel', { model: sampleModel })
 
@@ -411,6 +410,12 @@ export default {
     ...mapGetters({
       samples: ['samples/samples'],
     }),
+    sampleComponent() {
+      // Use a table editor unless capacity > 25
+      // If we have been passed a valid container id then we are editing the samples, else new table
+
+      return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-puck-samples-table'
+    },
   },
   provide() {
     return {

@@ -37,7 +37,7 @@
 
       <validation-provider
         tag="div"
-        class="tw-px-2 tw-w-1/2"
+        class="tw-px-2 tw-w-1/4"
         :name="`Sample ${sampleIndex + 1} Comment`"
         :vid="`sample ${sampleIndex + 1} comment`">
         <base-input-text
@@ -47,6 +47,21 @@
         />
         <p v-else class="tw-text-center">{{ sample['COMMENTS'] }}</p>
       </validation-provider>
+
+      <validation-provider
+        tag="div"
+        class="tw-px-2 tw-py-1 tw-w-1/4"
+        :class="sampleStatusDetails.className"
+        :name="`Sample ${sampleIndex + 1} Status`"
+        :vid="`sample ${sampleIndex + 1} status`">
+        <base-input-text
+          v-if="canEditRow(sample['LOCATION'], currentEditingRow)"
+          inputClass="tw-w-full tw-h-8"
+          v-model="STATUS"
+          :disabled="true"
+        />
+        <p v-else class="tw-text-center py-2 tw-w-full">{{ sampleStatusDetails.name }}</p>
+      </validation-provider>
     </div>
 
     <div v-show="currentTab === 'extraFields'" class="tw-flex tw-w-full tw-items-center">
@@ -54,7 +69,7 @@
         tag="div"
         class="tw-px-2 tw-w-3/12"
         :name="`Sample ${sampleIndex + 1} User Path`"
-        :rules="sample['PROTEINID'] > -1 ? { regex: /^(\w+\/\w+)$/ } : ''"
+        :rules="sample['PROTEINID'] > -1 ? { regex: /^(\w+(\/\w+)?)$/ } : ''"
         :vid="`sample ${sampleIndex + 1} userpath`"
         v-slot="{ errors }">
         <base-input-text

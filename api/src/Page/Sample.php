@@ -152,6 +152,7 @@ class Sample extends Page
         
         
         public static $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
+                              array('', 'put', '_bulk_update_sample_full'),
                               array('/:sid', 'patch', '_update_sample'),
                               array('/:sid', 'put', '_update_sample_full'),
                               array('', 'post', '_add_sample'),
@@ -1032,39 +1033,46 @@ class Sample extends Page
                                  'data' => $rows,
                            ));   
         }
-        
 
         function _update_sample_full() {
             $a = $this->_prepare_strategy_option_for_sample($this->_prepare_sample_args());
+            $result = $this->_handle_update_sample_full($a, $this->arg('sid'));
+
+            $this->_output($result);
+        }
+        
+
+        function _handle_update_sample_full($a, $sid) {
+            if (empty($sid)) $this->_error('No sampleid provided');
 
             $samp = $this->db->pq("SELECT sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid, string_agg(chc.componentid) as componentids
-              FROM blsample sp 
-              INNER JOIN crystal cr ON sp.crystalid = cr.crystalid 
-              INNER JOIN protein pr ON cr.proteinid = pr.proteinid 
+              FROM blsample sp
+              INNER JOIN crystal cr ON sp.crystalid = cr.crystalid
+              INNER JOIN protein pr ON cr.proteinid = pr.proteinid
               LEFT OUTER JOIN blsampletype_has_component chc ON sp.crystalid = chc.blsampletypeid
-              INNER JOIN proposal p ON pr.proposalid = p.proposalid 
-              LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = sp.diffractionplanid 
+              INNER JOIN proposal p ON pr.proposalid = p.proposalid
+              LEFT OUTER JOIN diffractionplan dp ON dp.diffractionplanid = sp.diffractionplanid
               WHERE p.proposalid = :1 AND sp.blsampleid=:2
-              GROUP BY sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid", 
-              array($this->proposalid, $this->arg('sid')));
-                
+              GROUP BY sp.blsampleid, pr.proteinid, cr.crystalid, dp.diffractionplanid",
+              array($this->proposalid, $sid));
+
             if (!sizeof($samp)) $this->_error('No such sample');
             else $samp = $samp[0];
 
             $blSampleId = $samp['BLSAMPLEID'];
 
-            $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10 WHERE blsampleid=:11", 
+            $this->db->pq("UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10 WHERE blsampleid=:11",
               array($a['NAME'],$a['COMMENTS'],$a['CODE'],$a['VOLUME'],$a['PACKINGFRACTION'],$a['DIMENSION1'],$a['DIMENSION2'],$a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE'], $blSampleId));
 
             if (array_key_exists('PROTEINID', $a)) {
-                $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10", 
+                $this->db->pq("UPDATE crystal set spacegroup=:1,proteinid=:2,cell_a=:3,cell_b=:4,cell_c=:5,cell_alpha=:6,cell_beta=:7,cell_gamma=:8,theoreticaldensity=:9 WHERE crystalid=:10",
                   array($a['SPACEGROUP'], $a['PROTEINID'], $a['CELL_A'], $a['CELL_B'], $a['CELL_C'], $a['CELL_ALPHA'], $a['CELL_BETA'], $a['CELL_GAMMA'], $a['THEORETICALDENSITY'], $samp['CRYSTALID']));
                 $this->db->pq("UPDATE diffractionplan set anomalousscatterer=:1,requiredresolution=:2, experimentkind=:3, centringmethod=:4, radiationsensitivity=:5, energy=:6, userpath=:7, strategyoption=:8, minimalresolution=:9 WHERE diffractionplanid=:10",
                   array($a['ANOMALOUSSCATTERER'], $a['REQUIREDRESOLUTION'], $a['EXPERIMENTKIND'], $a['CENTRINGMETHOD'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['STRATEGYOPTION'], $a['MINIMUMRESOLUTION'], $samp['DIFFRACTIONPLANID']));
 
-                if ($a['SCREENINGMETHOD'] == 'best' && isset($a['BLSAMPLEGROUPID'])) {
-                    $this->_save_sample_to_group($this->arg('sid'), $a['BLSAMPLEGROUPID'], null, null);
-                } else if (isset($a['INITIALSAMPLEGROUP']) && !isset($a['BLSAMPLEGROUPID']) && isset($blSampleId)) {
+                if (!isset($a['INITIALSAMPLEGROUP']) && $a['VALID_SAMPLE_GROUP'] && $sid) {
+                    $this->_save_sample_to_group($sid, $a['SAMPLEGROUP'], null, null);
+                } else if (isset($a['INITIALSAMPLEGROUP']) && !$a['SAMPLEGROUP'] && isset($blSampleId)) {
                     $this->_delete_sample_from_group($a['INITIALSAMPLEGROUP'], $blSampleId);
                 }
             }
@@ -1074,7 +1082,7 @@ class Sample extends Page
             $amounts = $a['COMPONENTAMOUNTS'] ? $a['COMPONENTAMOUNTS'] : null;
             $this->_update_sample_components($init_comps, $fin_comps, $amounts, $samp['CRYSTALID']);
 
-            $this->_output(array('BLSAMPLEID' => $samp['BLSAMPLEID']));
+            return array('BLSAMPLEID' => $samp['BLSAMPLEID']);
         }
 
         function _update_sample_components($initial, $final, $amounts, $crystalid) {
@@ -1117,6 +1125,25 @@ class Sample extends Page
                 $id = $this->_do_add_sample($this->_prepare_sample_args());
                 $this->_output(array('BLSAMPLEID' => $id));
             }
+        }
+
+        function _bulk_update_sample_full() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            // Register entire container
+            $this->db->start_transaction();
+            $col = array();
+            foreach ($this->arg('collection') as $s) {
+                $sample = $this->_prepare_strategy_option_for_sample($this->_prepare_sample_args($s));
+                $result = $this->_handle_update_sample_full($sample, $s['BLSAMPLEID']);
+
+                if ($result) {
+                    array_push($col, $result);
+                }
+            }
+
+            $this->db->end_transaction();
+            $this->_output($col);
         }
 
 
@@ -1232,35 +1259,41 @@ class Sample extends Page
                 array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE']));
             $sid = $this->db->id();
 
-            if ($a['SCREENINGMETHOD'] == 'best' && isset($a['BLSAMPLEGROUPID'])) {
-                $this->_save_sample_to_group($sid, $a['BLSAMPLEGROUPID'], null, null);
+            if ($a['SCREENINGMETHOD'] == 'best' && $a['VALID_SAMPLE_GROUP']) {
+                $this->_save_sample_to_group($sid, $a['SAMPLEGROUP'], null, null);
             }
 
             return $sid;
         }
 
         function _prepare_strategy_option_for_sample($a) {
-            if ($a['SCREENINGMETHOD'] == 'best') {
-                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => intval($a['SCREENINGCOLLECTVALUE']));
+            $is_valid_sample_group = false;
+            if (isset($a['SAMPLEGROUP'])) {
                 $args = array($this->proposalid);
                 array_push($args, $a['SAMPLEGROUP']);
                 $check = $this->db->pq("SELECT blsamplegroupid FROM blsamplegroup WHERE proposalid = :1 AND blsamplegroupid = :2", $args);
 
-                if (!sizeof($check)) $this->_error('No such sample group for this proposal.');
+                if (sizeof($check)) {
+                    $is_valid_sample_group = true;
+                }
+            }
+
+            if ($a['SCREENINGMETHOD'] == 'best' && $is_valid_sample_group) {
+                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => intval($a['SCREENINGCOLLECTVALUE']));
 
                 $a['SAMPLEGROUP'] = intval($a['SAMPLEGROUP']);
                 $strategyOptionsData['sample_group'] = $a['SAMPLEGROUP'];
-                $a['BLSAMPLEGROUPID'] = $a['SAMPLEGROUP'];
                 $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
             }
             elseif ($a['SCREENINGMETHOD'] == 'all') {
                 $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => null, "sample_group"=> null);
                 $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
             }
-            else {
-                $a['SAMPLEGROUP'] = null;
+            else if ($a['SCREENINGMETHOD'] == 'none' || !isset($a['SCREENINGMETHOD'])) {
                 $a['STRATEGYOPTION'] = null;
             }
+
+            $a['VALID_SAMPLE_GROUP'] = $is_valid_sample_group;
 
             return $a;
         }

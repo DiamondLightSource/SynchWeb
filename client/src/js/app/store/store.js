@@ -173,6 +173,27 @@ const store = new Vuex.Store({
       })
     },
 
+    // Method that updates a collection
+    // Note this will result in a PUT to the server
+    // Most backend endpoints do not seem to support PATCH to update collection in one hit
+    // In future might need to provide more general sync method for collections
+    // Params: collection is the Backbone collection being saved - same signature as saveModel
+    // Example: store.dispatch('updateCollection', { collection: myCollection })
+    updateCollection(context, {collection}) {
+      return new Promise((resolve, reject) => {
+        collection.update({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || {status: 400, message: 'Error updating collection'}
+            reject(response)
+          },
+        })
+      })
+    },
+
     // Method that returns a collection promise
     getModel(context, model) {
 

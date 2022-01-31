@@ -15,7 +15,7 @@
       :vid="`sample ${sampleIndex + 1} protein`"
       v-slot="{ errors }">
       <combo-box
-        v-if="canEditRow(sample['LOCATION'], editingRow)"
+        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
         :data="proteinsOptionsList"
         class="tw-w-full protein-select"
         textField="text"
@@ -45,7 +45,7 @@
       :vid="`sample ${sampleIndex + 1} name`"
       v-slot="{ errors }">
       <base-input-text
-        v-if="canEditRow(sample['LOCATION'], editingRow)"
+        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
         inputClass="tw-w-full tw-h-8"
         v-model="NAME"
         :errorMessage="errors[0]"
@@ -63,7 +63,7 @@
       :vid="`sample group sample ${sampleIndex + 1}`"
       v-slot="{ errors }">
       <combo-box
-        v-if="canEditRow(sample['LOCATION'], editingRow)"
+        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
         :data="sampleGroups"
         textField="text"
         valueField="value"
@@ -79,7 +79,7 @@
     </validation-provider>
 
     <tabbed-columns
-      class="tw-w-1/2 tw-py-1 tw-border-l tw-border-table-header-background min-height-8"
+      class="tw-w-1/2 tw-py-1 tw-border-l tw-border-table-header-background min-height-8 tw-flex tw-h-full"
       :currentEditingRow="editingRow"
       :sample="sample"
       :currentTab="currentTab"
@@ -94,7 +94,7 @@
           <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
         </span>
         <span v-else>
-          <a v-if="!isContainerProcessing && !sampleHasDataCollection" class="button tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
+          <a class="button tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
           <router-link v-if="sample['BLSAMPLEID']" class="button tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
           <a class="button tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
         </span>
