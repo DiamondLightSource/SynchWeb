@@ -49,9 +49,11 @@ define([
             }
         },
 
-        // Check if this DC has a MAXIV Viewer pod active for current user
+        // Check if this DC has a H5Web Viewer pod active for current user
         onRender: function() {
             this.isPodRunning(this)
+            this.listenTo(app, 'pod:started', this.podStarted)
+            this.listenTo(app, 'pod:shutdown', this.podShutdown)
         },
 
         onDestroy: function() {
@@ -116,7 +118,7 @@ define([
 
             let self = this
             Backbone.ajax({
-                url: app.apiurl + '/pod/maxiv/hdf5/' + this.model.get('ID'),
+                url: app.apiurl + '/pod/h5web/' + this.model.get('ID'),
                 method: 'get',
                 data: {
                     user: app.user
@@ -151,7 +153,7 @@ define([
             var count = 0;
             var check = function(count){
                 Backbone.ajax({
-                    url: app.apiurl + '/pod/maxiv/hdf5/status/' + podId,
+                    url: app.apiurl + '/pod/h5web/status/' + podId,
                     method: 'get',
                     success: function(response){
                         console.log(response[0])
@@ -194,7 +196,7 @@ define([
         openPod: function(e){
             e.preventDefault()
             var ip = this.ui.podReady.attr('data-podip')
-            window.open('http://'+ip+':8081')
+            window.open('http://'+ip+':8089/?file='+this.model.get('FILETEMPLATE'))
         },
 
         startTimer: function(){
@@ -205,7 +207,7 @@ define([
 
         isPodRunning: function(self){
             Backbone.ajax({
-                url: app.apiurl + '/pod/maxiv/hdf5/running/' + self.model.get('ID'),
+                url: app.apiurl + '/pod/h5web/running/' + self.model.get('ID'),
                 method: 'get',
                 data: { user: app.user },
                 success: function(response){
@@ -216,6 +218,7 @@ define([
                             self.ui.launcher.css('display', 'none')
                             self.ui.podReady.css('display', 'inline')
                             self.ui.podReady.attr('data-podip', response[0].IP)
+                            app.trigger('pod:started', response[0].IP)
 
                             if(!self.podActive){
                                 self.podActive = true
@@ -228,6 +231,7 @@ define([
                         self.ui.launcher.css('display', 'inline')
                         self.podActive = false
                         clearInterval(self.timer)
+                        app.trigger('pod:shutdown')
                     }
                 },
                 error: function(response){
@@ -235,6 +239,16 @@ define([
                     app.alert({message: 'Failed to get status of pod for data collection: ' + self.model.get('ID')})
                 }
             })
+        },
+
+        podStarted: function(ip){
+            this.ui.launcher.css('display', 'none')
+            this.ui.podReady.css('display', 'inline')
+            this.ui.podReady.attr('data-podip', ip)
+        },
+        podShutdown: function(){
+            this.ui.launcher.css('display', 'inline')
+            this.ui.podReady.css('display', 'none')
         }
     })
 
