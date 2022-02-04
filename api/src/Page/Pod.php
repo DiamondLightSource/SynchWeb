@@ -35,7 +35,7 @@ class Pod extends Page
         // Need to update the Pod table app enum field to allow h5web and jnb (jupyter notebook)
         $this->db->pq("INSERT INTO Pod (podid, app, status, personid, filePath) 
                     VALUES (s_pod.nextval, :1, :2, :3, :4)",
-                    array('MAXIV HDF5 Viewer', 'Requested', $person, $path.$file));
+                    array('H5Web', 'Requested', $person, $path.$file));
         $podId = $this->db->id();
 
         $data = array(

@@ -196,7 +196,15 @@ define([
         openPod: function(e){
             e.preventDefault()
             var ip = this.ui.podReady.attr('data-podip')
-            window.open('http://'+ip+':8089/?file='+this.model.get('FILETEMPLATE'))
+
+            var visit = this.model.get('DIRFULL').match(/[a-z]{2}[0-9]{5}-\d+/)[0]
+            var index = this.model.get('DIRFULL').indexOf(visit)
+            var path = this.model.get('DIRFULL').substring(index+visit.length+1, this.model.get('DIRFULL').length)
+
+            if(path)
+                window.open('http://'+ip+':8089/?file=' + path + '/' + this.model.get('FILETEMPLATE'))
+            else
+                window.open('http://'+ip+':8089/?file=' + this.model.get('FILETEMPLATE'))
         },
 
         startTimer: function(){
