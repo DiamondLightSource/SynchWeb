@@ -9,7 +9,7 @@ module.exports = {
       './src/**/*.vue',
     ],
     options: {
-      safeList: [
+      whitelist: [
         'tw-bg-auto-integrated',
         'tw-bg-data-collected',
         'tw-bg-auto-indexed',
