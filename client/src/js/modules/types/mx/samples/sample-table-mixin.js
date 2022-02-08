@@ -25,6 +25,7 @@ export default {
         { id: 'gr', name: 'Grid Scans', className: 'tw-bg-grid-scanned' },
         { id: 'fc', name: 'Full Collections', className: '' },
         { id: 'ap', name: 'Auto Integrated', className: 'tw-bg-auto-integrated' },
+        { id: 'ai', name: 'Auto Indexed', className: 'tw-bg-auto-indexed' },
         { id: 'err', name: 'Processing Errors', className: '' },
         { id: 'sc', name: 'Screenings', className: 'tw-bg-screened' },
         { id: 'edge', name: 'Edge Scans', className: '' },
@@ -32,6 +33,7 @@ export default {
         { id: 'rb', name: 'Robot Actions', className: 'tw-bg-loaded-by-robot' },
         { id: 'ac', name: 'Sample Actions', className: '' },
         { id: 'flag', name: 'Favourites', className: '' },
+        { id: 'r', name: 'Loaded By Robot', className: 'tw-bg-loaded-by-robot'},
         { id: '', name: '', className: ''}
       ]
     };
