@@ -506,7 +506,7 @@ export default {
       this.selectedFieldValue = ''
     },
     updateSelectedFieldValue(newValue) {
-      if (newValue && this.selectedEditableColumn.key) {
+      if (this.selectedEditableColumn.key) {
         this.samples.forEach((sample, index) => {
           if (sample['BLSAMPLEID']) {
             const path = `samples/${index}/${this.selectedEditableColumn.key}`
