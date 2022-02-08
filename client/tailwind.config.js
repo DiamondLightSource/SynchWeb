@@ -166,6 +166,11 @@ module.exports = {
         'grid-scanned': '#fdfd96',
         'loaded-by-robot': '#ff6961',
         'dark-amber': '#d9bf98'
+
+// Sample Groups Color Theme
+        'sample-group-added-light': '#f4e7Ba',
+        'sample-group-added-dark': '#d9bf98',
+
       },
       zIndex: {
         '75': 75,

@@ -33,8 +33,7 @@
         :headers="sampleGroupHeaders"
         :data="formatSamplesInGroups()"
         @row-clicked="getContainerFromSample"
-      >
-      </table-panel>
+      />
     </div>
 
     <div class="content">
@@ -46,7 +45,7 @@
         :query-params="queryParams"
         @row-clicked="onContainerSelected"
       >
-        <template slot-scope="{ row }" slot="actions">
+        <template slot="container-actions" slot-scope="{ row }">
           <router-link class="button button-notext atp" :to="`/containers/cid/${row.CONTAINERID}`">
             <i class="fa fa-info"></i> <span>See Details</span>
           </router-link>
@@ -228,7 +227,7 @@ export default {
         await this.getSampleGroupInformation()
 
         if (!this.gid) {
-          this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
+          await this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
         }
       } catch (error) {
         this.$store.commit('notifications/addNotification', { title: 'Error', message: error.message, level: 'error' })
@@ -238,6 +237,7 @@ export default {
     },
     async onContainerSelected(item) {
       try {
+        this.containerSelected = false
         this.$store.commit('loading', true)
   
         this.selectedContainer = item
@@ -248,10 +248,11 @@ export default {
         const samplesData = await this.$store.dispatch('getCollection', this.containerSamples)
   
         this.samples = samplesData.toJSON()
-        this.containerSelected = true
         this.$store.commit('loading', false)
       } catch (error) {
         this.$store.commit('loading', false)
+      } finally {
+        this.containerSelected = true
       }
     },
     async saveSampleGroupName(loading = false) {
@@ -315,8 +316,8 @@ export default {
     },
     // Remove when we start persisting the vuex store
     async getSampleGroupInformation() {
-      this.fetchSampleGroupName()
-      this.sampleGroupSamples.queryParams = { BLSAMPLEGROUPID: this.sampleGroupId, page: 1, per_page: 9999, total_pages: 0 }
+      await this.fetchSampleGroupName()
+      this.sampleGroupSamples.queryParams = { BLSAMPLEGROUPID: this.sampleGroupId, page: 1, per_page: 9999, total_pages: 1 }
       const groupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamples)
       this.initialSampleInGroupModels = groupSamples
 
@@ -371,7 +372,7 @@ export default {
           this.$store.commit('loading', true)
           this.containerModel = new ContainerModel({ CONTAINERID })
           const container = await this.$store.dispatch('getModel', this.containerModel)
-          this.onContainerSelected(container.toJSON())
+          await this.onContainerSelected(container.toJSON())
           this.$store.commit('loading', false)
         } catch (error) {
           this.$store.commit('loading', false)

@@ -7,15 +7,14 @@
       ></collection-filters>
 
     <base-input-checkbox
-        :outerClass="
-            `tw-mx-1 tw-mb-3 tw-rounded-md tw-w-32
-            tw-cursor-pointer tw-p-2 tw-bg-content-filter-background tw-bg-content-filter-background`
-        "
-        :value="showUserContainers"
-        description="My Containers"
-        name="currentUserContainers"
-        @input="setUserContainersState"
-    />
+      :outerClass="
+        `tw-mx-1 tw-mb-3 tw-rounded-md tw-w-32
+        tw-cursor-pointer tw-p-2 tw-bg-content-filter-background tw-bg-content-filter-background`
+      "
+      :value="showUserContainers"
+      description="My Containers"
+      name="currentUserContainers"
+      @input="setUserContainersState"/>
 
       <table-panel
         :headers="tableColumns"
@@ -23,8 +22,23 @@
         v-on="$listeners"
         :actions="tableActions"
       >
-        <template slot-scope="{ row }" slot="actions">
-            <slot :row="row" name="actions"></slot>
+        <template slot-scope="{ data, headers, rowClicked, actions }">
+          <slot :data="data" :headers="headers" :rowClicked="rowClicked">
+            <tr
+              v-for="(row, index) in data"
+              :key="index"
+              v-on:click="rowClicked(row)">
+              <td v-for="(header, index) in headers" :key="index">
+                {{row[header.key]}}
+              </td>
+
+              <td>
+                <slot :row="row" name="container-actions">
+                  <template slot="actions" v-if="actions"></template>
+                </slot>
+              </td>
+            </tr>
+          </slot>
         </template>
       </table-panel>
 

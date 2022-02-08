@@ -7,24 +7,25 @@
         :samples="samples"
         :scoreThreshold="scoreThreshold"
         :selectedDrops="selectedSampleLocations"
+        :selected-samples="selectedSamples"
         sampleColour="#dfdfdf"
         :labelAsButtons="true"
         v-on="$listeners"
-        />
+      />
     </div>
   </section>
 </template>
 
 <script>
 import PlateView from './PlateView.vue'
-import PuckView from './MockPuckView.vue'
+import PuckTableView from './puck-table-view.vue'
 import ContainerTypes from 'modules/shipment/collections/platetypes.js'
 
 export default {
-  name:"Containers",
+  name:"ContainerGraphic",
   components: {
     'plate-view': PlateView,
-    'puck-view': PuckView
+    'puck-table-view': PuckTableView
   },
   props: {
     selectedContainerType: {
@@ -46,8 +47,8 @@ export default {
   },
   computed: {
     containerComponent() {
-      if (this.containerType == 'plate') return 'plate-view'
-      if (this.containerType == 'puck') return 'puck-view'
+      if (this.containerType === 'plate') return 'plate-view'
+      if (this.containerType === 'puck') return 'puck-table-view'
 
       return null
     },

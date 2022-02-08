@@ -111,7 +111,6 @@ export default {
     async onSampleGroupSelected() {
       try {
         this.$store.commit('loading', true)
-        this.selectedSampleGroup
         this.sampleGroupSamples.queryParams.BLSAMPLEGROUPID = this.sampleGroupId   
   
         const collection = await this.$store.dispatch(
@@ -121,7 +120,6 @@ export default {
   
         this.sampleGroupMembers = collection.toJSON()
 
-
         this.sampleGroupSamplesListState = collection.state
         this.$store.commit('loading', false)
       } catch (error) {
@@ -130,11 +128,11 @@ export default {
     },
     async onEditSampleGroup() {
       await this.$store.commit('sampleGroups/resetSelectedSampleGroups')
-      this.$router.push('/samples/groups/edit/id/' + this.sampleGroupId)
+      await this.$router.push('/samples/groups/edit/id/' + this.sampleGroupId)
     },
     async onAddSampleGroup() {
       await this.$store.commit('sampleGroups/resetSelectedSampleGroups')
-      this.$router.push({ name: 'samples-group-edit' })
+      await this.$router.push({ name: 'samples-group-edit' })
     },
     // Wrap the method to get collection as promise
     async getSampleGroups() {
@@ -159,7 +157,7 @@ export default {
     },
     async handleSampleGroupSamplePageChange(data) {
       this.sampleGroupSamples.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
-      await this.onSampleGroupSelected(this.selectedSampleGroup)
+      await this.onSampleGroupSelected()
     }
   },
   watch: {
