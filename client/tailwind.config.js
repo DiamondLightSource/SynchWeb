@@ -8,6 +8,16 @@ module.exports = {
       './src/**/*.html',
       './src/**/*.vue',
     ],
+    options: {
+      safeList: [
+        'tw-bg-auto-integrated',
+        'tw-bg-data-collected',
+        'tw-bg-auto-indexed',
+        'tw-bg-screened',
+        'tw-bg-grid-scanned',
+        'tw-bg-loaded-by-robot'
+      ]
+    }
   },
   future: {
     purgeLayersByDefault: true,
