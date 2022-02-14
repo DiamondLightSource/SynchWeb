@@ -363,7 +363,7 @@ export default {
         },
         {
           key: 'REQUIREDRESOLUTION',
-          title: 'Reqd Res',
+          title: 'Required Resolution',
           className: 'tw-w-24',
           componentType: 'base-input-text',
           data: '',
@@ -371,7 +371,7 @@ export default {
         },
         {
           key: 'MINIMUMRESOLUTION',
-          title: 'Min Res',
+          title: 'Minimum Resolution',
           className: 'tw-w-24',
           componentType: 'base-input-text',
           data: '',
@@ -379,7 +379,7 @@ export default {
         },
         {
           key: 'SCREENINGCOLLECTVALUE',
-          title: 'No to collect',
+          title: 'Number to collect',
           className: 'tw-w-24',
           componentType: 'base-input-text',
           data: '',
