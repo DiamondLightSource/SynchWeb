@@ -20,7 +20,8 @@ The v-closable takes an object as argumnt with properties:
         'select-selected': true,
         ['tw-px-2']: true,
         [`select-${inputIndex}`]: true,
-        [size]: true
+        [size]: true,
+        'disabled': isDisabled
       }"
       v-show="!searching"
       @click="openComboBox(inputIndex, $event)" >
@@ -98,10 +99,6 @@ export default {
       // It is useful if you want to control how the component behaves when the `closeComboBox` method is called
       type: Number
     },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
     excludedSelectItemsIndices: {
       // This holds an array of the inputIndex values that you want to exclude from automatically closing when the
       // Select elements are closing
@@ -149,13 +146,16 @@ export default {
         value: event.target.value,
         addNew: this.filteredOptions.length < 1
       })
+    },
+    value(newValue) {
+      this.$emit('value-changed', newValue)
     }
   },
   methods: {
     openComboBox(index, event) {
       const { target } = event
       event.stopPropagation()
-      if (this.disabled) { return }
+      if (this.isDisabled) { return }
       this.closeComboBox(false)
       this.searching = true
       target.nextElementSibling.classList.toggle('select-hide')
@@ -257,6 +257,9 @@ export default {
 <style scoped>
 .select-selected {
   @apply tw-bg-white tw-h-8 tw-rounded tw-border tw-border-content-dark-background tw-flex tw-items-center tw-cursor-pointer
+}
+.select-selected.disabled {
+  @apply tw-bg-content-page-background
 }
 .select-selected.small {
   height: 30px;
