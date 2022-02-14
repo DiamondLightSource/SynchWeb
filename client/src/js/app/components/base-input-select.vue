@@ -23,7 +23,6 @@ Slots include:
 
     <!-- The form input itself - bound to the v-model passed in -->
     <select
-      class="tw-h-full"
       v-show="editable"
       ref="inputRef"
       :id="id"
@@ -160,7 +159,8 @@ export default {
   watch: {
     // Because we are using a cached local value (for inline edit mode) we should react to the passed prop change
     value: function(newVal) {
-      // this.localValue = newVal
+      this.localValue = newVal
+      this.$emit('value-changed', newVal)
     },
     editable: function(value) {
       if (value === false) this.showEditIcon = false

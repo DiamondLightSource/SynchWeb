@@ -97,13 +97,6 @@
               </div>
             </li>
           </ul>
-
-          <div class="tw-w-full">
-            <button name="submit" type="submit" @click.prevent="onUpdateContainer" :class="['button tw-text-base tw-px-4 tw-py-2 tw-w-64 tw-h-12', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
-              Update Container
-            </button>
-          </div>
-
         </div> <!-- End Container Form Elements -->
 
         <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
@@ -119,7 +112,8 @@
         <component
           :is="sampleComponent"
           ref="samples"
-          :containerId="container.CONTAINERID"
+          :containerId="containerId"
+          :invalid="invalid"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"
           @clear-sample="onClearSample"
@@ -127,22 +121,15 @@
           @clear-container="onClearContainer"
           @clone-container-column="onCloneColumn"
           @clone-container-row="onCloneRow"
+          @bulk-update-samples="onUpdateSamples"
         />
       </div>
-
-
 
       <div class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4" v-show="invalid">
         <p class="tw-font-bold">Please fix the errors on the form</p>
         <div v-for="(error, index) in errors" :key="index">
           <p v-show="error.length > 0" class="tw-black">{{error[0]}}</p>
         </div>
-      </div>
-
-      <div class="">
-        <button name="submit" type="submit" @click.prevent="onUpdateSamples" :class="['button submit tw-text-base tw-px-4 tw-py-2', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
-          Update Samples
-        </button>
       </div>
     </validation-observer>
 
@@ -270,9 +257,7 @@ export default {
     // Get samples for this container id
     this.fetchShipments()
     this.loadContainerData()
-    this.samplesCollection = new Samples(null, { state: { pageSize: 9999 } })
-    this.samplesCollection.queryParams.cid = this.containerId
-    this.getSamples(this.samplesCollection)
+    this.loadSampleGroupInformation()
     this.getProteins()
     this.getContainerRegistry()
     this.getHistory()
@@ -280,8 +265,6 @@ export default {
     this.getUsers()
     this.getProcessingPipelines()
     this.formatExperimentKindList()
-    this.getSampleGroups()
-    this.fetchSampleGroupSamples()
     this.getSpaceGroupsCollection()
     this.getImagingCollections()
     this.getImagingScheduleCollections()
@@ -292,6 +275,14 @@ export default {
       this.container = Object.assign({}, this.containerModel.toJSON())
       this.containerId = this.containerModel.get('CONTAINERID')
       this.containerQueueId = this.containerModel.get('CONTAINERQUEUEID')
+    },
+    async loadSampleGroupInformation() {
+      await this.getSampleGroups()
+      await this.fetchSampleGroupSamples()
+
+      this.samplesCollection = new Samples(null, { state: { pageSize: 9999 } })
+      this.samplesCollection.queryParams.cid = this.containerId
+      await this.getSamples(this.samplesCollection)
     },
     // Callback from pagination
     onUpdateHistory(payload) {
@@ -350,9 +341,10 @@ export default {
           if (Number(s.get(t)) > 0) status = t
         })
         s.set({ STATUS: status })
+        const payload = this.populateInitialSampleGroupValue(s.toJSON())
         this.$store.commit('samples/setSample', {
           index: Number(s.get('LOCATION')) - 1,
-          data: { ...s.toJSON(), VALID: 1 }
+          data: { ...payload, VALID: 1 }
         })
       })
     },
@@ -457,13 +449,36 @@ export default {
         await this.fetchContainers()
       }
     },
-    async onUpdateContainer() {
-      await this.$store.dispatch('saveModel', { model: this.containerModel, attributes: this.container })
-      this.$emit('update-container-state', this.container)
-    },
     async onUpdateSamples() {
-      await this.$store.dispatch('samples/update', this.containerId)
-      await this.getSamples(this.samplesCollection)
+      const containerId = this.containerId
+      this.containerId = null
+      await this.$nextTick()
+      const validated = await this.$refs.containerForm.validate()
+
+      this.containerId = containerId
+
+      if (validated) {
+        await this.$store.dispatch('samples/update', this.containerId)
+        await this.loadSampleGroupInformation()
+        await this.$store.commit('notifications/addNotification', {
+          title: 'Samples Updated',
+          message: 'Sample has been successfully updated',
+          level: 'success'
+        })
+        this.$refs.containerForm.reset()
+      }
+    },
+    populateInitialSampleGroupValue(sample) {
+      const sampleGroupsWithSample = this.sampleGroupSamples.filter(item => item['BLSAMPLEID'] === sample['BLSAMPLEID'])
+      let matchingSampleGroup = {}
+      if (sample['SAMPLEGROUP']) {
+        matchingSampleGroup = sampleGroupsWithSample.find(item => Number(item['BLSAMPLEGROUPID']) === Number(sample['SAMPLEGROUP']))
+      } else {
+        matchingSampleGroup = sampleGroupsWithSample[0]
+      }
+
+      sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
+      return sample
     }
   },
   watch: {

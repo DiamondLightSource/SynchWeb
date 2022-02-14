@@ -41,6 +41,7 @@ define(['backbone', 'collections/components',
                     this.set('SCREENINGMETHOD', option.screen)
                     this.set('SCREENINGCOLLECTVALUE', option.collect_samples)
                     this.set('SAMPLEGROUP', option.sample_group)
+                    this.set('STRATEGYOPTION', null)
                 }
             }
         },

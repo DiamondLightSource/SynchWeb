@@ -146,7 +146,10 @@ export default {
   watch: {
     editable: function(value) {
       if (!value) this.showEditIcon = false
-    }
+    },
+    value: function(newVal) {
+      this.$emit('value-changed', newVal)
+    },
   },
   computed: {
     // If a user passes in an error Message, add the error class to the input

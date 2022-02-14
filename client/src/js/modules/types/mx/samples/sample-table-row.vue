@@ -40,7 +40,7 @@
     <validation-provider
       tag="div"
       class="name-column tw-py-1 tw-px-2"
-      :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:20|' : ''"
+      :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:25|' : ''"
       :name="`Sample ${sampleIndex + 1} Name`"
       :vid="`sample ${sampleIndex + 1} name`"
       v-slot="{ errors }">
@@ -55,28 +55,29 @@
       <p v-else class="tw-text-center">{{ sample['NAME'] }}</p>
     </validation-provider>
 
-    <validation-provider
-      tag="div"
+    <extended-validation-provider
+      :ref="`sample_${sampleIndex}_sample_group`"
       class="tw-px-2 sample-group-column tw-py-1"
       :rules="`required_if:sample ${sampleIndex + 1} screening method,best`"
       :name="`Sample Group Sample ${sampleIndex + 1}`"
-      :vid="`sample group sample ${sampleIndex + 1}`"
-      v-slot="{ errors }">
-      <combo-box
-        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
-        :data="sampleGroups"
-        textField="text"
-        valueField="value"
-        :inputIndex="sampleIndex"
-        :defaultText="SAMPLEGROUP"
-        class="sample-group-select tw-w-44"
-        size="small"
-        :is-disabled="sampleGroupInputDisabled"
-        @create-new-option="createNewSampleGroup"
-        v-model="SAMPLEGROUP">
-      </combo-box>
-      <div v-else class="tw-text-center">{{ sampleGroupName }}</div>
-    </validation-provider>
+      :vid="`sample group sample ${sampleIndex + 1}`">
+      <template v-slot="{ errors, inputChanged }">
+        <combo-box
+          :is-disabled="!canEditRow(sample['LOCATION'], editingRow) || sampleGroupInputDisabled"
+          :data="sampleGroups"
+          textField="text"
+          valueField="value"
+          :inputIndex="sampleIndex"
+          :defaultText="SAMPLEGROUP"
+          class="sample-group-select tw-w-44"
+          size="small"
+          @create-new-option="createNewSampleGroup"
+          v-model="SAMPLEGROUP"
+          @value-changed="inputChanged"
+        >
+        </combo-box>
+      </template>
+    </extended-validation-provider>
 
     <tabbed-columns
       class="tw-w-1/2 tw-py-1 tw-border-l tw-border-table-header-background min-height-8 tw-flex tw-h-full"
@@ -113,6 +114,7 @@ import TabbedColumnsView from 'modules/types/mx/samples/tabbed-columns-view.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import {ValidationObserver, ValidationProvider} from 'vee-validate'
 import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
+import ExtendedValidationProvider from "app/components/extended-validation-provider.vue";
 
 export default {
   name: 'sample-table-row',
@@ -152,23 +154,13 @@ export default {
     },
   },
   components: {
+    'extended-validation-provider': ExtendedValidationProvider,
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,
     'tabbed-columns': TabbedColumnsView,
     'combo-box': ComboBox,
     'validation-provider': ValidationProvider,
     'validation-observer': ValidationObserver
-  },
-  computed: {
-    selectedColumns() {
-      const columnsMap = {
-        basic: this.basicColumns,
-        extraFields: this.extraFieldsColumns,
-        unattended: this.udcColumns
-      }
-
-      return [...this.requiredColumns, ...columnsMap[this.currentTab]]
-    }
   },
   methods: {
     editRow(row) {
