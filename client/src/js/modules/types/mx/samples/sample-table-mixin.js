@@ -108,24 +108,10 @@ export default {
     sampleGroupSamples() {
       return this.$sampleGroupsSamples()
     },
-    sampleGroupsWithSample() {
-      return this.sampleGroupSamples.filter(sample => sample['BLSAMPLEID'] === this.sample['BLSAMPLEID'])
-    },
     // Based on the requirements of UDC sample creations we want to return the
     // sample group that is saved in the strategyOption if the screening method is "Collect Best N";
     // otherwise, we want to return the first sample group that the sample belongs to
     // If the sample belongs to more than one group, we want to return the first matching name and how many other groups it belongs to
-    sampleGroupName() {
-      let matchingSampleGroup = {}
-      if (this.sample['SAMPLEGROUP']) {
-        matchingSampleGroup = this.sampleGroupsWithSample.find(sample => Number(sample['BLSAMPLEGROUPID']) === Number(this.sample['SAMPLEGROUP']))
-      } else {
-        matchingSampleGroup = this.sampleGroupsWithSample[0]
-      }
-
-      this.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
-      return this.generateSampleGroupNameText(matchingSampleGroup)
-    },
     ...createFieldsForSamples([
       'ABUNDANCE',
       'ANOMALOUSSCATTERER',
@@ -198,6 +184,10 @@ export default {
     },
     sampleStatusDetails() {
       return this.sampleStatusMappings.find(status => String(status.id.toLowerCase()) === String(this.sample.STATUS.toLowerCase()))
+    },
+    dataCollectionStarted() {
+      if (!this.samples) return
+      return this.samples.some(sample => sample['DCC'] ? Number(sample['DCC']) > 0 : false)
     }
   },
   methods: {

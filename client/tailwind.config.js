@@ -148,7 +148,8 @@ module.exports = {
         'auto-indexed': '#ffb347',
         'screened': '#fdfd96',
         'grid-scanned': '#fdfd96',
-        'loaded-by-robot': '#ff6961'
+        'loaded-by-robot': '#ff6961',
+        'dark-amber': '#d9bf98'
       }
     }
   },

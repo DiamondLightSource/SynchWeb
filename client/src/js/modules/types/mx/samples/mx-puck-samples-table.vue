@@ -7,26 +7,36 @@
         Clone all from first row
       </button>
     </div>
-    <div class="tw-w-full tw-flex tw-flex-col tw-items-end" v-if="containerId">
+    <div class="tw-w-full tw-flex tw-flex-col tw-items-end" v-if="containerId && !isContainerProcessing && !dataCollectionStarted">
       <p class="tw-w-full tw-mb-2">Select a field and enter a value to bulk populate in all samples</p>
-      <div class="tw-flex tw-w-full">
+      <div class="tw-flex tw-w-full tw-mb-2">
         <base-input-select
           option-text-key="title"
           option-value-key="key"
           :options="mappedEditableColumns"
           :value="selectedEditableColumn.key"
           outer-class="tw-mr-2"
+          input-class="tw-h-8"
           @input="resetSelectedEditableColumn"
         />
         <component
           :is="selectedEditableColumn.componentType"
           v-model="selectedFieldValue"
           :options="selectedEditableColumn.data"
-          outer-class="tw-mx-2"
+          input-class="tw-h-8"
+          outer-class="tw-mx-2 tw-h-full"
           option-text-key="text"
           option-value-key="value"
         />
+        <button
+          name="submit"
+          type="submit"
+          @click.prevent="onUpdateSamples"
+          :class="['button submit tw-mx-2 tw-text-base tw-px-4 tw-py-1 tw-h-8', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
+          Update Samples
+        </button>
       </div>
+      <p class="tw-w-full tw-mb-2">Click on the button to save changes</p>
     </div>
     <div class="tw-flex tw-justify-end tw-w-full tw-h-auto tw-items-center">
       <a
@@ -229,6 +239,9 @@ export default {
     },
     containerId: {
       type: [Number, String, undefined]
+    },
+    invalid: {
+      type: Boolean
     }
   },
   computed: {
@@ -401,6 +414,14 @@ export default {
     mappedEditableColumns() {
       const list = [...this.basicColumns, ...this.extraFieldsColumns, ...this.udcColumns].filter(column => !['STATUS', 'CELLS'].includes(column.key))
       list.push({
+        title: 'Sample Groups',
+        key: 'SAMPLEGROUP',
+        className: '',
+        componentType: 'base-input-select',
+        data: this.sampleGroups,
+        inputType: 'select'
+      },
+      {
         title: 'Cell A',
         key: 'CELL_A',
         className: '',
@@ -514,6 +535,9 @@ export default {
           }
         })
       }
+    },
+    onUpdateSamples() {
+      this.$emit('bulk-update-samples')
     }
   },
   watch: {

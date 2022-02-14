@@ -47,10 +47,11 @@ const INITIAL_SAMPLE_STATE = {
 }
 
 // Use Location as idAttribute for this table
-var LocationSample = Sample.extend({
+const LocationSample = Sample.extend({
   idAttribute: 'LOCATION',
   defaults: INITIAL_SAMPLE_STATE
 })
+
 export const createFieldsForSamples = (fields) => {
   return fields.reduce((prev, key) => {
     prev[key] = {
@@ -72,7 +73,7 @@ const samplesModule = {
   namespaced: true,
   state: {
     // Proposal / visit info
-    samples: [INITIAL_SAMPLE_STATE],
+    samples: [],
     samplesCollection: new Samples(), // Backbone model we will use to save,
     containersSamplesGroupData: {
       shipmentId: null,
