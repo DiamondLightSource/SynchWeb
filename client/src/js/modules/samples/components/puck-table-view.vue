@@ -1,25 +1,37 @@
 <template>
-  <custom-table
-    :data="formattedSampleList"
-    :headers="sampleHeaders"
-    class="puck-view-table"
-    @row-clicked="handleDropSelection"
-  >
-    <template v-slot:default="{ data, rowClicked }">
-      <tr
-        v-for="(row, index) in data"
-        :key="index"
-        :class="{
-          'sample-group-added': row['ISADDED'],
-          'table-row': true
-        }"
-        @click="rowClicked(row)"
-      >
-        <td><base-input-checkbox @input="rowClicked(row)" :value="row['ISADDED']"/></td>
-        <td v-for="(header, headerIndex) in tableColumns" :key="headerIndex">{{ row[header.key] }}</td>
-      </tr>
-    </template>
-  </custom-table>
+  <div>
+    <div class="tw-w-full"><button class="button"></button></div>
+    <custom-table
+      :data="formattedSampleList"
+      :headers="sampleHeaders"
+      class="puck-view-table"
+      @row-clicked="handleDropSelection"
+    >
+      <template v-slot:table-headers="{ headers, sortHeader }">
+        <th><base-input-checkbox @input="toggleSelectAll" :value="allSelected"/></th>
+        <th
+          v-for="(header, index) in tableColumns" :key="index"
+          class=""
+          @click="sortHeader(header)">
+          {{header.title}}
+        </th>
+      </template>
+      <template v-slot:default="{ data, rowClicked }">
+        <tr
+          v-for="(row, index) in data"
+          :key="index"
+          :class="{
+            'sample-group-added': row['ISADDED'],
+            'table-row': true
+          }"
+          @click="rowClicked(row)"
+        >
+          <td><base-input-checkbox @input="rowClicked(row)" :value="row['ISADDED']"/></td>
+          <td v-for="(header, headerIndex) in tableColumns" :key="headerIndex">{{ row[header.key] }}</td>
+        </tr>
+      </template>
+    </custom-table>
+  </div>
 </template>
 <script>
 import CustomTable from 'app/components/table.vue'
@@ -52,7 +64,8 @@ export default {
         { title: 'Location', key: 'LOCATION' },
         { title: 'Protein Acronym', key: 'ACRONYM' },
         { title: 'Sample Name', key: 'NAME' },
-      ]
+      ],
+      allSelected: false
     }
   },
   methods: {
@@ -70,6 +83,16 @@ export default {
       } else {
         this.$emit('cell-clicked', [drop['LOCATION']])
       }
+    },
+    toggleSelectAll() {
+      const dropsList = this.formattedSampleList.map(sample => sample['LOCATION'])
+      if (!this.allSelected) {
+        this.$emit('cell-clicked', dropsList)
+      } else {
+        this.$emit('unselect-cell', dropsList)
+      }
+
+      this.allSelected = !this.allSelected
     }
   },
   computed: {

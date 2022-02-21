@@ -94,12 +94,15 @@ export default {
       default: ''
     }
   },
-  'methods': {
-    'getRowData': function(row, header) {
+  methods: {
+    getRowData: function(row, header) {
       const item = typeof row.get == 'undefined' ? row[header.key] : row.get(header.key)
       return typeof header.format == 'function' ? header.format(item) : item
     },
-  },
+    sortHeader(header) {
+      this.$emit('sort-by', header.key)
+    }
+  }
 }
 </script>
 

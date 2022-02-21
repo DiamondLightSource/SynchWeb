@@ -22,6 +22,17 @@
       v-on="$listeners"
       :actions="tableActions"
     >
+      <template v-slot:table-headers="{ headers, sortHeader, actions }">
+        <slot name="container-header" :headers="headers" :sortHeader="sortHeader">
+          <th
+            v-for="(header,index) in headers" :key="index"
+            class=""
+            @click="sortHeader(header)">
+            {{header.title}}
+          </th>
+          <th v-if="actions">{{actions}}</th>
+        </slot>
+      </template>
       <template slot-scope="{ data, headers, rowClicked, actions }">
         <slot :data="data" :headers="headers" :rowClicked="rowClicked">
           <tr
