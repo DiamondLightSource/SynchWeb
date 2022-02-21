@@ -4,6 +4,8 @@
 // The wrapper components use samples-map to figure out which views are required
 
 // Because we are using wrapper vue components we can use the standard lazy loading async method
+import store from "app/store/store";
+
 const ProteinListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-list-wrapper.vue')
 const ProteinAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-add-wrapper.vue')
 const ProteinViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-view-wrapper.vue')
@@ -223,6 +225,24 @@ const routes = [
     path: '/samples/groups',
     name: 'samples-groups',
     component: SampleGroups,
+    beforeEnter: (to, from, next) => {
+      // Start the loading animation
+      app.loading()
+
+      const currentProposal = store.getters['proposal/currentProposal']
+
+      if (!currentProposal) {
+        store.commit('notifications/addNotification', {
+          title: 'Error',
+          message: 'Proposal not found',
+          level: 'error'
+        })
+        next('/404')
+      } else {
+        next()
+      }
+      app.loading(false)
+    }
   },
   {
     path: '/samples/groups/edit(/id/)?:gid([0-9]+)?',
@@ -231,6 +251,24 @@ const routes = [
     props: route => ({
       gid: +route.params.gid || null
     }),
+    beforeEnter: (to, from, next) => {
+      // Start the loading animation
+      app.loading()
+
+      const currentProposal = store.getters['proposal/currentProposal']
+
+      if (!currentProposal) {
+        store.commit('notifications/addNotification', {
+          title: 'Error',
+          message: 'Proposal not found',
+          level: 'error'
+        })
+        next('/404')
+      } else {
+        next()
+      }
+      app.loading(false)
+    }
   },
 ]
 

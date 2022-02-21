@@ -9,19 +9,12 @@ OnClickEvent will only fire if there is data bound to the element with a valid L
 TODO - move the score colour methods to a utility class
 -->
 <template>
-  <div class="tw-w-full tw-flex tw-flex-col">
-    <div class="tw-flex tw-w-full tw-items-center tw-justify-between">
-      <p class="tw-text-lg">
-        Click on Row/Column to select {{ getSelectedDropPosition(currentSelectedDropIndex) }} drops for the Row/Column
-      </p>
+  <div class="md:tw-w-full lg:tw-w-3/4 xl:tw-w-3/4 2xl:tw-w-1/2 tw-flex tw-flex-col">
+    <p class="tw-text-xs tw-mb-3">Click on label button to select drops for that label.</p>
+    <p class="tw-text-xs tw-mb-3">Selecting individual drop will change label selection behaviour to select matching drop in that label.</p>
 
-      <base-button
-        @perform-button-action="toggleSelectionState"
-        class="button tw-mr-2"
-      >
-        {{ nextFilterState }}
-      </base-button>
-    </div>
+    <p class="tw-text-sm tw-mb-3"> Selecting {{ getSelectedDropPosition(currentSelectedDropIndex) }} Drops </p>
+    <base-button @perform-button-action="toggleSelectionState" class="button tw-w-32 tw-mb-2">{{ nextFilterState }}</base-button>
     <div id="plate" class="tw-w-full"></div>
   </div>
 </template>
@@ -34,7 +27,7 @@ import BaseButton from 'app/components/base-button.vue'
 
 
 export default {
-  name: 'PlateView',
+  name: 'plate-view',
   components: {
     'base-button': BaseButton
   },
@@ -114,7 +107,7 @@ export default {
       // Note we iterate over y direction first so drops read left-right, top-bottom
       for (let j = 0; j < this.container.drops.y; ++j) {
         for (let i = 0; i < this.container.drops.x; ++i) {
-          if (dropIndex != this.wellIndex) {
+          if (dropIndex !== this.wellIndex) {
             drops.push({
               x: this.cell.padding + this.dropWidth * i,
               y: this.cell.padding + this.dropHeight * j,
@@ -188,7 +181,7 @@ export default {
       this.updateSelectedDrops()
       this.currentSelectedDropIndex = -1
     },
-    currentSelectedDropIndex(newVal, oldVal) {
+    currentSelectedDropIndex(newVal) {
       this.getSelectedDropPosition(newVal)
     }
   },
@@ -202,30 +195,23 @@ export default {
   },
   methods: {
     drawContainer () {
-      let self = this
       // Standard practice for d3 chart is to define margin, then define graphic/chart area inset from main svg
       // This allows room for axes labels etc.
-      const margin = { top: 40, left: 40, bottom: 20, right: 20 }
+      // const margin = { top: 20, left: 20, bottom: 10, right: 10 }
 
       const numColumns = this.preparedData[0].length || 0
       const numRows = this.preparedData.length || 0
 
       const viewBoxWidth =
-        numColumns *
-        (this.cell.width + 2 * this.cell.padding + 2 * this.cell.margin) +
-        this.plateMargin.left +
-        this.plateMargin.right
+        (numColumns * (this.cell.width + 2 * this.cell.margin)) + this.plateMargin.left + this.plateMargin.right
       const viewBoxHeight =
-        numRows *
-        (this.cell.height + 2 * this.cell.padding + 2 * this.cell.margin) +
-        this.plateMargin.top +
-        this.plateMargin.bottom
+        (numRows * (this.cell.height + 2 * this.cell.margin)) + this.plateMargin.top + this.plateMargin.bottom
 
       const viewBox = [0, 0, viewBoxWidth, viewBoxHeight]
       this.plateSvg = d3Select('#plate')
         .append('svg')
         .attr('viewBox', viewBox.join(','))
-        .attr('preserveAspectRatio', 'xMaxYMax meet')
+        .attr('preserveAspectRatio', 'xMinYMin meet')
 
       if (this.labelAsButtons) {
         this.drawColumnLabelsAsButton()
@@ -428,13 +414,13 @@ export default {
       const tenthRemainder = number % 10
       const hundredthRemainder = number % 100
 
-      if (tenthRemainder == 1 && hundredthRemainder != 11) {
+      if (tenthRemainder === 1 && hundredthRemainder !== 11) {
         return `${number}st`
       }
-      else if (tenthRemainder == 2 && hundredthRemainder != 12) {
+      else if (tenthRemainder === 2 && hundredthRemainder !== 12) {
         return `${number}nd`
       }
-      else if (tenthRemainder == 3 && hundredthRemainder != 13) {
+      else if (tenthRemainder === 3 && hundredthRemainder !== 13) {
         return `${number}rd`
       }
       return `${number}th`
@@ -500,7 +486,7 @@ export default {
           .attr('class', (d, index) => `plate-column-${index + 1}-header pointer`)
           .on('click', (event, index) => self.handleDropSelection(event.target, index, 'column'))
           .attr('transform', (_, i) => `translate(${(this.cell.width + 2 * this.cell.padding + this.cell.margin) * i}, -30)`)
-          .each(function(d, i) {
+          .each(function() {
             d3Select(this)
               .append('foreignObject')
               .attr('width', (self.cell.width + self.cell.margin))

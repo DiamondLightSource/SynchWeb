@@ -1,7 +1,7 @@
 <template>
   <section class="tw-mx-auto">
-    <div v-if="containerComponent" class="tw-w-full tw-flex tw-flex-col">
-      <h1 class="tw-text-xl tw-mb-4">Container: {{ selectedContainerName }}</h1>
+    <div v-if="containerComponent" class="tw-w-full tw-flex tw-flex-col content">
+      <h1 class="tw-text-xl tw-mb-2 content">Container {{ selectedContainerName }} Samples <span class="tw-text-xs">(Added samples are highlighted)</span></h1>
       <component v-bind:is="containerComponent"
         :container="containerGeometry"
         :samples="samples"
@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import PlateView from './PlateView.vue'
+import PlateView from './plate-view.vue'
 import PuckTableView from './puck-table-view.vue'
 import ContainerTypes from 'modules/shipment/collections/platetypes.js'
 

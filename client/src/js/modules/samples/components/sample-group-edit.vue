@@ -38,6 +38,34 @@
 
     <div class="content">
       <h1>Containers</h1>
+      <div class="tw-flex tw-flex-row tw-w-full">
+        <div class="tw-mr-2">
+          <p class="tw-mb-2">Shipment</p>
+          <combo-box
+            class="tw-w-48 tw-mb-4 shipment-select"
+            :data="shipments"
+            value-field="SHIPPINGID"
+            text-field="SHIPPINGNAME"
+            default-text="Select a Shipment"
+            :input-index="0"
+            v-model="shipmentId"
+          />
+        </div>
+
+        <div class="tw-ml-2">
+          <p class="tw-mb-2">Dewar</p>
+          <combo-box
+            class="tw-w-48 tw-mb-4 dewars-select"
+            :is-disabled="!shipmentId"
+            :data="dewars"
+            value-field="DEWARID"
+            text-field="CODE"
+            default-text="Select a Dewar"
+            :input-index="1"
+            v-model="dewarId"
+          />
+        </div>
+      </div>
       <containers-list
         v-if="proposalObject.BEAMLINENAME"
         :showImaging="false"
@@ -91,6 +119,10 @@ import SamplesCollection from 'collections/samples.js'
 import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
 import ContainerModel from 'models/container.js'
 import SampleGroupNameModel from 'models/samplegroupname.js'
+import BaseInputSelect from 'app/components/base-input-select.vue'
+import Shipments from 'collections/shipments'
+import Dewars from 'collections/dewars'
+import ComboBox from 'app/components/combo-box.vue';
 
 export default {
   name: 'sample-group-edit',
@@ -98,6 +130,8 @@ export default {
     gid: Number
   },
   components: {
+    'combo-box': ComboBox,
+    'base-input-select': BaseInputSelect,
     'table-panel': Table,
     'container-graphic': ContainerGraphic,
     'base-button': BaseButton,
@@ -152,7 +186,13 @@ export default {
       queryParams: {},
       beamLineTypesContainerType: {
         'i02-2': 'plate',
-      }
+      },
+      shipmentsCollection: null,
+      dewarsCollection: null,
+      shipments: [],
+      dewars: [],
+      shipmentId: '',
+      dewarId: ''
     };
   },
   computed: {
@@ -177,8 +217,11 @@ export default {
     this.containerSamples = new SamplesCollection()
     this.sampleGroupSamples = new SampleGroupSamplesCollection()
     this.containerModel = new ContainerModel()
+    this.shipmentsCollection = new Shipments()
+    this.dewarsCollection = new Dewars()
   },
   mounted() {
+    this.fetchShipmentsForProposal()
     this.sampleGroupId = this.gid
     if (this.sampleGroupId) {
       this.getSampleGroupInformation()
@@ -402,16 +445,35 @@ export default {
           this.$store.commit('loading', false)
         }
       }
-    }
+    },
+    async fetchShipmentsForProposal() {
+      this.shipmentsCollection = new Shipments(null, { state: { pageSize: 99999 } })
+      const shipments = await this.$store.dispatch('getCollection', this.shipmentsCollection)
+      this.shipments = [{ SHIPPINGID: '', SHIPPINGNAME: '' }, ...shipments.toJSON()]
+    },
+    async fetchDewarsByShipmentId() {
+      this.dewarsCollection = new Dewars(null, { id: this.shipmentId, state: { pageSize: 99999 } })
+      const dewars = await this.$store.dispatch('getCollection', this.dewarsCollection)
+      this.dewars = [{ DEWARID: '', CODE: '' }, ...dewars.toJSON()]
+    },
   },
   provide() {
     return {
-      $tableActions: 'Action'
+      $tableActions: 'Action',
+      $dewarId: () => this.dewarId,
+      $restrictLoading: () => true
     }
   },
   beforeRouteLeave(to, from , next) {
     this.$store.commit('sampleGroups/resetSelectedSampleGroups')
     next()
+  },
+  watch: {
+    shipmentId(newValue) {
+      if (newValue) {
+        this.fetchDewarsByShipmentId()
+      }
+    }
   }
 };
 </script>
@@ -426,5 +488,10 @@ export default {
 }
 .maven-pro-font {
   font-family: 'Maven Pro', sans-serif;
+}
+>>> .shipment-select .items-list, >>> .dewars-select .items-list {
+  min-height: 40px;
+  max-height: 100px;
+  overflow-y: auto;
 }
 </style>
