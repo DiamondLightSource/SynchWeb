@@ -38,6 +38,7 @@
 
     <div class="content">
       <h1>Containers</h1>
+      <p class="tw-text-xs tw-mb-3">Select a shipment and dewar to see all associated containers</p>
       <div class="tw-flex tw-flex-row tw-w-full">
         <div class="tw-mr-2">
           <p class="tw-mb-2">Shipment</p>

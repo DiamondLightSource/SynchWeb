@@ -193,21 +193,27 @@ export default {
         this.$store.commit('loading', false)
       },
       handleFilterSelection(data) {
-        this.filters.forEach(filter => {
-          if (filter.id === data.id ) {
-            filter.isSelected = !data.isSelected
-            this.selectedFilterType = filter.isSelected ? filter.id : ''
-          } else {
-            filter.isSelected = false
-          }
-        })
+        if (!this.restrictLoading || (this.restrictLoading && this.dewarId)) {
+          this.filters.forEach(filter => {
+            if (filter.id === data.id ) {
+              filter.isSelected = !data.isSelected
+              this.selectedFilterType = filter.isSelected ? filter.id : ''
+            } else {
+              filter.isSelected = false
+            }
+          })
+        }
       },
       async handlePageChange(data) {
-        this.collection.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
-        await this.fetchContainers()
+        if (!this.restrictLoading || (this.restrictLoading && this.dewarId)) {
+          this.collection.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
+          await this.fetchContainers()
+        }
       },
       setUserContainersState() {
-        this.showUserContainers = !this.showUserContainers
+        if (!this.restrictLoading || (this.restrictLoading && this.dewarId)) {
+          this.showUserContainers = !this.showUserContainers
+        }
       }
     },
     watch: {
