@@ -47,19 +47,26 @@ class Status extends Page
                 //'Ring State' => 'CS-CS-MSTAT-01:MODE',
                 'Refill' => 'SR-CS-FILL-01:COUNTDOWN',
             );
+
+            $messages_pvs = array(
+                'Machine Status Message 1' => 'CS-CS-MSTAT-01:MESS01',
+                'Machine Status Message 2' => 'CS-CS-MSTAT-01:MESS02',
+            );
             
             if (!array_key_exists($this->arg('bl'), $bl_pvs)) $this->_error('No such beamline');
             
-            $pvs = array_merge($ring_pvs, $bl_pvs[$this->arg('bl')], array(
-                'Machine Status Message 1' => 'CS-CS-MSTAT-01:MESS01',
-                'Machine Status Message 2' => 'CS-CS-MSTAT-01:MESS02',
-            ));
-            $vals = $this->pv(array_values($pvs), false, true);
+            $pvs = array_merge($ring_pvs, $bl_pvs[$this->arg('bl')]);
+            $vals = $this->pv(array_values($pvs), false, false);
+            $messages_val = $this->pv(array_values($messages_pvs), false, true);
             
             $return = array();
             foreach ($pvs as $k => $pv) {
                 if ($k == 'Hutch') $return[$k] = $vals[$pv] == 7 ? 'Open' : 'Locked';
                 else $return[$k] = $vals[$pv];
+            }
+
+            foreach ($messages_pvs as $k => $v) {
+                $return[$k] = $messages_val[$v];
             }
             
             $this->_output($return);
