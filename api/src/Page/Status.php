@@ -42,10 +42,13 @@ class Status extends Page
             
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             
-            $ring_pvs = array('Ring Current' => 'SR-DI-DCCT-01:SIGNAL',
-                              //'Ring State' => 'CS-CS-MSTAT-01:MODE',
-                              'Refill' => 'SR-CS-FILL-01:COUNTDOWN'
-                              );
+            $ring_pvs = array(
+                'Ring Current' => 'SR-DI-DCCT-01:SIGNAL',
+                //'Ring State' => 'CS-CS-MSTAT-01:MODE',
+                'Refill' => 'SR-CS-FILL-01:COUNTDOWN',
+                'Machine Status Message 1' => 'CS-CS-MSTAT-01:MESS01',
+                'Machine Status Message 2' => 'CS-CS-MSTAT-01:MESS02',
+            );
             
             if (!array_key_exists($this->arg('bl'), $bl_pvs)) $this->_error('No such beamline');
             
