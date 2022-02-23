@@ -46,14 +46,15 @@ class Status extends Page
                 'Ring Current' => 'SR-DI-DCCT-01:SIGNAL',
                 //'Ring State' => 'CS-CS-MSTAT-01:MODE',
                 'Refill' => 'SR-CS-FILL-01:COUNTDOWN',
-                'Machine Status Message 1' => 'CS-CS-MSTAT-01:MESS01',
-                'Machine Status Message 2' => 'CS-CS-MSTAT-01:MESS02',
             );
             
             if (!array_key_exists($this->arg('bl'), $bl_pvs)) $this->_error('No such beamline');
             
-            $pvs = array_merge($ring_pvs, $bl_pvs[$this->arg('bl')]);
-            $vals = $this->pv(array_values($pvs));
+            $pvs = array_merge($ring_pvs, $bl_pvs[$this->arg('bl')], array(
+                'Machine Status Message 1' => 'CS-CS-MSTAT-01:MESS01',
+                'Machine Status Message 2' => 'CS-CS-MSTAT-01:MESS02',
+            ));
+            $vals = $this->pv(array_values($pvs), false, true);
             
             $return = array();
             foreach ($pvs as $k => $pv) {
