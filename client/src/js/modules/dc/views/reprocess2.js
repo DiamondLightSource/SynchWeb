@@ -452,6 +452,7 @@ define(['backbone', 'marionette', 'views/dialog',
                 { NAME: 'Xia2 DIALS', VALUE: 'xia2-dials' },
                 { NAME: 'Xia2 3dii', VALUE: 'xia2-3dii' },
                 { NAME: 'Fast DP', VALUE: 'fast_dp' },
+                { NAME: 'autoPROC', VALUE: 'autoPROC' },
             ])
 
             this.ui.met.html(this.pipelines.opts())
