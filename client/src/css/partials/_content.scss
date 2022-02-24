@@ -1556,6 +1556,18 @@ div.status.oavs {
     }
 }
 
+.streamed-pvs {
+    .pv {
+        &.on {
+            background: $content-active;
+        }
+
+        &.off {
+            background: $content-inactive;
+        }
+    }
+}
+
 
 .log.gda ul {
     height: 250px;
