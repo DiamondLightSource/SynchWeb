@@ -15,6 +15,8 @@ define(['marionette',
             'click a.dl': utils.signHandler,
             'click a.vaplog': 'showLog',
             'click a.vapplot': 'showPlots',
+            'click a.k8s': 'initiatePod',
+            'click a.podReady': 'openPod'
         },
 
         render: function() {
@@ -27,6 +29,16 @@ define(['marionette',
             if (this.model.get('FILETYPE') == 'Graph') {
                 this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
             }
+
+            if(this.model.get('FILETYPE') == 'Result' && this.model.get('FILENAME').endsWith('.nxs')) {
+                this.$el.append('<a href="#" class="button k8s">Launch H5Web Viewer</a>')
+                this.$el.append('<span class="podLoader" style="display:none">Starting Pod...<i class="fa icon grey fa-cog fa-spin"></i></span>')
+                this.$el.append('<a href="#" class="button podReady" style="display:none">Ready!</a>')
+            }
+
+            this.isPodRunning(this)
+            this.listenTo(app, 'pod:started', this.podStarted)
+            this.listenTo(app, 'pod:shutdown', this.podShutdown)
 
             return this
         },
@@ -80,6 +92,159 @@ define(['marionette',
                 }
             })
         },
+
+        // Mostly copied from xpdf dc except ui object to get html elemtns doesn't work here. Used this.$el.find() instead
+        initiatePod: function(e) {
+            e.preventDefault()
+            this.$el.find('.k8s')[0].style.display = 'none'
+            this.$el.find('.podLoader')[0].style.display = 'inline'
+
+            let self = this
+            Backbone.ajax({
+                url: app.apiurl + '/pod/h5web/' + this.model.get('DATACOLLECTIONID'),
+                method: 'get',
+                data: {
+                    user: app.user
+                },
+                success: function(response){
+                    console.log('success: ' + response.podId)
+                    self.pollPodStartupStatus(response.podId)
+                },
+                error: function(response){
+                    console.log('error: ' + response)
+                    self.$el.find('.podLoader')[0].style.display = 'none'
+                    self.$el.find('.k8s')[0].style.display = 'inline'
+
+                    let responseObj
+                    let alertMessage = "Failed to spin up pod"
+
+                    try {
+                        responseObj = JSON.parse(response.responseText)
+                        if('message' in responseObj)
+                            alertMessage = alertMessage + ': ' + responseObj.message
+                    } catch(e) {
+                        console.log('Response was not JSON', e)
+                    }
+
+                    app.alert({message: alertMessage})
+                }
+            })
+        },
+
+        pollPodStartupStatus: function(podId){
+            let self = this
+            var count = 0;
+            var check = function(count){
+                Backbone.ajax({
+                    url: app.apiurl + '/pod/h5web/status/' + podId,
+                    method: 'get',
+                    success: function(response){
+                        console.log(response[0])
+
+                        if(response[0].STATUS == 'Running'){
+                            self.$el.find('.podLoader')[0].style.display = 'none'
+                            self.$el.find('.podReady')[0].style.display = 'inline'
+                            self.$el.find('.podReady')[0].setAttribute('data-podip', response[0].IP)
+
+                            self.podActive = true
+                            self.startTimer()
+                        } else if (response[0].STATUS == 'Failed') {
+                            self.$el.find('.podLoader')[0].style.display = 'none'
+                            self.$el.find('.k8s')[0].style.display = 'inline'
+                            app.alert({message: response[0].MESSAGE})
+                        } else {
+                            count++
+                            self.$el.find('.podLoader')[0].childNodes[0].textContent = 'Starting Pod...' + response[0].STATUS + ' '
+
+                            if(count < 10){
+                                setTimeout(function(){check(count)}, 1000)
+                            }
+                            else {
+                                self.$el.find('.podLoader')[0].style.display = 'none'
+                                self.$el.find('.k8s')[0].style.display = 'inline'
+                                app.alert({message: 'Something got stuck trying to launch your pod, please try again later'})
+                            }
+                        }
+                    },
+                    error: function(response){
+                        self.$el.find('.podLoader')[0].style.display = 'none'
+                        self.$el.find('.k8s')[0].style.display = 'inline'
+                        console.log('error getting pod status: ' + response)
+                    }
+                })
+            }
+            check(count)
+        },
+
+        openPod: function(e){
+            e.preventDefault()
+            var ip = this.$el.find('.podReady')[0].getAttribute('data-podip')
+
+            var visit = this.model.get('FILEPATH').match(/[a-z]{2}[0-9]{5}-\d+/)[0]
+            var index = this.model.get('FILEPATH').indexOf(visit)
+            var path = this.model.get('FILEPATH').substring(index+visit.length+1, this.model.get('FILEPATH').length)
+
+            window.open('http://'+ip+':8089/?file='+ path + '/' + this.model.get('FILENAME'))
+        },
+
+        startTimer: function(){
+            let self = this
+            var timer = setInterval(function(){ self.isPodRunning(self) }, 5000)
+            this.timer = timer
+        },
+
+        isPodRunning: function(self){
+            Backbone.ajax({
+                url: app.apiurl + '/pod/h5web/running/' + self.model.get('DATACOLLECTIONID'),
+                method: 'get',
+                data: { user: app.user },
+                success: function(response){
+                    if(response[0]){
+                        // When navigating pages the ui elements may not immediately be available (from onRender)
+                        // Check they are available for intended use to avoid errors that hurt performance
+                        if(self.$el.find('.k8s')[0]){
+                            self.$el.find('.k8s')[0].style.display = 'none'
+                            self.$el.find('.podReady')[0].style.display = 'inline'
+                            self.$el.find('.podReady')[0].setAttribute('data-podip', response[0].IP)
+                            app.trigger('pod:started', response[0].IP)
+
+                            if(!self.podActive){
+                                self.podActive = true
+                                self.startTimer()
+                            }
+                        }
+                    } else {
+                        if(self.$el.find('.k8s')[0]){
+                            self.$el.find('.podLoader')[0].style.display = 'none'
+                            self.$el.find('.podReady')[0].style.display = 'none'
+                            self.$el.find('.k8s')[0].style.display = 'inline'
+
+                            self.podActive = false
+                            clearInterval(self.timer)
+                            app.trigger('pod:shutdown')
+                        }
+                    }
+                },
+                error: function(response){
+                    console.log(response)
+                    app.alert({message: 'Failed to get status of pod for data collection: ' + self.model.get('ID')})
+                }
+            })
+        },
+
+        podStarted: function(ip){
+            if(this.$el.find('.k8s')[0]){
+                this.$el.find('.k8s')[0].style.display = 'none'
+                this.$el.find('.podReady')[0].style.display = 'inline'
+                this.$el.find('.podReady')[0].setAttribute('data-podip', ip)
+            }
+        },
+        podShutdown: function(){
+            if(this.$el.find('.k8s')[0]){
+                this.$el.find('.k8s')[0].style.display = 'inline'
+                this.$el.find('.podReady')[0].style.display = 'none'
+            }
+        }
     })
 
     return Marionette.LayoutView.extend({
