@@ -29,8 +29,6 @@ class Pod extends Page
         $path = $filePath['IMAGEDIRECTORY'];
         $file = $filePath['FILETEMPLATE'];
 
-        $uid = exec("id -u ".$this->arg('user'));
-
         // Insert row acknowledging a valid pod request was sent to SynchWeb
         // Need to update the Pod table app enum field to allow h5web and jnb (jupyter notebook)
         $this->db->pq("INSERT INTO Pod (podid, app, status, personid, filePath) 
@@ -40,7 +38,6 @@ class Pod extends Page
 
         $data = array(
             'user' => $this->arg('user'),
-            'userid' => $uid,
             'path' => $path,
             'file' => $file,
             'podid' => $podId,
