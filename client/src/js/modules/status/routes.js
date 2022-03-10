@@ -1,6 +1,7 @@
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import StatusView from 'modules/status/views/status'
+import BeamlineStatusView from 'modules/status/views/beamline-status-view.vue'
 
 const routes = [
     {
@@ -13,6 +14,10 @@ const routes = [
             },
             breadcrumbs: [{ title: 'Beamline Status' }, { title: route.params.bl }]
         })
+    },
+    {
+        path: '/status-vue/bl/:bl',
+        component: BeamlineStatusView,
     }
 ]
 

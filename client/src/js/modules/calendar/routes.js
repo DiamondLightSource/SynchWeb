@@ -4,7 +4,7 @@
 import MarionetteApplication from 'app/marionette-application.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import Page from 'app/layouts/page.vue'
-import CalendarView from 'modules/calendar/views/calendar.js'
+import CalendarView from 'modules/calendar/views/calendar-view.vue'
 import CurrentView from 'modules/calendar/views/current.js'
 
 // Initialize MarionetteApplication if not already existing
@@ -48,23 +48,16 @@ const routes = [
         {
           path: '',
           name: 'cal',
-          component: MarionetteView,
-          props: { 
-            mview: CalendarView,
-            options: {
-              all: 1,
-            }
-          }
+          component: CalendarView,
+          props: () => ({
+            bl: ''
+          })
         },
         {
           path: 'bl/:bl',
-          component: MarionetteView,
-          props: route => ({ 
-            mview: CalendarView, 
-            options: {
-              all: 1, 
-              bl: route.params.bl
-            }
+          component: CalendarView,
+          props: route => ({
+            bl: route.params.bl
           })
         }
       ]

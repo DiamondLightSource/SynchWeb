@@ -50,12 +50,12 @@ define(['marionette',
             _.each(statuses, function(b, k) {
                 var bd = this.$el.find('.button.'+k.toLowerCase())
                 _.each(b, function(s, v) {
-                    this.model.get('val')[k] == v ? bd.addClass(s) : bd.removeClass(s)
+                    this.model.get('val')[k] === v ? bd.addClass(s) : bd.removeClass(s)
                 }, this)
             }, this)
             
             var b = this.$el.find('.button.ffe')
-            var ffe = (this.model.get('MSTA') & 1<<6) == 1<<6
+            var ffe = (this.model.get('MSTA') & 1<<6) === 1<<6
             ffe ? b.addClass('inactive') : b.removeClass('inactive')
         },
     })
@@ -63,13 +63,12 @@ define(['marionette',
         
     return Marionette.CollectionView.extend({
         getChildView: function(m) {
-            return m.get('t') == 1 ? MotorView : ToggleView
+            return m.get('t') === 1 ? MotorView : ToggleView
         },
         
-        initialize: function(options) {
+        initialize: function() {
             this.collection = new Motors(null, { bl: this.getOption('bl'), epid: this.getOption('epid') })
-            
-            var self = this
+
             this.collection.fetch()//.done(function() { console.log(self.collection) })
         },
         

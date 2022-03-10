@@ -54,8 +54,7 @@ define(['marionette',
             }
         },
         
-        initialize: function(options) {
-        },
+        initialize: function(options) {},
         
         onRender: function() {
             this.ep.show(new EpicsPagesView({ bl: this.getOption('bl') }))
