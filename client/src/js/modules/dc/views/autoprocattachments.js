@@ -30,7 +30,7 @@ define(['marionette',
                 this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
             }
 
-            if(this.model.get('FILETYPE') == 'Result' && this.model.get('FILENAME').endsWith('.nxs')) {
+            if(this.model.get('FILETYPE') == 'Result' && this.canUseH5Web(this.model.get('FILENAME'))) {
                 this.$el.append('<a href="#" class="button k8s">Launch H5Web Viewer</a>')
                 this.$el.append('<span class="podLoader" style="display:none">Starting Pod...<i class="fa icon grey fa-cog fa-spin"></i></span>')
                 this.$el.append('<a href="#" class="button podReady" style="display:none">Ready!</a>')
@@ -41,6 +41,16 @@ define(['marionette',
             this.listenTo(app, 'pod:shutdown', this.podShutdown)
 
             return this
+        },
+
+        canUseH5Web: function(filename) {
+            extensions = ['.nxs', '.h5', '.hdf', '.hdf5', '.ptyr']
+
+            for(var i=0; i<extensions.length; i++){
+                if(filename.endsWith(extensions[i]))
+                    return true
+            }
+            return false
         },
 
         showPlots: function(e) {
