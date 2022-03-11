@@ -121,8 +121,6 @@ export default {
     onHover(ref, addHover) {
       const hoveredRef = this.$refs[ref]
 
-      console.log({ hoveredRef })
-
       if (addHover) {
         hoveredRef.classList.add('tw-h-auto', 'tw-absolute', 'tw-z-9999')
         hoveredRef.classList.remove('tw-invisible', 'tw-h-1')

@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <filter-pills v-if="displayFilters" :filter-data="beamlines" value-field="id" text-field="name" :selected="this.selectedBeamline" @filter-selected="updateSelectedFilter" />
+    <filter-pills class="tw-mt-3" v-if="displayFilters" :filter-data="beamlines" value-field="id" text-field="name" :selected="this.selectedBeamline" @filter-selected="updateSelectedFilter" />
     <h1>Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
 
     <div class="tw-w-full tw-flex tw-mb-2">
@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <div class="tw-w-full tw-flex tw-flex-row sm:tw-flex-col tw-overflow-x-scroll sm:tw-overflow-x-hidden tw-h-auto">
+    <div class="tw-hidden tw-w-full sm:tw-flex tw-flex-row sm:tw-flex-col tw-overflow-x-scroll sm:tw-overflow-x-hidden tw-h-auto">
       <div
         v-for="(weekValues, weekKey) in getDatesForDay(startDayOfMonth)"
         :key="weekKey"
@@ -27,17 +27,58 @@
           v-for="(date, dateIndex) in weekValues"
           :key="dateIndex"
           :class="{
-            'tw-bg-content-cal-background': date && currentDate.getUTCDate() !== date,
-            'tw-bg-content-cal-header-background': date && currentDate.getUTCDate() === date
+            'tw-bg-content-cal-background': !isToday(date),
+            'tw-bg-content-cal-header-background': isToday(date)
           }"
           class="sm:tw-w-1/7  tw-h-32 tw-mx-1">
-          <calendar-day
+          <div
             v-if="date"
-            :date="date"
-            :day="days[dateIndex]"
-            :visits-data="sortedVisitsByDay[date]"
-            :month="currentSelectedMonth"
-            :year="currentYear"/>
+            class="tw-hidden sm:tw-block tw-p-2 tw-h-32 tw-overflow-hidden hover:tw-overflow-visible hover:tw-h-auto hover:tw-relative"
+            @mouseenter="onHover(`day-${date}-${currentSelectedMonth}-${currentYear}`, true)"
+            @mouseleave="onHover(`day-${date}-${currentSelectedMonth}-${currentYear}`, false)">
+            <div :class="['sm:tw-bg-transparent', sortedVisitsByDay[date].length > 0 ? 'tw-bg-content-filter-background' : '']">
+              <p class="tw-p-4 sm:tw-p-1">{{ date }}</p>
+            </div>
+            <calendar-day-events
+              class="tw-hidden sm:tw-block"
+              :ref="`day-${date}-${currentSelectedMonth}-${currentYear}`"
+              :date="date"
+              :day="days[dateIndex]"
+              :visits-data="sortedVisitsByDay[date]"
+              :month="currentSelectedMonth"
+              :year="currentYear"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tw-w-full sm:tw-hidden tw-flex tw-flex-row tw-overflow-x-scroll" @scroll="handleDivScroll">
+      <div v-for="([date, day], index) in Object.entries(dateAndDays)" :key="index" :class="[date && sortedVisitsByDay[date].length > 0 ? 'tw-bg-content-filter-background' : '', 'tw-mx-1']">
+        <p class="tw-p-4 sm:tw-p-1">{{ day }}</p>
+        <p class="tw-p-4 sm:tw-p-1 tw-text-center">{{ date }}</p>
+      </div>
+    </div>
+    <div class="tw-w-full sm:tw-hidden tw-overflow-y-scroll mobile-calendar-view">
+      <div
+        v-for="(weekValues, weekKey) in getDatesForDay(startDayOfMonth)"
+        :key="weekKey">
+        <div
+          v-for="(date, dateIndex) in weekValues"
+          :key="dateIndex"
+          :class="{
+            'tw-bg-content-cal-background': !isToday(date),
+            'tw-bg-content-cal-header-background': isToday(date),
+            'tw-my-2': true
+          }">
+          <div v-if="date && sortedVisitsByDay[date].length">
+            <div class="tw-mb-2">{{ days[dateIndex] }} {{ date }} {{ currentSelectedMonth }}</div>
+            <calendar-day-events
+              :date="date"
+              :day="days[dateIndex]"
+              :visits-data="sortedVisitsByDay[date]"
+              :month="currentSelectedMonth"
+              :year="currentYear"/>
+          </div>
         </div>
       </div>
     </div>
@@ -49,14 +90,14 @@ import { mapGetters } from 'vuex'
 
 import Visits from 'collections/visits'
 import Beamlines from 'collections/bls'
-import CalendarDay from 'modules/calendar/views/components/calendar-day.vue'
 import FilterPills from 'app/components/filter-pills.vue'
+import CalendarDayEvents from 'modules/calendar/views/components/calendar-day-events.vue'
 
 export default {
   name: 'calendar-view',
   components: {
-    'filter-pills': FilterPills,
-    'calendar-day': CalendarDay
+    'calendar-day-events': CalendarDayEvents,
+    'filter-pills': FilterPills
   },
   props: {
     bl: {
@@ -80,6 +121,15 @@ export default {
         'Friday',
         'Saturday',
         'Sunday',
+      ],
+      shortDays: [
+        'Sun',
+        'Mon',
+        'Tues',
+        'Wed',
+        'Thurs',
+        'Fri',
+        'Sat',
       ],
       months: [
         'January',
@@ -203,6 +253,24 @@ export default {
         return acc
       }, {})
     },
+    isToday(date) {
+      const todaysDate = new Date()
+      const [month, day, year] = [todaysDate.getUTCMonth(), todaysDate.getUTCDate(), todaysDate.getUTCFullYear()]
+      return date === day && month === this.currentMonth && year === this.currentYear
+    },
+    onHover(ref, addHover) {
+      const hoveredRef = this.$refs[ref][0].$el
+
+      if (hoveredRef && addHover) {
+        hoveredRef.classList.add('tw-bg-content-cal-hl1-background', 'tw-h-auto', 'tw-absolute')
+
+      } else if (hoveredRef && !addHover) {
+        hoveredRef.classList.remove('tw-bg-content-cal-hl1-background', 'tw-h-auto', 'tw-absolute')
+      }
+    },
+    handleDivScroll(event) {
+      console.log({ event })
+    }
   },
   computed: {
     ...mapGetters({
@@ -231,9 +299,6 @@ export default {
     startDayOfMonth() {
       return new Date(this.currentYear, this.currentMonth, 1).getUTCDay()
     },
-    endDayOfMonth() {
-      return new Date(this.currentYear, this.currentMonth, this.daysInMonth).getUTCDay()
-    },
     sortedVisitsByDay() {
       return Array(this.daysInMonth).fill('').reduce((acc, curr, index) => {
         const number = index + 1
@@ -242,6 +307,14 @@ export default {
         acc[number] = this.visits.filter(visit => {
           return new Date(visit['STISO']) >= date && new Date(visit['STISO']) < new Date(date.getTime() + (24 * 3600 * 1000))
         })
+
+        return acc
+      }, {})
+    },
+    dateAndDays() {
+      return Array(this.daysInMonth).fill('').reduce((acc, curr, index) => {
+        const dayOfWeek = this.startDayOfMonth + index
+        acc[index + 1] = this.shortDays[dayOfWeek % 6]
 
         return acc
       }, {})
@@ -260,5 +333,8 @@ export default {
 <style>
 .calendar-nav-button {
   @apply tw-h-10 tw-p-2 tw-w-1/4 tw-flex tw-items-center tw-justify-center tw-mx-1 tw-bg-content-cal-background tw-cursor-pointer
+}
+.mobile-calendar-view {
+  height: 500px;
 }
 </style>
