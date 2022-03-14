@@ -1268,6 +1268,7 @@ class Sample extends Page
 
         function _prepare_strategy_option_for_sample($a) {
             $is_valid_sample_group = false;
+            $strategyOptionsData = [];
             if (isset($a['SAMPLEGROUP'])) {
                 $args = array($this->proposalid);
                 array_push($args, $a['SAMPLEGROUP']);
@@ -1275,21 +1276,36 @@ class Sample extends Page
 
                 if (sizeof($check)) {
                     $is_valid_sample_group = true;
+                    $strategyOptionsData["sample_group"] = $a["SAMPLEGROUP"];
+                } else {
+                    $strategyOptionsData["sample_group"] = null;
                 }
             }
 
-            if ($a['SCREENINGMETHOD'] == 'best' && $is_valid_sample_group) {
-                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => intval($a['SCREENINGCOLLECTVALUE']));
+            if (isset($a["SCREENINGMETHOD"]) && $a['SCREENINGMETHOD'] == 'best' && $is_valid_sample_group) {
+                $strategyOptionsData = array_merge($strategyOptionsData, array(
+                    "screen" => $a['SCREENINGMETHOD'],
+                    "collect_samples" => intval($a['SCREENINGCOLLECTVALUE']),
+                ));
 
-                $a['SAMPLEGROUP'] = intval($a['SAMPLEGROUP']);
-                $strategyOptionsData['sample_group'] = $a['SAMPLEGROUP'];
                 $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
             }
-            elseif ($a['SCREENINGMETHOD'] == 'all') {
-                $strategyOptionsData = array("screen" => $a['SCREENINGMETHOD'], "collect_samples" => null, "sample_group"=> null);
+            else if (isset($a["SCREENINGMETHOD"]) && $a['SCREENINGMETHOD'] == 'all') {
+                $strategyOptionsData = array_merge($strategyOptionsData, array(
+                    "screen" => $a['SCREENINGMETHOD'],
+                    "collect_samples" => null
+                ));
+
                 $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
             }
-            else if ($a['SCREENINGMETHOD'] == 'none' || !isset($a['SCREENINGMETHOD'])) {
+            else if (isset($a["SCREENINGMETHOD"]) && $a['SCREENINGMETHOD'] == 'none') {
+                $strategyOptionsData = array_merge($strategyOptionsData, array(
+                    "screen" => $a['SCREENINGMETHOD'],
+                    "collect_samples" => null
+                ));
+
+                $a['STRATEGYOPTION'] = json_encode($strategyOptionsData);
+            } else {
                 $a['STRATEGYOPTION'] = null;
             }
 
