@@ -231,14 +231,23 @@ export default {
     // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
     async onSaveSample(location) {
-      const result = await this.$refs.containerForm.validate()
-      if (result) {
-        await this.saveSample(location)
-        const samplesRef = this.$refs.samples
-        samplesRef.$refs[`sample-row-${location}`][0].closeSampleEditing()
-      }
-      else {
-        this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
+      try {
+        this.$store.commit('loading', true)
+        const result = await this.$refs.containerForm.validate()
+
+        if (result) {
+          await this.saveSample(location)
+          const samplesRef = this.$refs.samples
+          samplesRef.$refs[`sample-row-${location}`][0].closeSampleEditing()
+          this.$refs.containerForm.reset()
+        }
+        else {
+          this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
+        }
+      } catch (error) {
+        this.$store.commit('notifications/addNotification', { message: 'An error occurred while updating sample data', level: 'error'})
+      } finally {
+        this.$store.commit('loading', false)
       }
     },
     async saveSample(location) {
