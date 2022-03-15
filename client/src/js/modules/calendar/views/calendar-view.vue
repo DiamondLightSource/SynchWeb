@@ -52,41 +52,53 @@
       </div>
     </div>
 
-    <div class="tw-w-full sm:tw-hidden tw-flex tw-flex-row tw-overflow-x-scroll" @scroll="handleDivScroll">
-      <div v-for="([date, day], index) in Object.entries(dateAndDays)" :key="index" :class="[date && sortedVisitsByDay[date].length > 0 ? 'tw-bg-content-filter-background' : '', 'tw-mx-1']">
-        <p class="tw-p-4 sm:tw-p-1">{{ day }}</p>
-        <p class="tw-p-4 sm:tw-p-1 tw-text-center">{{ date }}</p>
+    <div
+      class="tw-w-full sm:tw-hidden tw-flex tw-flex-row tw-overflow-x-scroll"
+      id="mobileDateWrapper"
+      @scroll="handleScrollDebounced({
+        event: $event,
+        targetId: 'mobileDayVisitsWrapper',
+        targetDirection: 'ttb',
+        sourceDirection: 'rtl'
+      })">
+      <div
+        v-for="([date, day], index) in Object.entries(dateAndDays)"
+        @click="goToDate(date)"
+        :key="index"
+        :data-visit="date && sortedVisitsByDay[date].length > 0 ? date : ''"
+        :class="[
+          date && sortedVisitsByDay[date].length > 0 ? 'tw-bg-content-filter-background' : '',
+          'tw-mx-1',
+          'tw-cursor-pointer'
+        ]">
+        <p class="tw-p-4 sm:tw-p-1" :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']">{{ day }}</p>
+        <p class="tw-p-4 sm:tw-p-1 tw-text-center" :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']">{{ date }}</p>
       </div>
     </div>
-    <div class="tw-w-full sm:tw-hidden tw-overflow-y-scroll mobile-calendar-view">
+    <div
+      class="tw-w-full sm:tw-hidden tw-overflow-y-scroll mobile-calendar-view tw-mt-4"
+      id="mobileDayVisitsWrapper">
+
       <div
-        v-for="(weekValues, weekKey) in getDatesForDay(startDayOfMonth)"
-        :key="weekKey">
-        <div
-          v-for="(date, dateIndex) in weekValues"
-          :key="dateIndex"
-          :class="{
-            'tw-bg-content-cal-background': !isToday(date),
-            'tw-bg-content-cal-header-background': isToday(date),
-            'tw-my-2': true
-          }">
-          <div v-if="date && sortedVisitsByDay[date].length">
-            <div class="tw-mb-2">{{ days[dateIndex] }} {{ date }} {{ currentSelectedMonth }}</div>
-            <calendar-day-events
-              :date="date"
-              :day="days[dateIndex]"
-              :visits-data="sortedVisitsByDay[date]"
-              :month="currentSelectedMonth"
-              :year="currentYear"/>
-          </div>
+        v-for="([date, day], index) in Object.entries(dateAndDays)"
+        :key="index"
+        :data-visit="date && sortedVisitsByDay[date].length > 0 ? date : ''">
+        <div v-if="date && sortedVisitsByDay[date].length">
+          <div class="tw-mb-2">{{ day }} {{ date }} {{ currentSelectedMonth }}</div>
+          <calendar-day-events
+            :date="Number(date)"
+            :day="day"
+            :visits-data="sortedVisitsByDay[date]"
+            :month="currentSelectedMonth"
+            :year="currentYear"/>
         </div>
       </div>
     </div>
   </div>
-
 </template>
 <script>
 import { mapGetters } from 'vuex'
+import { debounce } from 'lodash-es'
 
 import Visits from 'collections/visits'
 import Beamlines from 'collections/bls'
@@ -258,6 +270,14 @@ export default {
       const [month, day, year] = [todaysDate.getUTCMonth(), todaysDate.getUTCDate(), todaysDate.getUTCFullYear()]
       return date === day && month === this.currentMonth && year === this.currentYear
     },
+    isPastDate(date) {
+      const todaysDate = new Date()
+      const currentDate = new Date(todaysDate.getUTCFullYear(), todaysDate.getUTCMonth(), todaysDate.getUTCDate())
+      const dateItem = new Date(this.currentYear, this.currentMonth, date)
+
+      return currentDate > dateItem
+
+    },
     onHover(ref, addHover) {
       const hoveredRef = this.$refs[ref][0].$el
 
@@ -268,8 +288,50 @@ export default {
         hoveredRef.classList.remove('tw-bg-content-cal-hl1-background', 'tw-h-auto', 'tw-absolute')
       }
     },
-    handleDivScroll(event) {
-      console.log({ event })
+    handleScrollDebounced: debounce(function({ event, targetId, targetDirection, sourceDirection }) {
+      this.handleDivScroll({event, targetId, targetDirection, sourceDirection})
+    }, 1000),
+    handleDivScroll({
+      event,
+      targetId,
+      targetDirection,
+      sourceDirection
+    }) {
+      const children = event.target.children
+      const parentRect = event.target.getBoundingClientRect()
+      const otherContainer = document.getElementById(targetId)
+      const otherContainerRect = otherContainer.getBoundingClientRect()
+      let scrollingDivAttribute = ''
+
+      const parentStartDirection = sourceDirection === 'rtl' ? 'left' : 'top'
+      const childStart = sourceDirection === 'rtl' ? 'right' : 'bottom'
+
+      const targetChildPart = targetDirection === 'rtl' ? 'offsetLeft' : 'offsetTop'
+      const targetContainerDirection = targetDirection === 'rtl' ? 'scrollLeft' : 'scrollTop'
+      const targetRectDirection = targetDirection === 'rtl' ? 'left' : 'top'
+
+      for (let i = 0; i < children.length; i++) {
+        const childRect = children[i].getBoundingClientRect()
+        if (Math.floor(childRect[childStart]) - Math.floor(parentRect[parentStartDirection]) > 0) {
+          scrollingDivAttribute = children[i].getAttribute('data-visit')
+          break
+        }
+      }
+
+      const matchingChild = otherContainer.querySelectorAll(`[data-visit="${scrollingDivAttribute}"]`)
+
+      if (matchingChild.length > 0 && matchingChild[0].getAttribute('data-visit') === scrollingDivAttribute) {
+        otherContainer[targetContainerDirection] = Math.floor(matchingChild[0][targetChildPart]) - Math.floor(otherContainerRect[targetRectDirection])
+      }
+    },
+    goToDate(date) {
+      const visitsWrapper = document.getElementById('mobileDayVisitsWrapper')
+      const dateElement = visitsWrapper.querySelectorAll(`[data-visit="${date}"]`)
+      const parentRect = visitsWrapper.getBoundingClientRect()
+
+      if (dateElement.length > 0 && dateElement[0].getAttribute('data-visit') === String(date)) {
+        visitsWrapper.scrollTop = Math.floor(dateElement[0].offsetTop) - Math.floor(parentRect.top)
+      }
     }
   },
   computed: {
@@ -314,7 +376,7 @@ export default {
     dateAndDays() {
       return Array(this.daysInMonth).fill('').reduce((acc, curr, index) => {
         const dayOfWeek = this.startDayOfMonth + index
-        acc[index + 1] = this.shortDays[dayOfWeek % 6]
+        acc[index + 1] = this.shortDays[dayOfWeek % 7]
 
         return acc
       }, {})

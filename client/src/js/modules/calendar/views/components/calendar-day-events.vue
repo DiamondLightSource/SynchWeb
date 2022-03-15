@@ -1,5 +1,5 @@
 <template>
-  <div :id="`${date}_${month}_${year}`" class="tw-p-2">
+  <div :id="`${date}_${month}_${year}`" class="tw-p-2 tw-w-full">
     <div class="tw-ml-2 tw-py-2 tw-border-b tw-border-content-cal-hl1-background" v-for="(visitHour, visitHourIndex) in visitDataKeys" :key="visitHourIndex">
       <p>{{ visitHour }}</p>
       <div v-for="(session, sessionIndex) in visitsByTime[visitHour]" :key="sessionIndex" class="tw-ml-1">

@@ -135,6 +135,7 @@ module.exports = {
         'content-dark-background': '#dedede',
         'content-cal-header-background': '#cecece',
         'content-cal-background': '#eeeeee',
+        'content-cal-past-date': 'rgb(153, 153, 153)',
         'content-cal-hl1-background': '#dfdfdf',
         'content-cal-hl2-background': '#f3f3f3',
         'content-help-background': '#000000',
