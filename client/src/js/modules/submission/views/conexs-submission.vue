@@ -17,8 +17,8 @@
             <br /><br />
 
             <div v-if="form != 'orca'">
-                <label class="left">Element:</label>
-                <select name="element" v-model="element" v-on:change="overviewBuilder()">
+                <label v-if="form == 'fdmnes'" class="left">Element:</label>
+                <select v-if="form == 'fdmnes'" name="element" v-model="element" v-on:change="overviewBuilder()">
                     <option v-for="e in elements">{{ e['element'] }}</option>
                 </select>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -244,7 +244,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         <li>
                             <label class="left">Atoms:</label>
                             <table-component
-                                :headers="atomHeaders"
+                                :headers="qeAtomHeaders"
                                 :data="atomData"
                                 actions="Actions"
                                 addRow="addRow"
@@ -262,6 +262,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                                     <td><input type="text" v-model="atomX" name="atomX" v-bind:class="{ferror: errors.has('atomX')}" v-validate="'required|decimal|min_value:-100|max_value:100'"/></td>
                                     <td><input type="text" v-model="atomY" name="atomY" v-bind:class="{ferror: errors.has('atomY')}" v-validate="'required|decimal|min_value:-100|max_value:100'"/></td>
                                     <td><input type="text" v-model="atomZ" name="atomZ" v-bind:class="{ferror: errors.has('atomZ')}" v-validate="'required|decimal|min_value:-100|max_value:100'"/></td>
+                                    <td><input type="checkbox" title="Only one atom can be marked as absorbing" v-model="absorbingAtom" :disabled="absorbingAtomDisabled"/></td>
                                     <td><button class="button" type="button" v-on:click="addAtom(); overviewBuilder()">Add</button></td>
                                 </template>
                             </table-component>
@@ -516,7 +517,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
 
                 // QUANTUM ESPRESSO
-                qe_abs_edge: ['K', 'L1', 'L2'],
+                qe_abs_edge: ['K', 'L1', 'L2', 'L23'],
 
                 // Control
                 quantumEspressoDisplay: 'none',
@@ -548,6 +549,9 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                 // Atomic_Position
                 atomicPositionType: '',
+                qeAtomHeaders: [{key: 'Atom', title: 'Atom'}, {key: 'X', title: 'X'}, {key: 'Y', title: 'Y'}, {key: 'Z', title: 'Z'}, {key: 'AbsorbingAtom', title: 'Absorbing Atom?'}],
+                absorbingAtom: false,
+                absorbingAtomDisabled: false,
 
                 // Cell_Parameters
                 cellParamsType: '',
@@ -1011,9 +1015,15 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                 this.atomData.forEach(function(item, index){
                     self.ppElements.forEach(function(el, idx){
-                        if(el.element == item.Atom && !ppe.includes(el.element)){
-                            self.output += el.element + " " + el.mass + " " + el.pseudopotential + "\n"
-                            ppe.push(el.element)
+                        if(el.element == item.Atom && !ppe.includes(el.element) || el.element == item.Atom && item.AbsorbingAtom == 'Yes'){
+                            if(item.AbsorbingAtom == 'Yes'){
+                                self.output += el.element + "* " + el.mass + " " + el.pseudopotential + "\n"
+                                ppe.push(el.element + '*')
+                            }
+                            else {
+                                self.output += el.element + " " + el.mass + " " + el.pseudopotential + "\n"
+                                ppe.push(el.element)
+                            }
                         }
                     })
                 })
@@ -1023,7 +1033,10 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                 this.atomData.forEach(function(item, index){
                     console.log(item)
-                    self.output += item.Atom + " " + item.X + " " + item.Y + " " + item.Z + "\n"
+                    if(item.AbsorbingAtom == 'Yes')
+                        self.output += item.Atom + "* " + item.X + " " + item.Y + " " + item.Z + "\n"
+                    else
+                        self.output += item.Atom + " " + item.X + " " + item.Y + " " + item.Z + "\n"
                 })
                 this.output += "\n\n"
 
@@ -1192,7 +1205,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         let self = this
                         let exists = false
                         this.atomData.forEach(function(item, index){
-                            if(item.Atom == self.atom){
+                            if(item.Atom == self.atom && item.AbsorbingAtom == 'Yes' && self.absorbingAtom || item.Atom == self.atom && item.AbsorbingAtom == 'No' && !self.absorbingAtom){
                                 exists = true
                             }
                         })
@@ -1212,9 +1225,13 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         Atom: this.atom,
                         X: this.atomX,
                         Y: this.atomY,
-                        Z: this.atomZ
+                        Z: this.atomZ,
+                        AbsorbingAtom: this.absorbingAtom ? 'Yes' : 'No'
                     }
                     this.atomData[this.atomData.length] = newAtom
+
+                    if(this.absorbingAtom)
+                        this.absorbingAtomDisabled = true
 
                     if(this.structureFile) {
                         this.structureFile = null
@@ -1253,6 +1270,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     this.atomX = 0
                     this.atomY = 0
                     this.atomZ = 0
+                    this.absorbingAtom = false
                 } else {
                     app.alert({title: 'Error', message: "Invalid atom data!"})
                 }
@@ -1265,13 +1283,19 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             removeAtom: function(atomID){
                 var atomIndex
                 var atomName
+                var absorbingAtomLocal
                 for(var i = 0; i< this.atomData.length; i++){
                     if(this.atomData[i].ID == atomID){
                         atomIndex = i
                         atomName = this.atomData[i].Atom
+                        absorbingAtomLocal = this.atomData[i].AbsorbingAtom
                         break
                     }
                 }
+
+                if(this.atomData[atomIndex].AbsorbingAtom == 'Yes')
+                    this.absorbingAtomDisabled = false
+
                 this.atomData.splice(atomIndex, 1)
 
                 if(this.form == 'qe') {
@@ -1279,7 +1303,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                     var exists = false
                     this.atomData.forEach(function(item, index){
-                        if(item.Atom == atomName){
+                        if(item.Atom == atomName && absorbingAtomLocal == 'Yes' && item.AbsorbingAtom == 'Yes' || item.Atom == atomName && absorbingAtomLocal == 'No' && item.AbsorbingAtom == 'No'){
                             exists = true
                         }
                     })
