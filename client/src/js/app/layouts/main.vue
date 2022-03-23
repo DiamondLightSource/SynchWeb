@@ -54,6 +54,7 @@ import NotificationPersist from 'app/components/notification-persist.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import Dialog from 'app/components/dialogbox.vue'
 import SearchMobile from 'app/components/search-mobile.vue'
+import Backbone from 'backbone'
 
 import { mapState } from 'vuex'
 
@@ -76,6 +77,7 @@ export default {
         admin_menu: [],
         proposal_menu: [],
         bc: [{title: 'Home', link: '/'}],
+        bl: ''
       }
     },
     computed: {
@@ -128,14 +130,40 @@ export default {
             menu.push(item)
           })
         } else {
+          var conexsAllowed = ['i20', 'i20-1', 'i18', 'b18']
+          let self = this
           // proposal and extra menus are simpler
           Object.keys(legacyMenu).forEach(function(key) {
             var item = {link: key, name: legacyMenu[key]}
-            menu.push(item)
+
+            if(app.type == 'xpdf' && key == 'conexs'){
+              self.getBeamlineName()
+              if(conexsAllowed.includes(self.bl)){
+                menu.push(item)
+              }
+            } else {
+              menu.push(item)
+            }
           })
         }
 
         return menu
+      },
+
+      getBeamlineName: function(){
+        let self = this
+        Backbone.ajax({
+            url: app.apiurl + '/proposal/bl/' + app.prop,
+            data: {prop: app.prop},
+            method: 'GET',
+            async: false,
+            success: function(response){
+                self.bl = response.BEAMLINENAME
+            },
+            error: function(response){
+                console.log('error getting beamline name: ' + response)
+            }
+        })
       },
     },
 }
