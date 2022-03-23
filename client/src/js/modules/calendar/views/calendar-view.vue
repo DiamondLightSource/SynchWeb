@@ -3,7 +3,7 @@
     <filter-pills class="tw-mt-3" v-if="displayFilters" :filter-data="beamlines" value-field="id" text-field="name" :selected="this.selectedBeamline" @filter-selected="updateSelectedFilter" />
     <h1>Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
 
-    <div class="tw-w-full tw-flex tw-mb-2">
+    <div class="tw-w-full tw-flex tw-mb-1">
       <div class="calendar-nav-button" @click="goToPreviousYear"> {{ previousYear}} </div>
       <div class="calendar-nav-button" @click="goToPreviousMonth">{{ previousMonth}}</div>
       <div class="calendar-nav-button" @click="goToNextMonth">{{ nextMonth }}</div>
@@ -12,7 +12,7 @@
 
     <div class="tw-w-full tw-hidden sm:tw-flex">
       <div
-        class="tw-flex tw-items-center tw-justify-center tw-font-bold tw-h-8 tw-w-1/7 tw-py-2 tw-px-4 tw-bg-content-filter-background tw-mx-1"
+        class="calendar-day-header"
         v-for="(day, dayIndex) in days" :key="dayIndex">
         {{ day }}
       </div>
@@ -22,15 +22,15 @@
       <div
         v-for="(weekValues, weekKey) in getDatesForDay(startDayOfMonth)"
         :key="weekKey"
-        class="tw-w-full tw-flex tw-my-2">
+        class="tw-w-full tw-flex tw-my-1/2">
         <div
           v-for="(date, dateIndex) in weekValues"
           :key="dateIndex"
           :class="{
-            'tw-bg-content-cal-background': !isToday(date),
-            'tw-bg-content-cal-header-background': isToday(date)
+            'tw-bg-content-cal-background': date && !isToday(date),
+            'tw-bg-content-cal-header-background': date && isToday(date)
           }"
-          class="sm:tw-w-1/7  tw-h-32 tw-mx-1">
+          class="sm:tw-w-1/7  tw-h-32 tw-mx-1/2">
           <div
             v-if="date"
             class="tw-hidden sm:tw-block tw-p-2 tw-h-32 tw-overflow-hidden hover:tw-overflow-visible hover:tw-h-auto hover:tw-relative"
@@ -394,9 +394,13 @@ export default {
 </script>
 <style>
 .calendar-nav-button {
-  @apply tw-h-10 tw-p-2 tw-w-1/4 tw-flex tw-items-center tw-justify-center tw-mx-1 tw-bg-content-cal-background tw-cursor-pointer
+  @apply tw-h-10 tw-p-2 tw-w-1/4 tw-flex tw-items-center tw-justify-center tw-mx-1/2 tw-bg-content-cal-background tw-cursor-pointer
 }
 .mobile-calendar-view {
   height: 500px;
+}
+.calendar-day-header {
+  @apply tw-flex tw-items-center tw-justify-center tw-font-bold tw-h-8 tw-w-1/7 tw-py-2 tw-px-4 tw-bg-content-filter-background tw-mx-1/2;
+  height: 36px;
 }
 </style>

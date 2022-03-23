@@ -5,7 +5,7 @@
     </div>
 
     <div class="tw-w-full tw-flex tw-mb-3 tw-flex-wrap">
-      <pv-item v-for="(pv, pvIndex) in pvs" :key="pvIndex" class="tw-mx-1 tw-my-1 tw-h-24 md:tw-w-1/7 sm:tw-w-1/6" :pv-item="pv">
+      <pv-item v-for="(pv, pvIndex) in pvs" :key="pvIndex" class="tw-mx-1/2 tw-my-1/2 md:tw-w-1/7 sm:tw-w-1/6" :pv-item="pv">
       </pv-item>
     </div>
 

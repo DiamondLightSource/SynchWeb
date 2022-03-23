@@ -1,11 +1,7 @@
 <template>
-  <div class="tw-p-2 tw-rounded tw-flex tw-flex-col tw-items-center tw-justify-center" :class="`${pvStatusClassName}`">
-    <div class="tw-w-full tw-flex-1">
-      <p class="tw-text-center tw-text-2xl tw-font-page-header">{{ pvItem['NAME'] }}</p>
-    </div>
-    <div class="tw-w-full tw-pt-2 tw-border-t tw-border-content-page-hover-color tw-flex tw-justify-center tw-items-center">
-      <p class="tw-text-center">{{ pvItem['VALUE'] }}</p>
-    </div>
+  <div class="tw-p-1 tw-rounded" :class="`${pvStatusClassName}`">
+    <h6 class="tw-text-center tw-text-sm tw-font-page-header tw-mb-1">{{ pvItem['NAME'] }}</h6>
+    <p class="tw-text-center">{{ pvItem['VALUE'] }}</p>
   </div>
 </template>
 <script>
