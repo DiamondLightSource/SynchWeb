@@ -231,6 +231,10 @@ export default {
       handler: 'formatMotorItemsCollectionData'
     }
   },
+  beforeDestroy() {
+    this.pvsCollection.stop()
+    this.GDALogCollection.stop()
+  }
 }
 </script>
 <style>
