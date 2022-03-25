@@ -66,9 +66,12 @@ define(['jquery', 'marionette',
             this.draw = _.debounce(this.draw, 10)
             this.statusesLoaded = false
             this.listenTo(options.imagestatuses, 'sync', this.setStatues, this)
+            this.noDistlItem = []
 
             this._ready = []
 
+            // Distl data comes in te form of a list of 2-dimensional array that represents the index of the grid and
+            // the value of diffraction for that particular grid
             this.distl = new DISTL({ id: this.getOption('ID'), nimg: this.getOption('NUMIMG'), pm: this.getOption('parent') })
             this.listenTo(this.distl, 'change', this.draw, this)
             this.grid = new GridInfo({ id: this.getOption('ID') })
@@ -104,7 +107,7 @@ define(['jquery', 'marionette',
         afterFetchGrid: function() {
             if (this.grid.get('STEPS_Y') > 0) {
                 this.gridFetched = true
-                if (this.grid.get('ORIENTATION')) this.vertical = this.grid.get('ORIENTATION') == 'vertical'
+                if (this.grid.get('ORIENTATION')) this.vertical = this.grid.get('ORIENTATION') === 'vertical'
                 else this.vertical = (this.grid.get('STEPS_Y') > this.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
                 // console.log('grid', this.grid.get('DATACOLLECTIONID'), this.grid.get('ORIENTATION'), 'vertical', this.vertical)
 
@@ -144,7 +147,7 @@ define(['jquery', 'marionette',
                 var tmp = _.where(this.xfm.get('data'), { TITLE: this.ui.el.val() })
                 if (tmp[0]['R'] && tmp[0]['G'] && tmp[0]['B']) {
                     this.heatmap.configure({ maxOpacity: .4, gradient: { 0: 'rgba(0,0,0,0)', 1: 'rgb('+tmp[0]['R']+','+tmp[0]['G']+','+tmp[0]['B']+')' } })
-                } else if (this.getOption('colormap') == 'viridis') {
+                } else if (this.getOption('colormap') === 'viridis') {
                     var vgrad = _.object(_.map(viridis, function(row, i) { return [i/255, 'rgb('+row[0]*255+','+row[1]*255+','+row[2]*255+')'] }))
                     this.heatmap.configure({ maxOpacity: .4, gradient: vgrad })
                 } else {
@@ -202,14 +205,18 @@ define(['jquery', 'marionette',
             }
         },
 
-        populatePIA: function(e) {
+        populatePIA: function() {
             var d = this.distl.get('data')
-            if (!d[0].length) {
+            if (d[0].length < 1) {
                 this.ui.ty.hide()
                 if (this.attachments.length) {
                     this.ui.ty2.html(this.attachments.opts()).show()
                     this.loadAttachment()
                 }
+            } else {
+                this.noDistlItem = Array(d[0].length).fill([]).map((item, index) => {
+                    return [index + 1, 0]
+                })
             }
         },
 
@@ -217,10 +224,10 @@ define(['jquery', 'marionette',
         getModel: function() {
             var m = this.getOption('imagestatuses').findWhere({ ID: this.getOption('ID') })
             if (m.get('SNS').length) {
-                if (m.get('SNS')[this.getOption('snapshotId')] && this.hasSnapshot == false) {
+                if (m.get('SNS')[this.getOption('snapshotId')] && !this.hasSnapshot) {
                     this.snapshotLoading = true
                     this.$el.addClass('loading')
-                    this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')   
+                    this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')
                 }
             }
         },
@@ -272,7 +279,6 @@ define(['jquery', 'marionette',
 
 
         draw: function() {
-            // console.log('draw', this.ctx, this.hasSnapshot)
             if (!this.ctx || !this.gridFetched) return
 
             var bw = 1000*this.grid.get('DX_MM')/Math.abs(this.grid.get('PIXELSPERMICRONX'))
@@ -324,22 +330,24 @@ define(['jquery', 'marionette',
                     if (tmp.MAX && r < tmp.MIN) val = tmp.MIN
                     d.push([i+1, val])
                 }, this)
-            } else if (this.distl.get('data') && this.distl.get('data')[0].length) {
-                if (this.distl.get('data')) d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
+            } else if (this.distl.get('data') && this.distl.get('data').length) {
+                if (Number(this.ui.ty.val()) > -1) {
+                    d = this.distl.get('data')[Number(this.ui.ty.val())]
+                } else {
+                    d = this.noDistlItem
+                }
             } else {
                 var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
                 if (a && a.get('DATA')) d = a.get('DATA')
             }
 
-            if (!d) return
-
-            // plot distl data
-            if (d.length) {
-                var max = 0
-                _.each(d, function(v,i) {
+            if (d.length > 0) {
+                let max = 0
+                _.each(d, function(v) {
                     if (v[1] > max) max = v[1]
                 })
 
+                max = max === 0 ? 1 : max
                 if (this.getOption('padMax') && max < 10) max = max * 50
 
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
@@ -349,39 +357,40 @@ define(['jquery', 'marionette',
                 var radius = (sw > sh && this.grid.get('STEPS_X') > 1 ? sw : sh) * this.getOption('blurRadius')
 
                 var data = []
-                _.each(d, function(v,i) {
+                _.each(d, function(v) {
                     var k = v[0] - 1
 
                     // Account for vertical grid scans
+                    let xstep, ystep, x, y
                     if (this.vertical) {
-                        var xstep = Math.floor(k / this.grid.get('STEPS_Y'))
-                        var ystep = k % this.grid.get('STEPS_Y')
+                        xstep = Math.floor(k / this.grid.get('STEPS_Y'))
+                        ystep = k % this.grid.get('STEPS_Y')
 
-                        if (this.grid.get('SNAKED') == 1) {
-                             if (xstep % 2 == 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
+                        if (this.grid.get('SNAKED') === 1) {
+                             if (xstep % 2 === 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
                          }
 
-                        var x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
-                        var y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
+                        x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
+                        y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
 
                     } else {
-                        var xstep = k % this.grid.get('STEPS_X')
-                        var ystep = Math.floor(k / this.grid.get('STEPS_X'))
+                        xstep = k % this.grid.get('STEPS_X')
+                        ystep = Math.floor(k / this.grid.get('STEPS_X'))
 
-                        if (this.grid.get('SNAKED') == 1) {
-                             if (ystep % 2 == 1) xstep = (this.grid.get('STEPS_X')-1) - xstep
+                        if (this.grid.get('SNAKED') === 1) {
+                             if (ystep % 2 === 1) xstep = (this.grid.get('STEPS_X')-1) - xstep
                         }
 
-                        var x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
-                        var y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
+                        x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
+                        y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
                     }
 
                     // Dont zero values < 1 if data is scaled to max==1
-                    data.push({ x: x, y: y, value: v[1] < 1 && max > 1 ? 0 : v[1], 
+                    data.push({ x: x, y: y, value: v[1] < 1 && max > 1 ? 0 : v[1],
                         radius: radius
                     })
 
-                    if (this.current == k) {
+                    if (this.current === k) {
                         this.ctx.globalAlpha = 0.8
                         this.ctx.beginPath()
                         this.ctx.lineWidth = 2
@@ -399,7 +408,7 @@ define(['jquery', 'marionette',
             var c = utils.get_xy(e, this.ui.canvas)
             var current = this._xyToPos(c[0], c[1])
 
-            if (current != this.current) {
+            if (current !== this.current) {
                 this.current = current
                 var xyz = this._getXYZ(current)
                 this.trigger('current', current, xyz[0], xyz[1], xyz[2], this._getVal(current))
@@ -409,12 +418,13 @@ define(['jquery', 'marionette',
         },
 
         _getXYZ: function(pos) {
+            let xp, yp
             if (this.vertical) {
-                var xp = Math.floor(pos / this.grid.get('STEPS_Y'))
-                var yp = pos % this.grid.get('STEPS_Y')
+                xp = Math.floor(pos / this.grid.get('STEPS_Y'))
+                yp = pos % this.grid.get('STEPS_Y')
             } else {
-                var xp = pos % this.grid.get('STEPS_X')
-                var yp = Math.floor(pos / this.grid.get('STEPS_X'))
+                xp = pos % this.grid.get('STEPS_X')
+                yp = Math.floor(pos / this.grid.get('STEPS_X'))
             }
 
             var rad = Math.PI/180
@@ -436,12 +446,11 @@ define(['jquery', 'marionette',
 
         _getVal: function(pos) {
             var val = null
-            var d = this.distl.get('data')[parseInt(this.ui.ty.val())] 
-            _.each(d, function(v, i) {
+            const d = Number(this.ui.ty.val()) > -1 ?  this.distl.get('data')[Number(this.ui.ty.val())] : []
+            _.each(d, function(v) {
                 // 1 indexed array
-                if (v[0] == pos+1) {
+                if (v[0] === pos+1) {
                     val = v[1]
-                    return
                 }
             })
 
@@ -449,29 +458,30 @@ define(['jquery', 'marionette',
         },
 
 
-        _xyToPos: function(x, y) {
+        _xyToPos: function(xValue, yValue) {
             var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
             var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
         
             // if (xstep % 2 == 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
 
-            var xa = x - ((this.offset_w*this.scale)/2)
-            var ya = y - ((this.offset_h*this.scale)/2)
+            var xa = xValue - ((this.offset_w*this.scale)/2)
+            var ya = yValue - ((this.offset_h*this.scale)/2)
+            let x, y, pos
 
             if (this.vertical) {
-                var x =  Math.floor(xa/sw) 
-                var y = Math.floor(ya/sh)
-                if (this.grid.get('SNAKED') == 1) {
-                    if (x % 2 == 1) y = (this.grid.get('STEPS_Y') - 1) - y
+                x =  Math.floor(xa/sw)
+                y = Math.floor(ya/sh)
+                if (this.grid.get('SNAKED') === 1) {
+                    if (x % 2 === 1) y = (this.grid.get('STEPS_Y') - 1) - y
                 }
-                var pos = (x * this.grid.get('STEPS_Y')) + y
+                pos = (x * this.grid.get('STEPS_Y')) + y
             } else {
-                var x =  Math.floor(xa/sw) 
-                var y = Math.floor(ya/sh)
-                if (this.grid.get('SNAKED') == 1) {
-                    if (y % 2 == 1) x = (this.grid.get('STEPS_X') - 1) - x
+                x =  Math.floor(xa/sw)
+                y = Math.floor(ya/sh)
+                if (this.grid.get('SNAKED') === 1) {
+                    if (y % 2 === 1) x = (this.grid.get('STEPS_X') - 1) - x
                 }
-                var pos = x + (y  * this.grid.get('STEPS_X'))
+                pos = x + (y  * this.grid.get('STEPS_X'))
             }
 
             return pos

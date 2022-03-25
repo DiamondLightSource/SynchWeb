@@ -1,7 +1,7 @@
 <template>
   <section>
     <marionette-view
-      v-if="typeOfView == 'marionette'"
+      v-if="typeOfView === 'marionette'"
       :key="$route.fullPath"
       :options="options"
       :fetchOnLoad="true"
@@ -12,7 +12,7 @@
          options property for pure Vue views they are better as individual
          properties -->
     <em-dc-list
-      v-if="typeOfView == 'EmDcList'"
+      v-if="typeOfView === 'EmDcList'"
       :collection="collection"
       :model="model"
       :params="params"
