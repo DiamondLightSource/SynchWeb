@@ -66,7 +66,7 @@ define(['jquery', 'marionette',
             this.draw = _.debounce(this.draw, 10)
             this.statusesLoaded = false
             this.listenTo(options.imagestatuses, 'sync', this.setStatues, this)
-            this.noDistlItem = []
+            this.noHeatMapResult = []
 
             this._ready = []
 
@@ -110,6 +110,9 @@ define(['jquery', 'marionette',
                 if (this.grid.get('ORIENTATION')) this.vertical = this.grid.get('ORIENTATION') === 'vertical'
                 else this.vertical = (this.grid.get('STEPS_Y') > this.grid.get('STEPS_X')) && app.config.gsMajorAxisOrientation
                 // console.log('grid', this.grid.get('DATACOLLECTIONID'), this.grid.get('ORIENTATION'), 'vertical', this.vertical)
+                this.noHeatMapResult = Array(this.grid.get('STEPS_Y') * this.grid.get('STEPS_X')).fill([]).map((item, index) => {
+                    return [index + 1, 0]
+                })
 
             } else {
                 var self = this
@@ -136,6 +139,8 @@ define(['jquery', 'marionette',
                         }
                     })
                 } else this.draw()
+            } else {
+                this.draw()
             }
         },
 
@@ -210,13 +215,10 @@ define(['jquery', 'marionette',
             if (d[0].length < 1) {
                 this.ui.ty.hide()
                 if (this.attachments.length) {
-                    this.ui.ty2.html(this.attachments.opts()).show()
+                    const heatMapsOptionsList = `${this.attachments.opts()} \n <option value=""> None </option>`
+                    this.ui.ty2.html(heatMapsOptionsList).show()
                     this.loadAttachment()
                 }
-            } else {
-                this.noDistlItem = Array(d[0].length).fill([]).map((item, index) => {
-                    return [index + 1, 0]
-                })
             }
         },
 
@@ -330,15 +332,19 @@ define(['jquery', 'marionette',
                     if (tmp.MAX && r < tmp.MIN) val = tmp.MIN
                     d.push([i+1, val])
                 }, this)
-            } else if (this.distl.get('data') && this.distl.get('data').length) {
+            } else if (this.distl.get('data') && this.distl.get('data')[0].length) {
                 if (Number(this.ui.ty.val()) > -1) {
                     d = this.distl.get('data')[Number(this.ui.ty.val())]
                 } else {
-                    d = this.noDistlItem
+                    d = this.noHeatMapResult
                 }
             } else {
                 var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
-                if (a && a.get('DATA')) d = a.get('DATA')
+                if (a && a.get('DATA')) {
+                    d = a.get('DATA')
+                } else {
+                    d = this.noHeatMapResult
+                }
             }
 
             if (d.length > 0) {

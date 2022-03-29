@@ -33,7 +33,7 @@ define(['marionette',
             'click': 'setSelected',
         },
         
-        setSelected: function(e) {
+        setSelected: function() {
             console.log('click score')
             this.model.set('isSelected', true)
         },
@@ -170,7 +170,7 @@ define(['marionette',
                         self.plotObjects()
                     },
                     
-                    error: function(model, response, options) {
+                    error: function(model, response) {
                         app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
                     },
                 })
@@ -186,7 +186,7 @@ define(['marionette',
         },
         
         
-        remSubsample: function(e) {
+        remSubsample: function() {
             this.draw()
             this.plotObjects()
         },
@@ -195,8 +195,7 @@ define(['marionette',
             return this.model.get('BLSAMPLEID')
         },
 
-        subsamplesSynced: function() {
-            var self = this
+        subSamplesSynced: function() {
             this.attachments.fetch({
                 success: this.populateHeatmap.bind(this)
             })
@@ -216,7 +215,7 @@ define(['marionette',
             }
 
             this.subsamples = options.subsamples
-            this.listenTo(this.subsamples, 'sync', this.subsamplesSynced, this)
+            this.listenTo(this.subsamples, 'sync', this.subSamplesSynced, this)
             this.listenTo(this.subsamples, 'change:BOXSIZEX', this.replotObjects, this)
             this.listenTo(this.subsamples, 'change:BOXSIZEY', this.replotObjects, this)
             this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEX', this.replotObjects, this)
@@ -265,7 +264,7 @@ define(['marionette',
             this.resizeObject = false
         },
 
-        selectSubSample: function(e) {
+        selectSubSample: function() {
             this.draw()
             this.plotObjects()
         },
@@ -356,7 +355,7 @@ define(['marionette',
                 this.hist.$el.hide()
             } else (this.ui.hist.hide())
 
-            if (this.getOption('move') !== null && this.getOption('move') == false) this.ui.move.hide()
+            if (this.getOption('move') !== null && !this.getOption('move')) this.ui.move.hide()
             if (this.getOption('scores') !== null && this.getOption('scores') === false) this.$el.find('.scoresel').hide()
             
             $(document).unbind('keypress.imviewer').bind('keypress.imviewer', this.keyPress.bind(this))
@@ -512,13 +511,13 @@ define(['marionette',
             $(document).unbind('keypress.imviewer')
         },
 
-        drawLarge: function(options) {
+        drawLarge: function() {
             console.log('image model', this.model, this.model.urlFor('full'), 'drop', this.getOption('drop'))
             this.img.load(this.model.urlFor(app.mobile() ? 'full' : 'hd'))
             this.showProgressBar()
         },
         
-        onImageError: function(options) {
+        onImageError: function() {
             if (!this.low) {
                 this.img.load(this.model.urlFor('full'))
                 this.showProgressBar()
@@ -543,7 +542,7 @@ define(['marionette',
             this.ui.progress.hide()
         },
         
-        onImageLoaded: function(options) {
+        onImageLoaded: function() {
             this.hideProgressBar()
             this.width = this.img.width
             this.height = this.img.height
@@ -717,7 +716,6 @@ define(['marionette',
             e.preventDefault()
             if (e.originalEvent.touches && e.originalEvent.touches.length >  1) return
                 if (e.originalEvent.touches && e.originalEvent.touches.length) e = e.originalEvent.touches[0];
-            var c = utils.get_xy(e, this.ui.canvas)
             
             if (this.record) {
                 this.moved = true
@@ -784,7 +782,7 @@ define(['marionette',
 
                         },
 
-                        error: function(model, response, options) {
+                        error: function(model, response) {
                             app.alert({ message: 'Something went wrong moving that object, please try again: '+response.responseText })
                         },
                     })
@@ -793,20 +791,21 @@ define(['marionette',
 
             if (this.drawingRegion) {
                 // swap coords if needed
+                let x1, x2, y1, y2
                 if (this.lineStart.x > this.lineEnd.x) {
-                    var x1 = this.lineEnd.x
-                    var x2 = this.lineStart.x
+                    x1 = this.lineEnd.x
+                    x2 = this.lineStart.x
                 } else {
-                    var x1 = this.lineStart.x
-                    var x2 = this.lineEnd.x
+                    x1 = this.lineStart.x
+                    x2 = this.lineEnd.x
                 }
 
                 if (this.lineStart.y > this.lineEnd.y) {
-                    var y1 = this.lineEnd.y
-                    var y2 = this.lineStart.y
+                    y1 = this.lineEnd.y
+                    y2 = this.lineStart.y
                 } else {
-                    var y1 = this.lineStart.y
-                    var y2 = this.lineEnd.y
+                    y1 = this.lineStart.y
+                    y2 = this.lineEnd.y
                 }
 
                 this.lineStart = {}
@@ -833,7 +832,7 @@ define(['marionette',
                             self.plotObjects()
                         },
                         
-                        error: function(model, response, options) {
+                        error: function(model, response) {
                             app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
                         },
                     })
@@ -1025,7 +1024,7 @@ define(['marionette',
 
         drawGrid: function(o) {
             if (!o.get('BOXSIZEX') || !o.get('BOXSIZEY')) return
-            if (o.get('BOXSIZEX') == 0 || o.get('BOXSIZEY') == 0) return
+            if (o.get('BOXSIZEX') === 0 || o.get('BOXSIZEY') === 0) return
 
             var mppx = this.model.get('MICRONSPERPIXELX') || 3
             var mppy = this.model.get('MICRONSPERPIXELY') || 3
@@ -1100,6 +1099,7 @@ define(['marionette',
             _.each(types, function(ty) {
                 sel.push('<option value="'+ty+'">'+ty.replace('.json', '')+'</option>')
             })
+            sel.push('<option value="">None</option>')
             this.ui.pia.html(sel.join(''))
             this.changeHeatmap()
         },
@@ -1126,11 +1126,10 @@ define(['marionette',
 
             $.when.apply($, ready).done(function() {
                 // this is fucking stupid, different response based on length of args
-                var args = actual.length == 1 ? [arguments] : arguments
+                var args = actual.length === 1 ? [arguments] : arguments
 
                 var data = [{ x: 10, y: 10, value: 1, radius: 1 }]
                 _.each(actual, function(ss, sid) {
-                    // console.log('matching', ss.get('BLSUBSAMPLEID'), self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') }), sid, args[sid])
                     var att = self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') })
                     if (att) {
                         data = data.concat(self.parseAttachment(ss, att, args[sid][0]))
@@ -1157,27 +1156,28 @@ define(['marionette',
             var data = []
             _.each(resp, function(v,k) {
                 // Account for vertical grid scans
-                if (att.get('ORIENTATION') == 'vertical') {
-                    var xstep = Math.floor(k / att.get('STEPS_Y'))
-                    var ystep = k % att.get('STEPS_Y')
+                let xstep, ystep, x, y
+                if (att.get('ORIENTATION') === 'vertical') {
+                    xstep = Math.floor(k / att.get('STEPS_Y'))
+                    ystep = k % att.get('STEPS_Y')
 
-                    if (att.get('SNAKED') == 1) {
-                         if (xstep % 2 == 1) ystep = (att.get('STEPS_Y')-1) - ystep
+                    if (att.get('SNAKED') === 1) {
+                         if (xstep % 2 === 1) ystep = (att.get('STEPS_Y')-1) - ystep
                     }
 
-                    var x = xstep * sw + sw/2 + parseInt(ss.get('X'))
-                    var y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
+                    x = xstep * sw + sw/2 + parseInt(ss.get('X'))
+                    y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
 
                 } else {
-                    var xstep = k % att.get('STEPS_X')
-                    var ystep = Math.floor(k / att.get('STEPS_X'))
+                    xstep = k % att.get('STEPS_X')
+                    ystep = Math.floor(k / att.get('STEPS_X'))
 
-                    if (att.get('SNAKED') == 1) {
-                         if (ystep % 2 == 1) xstep = (att.get('STEPS_X')-1) - xstep
+                    if (att.get('SNAKED') === 1) {
+                         if (ystep % 2 === 1) xstep = (att.get('STEPS_X')-1) - xstep
                     }
 
-                    var x = xstep * sw + sw/2 + parseInt(ss.get('X'))
-                    var y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
+                    x = xstep * sw + sw/2 + parseInt(ss.get('X'))
+                    y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
                 }
 
                 data.push({ x: parseInt(x), y: parseInt(y), value: v < 1 ? 0 : v, 
