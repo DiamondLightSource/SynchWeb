@@ -361,6 +361,18 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     <span v-if="errors.has('memory')" class="errormessage ferror">{{ errors.first('memory') }}</span>
                     <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled">SUBMIT</button>
                 </li>
+                <li v-if="orcaDisplay == 'inline'">
+                    <label class="left">Spectrum Type:</label>
+                    <select name="orcaSpectrumType" v-model="orcaSpectrumType">
+                        <option v-for="s in orcaMapKeyword">{{ s }}</option>
+                    </select>
+                    <label class="notLeft">Start Value (eV):</label>
+                    <input type="text" name="orcaStartValue" v-model="orcaStartValue" v-bind:class="{ferror: errors.has('orcaStartValue')}" v-validate="'required|decimal'">
+                    <label class="notLeft">Stop Value (eV):</label>
+                    <input type="text" name="orcaStopValue" v-model="orcaStopValue" v-bind:class="{ferror: errors.has('orcaStopValue')}" v-validate="'required|decimal'">
+                    <label class="notLeft">Broadening (eV):</label>
+                    <input type="text" name="orcaBroadening" v-model="orcaBroadening" v-bind:class="{ferror: errors.has('orcaBroadening')}" v-validate="'required|decimal|min_value:0|max_value:100'">
+                </li>
                 <li>
                     <span style="font-size:14px">On successful submission, your results will be sent to the e-mail address associated with your fedid</span>
                 </li>
@@ -492,6 +504,15 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 orbWin0Stop: 0,
                 orbWin1Start: 0,
                 orbWin1Stop: 0,
+                orcaSpectrumType: '',
+                orcaMapKeyword: [
+                    "", "ABS", "ABSV", "ABSQ", "ABSOI", "SOCABS", "SOCABSQ", "SOCABSOI", "XES", "XESV", "XESQ",
+                    "CD", "IR", "RAMAN", "NRVS", "VDOS", "MCD", "XESOI", "XAS", "XASV", "XASQ", "XASOI", "XESSOC", "XASSOC",
+                    "RIXS", "RIXSSOC"
+                ],
+                orcaStartValue: 0,
+                orcaStopValue: 100,
+                orcaBroadening: 1,
 
 
                 // FDMNES
@@ -1152,6 +1173,13 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         // Add data
                         for(var key in data){
                             formData.append(key, data[key])
+                        }
+
+                        if(self.form == 'orca'){
+                            formData.append('orcaSpectrumType', self.orcaSpectrumType)
+                            formData.append('orcaStartValue', self.orcaStartValue)
+                            formData.append('orcaStopValue', self.orcaStopValue)
+                            formData.append('orcaBroadening', self.orcaBroadening)
                         }
 
                         // Add structure file
