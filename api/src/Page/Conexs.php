@@ -33,6 +33,10 @@ class Conexs extends Page
                                     'memory' => '\d+',
                                     'cpu' => '\d+',
                                     'jobId' => '\d+',
+                                    'orcaSpectrumType' => '.*',
+                                    'orcaStartValue' => '.*',
+                                    'orcaStopValue' => '.*',
+                                    'orcaBroadening' => '.*',
                             );
 
     public static $dispatch = array(array('/', 'post', '_initiate_conexs_cluster'),
