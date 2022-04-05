@@ -462,7 +462,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 atomZ: 0,
                 isSubmitDisabled: true,
                 clusterStatus: '',
-                baseURL: 'http://172.23.169.32/',
                 form: '',
                 jobData: [],
 
@@ -612,12 +611,12 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 console.log('startCluster called')
                 let self = this
                 Backbone.ajax({
-                    url: self.baseURL,
+                    url: app.apiurl + '/conexs',
                     data: { login: app.user },
                     method: 'POST',
                     success: function(response){
                         if(response['cluster']){
-                            if(response['cluster'] == 'new'){
+                            if(response['cluster'].status == 'new'){
                                 console.log('starting new cluster for: ' + app.user)
                                 self.isSubmitEnabled = false
 
@@ -652,7 +651,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             pollClusterStatus: function(){
                 let self = this
                 Backbone.ajax({
-                    url: self.baseURL + 'check_server',
+                    url: app.apiurl + '/conexs/status',
                     data: {
                         login: app.user
                     },
@@ -682,7 +681,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             getJobStatus: function(){
                 let self = this
                 Backbone.ajax({
-                    url: self.baseURL + "list_jobs",
+                    url: app.apiurl + '/conexs/jobs',
                     data: {
                         login: app.user
                     },
@@ -1129,6 +1128,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                             data: self.inputFileContents,
                             charge: self.charge,
                             multiplicity: self.multiplicity,
+                            cpu: self.cpus,
                             memory: self.memory,
                             fedid: app.user,
                             element: self.element,
@@ -1153,6 +1153,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                             disagonalization: self.disagonalization,
                             electron_maxstep: self.electron_maxstep,
                             mixing_beta: self.mixing_beta,
+                            form: self.form,
                         }
 
                         let formData = new FormData()
@@ -1172,7 +1173,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         }
 
                         Backbone.ajax({
-                            url: self.baseURL + 'upload_' + self.form,
+                            url: app.apiurl + '/conexs/submit',
                             data: formData,
                             method: 'POST',
                             // Required to allow split content type between file/data
@@ -1330,7 +1331,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 
                 let self = this
                 Backbone.ajax({
-                    url: self.baseURL + "kill_job",
+                    url: app.apiurl + "conexs/kill",
                     data: {
                         login: app.user,
                         jobId: jobID
