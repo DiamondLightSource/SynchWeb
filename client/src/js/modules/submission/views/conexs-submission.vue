@@ -183,16 +183,8 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 <br />
                 <ul>
                     <li>
-                        <label class="left">Result filename (no extension) </label>
-                        <input type="text" name="fdemnes_result_file" v-model="fdmnes_result_file" v-on:change="overviewBuilder()">
-                    </li>
-
-                    <li>
-                        <label class="left">Method:</label>
-                        <select name="method" v-model="fdmnes_method" v-on:change="overviewBuilder()">
-                            <option>Green</option>
-                            <option>FDM</option>
-                        </select>
+                        <label class="left">Green?</label>
+                        <input type="checkbox" v-model="fdmnes_method" v-on:change="overviewBuilder()" />
 
                         <label class="notLeft">Crystal?</label>
                         <select name="crystal" v-model="crystal" v-on:change="overviewBuilder()">
@@ -590,7 +582,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
             //fdmnes
             this.edge = this.fdmnes_abs_edge[0]
-            this.fdmnes_method = 'Green'
             this.crystal = 'Crystal'
 
             //qe
@@ -895,7 +886,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                 this.output += 'SCF' + '        !Performs self-consistent calculation' + "\n"
                 this.output += 'Energpho' + '       !Output energy relative to the photon energy of absorbing atom' + "\n\n"
-                this.output += this.fdmnes_method + "\n"
+                this.output += this.fdmnes_method ? "Green\n" : ""
                 this.output += 'Quadrupole' + "\n"
 
                 if(this.edge.includes('L'))
