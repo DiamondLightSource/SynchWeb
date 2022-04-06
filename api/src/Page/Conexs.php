@@ -148,13 +148,14 @@ class Conexs extends Page
 
         if(!$this->has_arg('login') || !$this->has_arg('jobId')) $this->_error('No fedid or job ID provided');
 
-        $ata = array(
+        $data = array(
             'login' => $this->arg('login'),
             'jobId' => $this->arg('jobId')
         );
 
         $c = curl_init();
         curl_setopt($c, CURLOPT_URL, $conexs_url . 'kill_job');
+        curl_setopt($c, CURLOPT_POST, 1);
         curl_setopt($c, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($c, CURLOPT_POSTFIELDS, json_encode($data, JSON_UNESCAPED_SLASHES));
         curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);

@@ -636,6 +636,10 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                                     self.pollClusterStatus()
                                 }, 5000)
 
+                                setInterval(function(){
+                                    self.getJobStatus()
+                                }, 5000)
+
                             } else {
                                 console.log('cluster already available for: ' + app.user)
                                 self.isSubmitDisabled = false
@@ -699,7 +703,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     },
                     method: 'GET',
                     success: function(response){
-                        self.jobData = JSON.parse(response)
+                        self.jobData = response
                     },
                     error: function(response){
                         console.log('Unsable to get job status ' + response)
@@ -1350,7 +1354,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 
                 let self = this
                 Backbone.ajax({
-                    url: app.apiurl + "conexs/kill",
+                    url: app.apiurl + "/conexs/kill",
                     data: {
                         login: app.user,
                         jobId: jobID
@@ -1367,7 +1371,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         }
                     },
                     error: function(response){
-                        this.$refs['job'+jobID].disabled = false
+                        self.$refs['job'+jobID].disabled = false
                         console.log('failed to kill job')
                         app.alert({ title: 'Error', message: 'Failed to kill job, please try again later'})
                     }
