@@ -351,16 +351,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     <label class="left">Save input file:</label>
                     <button type="button" class="button" v-on:click="downloadFileContents()">Download</button>
                 </li>
-                <li>
-                    <label class="left">CPUs: </label>
-                    <input type="text" name="cpus" v-model="cpus" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('cpus')}" v-validate="'required|numeric|min_value:1|max_value:10'"/>
-                    <span v-if="errors.has('cpus')" class="errormessage ferror">{{ errors.first('cpus') }}</span>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <label class="notLeft">Memory required in Gb:</label>
-                    <input type="text" name="memory" v-model="memory" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('memory')}" v-validate="'required|numeric|min_value:1|max_value:32'"/>
-                    <span v-if="errors.has('memory')" class="errormessage ferror">{{ errors.first('memory') }}</span>
-                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled">SUBMIT</button>
-                </li>
                 <li v-if="orcaDisplay == 'inline'">
                     <label class="left">Spectrum Type:</label>
                     <select name="orcaSpectrumType" v-model="orcaSpectrumType">
@@ -372,6 +362,16 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     <input type="text" name="orcaStopValue" v-model="orcaStopValue" v-bind:class="{ferror: errors.has('orcaStopValue')}" v-validate="'required|decimal'">
                     <label class="notLeft">Broadening (eV):</label>
                     <input type="text" name="orcaBroadening" v-model="orcaBroadening" v-bind:class="{ferror: errors.has('orcaBroadening')}" v-validate="'required|decimal|min_value:0|max_value:100'">
+                </li>
+                <li>
+                    <label class="left">CPUs: </label>
+                    <input type="text" name="cpus" v-model="cpus" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('cpus')}" v-validate="'required|numeric|min_value:1|max_value:10'"/>
+                    <span v-if="errors.has('cpus')" class="errormessage ferror">{{ errors.first('cpus') }}</span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <label class="notLeft">Memory required in Gb:</label>
+                    <input type="text" name="memory" v-model="memory" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('memory')}" v-validate="'required|numeric|min_value:1|max_value:32'"/>
+                    <span v-if="errors.has('memory')" class="errormessage ferror">{{ errors.first('memory') }}</span>
+                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled">SUBMIT</button>
                 </li>
                 <li>
                     <span style="font-size:14px">On successful submission, your results will be sent to the e-mail address associated with your fedid</span>
@@ -1135,6 +1135,11 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 e.preventDefault()
                 let self = this
 
+                /* Useful for debugging v-validate errors
+                for(var i=0; i<this.$validator.errors.items.length;i++){
+                    console.log(this.$validator.errors.items[i].field + ' ' + this.$validator.errors.items[i].msg)
+                }*/
+
                 this.$validator.validateAll().then(function(result){
                     self.isLoading = true
 
@@ -1149,7 +1154,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                             fedid: app.user,
                             element: self.element,
 
-                            fdmnes_method: self.method,
+                            fdmnes_method: self.fdmnes_method,
                             edge: self.edge,
                             crystal: self.crystal,
 
