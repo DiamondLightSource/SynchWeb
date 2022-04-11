@@ -35,6 +35,7 @@ import EmDcList from 'modules/types/em/dc-list/em-dc-list.vue'
 import POWDCList from 'modules/types/pow/dc/datacollections'
 import SAXSDCList from 'modules/types/saxs/dc/datacollections'
 import XPDFDCList from 'modules/types/xpdf/dc/datacollections'
+import B18DCList from 'modules/types/b18/dc/datacollections'
 
 import DCCol from 'collections/datacollections'
 import Proposal from 'models/proposal'
@@ -49,6 +50,7 @@ let dc_views = {
   pow: POWDCList,
   saxs: SAXSDCList,
   xpdf: XPDFDCList,
+  b18: B18DCList,
 }
 
 export default {
