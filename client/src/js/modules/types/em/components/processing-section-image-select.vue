@@ -6,6 +6,7 @@
   >
     <template #controls>
       <image-select
+        v-if="max > 0"
         :max="max"
         :latest="latest"
         @changed="selectChanged"

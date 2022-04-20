@@ -5,12 +5,13 @@
     :data-available="particleClasses.length > 0"
   >
     <template #controls>
-      <select-sort v-model="sortBy" />
-
-      <select-page
-        v-model="page"
-        :max="pageCount"
-      />
+      <span v-if="pageCount > 0">
+        <select-sort v-model="sortBy" />
+        <select-page
+          v-model="page"
+          :max="pageCount"
+        />
+      </span>
     </template>
 
     <div class="preview-images">
@@ -62,7 +63,7 @@ export default {
             'type': String,
             'required': true,
             'validator': function(value) {
-                return ['2D', '3D'].includes(value);
+                return ['2D', '3D'].includes(value)
             },
         },
     },
@@ -129,7 +130,7 @@ export default {
                         '?page=' + this.page +
                         '&per_page=' + this.perPage +
                         '&sort_by=' + this.sortBy,
-                    'humanName': 'Particle Classification',
+                    'humanName': this.type + ' Particle Classification',
                 }).then(
                     (response) => {
                         this.pageCount = Math.ceil(response.total / this.perPage)

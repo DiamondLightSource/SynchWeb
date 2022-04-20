@@ -8,6 +8,16 @@ module.exports = {
       './src/**/*.html',
       './src/**/*.vue',
     ],
+    options: {
+      whitelist: [
+        'tw-bg-auto-integrated',
+        'tw-bg-data-collected',
+        'tw-bg-auto-indexed',
+        'tw-bg-screened',
+        'tw-bg-grid-scanned',
+        'tw-bg-loaded-by-robot'
+      ]
+    }
   },
   future: {
     purgeLayersByDefault: true,
@@ -128,6 +138,18 @@ module.exports = {
         'table-pages-disable-color': '#ababab',
 // Plot
         'plot-legend-background': '#dddddd',
+
+// Modal
+        'modal-header-background': '#e9e9e9',
+
+// Sample Status
+        'auto-integrated': '#77dd77',
+        'data-collected': '#87ceeb',
+        'auto-indexed': '#ffb347',
+        'screened': '#fdfd96',
+        'grid-scanned': '#fdfd96',
+        'loaded-by-robot': '#ff6961',
+        'dark-amber': '#d9bf98'
       }
     }
   },

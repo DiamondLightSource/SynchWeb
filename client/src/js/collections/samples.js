@@ -25,12 +25,11 @@ define(['backbone', 'underscore', 'backbone.paginator', 'models/sample'], functi
 
         setFetched: function() {
           if (this.fetched) return
-          console.log('fetched samples')
           this.fetched = true
           this.trigger('reset')
         },
         
-        onSelectedChanged: function(model) {
+        onSelectedChanged: function() {
             this.each(function(model) {
                 if (model.get('isSelected') === true && !model._changing) {
                     model.set({isSelected: false}, { silent: true })
@@ -46,11 +45,11 @@ define(['backbone', 'underscore', 'backbone.paginator', 'models/sample'], functi
             this.running = false
         },
         
-        parseState: function(r, q, state, options) {
+        parseState: function(r) {
             return { totalRecords: r.total }
         },
             
-        parseRecords: function(r, options) {
+        parseRecords: function(r) {
             clearTimeout(this.refresh_thread)
             if (this.running) this.refresh_thread = setTimeout(this.fetch.bind(this), 5000)
                 
@@ -72,5 +71,18 @@ define(['backbone', 'underscore', 'backbone.paginator', 'models/sample'], functi
             
             return Backbone.sync('create', this, options)
         },
+
+        update: function(options) {
+            options = _.extend({}, options)
+
+            var col = this
+            var success = options.success;
+            options.success = function(resp) {
+                col.reset(resp, { silent: true })
+                if (success) success(col, resp, options)
+            }
+
+            return Backbone.sync('update', this, options)
+        }
     })
 })

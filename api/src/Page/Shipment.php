@@ -166,7 +166,7 @@ class Shipment extends Page
                               array('/containers/', 'post', '_add_container'),
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
-                              array('/containers/queue', 'get', '_queue_container'),
+                              array('/containers/queue(/:cid)', 'patch', '_queue_container'),
                               array('/containers/barcode/:BARCODE', 'get', '_check_container'),
 
 
@@ -182,6 +182,7 @@ class Shipment extends Page
                               array('/containers/history', 'post', '_add_container_history'),
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
+                              array('/containers/types', 'get', '_get_container_types'),
                               
                               array('/containers/notify/:BARCODE', 'get', '_notify_container'),
 
@@ -1525,11 +1526,14 @@ class Shipment extends Page
                 $this->_output();
 
             } else {
-                $chkq = $this->db->pq("SELECT containerid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
-                if (sizeof($chkq)) $this->_error('That container is already queued');
+                $chkq = $this->db->pq("SELECT containerid, containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
+                if (!sizeof($chkq)) {
+                    $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
+                    $qid = $this->db->id();
+                } else {
+                    $qid = $chkq[0]['CONTAINERQUEUEID'];
+                }
 
-                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
-                $qid = $this->db->id();
 
                 $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
                   INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
@@ -1604,8 +1608,8 @@ class Shipment extends Page
             if (!$this->has_arg('NAME')) $this->_error('No container name specified');
             if (!$this->has_arg('CONTAINERTYPE')) $this->_error('No container type specified');
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar id specified');
-        
-            
+
+
             $cap = $this->has_arg('CAPACITY') ? $this->arg('CAPACITY') : 16;
             $sch = $this->has_arg('SCHEDULEID') ? $this->arg('SCHEDULEID') : null;
             $scr = $this->has_arg('SCREENID') ? $this->arg('SCREENID') : null;
@@ -1623,9 +1627,9 @@ class Shipment extends Page
             $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid)
               VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING containerid INTO :id",
               array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline));
-                                 
+
             $cid = $this->db->id();
-            
+
             if ($this->has_arg('SCHEDULEID')) {
                 $sh = new ImagingShared($this->db);
                 $sh->_generate_schedule(array(
@@ -1757,8 +1761,18 @@ class Shipment extends Page
             $this->_output(array('CONTAINERHISTORYID' => $chid));
         }
 
-
-
+        function _get_container_types() {
+            $where = '';
+            // By default only return active container types.
+            // If all param set return everything
+            if ($this->has_arg('all')) {
+                $where .= '1=1';
+            } else {
+                $where .= 'ct.active = 1';
+            }
+            $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where");
+            $this->_output(array('total' => count($rows), 'data' => $rows));
+        }
 
         function _container_registry() {
             $args = array($this->proposalid);

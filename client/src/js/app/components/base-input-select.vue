@@ -15,7 +15,7 @@ Slots include:
 <template>
   <div :class="outerClass">
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id">{{label}}
+    <label v-if="label" :for="id" :class="labelClass">{{label}}
       <slot name="description">
         <span v-if="description" class="small">{{description}}</span>
       </slot>
@@ -28,14 +28,20 @@ Slots include:
       :id="id"
       :name="name"
       :value="localValue"
-      :disabled="disabled"
+      :disabled="isDisabled"
       :class="classObject"
       @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
     >
       <option v-show="defaultText" disabled :value="defaultValue">{{defaultText}}</option>
-      <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
+      <option
+        v-for="option in options"
+        :key="option[optionValueKey]"
+        :value="option[optionValueKey]"
+        :selected="option[optionValueKey] === localValue">
+        {{option[optionTextKey]}}
+      </option>
     </select>
 
     <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ inlineText }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
@@ -43,7 +49,7 @@ Slots include:
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
+      <span v-show="errorMessage && !quiet" :class="errorClass">{{ errorMessage }}</span>
     </slot>
 
     <!-- Placeholder for any buttons that should be placed after the input -->
@@ -126,6 +132,21 @@ export default {
     // Use the save event to update this prop
     initialText: {
       type: String,
+    },
+    // For cases where we need to add a css class to the label of the input field
+    labelClass: {
+      type: String,
+      default: ''
+    },
+    // If using the input within a table, set quiet mode to suppress error messages
+    // Keeps the styling around input fields
+    quiet: {
+      type: Boolean,
+      default: false
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -139,9 +160,10 @@ export default {
     // Because we are using a cached local value (for inline edit mode) we should react to the passed prop change
     value: function(newVal) {
       this.localValue = newVal
+      this.$emit('value-changed', newVal)
     },
     editable: function(value) {
-      if (value == false) this.showEditIcon = false
+      if (value === false) this.showEditIcon = false
     }
   },
   computed: {

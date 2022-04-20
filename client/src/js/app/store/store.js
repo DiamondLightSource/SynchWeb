@@ -8,6 +8,8 @@ import MenuStore from './modules/store.menus.js'
 import ProposalStore from './modules/store.proposal.js'
 import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
+import SamplesStore from './modules/store.samples.js'
+import ShipmentStore from './modules/store.shipment.js'
 
 // Configuration
 import Options from 'models/options.js'
@@ -16,8 +18,10 @@ import config from 'config.json'
 import MarionetteApplication from 'app/marionette-application.js'
 import { resolve } from 'promise'
 import { reject } from 'promise'
+import Backbone from "backbone";
 
 Vue.use(Vuex)
+Vue.config.devtools = !config.production
 
 const store = new Vuex.Store({
   modules: {
@@ -26,6 +30,8 @@ const store = new Vuex.Store({
     proposal: ProposalStore,
     user: UserStore,
     notifications: NotificationStore,
+    samples: SamplesStore,
+    shipment: ShipmentStore
   },
   state: {
     // Flag we use to check if we have already setup options
@@ -59,14 +65,14 @@ const store = new Vuex.Store({
       app.options = options
     },
     setHelp(state, helpFlag) {
-      state.help = helpFlag ? true : false
+      state.help = !!helpFlag
       sessionStorage.setItem('ispyb_help', state.help)
     },
     //
     // Loading screen
     //
     loading(state, status) {
-      state.isLoading = status ? true : false
+      state.isLoading = !!status
     },
   },
   actions: {
@@ -167,17 +173,38 @@ const store = new Vuex.Store({
       })
     },
 
+    // Method that updates a collection
+    // Note this will result in a PUT to the server
+    // Most backend endpoints do not seem to support PATCH to update collection in one hit
+    // In future might need to provide more general sync method for collections
+    // Params: collection is the Backbone collection being saved - same signature as saveModel
+    // Example: store.dispatch('updateCollection', { collection: myCollection })
+    updateCollection(context, {collection}) {
+      return new Promise((resolve, reject) => {
+        collection.update({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || {status: 400, message: 'Error updating collection'}
+            reject(response)
+          },
+        })
+      })
+    },
+
     // Method that returns a collection promise
     getModel(context, model) {
 
       return new Promise((resolve, reject) => {
         model.fetch({
-          success: function(model, response, options) {
+          success: function(model) {
             // Could extend to return the response/options
             resolve(model)
           },
 
-          error: function(model, response, options) {
+          error: function(model, response) {
             let err = response.responseJSON || {status: 400, message: 'Error getting model'}
             reject(err)
           },
@@ -190,9 +217,9 @@ const store = new Vuex.Store({
     // If the backbone model has an "ID" (as defined in it's Model class) and there are no attributes provided,
     // then save will be a PUT request rather than POST request
     // Example: store.dispatch('saveModel', {model: myModel, attributes: myAttributes})
-    saveModel(context, {model, attributes}) {
+    saveModel(context, { model, attributes }) {
       // If we have attributes, assume a patch request
-      let patch = attributes ? true : false
+      let patch = !!attributes
       let attrs = attributes || {}
 
       return new Promise((resolve, reject) => {
@@ -209,12 +236,32 @@ const store = new Vuex.Store({
         })
       })
     },
+
+    // fetch data from the backend that is not attached to any model
+    async fetchDataFromApi({ state, commit, rootState }, { url, data }) {
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        data,
+
+        success: function(response) {
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error creating default dewar',
+            message: 'The default dewar for this visit could not be created (no session-0?)'
+          }, {
+            root: true
+          })
+        },
+      })
+    }
   },
   getters: {
     sso: state => state.auth.cas_sso,
     sso_url: state => state.auth.cas_url,
     apiUrl: state => state.apiUrl,
-    appUrl: state => state.appUrl,
+    appUrl: state => state.appUrl
   }
 })
 
