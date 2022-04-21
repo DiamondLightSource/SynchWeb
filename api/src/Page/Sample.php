@@ -147,8 +147,9 @@ class Sample extends Page
                               'SAMPLEGROUP' => '\d+',
                               'INITIALSAMPLEGROUP' => '\d+',
                               'STRATEGYOPTION' => '',
-                              'MINIMUMRESOLUTION' => '\d+(.\d+)?'
-                               );
+                              'MINIMUMRESOLUTION' => '\d+(.\d+)?',
+                              'groupSamplesType' => '.*' // query parameter to query sample groups by sample types. Should be comma separated values like so: groupSamplesType=container,capillary
+        );
         
         
         public static $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
@@ -435,7 +436,7 @@ class Sample extends Page
                      * Doing this allows a sample to be associated with a capillary for experiment planning which can be useful for background subtraction
                      *  */
                     if(!$capillary->CONTAINERLESS){
-                        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
+                        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, proposalid) VALUES(NULL, :1)", array($this->proposalid));
                         $ids[$model]['SAMPLEGROUPID'] = $this->db->id();
                         
                         if(!array_key_exists('BLSAMPLECAPILLARYID', $ids[$model])){
@@ -2194,6 +2195,22 @@ class Sample extends Page
 
             $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
+
+            // Check if we are querying the table by the sample group samples type.
+            // This is currently being used by xpdf when fetching the list of sample group samples.
+            if ($this->has_arg('groupSamplesType')) {
+                $groupSamplesType = explode(',', $this->arg('groupSamplesType'));
+                $where .= ' AND (';
+
+                for ($i = 0; $i < sizeof($groupSamplesType); $i++) {
+                    if ($i < sizeof($groupSamplesType) - 1) {
+                        $where .= 'bshg.type LIKE :'. (sizeof($args)+1). ' OR ';
+                    } else {
+                        $where .= 'bshg.type LIKE :'. (sizeof($args)+1). ')';
+                    }
+                    array_push($args, $groupSamplesType[$i]);
+                }
+            }
 
             $tot = $this->db->pq("SELECT count(*) as total
                 FROM (
