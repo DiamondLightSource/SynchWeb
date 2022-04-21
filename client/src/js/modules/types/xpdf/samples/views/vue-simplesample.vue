@@ -307,15 +307,15 @@
             async fetchSampleGroupsAndAssignContainers() {
                 const existingSamples = new Set()
                 let lastCapillaryId = 0
-                this.sampleGroupCollection = new SampleGroups()
 
-                let result = await this.$store.dispatch('getCollection', this.sampleGroupCollection)
-                this.sampleGroupCollection.queryParams.page = Math.ceil(result.state.totalRecords / result.state.pageSize) || 1
-                this.sampleGroupCollection.queryParams.per_page = result.state.pageSize
-                this.sampleGroupCollection.queryParams.groupSamplesType = 'container,capillary'
-                result = await this.$store.dispatch('getCollection', this.sampleGroupCollection)
+                const result = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/sample/groups',
+                })
+                const sampleGroups = await this.$store.dispatch('fetchDataFromApi', {
+                  url: `/sample/groups?page=1&per_page=${result.total}`,
+                })
 
-                this.sampleGroups = result.toJSON().sort((a, b) => this.sortItemsByField(a, b)('BLSAMPLEGROUPID'))
+                this.sampleGroups = sampleGroups.data
 
                 this.sampleGroups.forEach(sample => {
                     if (sample.TYPE === 'container' || sample.TYPE === 'capillary') {

@@ -2195,16 +2195,23 @@ class Sample extends Page
 
             $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
+            $group_by = 'bshg.blsampleid';
+
+            // Check if we are grouping the result by BlSAMPLEID or BLSAMPLEGROUPID.
+            // This is currently being used by xpdf when fetching the list of sample group samples.
+            if ($this->has_arg('groupSamplesType') &&  $this->arg('groupSamplesType') === 'BLSAMPLEGROUPID') {
+                $group_by = 'bshg.blsamplegroupid';
+            }
 
             $tot = $this->db->pq("SELECT count(*) as total
                 FROM (
                     SELECT count(*) as tot
-                    FROM blsamplegroup bsg
-                    INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                    FROM blsamplegroup_has_blsample bshg
+                    INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
                     INNER JOIN blsample b ON bshg.blsampleid = b.blsampleid
                     INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                     WHERE $where
-                    GROUP BY bsg.blsamplegroupid
+                    GROUP BY $group_by
                 ) as total", $args);
 
             $tot = intval($tot[0]['TOTAL']);
@@ -2225,13 +2232,12 @@ class Sample extends Page
             array_push($args, $end);
 
             $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples, bshg.type, b.name as sample,  cr.crystalid, cr.name as crystal
-                FROM blsamplegroup bsg
-                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                FROM blsamplegroup_has_blsample bshg
+                INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
                 INNER JOIN blsample b ON bshg.blsampleid = b.blsampleid
                 INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                 WHERE $where
-                GROUP BY bsg.blsamplegroupid
-            ", $args);
+                GROUP BY $group_by", $args);
 
             $this->_output(array(
                 'total' => $tot,
