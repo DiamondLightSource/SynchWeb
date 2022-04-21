@@ -7,7 +7,7 @@ define(['backbone', 'backbone.paginator', 'models/samplegroupsmember'], function
   return PageableCollection.extend({
     blSampleId: null,
     url: function() {
-      if (blSampleId) {
+      if (this.blSampleId) {
         return `/sample/groups/${this.blSampleId}`
       }
 

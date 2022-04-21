@@ -144,7 +144,6 @@
     import phaseCompositor from 'modules/types/xpdf/utils/phasecompositor'
     import Capillaries from 'modules/types/xpdf/collections/capillaries'
     import SampleGroups from 'collections/samplegroups'
-    import SampleGroupSamples from 'collections/samplegroupsamples'
     import CSVFileValidator from 'csv-file-validator'
 
     const requiredError = (headerName, rowNumber, columnNumber) => {
@@ -318,22 +317,14 @@
 
                 this.sampleGroups = result.toJSON().sort((a, b) => this.sortItemsByField(a, b)('BLSAMPLEGROUPID'))
 
-                if (this.sampleGroups.length > 0) {
-                  this.latestSampleGroup = this.sampleGroups.length > 0 ? this.sampleGroups[this.sampleGroups.length - 1] : null
-                  this.sampleGroupSamplesCollection = new SampleGroupSamples(null, { state: { pageSize: 9999 } })
-                  this.sampleGroupSamplesCollection.sampleGroupId = this.latestSampleGroup.BLSAMPLEGROUPID
-                  const sampleGroupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamplesCollection)
-                  this.sampleGroupSamples = sampleGroupSamples.toJSON()
-
-                  this.sampleGroupSamples.forEach(sample => {
-                      if (sample.TYPE === 'container' || sample.TYPE === 'capillary') {
-                          if (sample.BLSAMPLEGROUPID > lastCapillaryId) {
-                              lastCapillaryId = sample.CRYSTALID
-                          }
-                          existingSamples.add(`${sample.CRYSTALID}:${sample.CRYSTAL}`)
-                      }
-                  })
-                }
+                this.sampleGroups.forEach(sample => {
+                    if (sample.TYPE === 'container' || sample.TYPE === 'capillary') {
+                        if (sample.BLSAMPLEGROUPID > lastCapillaryId) {
+                            lastCapillaryId = sample.CRYSTALID
+                        }
+                        existingSamples.add(`${sample.CRYSTALID}:${sample.CRYSTAL}`)
+                    }
+                })
 
                 const existingSamplesArray = Array.from(existingSamples)
 

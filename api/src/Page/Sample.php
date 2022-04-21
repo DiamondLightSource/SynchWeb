@@ -2196,27 +2196,13 @@ class Sample extends Page
             $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
 
-            // Check if we are querying the table by the sample group samples type.
-            // This is currently being used by xpdf when fetching the list of sample group samples.
-            if ($this->has_arg('groupSamplesType')) {
-                $groupSamplesType = explode(',', $this->arg('groupSamplesType'));
-                $where .= ' AND (';
-
-                for ($i = 0; $i < sizeof($groupSamplesType); $i++) {
-                    if ($i < sizeof($groupSamplesType) - 1) {
-                        $where .= 'bshg.type LIKE :'. (sizeof($args)+1). ' OR ';
-                    } else {
-                        $where .= 'bshg.type LIKE :'. (sizeof($args)+1). ')';
-                    }
-                    array_push($args, $groupSamplesType[$i]);
-                }
-            }
-
             $tot = $this->db->pq("SELECT count(*) as total
                 FROM (
                     SELECT count(*) as tot
                     FROM blsamplegroup bsg
-                    LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                    INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                    INNER JOIN blsample b ON bshg.blsampleid = b.blsampleid
+                    INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                     WHERE $where
                     GROUP BY bsg.blsamplegroupid
                 ) as total", $args);
@@ -2238,10 +2224,11 @@ class Sample extends Page
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples
+            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples, bshg.type, b.name as sample,  cr.crystalid, cr.name as crystal
                 FROM blsamplegroup bsg
-                LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                LEFT JOIN blsample b ON bshg.blsampleid = b.blsampleid
+                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                INNER JOIN blsample b ON bshg.blsampleid = b.blsampleid
+                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                 WHERE $where
                 GROUP BY bsg.blsamplegroupid
             ", $args);
