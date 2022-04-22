@@ -2206,9 +2206,9 @@ class Sample extends Page
             $tot = $this->db->pq("SELECT count(*) as total
                 FROM (
                     SELECT count(*) as tot
-                    FROM blsamplegroup_has_blsample bshg
+                    FROM blsample b
+                    INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
                     INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                    INNER JOIN blsample b ON bshg.blsampleid = b.blsampleid
                     INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                     WHERE $where
                     GROUP BY $group_by
@@ -2232,9 +2232,9 @@ class Sample extends Page
             array_push($args, $end);
 
             $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples, bshg.type, b.name as sample,  cr.crystalid, cr.name as crystal
-                FROM blsamplegroup_has_blsample bshg
+                FROM blsample b
+                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
                 INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                INNER JOIN blsample b ON bshg.blsampleid = b.blsampleid
                 INNER JOIN crystal cr ON cr.crystalid = b.crystalid
                 WHERE $where
                 GROUP BY $group_by", $args);
