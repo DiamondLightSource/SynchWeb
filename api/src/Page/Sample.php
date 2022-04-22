@@ -2190,29 +2190,39 @@ class Sample extends Page
 
 
         # Sample Groups
+        function _build_sample_groups_query($where, $fields, $group = '')
+        {
+            return "SELECT $fields
+                FROM blsample b
+                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
+                INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                WHERE $where
+                $group";
+        }
+
         function _sample_groups() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
             $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
-            $group_by = 'bshg.blsampleid';
+            $select_fields = 'bsg.blSampleGroupId, bsg.name, bshg.blSampleId, bshg.type, b.name as sample, cr.crystalId, cr.name as crystal';
+            $total_select_field = 'count(*) as total';
+            $group_by = '';
+            $total_query = $this->_build_sample_groups_query($where, $total_select_field, $group_by);
+
 
             // Check if we are grouping the result by BlSAMPLEID or BLSAMPLEGROUPID.
             // This is currently being used by xpdf when fetching the list of sample group samples.
             if ($this->has_arg('groupSamplesType') &&  $this->arg('groupSamplesType') === 'BLSAMPLEGROUPID') {
-                $group_by = 'bshg.blsamplegroupid';
+                $group_by .= 'GROUP BY bshg.blsamplegroupid';
+                $select_fields = 'bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples';
+                $total_select_field = 'count(*) as tot';
+                $total_sub_query = $this->_build_sample_groups_query($where, $total_select_field, $group_by);
+                $total_query = "SELECT count(*) as total FROM ($total_sub_query) as total";
             }
 
-            $tot = $this->db->pq("SELECT count(*) as total
-                FROM (
-                    SELECT count(*) as tot
-                    FROM blsample b
-                    INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
-                    INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                    INNER JOIN crystal cr ON cr.crystalid = b.crystalid
-                    WHERE $where
-                    GROUP BY $group_by
-                ) as total", $args);
+            $tot = $this->db->pq($total_query, $args);
 
             $tot = intval($tot[0]['TOTAL']);
 
@@ -2231,13 +2241,8 @@ class Sample extends Page
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples, bshg.type, b.name as sample,  cr.crystalid, cr.name as crystal
-                FROM blsample b
-                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
-                INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
-                WHERE $where
-                GROUP BY $group_by", $args);
+            $rows_query = $this->_build_sample_groups_query($where, $select_fields, $group_by);
+            $rows = $this->db->paginate($rows_query, $args);
 
             $this->_output(array(
                 'total' => $tot,
