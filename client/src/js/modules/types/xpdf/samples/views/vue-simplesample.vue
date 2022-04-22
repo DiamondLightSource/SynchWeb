@@ -318,7 +318,7 @@
                     if (sample.TYPE === 'container' || sample.TYPE === 'capillary') {
                         if (Number(sample.BLSAMPLEGROUPID) > lastCapillaryGroupId) {
                             lastCapillaryId = sample.CRYSTALID
-                            lastCapillaryGroupId = sample.CRYSTALID
+                            lastCapillaryGroupId = sample.BLSAMPLEGROUPID
                         }
                         existingSamples.add(`${sample.CRYSTALID}:${sample.CRYSTAL}`)
                     }
