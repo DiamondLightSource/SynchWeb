@@ -2231,14 +2231,26 @@ class Sample extends Page
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples, bshg.type, b.name as sample,  cr.crystalid, cr.name as crystal
+            /*$rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples, bshg.type, b.name as sample,  cr.crystalid, cr.name as crystal
                 FROM blsample b
                 INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
                 INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
                 INNER JOIN crystal cr ON cr.crystalid = b.crystalid
-                WHERE $where
-                GROUP BY $group_by", $args);
-
+                WHERE $where", $args);
+                // GROUP BY $group_by", $args);
+            */
+            $rows = $this->db->paginate("SELECT bsg.blSampleGroupId, 
+                                                bsg.name, 
+                                                bshg.blSampleId as samplegroupsamples,
+                                                bshg.type, 
+                                                b.name as sample,  
+                                                cr.crystalId, 
+                                                cr.name as crystal 
+                                        FROM BLSample b 
+                                            INNER JOIN BLSampleGroup_has_BLSample bshg ON bshg.blSampleId = b.blSampleId 
+                                            INNER JOIN BLSampleGroup bsg ON bshg.blSampleGroupId = bsg.blSampleGroupId 
+                                            INNER JOIN Crystal cr ON cr.crystalId = b.crystalId  
+                                        WHERE $where", $args);
             $this->_output(array(
                 'total' => $tot,
                 'data' => $rows,

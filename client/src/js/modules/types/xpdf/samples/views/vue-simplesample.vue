@@ -307,20 +307,22 @@
             async fetchSampleGroupsAndAssignContainers() {
                 const existingSamples = new Set()
                 let lastCapillaryId = 0
+                let lastCapillaryGroupId = 0
 
                 const result = await this.$store.dispatch('fetchDataFromApi', {
                   url: '/sample/groups',
                 })
                 const sampleGroups = await this.$store.dispatch('fetchDataFromApi', {
-                  url: `/sample/groups?page=1&per_page=${result.total}`,
+                  url: `/sample/groups?page=1&per_page=9999`,
                 })
 
                 this.sampleGroups = sampleGroups.data
 
                 this.sampleGroups.forEach(sample => {
                     if (sample.TYPE === 'container' || sample.TYPE === 'capillary') {
-                        if (sample.BLSAMPLEGROUPID > lastCapillaryId) {
+                        if (parseInt(sample.BLSAMPLEGROUPID) > lastCapillaryGroupId) {
                             lastCapillaryId = sample.CRYSTALID
+                            lastCapillaryGroupId = parseInt(sample.BLSAMPLEGROUPID)
                         }
                         existingSamples.add(`${sample.CRYSTALID}:${sample.CRYSTAL}`)
                     }
