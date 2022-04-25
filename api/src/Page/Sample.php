@@ -1269,7 +1269,8 @@ class Sample extends Page
 
         function _prepare_strategy_option_for_sample($a) {
             $is_valid_sample_group = false;
-            $strategyOptionsData = [];
+            $strategyOptionsData = ["sample_group" => null];
+
             if (isset($a['SAMPLEGROUP'])) {
                 $args = array($this->proposalid);
                 array_push($args, $a['SAMPLEGROUP']);
@@ -1278,8 +1279,6 @@ class Sample extends Page
                 if (sizeof($check)) {
                     $is_valid_sample_group = true;
                     $strategyOptionsData["sample_group"] = $a["SAMPLEGROUP"];
-                } else {
-                    $strategyOptionsData["sample_group"] = null;
                 }
             }
 
@@ -1301,7 +1300,7 @@ class Sample extends Page
             }
             else if (isset($a["SCREENINGMETHOD"]) && $a['SCREENINGMETHOD'] == 'none') {
                 $strategyOptionsData = array_merge($strategyOptionsData, array(
-                    "screen" => $a['SCREENINGMETHOD'],
+                    "screen" => null,
                     "collect_samples" => null
                 ));
 
