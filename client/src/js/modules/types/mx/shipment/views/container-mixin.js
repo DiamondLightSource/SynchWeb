@@ -137,7 +137,7 @@ export default {
     },
     async getSampleGroups() {
       this.sampleGroupsCollection = new SampleGroups(null, { state: { pageSize: 9999 }})
-
+      this.sampleGroupsCollection.queryParams.groupSamplesType = 'BLSAMPLEGROUPID'
       const result = await this.$store.dispatch('getCollection', this.sampleGroupsCollection)
 
       this.sampleGroups = result.toJSON().reduce((acc, curr, index) => {

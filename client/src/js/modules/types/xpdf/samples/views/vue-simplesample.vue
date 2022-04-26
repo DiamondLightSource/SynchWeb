@@ -144,7 +144,6 @@
     import phaseCompositor from 'modules/types/xpdf/utils/phasecompositor'
     import Capillaries from 'modules/types/xpdf/collections/capillaries'
     import SampleGroups from 'collections/samplegroups'
-    import SampleGroupSamples from 'collections/samplegroupsamples'
     import CSVFileValidator from 'csv-file-validator'
 
     const requiredError = (headerName, rowNumber, columnNumber) => {
@@ -244,7 +243,7 @@
                 acronym: null,
                 density: '',
                 fraction: null,
-                containers: null,
+                containers: [],
                 showUploadDialog: false,
                 cifFiles: [],
                 comments: '',
@@ -280,11 +279,19 @@
         methods: {
             async setDewarInformation() {
               // Try to retrieve the default dewar for this proposal/visit
-              // Uses the special session-0 because at this point we are not necesarily on a session
-              this.defaultDewarId = await this.$store.dispatch('fetchDataFromApi', {
-                url: '/shipment/dewars/default',
-                data: { visit: `${this.$store.getters['proposal/currentProposal']}-0`}
-              })
+              // Uses the special session-0 because at this point we are not necessarily on a session
+              try {
+                this.defaultDewarId = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/shipment/dewars/default',
+                  data: { visit: `${this.$store.getters['proposal/currentProposal']}-0`}
+                })
+              } catch (error) {
+                this.$store.commit('notifications/addNotification', {
+                  title: 'Error',
+                  message: 'The default dewar for this visit could not be created (no session-0?)',
+                  level: 'error'
+                })
+              }
             },
             setProteinData() {
               // We should have arrived with an existing Phase to base the new simple samples on
@@ -298,26 +305,22 @@
               this.externalid = protein.EXTERNALID
             },
             async fetchSampleGroupsAndAssignContainers() {
-                this.sampleGroupCollection = new SampleGroups()
-
-                let result = await this.$store.dispatch('getCollection', this.sampleGroupCollection)
-                console.log({ result })
-                this.sampleGroupCollection.queryParams.page = Math.ceil(result.state.totalRecords / result.state.pageSize)
-                this.sampleGroupCollection.queryParams.per_page = result.state.pageSize
-                result = await this.$store.dispatch('getCollection', this.sampleGroupCollection)
-
-                this.sampleGroups = result.toJSON().sort((a, b) => this.sortItemsByField(a, b)('BLSAMPLEGROUPID'))
-                this.latestSampleGroup = this.sampleGroups[this.sampleGroups.length - 1]
-                this.sampleGroupSamplesCollection = new SampleGroupSamples(null, { state: { pageSize: 9999 } })
-                this.sampleGroupSamplesCollection.sampleGroupId = this.latestSampleGroup.BLSAMPLEGROUPID
-                const sampleGroupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamplesCollection)
-                this.sampleGroupSamples = sampleGroupSamples.toJSON()
                 const existingSamples = new Set()
+                let lastCapillaryId = 0
+                let lastCapillaryGroupId = 0
 
+                const sampleGroups = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/sample/groups?page=1&per_page=9999',
+                })
 
-                this.sampleGroupSamples.forEach(sample => {
+                this.sampleGroups = sampleGroups.data
+                this.sampleGroups.forEach(sample => {
                     if (sample.TYPE === 'container' || sample.TYPE === 'capillary') {
-                        existingSamples.add(this.latestSampleGroup.BLSAMPLEGROUPID + ':' + groups.data[i].CRYSTAL)
+                        if (Number(sample.BLSAMPLEGROUPID) > lastCapillaryGroupId) {
+                            lastCapillaryId = sample.CRYSTALID
+                            lastCapillaryGroupId = sample.BLSAMPLEGROUPID
+                        }
+                        existingSamples.add(`${sample.CRYSTALID}:${sample.CRYSTAL}`)
                     }
                 })
 
@@ -326,8 +329,7 @@
                 if (existingSamplesArray.length > 0) {
                     this.hasExistingCapillaries = true
                     existingSamplesArray.forEach(sample => {
-                        if (sample.startsWith(this.latestSampleGroup.BLSAMPLEGROUPID))
-                          this.type = sample
+                        if (sample.startsWith(lastCapillaryId)) this.type = sample
                     })
                 }
 
@@ -335,7 +337,7 @@
                   this.containers.push(capillary.name)
                 })
 
-                this.containers.concat(existingSamplesArray)
+                this.containers = this.containers.concat(existingSamplesArray)
             },
             onSubmit: function(e){
                 e.preventDefault()
@@ -559,7 +561,7 @@
             },
 
             getCapillaryInfo: function(field) {
-                for(var i=0;i<this.capillaries.length;i++){
+                for(let i=0;i<this.capillaries.length;i++){
                     if(this.capillaries[i].name === this.type){
                         return this.capillaries[i][field];
                     }

@@ -147,8 +147,9 @@ class Sample extends Page
                               'SAMPLEGROUP' => '\d+',
                               'INITIALSAMPLEGROUP' => '\d+',
                               'STRATEGYOPTION' => '',
-                              'MINIMUMRESOLUTION' => '\d+(.\d+)?'
-                               );
+                              'MINIMUMRESOLUTION' => '\d+(.\d+)?',
+                              'groupSamplesType' => '.*' // query parameter to query sample groups by sample types. Should be comma separated values like so: groupSamplesType=container,capillary
+        );
         
         
         public static $dispatch = array(array('(/:sid)(/cid/:cid)', 'get', '_samples'),
@@ -435,7 +436,7 @@ class Sample extends Page
                      * Doing this allows a sample to be associated with a capillary for experiment planning which can be useful for background subtraction
                      *  */
                     if(!$capillary->CONTAINERLESS){
-                        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid) VALUES(NULL)");
+                        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, proposalid) VALUES(NULL, :1)", array($this->proposalid));
                         $ids[$model]['SAMPLEGROUPID'] = $this->db->id();
                         
                         if(!array_key_exists('BLSAMPLECAPILLARYID', $ids[$model])){
@@ -1268,7 +1269,8 @@ class Sample extends Page
 
         function _prepare_strategy_option_for_sample($a) {
             $is_valid_sample_group = false;
-            $strategyOptionsData = [];
+            $strategyOptionsData = ["sample_group" => null];
+
             if (isset($a['SAMPLEGROUP'])) {
                 $args = array($this->proposalid);
                 array_push($args, $a['SAMPLEGROUP']);
@@ -1277,8 +1279,6 @@ class Sample extends Page
                 if (sizeof($check)) {
                     $is_valid_sample_group = true;
                     $strategyOptionsData["sample_group"] = $a["SAMPLEGROUP"];
-                } else {
-                    $strategyOptionsData["sample_group"] = null;
                 }
             }
 
@@ -1300,7 +1300,7 @@ class Sample extends Page
             }
             else if (isset($a["SCREENINGMETHOD"]) && $a['SCREENINGMETHOD'] == 'none') {
                 $strategyOptionsData = array_merge($strategyOptionsData, array(
-                    "screen" => $a['SCREENINGMETHOD'],
+                    "screen" => null,
                     "collect_samples" => null
                 ));
 
@@ -2189,20 +2189,39 @@ class Sample extends Page
 
 
         # Sample Groups
+        function _build_sample_groups_query($where, $fields, $group = '')
+        {
+            return "SELECT $fields
+                FROM blsample b
+                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
+                INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                WHERE $where
+                $group";
+        }
+
         function _sample_groups() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
             $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
+            $select_fields = 'bsg.blSampleGroupId, bsg.name, bshg.blSampleId, bshg.type, b.name as sample, cr.crystalId, cr.name as crystal';
+            $total_select_field = 'count(*) as total';
+            $group_by = '';
+            $total_query = $this->_build_sample_groups_query($where, $total_select_field, $group_by);
 
-            $tot = $this->db->pq("SELECT count(*) as total
-                FROM (
-                    SELECT count(*) as tot
-                    FROM blsamplegroup bsg
-                    LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                    WHERE $where
-                    GROUP BY bsg.blsamplegroupid
-                ) as total", $args);
+
+            // Check if we are grouping the result by BlSAMPLEID or BLSAMPLEGROUPID.
+            // This is currently being used by xpdf when fetching the list of sample group samples.
+            if ($this->has_arg('groupSamplesType') &&  $this->arg('groupSamplesType') === 'BLSAMPLEGROUPID') {
+                $group_by .= 'GROUP BY bshg.blsamplegroupid';
+                $select_fields = 'bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples';
+                $total_select_field = 'count(*) as tot';
+                $total_sub_query = $this->_build_sample_groups_query($where, $total_select_field, $group_by);
+                $total_query = "SELECT count(*) as total FROM ($total_sub_query) as total";
+            }
+
+            $tot = $this->db->pq($total_query, $args);
 
             $tot = intval($tot[0]['TOTAL']);
 
@@ -2221,13 +2240,8 @@ class Sample extends Page
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->paginate("SELECT bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples
-                FROM blsamplegroup bsg
-                LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                LEFT JOIN blsample b ON bshg.blsampleid = b.blsampleid
-                WHERE $where
-                GROUP BY bsg.blsamplegroupid
-            ", $args);
+            $rows_query = $this->_build_sample_groups_query($where, $select_fields, $group_by);
+            $rows = $this->db->paginate($rows_query, $args);
 
             $this->_output(array(
                 'total' => $tot,
