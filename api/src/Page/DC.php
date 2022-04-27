@@ -9,7 +9,20 @@ class DC extends Page
 {
         
 
-        public static $arg_list = array('id' => '\d+', 'ids' => '\d+', 'visit' => '\w+\d+-\d+', 's' => '[\w\d-\/]+', 't' => '\w+', 'value' => '.*', 'sid' => '\d+', 'aid' => '\d+', 'pjid' => '\d+', 'imp' => '\d', 'pid' => '\d+', 'h' => '\d\d', 'dmy' => '\d\d\d\d\d\d\d\d',
+        public static $arg_list = array(
+                              'id' => '\d+',
+                              'ids' => '\d+',
+                              'visit' => '\w+\d+-\d+',
+                              's' => '[\w\d-\/]+',
+                              't' => '\w+',
+                              'value' => '.*',
+                              'sid' => '\d+',
+                              'aid' => '\d+',
+                              'pjid' => '\d+',
+                              'imp' => '\d',
+                              'pid' => '\d+',
+                              'h' => '\d\d',
+                              'dmy' => '\d\d\d\d\d\d\d\d',
                               'ssid' => '\d+',
                               'dcg' => '\d+',
                               'a' => '\d+(.\d+)?',
@@ -21,7 +34,6 @@ class DC extends Page
                               'sg' => '\w+',
                               'single' => '\d',
                               'COMMENTS' => '.*',
-
                               'dcid' => '\d+',
                               'DATACOLLECTIONID' => '\d+',
                               'PERSONID' => '\d+',
@@ -29,7 +41,9 @@ class DC extends Page
                               'PROCESSINGJOBID' => '\d+',
 
                               'debug' => '\d',
-
+                              'bl' => '\w+',
+                              'start_time' => '\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d',
+                              'end_time' => '\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d',
                               );
         
 
@@ -253,6 +267,35 @@ class DC extends Page
                 array_push($args, $this->arg('PROCESSINGJOBID'));
                 $extj[0] .= ' LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.datacollectionid=dc.datacollectionid';
 
+            # Beamline
+            } else if ($this->has_arg('bl')) {
+                $info = array_filter($this->_get_beamlines_from_type('all', false), function($k) {
+                   return $k === $this->arg('bl');
+                });
+
+                for ($i = 0; $i < 4; $i++) {
+                    $sess[$i] = 'ses.beamlinename LIKE :'.($i+1);
+                    array_push($args, $this->arg('bl'));
+                }
+
+                if ($this->has_arg('start_time') && $this->has_arg('end_time')) {
+                    $start_time = $this->arg('start_time');
+                    $end_time = $this->arg('end_time');
+
+                    $where = ' AND dc.starttime BETWEEN DATE(:'. (sizeof($args)+1) .') AND DATE(:'. (sizeof($args)+2) .')';
+                    array_push($args, $start_time, $end_time);
+
+                    $where2 = ' AND es.starttime BETWEEN DATE(:'. (sizeof($args)+1) .') AND DATE(:'. (sizeof($args)+2) .')';
+                    array_push($args, $start_time, $end_time);
+
+                    $where3 = ' AND r.starttimestamp BETWEEN DATE(:'. (sizeof($args)+1) .') AND DATE(:'. (sizeof($args)+2) .')';
+                    array_push($args, $start_time, $end_time);
+
+                    $where4 = ' AND xrf.starttime BETWEEN DATE(:'. (sizeof($args)+1) .') AND DATE(:'. (sizeof($args)+2) .')';
+                    array_push($args, $start_time, $end_time);
+                } else {
+                    $this->_error('Please specify a start and end date to get results by beamline');
+                }
             # Proposal
             } else if ($this->has_arg('prop')) {
                 $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
@@ -263,7 +306,7 @@ class DC extends Page
                 }
             }
             
-            if (!sizeof($info)) $this->_error('The specified visit, sample, or project doesnt exist');
+            if (!sizeof($info)) $this->_error('The specified visit, sample, project or beamline does not exist');
             
             
             # Filter by time for visits
@@ -334,7 +377,54 @@ class DC extends Page
             # Data collection group
             if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
                 $count_field = 'dc.datacollectionid';
-                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, 1 as dcc, smp.name as sample,smp.blsampleid, ses.visit_number as vn, dc.kappastart as kappa, dc.phistart as phi, dc.startimagenumber as si, dcg.experimenttype as dct, dc.datacollectiongroupid as dcg, dc.runstatus, dc.beamsizeatsamplex as bsx, dc.beamsizeatsampley as bsy, dc.overlap, dc.flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, dc.imageprefix as imp, dc.datacollectionnumber as run, dc.filetemplate, dc.datacollectionid as id, dc.numberofimages as ni, dc.imagedirectory as dir, dc.resolution, dc.exposuretime, dc.axisstart, dc.numberofimages as numimg, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, dc.transmission, dc.axisrange, dc.wavelength, dc.comments, 1 as epk, 1 as ein, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4, dc.starttime as sta, dc.detectordistance as det, dc.xbeam, dc.ybeam, dc.chistart, dcg.scanparameters as scanparams,
+                $fields = "
+                    count(distinct dca.datacollectionfileattachmentid) as dcac,
+                    count(distinct dcc.datacollectioncommentid) as dccc,
+                    1 as dcc,
+                    smp.name as sample,
+                    smp.blsampleid,
+                    ses.visit_number as vn,
+                    dc.kappastart as kappa,
+                    dc.phistart as phi,
+                    dc.startimagenumber as si,
+                    dcg.experimenttype as dct,
+                    dc.datacollectiongroupid as dcg,
+                    dc.runstatus,
+                    dc.beamsizeatsamplex as bsx,
+                    dc.beamsizeatsampley as bsy,
+                    dc.overlap,
+                    dc.flux,
+                    1 as scon,
+                    'a' as spos,
+                    'a' as san,
+                    'data' as type,
+                    dc.imageprefix as imp,
+                    dc.datacollectionnumber as run,
+                    dc.filetemplate,
+                    dc.datacollectionid as id,
+                    dc.numberofimages as ni,
+                    dc.imagedirectory as dir,
+                    dc.resolution,
+                    dc.exposuretime,
+                    dc.axisstart,
+                    dc.numberofimages as numimg,
+                    TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st,
+                    dc.transmission,
+                    dc.axisrange,
+                    dc.wavelength,
+                    dc.comments,
+                    1 as epk,
+                    1 as ein,
+                    dc.xtalsnapshotfullpath1 as x1,
+                    dc.xtalsnapshotfullpath2 as x2,
+                    dc.xtalsnapshotfullpath3 as x3,
+                    dc.xtalsnapshotfullpath4 as x4,
+                    dc.starttime as sta,
+                    dc.detectordistance as det,
+                    dc.xbeam,
+                    dc.ybeam,
+                    dc.chistart,
+                    dcg.scanparameters as scanparams,
                     dc.voltage,
                     dc.c2aperture,
                     dc.c2lens,
@@ -346,7 +436,6 @@ class DC extends Page
                     d.detectormanufacturer,
                     d.detectormodel,
                     TIMESTAMPDIFF('MINUTE', dc.starttime, CURRENT_TIMESTAMP) as age,
-
                     dc.numberofpasses,
                     dc.c1aperture,
                     dc.c3aperture,
@@ -385,7 +474,53 @@ class DC extends Page
 
             } else {
                 $count_field = 'distinct dc.datacollectiongroupid';
-                $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac, count(distinct dcc.datacollectioncommentid) as dccc, count(distinct dc.datacollectionid) as dcc, min(smp.name) as sample, min(smp.blsampleid) as blsampleid, min(ses.visit_number) as vn, min(dc.kappastart) as kappa, min(dc.phistart) as phi, min(dc.startimagenumber) as si, min(dcg.experimenttype) as dct, dc.datacollectiongroupid as dcg, min(dc.runstatus) as runstatus, min(dc.beamsizeatsamplex) as bsx, min(dc.beamsizeatsampley) as bsy, min(dc.overlap) as overlap, max(dc.flux) as flux, 1 as scon, 'a' as spos, 'a' as san, 'data' as type, min(dc.imageprefix) as imp, min(dc.datacollectionnumber) as run, min(dc.filetemplate) as filetemplate, min(dc.datacollectionid) as id, min(dc.numberofimages) as ni, min(dc.imagedirectory) as dir, min(dc.resolution) as resolution, min(dc.exposuretime) as exposuretime, min(dc.axisstart) as axisstart, min(dc.numberofimages) as numimg, TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st, min(dc.transmission) as transmission, min(dc.axisrange) as axisrange, min(dc.wavelength) as wavelength, min(dc.comments) as comments, 1 as epk, 1 as ein, min(dc.xtalsnapshotfullpath1) as x1, min(dc.xtalsnapshotfullpath2) as x2, min(dc.xtalsnapshotfullpath3) as x3, min(dc.xtalsnapshotfullpath4) as x4, min(dc.starttime) as sta, min(dc.detectordistance) as det, min(dc.xbeam) as xbeam, min(dc.ybeam) as ybeam, min(dc.chistart) as chistart, dcg.scanparameters as scanparams,
+                $fields = "
+                    count(distinct dca.datacollectionfileattachmentid) as dcac,
+                    count(distinct dcc.datacollectioncommentid) as dccc,
+                    count(distinct dc.datacollectionid) as dcc,
+                    min(smp.name) as sample,
+                    min(smp.blsampleid) as blsampleid,
+                    min(ses.visit_number) as vn,
+                    min(dc.kappastart) as kappa,
+                    min(dc.phistart) as phi,
+                    min(dc.startimagenumber) as si,
+                    min(dcg.experimenttype) as dct,
+                    dc.datacollectiongroupid as dcg,
+                    min(dc.runstatus) as runstatus,
+                    min(dc.beamsizeatsamplex) as bsx,
+                    min(dc.beamsizeatsampley) as bsy,
+                    min(dc.overlap) as overlap,
+                    max(dc.flux) as flux, 1 as scon,
+                    'a' as spos,
+                    'a' as san,
+                    'data' as type,
+                    min(dc.imageprefix) as imp,
+                    min(dc.datacollectionnumber) as run,
+                    min(dc.filetemplate) as filetemplate,
+                    min(dc.datacollectionid) as id,
+                    min(dc.numberofimages) as ni,
+                    min(dc.imagedirectory) as dir,
+                    min(dc.resolution) as resolution,
+                    min(dc.exposuretime) as exposuretime,
+                    min(dc.axisstart) as axisstart,
+                    min(dc.numberofimages) as numimg,
+                    TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st,
+                    min(dc.transmission) as transmission,
+                    min(dc.axisrange) as axisrange,
+                    min(dc.wavelength) as wavelength,
+                    min(dc.comments) as comments,
+                    1 as epk,
+                    1 as ein,
+                    min(dc.xtalsnapshotfullpath1) as x1,
+                    min(dc.xtalsnapshotfullpath2) as x2,
+                    min(dc.xtalsnapshotfullpath3) as x3,
+                    min(dc.xtalsnapshotfullpath4) as x4,
+                    min(dc.starttime) as sta,
+                    min(dc.detectordistance) as det,
+                    min(dc.xbeam) as xbeam,
+                    min(dc.ybeam) as ybeam,
+                    min(dc.chistart) as chistart,
+                    dcg.scanparameters as scanparams,
                     max(dc.voltage) as voltage,
                     max(dc.c2aperture) as c2aperture,
                     max(dc.c2lens) as c2lens,

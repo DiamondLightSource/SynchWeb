@@ -120,6 +120,7 @@ module.exports = {
         'content-minor': 'yellow',
         'content-light-background': '#ebebeb',
         'content-dark-background': '#dedede',
+        'content-mid-background': '#e6e6e6',
         'content-cal-header-background': '#cecece',
         'content-cal-background': '#eeeeee',
         'content-cal-hl1-background': '#dfdfdf',

@@ -1,6 +1,5 @@
 import MarionetteApplication from 'app/marionette-application.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import Debug from 'app/views/debug.vue'
 
 // Lazy load Vue wrapper components
 // Group these to isolate loading Three.js in dc vendor module
@@ -8,6 +7,7 @@ const DCWrapper = () => import(/* webpackChunkName: "dc" */ 'modules/dc/componen
 const MapModelWrapper = () => import(/* webpackChunkName: "dc-3d" */ 'modules/dc/components/map-model-wrapper.vue')
 const ImageViewWrapper = () => import(/* webpackChunkName: "dc-3d" */ 'modules/dc/components/image-view-wrapper.vue')
 const ReciprocalViewWrapper = () => import(/* webpackChunkName: "dc-3d" */ 'modules/dc/components/reciprocal-view-wrapper.vue')
+const DataCollectionList = () => import(/* webpackChunkName: "data-collection-list" */ 'modules/dc/views/data-collection-list.vue')
 
 // Data Collection Marionette Views
 const Summary = import(/* webpackChunkName: "dc" */ 'modules/dc/views/summary')
@@ -100,6 +100,20 @@ let routes = [
     }),
   },
   {
+    path: '/dc/beamline-activity/bl/:bl([a-zA-Z0-9]+)(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?(/s/)?:search([a-zA-z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9_-]+)?(/id/)?:id([0-9]+)?(/pjid/)?:pjid([0-9]+)?',
+    name: 'beamline-data-collection-activities',
+    component: DataCollectionList,
+    props: route => ({
+      id: +route.params.id || null,
+      bl: route.params.bl || '',
+      dcg: +route.params.dcg || null,
+      page: +route.params.page || 1,
+      ty: route.params.ty || '',
+      search: route.params.search || '',
+      processingJobId: +route.params.pjid || null,
+    }),
+  },
+  {
     path: '/dc/map/id/:id([0-9]+)(/aid/)?:aid([0-9]+)?',
     name: 'dc-mapmodelviewer',
     component: MapModelWrapper,
@@ -147,7 +161,7 @@ let routes = [
       lookupVisit(to.params.visit).then((response) => {
         console.log("Lookup OK Prop = " + response.get('PROPOSAL'))
         next()
-      }, (error) => {
+      }, () => {
         console.log("Calling next - Error, no proposal found")
         next('/notfound')
       }).finally( () => {
@@ -179,7 +193,7 @@ let routes = [
       lookupVisit(to.params.visit).then((response) => {
         console.log("Lookup OK Prop = " + response.get('PROPOSAL'))
         next()
-      }, (error) => {
+      }, () => {
         console.log("Calling next - Error, no proposal found")
         next('/notfound')
       }).finally( () => {
@@ -212,7 +226,7 @@ let routes = [
       lookupVisit(to.params.visit).then((response) => {
         console.log("Lookup OK Prop = " + response.get('PROPOSAL'))
         next()
-      }, (error) => {
+      }, () => {
         console.log("Calling next - Error, no proposal found")
         next('/notfound')
       }).finally( () => {
@@ -245,10 +259,10 @@ let routes = [
       lookupVisit(to.params.visit).then((response) => {
         console.log("Lookup OK Prop = " + response.get('PROPOSAL'))
         next()
-      }), (error) => {
+      }, () => {
         console.log("Calling next - Error, no proposal found")
         next('/notfound')
-      }
+      })
     }
   },
 ]

@@ -18,53 +18,79 @@
     </div>
 
     <div class="tw-w-full tw-flex sm:tw-flex-row tw-flex-col tw-mt-1">
-      <slot name="fields-slot"
-        :sample="sample"
-        :kappaPhiChiValues="kappaPhiChiValues"
-        :hasKappaPhiOrChi-="hasKappaPhiOrChi"
-        :rotationAxisSymbol="rotationAxisSymbol"
-        :flux="flux"
-        :axisStart="axisStart"
-        :axisRange="axisRange"
-        :overlap="overlap"
-        :numberOfImages="numberOfImages"
-        :firstImage="firstImage"
-        :resolution="resolution"
-        :wavelength="wavelength"
-        :exposureYime="exposureTime"
-        :transmission="transmission"
-        :dct="dct"
-        :comments="comments"
-        :state="state"
-        :bsx="bsx"
-        :bsy="bsy"
-        :boxSizeX="boxSizeX"
-        :boxSizeY="boxSizeY"
-        :sampleId="sampleId"
-        :spos="spos"
-        :san="san"
-        :directory="directory"
-      >
-      </slot>
-      <slot name="images-slots"></slot>
-      <slot name="chart-slot"></slot>
+      <div :class="[dataCollection['TYPE'] === 'grid' ? 'sm:tw-w-1/6' : 'tw-flex-wrap sm:tw-w-1/4']">
+        <slot name="fields-slot"
+          :sample="sample"
+          :kappaPhiChiValues="kappaPhiChiValues"
+          :hasKappaPhiOrChi-="hasKappaPhiOrChi"
+          :rotationAxisSymbol="rotationAxisSymbol"
+          :flux="flux"
+          :axisStart="axisStart"
+          :axisRange="axisRange"
+          :overlap="overlap"
+          :numberOfImages="numberOfImages"
+          :firstImage="firstImage"
+          :resolution="resolution"
+          :wavelength="wavelength"
+          :exposureYime="exposureTime"
+          :transmission="transmission"
+          :dct="dct"
+          :comments="comments"
+          :state="state"
+          :bsx="bsx"
+          :bsy="bsy"
+          :boxSizeX="boxSizeX"
+          :boxSizeY="boxSizeY"
+          :sampleId="sampleId"
+          :spos="spos"
+          :san="san"
+          :directory="directory"
+        >
+        </slot>
+      </div>
+      <div class="tw-flex-1">
+        <slot
+          name="images-slots"
+          :dataCollectionType="dataCollection['TYPE']"
+          :imageData="dataCollectionImageData"
+          :dataCollectionId="dataCollection['ID']"
+        >
+        </slot>
+      </div>
+      <div :class="[dataCollection['TYPE'] === 'data' ? 'sm:tw-w-3/12': 'sm:tw-w-1/3', 'tw-w-full']">
+        <slot
+          name="chart-slot"
+          :dataCollectionType="dataCollection['TYPE']"
+          :axisRange="Number(dataCollection['AXISRANGE'])"
+          :axisStart="Number(dataCollection['AXISSTART'])"
+          :si="Number(dataCollection['SI'])"
+          :numberOfImage="Number(dataCollection['NUMIMG'])"
+          :selection="false"
+          :chartData="chartData"
+        >
+        </slot>
+      </div>
     </div>
   </div>
 </template>
 <script>
 import { mapGetters } from 'vuex'
-import DataCollectionField from 'modules/dc/components/data-collection-field.vue'
 import DataCollectionItemHeader from 'modules/dc/components/data-collection-item-header.vue'
+import DataCollectionDistlView from 'app/components/data-collection-distl-view.vue'
+import DCDISTLModel from 'modules/dc/models/distl'
 export default {
   name: 'data-collection-item',
   components: {
-    DataCollectionItemHeader,
-    DataCollectionField
+    'data-collection-distl-view': DataCollectionDistlView,
+    'data-collection-item-header': DataCollectionItemHeader,
   },
   props: {
     dataCollection: {
       type: Object,
       default: () => ({})
+    },
+    dataCollectionModel: {
+      type: [undefined, Object],
     },
     dataCollectionIndex: {
       type: Number,
@@ -73,16 +99,36 @@ export default {
     dataCollectionMessageStatus: {
       type: Object,
       default: () => ({})
+    },
+    dataCollectionImageData: {
+      type: Object,
+      default: () => ({})
     }
   },
   data() {
     return {
       displayFullPath: false,
+      chartData: [],
+      chartDataModel: null
+    }
+  },
+  mounted() {
+    if (this.dataCollectionModel) {
+      this.fetchDataCollectionChartData()
     }
   },
   methods: {
     toggleFilePath() {
       this.displayFullPath = !this.displayFullPath
+    },
+    async fetchDataCollectionChartData() {
+      this.chartDataModel = new DCDISTLModel({ id: this.dataCollection['ID'], nimg: this.dataCollection['NUMIMG'], pm: this.dataCollectionModel })
+      await this.$store.dispatch('getModel', this.chartDataModel)
+    },
+    formatChartModel(newValue) {
+      const data = this.chartDataModel && this.chartDataModel.get('data')
+      if (newValue && data)
+      this.chartData = data
     }
   },
   computed: {
@@ -188,6 +234,13 @@ export default {
     },
     spos() {
       return this.dataCollection['SPOS']
+    }
+  },
+  watch: {
+    chartDataModel: {
+      deep: true,
+      immediate: true,
+      handler: 'formatChartModel'
     }
   }
 }
