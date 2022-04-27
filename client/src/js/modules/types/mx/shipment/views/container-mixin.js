@@ -216,6 +216,15 @@ export default {
     },
     // Take first entry (or index) and clone all rows
     onCloneContainer(sampleIndex=0) {
+      const firstSample = this.samples[sampleIndex]
+      this.$store.commit('samples/reset')
+
+      // We want the name of the first sample to always remain the same when we clone all samples
+      const baseName = firstSample['NAME'].replace(/([\d]+)$/, '')
+      const digitMatch = firstSample['NAME'].match(/([\d]+)$/)
+      const digitValue = digitMatch && digitMatch.length > 0 ? Number(digitMatch[0]) - 1 : 0
+
+      this.$store.commit('samples/setSample', { index: sampleIndex, data: {...firstSample, NAME: `${baseName}${digitValue}`} })
       for (let i = 0; i < this.samples.length; i++) {
         this.cloneSample(sampleIndex, i)
       }
@@ -282,41 +291,22 @@ export default {
       let sampleIndex = +location - 1
       let sourceCoordinates = this.getRowColDrop(location)
 
-      for (let i = 0; i < this.samples.length; i++) {
-        // We are only cloning samples that come after this one - so skip any with a lower index
-        if (i > sampleIndex) {
-          let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
-
-          if (targetCoordinates['drop'] === sourceCoordinates['drop'] && targetCoordinates['col'] === sourceCoordinates['col']) {
-            this.cloneSample(sampleIndex, i)
-            this.sampleLocation = i
-
-            await this.$nextTick()
-            const locationValid = await this.$refs.containerForm.validate();
-
-            if (!locationValid) {
-              break
-            } else {
-              this.$store.commit('samples/updateSamplesField', {
-                path: `samples/${sampleIndex}/VALID`,
-                value: 1
-              })
-            }
-          }
-        }
-      }
+      await this.performCloneByRowOrColumn(sampleIndex, sourceCoordinates, 'col')
     },
     // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
     async onCloneRow(location) {
       let sampleIndex = +location - 1
       let sourceCoordinates = this.getRowColDrop(location)
 
+      await this.performCloneByRowOrColumn(sampleIndex, sourceCoordinates, 'row')
+    },
+    async performCloneByRowOrColumn(sampleIndex, sourceCoordinates, direction) {
       for (let i = 0; i < this.samples.length; i++) {
         // We are only cloning samples that come after this one - so skip any with a lower index
         if (i > sampleIndex) {
           let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
 
-          if (targetCoordinates['drop'] === sourceCoordinates['drop'] && targetCoordinates['row'] === sourceCoordinates['row']) {
+          if (targetCoordinates['drop'] === sourceCoordinates['drop'] && targetCoordinates[direction] === sourceCoordinates[direction]) {
             this.cloneSample(sampleIndex, i)
             this.sampleLocation = i
 
@@ -347,12 +337,6 @@ export default {
       sampleClone.LOCATION = (targetIndex + 1).toString()
       sampleClone.NAME = this.generateSampleName(baseName)
       this.$store.commit('samples/setSample', { index: targetIndex, data: sampleClone })
-    },
-    // Reset the validation for the field when an input is edited
-    resetFormValidation() {
-      requestAnimationFrame(() => {
-        this.$refs.containerForm.reset()
-      })
     },
     async fetchSampleGroupSamples() {
       const sampleGroupCollection = new SampleGroups(null, { state: { pageSize: 9999 } })

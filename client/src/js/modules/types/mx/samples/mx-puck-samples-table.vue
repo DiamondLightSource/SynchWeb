@@ -2,9 +2,14 @@
   <div class="tw-mt-12 tw-mb-4">
     <div class="tw-flex tw-justify-end tw-mb-2" v-if="!containerId">
       <button
-        class="button"
+        class="button tw-mr-1"
         @click="$emit('clone-container', 0)">
         Clone all from first row
+      </button>
+      <button
+        class="button tw-ml-1"
+        @click="$emit('clear-container')">
+        Clear all samples
       </button>
     </div>
     <div class="tw-w-full tw-flex tw-flex-col tw-items-end" v-if="containerId && !isContainerProcessing && !dataCollectionStarted">

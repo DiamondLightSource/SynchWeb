@@ -238,7 +238,7 @@ const store = new Vuex.Store({
     },
 
     // fetch data from the backend that is not attached to any model
-    async fetchDataFromApi({ state, commit, rootState }, { url, data }) {
+    async fetchDataFromApi({ state, commit, rootState }, { url, data, requestType }) {
       return await Backbone.ajax({
         url: app.apiurl + url,
         data,
@@ -248,8 +248,9 @@ const store = new Vuex.Store({
         },
         error: function() {
           commit('notifications/addNotification', {
-            title: 'Error creating default dewar',
-            message: 'The default dewar for this visit could not be created (no session-0?)'
+            title: 'Error performing request',
+            message: `There was an error ${requestType}`,
+            level: 'error'
           }, {
             root: true
           })

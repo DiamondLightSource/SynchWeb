@@ -112,7 +112,7 @@ const samplesModule = {
     },
     // Set all samples to a passed array - convenient when used with forms and computed properties
     set(state, data) {
-      if (data.length <= state.samples.length) {
+      if (data && data.length <= state.samples.length) {
         state.samples = data.map((item) => { return item })
       }
     },

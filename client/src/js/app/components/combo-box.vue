@@ -194,7 +194,7 @@ export default {
 
       for (let j = 0; j < selectItemsWrapper.length; j += 1) {
         if (dropDownList.indexOf(j) > -1) {
-          const isSelfTriggered = this.$refs[`select-items-${this.inputIndex}`].contains(event.target)
+          const isSelfTriggered = this.$refs[`select-items-${this.inputIndex}`] && this.$refs[`select-items-${this.inputIndex}`].contains(event.target)
 
           if (force) {
             this.searching = false
