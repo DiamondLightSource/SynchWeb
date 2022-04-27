@@ -3,6 +3,7 @@ var FontAwesome = require('font-awesome/css/font-awesome.css')
 
 import Vue from 'vue'
 import VeeValidate from 'vee-validate'
+import jQuery from 'jquery'
 
 import Main from 'app/layouts/main.vue'
 import MaintenanceView from 'app/layouts/maintenance.vue'
@@ -21,6 +22,8 @@ Vue.use(PortalVue)
 Vue.config.productionTip = false
 Vue.config.devtools = !config.production
 
+global.jQuery = jQuery
+window.$ = global.jQuery
 
 const vm = new Vue({
   store,

@@ -38,6 +38,7 @@
 
     <!-- Show logos, links etc. -->
     <footer-panel />
+
     <portal-target name="dialog"></portal-target>
   </div>
 </template>
@@ -97,15 +98,8 @@ export default {
       ...mapState(['isLoading', 'motd'])
     },
     created: function () {
-      console.log(this.$options.name + " created")
-      let self = this
-
-      EventBus.$on('proposalChange', function (payLoad) {
-          console.log("App Proposal has Changed - " + payload)
-      })
-
-      EventBus.$on('bcChange', function (payload=undefined) {
-          self.bc = payload || []
+      EventBus.$on('bcChange', (payload=undefined) => {
+          this.bc = payload || []
       })
     },
     methods: {
