@@ -1,5 +1,5 @@
 /**
- * The menu specification for b18 pages
+ * The menu specification for k11 pages 
  */
 
 define([], function() {
