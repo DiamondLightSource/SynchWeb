@@ -89,7 +89,7 @@ define(['backbone',
             e.preventDefault()
         },
         
-        clearAll: function(e) {
+        clearAll: function() {
             this.clear([], true)
         },
 
@@ -172,7 +172,7 @@ define(['backbone',
                     
                     var match = true
                     _.each(test, function(t) {
-                        if (p[t] != sp[t]) match = false
+                        if (p[t] !== sp[t]) match = false
                     })
                     
                     if (match) {
@@ -191,7 +191,7 @@ define(['backbone',
             start.set({ NAME: this.sampleName(sp.pos, start.get('NAME')) })
         },
 
-        success: function(e) {
+        success: function() {
             var p = this.getOption('proteins').findWhere({ PROTEINID: this.model.get('PROTEINID') })
             this.model.set({ new: false, ACRONYM: p.get('ACRONYM') })
             this.render()
@@ -299,7 +299,13 @@ define(['backbone',
                 })
 
                 console.log('render single', this.model)
-                this.compview = new ComponentsView({ showEmpty: true, CRYSTALID: this.model.get('CRYSTALID'), collection: this.model.get('components'), editable: this.model.get('new'), editinline: this.getOption('existingContainer') })
+                this.compview = new ComponentsView({
+                    showEmpty: true,
+                    CRYSTALID: this.model.get('CRYSTALID'),
+                    collection: this.model.get('components'),
+                    editable: this.model.get('new'),
+                    editinline: this.getOption('existingContainer')
+                })
                 this.ui.comps.append(this.compview.render().$el)
 
                 if (this.extra) this.$el.find('.extra').addClass('show')
@@ -327,7 +333,7 @@ define(['backbone',
                     term: req.term,
                     global: 1,
                 },
-                success: function(data) {
+                success: function() {
                     resp(self.gproteins.map(function(m) {
                         return {
                             label: m.get('ACRONYM'),

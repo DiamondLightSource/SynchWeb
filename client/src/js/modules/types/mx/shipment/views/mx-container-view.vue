@@ -42,11 +42,14 @@
             <li v-if="isPuck" class="tw-flex tw-flex-row tw-w-full">
               <span class="label">Registered Container</span>
               <base-input-select
+                :initial-text="container.REGISTRY"
                 v-model="container.CONTAINERREGISTRYID"
                 name="CONTAINERREGISTRYID"
                 :options="containerRegistry"
+                :inline="true"
                 optionValueKey="CONTAINERREGISTRYID"
                 optionTextKey="BARCODE"
+                @save="save('CONTAINERREGISTRYID')"
               />
               <span class="tw-relative"><router-link :to="`/containers/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
             </li>
@@ -212,10 +215,6 @@ export default {
         {key: 'BEAMLINELOCATION', title: 'Beamline'}
       ],
       containerHistoryTotal: 0,
-
-      experimentKind: null,
-      plateType: null, // Stores if a puck or plate type
-      plateKey: 0,
       displayQueueModal: false,
       modal: {
         queueContainer: {
@@ -258,6 +257,7 @@ export default {
     this.fetchShipments()
     this.loadContainerData()
     this.loadSampleGroupInformation()
+    this.getGlobalProteins()
     this.getProteins()
     this.getContainerRegistry()
     this.getHistory()
@@ -295,6 +295,13 @@ export default {
       params[parameter] = this.container[parameter]
 
       await this.$store.dispatch('saveModel', { model: this.containerModel, attributes: params })
+      this.$store.commit('notifications/addNotification', {
+        title: 'Success:',
+        message: 'Container has been successfully updated',
+        level: 'success'
+      })
+      await this.$store.dispatch('getModel', this.containerModel)
+      this.loadContainerData()
     },
     async getHistory() {
       let collection = new ContainerHistory()
@@ -312,22 +319,6 @@ export default {
       if (result) {
         this.resetSamples(this.container.CAPACITY)
       }
-    },
-    findExperimentType(collection) {
-      let proposalType = this.$store.state.proposal.proposalType
-      let experimentTypes = collection.toJSON()
-      let filteredTypes = []
-      // Try to find the experiment Type ID from the group of experiment types
-      filteredTypes = experimentTypes.filter( (type) => {
-        if (type.NAME === this.container.EXPERIMENTTYPE && type.PROPOSALTYPE === proposalType) return true
-      })
-      // Try to find the experiment Type ID from all experiment types
-      if (!filteredTypes) {
-        filteredTypes = experimentTypes.filter( (type) => {
-          if (type.NAME === this.container.EXPERIMENTTYPE) return true
-        })
-      }
-      return filteredTypes
     },
     // Reset Backbone Samples Collection
     resetSamples(capacity) {

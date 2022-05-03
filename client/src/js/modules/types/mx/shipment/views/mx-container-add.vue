@@ -33,16 +33,17 @@
               />
             </div>
 
-            <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
-              <base-input-text
-                label="Container Name"
-                v-model="NAME"
-                :errorMessage="errors[0]"
-              />
-            </validation-provider>
+            <div v-show="plateType === 'puck'">
+              <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
+                <base-input-text
+                  label="Container Name"
+                  v-model="NAME"
+                  :errorMessage="errors[0]"
+                />
+              </validation-provider>
 
-            <div v-show="isPuck" class="pck tw-mb-2 tw-py-2">
               <base-input-select
+                outer-class="tw-mb-2 tw-py-2"
                 v-model="CONTAINERREGISTRYID"
                 label="Registered Container"
                 name="CONTAINERREGISTRYID"
@@ -50,10 +51,9 @@
                 optionValueKey="CONTAINERREGISTRYID"
                 optionTextKey="BARCODE"
               />
-            </div>
 
-            <div v-show="isPuck" class="autoprocessing_options tw-mb-2 tw-py-2">
               <base-input-select
+                outer-class="autoprocessing_options tw-mb-2 tw-py-2"
                 v-model="PROCESSINGPIPELINEID"
                 label="Priority Processing"
                 description="Other data reduction pipelines will run on a lower priority queue"
@@ -61,41 +61,35 @@
                 :options="processingPipelines"
                 optionValueKey="PROCESSINGPIPELINEID"
                 optionTextKey="NAME"
-                />
-            </div>
-
-            <div class="pck tw-mb-2 tw-py-2">
-              <label>Show all spacegroups</label>
-              <base-input-checkbox
-                name="SHOW SPACEGROUP"
-                v-model="SPACEGROUP"
               />
+
+              <div class="tw-mb-2 tw-py-2">
+                <label>Show all space groups</label>
+                <base-input-checkbox name="SHOW SPACEGROUP" v-model="SPACEGROUP" />
+              </div>
+
+              <div class="tw-mb-2 tw-py-2">
+                <label>Queue For UDC</label>
+                <base-input-checkbox name="Queue For UDC" v-model="QUEUEFORUDC"/>
+              </div>
             </div>
 
-            <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="owner">
-              <base-input-select
-                label="Owner"
-                  description="This user will be emailed with container updates. Check your email is up to date!"
-                  name="PERSONID"
-                  v-model="PERSONID"
-                  :options="users"
-                  optionValueKey="PERSONID"
-                  optionTextKey="FULLNAME"
-                  >
-                <template v-slot:error-msg>
-                  <span v-show="!ownerEmail" class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6">Please update your email address by clicking view</span>
-                </template>
-                <template v-slot:actions>
-                  <a :href="`/contacts/user/${PERSONID}`" class="button edit_user tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
-                </template>
-              </base-input-select>
-            </validation-provider>
+            <div v-show="plateType === 'plate'">
+              <div class="tw-flex tw-w-full tw-relative">
+                <base-input-text outer-class="tw-mb-2 tw-py-2 tw-flex tw-flex-1" v-model="BARCODE" label="Barcode" name="Barcode"/>
+                <span class="barcode-message tw-text-xs tw-ml-4 tw-bg-content-light-background tw-rounded tw-p-2 tw-absolute">{{ barcodeMessage }}</span>
+              </div>
 
-            <base-input-text outerClass="tw-mb-2 tw-py-2" id="comments" v-model="COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
+              <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
+                <base-input-text
+                  label="Container Name"
+                  v-model="NAME"
+                  :errorMessage="errors[0]"
+                />
+              </validation-provider>
 
-            <!-- VMXi Plates... -->
-            <div v-show="isPlate " class="plate tw-mb-2 tw-py-2">
               <base-input-select
+                outer-class="tw-mb-2 tw-py-2"
                 v-model="REQUESTEDIMAGERID"
                 label="Requested Imager"
                 description="Imager this container should go into"
@@ -104,10 +98,9 @@
                 optionValueKey="IMAGERID"
                 optionTextKey="NAME"
               />
-            </div>
 
-            <div v-show="isPlate" class="plate tw-mb-2 tw-py-2">
               <base-input-select
+                outer-class="tw-mb-2 tw-py-2"
                 v-model="SCHEDULEID"
                 label="Imaging Schedule"
                 description="Requested Imaging Schedule"
@@ -120,10 +113,9 @@
                   <a href="#" @click="viewSchedule" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
                 </template>
               </base-input-select>
-            </div>
 
-            <div v-show="isPlate" class="plate tw-mb-2 tw-py-2">
               <base-input-select
+                outer-class="tw-mb-2 tw-py-2"
                 v-model="SCREENID"
                 label="Crystallisation Screen"
                 description="Crystallisation screen that was used for this container"
@@ -134,24 +126,71 @@
               />
             </div>
 
-            <div class="pck tw-mb-2 tw-py-2">
-              <label>Queue For UDC</label>
-              <base-input-checkbox
-                name="Queue For UDC"
-                v-model="QUEUEFORUDC"
+            <div v-show="plateType === 'pcr'">
+              <base-input-text outer-class="tw-mb-2 tw-py-2" v-model="BARCODE" label="Barcode" name="Barcode" />
+
+              <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
+                <base-input-text
+                  label="Container Name"
+                  v-model="NAME"
+                  :errorMessage="errors[0]"
+                />
+              </validation-provider>
+
+              <base-input-select
+                outer-class="tw-mb-2 tw-py-2"
+                v-model="EXPERIMENTTYPEID"
+                label="Experiment Type"
+                name="EXPERIMENTTYPE"
+                default-text="-"
+                :options="experimentTypes"
+                optionValueKey="value"
+                optionTextKey="name"
+              />
+
+              <base-input-select
+                outer-class="tw-mb-2 tw-py-2"
+                v-model="STORAGETEMPERATURES"
+                label="Experiment Type"
+                name="STORAGETEMPERATURES"
+                default-text="-"
+                :options="storageTemperatures"
+                optionValueKey="value"
+                optionTextKey="name"
               />
             </div>
-          </div>
 
+            <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="owner">
+              <base-input-select
+                outer-class="tw-flex tw-w-full tw-items-center"
+                label="Owner"
+                description="This user will be emailed with container updates. Check your email is up to date!"
+                name="PERSONID"
+                v-model="PERSONID"
+                :options="users"
+                optionValueKey="PERSONID"
+                optionTextKey="FULLNAME"
+              >
+                <template v-slot:error-msg>
+                  <span v-show="!ownerEmail" class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6">Please update your email address by clicking view</span>
+                </template>
+                <template v-slot:actions>
+                  <a :href="`/contacts/user/${PERSONID}`" class="button edit_user tw-w-16 tw-text-center tw-h-6 tw-text-xxs"><i class="fa fa-search"></i> View</a>
+                </template>
+              </base-input-select>
+            </validation-provider>
+
+            <base-input-text outerClass="tw-mb-2 tw-py-2" id="comments" v-model="COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
+          </div>
 
           <!-- Right hand side is container graphic -->
           <div class="tw-w-1/2">
             <div class="tw-justify-end">
-            <valid-container-graphic
-              ref="containerGraphic"
-              :containerType="containerType"
-              :samples="samples"
-              @cell-clicked="onContainerCellClicked"/>
+              <valid-container-graphic
+                ref="containerGraphic"
+                :containerType="containerType"
+                :samples="samples"
+                @cell-clicked="onContainerCellClicked"/>
             </div>
           </div>
         </form>
@@ -170,6 +209,17 @@
             @clone-container-row="onCloneRow"
             @update-sample-group-input-disabled="updateSampleGroupInputDisabled"
             @update-sample-group-list="getSampleGroups"
+          />
+
+          <screen-component-group
+            class="tw-w-1/2 tw-mb-5"
+            v-if="plateType === 'plate'"
+            :global-proteins="globalProteins"
+            :screen-components="[]"
+            :screen-component-group="{}"
+            :editable="true"
+            :can-save="false"
+            v-on:add-component-to-group="addScreenComponentToGroup"
           />
         </div>
         <!--
@@ -225,9 +275,12 @@
 </template>
 
 <script>
+import { ValidationObserver, ValidationProvider }  from 'vee-validate'
+import { debounce } from 'lodash-es'
 import Container from 'models/container'
-import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
+import DistinctProteins from 'modules/shipment/collections/distinctproteins'
 
+import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputGroupSelect from 'app/components/base-input-groupselect.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
@@ -237,10 +290,10 @@ import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import TableComponent from 'app/components/table.vue'
 import MxPuckSamplesTable from 'js/modules/types/mx/samples/mx-puck-samples-table.vue'
 import SingleSample from 'modules/types/mx/samples/single-sample.vue'
+import ScreenComponentGroup from 'modules/imaging/views/screen-component-group.vue'
 
 import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
 
-import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 const INITIAL_CONTAINER_TYPE = {
   CONTAINERTYPEID: 0,
@@ -257,6 +310,7 @@ export default {
   name: 'MxAddContainer',
   mixins: [ContainerMixin],
   components: {
+    'screen-component-group': ScreenComponentGroup,
     'base-input-groupselect': BaseInputGroupSelect,
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,
@@ -298,11 +352,12 @@ export default {
       EXPERIMENTTYPEID: null,
       QUEUEFORUDC: false,
       SPACEGROUP: false,
+      STORAGETEMPERATURES: null,
+
+      barcodeMessage: '',
 
       // The dewar that this container will belong to
       dewar: null,
-      plateKey: 0,
-      plateType: null,
 
       processingPipeline: '',
       processingPipelines: [],
@@ -310,10 +365,10 @@ export default {
       proteinCombo: '123540',
       proteinSelection: null,
       selectedSample: null,
-      showAllExperimentTypes: false,
       sampleLocation: 0,
       displayImagerScheduleModal: false,
       selectedSchedule: null,
+      selectedScreen: null,
       schedulingComponentHeader: [
         {key: 'OFFSET_HOURS', title: 'Offset Hours'},
         {key: 'INSPECTIONTYPE', title: 'Imaging Type'},
@@ -333,16 +388,6 @@ export default {
       }
       return groups
     },
-    // Build the complete list of proposal types included for each container type
-    containerTypesFilter: function() {
-      let types = this.containerTypes.map( container => container.PROPOSALTYPE )
-      return types.filter( (value, index, self) => self.indexOf(value) === index )
-    },
-    // Build the complete list of proposal types included for each experiment type
-    experimentTypesFilter: function() {
-      let types = this.experimentTypes.map( experiment => experiment.PROPOSALTYPE )
-      return types.filter( (value, index, self) => self.indexOf(value) === index )
-    },
     ownerEmail: function() {
       // Does the selected owner have a valid email?
       if (!this.PERSONID) return false
@@ -361,12 +406,22 @@ export default {
       immediate: true,
       handler: function(newVal) {
         if (newVal) {
-          let type = this.containerTypesCollection.findWhere({CONTAINERTYPEID: newVal})
+          let type = this.containerTypesCollection.findWhere({ CONTAINERTYPEID: newVal })
 
           if (!type) {
             return
           }
           this.CONTAINERTYPE = type.get('NAME')
+          const nameToLower = this.CONTAINERTYPE.toLowerCase()
+
+          if (nameToLower.includes('puck')) {
+            this.plateType = 'puck'
+          } else if (nameToLower.includes('pcrstrip')) {
+            this.plateType = 'pcr'
+          } else {
+            this.plateType = 'plate'
+          }
+
           this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
 
           this.resetSamples(type.get('CAPACITY'))
@@ -376,14 +431,15 @@ export default {
     AUTOMATED: {
       immediate: true,
       handler: function(newVal) {
-        // If now on, add safetylevel to query
+        const proteinsCollection = new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } })
+        // If now on, add safety level to query
         // Automated collections limited to GREEN Low risk samples
         if (newVal) {
-          this.proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
+          proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
         } else {
-          this.proteinsCollection.queryParams.SAFETYLEVEL = 'ALL';
+          proteinsCollection.queryParams.SAFETYLEVEL = 'ALL';
         }
-        this.$store.dispatch('getCollection', this.proteinsCollection).then( (result) => {
+        this.$store.dispatch('getCollection', proteinsCollection).then( (result) => {
           this.proteins = result.toJSON()
         })
         app.trigger('samples:automated', newVal)
@@ -392,7 +448,7 @@ export default {
     CONTAINERREGISTRYID: {
       immediate: true,
       handler: function(newVal) {
-        if (this.isPuck && newVal) {
+        if (this.plateType === 'puck' && newVal) {
           // When a user selects a registered container we should update the name/barcode
           let entry = this.containerRegistry.find( item => item.CONTAINERREGISTRYID === newVal)
           this.NAME = entry['BARCODE'] || '-'
@@ -434,6 +490,17 @@ export default {
         this.getSpaceGroupsCollection()
       }
     },
+    BARCODE: {
+      handler: debounce(function() {
+        this.checkContainerBarcode()
+      }, 1000)
+    },
+    REQUESTEDIMAGERID: {
+      handler: 'getUsers'
+    },
+    SCREENID: {
+      handler: 'assignScreeningComponent'
+    }
   },
   created: function() {
     this.containerType = INITIAL_CONTAINER_TYPE
@@ -442,6 +509,7 @@ export default {
 
     this.resetSamples(this.containerType.CAPACITY)
 
+    this.getGlobalProteins()
     this.getProteins()
     this.getContainerTypes()
     this.getContainerRegistry()
@@ -476,7 +544,7 @@ export default {
         NAME: this.NAME,
         CONTAINERREGISTRYID: this.CONTAINERREGISTRYID,
         AUTOMATED: this.AUTOMATED > 0 ? this.AUTOMATED : null,
-        BARCODE: this.CODE,
+        BARCODE: this.BARCODE,
         PERSONID: this.PERSONID,
         EXPERIMENTTYPE: null,
         COMMENTS: this.COMMENTS,
@@ -515,7 +583,7 @@ export default {
 
         // Reset container - we may want to add more containers so just reset the name and barcode
         this.NAME = ''
-        this.CODE = ''
+        this.BARCODE = ''
         // Reset state of form
         this.$refs.containerForm.reset()
       } catch (error) {
@@ -557,6 +625,59 @@ export default {
     closeModalAction() {
       this.displayImagerScheduleModal = false
     },
+    async checkContainerBarcode() {
+      try {
+        const response = await this.$store.dispatch('fetchDataFromApi', {
+          url: `/shipment/containers/barcode/${this.BARCODE}`,
+          requestType: 'fetching barcode status'
+        })
+
+        const { PROP } = response
+        this.BARCODECHECK = 0
+        this.barcodeMessage = `This barcode is already registered to ${PROP}`
+      } catch (error) {
+        this.BARCODECHECK = 1
+        this.barcodeMessage = ''
+      }
+    },
+    async assignScreeningComponent(newValue) {
+      if (newValue) {
+        this.selectedScreen = { SCREENID: newValue }
+        await this.fetchScreenComponents()
+        await this.fetchScreenComponentsGroups()
+        this.assignScreenComponentGroupToSamples()
+      }
+    },
+    assignScreenComponentGroupToSamples() {
+      const dropTotal = (this.containerType['DROPPERWELLX'] * this.containerType['DROPPERWELLY']) - this.containerType['WELLDROP'] > -1 ? 1 : 0
+      this.samples.forEach((sample, index) => {
+        const getWell = Math.floor((Number(index) - 1) / dropTotal)
+        const group = this.screenComponentGroups.find(item => Number(item['POSITION']) === getWell + 1)
+        let data = null
+        if (group) {
+          data = group['SCREENCOMPONENTGROUPID']
+        }
+
+        this.$store.commit('samples/updateSamplesField', { path: `samples/${index}/SCREENCOMPONENTGROUPID`, value: data })
+      })
+    },
+    addScreenComponentToGroup() {
+
+    }
   }
 }
 </script>
+<style scoped>
+.barcode-message {
+  left: 50%;
+}
+/*.barcode-message::before {*/
+/*  @apply tw-absolute;*/
+/*  left: -0.3em;*/
+/*  top: 5%;*/
+/*  content: '';*/
+/*  border: 0.7em solid transparent;*/
+/*  border-right-color: #ebebeb;*/
+/*  transform: rotate(45deg);*/
+/*}*/
+</style>

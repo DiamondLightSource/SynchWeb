@@ -45,7 +45,7 @@ The v-closable takes an object as argumnt with properties:
           <button class="button custom-add" @click.stop="handleMoreData" v-if="loadMore">Load More...</button>
           <p class="tw-text-sm" v-else>No more data</p>
         </div>
-        <div class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add" v-if="filteredOptions.length < 1 && searchText.length > 0">
+        <div class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add" v-if="canCreateNewItem && filteredOptions.length < 1 && searchText.length > 0">
           <button class="button custom-add" @click.stop="createNewOption">Create New</button>
         </div>
       </div>
@@ -118,6 +118,10 @@ export default {
     isDisabled: {
       type: Boolean,
       default: false
+    },
+    canCreateNewItem: {
+      type: Boolean,
+      default: true
     }
   },
   data() {

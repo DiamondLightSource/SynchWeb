@@ -46,7 +46,11 @@ export default {
   computed: {
     proteinsOptionsList() {
       return this.$proteins()
-        .map(item => ({ value: item.PROTEINID, text: item.ACRONYM, SAFETYLEVEL: item.SAFETYLEVEL }));
+        .map(item => ({
+          PROTEINID: item.PROTEINID,
+          ACRONYM: item.ACRONYM,
+          SAFETYLEVEL: item.SAFETYLEVEL
+        }));
     },
     experimentKindList() {
       return this.$experimentKindList();
@@ -154,7 +158,10 @@ export default {
       'VOLUME',
       'VALID',
       'INITIALSAMPLEGROUP',
-      'STATUS'
+      'STATUS',
+      'COMPONENTS',
+      'COMPONENTIDS',
+      'COMPONENTAMOUNTS'
     ]),
     sampleGroupInputDisabled() {
       return this.$sampleGroupInputDisabled()
@@ -188,6 +195,18 @@ export default {
     dataCollectionStarted() {
       if (!this.samples) return
       return this.samples.some(sample => sample['DCC'] ? Number(sample['DCC']) > 0 : false)
+    },
+    globalProteins() {
+      return this.$globalProteins()
+        .map(item => ({
+          PROTEINID: item.PROTEINID,
+          ACRONYM: item.ACRONYM,
+          SAFETYLEVEL: item.SAFETYLEVEL,
+          CONCENTRATIONTYPE: item.CONCENTRATIONTYPE
+        }));
+    },
+    plateType() {
+      return this.$plateType()
     }
   },
   methods: {
@@ -273,14 +292,8 @@ export default {
     canEditRow(location, editingRow) {
       return !this.containerId || location === editingRow
     },
-    generateSampleGroupNameText(matchingSampleGroup) {
-      if (matchingSampleGroup && this.sampleGroupsWithSample.length > 1)  {
-        return `${matchingSampleGroup['NAME']} and ${this.sampleGroupsWithSample.length - 1} other(s)`
-      } else if (matchingSampleGroup && this.sampleGroupsWithSample.length <= 1) {
-        return matchingSampleGroup['NAME']
-      } else if (!matchingSampleGroup) {
-        return ''
-      }
+    doAddNewProteinOption(protein) {
+
     }
   },
   inject: [
@@ -297,6 +310,8 @@ export default {
     "$proteins",
     "$sampleGroupsSamples",
     "$sampleGroupInputDisabled",
-    "$containerStatus"
+    "$containerStatus",
+    "$globalProteins",
+    "$plateType"
   ]
 };

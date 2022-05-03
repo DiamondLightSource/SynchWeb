@@ -14,8 +14,10 @@ import ImagingScreens from 'modules/imaging/collections/screens'
 import ImagingScheduleComponents from 'modules/imaging/collections/schedulecomponents'
 import { mapGetters } from 'vuex'
 import Sample from 'models/sample'
-import SampleGroupSamples from "collections/samplegroupsamples";
-import ContainerQueue from "modules/shipment/models/containerqueue";
+import SampleGroupSamples from "collections/samplegroupsamples"
+import ContainerQueue from "modules/shipment/models/containerqueue"
+import ScreenComponents from 'modules/imaging/collections/screencomponents'
+import ScreenComponentGroups from 'modules/imaging/collections/screencomponentgroups'
 import { omit } from 'lodash'
 
 const INITIAL_CONTAINER_TYPE = {
@@ -42,9 +44,18 @@ export default {
       containerRegistry: [],
       containerRegistryId: '',
 
-      experimentTypes: [],
-      experimentTypesCollection: null,
+      experimentTypes: [
+        {
+          value: 'robot',
+          name: 'Robot'
+        },
+        {
+          value: 'HPLC',
+          name: 'HPLC'
+        },
+      ],
       experimentKindList: [],
+      globalProteins: [],
 
       imagingImagers: [],
       imagingCollections: null,
@@ -55,11 +66,16 @@ export default {
       imagingScreens: [],
       imagingScreensCollections: null,
 
+      plateType: null,
       processingPipeline: '',
       processingPipelines: [],
-
       proteins: [],
-      proteinsCollection: new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } }),
+
+      storageTemperatures: [
+        { value: '-80', name:'-80' },
+        { value: '4', name:'4' },
+        { value: '25', name :'25' }
+      ],
 
       users: [],
       usersCollection: null,
@@ -69,7 +85,11 @@ export default {
       spaceGroups: [],
       spaceGroupsCollection: null,
       sampleGroupSamples: [],
-      sampleGroupInputDisabled: false
+      sampleGroupInputDisabled: false,
+      screenComponentsCollection: new ScreenComponents(null, { state: { pageSize: 9999 }}),
+      screenComponents: [],
+      screenComponentGroupsCollection: new ScreenComponentGroups(null, { state: { pageSize: 9999 }}),
+      screenComponentGroups: [],
     }
   },
   methods: {
@@ -77,6 +97,10 @@ export default {
       this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
       this.usersCollection.queryParams.all = 1
       this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
+
+      if (this.REQUESTEDIMAGERID) {
+        this.usersCollection.queryParams.login = 1
+      }
 
       const result = await this.$store.dispatch('getCollection', this.usersCollection)
       this.users = result.toJSON()
@@ -92,15 +116,23 @@ export default {
       const result = await this.$store.dispatch('getCollection', processingPipelinesCollection)
       this.processingPipelines = result.toJSON()
     },
+    async getGlobalProteins() {
+      const proteinsCollection = new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } })
+      // If we want to only allow valid samples
+      proteinsCollection.queryParams.global = 1
+      const result = await this.$store.dispatch('getCollection', proteinsCollection)
+      this.globalProteins = result.toJSON()
+    },
     async getProteins() {
+      const proteinsCollection = new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } })
       // If we want to only allow valid samples
       if (app.options.get('valid_components') && !app.staff) {
-        this.proteinsCollection.queryParams.external = 1
+        proteinsCollection.queryParams.external = 1
       }
 
-      this.proteinsCollection.queryParams.SAFETYLEVEL = 'ALL'
+      proteinsCollection.queryParams.SAFETYLEVEL = 'ALL'
 
-      const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
+      const result = await this.$store.dispatch('getCollection', proteinsCollection)
       this.proteins = result.toJSON()
     },
     async getContainerRegistry() {
@@ -115,12 +147,12 @@ export default {
       this.containerTypes = result.toJSON()
       // Do we have valid start state?
       if (this.containerTypes.length) {
-        let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
+        let initialContainerType = result.findWhere({ PROPOSALTYPE: this.containerFilter[0] })
         this.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
       }
 
       if (this.container) {
-        let containerTypeModel = result.findWhere({NAME: this.container.CONTAINERTYPE})
+        let containerTypeModel = result.findWhere({ NAME: this.container.CONTAINERTYPE })
 
         if (containerTypeModel) {
           this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, containerTypeModel.toJSON())
@@ -154,19 +186,19 @@ export default {
       this.imagingCollections = new ImagingImager(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingCollections)
-      this.imagingImagers = result.toJSON()
+      this.imagingImagers = [{ NAME: '-', IMAGERID: '' }, ... result.toJSON()]
     },
     async getImagingScheduleCollections() {
       this.imagingSchedulesCollection = new ImagingSchedules(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingSchedulesCollection)
-      this.imagingSchedules = result.toJSON()
+      this.imagingSchedules = [{ NAME: '-', SCHEDULEID: '' }, ... result.toJSON()]
     },
     async getImagingScreensCollections() {
       this.imagingScreensCollection = new ImagingScreens(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingScreensCollection)
-      this.imagingScreens = result.toJSON()
+      this.imagingScreens = [{ NAME: '-', SCREENID: '' }, ... result.toJSON()]
     },
     async getImagingScheduleComponentsCollection() {
       this.imagingScheduleComponentsCollection = new ImagingScheduleComponents(null, { state: { pageSize: 9999 } })
@@ -174,6 +206,19 @@ export default {
 
       const result = await this.$store.dispatch('getCollection', this.imagingScheduleComponentsCollection)
       this.imagingScheduleComponents = result.toJSON()
+    },
+    async fetchScreenComponents() {
+      this.screenComponentsCollection.queryParams.scid = this.selectedScreen.SCREENID
+      this.screenComponents = []
+
+      const result = await this.$store.dispatch('getCollection', this.screenComponentsCollection)
+      this.screenComponents = this.screenComponents.concat(result.toJSON())
+    },
+    async fetchScreenComponentsGroups() {
+      this.screenComponentGroupsCollection.queryParams.scid = this.selectedScreen.SCREENID
+      this.screenComponentGroups = []
+      const result = await this.$store.dispatch('getCollection', this.screenComponentGroupsCollection)
+      this.screenComponentGroups = this.screenComponentGroups.concat(result.toJSON())
     },
     async getSpaceGroupsCollection() {
       this.spaceGroupsCollection = new SpaceGroups(null, { state: { pageSize: 9999 } })
@@ -422,7 +467,9 @@ export default {
       $proteins: () => this.proteins,
       $sampleGroupsSamples: () => this.sampleGroupSamples,
       $sampleGroupInputDisabled: () => this.sampleGroupInputDisabled,
-      $containerStatus: () => this.container ? this.container['CONTAINERSTATUS'] : null
+      $containerStatus: () => this.container ? this.container['CONTAINERSTATUS'] : null,
+      $globalProteins:() => this.globalProteins,
+      $plateType: () => this.plateType
     }
   }
 }

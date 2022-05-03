@@ -256,7 +256,70 @@ const store = new Vuex.Store({
           })
         },
       })
-    }
+    },
+    // post data to the backend that is not attached to any model
+    async saveDataToApi({ state, commit, rootState }, { url, data, requestType }) {
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        type: 'POST',
+        data,
+
+        success: function(response) {
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error performing request',
+            message: `There was an error ${requestType}`,
+            level: 'error'
+          }, {
+            root: true
+          })
+        },
+      })
+    },
+    // update data to the backend that is not attached to any model
+    async updateDataToApi({ state, commit, rootState }, { url, data, requestType, updateType }) {
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        type: updateType,
+        data,
+
+        success: function(response) {
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error performing request',
+            message: `There was an error ${requestType}`,
+            level: 'error'
+          }, {
+            root: true
+          })
+        },
+      })
+    },
+    // delete data from the backend that is not attached to any model
+    async deleteDataFromApi({ state, commit, rootState }, { url, requestType }) {
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        type: 'DELETE',
+        dataType: 'json',
+
+        success: function(response) {
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error performing request',
+            message: `There was an error ${requestType}`,
+            level: 'error'
+          }, {
+            root: true
+          })
+        },
+      })
+    },
   },
   getters: {
     sso: state => state.auth.cas_sso,
