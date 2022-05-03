@@ -50,25 +50,6 @@
       <validation-provider
         tag="div"
         class="tw-py-1"
-        :name="`Sample ${sampleLocation + 1} Abundance`"
-        :vid="`sample ${sampleLocation + 1} abundance`"
-        v-slot="{ errors }">
-        <base-input-text
-          inputClass="tw-w-48 tw-h-8 single-sample-input"
-          outerClass="tw-w-full tw-flex"
-          :quiet="true"
-          type="number"
-          labelClass="tw-w-1/5"
-          :errorMessage="errors[0]"
-          :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          label="Abundance"
-          v-model="ABUNDANCE"
-        />
-      </validation-provider>
-
-      <validation-provider
-        tag="div"
-        class="tw-py-1"
         :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:20' : ''"
         :name="`Sample ${sampleLocation + 1} Name`"
         :vid="`sample ${sampleLocation + 1} name`"
@@ -82,6 +63,25 @@
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
           v-model="NAME"
+        />
+      </validation-provider>
+
+      <validation-provider
+        tag="div"
+        class="tw-py-1"
+        :name="`Sample ${sampleLocation + 1} Abundance`"
+        :vid="`sample ${sampleLocation + 1} abundance`"
+        v-slot="{ errors }">
+        <base-input-text
+          inputClass="tw-w-48 tw-h-8 single-sample-input"
+          outerClass="tw-w-full tw-flex"
+          :quiet="true"
+          type="number"
+          labelClass="tw-w-1/5"
+          :errorMessage="errors[0]"
+          :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+          label="Abundance"
+          v-model="ABUNDANCE"
         />
       </validation-provider>
 
