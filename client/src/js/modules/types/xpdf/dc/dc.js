@@ -26,19 +26,20 @@ define([
             'click a.dd': utils.signHandler,
             'click li.parent': 'toggleNodeShow',
             'click a.k8s': 'initiatePod',
-            'click a.podReady': 'openPod',
+            'click a.podReady': 'openPod'
         },
 
         ui: {
-            params: '.params',
             temp: 'span.temp',
             exp: 'i.expand',
             cc: '.dcc',
             rp: 'a.reprocess',
 
+            params: '.params',
+
             launcher: 'a.k8s',
             loader: 'span.podLoader',
-            podReady: 'a.podReady',
+            podReady: 'a.podReady'
         },
 
         onDomRefresh: function() {
@@ -47,6 +48,25 @@ define([
                 var output = this.buildScanParams(params, '<ul style="padding-left: 10px">', 0)
                 this.ui.params[0].innerHTML = "Scan Params: " + output
             }
+            
+        },
+
+        // Check if this DC has a H5Web Viewer pod active for current user
+        onRender: function() {
+            this.isPodRunning(this)
+            this.listenTo(app, 'pod:started', this.podStarted)
+            this.listenTo(app, 'pod:shutdown', this.podShutdown)
+        },
+
+        onDestroy: function() {
+            if (this.getOption('plotView')) this.plotview.destroy()
+            if (this.strat) this.strat.destroy()
+            if (this.ap) this.ap.destroy()
+
+            this.imagestatus.destroy()
+            this.apstatus.destroy()
+
+            clearInterval(this.timer)
         },
 
         // Check if this DC has a H5Web Viewer pod active for current user
