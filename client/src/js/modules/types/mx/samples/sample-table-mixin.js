@@ -35,7 +35,8 @@ export default {
         { id: 'flag', name: 'Favourites', className: '' },
         { id: 'r', name: 'Loaded By Robot', className: 'tw-bg-loaded-by-robot'},
         { id: '', name: '', className: ''}
-      ]
+      ],
+      sampleScreenComponentGroup: {}
     };
   },
   props: {
@@ -166,20 +167,6 @@ export default {
     sampleGroupInputDisabled() {
       return this.$sampleGroupInputDisabled()
     },
-    screeningMethodText() {
-      if (this.sample['PROTEINID'] > 0) {
-        const selectedScreeningMethod = this.screeningMethodList.find(item => item.value === this.sample['SCREENINGMETHOD'])
-
-        return selectedScreeningMethod ? selectedScreeningMethod.text : 'None'
-      }
-    },
-    experimentKindText() {
-      if (this.sample['PROTEINID'] > 0) {
-        const selectedExperimentKind = this.experimentKindList.find(item => item.value === this.sample['EXPERIMENTKIND'])
-
-        return selectedExperimentKind ? selectedExperimentKind.text : ''
-      }
-    },
     containerStatus() {
       return this.$containerStatus()
     },
@@ -207,6 +194,15 @@ export default {
     },
     plateType() {
       return this.$plateType()
+    },
+    containerTypeDetails() {
+      return this.$containerTypeDetails()
+    },
+    screenComponents() {
+      return this.$screenComponents()
+    },
+    screenComponentGroups() {
+      return this.$screenComponentGroups()
     }
   },
   methods: {
@@ -312,6 +308,9 @@ export default {
     "$sampleGroupInputDisabled",
     "$containerStatus",
     "$globalProteins",
-    "$plateType"
+    "$plateType",
+    "$containerTypeDetails",
+    "$screenComponents",
+    "$screenComponentGroups"
   ]
 };

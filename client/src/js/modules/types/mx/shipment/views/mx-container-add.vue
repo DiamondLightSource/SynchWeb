@@ -190,6 +190,7 @@
                 ref="containerGraphic"
                 :containerType="containerType"
                 :samples="samples"
+                :valid-samples="validSamples"
                 @cell-clicked="onContainerCellClicked"/>
             </div>
           </div>
@@ -207,19 +208,10 @@
             @clear-container="onClearContainer"
             @clone-container-column="onCloneColumn"
             @clone-container-row="onCloneRow"
+            @clear-container-column="onClearColumn"
+            @clear-container-row="onClearRow"
             @update-sample-group-input-disabled="updateSampleGroupInputDisabled"
             @update-sample-group-list="getSampleGroups"
-          />
-
-          <screen-component-group
-            class="tw-w-1/2 tw-mb-5"
-            v-if="plateType === 'plate'"
-            :global-proteins="globalProteins"
-            :screen-components="[]"
-            :screen-component-group="{}"
-            :editable="true"
-            :can-save="false"
-            v-on:add-component-to-group="addScreenComponentToGroup"
           />
         </div>
         <!--
@@ -290,9 +282,9 @@ import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import TableComponent from 'app/components/table.vue'
 import MxPuckSamplesTable from 'js/modules/types/mx/samples/mx-puck-samples-table.vue'
 import SingleSample from 'modules/types/mx/samples/single-sample.vue'
-import ScreenComponentGroup from 'modules/imaging/views/screen-component-group.vue'
 
 import ContainerMixin from 'modules/types/mx/shipment/views/container-mixin'
+import ContainerTypeUtils from 'app/utils/container-type.utils'
 
 
 const INITIAL_CONTAINER_TYPE = {
@@ -310,7 +302,6 @@ export default {
   name: 'MxAddContainer',
   mixins: [ContainerMixin],
   components: {
-    'screen-component-group': ScreenComponentGroup,
     'base-input-groupselect': BaseInputGroupSelect,
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,
@@ -372,7 +363,8 @@ export default {
       schedulingComponentHeader: [
         {key: 'OFFSET_HOURS', title: 'Offset Hours'},
         {key: 'INSPECTIONTYPE', title: 'Imaging Type'},
-      ]
+      ],
+      wellDrop: -1
     }
   },
   computed: {
@@ -413,6 +405,7 @@ export default {
           }
           this.CONTAINERTYPE = type.get('NAME')
           const nameToLower = this.CONTAINERTYPE.toLowerCase()
+          this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
 
           if (nameToLower.includes('puck')) {
             this.plateType = 'puck'
@@ -420,9 +413,17 @@ export default {
             this.plateType = 'pcr'
           } else {
             this.plateType = 'plate'
+            this.containerTypeDetails = ContainerTypeUtils({
+              capacity: this.containerType['CAPACITY'],
+              dropHeight: this.containerType['DROPHEIGHT'],
+              dropPerWellX: this.containerType['DROPPERWELLX'],
+              dropPerWellY: this.containerType['DROPPERWELLY'],
+              dropWidth: this.containerType['DROPWIDTH'],
+              wellDrop: this.containerType['WELLDROP'],
+              wellPerRow: this.containerType['WELLPERROW']
+            })
           }
 
-          this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
 
           this.resetSamples(type.get('CAPACITY'))
         }
@@ -523,7 +524,6 @@ export default {
     this.getImagingScheduleCollections()
     this.getImagingScreensCollections()
   },
-
   methods: {
     // Called on Add Container
     // Calls the validation method on our observer component
@@ -599,17 +599,27 @@ export default {
       this.$store.commit('samples/reset', capacity)
       // this.$store.commit('samples/set', { data: this.samples.map((sample => {}))})
     },
-    async onContainerCellClicked(location) {
+    async onContainerCellClicked(args) {
+      let location, index
+      if (args && typeof args === 'object' && !Array.isArray(args)) {
+        ({ location, index } = args);
+      } else {
+        return
+      }
+
+      if (index || index > -1) {
+        this.wellDrop = index
+      }
       // We want to validate each single sample form before they current location is saved.
       // This is because only one sample form is displayed at a time.
       if (this.containerType.CAPACITY > 25) {
         const validatedForm = await this.$refs.containerForm.validate()
 
         if (validatedForm) {
-          this.sampleLocation = location - 1
+          this.sampleLocation = +location - 1
         }
       } else {
-        this.sampleLocation = location - 1
+        this.sampleLocation = +location - 1
       }
     },
     async viewSchedule() {
@@ -649,10 +659,9 @@ export default {
       }
     },
     assignScreenComponentGroupToSamples() {
-      const dropTotal = (this.containerType['DROPPERWELLX'] * this.containerType['DROPPERWELLY']) - this.containerType['WELLDROP'] > -1 ? 1 : 0
       this.samples.forEach((sample, index) => {
-        const getWell = Math.floor((Number(index) - 1) / dropTotal)
-        const group = this.screenComponentGroups.find(item => Number(item['POSITION']) === getWell + 1)
+        const sampleWellLocation = this.containerTypeDetails.getWell(sample['LOCATION'])
+        const group = this.screenComponentGroups.find(item => Number(item['POSITION']) === sampleWellLocation + 1)
         let data = null
         if (group) {
           data = group['SCREENCOMPONENTGROUPID']
@@ -661,9 +670,6 @@ export default {
         this.$store.commit('samples/updateSamplesField', { path: `samples/${index}/SCREENCOMPONENTGROUPID`, value: data })
       })
     },
-    addScreenComponentToGroup() {
-
-    }
   }
 }
 </script>

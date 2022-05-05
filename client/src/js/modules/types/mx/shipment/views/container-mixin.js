@@ -43,6 +43,7 @@ export default {
       containerRegistryCollection: new ContainerRegistry(),
       containerRegistry: [],
       containerRegistryId: '',
+      containerTypeDetails: {},
 
       experimentTypes: [
         {
@@ -96,7 +97,7 @@ export default {
     async getUsers() {
       this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
       this.usersCollection.queryParams.all = 1
-      this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
+      this.usersCollection.queryParams.pid = this.proposalId
 
       if (this.REQUESTEDIMAGERID) {
         this.usersCollection.queryParams.login = 1
@@ -248,7 +249,8 @@ export default {
         }
       }
 
-      this.cloneSample(location, nextSampleIndex)
+      const data = this.handleSampleCloneForPucks(location, nextSampleIndex)
+      this.cloneSample(location, nextSampleIndex, data)
     },
     // Clear row for a single row in the sample table
     onClearSample(sampleLocation) {
@@ -261,24 +263,46 @@ export default {
     },
     // Take first entry (or index) and clone all rows
     onCloneContainer(sampleIndex=0) {
-      const firstSample = this.samples[sampleIndex]
-      this.$store.commit('samples/reset')
+      if (this.plateType === 'puck') {
+        const firstSample = this.samples[sampleIndex]
+        this.$store.commit('samples/reset')
 
-      // We want the name of the first sample to always remain the same when we clone all samples
-      const baseName = firstSample['NAME'].replace(/([\d]+)$/, '')
-      const digitMatch = firstSample['NAME'].match(/([\d]+)$/)
-      const digitValue = digitMatch && digitMatch.length > 0 ? Number(digitMatch[0]) - 1 : 0
+        // We want the name of the first sample to always remain the same when we clone all samples
+        const baseName = firstSample['NAME'].replace(/([\d]+)$/, '')
+        const digitMatch = firstSample['NAME'].match(/([\d]+)$/)
+        const digitValue = digitMatch && digitMatch.length > 0 ? Number(digitMatch[0]) - 1 : 0
 
-      this.$store.commit('samples/setSample', { index: sampleIndex, data: {...firstSample, NAME: `${baseName}${digitValue}`} })
-      for (let i = 0; i < this.samples.length; i++) {
-        this.cloneSample(sampleIndex, i)
+        this.$store.commit('samples/setSample', { index: sampleIndex, data: {...firstSample, NAME: `${baseName}${digitValue}`} })
+        for (let i = 0; i < this.samples.length; i++) {
+          const data = this.handleSampleCloneForPucks(sampleIndex, i)
+          this.cloneSample(sampleIndex, i, data)
+        }
+      } else {
+        this.clonePlateContainer()
       }
+    },
+    async clonePlateContainer() {
+      if (!this.samples[this.sampleLocation].VALID) return
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(this.sampleLocation + 1)
+      await this.performCloneByRowOrColumn(this.sampleLocation, sourceCoordinates)
     },
     // Remove all sample information from every row
     onClearContainer() {
       for (let i = 0; i < this.samples.length; i++) {
         this.$store.commit('samples/clearSample', i)
       }
+    },
+    async onClearColumn(location) {
+      let sampleIndex = +location - 1
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
+
+      await this.performClearByRowOrColumn(sampleIndex, sourceCoordinates, 'col')
+    },
+    async onClearRow(location) {
+      let sampleIndex = +location - 1
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
+
+      await this.performClearByRowOrColumn(sampleIndex, sourceCoordinates, 'row')
     },
     // When cloning, take the last digits and pad the new samples names
     // So if 1: sample-01, 2: will equal sample-02 etc.
@@ -319,29 +343,20 @@ export default {
       }
       await this.fetchSampleGroupSamples()
     },
-    getRowColDrop(pos) {
-      let well = this.containerType.WELLDROP > -1 ? 1 : 0
-      let dropTotal = (this.containerType.DROPPERWELLX * this.containerType.DROPPERWELLY) - well
-
-      const wellPosition = Math.floor((parseInt(pos) - 1) / dropTotal);
-      const drop = ((pos - 1) % dropTotal) + 1;
-
-      const col = wellPosition % this.containerType.WELLPERROW;
-      const row = Math.floor(wellPosition / this.containerType.WELLPERROW);
-
-      return { row: row, col: col, drop: drop, pos: pos }
-    },
     // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
     async onCloneColumn(location) {
+      if (!this.samples[this.sampleLocation].VALID) return
       let sampleIndex = +location - 1
-      let sourceCoordinates = this.getRowColDrop(location)
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
 
       await this.performCloneByRowOrColumn(sampleIndex, sourceCoordinates, 'col')
     },
     // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
     async onCloneRow(location) {
+      if (!this.samples[this.sampleLocation].VALID) return
       let sampleIndex = +location - 1
-      let sourceCoordinates = this.getRowColDrop(location)
+      this.sampleLocation = location
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
 
       await this.performCloneByRowOrColumn(sampleIndex, sourceCoordinates, 'row')
     },
@@ -349,39 +364,47 @@ export default {
       for (let i = 0; i < this.samples.length; i++) {
         // We are only cloning samples that come after this one - so skip any with a lower index
         if (i > sampleIndex) {
-          let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
+          let targetCoordinates = this.containerTypeDetails.getRowColDrop(this.samples[i].LOCATION)
+          const canClone = !!direction ? targetCoordinates[direction] === sourceCoordinates[direction] : true
+
+          if (targetCoordinates['drop'] === sourceCoordinates['drop'] && canClone) {
+            const data = this.handleSampleCloneForPlates(sampleIndex, i)
+            this.cloneSample(sampleIndex, i, data)
+          }
+        }
+      }
+
+      this.$store.commit('samples/setSample', {
+        index: sampleIndex,
+        data: { ...this.samples[sampleIndex], VALID: 1, NAME: this.generateSampleNameForPlate(sampleIndex, sampleIndex) }
+      })
+    },
+    async performClearByRowOrColumn(sampleIndex, sourceCoordinates, direction) {
+      for (let i = 0; i < this.samples.length; i++) {
+        // We are only cloning samples that come after this one - so skip any with a lower index
+        if (i > sampleIndex) {
+          let targetCoordinates = this.containerTypeDetails.getRowColDrop(this.samples[i].LOCATION)
 
           if (targetCoordinates['drop'] === sourceCoordinates['drop'] && targetCoordinates[direction] === sourceCoordinates[direction]) {
-            this.cloneSample(sampleIndex, i)
-            this.sampleLocation = i
-
-            await this.$nextTick()
-            const locationValid = await this.$refs.containerForm.validate();
-
-            if (!locationValid) {
-              break
-            } else {
-              this.$store.commit('samples/updateSamplesField', {
-                path: `samples/${sampleIndex}/VALID`,
-                value: 1
-              })
-            }
+            this.onClearSample(i)
           }
         }
       }
     },
-    cloneSample(sourceIndex, targetIndex) {
+    cloneSample(sourceIndex, targetIndex, data) {
       if (targetIndex < 0 || targetIndex >= this.samples.length) return false
       if (sourceIndex < 0 || sourceIndex >= this.samples.length) return false
 
       let sourceSample = this.samples[sourceIndex]
       if (sourceSample.PROTEINID < 0) return false
-
-      let baseName = this.samples[sourceIndex].NAME
-      let sampleClone = { ...this.samples[targetIndex], ...this.samples[sourceIndex] }
+      this.$store.commit('samples/setSample', { index: targetIndex, data })
+    },
+    handleSampleCloneForPlates(sourceIndex, targetIndex) {
+      const sampleClone = { ...this.samples[targetIndex], ...this.samples[sourceIndex], VALID: 1 }
+      sampleClone.NAME = this.generateSampleNameForPlate(sourceIndex, targetIndex)
       sampleClone.LOCATION = (targetIndex + 1).toString()
-      sampleClone.NAME = this.generateSampleName(baseName)
-      this.$store.commit('samples/setSample', { index: targetIndex, data: sampleClone })
+
+      return sampleClone
     },
     async fetchSampleGroupSamples() {
       const sampleGroupCollection = new SampleGroups(null, { state: { pageSize: 9999 } })
@@ -417,7 +440,7 @@ export default {
       }
       return await this.$store.dispatch('saveModel', { model: containerQueue, attributes })
     },
-    generateSampleName(sourceName) {
+    generateSampleNameForPucks(sourceName) {
       const samplesNameDictionary = {}
       const sourceNameKey = sourceName.replace(/([\d]+)$/, '')
 
@@ -433,6 +456,20 @@ export default {
         }
       })
       return `${sourceNameKey}${samplesNameDictionary[sourceNameKey] + 1}`
+    },
+    generateSampleNameForPlate(sampleIndex, targetIndex) {
+      const sourceSampleName = this.samples[sampleIndex]['NAME']
+      const targetCoordinates = this.containerTypeDetails.getRowColDrop(targetIndex + 1)
+
+      return `${this.containerTypeDetails.getName(targetCoordinates.position)}d${targetCoordinates.drop}_${sourceSampleName}`
+    },
+    handleSampleCloneForPucks(sourceIndex, targetIndex) {
+      let baseName = this.samples[sourceIndex].NAME
+      const sampleClone = { ...this.samples[targetIndex], ...this.samples[sourceIndex] }
+      sampleClone.LOCATION = (targetIndex + 1).toString()
+      sampleClone.NAME = this.generateSampleNameForPucks(baseName)
+
+      return sampleClone
     }
   },
   computed: {
@@ -447,6 +484,7 @@ export default {
     },
     ...mapGetters({
       samples: ['samples/samples'],
+      proposalModel: ['proposal/getProposalId']
     }),
     sampleComponent() {
       // Use a table editor unless capacity > 25
@@ -454,6 +492,15 @@ export default {
 
       return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-puck-samples-table'
     },
+    validSamples() {
+      return this.samples.filter(sample => Number(sample['VALID']) === 1)
+    }
+  },
+  watch: {
+    proposalId: {
+      handler: 'getUsers',
+      immediate: true
+    }
   },
   provide() {
     return {
@@ -469,7 +516,10 @@ export default {
       $sampleGroupInputDisabled: () => this.sampleGroupInputDisabled,
       $containerStatus: () => this.container ? this.container['CONTAINERSTATUS'] : null,
       $globalProteins:() => this.globalProteins,
-      $plateType: () => this.plateType
+      $plateType: () => this.plateType,
+      $containerTypeDetails: () => this.containerTypeDetails,
+      $screenComponents: () => this.screenComponents,
+      $screenComponentGroups: () => this.screenComponentGroups
     }
   }
 }

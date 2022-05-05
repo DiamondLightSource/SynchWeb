@@ -2,7 +2,7 @@
   <div>
     <h2>Screen Components</h2>
 
-    <button class="button" v-if="screenComponents.length > 0" @click="addNewComponent">Add Component</button>
+    <button class="button" v-if="screenComponents.length > 0 && editable" @click="addNewComponent">Add Component</button>
 
     <custom-table-component
       class="tw-w-full screen-component-group-table"
@@ -15,7 +15,7 @@
         <td class="tw-w-2/12 tw-py-2 tw-text-center">pH</td>
         <td class="tw-w-3/12 tw-py-2"></td>
       </template>
-      <template v-slot:addNew="">
+      <template v-slot:addNew>
         <tr v-if="newComponent.isEditing" class="tw-w-full">
           <td class="tw-w-5/12 tw-py-2 tw-text-center">
             <combo-box
@@ -81,14 +81,17 @@
             </td>
             <td class="tw-w-2/12 tw-py-2 tw-text-center">
               <div class="tw-flex tw-w-full tw-items-center">
-                <base-input-text class="tw-flex-1" v-model="result.CONCENTRATION" :disabled="!result.isEditing"/> <span class="tw-ml-2">{{ result.UNIT }}</span>
+                <base-input-text v-if="result.isEditing" class="tw-flex-1" v-model="result.CONCENTRATION" />
+                <p v-else>{{ result.CONCENTRATION }}</p>
+                <span class="tw-ml-2">{{ result.UNIT }}</span>
               </div>
             </td>
             <td class="tw-w-2/12 tw-py-2 tw-text-center">
-              <base-input-text class="tw-ml-2 tw-flex-1" v-model="result.PH" :disabled="!result.isEditing || !result.HASPH"/>
+              <base-input-text v-if="result.isEditing && result.HASPH" class="tw-ml-2 tw-flex-1" v-model="result.PH" />
+              <p v-else>{{ result.PH }}</p>
             </td>
             <td class="tw-w-3/12">
-              <div class="tw-w-full tw-flex tw-justify-end tw-items-center">
+              <div class="tw-w-full tw-flex tw-justify-end tw-items-center" v-if="editable">
                 <button class="button tw-mr-1" @click="editRow(rowIndex)"><i class="fa fa-pencil"></i> <span>Edit</span></button>
                 <button class="button tw-ml-1" @click="deleteRow(rowIndex)"><i class="fa fa-times"></i> <span>Delete</span></button>
               </div>
@@ -195,16 +198,22 @@ export default {
       this.formattedScreenComponents.splice(index, 1)
     },
     formatScreenComponents() {
-      this.formattedScreenComponents = cloneDeep(this.screenComponents).map(component => {
-        return {
-          ...component,
-          isEditing: false,
-          toSave: false,
-          isSaving: false,
-          toDelete: false,
-          isDeleting: false
-        }
-      })
+      this.formattedScreenComponents = cloneDeep(this.screenComponents)
+        .reduce((acc, curr) => {
+          if (Number(curr['POSITION']) === Number(this.screenComponentGroup['POSITION'])) {
+            const data = {
+              ...curr,
+              isEditing: false,
+              toSave: false,
+              isSaving: false,
+              toDelete: false,
+              isDeleting: false
+            }
+            acc.push(data)
+          }
+
+          return acc
+        }, [])
     },
     populateSelectedComponent(newValue) {
       if (newValue) {
@@ -222,7 +231,7 @@ export default {
         }
 
       }
-    }
+    },
   },
   watch: {
     screenComponents: {
@@ -233,6 +242,11 @@ export default {
     'newComponent.COMPONENTID': {
       immediate: true,
       handler: 'populateSelectedComponent'
+    },
+    screenComponentGroup: {
+      deep: true,
+      immediate: true,
+      handler: 'formatScreenComponents'
     }
   }
 }

@@ -159,10 +159,10 @@ export default {
     onCellClicked: function(sampleData) {
       if (sampleData && sampleData.BLSAMPLEID) {
         // Convert to an actual index not string
-        this.$emit('cell-clicked', +sampleData.LOCATION)
+        this.$emit('cell-clicked', { location: + sampleData.LOCATION, type: 'puck' })
       } else {
         // All samples should have a location
-        this.$emit('cell-clicked', +sampleData.LOCATION)
+        this.$emit('cell-clicked', { location: + sampleData.LOCATION, type: 'puck' })
       }
     },
     updateSelected: function() {

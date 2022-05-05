@@ -329,6 +329,16 @@
       </div>
 
     </div>
+
+    <screen-component-group
+      class="tw-w-1/2 tw-mb-5 tw-mt-3"
+      :global-proteins="globalProteins"
+      :screen-components="sampleScreenComponentGroup.POSITION ? screenComponents : []"
+      :screen-component-group="sampleScreenComponentGroup"
+      :editable="false"
+      :can-save="false"
+      v-on:add-component-to-group="addScreenComponentToGroup"
+    />
   </div>
 </template>
 
@@ -341,6 +351,7 @@ import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import Table from 'app/components/table.vue'
+import ScreenComponentGroup from 'modules/imaging/views/screen-component-group.vue'
 
 import PlateSampleControls from 'modules/types/mx/samples/plate-sample-controls.vue'
 import SampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
@@ -352,7 +363,8 @@ export default {
   name: 'single-sample-default',
 	mixins: [SampleTableMixin],
   components: {
-    SampleComponentView,
+    'screen-component-group': ScreenComponentGroup,
+    'sample-component-view': SampleComponentView,
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
@@ -389,9 +401,7 @@ export default {
       this.$emit('clear-container')
     },
     onClearSample: function() {
-      let location = this.sampleLocation + 1
-
-      this.$emit('clear-sample', location)
+      this.$emit('clear-sample', +this.sampleLocation)
     },
     onCloneContainerColumn: function() {
       let location = this.sampleLocation + 1
@@ -404,8 +414,12 @@ export default {
     onExtraPuckToggle(value) {
       this.currentTab = value ? 'extraFields' : ''
     },
-    onClearContainerColumn() {},
-    onClearContainerRow() {},
+    onClearContainerColumn() {
+      this.$emit('clear-container-column', this.sampleLocation)
+    },
+    onClearContainerRow() {
+      this.$emit('clear-container-row', this.sampleLocation)
+    },
     updateProteinAbundance({ proteinId, abundance}) {
       console.log(this.COMPONENTS)
       const index = this.COMPONENTS.findIndex(protein => +protein['PROTEINID'] === +proteinId)
@@ -454,6 +468,17 @@ export default {
         path: `samples/${this.sampleIndex}/COMPONENTAMOUNTS`,
         value: componentAbundance
       })
+    },
+    addScreenComponentToGroup() {},
+    generateSampleScreenComponent() {
+      if (this.plateType === 'plate') {
+        const selectedSample = this.samples[this.sampleLocation]
+        const wellLocation = this.containerTypeDetails.getWell(selectedSample['LOCATION'])
+        const screenComponentGroup = this.screenComponentGroups.find(group => Number(group['POSITION']) === Number(wellLocation) + 1)
+        if (screenComponentGroup) {
+          this.sampleScreenComponentGroup = screenComponentGroup
+        }
+      }
     }
   },
   computed: {
@@ -494,6 +519,10 @@ export default {
     COMPONENTS: {
       deep: true,
       handler: 'setComponentIdsAndAmounts'
+    },
+    sampleIndex: {
+      immediate: true,
+      handler: 'generateSampleScreenComponent'
     }
   }
 }
