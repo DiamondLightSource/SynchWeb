@@ -432,7 +432,7 @@ export default {
     AUTOMATED: {
       immediate: true,
       handler: function(newVal) {
-        const proteinsCollection = new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } })
+        const proteinsCollection = new DistinctProteins()
         // If now on, add safety level to query
         // Automated collections limited to GREEN Low risk samples
         if (newVal) {

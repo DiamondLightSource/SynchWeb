@@ -118,14 +118,14 @@ export default {
       this.processingPipelines = result.toJSON()
     },
     async getGlobalProteins() {
-      const proteinsCollection = new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } })
+      const proteinsCollection = new DistinctProteins()
       // If we want to only allow valid samples
       proteinsCollection.queryParams.global = 1
       const result = await this.$store.dispatch('getCollection', proteinsCollection)
       this.globalProteins = result.toJSON()
     },
     async getProteins() {
-      const proteinsCollection = new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } })
+      const proteinsCollection = new DistinctProteins()
       // If we want to only allow valid samples
       if (app.options.get('valid_components') && !app.staff) {
         proteinsCollection.queryParams.external = 1
