@@ -30,9 +30,9 @@ export default {
       type: String, // Which key within the sample data should be shown (location index if nothing provided)
       required: false
     },
-    'color-scale': String, // color-scale mapped to colorScale prop
+    'colorScale': String, // color-scale mapped to colorScale prop
     'threshold': Number, // Threshold used as part of colorScale
-    'colorAttr': {
+    'colorAttribute': {
       type: String,
       default: 'SCORE'
     },
@@ -210,7 +210,7 @@ export default {
     // TODO - move these color functions into a separate utility class
     scoreColors: function(d) {
       let scale
-      let score = (this.colorAttr && d[this.colorAttr]) ? d[this.colorAttr] : null
+      let score = (this.colorAttribute && d[this.colorAttribute]) ? d[this.colorAttribute] : null
       switch(this.colorScale) {
         case 'rgb':
           scale = this.rgbScale()

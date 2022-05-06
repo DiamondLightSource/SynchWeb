@@ -106,6 +106,7 @@
           <valid-container-graphic
             :containerType="containerType"
             :samples="samples"
+            :valid-samples="validSamples"
             @cell-clicked="onContainerCellClicked"/>
         </div>
 

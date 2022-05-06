@@ -97,7 +97,7 @@ export default {
     async getUsers() {
       this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
       this.usersCollection.queryParams.all = 1
-      this.usersCollection.queryParams.pid = this.proposalId
+      this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
 
       if (this.REQUESTEDIMAGERID) {
         this.usersCollection.queryParams.login = 1
@@ -408,6 +408,7 @@ export default {
     },
     async fetchSampleGroupSamples() {
       const sampleGroupCollection = new SampleGroups(null, { state: { pageSize: 9999 } })
+      sampleGroupCollection.queryParams.groupSamplesType = 'BLSAMPLEGROUPID'
 
       const result = await this.$store.dispatch('getCollection', sampleGroupCollection)
       const sampleGroups = result.toJSON()
