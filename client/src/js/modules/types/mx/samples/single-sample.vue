@@ -7,12 +7,12 @@
       v-if="!containerId"
       :extra="true"
       @clone-container="onClonePlate"
-      @clear-container="onClearPlate"
-      @clear-container-sample="onClearSample"
       @clone-container-column="onCloneContainerColumn"
       @clone-container-row="onCloneContainerRow"
+      @clear-container="onClearPlate"
       @clear-container-column="onClearContainerColumn"
       @clear-container-row="onClearContainerRow"
+      @clear-container-sample="onClearSample"
       @extra-puck="onExtraPuckToggle"
     />
 
@@ -395,7 +395,7 @@ export default {
   },
 	methods: {
     onClonePlate: function() {
-      this.$emit('clone-container', this.sampleLocation)
+      this.$emit('clone-container', 0)
     },
     onClearPlate: function() {
       this.$emit('clear-container')

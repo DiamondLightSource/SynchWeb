@@ -77,7 +77,7 @@
             <div v-show="plateType === 'plate'">
               <div class="tw-flex tw-w-full tw-relative">
                 <base-input-text outer-class="tw-mb-2 tw-py-2 tw-flex tw-flex-1" v-model="BARCODE" label="Barcode" name="Barcode"/>
-                <span class="barcode-message tw-text-xs tw-ml-4 tw-bg-content-light-background tw-rounded tw-p-2 tw-absolute">{{ barcodeMessage }}</span>
+                <span class="barcode-message tw-text-xs tw-ml-4 tw-bg-content-light-background tw-rounded tw-p-2 tw-absolute" v-if="barcodeMessage">{{ barcodeMessage }}</span>
               </div>
 
               <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">

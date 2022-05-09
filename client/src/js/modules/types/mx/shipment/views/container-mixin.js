@@ -278,13 +278,23 @@ export default {
           this.cloneSample(sampleIndex, i, data)
         }
       } else {
-        this.clonePlateContainer()
+        this.clonePlateContainer(sampleIndex)
       }
     },
-    async clonePlateContainer() {
-      if (!this.samples[this.sampleLocation].VALID) return
-      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(this.sampleLocation + 1)
-      await this.performCloneByRowOrColumn(this.sampleLocation, sourceCoordinates)
+    async clonePlateContainer(location) {
+      const sampleLocation = +location
+      if (!this.samples[sampleLocation].VALID) return
+
+      // We want to clone the plates with the content of the first location, so we start from i = 1
+      for (let i = 1; i < this.samples.length; i++) {
+        const data = this.handleSampleCloneForPlates(sampleLocation, i)
+        this.cloneSample(sampleLocation, i, data)
+      }
+
+      this.$store.commit('samples/setSample', {
+        index: sampleLocation,
+        data: { ...this.samples[sampleLocation], VALID: 1, NAME: this.generateSampleNameForPlate(sampleLocation, sampleLocation) }
+      })
     },
     // Remove all sample information from every row
     onClearContainer() {
@@ -293,16 +303,18 @@ export default {
       }
     },
     async onClearColumn(location) {
-      let sampleIndex = +location - 1
-      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
+      let sampleIndex = +location
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(sampleIndex + 1)
 
       await this.performClearByRowOrColumn(sampleIndex, sourceCoordinates, 'col')
+      this.onClearSample(sampleIndex)
     },
     async onClearRow(location) {
-      let sampleIndex = +location - 1
-      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
+      let sampleIndex = +location
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(sampleIndex + 1)
 
       await this.performClearByRowOrColumn(sampleIndex, sourceCoordinates, 'row')
+      this.onClearSample(sampleIndex)
     },
     // When cloning, take the last digits and pad the new samples names
     // So if 1: sample-01, 2: will equal sample-02 etc.
@@ -346,7 +358,7 @@ export default {
     // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
     async onCloneColumn(location) {
       if (!this.samples[this.sampleLocation].VALID) return
-      let sampleIndex = +location - 1
+      const sampleIndex = +location - 1
       let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
 
       await this.performCloneByRowOrColumn(sampleIndex, sourceCoordinates, 'col')
@@ -354,8 +366,7 @@ export default {
     // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
     async onCloneRow(location) {
       if (!this.samples[this.sampleLocation].VALID) return
-      let sampleIndex = +location - 1
-      this.sampleLocation = location
+      const sampleIndex = +location - 1
       let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
 
       await this.performCloneByRowOrColumn(sampleIndex, sourceCoordinates, 'row')

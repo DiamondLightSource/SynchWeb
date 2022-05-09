@@ -5,9 +5,9 @@
   -->
   <div class="tw-mb-2">
     <div class="tw-flex tw-flex-wrap tw-w-full tw-mb-2">
-      <button class="button" @click.prevent="$emit('clone-container')" ><i class="fa fa-plus"></i> Plate</button>
-      <button class="button" @click.prevent="$emit('clone-container-column')" ><i class="fa fa-plus"></i> Column</button>
-      <button class="button" @click.prevent="$emit('clone-container-row')" ><i class="fa fa-plus"></i> Row</button>
+      <button class="button" @click.prevent="$emit('clone-container')" title="Clone Plate"><i class="fa fa-plus"></i> Plate</button>
+      <button class="button" @click.prevent="$emit('clone-container-column')" title="Clone Column"><i class="fa fa-plus"></i> Column</button>
+      <button class="button" @click.prevent="$emit('clone-container-row')" title="Clone Row"><i class="fa fa-plus"></i> Row</button>
 
       <button class="button" @click.prevent="$emit('clear-container')" title="Clear Plate"><i class="fa fa-times"></i> Plate</button>
       <button class="button" @click.prevent="$emit('clear-container-column')" title="Clear Column"><i class="fa fa-times"></i> Column</button>
