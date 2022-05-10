@@ -9,9 +9,12 @@
           :is="containerComponent"
           :container="geometry"
           :samples="samples"
+          :selectedDrops="validSamples"
           color-scale="rgb"
-          color-attr="VALID"
-          @cell-clicked="onCellClicked"/>
+          colorAttribute="VALID"
+          :label-as-buttons="false"
+          @cell-clicked="onCellClicked"
+          @drop-clicked="onCellClicked" />
       </div>
     </div>
   </section>
@@ -32,6 +35,10 @@ export default {
       required: true
     },
     samples: {
+      type: Array,
+      default: []
+    },
+    validSamples: {
       type: Array,
       default: []
     }
@@ -62,8 +69,8 @@ export default {
     updateGraphicView: function() {
       this.graphicKey += 1;
     },
-    onCellClicked: function(location) {
-      this.$emit('cell-clicked', location)
+    onCellClicked: function(args) {
+      this.$emit('cell-clicked', args)
     },
   },
   watch: {

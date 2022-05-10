@@ -15,6 +15,9 @@ const INITIAL_SAMPLE_STATE = {
   CENTRINGMETHOD: '',
   COMMENTS: '',
   COMPOSITION: '',
+  COMPONENTS: [],
+  COMPONENTIDS: [],
+  COMPONENTAMOUNTS: [],
   CONTAINERID: '',
   CRYSTALID: -1,
   DIMENSION1: '',
@@ -31,7 +34,7 @@ const INITIAL_SAMPLE_STATE = {
   PROTEINID: -1,
   REQUIREDRESOLUTION: '',
   RADIATIONSENSITIVITY: '',
-  SCREENCOMPONENTGROUPID: '',
+  SCREENCOMPONENTGROUPID: null,
   SCREENINGMETHOD: '',
   SCREENINGCOLLECTVALUE: '',
   THEORETICALDENSITY: '',
@@ -43,7 +46,7 @@ const INITIAL_SAMPLE_STATE = {
   VALID: 0,
   SAMPLEGROUP: '',
   INITIALSAMPLEGROUP: '',
-  STATUS: ''
+  STATUS: '',
 }
 
 // Use Location as idAttribute for this table
@@ -112,7 +115,7 @@ const samplesModule = {
     },
     // Set all samples to a passed array - convenient when used with forms and computed properties
     set(state, data) {
-      if (data.length <= state.samples.length) {
+      if (data && data.length <= state.samples.length) {
         state.samples = data.map((item) => { return item })
       }
     },

@@ -35,7 +35,8 @@ export default {
         { id: 'flag', name: 'Favourites', className: '' },
         { id: 'r', name: 'Loaded By Robot', className: 'tw-bg-loaded-by-robot'},
         { id: '', name: '', className: ''}
-      ]
+      ],
+      sampleScreenComponentGroup: {}
     };
   },
   props: {
@@ -46,7 +47,11 @@ export default {
   computed: {
     proteinsOptionsList() {
       return this.$proteins()
-        .map(item => ({ value: item.PROTEINID, text: item.ACRONYM, SAFETYLEVEL: item.SAFETYLEVEL }));
+        .map(item => ({
+          PROTEINID: item.PROTEINID,
+          ACRONYM: item.ACRONYM,
+          SAFETYLEVEL: item.SAFETYLEVEL
+        }));
     },
     experimentKindList() {
       return this.$experimentKindList();
@@ -154,24 +159,13 @@ export default {
       'VOLUME',
       'VALID',
       'INITIALSAMPLEGROUP',
-      'STATUS'
+      'STATUS',
+      'COMPONENTS',
+      'COMPONENTIDS',
+      'COMPONENTAMOUNTS'
     ]),
     sampleGroupInputDisabled() {
       return this.$sampleGroupInputDisabled()
-    },
-    screeningMethodText() {
-      if (this.sample['PROTEINID'] > 0) {
-        const selectedScreeningMethod = this.screeningMethodList.find(item => item.value === this.sample['SCREENINGMETHOD'])
-
-        return selectedScreeningMethod ? selectedScreeningMethod.text : 'None'
-      }
-    },
-    experimentKindText() {
-      if (this.sample['PROTEINID'] > 0) {
-        const selectedExperimentKind = this.experimentKindList.find(item => item.value === this.sample['EXPERIMENTKIND'])
-
-        return selectedExperimentKind ? selectedExperimentKind.text : ''
-      }
     },
     containerStatus() {
       return this.$containerStatus()
@@ -188,6 +182,27 @@ export default {
     dataCollectionStarted() {
       if (!this.samples) return
       return this.samples.some(sample => sample['DCC'] ? Number(sample['DCC']) > 0 : false)
+    },
+    globalProteins() {
+      return this.$globalProteins()
+        .map(item => ({
+          PROTEINID: item.PROTEINID,
+          ACRONYM: item.ACRONYM,
+          SAFETYLEVEL: item.SAFETYLEVEL,
+          CONCENTRATIONTYPE: item.CONCENTRATIONTYPE
+        }));
+    },
+    plateType() {
+      return this.$plateType()
+    },
+    containerTypeDetails() {
+      return this.$containerTypeDetails()
+    },
+    screenComponents() {
+      return this.$screenComponents()
+    },
+    screenComponentGroups() {
+      return this.$screenComponentGroups()
     }
   },
   methods: {
@@ -273,14 +288,8 @@ export default {
     canEditRow(location, editingRow) {
       return !this.containerId || location === editingRow
     },
-    generateSampleGroupNameText(matchingSampleGroup) {
-      if (matchingSampleGroup && this.sampleGroupsWithSample.length > 1)  {
-        return `${matchingSampleGroup['NAME']} and ${this.sampleGroupsWithSample.length - 1} other(s)`
-      } else if (matchingSampleGroup && this.sampleGroupsWithSample.length <= 1) {
-        return matchingSampleGroup['NAME']
-      } else if (!matchingSampleGroup) {
-        return ''
-      }
+    doAddNewProteinOption(protein) {
+
     }
   },
   inject: [
@@ -297,6 +306,11 @@ export default {
     "$proteins",
     "$sampleGroupsSamples",
     "$sampleGroupInputDisabled",
-    "$containerStatus"
+    "$containerStatus",
+    "$globalProteins",
+    "$plateType",
+    "$containerTypeDetails",
+    "$screenComponents",
+    "$screenComponentGroups"
   ]
 };

@@ -30,9 +30,9 @@ export default {
       type: String, // Which key within the sample data should be shown (location index if nothing provided)
       required: false
     },
-    'color-scale': String, // color-scale mapped to colorScale prop
+    'colorScale': String, // color-scale mapped to colorScale prop
     'threshold': Number, // Threshold used as part of colorScale
-    'colorAttr': {
+    'colorAttribute': {
       type: String,
       default: 'SCORE'
     },
@@ -159,10 +159,10 @@ export default {
     onCellClicked: function(sampleData) {
       if (sampleData && sampleData.BLSAMPLEID) {
         // Convert to an actual index not string
-        this.$emit('cell-clicked', +sampleData.LOCATION)
+        this.$emit('cell-clicked', { location: + sampleData.LOCATION, type: 'puck' })
       } else {
         // All samples should have a location
-        this.$emit('cell-clicked', +sampleData.LOCATION)
+        this.$emit('cell-clicked', { location: + sampleData.LOCATION, type: 'puck' })
       }
     },
     updateSelected: function() {
@@ -210,7 +210,7 @@ export default {
     // TODO - move these color functions into a separate utility class
     scoreColors: function(d) {
       let scale
-      let score = (this.colorAttr && d[this.colorAttr]) ? d[this.colorAttr] : null
+      let score = (this.colorAttribute && d[this.colorAttribute]) ? d[this.colorAttribute] : null
       switch(this.colorScale) {
         case 'rgb':
           scale = this.rgbScale()

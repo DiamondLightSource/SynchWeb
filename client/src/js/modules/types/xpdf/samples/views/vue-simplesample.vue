@@ -280,18 +280,11 @@
             async setDewarInformation() {
               // Try to retrieve the default dewar for this proposal/visit
               // Uses the special session-0 because at this point we are not necessarily on a session
-              try {
-                this.defaultDewarId = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/shipment/dewars/default',
-                  data: { visit: `${this.$store.getters['proposal/currentProposal']}-0`}
-                })
-              } catch (error) {
-                this.$store.commit('notifications/addNotification', {
-                  title: 'Error',
-                  message: 'The default dewar for this visit could not be created (no session-0?)',
-                  level: 'error'
-                })
-              }
+              this.defaultDewarId = await this.$store.dispatch('fetchDataFromApi', {
+                url: '/shipment/dewars/default',
+                data: { visit: `${this.$store.getters['proposal/currentProposal']}-0`},
+                requestType: 'fetching default dewar for this proposal/visit'
+              })
             },
             setProteinData() {
               // We should have arrived with an existing Phase to base the new simple samples on
@@ -311,6 +304,7 @@
 
                 const sampleGroups = await this.$store.dispatch('fetchDataFromApi', {
                   url: '/sample/groups?page=1&per_page=9999',
+                  requestType: 'fetching sample groups'
                 })
 
                 this.sampleGroups = sampleGroups.data

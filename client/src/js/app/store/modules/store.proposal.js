@@ -59,7 +59,7 @@ const proposalModule = {
     setProposal({commit, state, rootState}, prop) {
         return new Promise((resolve, reject) => {
           // Only fetch a new model if this one is different from what we have already
-          if (prop == state.proposal) { resolve(); return }
+          if (String(prop) === String(state.proposal)) { resolve(); return }
           // If null reset (e.g. navigated back to home page)
           if (!prop) {
             commit('setProposal', null)
@@ -129,6 +129,7 @@ const proposalModule = {
     },
     currentProposalType: state => state.proposalType,
     currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null,
+    getProposalId: state => state.proposalModel ? state.proposalModel.get('PROPOSALID'): null,
     currentVisit: state => state.visit,
   }
 }

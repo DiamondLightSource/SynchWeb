@@ -18,8 +18,8 @@
         v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
         :data="proteinsOptionsList"
         class="tw-w-full protein-select"
-        textField="text"
-        valueField="value"
+        textField="ACRONYM"
+        valueField="PROTEINID"
         :inputIndex="sampleIndex"
         defaultText=""
         size="small"
@@ -29,11 +29,11 @@
         <template slot-scope="{ option }">
           <span class="tw-flex tw-justify-between tw-w-full">
             <span class="tw-"><i v-if="option.SAFETYLEVEL === 'GREEN'" class="fa fa-check green"></i></span>
-            {{ option['text'] }}
+            {{ option['ACRONYM'] }}
           </span>
         </template>
       </combo-box>
-      <div v-else class="tw-text-center">{{ selectDataValue(proteinsOptionsList, sample, 'PROTEINID') }}</div>
+      <div v-else class="tw-text-center">{{ sample['ACRONYM'] }}</div>
       <span>{{ errors[0] }}</span>
     </validation-provider>
 

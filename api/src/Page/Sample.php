@@ -1260,7 +1260,7 @@ class Sample extends Page
                 array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'] ,$a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'],$a['SHAPE'],$a['LOOPTYPE']));
             $sid = $this->db->id();
 
-            if ($a['SCREENINGMETHOD'] == 'best' && $a['VALID_SAMPLE_GROUP']) {
+            if ($a['VALID_SAMPLE_GROUP']) {
                 $this->_save_sample_to_group($sid, $a['SAMPLEGROUP'], null, null);
             }
 
@@ -1506,29 +1506,7 @@ class Sample extends Page
                 array_push($args, $this->arg('term'));
             }
 
-            $total = $this->db->pq("SELECT count(*) as total
-                FROM (
-                    SELECT count(*) as total
-                    FROM protein pr
-                    LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
-                    WHERE pr.acronym is not null AND $where
-                    GROUP BY ct.symbol, pr.acronym, pr.name, pr.global
-            ) as total", $args);
-
-            $total = isset($total[0]) ? intval($total[0]['TOTAL']) : 0;
-            $start = 0;
-            $end = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
-
-            if ($this->has_arg('page')) {
-                $page = $this->arg('page') - 1;
-                $start = $page * $end;
-                $end = $start + $end;
-            }
-
-            array_push($args, $start);
-            array_push($args, $end);
-
-            $rows = $this->db->paginate("SELECT distinct pr.global, pr.name, pr.acronym, pr.safetylevel,
+            $rows = $this->db->pq("SELECT distinct pr.global, pr.name, pr.acronym, pr.safetylevel,
               max(pr.proteinid) as proteinid,
               ct.symbol as concentrationtype,
               1 as hasph,
@@ -1539,10 +1517,7 @@ class Sample extends Page
               GROUP BY ct.symbol, pr.acronym, pr.name, pr.global
               ORDER BY lower(pr.acronym)", $args);
                                  
-            $this->_output(array(
-                'total' => $total,
-                'data' => $rows,
-            ));
+            $this->_output($rows);
         }
 
 
@@ -2189,15 +2164,9 @@ class Sample extends Page
 
 
         # Sample Groups
-        function _build_sample_groups_query($where, $fields, $group = '')
+        function _build_sample_groups_query($where, $fields, $from_table, $joins, $group = '')
         {
-            return "SELECT $fields
-                FROM blsample b
-                INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
-                INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                INNER JOIN crystal cr ON cr.crystalid = b.crystalid
-                WHERE $where
-                $group";
+            return "SELECT $fields $from_table $joins WHERE $where $group";
         }
 
         function _sample_groups() {
@@ -2205,20 +2174,31 @@ class Sample extends Page
 
             $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
-            $select_fields = 'bsg.blSampleGroupId, bsg.name, bshg.blSampleId, bshg.type, b.name as sample, cr.crystalId, cr.name as crystal';
             $total_select_field = 'count(*) as total';
+            $joins = '';
+            $from_table = '';
             $group_by = '';
-            $total_query = $this->_build_sample_groups_query($where, $total_select_field, $group_by);
-
 
             // Check if we are grouping the result by BlSAMPLEID or BLSAMPLEGROUPID.
             // This is currently being used by xpdf when fetching the list of sample group samples.
             if ($this->has_arg('groupSamplesType') &&  $this->arg('groupSamplesType') === 'BLSAMPLEGROUPID') {
-                $group_by .= 'GROUP BY bshg.blsamplegroupid';
                 $select_fields = 'bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples';
-                $total_select_field = 'count(*) as tot';
-                $total_sub_query = $this->_build_sample_groups_query($where, $total_select_field, $group_by);
+                $from_table = 'FROM blsamplegroup bsg';
+                $joins = 'LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid';
+                $group_by .= 'GROUP BY bsg.blsamplegroupid';
+
+                $total_sub_query = $this->_build_sample_groups_query($where, $total_select_field, $from_table, $joins, $group_by);
                 $total_query = "SELECT count(*) as total FROM ($total_sub_query) as total";
+            } else {
+                $select_fields = 'bsg.blSampleGroupId, bsg.name, bshg.blSampleId, bshg.type, b.name as sample, cr.crystalId, cr.name as crystal';
+                $from_table = 'FROM blsample b';
+                $joins = '
+                    INNER JOIN blsamplegroup_has_blsample bshg ON bshg.blsampleid = b.blsampleid
+                    INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                    INNER JOIN crystal cr ON cr.crystalid = b.crystalid
+                ';
+
+                $total_query = $this->_build_sample_groups_query($where, $total_select_field, $from_table, $joins, $group_by);
             }
 
             $tot = $this->db->pq($total_query, $args);
@@ -2240,7 +2220,7 @@ class Sample extends Page
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows_query = $this->_build_sample_groups_query($where, $select_fields, $group_by);
+            $rows_query = $this->_build_sample_groups_query($where, $select_fields, $from_table, $joins, $group_by);
             $rows = $this->db->paginate($rows_query, $args);
 
             $this->_output(array(
