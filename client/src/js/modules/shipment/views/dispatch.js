@@ -70,13 +70,11 @@ define(['marionette', 'views/form',
             })
         },
         
-        success: function(model, response, options) {
-            console.log('success from dispatch req')
+        success: function() {
             app.trigger('shipment:show', this.getOption('dewar').get('SHIPPINGID'))
         },
 
-        failure: function(model, response, options) {
-            console.log('failure from dispatch req')
+        failure: function() {
             app.alert({ message: 'Something went wrong registering this dispatch request, please try again'})
         },
         
@@ -115,7 +113,6 @@ define(['marionette', 'views/form',
             this.history = new DewarHistory(null, { queryParams: { did: this.getOption('dewar').get('DEWARID') }})
             this.history.fetch().done(function() {
                 const history = self.history.at(0)
-                console.log({ history })
                 const location = history ? history.get('STORAGELOCATION') : null
                 const historyComment = history ? history.get('COMMENTS') : null
                 const restrictedLocations = ['i03', 'i04', 'i04-1', 'i024']
