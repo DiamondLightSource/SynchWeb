@@ -166,7 +166,10 @@ class Shipment extends Page
                               array('/containers/', 'post', '_add_container'),
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
+
+                              // TODO: Need to have a separate method for handling queueing and unqueueing of containers
                               array('/containers/queue(/:cid)', 'patch', '_queue_container'),
+                              array('/containers/queue(/:cid)', 'get', '_queue_container'),
                               array('/containers/barcode/:BARCODE', 'get', '_check_container'),
 
 

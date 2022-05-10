@@ -82,7 +82,7 @@ define(['backbone', 'collections/components',
             REQUIREDRESOLUTION: '',
             RADIATIONSENSITIVITY: '',
             SAMPLEGROUP: '',
-            SCREENCOMPONENTGROUPID: '',
+            SCREENCOMPONENTGROUPID: null,
             SCREENINGMETHOD: '',
             SCREENINGCOLLECTVALUE: '',
             STRATEGYOPTION: '',
@@ -92,7 +92,9 @@ define(['backbone', 'collections/components',
             THEORETICALDENSITY: '',
             USERPATH: '',
             VOLUME: '',
-            INITIALSAMPLEGROUP: ''
+            INITIALSAMPLEGROUP: '',
+            COMPONENTIDS: [],
+            COMPONENTAMOUNTS: []
         },
         
         validation: {

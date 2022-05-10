@@ -14,8 +14,10 @@ import ImagingScreens from 'modules/imaging/collections/screens'
 import ImagingScheduleComponents from 'modules/imaging/collections/schedulecomponents'
 import { mapGetters } from 'vuex'
 import Sample from 'models/sample'
-import SampleGroupSamples from "collections/samplegroupsamples";
-import ContainerQueue from "modules/shipment/models/containerqueue";
+import SampleGroupSamples from "collections/samplegroupsamples"
+import ContainerQueue from "modules/shipment/models/containerqueue"
+import ScreenComponents from 'modules/imaging/collections/screencomponents'
+import ScreenComponentGroups from 'modules/imaging/collections/screencomponentgroups'
 import { omit } from 'lodash'
 
 const INITIAL_CONTAINER_TYPE = {
@@ -41,10 +43,20 @@ export default {
       containerRegistryCollection: new ContainerRegistry(),
       containerRegistry: [],
       containerRegistryId: '',
+      containerTypeDetails: {},
 
-      experimentTypes: [],
-      experimentTypesCollection: null,
+      experimentTypes: [
+        {
+          value: 'robot',
+          name: 'Robot'
+        },
+        {
+          value: 'HPLC',
+          name: 'HPLC'
+        },
+      ],
       experimentKindList: [],
+      globalProteins: [],
 
       imagingImagers: [],
       imagingCollections: null,
@@ -55,11 +67,16 @@ export default {
       imagingScreens: [],
       imagingScreensCollections: null,
 
+      plateType: null,
       processingPipeline: '',
       processingPipelines: [],
-
       proteins: [],
-      proteinsCollection: new DistinctProteins(null, { state: { pageSize: 9999 }, queryParams: { per_page: 9999 } }),
+
+      storageTemperatures: [
+        { value: '-80', name:'-80' },
+        { value: '4', name:'4' },
+        { value: '25', name :'25' }
+      ],
 
       users: [],
       usersCollection: null,
@@ -69,7 +86,11 @@ export default {
       spaceGroups: [],
       spaceGroupsCollection: null,
       sampleGroupSamples: [],
-      sampleGroupInputDisabled: false
+      sampleGroupInputDisabled: false,
+      screenComponentsCollection: new ScreenComponents(null, { state: { pageSize: 9999 }}),
+      screenComponents: [],
+      screenComponentGroupsCollection: new ScreenComponentGroups(null, { state: { pageSize: 9999 }}),
+      screenComponentGroups: [],
     }
   },
   methods: {
@@ -77,6 +98,10 @@ export default {
       this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
       this.usersCollection.queryParams.all = 1
       this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
+
+      if (this.REQUESTEDIMAGERID) {
+        this.usersCollection.queryParams.login = 1
+      }
 
       const result = await this.$store.dispatch('getCollection', this.usersCollection)
       this.users = result.toJSON()
@@ -92,15 +117,23 @@ export default {
       const result = await this.$store.dispatch('getCollection', processingPipelinesCollection)
       this.processingPipelines = result.toJSON()
     },
+    async getGlobalProteins() {
+      const proteinsCollection = new DistinctProteins()
+      // If we want to only allow valid samples
+      proteinsCollection.queryParams.global = 1
+      const result = await this.$store.dispatch('getCollection', proteinsCollection)
+      this.globalProteins = result.toJSON()
+    },
     async getProteins() {
+      const proteinsCollection = new DistinctProteins()
       // If we want to only allow valid samples
       if (app.options.get('valid_components') && !app.staff) {
-        this.proteinsCollection.queryParams.external = 1
+        proteinsCollection.queryParams.external = 1
       }
 
-      this.proteinsCollection.queryParams.SAFETYLEVEL = 'ALL'
+      proteinsCollection.queryParams.SAFETYLEVEL = 'ALL'
 
-      const result = await this.$store.dispatch('getCollection', this.proteinsCollection)
+      const result = await this.$store.dispatch('getCollection', proteinsCollection)
       this.proteins = result.toJSON()
     },
     async getContainerRegistry() {
@@ -115,12 +148,12 @@ export default {
       this.containerTypes = result.toJSON()
       // Do we have valid start state?
       if (this.containerTypes.length) {
-        let initialContainerType = result.findWhere({PROPOSALTYPE: this.containerFilter[0]})
+        let initialContainerType = result.findWhere({ PROPOSALTYPE: this.containerFilter[0] })
         this.CONTAINERTYPEID = initialContainerType ? initialContainerType.get('CONTAINERTYPEID') : ''
       }
 
       if (this.container) {
-        let containerTypeModel = result.findWhere({NAME: this.container.CONTAINERTYPE})
+        let containerTypeModel = result.findWhere({ NAME: this.container.CONTAINERTYPE })
 
         if (containerTypeModel) {
           this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, containerTypeModel.toJSON())
@@ -154,19 +187,19 @@ export default {
       this.imagingCollections = new ImagingImager(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingCollections)
-      this.imagingImagers = result.toJSON()
+      this.imagingImagers = [{ NAME: '-', IMAGERID: '' }, ... result.toJSON()]
     },
     async getImagingScheduleCollections() {
       this.imagingSchedulesCollection = new ImagingSchedules(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingSchedulesCollection)
-      this.imagingSchedules = result.toJSON()
+      this.imagingSchedules = [{ NAME: '-', SCHEDULEID: '' }, ... result.toJSON()]
     },
     async getImagingScreensCollections() {
       this.imagingScreensCollection = new ImagingScreens(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingScreensCollection)
-      this.imagingScreens = result.toJSON()
+      this.imagingScreens = [{ NAME: '-', SCREENID: '' }, ... result.toJSON()]
     },
     async getImagingScheduleComponentsCollection() {
       this.imagingScheduleComponentsCollection = new ImagingScheduleComponents(null, { state: { pageSize: 9999 } })
@@ -174,6 +207,19 @@ export default {
 
       const result = await this.$store.dispatch('getCollection', this.imagingScheduleComponentsCollection)
       this.imagingScheduleComponents = result.toJSON()
+    },
+    async fetchScreenComponents() {
+      this.screenComponentsCollection.queryParams.scid = this.selectedScreen.SCREENID
+      this.screenComponents = []
+
+      const result = await this.$store.dispatch('getCollection', this.screenComponentsCollection)
+      this.screenComponents = this.screenComponents.concat(result.toJSON())
+    },
+    async fetchScreenComponentsGroups() {
+      this.screenComponentGroupsCollection.queryParams.scid = this.selectedScreen.SCREENID
+      this.screenComponentGroups = []
+      const result = await this.$store.dispatch('getCollection', this.screenComponentGroupsCollection)
+      this.screenComponentGroups = this.screenComponentGroups.concat(result.toJSON())
     },
     async getSpaceGroupsCollection() {
       this.spaceGroupsCollection = new SpaceGroups(null, { state: { pageSize: 9999 } })
@@ -203,7 +249,8 @@ export default {
         }
       }
 
-      this.cloneSample(location, nextSampleIndex)
+      const data = this.handleSampleCloneForPucks(location, nextSampleIndex)
+      this.cloneSample(location, nextSampleIndex, data)
     },
     // Clear row for a single row in the sample table
     onClearSample(sampleLocation) {
@@ -216,15 +263,58 @@ export default {
     },
     // Take first entry (or index) and clone all rows
     onCloneContainer(sampleIndex=0) {
-      for (let i = 0; i < this.samples.length; i++) {
-        this.cloneSample(sampleIndex, i)
+      if (this.plateType === 'puck') {
+        const firstSample = this.samples[sampleIndex]
+        this.$store.commit('samples/reset')
+
+        // We want the name of the first sample to always remain the same when we clone all samples
+        const baseName = firstSample['NAME'].replace(/([\d]+)$/, '')
+        const digitMatch = firstSample['NAME'].match(/([\d]+)$/)
+        const digitValue = digitMatch && digitMatch.length > 0 ? Number(digitMatch[0]) - 1 : 0
+
+        this.$store.commit('samples/setSample', { index: sampleIndex, data: {...firstSample, NAME: `${baseName}${digitValue}`} })
+        for (let i = 0; i < this.samples.length; i++) {
+          const data = this.handleSampleCloneForPucks(sampleIndex, i)
+          this.cloneSample(sampleIndex, i, data)
+        }
+      } else {
+        this.clonePlateContainer(sampleIndex)
       }
+    },
+    async clonePlateContainer(location) {
+      const sampleLocation = +location
+      if (!this.samples[sampleLocation].VALID) return
+
+      // We want to clone the plates with the content of the first location, so we start from i = 1
+      for (let i = 1; i < this.samples.length; i++) {
+        const data = this.handleSampleCloneForPlates(sampleLocation, i)
+        this.cloneSample(sampleLocation, i, data)
+      }
+
+      this.$store.commit('samples/setSample', {
+        index: sampleLocation,
+        data: { ...this.samples[sampleLocation], VALID: 1, NAME: this.generateSampleNameForPlate(sampleLocation, sampleLocation) }
+      })
     },
     // Remove all sample information from every row
     onClearContainer() {
       for (let i = 0; i < this.samples.length; i++) {
         this.$store.commit('samples/clearSample', i)
       }
+    },
+    async onClearColumn(location) {
+      let sampleIndex = +location
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(sampleIndex + 1)
+
+      await this.performClearByRowOrColumn(sampleIndex, sourceCoordinates, 'col')
+      this.onClearSample(sampleIndex)
+    },
+    async onClearRow(location) {
+      let sampleIndex = +location
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(sampleIndex + 1)
+
+      await this.performClearByRowOrColumn(sampleIndex, sourceCoordinates, 'row')
+      this.onClearSample(sampleIndex)
     },
     // When cloning, take the last digits and pad the new samples names
     // So if 1: sample-01, 2: will equal sample-02 etc.
@@ -265,97 +355,71 @@ export default {
       }
       await this.fetchSampleGroupSamples()
     },
-    getRowColDrop(pos) {
-      let well = this.containerType.WELLDROP > -1 ? 1 : 0
-      let dropTotal = (this.containerType.DROPPERWELLX * this.containerType.DROPPERWELLY) - well
-
-      const wellPosition = Math.floor((parseInt(pos) - 1) / dropTotal);
-      const drop = ((pos - 1) % dropTotal) + 1;
-
-      const col = wellPosition % this.containerType.WELLPERROW;
-      const row = Math.floor(wellPosition / this.containerType.WELLPERROW);
-
-      return { row: row, col: col, drop: drop, pos: pos }
-    },
     // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
     async onCloneColumn(location) {
-      let sampleIndex = +location - 1
-      let sourceCoordinates = this.getRowColDrop(location)
+      if (!this.samples[this.sampleLocation].VALID) return
+      const sampleIndex = +location - 1
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
 
-      for (let i = 0; i < this.samples.length; i++) {
-        // We are only cloning samples that come after this one - so skip any with a lower index
-        if (i > sampleIndex) {
-          let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
-
-          if (targetCoordinates['drop'] === sourceCoordinates['drop'] && targetCoordinates['col'] === sourceCoordinates['col']) {
-            this.cloneSample(sampleIndex, i)
-            this.sampleLocation = i
-
-            await this.$nextTick()
-            const locationValid = await this.$refs.containerForm.validate();
-
-            if (!locationValid) {
-              break
-            } else {
-              this.$store.commit('samples/updateSamplesField', {
-                path: `samples/${sampleIndex}/VALID`,
-                value: 1
-              })
-            }
-          }
-        }
-      }
+      await this.performCloneByRowOrColumn(sampleIndex, sourceCoordinates, 'col')
     },
     // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
     async onCloneRow(location) {
-      let sampleIndex = +location - 1
-      let sourceCoordinates = this.getRowColDrop(location)
+      if (!this.samples[this.sampleLocation].VALID) return
+      const sampleIndex = +location - 1
+      let sourceCoordinates = this.containerTypeDetails.getRowColDrop(location)
 
+      await this.performCloneByRowOrColumn(sampleIndex, sourceCoordinates, 'row')
+    },
+    async performCloneByRowOrColumn(sampleIndex, sourceCoordinates, direction) {
       for (let i = 0; i < this.samples.length; i++) {
         // We are only cloning samples that come after this one - so skip any with a lower index
         if (i > sampleIndex) {
-          let targetCoordinates = this.getRowColDrop(this.samples[i].LOCATION)
+          let targetCoordinates = this.containerTypeDetails.getRowColDrop(this.samples[i].LOCATION)
+          const canClone = !!direction ? targetCoordinates[direction] === sourceCoordinates[direction] : true
 
-          if (targetCoordinates['drop'] === sourceCoordinates['drop'] && targetCoordinates['row'] === sourceCoordinates['row']) {
-            this.cloneSample(sampleIndex, i)
-            this.sampleLocation = i
+          if (targetCoordinates['drop'] === sourceCoordinates['drop'] && canClone) {
+            const data = this.handleSampleCloneForPlates(sampleIndex, i)
+            this.cloneSample(sampleIndex, i, data)
+          }
+        }
+      }
 
-            await this.$nextTick()
-            const locationValid = await this.$refs.containerForm.validate();
+      this.$store.commit('samples/setSample', {
+        index: sampleIndex,
+        data: { ...this.samples[sampleIndex], VALID: 1, NAME: this.generateSampleNameForPlate(sampleIndex, sampleIndex) }
+      })
+    },
+    async performClearByRowOrColumn(sampleIndex, sourceCoordinates, direction) {
+      for (let i = 0; i < this.samples.length; i++) {
+        // We are only cloning samples that come after this one - so skip any with a lower index
+        if (i > sampleIndex) {
+          let targetCoordinates = this.containerTypeDetails.getRowColDrop(this.samples[i].LOCATION)
 
-            if (!locationValid) {
-              break
-            } else {
-              this.$store.commit('samples/updateSamplesField', {
-                path: `samples/${sampleIndex}/VALID`,
-                value: 1
-              })
-            }
+          if (targetCoordinates['drop'] === sourceCoordinates['drop'] && targetCoordinates[direction] === sourceCoordinates[direction]) {
+            this.onClearSample(i)
           }
         }
       }
     },
-    cloneSample(sourceIndex, targetIndex) {
+    cloneSample(sourceIndex, targetIndex, data) {
       if (targetIndex < 0 || targetIndex >= this.samples.length) return false
       if (sourceIndex < 0 || sourceIndex >= this.samples.length) return false
 
       let sourceSample = this.samples[sourceIndex]
       if (sourceSample.PROTEINID < 0) return false
-
-      let baseName = this.samples[sourceIndex].NAME
-      let sampleClone = { ...this.samples[targetIndex], ...this.samples[sourceIndex] }
-      sampleClone.LOCATION = (targetIndex + 1).toString()
-      sampleClone.NAME = this.generateSampleName(baseName)
-      this.$store.commit('samples/setSample', { index: targetIndex, data: sampleClone })
+      this.$store.commit('samples/setSample', { index: targetIndex, data })
     },
-    // Reset the validation for the field when an input is edited
-    resetFormValidation() {
-      requestAnimationFrame(() => {
-        this.$refs.containerForm.reset()
-      })
+    handleSampleCloneForPlates(sourceIndex, targetIndex) {
+      const sampleClone = { ...this.samples[targetIndex], ...this.samples[sourceIndex], VALID: 1 }
+      sampleClone.NAME = this.generateSampleNameForPlate(sourceIndex, targetIndex)
+      sampleClone.LOCATION = (targetIndex + 1).toString()
+
+      return sampleClone
     },
     async fetchSampleGroupSamples() {
       const sampleGroupCollection = new SampleGroups(null, { state: { pageSize: 9999 } })
+      sampleGroupCollection.queryParams.groupSamplesType = 'BLSAMPLEGROUPID'
 
       const result = await this.$store.dispatch('getCollection', sampleGroupCollection)
       const sampleGroups = result.toJSON()
@@ -388,7 +452,7 @@ export default {
       }
       return await this.$store.dispatch('saveModel', { model: containerQueue, attributes })
     },
-    generateSampleName(sourceName) {
+    generateSampleNameForPucks(sourceName) {
       const samplesNameDictionary = {}
       const sourceNameKey = sourceName.replace(/([\d]+)$/, '')
 
@@ -404,6 +468,20 @@ export default {
         }
       })
       return `${sourceNameKey}${samplesNameDictionary[sourceNameKey] + 1}`
+    },
+    generateSampleNameForPlate(sampleIndex, targetIndex) {
+      const sourceSampleName = this.samples[sampleIndex]['NAME']
+      const targetCoordinates = this.containerTypeDetails.getRowColDrop(targetIndex + 1)
+
+      return `${this.containerTypeDetails.getName(targetCoordinates.position)}d${targetCoordinates.drop}_${sourceSampleName}`
+    },
+    handleSampleCloneForPucks(sourceIndex, targetIndex) {
+      let baseName = this.samples[sourceIndex].NAME
+      const sampleClone = { ...this.samples[targetIndex], ...this.samples[sourceIndex] }
+      sampleClone.LOCATION = (targetIndex + 1).toString()
+      sampleClone.NAME = this.generateSampleNameForPucks(baseName)
+
+      return sampleClone
     }
   },
   computed: {
@@ -418,6 +496,7 @@ export default {
     },
     ...mapGetters({
       samples: ['samples/samples'],
+      proposalModel: ['proposal/getProposalId']
     }),
     sampleComponent() {
       // Use a table editor unless capacity > 25
@@ -425,6 +504,15 @@ export default {
 
       return this.containerType.CAPACITY > 25 ? 'single-sample-plate' : 'mx-puck-samples-table'
     },
+    validSamples() {
+      return this.samples.filter(sample => Number(sample['VALID']) === 1)
+    }
+  },
+  watch: {
+    proposalId: {
+      handler: 'getUsers',
+      immediate: true
+    }
   },
   provide() {
     return {
@@ -438,7 +526,12 @@ export default {
       $proteins: () => this.proteins,
       $sampleGroupsSamples: () => this.sampleGroupSamples,
       $sampleGroupInputDisabled: () => this.sampleGroupInputDisabled,
-      $containerStatus: () => this.container ? this.container['CONTAINERSTATUS'] : null
+      $containerStatus: () => this.container ? this.container['CONTAINERSTATUS'] : null,
+      $globalProteins:() => this.globalProteins,
+      $plateType: () => this.plateType,
+      $containerTypeDetails: () => this.containerTypeDetails,
+      $screenComponents: () => this.screenComponents,
+      $screenComponentGroups: () => this.screenComponentGroups
     }
   }
 }
