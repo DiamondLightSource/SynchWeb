@@ -26,9 +26,11 @@ client/assets
 client/index.php
 client/dist
 client/index.html
+client/.env
+client/cypress/screenshots
+client/cypress/videos
 
 api/config.php
 api/vendor
 api/src/MockUAS.php
 
-./idea

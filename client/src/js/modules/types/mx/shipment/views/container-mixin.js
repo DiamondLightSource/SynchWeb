@@ -18,7 +18,7 @@ import SampleGroupSamples from "collections/samplegroupsamples"
 import ContainerQueue from "modules/shipment/models/containerqueue"
 import ScreenComponents from 'modules/imaging/collections/screencomponents'
 import ScreenComponentGroups from 'modules/imaging/collections/screencomponentgroups'
-import { omit } from 'lodash'
+import { omit } from 'lodash-es'
 
 const INITIAL_CONTAINER_TYPE = {
   CONTAINERTYPEID: 0,

@@ -2,10 +2,10 @@
     <div id="vue-header" class="tw-flex tw-justify-between tw-items-center tw-h-10 tw-bg-header-background">
       <div class="">
         <router-link class="tw-mx-1 tw-inline lg:tw-hidden hover:tw-text-header-hover-color" @click.native="showSidebar" to=""><span class="fa fa-2x fa-bars"/></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" to="/"><span class="fa fa-2x fa-home"/><p class="tw-hidden lg:tw-inline"> Home </p></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isStaff" to="/cal"><span class="fa fa-2x fa-calendar"/><p class="tw-hidden lg:tw-inline"> Calendar </p></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isLoggedIn" to="/" v-on:click.native="logout"><span class="fa fa-2x fa-sign-out"/><p class="tw-hidden lg:tw-inline"> Logout </p></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-else to="/login" @click.prevent="login"><span class="fa fa-2x fa-sign-in"/> <p class="tw-hidden lg:tw-inline"> Login </p></router-link>
+        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" to="/" data-testid="home-link"><span class="fa fa-2x fa-home"/><p class="tw-hidden lg:tw-inline"> Home </p></router-link>
+        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isStaff" to="/cal" data-testid="calendar-link"><span class="fa fa-2x fa-calendar"/><p class="tw-hidden lg:tw-inline"> Calendar </p></router-link>
+        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isLoggedIn" to="/" v-on:click.native="logout" data-testid="logout-link"><span class="fa fa-2x fa-sign-out"/><p class="tw-hidden lg:tw-inline"> Logout </p></router-link>
+        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-else to="/login" @click.prevent="login" data-testid="login-link"><span class="fa fa-2x fa-sign-in"/> <p class="tw-hidden lg:tw-inline"> Login </p></router-link>
       </div>
       <div v-if="isStaff" class="tw-flex">
         <!-- Only show those links with correct permission -->
@@ -47,11 +47,10 @@ export default {
         },
         validStaffMenus: function() {
           // filter the list of staff menus based on their permissions
-          let menus = this.staff_menus.filter( item => {
+          return this.staff_menus.filter( item => {
             if (!item.permission) return item
             else return (this.$store.getters['user/hasPermission'](item.permission))
           }, this)
-          return menus
         }
     },
     methods: {

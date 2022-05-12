@@ -38,7 +38,7 @@
             </div>
 
             <div class="tw-flex tw-flex-col w-w-full tw-m-2 tw-p-4">
-                <p class="tw-text-center tw-text-lg tw-mb-4"><router-link to='/login' class="tw-underline">Login</router-link> to view your proposals and sessions</p>
+                <p class="tw-text-center tw-text-lg tw-mb-4"><router-link to='/login' class="tw-underline" data-testid="login-footer-link">Login</router-link> to view your proposals and sessions</p>
                 <p v-if="dataCatalogue" class="tw-text-center tw-text-lg">If you are looking for archived data please visit the data catalogue <a :href="dataCatalogue.url" class="tw-underline">{{dataCatalogue.name}}</a></p>
             </div>
         </div>
@@ -73,7 +73,6 @@ export default {
         }
     },
     created: function() {
-        let self = this
         // Reset proposal and associated type/model
         // We call the action so the store can handle the proposal type and model
         this.$store.dispatch('proposal/setProposal', null)

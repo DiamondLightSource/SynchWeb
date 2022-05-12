@@ -64,7 +64,7 @@ The v-closable takes an object as argumnt with properties:
 </template>
 
 <script>
-import { cloneDeep } from 'lodash'
+import { cloneDeep } from 'lodash-es'
 import OutsideClickDirective from 'app/directives/outside-click.directive'
 export default {
   name: 'combo-box',

@@ -183,7 +183,7 @@ import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import { mapGetters } from 'vuex'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
-import { sortBy, uniqBy, debounce } from 'lodash'
+import { sortBy, uniqBy, debounce } from 'lodash-es'
 import sampleTableMixin from "modules/types/mx/samples/sample-table-mixin";
 
 export default {
