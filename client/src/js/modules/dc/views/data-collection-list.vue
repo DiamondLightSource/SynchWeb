@@ -7,32 +7,33 @@
 <!--        class="tw-w-1/2"-->
 <!--      />-->
     </div>
-    <div>
-      <p class="help">This page shows all data collections for the selected visit. If the visit is ongoing the page will automatically update as new data is collected. Auto processing results will be displayed</p>
+    <p class="help tw-mt-3">This page shows all data collections for the selected visit. If the visit is ongoing the page will automatically update as new data is collected. Auto processing results will be displayed</p>
 
-      <% if (visit && !IS_SINGLE) { %>
-      <% if (VISIT.search('cm') == -1 && VISIT.search('nt') == -1 && VISIT.search('nr') == -1 && ACTIVE != '1' && ARCHIVED != '1') { %>
-      <p class="message notify">
-        This visit is inactive and will not auto update
-        | Auto Refresh <input type="checkbox" name="autorefresh" value="1" />
+    <div class="tw-mt-3" v-if="visit && !isSingle">
+      <p class="message notify" v-if="activeAndUnArchived">
+        This visit is inactive and will not auto update | Auto Refresh <input type="checkbox" name="autorefresh" value="1" />
         <a href="#" class="button refresh"><i class="fa fa-refresh"></i> Refresh</a>
       </p>
-      <% } %>
 
-      <% if (ARCHIVED == "1") { %>
-      <p class="message notify">
+      <p class="message notify" v-if="archived">
         This visit is archived, data is no longer held on disk. You cannot download processing results, view full sized diffraction images, or reprocess data.
       </p>
-      <% } %>
+
+      <div class="tw-w-full tw-flex tw-mt-2">
+        <router-link
+          :to="menuItem.to"
+          class="tw-rounded tw-px-2 tw-py-1 tw-mx-1 tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-bg-content-filter-background"
+          v-for="(menuItem, menuItemIndex) in menuList"
+          :key="menuItemIndex">
+          <span><i :class="['fa', menuItem.icon]"></i> {{ menuItem.name }}</span>
+        </router-link>
+      </div>
     </div>
-    <div class="tw-w-full tw-flex tw-mt-2">
-      <router-link
-        :to="menuItem.to"
-        class="tw-rounded tw-px-2 tw-py-1 tw-mx-1 tw-flex tw-items-center tw-justify-center tw-bg-content-filter-background"
-        v-for="(menuItem, menuItemIndex) in menuList"
-        :key="menuItemIndex">
-        <span><i :class="['fa', menuItem.icon]"></i> {{ menuItem.name }}</span>
-      </router-link>
+
+    <div class="tw-w-full tw-flex tw-flex-col">
+      <router-link v-if="isSingle || dcg" :to="allDataCollectionUrl">View All Data Collections</router-link>
+      <h2 v-if="dcg">Data Collection Group</h2>
+      <h2 v-if="processingJobId">Processing Job</h2>
     </div>
 
     <div class="tw-mt-3 tw-flex tw-w-full tw-justify-end">
@@ -41,11 +42,11 @@
       </div>
     </div>
 
-    <div class="tw-mt-3 tw-flex">
+    <div class="tw-mt-3 tw-flex tw-w-full tw-flex tw-flex-wrap">
       <button
         v-for="(tabItem, tabItemIndex) in tabsList"
         :key="tabItemIndex"
-        class="tw-rounded tw-px-2 tw-py-1 tw-mx-1 tw-flex tw-items-center tw-justify-center"
+        class="tw-rounded tw-p-2 tw-mx-1 tw-my-1 tw-flex tw-items-center"
         :class="{
           'tw-bg-content-filter-background': selectedTabIndex !== tabItemIndex,
           'tw-bg-content-filter-current-background': selectedTabIndex === tabItemIndex
@@ -68,8 +69,8 @@
         visit-link="45637"
         :data-collection-model="dcCollections.findWhere({ ID: dataCollection['ID'] })"
         v-on:add-to-project="addToProject"
-        v-on:add-to-favorites="addToFavorites"
-        v-on:open-data-collection-comments="openDataCollectionComments"
+        v-on:add-to-favorites="addToFavorites(dataCollection)"
+        v-on:open-data-collection-comments="openCommentsDialog"
         v-on:view-attachments="viewAttachments"
         v-on:reprocess-data-collection="reprocessDataCollection"
       >
@@ -95,7 +96,7 @@
     </div>
 
     <portal to="dialog">
-      <custom-dialog-box v-if="displayCustomModal">
+      <custom-dialog-box v-if="displayCustomModal" :size="dialogSize">
         <template v-slot:default>
           <add-to-project
             v-if="currentModal === 'projects'"
@@ -103,12 +104,20 @@
             :item="dataCollectionFilePath"
             :selected-value="selectedProjectItem"
             v-on:update-selected-project="getProjectItemState"
-            v-on:close-add-projects-modal="closeAddToProject"
+            v-on:close-modal="closeDialog"
+          />
+          <data-collection-comments
+            v-else-if="currentModal === 'comments'"
+            :data-collection="selectedDataCollection"
+            :comments="selectedDataCollectionComments"
+            :proposal-users="proposalUsers"
+            v-on:close-modal="closeDialog"
+            v-on:save-new-comment="saveNewCommentForDataCollection"
           />
         </template>
         <template v-slot:button-slot>
-          <button v-if="selectedProjectItem" class="ui-button ui-corner-all ui-widget tw-mr-px" @click="performAddToProject">{{ Number(selectedProjectItemData['STATE']) === 1 ? 'Remove' : 'Add' }}</button>
-          <button class="ui-button ui-corner-all ui-widget tw-ml-px" @click="closeAddToProject">Cancel</button>
+          <button v-if="displayOkayButton" class="ui-button ui-corner-all ui-widget tw-mr-px" @click="performOkayAction(currentModal)">{{ Number(selectedProjectItemData['STATE']) === 1 ? 'Remove' : 'Add' }}</button>
+          <button class="ui-button ui-corner-all ui-widget tw-ml-px" @click="closeDialog">Cancel</button>
         </template>
       </custom-dialog-box>
     </portal>
@@ -121,6 +130,10 @@ import DCCol from 'collections/datacollections'
 import DCImageStatusCollection from 'modules/dc/collections/imagestatuses'
 import PieModel from 'modules/stats/models/pie'
 import Projects from 'collections/projects'
+import Visit from 'models/visit'
+import DCComments from 'modules/dc/collections/dccomments'
+import ProjectItemState from 'modules/projects/models/itemstate'
+import Users from 'collections/users'
 
 import DataCollectionStackView from 'app/components/data-collection-stack-view.vue'
 import DataCollectionItem from 'modules/dc/components/data-collection-item.vue'
@@ -132,12 +145,13 @@ import DataCollectionDistlView from 'app/components/data-collection-distl-view.v
 import DataCollectionImageStatus from 'modules/dc/components/data-collection-image-status.vue'
 import CustomDialogBox from 'app/components/custom-dialog-box.vue'
 import AddToProject from 'modules/projects/views/add-to-project.vue'
-import ProjectItemState from 'modules/projects/models/itemstate'
+import DataCollectionComments from 'modules/dc/components/data-collection-comments.vue'
 
 export default {
   name: 'data-collection-list',
   components: {
-    AddToProject,
+    'data-collection-comments': DataCollectionComments,
+    'add-to-project': AddToProject,
     'custom-dialog-box': CustomDialogBox,
     'data-collection-image-status': DataCollectionImageStatus,
     'data-collection-item': DataCollectionItem,
@@ -173,9 +187,11 @@ export default {
   },
   data() {
     return {
-      visit: 'mx23694-73',
+      visit: 'mx30951-8',
       beamline: this.$route.params.bl,
       pieModel: new PieModel({ visit: this.$route.params.visit }),
+      visitModel: new Visit(),
+      visitData: {},
       autoProcessingMessagesStatusesCollection: new AutoProcessingMessagingStatuses(),
       imageStatusCollection: new DCImageStatusCollection(),
       autoProcessMessageStatuses: [],
@@ -237,15 +253,26 @@ export default {
       selectedProjectItem: '',
       selectedProjectItemData: {},
 
-      selectedDataCollection: null
+      selectedDataCollection: null,
+      selectedDataCollectionComments: [],
+      dialogSize: 'default',
+      displayOkayButton: false,
+      proposalUsers: []
     }
   },
   created() {
     // this.fetchVStatPie()
+    this.fetchProposalUsers()
     this.fetchDataCollection()
     this.fetchProjects()
+    this.fetchVisitData()
   },
   methods: {
+    async fetchVisitData() {
+      this.visitModel = new Visit({ VISIT: this.visit })
+      const visitData = await this.$store.dispatch('getModel', this.visitModel)
+      this.visitData = visitData.toJSON()
+    },
     async fetchVStatPie() {
       await this.$store.dispatch('getModel', this.pieModel)
     },
@@ -306,6 +333,16 @@ export default {
         this.imageStatuses = imageStatuses
       }
     },
+    formatVisitData(data) {
+      const visitData = this.visitModel.toJSON()
+      if (data && visitData) {
+        this.visitData = visitData
+
+        if (!visitData['ACTIVE']) {
+          this.dcCollections.stop()
+        }
+      }
+    },
     findDataCollectionMessageStatus(id) {
       const selectedMessageStatus = this.autoProcessMessageStatuses.find(autoProcess => Number(autoProcess['ID']) === Number(id))
 
@@ -324,20 +361,33 @@ export default {
         this.currentModal = 'projects'
       })
     },
-    async getProjectItemState() {
+    async getProjectItemState(value) {
+      const project = this.projects.find(item => +item['PROJECTID'] === +value)
+      if (!project) return
+
+      this.selectedProjectItem = value
+      this.displayOkayButton = true
       const projectItemModel = new ProjectItemState({ type: this.selectedDataCollection['TYPE'], pid: this.selectedProjectItem, iid: this.selectedDataCollection['DCG'] })
       const projectItem = await this.$store.dispatch('getModel', projectItemModel)
       this.selectedProjectItemData = projectItem.toJSON()
     },
-    closeAddToProject() {
+    closeDialog() {
       this.currentModal = ''
       this.displayCustomModal = false
-      this.selectedDataCollection = null
       this.dataCollectionFilePath = ''
+      this.dialogSize = 'default'
+      this.selectedDataCollection = null
+      this.selectedDataCollectionComments = []
+    },
+    performOkayAction() {
+      const modalTypeAction = {
+        projects: 'performAddToProject',
+      }
+
+      return this[modalTypeAction[this.currentModal]]()
     },
     async performAddToProject() {
       try {
-        console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
         const { TYPE, DCG } = this.selectedDataCollection
         const { STATE } = this.selectedProjectItemData
         const extraUrl = STATE ? '/rem/1' : ''
@@ -347,18 +397,22 @@ export default {
           requestType: 'Add item to project'
         })
       } finally {
-        this.closeAddToProject()
+        this.closeDialog()
       }
     },
-    openCommentsDialog() {
-      // TODO: Trigger the opening of the comments modal
-      e.preventDefault()
-      // app.dialog.show(new DialogView({ title: 'Data Collection Comments', view: new DCCommentsView({ model: this.model }), autoSize: true }))
+    async openCommentsDialog(dataCollection) {
+      this.dialogSize = 'x-large'
+      this.selectedDataCollection = dataCollection
+      await this.fetchDataCollectionComments()
+      this.dataCollectionFilePath = `${this.selectedDataCollection['DIR']}${this.selectedDataCollection['FILETEMPLATE']}`
+      this.displayCustomModal = true
+      this.$nextTick(() => {
+        this.currentModal = 'comments'
+      })
     },
-    addToFavorites() {
-      e.preventDefault()
-      // TODO: Check what this.model.flag() does in the model file
-      this.model.flag()
+    addToFavorites(dataCollection) {
+      const dataCollectionModel = this.dcCollections.findWhere({ ID: dataCollection['ID'] })
+      dataCollectionModel.flag()
     },
     viewAttachments() {
       e.preventDefault()
@@ -376,7 +430,6 @@ export default {
       // }))
     },
     reprocessDataCollection() {},
-    openDataCollectionComments() {},
     selectDataCollectionType(index) {
       this.ty = this.tabsList[index].key
       this.updateRouteParams({ ty: this.ty })
@@ -388,11 +441,50 @@ export default {
     },
     setSelectedTab(newValue) {
       this.selectedTabIndex = this.tabsList.findIndex(tab => tab.key === newValue)
+    },
+    async fetchDataCollectionComments() {
+      const dcCollectionCommentsCollection = new DCComments()
+      dcCollectionCommentsCollection.queryParams.id = this.selectedDataCollection['ID']
+      dcCollectionCommentsCollection.state.pageSize = 9999
+      const result = await this.$store.dispatch('getCollection', dcCollectionCommentsCollection)
+      this.selectedDataCollectionComments = result.toJSON()
+    },
+    async saveNewCommentForDataCollection(model) {
+      await this.$store.dispatch('saveModel', model)
+      await this.fetchDataCollectionComments()
+    },
+    async fetchProposalUsers() {
+      const usersCollection = new Users(null, { state: { pageSize: 9999 } })
+      usersCollection.queryParams.all = 1
+      usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
+      const result = await this.$store.dispatch('getCollection', usersCollection)
+      this.proposalUsers = result.toJSON()
     }
   },
   computed: {
     dataCollectionIds() {
       return this.dcCollections.pluck('ID')
+    },
+    isSingle() {
+      return this.id
+    },
+    isActive() {
+     return +this.visitData['ACTIVE'] === 1
+    },
+    archived() {
+      return +this.visitData['ARCHIVED'] === 1
+    },
+    activeAndUnArchived() {
+      return this.visit && !this.visit.includes('cm') && !this.visit.includes('nt') && !this.visit.includes('nr') && !this.isActive && !this.archived
+    },
+    allDataCollectionUrl() {
+      let url = '/dc'
+
+      if (this.visit) {
+        url += `/visit/${this.visit}`
+      }
+
+      return url
     },
   },
   watch: {
@@ -419,6 +511,11 @@ export default {
       deep: true,
       immediate: true,
       handler: 'setSelectedTab'
+    },
+    visitModel: {
+      deep: true,
+      immediate: true,
+      handler: 'formatVisitData'
     }
   },
   beforeDestroy() {

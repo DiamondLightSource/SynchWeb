@@ -16,6 +16,7 @@ Slots include:
 
     <!-- The form input itself - bound to the v-model passed in -->
     <textarea
+      :rows="rows"
       v-show="editable"
       ref="inputRef"
       :id="id"
@@ -95,6 +96,10 @@ export default {
     quiet: {
       type: Boolean,
       default: false
+    },
+    rows: {
+      type: Number,
+      default: 7
     }
   },
   data() {
@@ -105,7 +110,7 @@ export default {
   },
   watch: {
     editable: function(value) {
-      if (value == false) this.showEditIcon = false
+      if (!!value === false) this.showEditIcon = false
     }
   },
   computed: {
@@ -143,7 +148,7 @@ export default {
     },
     onEnter(event) {
       // If we are in inline edit mode - save the model on enter (key = 13)
-      if (this.inline && event.keyCode == 13) this.onSave()
+      if (this.inline && event.keyCode === 13) this.onSave()
     }
   }
 };

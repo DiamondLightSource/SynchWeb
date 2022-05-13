@@ -4,7 +4,7 @@
       <p class="tw-font-bold tw-text-link-color">Add To Projects</p>
       <button
         class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
-        @click="$emit('close-add-projects-modal')">
+        @click="$emit('close-modal')">
         <i class="fa fa-times"></i>
       </button>
     </div>
