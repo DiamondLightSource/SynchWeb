@@ -20,16 +20,13 @@ export default {
   },
   props: {
     dataCollectionType: {
-      type: String,
-      required: true
+      type: String
     },
     dataCollectionId: {
       type: Number,
-      required: true
     },
     imageData: {
       type: Object,
-      required: true
     }
   },
   data() {
