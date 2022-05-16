@@ -568,7 +568,7 @@ class Page
             exec($bl_pv_prog . ($string ? ' -S' : '') .' ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
             $output = array();
             foreach ($ret as $i => $v) {
-                $lis = preg_split('/\s+/', $v);
+                $lis = preg_split('/\s+/', $v, 2);
                 $output[$lis[0]] = sizeof($lis) > 1 ? ($full ? array_slice($lis,1) : $lis[1]) : '';
             }
             

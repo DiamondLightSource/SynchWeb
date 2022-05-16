@@ -2,10 +2,13 @@ define(['backbone', 'models/pv'], function(Backbone, PV) {
     
     return Backbone.Collection.extend({
         model: PV,
-        url: function() { return '/status/pvs/'+this.bl },
+        url: function() {
+            return '/status/pvs/'+this.bl + (this.mmsg ? '?mmsg=1' : '')
+        },
             
         initialize: function(models, options) {
             this.bl = options.bl
+            this.mmsg = options.mmsg
             
             this.running = true
             this.refresh_thread = null
