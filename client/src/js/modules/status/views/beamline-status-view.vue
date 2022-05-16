@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <div class="tw-mb-3">
+    <div class="tw-mb-3 content">
       <h1>{{ beamline }} Beamline Status</h1>
     </div>
 
