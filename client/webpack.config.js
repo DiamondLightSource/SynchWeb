@@ -34,7 +34,7 @@ module.exports = (env, argv) => ({
         // Change this target to where SynchWeb server is running
         target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
         // Intercept the request and add auth header
-        onProxyReq: function(proxyReq, req, res) {
+        onProxyReq: function(proxyReq, req) {
           if (req.headers.authorization) {
             proxyReq.setHeader('Authorization', req.headers.authorization);
           }
