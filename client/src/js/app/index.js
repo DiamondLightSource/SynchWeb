@@ -13,7 +13,7 @@ import router from 'app/router/router'
 import MarionetteApp from 'app/marionette-application.js'
 
 import config from 'config.json'
-import VeeValidateCustomRules from "js/app/mixins/vee-validate-custom-rules";
+import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
 
 Vue.use(VeeValidate)
 Vue.use(PortalVue)
