@@ -38,11 +38,11 @@ define(['marionette',
 
             this.$el.append('<a href="'+app.apiurl+'/download/attachment/id/'+dcid+'/aid/'+this.model.escape('DATACOLLECTIONFILEATTACHMENTID')+'" class="button dl"><i class="fa fa-download"></i> Download</a>')
 
-            if (this.model.get('FILETYPE') == 'log') {
+            if (this.model.get('FILETYPE') === 'log') {
                 this.$el.append('<a href="'+app.apiurl+'/download/attachment/id/'+dcid+'/aid/'+this.model.escape('DATACOLLECTIONFILEATTACHMENTID')+'" class="button vatlog"><i class="fa fa-search"></i> View</a>')
             }
 
-            if (this.model.get('FILETYPE') == 'recip') {
+            if (this.model.get('FILETYPE') === 'recip') {
                 this.$el.append('<a href="/dc/rsv/id/'+dcid+'" class="button rsv"><i class="fa fa-search"></i> Reciprocal Space Viewer</a>')
             }
 
@@ -52,11 +52,11 @@ define(['marionette',
 
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected datacollection</p><div class="wrapper"></div></div>',
+        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected data collection</p><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper' },
     
 
-        initialize: function(options) {
+        initialize: function() {
             this.attachments = new attachments()
             this.listenTo(this.attachments, 'change:clicked', this.closeDialog)
 

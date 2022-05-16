@@ -1,5 +1,5 @@
 <template>
-  <div class="table-responsive">
+  <div class="table-responsive tw-w-full">
     <table class="table" :style="`width: ${tableWidth}; min-width: ${tableWidth}`" :class="tableClass">
       <thead>
         <tr class="tw-bg-table-header-background tw-text-table-header-color tw-font-bold">
