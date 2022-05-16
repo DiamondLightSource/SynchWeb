@@ -34,14 +34,6 @@
             </div>
 
             <div v-show="plateType === 'puck'">
-              <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
-                <base-input-text
-                  label="Container Name"
-                  v-model="NAME"
-                  :errorMessage="errors[0]"
-                />
-              </validation-provider>
-
               <base-input-select
                 outer-class="tw-mb-2 tw-py-2"
                 v-model="CONTAINERREGISTRYID"
@@ -51,6 +43,14 @@
                 optionValueKey="CONTAINERREGISTRYID"
                 optionTextKey="BARCODE"
               />
+
+              <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
+                <base-input-text
+                  label="Container Name"
+                  v-model="NAME"
+                  :errorMessage="errors[0]"
+                />
+              </validation-provider>
 
               <base-input-select
                 outer-class="autoprocessing_options tw-mb-2 tw-py-2"

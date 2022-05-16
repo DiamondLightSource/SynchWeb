@@ -42,7 +42,7 @@
             <li v-if="isPuck" class="tw-flex tw-flex-row tw-w-full">
               <span class="label">Registered Container</span>
               <base-input-select
-                :initial-text="container.REGISTRY"
+                :initial-text="container.REGISTRY ? container.REGISTRY : 'Select From Registry'"
                 v-model="container.CONTAINERREGISTRYID"
                 name="CONTAINERREGISTRYID"
                 :options="containerRegistry"
