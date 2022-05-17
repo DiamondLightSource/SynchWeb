@@ -11,11 +11,9 @@ import I16Menu from 'modules/types/i16/menu.js'
 import I14Menu from 'modules/types/i14/menu.js'
 import I18Menu from 'modules/types/i18/menu.js'
 import I08Menu from 'modules/types/i08/menu.js'
-import I08_1Menu from 'modules/types/i08-1/menu.js'
 import I11Menu from 'modules/types/i11/menu.js'
 import K11Menu from 'modules/types/k11/menu.js'
 import I20Menu from 'modules/types/i20/menu.js'
-import I20_1Menu from 'modules/types/i20-1/menu.js'
 
 
 const menuStore = {
@@ -35,11 +33,9 @@ const menuStore = {
         'i14': I14Menu,
         'i18': I18Menu,
         'i08': I08Menu,
-        'i08-1': I08_1Menu,
         'i11': I11Menu,
         'k11': K11Menu,
         'i20': I20Menu,
-        'i20-1': I20_1Menu,
       }
     }),
 

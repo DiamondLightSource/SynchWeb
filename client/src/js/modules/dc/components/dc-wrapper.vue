@@ -40,11 +40,10 @@ import I16DCList from 'modules/types/i16/dc/datacollections'
 import I14DCList from 'modules/types/i14/dc/datacollections'
 import I18DCList from 'modules/types/i18/dc/datacollections'
 import I08DCList from 'modules/types/i08/dc/datacollections'
-import I08_1DCList from 'modules/types/i08-1/dc/datacollections'
 import I11DCList from 'modules/types/i11/dc/datacollections'
 import K11DCList from 'modules/types/k11/dc/datacollections'
 import I20DCList from 'modules/types/i20/dc/datacollections'
-import I20_1DCList from 'modules/types/i20-1/dc/datacollections'
+
 
 import DCCol from 'collections/datacollections'
 import Proposal from 'models/proposal'
@@ -64,11 +63,9 @@ let dc_views = {
   i14: I14DCList,
   i18: I18DCList,
   i08: I08DCList,
-  i08_1: I08_1DCList,
   i11: I11DCList,
   k11: K11DCList,
   i20: I20DCList,
-  i20_1: I20_1DCList,
 }
 
 export default {
