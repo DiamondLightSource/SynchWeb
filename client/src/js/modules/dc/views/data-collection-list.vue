@@ -114,6 +114,16 @@
             v-on:close-modal="closeDialog"
             v-on:save-new-comment="saveNewCommentForDataCollection"
           />
+          <data-collection-attachments
+            v-else-if="currentModal === 'attachments'"
+            :attachments="dataCollectionAttachments"
+            v-on:close-modal="closeDialog"/>
+
+          <data-collection-reprocess
+            v-else-if="currentModal === 'reprocess'"
+            :visit-number="visit"
+            v-on:close-modal="closeDialog"
+          />
         </template>
         <template v-slot:button-slot>
           <button v-if="displayOkayButton" class="ui-button ui-corner-all ui-widget tw-mr-px" @click="performOkayAction(currentModal)">{{ Number(selectedProjectItemData['STATE']) === 1 ? 'Remove' : 'Add' }}</button>
@@ -134,6 +144,7 @@ import Visit from 'models/visit'
 import DCComments from 'modules/dc/collections/dccomments'
 import ProjectItemState from 'modules/projects/models/itemstate'
 import Users from 'collections/users'
+import Attachments from 'collections/attachments'
 
 import DataCollectionStackView from 'app/components/data-collection-stack-view.vue'
 import DataCollectionItem from 'modules/dc/components/data-collection-item.vue'
@@ -146,10 +157,14 @@ import DataCollectionImageStatus from 'modules/dc/components/data-collection-ima
 import CustomDialogBox from 'app/components/custom-dialog-box.vue'
 import AddToProject from 'modules/projects/views/add-to-project.vue'
 import DataCollectionComments from 'modules/dc/components/data-collection-comments.vue'
+import DataCollectionAttachments from 'modules/dc/components/data-collection-attachments.vue'
+import DataCollectionReprocess from 'modules/dc/components/data-collection-reprocess.vue'
 
 export default {
   name: 'data-collection-list',
   components: {
+    'data-collection-reprocess': DataCollectionReprocess,
+    'data-collection-attachments': DataCollectionAttachments,
     'data-collection-comments': DataCollectionComments,
     'add-to-project': AddToProject,
     'custom-dialog-box': CustomDialogBox,
@@ -257,7 +272,8 @@ export default {
       selectedDataCollectionComments: [],
       dialogSize: 'default',
       displayOkayButton: false,
-      proposalUsers: []
+      proposalUsers: [],
+      dataCollectionAttachments: [],
     }
   },
   created() {
@@ -414,22 +430,29 @@ export default {
       const dataCollectionModel = this.dcCollections.findWhere({ ID: dataCollection['ID'] })
       dataCollectionModel.flag()
     },
-    viewAttachments() {
-      e.preventDefault()
+    async viewAttachments(dataCollection) {
+      this.dialogSize = 'x-large'
+      const attachmentsCollection = new Attachments()
+      if (Number(dataCollection['DCC']) > 1) {
+        attachmentsCollection.queryParams.dcg = dataCollection['DCG']
+      } else {
+        attachmentsCollection.queryParams.id = dataCollection['ID']
+      }
 
-      const d = {}
-      if (this.dataCollection['DCC'] > 1) d.dcg = this.dataCollection['DCG']
-      else d.id = this.dataCollection['ID']
-
-
-      // TODO: Show Attachments View
-
-      // app.dialog.show(new DialogView({
-      //   title: 'Attachments',
-      //   view: new AttachmentsView(d)
-      // }))
+      const attachments = await this.$store.dispatch('getCollection', attachmentsCollection)
+      this.dataCollectionAttachments = attachments.toJSON()
+      this.displayCustomModal = true
+      this.$nextTick(() => {
+        this.currentModal = 'attachments'
+      })
     },
-    reprocessDataCollection() {},
+    reprocessDataCollection() {
+      this.dialogSize = 'large'
+      this.displayCustomModal = true
+      this.$nextTick(() => {
+        this.currentModal = 'reprocess'
+      })
+    },
     selectDataCollectionType(index) {
       this.ty = this.tabsList[index].key
       this.updateRouteParams({ ty: this.ty })

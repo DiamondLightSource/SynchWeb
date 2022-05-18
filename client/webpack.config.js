@@ -33,7 +33,8 @@ module.exports = (env, argv) => ({
     proxy: [{
         context: ['/api'],
         // Change this target to where SynchWeb server is running
-        target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
+        // target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
+        target: 'https://cs04r-sc-vserv-163.diamond.ac.uk/',
         // Intercept the request and add auth header
         onProxyReq: function(proxyReq, req) {
           if (req.headers.authorization) {
@@ -43,7 +44,6 @@ module.exports = (env, argv) => ({
         secure: env && env.proxy && env.proxy.secure && JSON.parse(env.proxy.secure)
       },
     ],
-    hot: true
   },
   optimization: {
     splitChunks: {

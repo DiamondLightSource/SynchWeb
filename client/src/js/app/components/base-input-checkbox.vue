@@ -25,7 +25,7 @@ Slots include:
     >
     <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ value }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
 
-    <label class="secondary" :for="id">{{label}}
+    <label :class="['secondary', labelClass]" :for="id">{{label}}
       <slot name="description">
         <span v-show="description" class="small">{{description}}</span>
       </slot>
@@ -74,6 +74,9 @@ export default {
     // Class styling for outer div of this component
     outerClass: {
       type: String,
+    },
+    labelClass: {
+      type: String
     }
   },
   data() {

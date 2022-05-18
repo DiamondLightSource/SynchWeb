@@ -6,7 +6,7 @@
           <slot name="tableHeaders"></slot>
         </tr>
       </thead>
-      <tbody :style="{ height: tableHeight }" :class="{'no-hover': unsetHover , custom}">
+      <tbody :style="{ 'max-height': maxTableHeight, 'height': tableHeight }" :class="{'no-hover': unsetHover , custom}">
         <slot name="addNew"></slot>
         <slot name="slotData" :dataList="dataList"></slot>
         <slot name="noData" v-if="dataList.length < 1"></slot>
@@ -24,6 +24,9 @@ export default {
       type: Array,
     },
     tableHeight: {
+      type: String,
+    },
+    maxTableHeight: {
       type: String,
     },
     tableWidth: {
