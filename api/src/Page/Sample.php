@@ -199,11 +199,14 @@ class Sample extends Page
 
                               array('/groups', 'get', '_sample_groups'),
                               array('/groups', 'post', '_add_new_sample_group'),
+                              array('/groups/:BLSAMPLEGROUPID', 'get', '_get_sample_group'),
+                              array('/groups/:BLSAMPLEGROUPID', 'patch', '_update_sample_group'),
                               array('/groups/:BLSAMPLEID', 'get', '_get_sample_groups_by_sample'),
+                              array('/groups/:BLSAMPLEGROUPID/samples', 'get', '_get_sample_group_samples'),
                               array('/groups/:BLSAMPLEGROUPID/samples', 'post', '_add_sample_to_group'),
+                              array('/groups/:BLSAMPLEGROUPID/samples', 'put', '_bulk_update_samples_in_group'),
                               array('/groups/:BLSAMPLEGROUPID/samples/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
                               array('/groups/:BLSAMPLEGROUPID/samples/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
-                              array('/groups/:BLSAMPLEGROUPID/samples', 'get', '_get_sample_group_samples'),
 
                               array('/spacegroups(/:SPACEGROUPID)', 'get', '_get_spacegroups'),
 
@@ -2467,6 +2470,7 @@ class Sample extends Page
         }
 
         function _add_sample_to_group() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
             if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
 
@@ -2529,6 +2533,7 @@ class Sample extends Page
         }
 
         function _update_sample_in_group() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
             if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No group sample id specified');
 
@@ -2556,7 +2561,30 @@ class Sample extends Page
             }
         }
 
+        function _get_sample_group() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+
+            $sampleGroup = $this->db->pq("SELECT * FROM blsamplegroup WHERE blsamplegroupid = :1", array($this->arg('BLSAMPLEGROUPID')));
+
+            $this->_output($sampleGroup[0]);
+        }
+
+        function _update_sample_group() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
+
+            $fields = array('NAME');
+            foreach ($fields as $f) {
+                if ($this->has_arg($f)) {
+                    $this->db->pq("UPDATE blsamplegroup SET $f=:1 WHERE blsamplegroupid=:2", array($this->arg($f), $this->arg('BLSAMPLEGROUPID')));
+                    $this->_output(array($f => $this->arg($f), 'BLSAMPLEGROUPID' => $this->arg('BLSAMPLEGROUPID')));
+                }
+            }
+        }
+
         function _remove_sample_from_group() {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
             if (!$this->has_arg('BLSAMPLEGROUPSAMPLEID')) $this->_error('No group sample id specified');
 
@@ -2567,6 +2595,30 @@ class Sample extends Page
             $this->_delete_sample_from_group($gid, $sid);
 
             $this->_output(new \stdClass);
+        }
+
+        function _bulk_update_samples_in_group () {
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+            if (!$this->has_arg('collection')) $this->_error('Samples for group should be a collection');
+
+            $this->db->start_transaction();
+            $collection = array();
+            foreach ($this->arg('collection') as $sample) {
+                $blSampleGroupId = isset($sample['BLSAMPLEGROUPID']) ? $sample['BLSAMPLEGROUPID'] : null;
+                $blSampleId = isset($sample['BLSAMPLEID']) ? $sample['BLSAMPLEID'] : null;
+                $groupOrder = isset($sample['GROUPORDER']) ? $sample['GROUPORDER'] : null;
+                $type = isset($sample['TYPE']) ? $sample['TYPE'] : null;
+
+                $sample_group_result = $this->_save_sample_to_group($blSampleId, $blSampleGroupId, $groupOrder, $type);
+
+                if (is_string($sample_group_result)) $this->_error($sample_group_result);
+
+                array_push($collection, $sample_group_result);
+            }
+
+            $this->db->end_transaction();
+
+            $this->_output($collection);
         }
 
         function _delete_sample_from_group($blSampleGroupId, $blSampleGroupSampleId) {

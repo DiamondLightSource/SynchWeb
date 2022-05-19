@@ -181,7 +181,7 @@ class Proposal extends Page
                 $start = $pg*$pp;
                 $end = $pg*$pp+$pp;
             }
-//
+
             $st = sizeof($args)+1;
             array_push($args, $start);
             array_push($args, $end);

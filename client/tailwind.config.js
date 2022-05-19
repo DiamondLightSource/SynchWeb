@@ -165,7 +165,7 @@ module.exports = {
         'screened': '#fdfd96',
         'grid-scanned': '#fdfd96',
         'loaded-by-robot': '#ff6961',
-        'dark-amber': '#d9bf98'
+        'dark-amber': '#d9bf98',
 
 // Sample Groups Color Theme
         'sample-group-added-light': '#f4e7Ba',
