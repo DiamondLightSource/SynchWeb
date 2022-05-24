@@ -422,8 +422,8 @@ export default {
               wellDrop: this.containerType['WELLDROP'],
               wellPerRow: this.containerType['WELLPERROW']
             })
-          }
 
+          }
 
           this.resetSamples(type.get('CAPACITY'))
         }
@@ -535,28 +535,42 @@ export default {
       this.addContainer()
     },
     addContainer() {
-      let containerModel = new Container({
+      let containerAttributes = {
+        NAME: this.NAME,
         DEWARID: this.DEWARID,
-        BARCODECHECK: null,
         CAPACITY: this.containerType.CAPACITY,
         CONTAINERTYPE: this.CONTAINERTYPE,
-        PROCESSINGPIPELINEID: this.PROCESSINGPIPELINEID,
-        NAME: this.NAME,
-        CONTAINERREGISTRYID: this.CONTAINERREGISTRYID,
         AUTOMATED: this.AUTOMATED > 0 ? this.AUTOMATED : null,
-        BARCODE: this.BARCODE,
         PERSONID: this.PERSONID,
-        EXPERIMENTTYPE: null,
         COMMENTS: this.COMMENTS,
-        REQUESTEDIMAGERID: "",
-        SCHEDULEID: "",
-        SCREENID: "",
-      })
-      this.saveContainer(containerModel)
+      }
+      if (this.plateType === 'plate') {
+        containerAttributes = {
+          ...containerAttributes,
+          REQUESTEDIMAGERID: this.REQUESTEDIMAGERID,
+          SCHEDULEID: this.SCHEDULEID,
+          SCREENID: this.SCREENID
+        }
+      } else if (this.plateType === 'puck') {
+        containerAttributes = {
+          ...containerAttributes,
+          CONTAINERREGISTRYID: this.CONTAINERREGISTRYID,
+          PROCESSINGPIPELINEID: this.PROCESSINGPIPELINEID,
+          SPACEGROUP: this.SPACEGROUP
+        }
+      } else if (this.plateType === 'pcr') {
+        containerAttributes = {
+          ...containerAttributes,
+          EXPERIMENTTYPEID: this.EXPERIMENTTYPEID,
+          STORAGETEMPERATURES: this.STORAGETEMPERATURES
+        }
+      }
+
+      this.saveContainer(new Container(containerAttributes))
     },
     async saveContainer(model) {
       try {
-        const result = await this.$store.dispatch('saveModel', { model: model })
+        const result = await this.$store.dispatch('saveModel', { model })
 
         const containerId = result.get('CONTAINERID')
 
