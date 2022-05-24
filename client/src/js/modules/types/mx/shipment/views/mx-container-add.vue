@@ -543,6 +543,7 @@ export default {
         AUTOMATED: this.AUTOMATED > 0 ? this.AUTOMATED : null,
         PERSONID: this.PERSONID,
         COMMENTS: this.COMMENTS,
+        BARCODE: this.BARCODE
       }
       if (this.plateType === 'plate') {
         containerAttributes = {
