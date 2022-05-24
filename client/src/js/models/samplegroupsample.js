@@ -2,15 +2,16 @@
  * Model for a member of a sample group
  */
 
-define(['backbone'], function(Backbone) {
-  return Backbone.Model.extend({
+define(['models/sample'], function(Sample) {
+  const SampleGroupSample = Sample.extend({
     idAttribute: 'BLSAMPLEGROUPSAMPLEID',
     sampleGroupId: null,
     urlRoot() {
       return `/sample/groups/${this.sampleGroupId}/samples`
     },
 
-    initialize(attributes) {
+    initialize(attributes, options) {
+      SampleGroupSample.__super__.initialize.call(this, attributes, options)
       let sampleGroupId = null
       if (attributes.BLSAMPLEGROUPID) {
         sampleGroupId = attributes.BLSAMPLEGROUPID
@@ -42,10 +43,17 @@ define(['backbone'], function(Backbone) {
         pattern: 'digits',
       },
 
+      BLSAMPLEGROUPID: {
+        required: false,
+        pattern: 'digits',
+      },
+
       TYPE: {
         required: false,
         pattern: 'word'
       },
     }
   })
+
+  return SampleGroupSample
 })

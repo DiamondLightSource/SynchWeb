@@ -48,7 +48,7 @@ import ContainerGraphic from "./ContainerGraphic.vue";
 import Table from 'app/components/table.vue'
 import Pagination from 'app/components/pagination.vue'
 
-import SampleGroupsNamesCollection from 'collections/samplegroupnames.js'
+import SampleGroupsCollection from 'collections/samplegroups.js'
 import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
 
 export default {
@@ -95,7 +95,7 @@ export default {
     };
   },
   created() {
-    this.sampleGroups = new SampleGroupsNamesCollection(null, { state: { pageSize: 15 } })
+    this.sampleGroups = new SampleGroupsCollection(null, { state: { pageSize: 15 } })
     this.sampleGroupSamples = new SampleGroupSamplesCollection(null, { state: { pageSize: 15 } })
   },
   mounted() {

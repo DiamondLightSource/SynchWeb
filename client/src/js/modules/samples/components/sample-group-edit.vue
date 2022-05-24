@@ -119,7 +119,7 @@ import SampleGroupsCollection from 'collections/samplegroups.js'
 import SamplesCollection from 'collections/samples.js'
 import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
 import ContainerModel from 'models/container.js'
-import SampleGroupNameModel from 'models/samplegroupname.js'
+import SampleGroup from 'models/samplegroup.js'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import Shipments from 'collections/shipments'
 import Dewars from 'collections/dewars'
@@ -433,11 +433,10 @@ export default {
         this.groupName = ''
       } else {
         try {
-          this.sampleGroupNameModel = new SampleGroupNameModel({ BLSAMPLEGROUPID: this.sampleGroupId })
-          this.sampleGroupNameModel.ignoreSamples = true
+          const sampleGroupModel = new SampleGroup({ BLSAMPLEGROUPID: this.sampleGroupId })
           const groupNameResult = await this.$store.dispatch(
             'getModel',
-            this.sampleGroupNameModel
+              sampleGroupModel
           )
           this.groupName = groupNameResult.toJSON().NAME
         } catch (error) {

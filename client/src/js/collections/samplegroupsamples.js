@@ -11,6 +11,10 @@ define(['backbone', 'backbone.paginator', 'models/samplegroupsample'], function(
     model: SampleGroupSample,
     mode: 'server',
 
+    comparator: function(m) {
+      return parseInt(m.get('GROUPORDER'))
+    },
+
     state: {
       pageSize: 100,
     },
