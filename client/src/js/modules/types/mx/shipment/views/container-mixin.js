@@ -14,8 +14,7 @@ import ImagingScreens from 'modules/imaging/collections/screens'
 import ImagingScheduleComponents from 'modules/imaging/collections/schedulecomponents'
 import { mapGetters } from 'vuex'
 import Sample from 'models/sample'
-import SampleGroupSamples from "collections/samplegroupsamples"
-import ContainerQueue from "modules/shipment/models/containerqueue"
+import ContainerQueue from 'modules/shipment/models/containerqueue'
 import ScreenComponents from 'modules/imaging/collections/screencomponents'
 import ScreenComponentGroups from 'modules/imaging/collections/screencomponentgroups'
 import { omit } from 'lodash'
@@ -85,7 +84,6 @@ export default {
       sampleGroups: [],
       spaceGroups: [],
       spaceGroupsCollection: null,
-      sampleGroupSamples: [],
       sampleGroupInputDisabled: false,
       screenComponentsCollection: new ScreenComponents(null, { state: { pageSize: 9999 }}),
       screenComponents: [],
@@ -352,8 +350,15 @@ export default {
           path: `samples/${sampleIndex}/BLSAMPLEID`,
           value: result.get('BLSAMPLEID')
         })
+
+        const payload = await this.populateInitialSampleGroupValue(this.samples[sampleIndex])
+        if (payload.INITIALSAMPLEGROUP) {
+          this.$store.commit('samples/updateSamplesField', {
+            path: `samples/${sampleIndex}/INITIALSAMPLEGROUP`,
+            value: result.get('BLSAMPLEID')
+          })
+        }
       }
-      await this.fetchSampleGroupSamples()
     },
     // While updating the sample locations during the cloning, the update will stop is one of the form field is invalid.
     async onCloneColumn(location) {
@@ -417,29 +422,6 @@ export default {
 
       return sampleClone
     },
-    async fetchSampleGroupSamples() {
-      const sampleGroupCollection = new SampleGroups(null, { state: { pageSize: 9999 } })
-      sampleGroupCollection.queryParams.groupSamplesType = 'BLSAMPLEGROUPID'
-
-      const result = await this.$store.dispatch('getCollection', sampleGroupCollection)
-      const sampleGroups = result.toJSON()
-
-      let sampleGroupSamples = []
-      let sampleGroupSamplesPromise = []
-
-      for (let i = 0; i < sampleGroups.length; i++) {
-        const sampleGroupSamplesCollection = new SampleGroupSamples
-        sampleGroupSamplesCollection.sampleGroupId = sampleGroups[i].BLSAMPLEGROUPID
-        sampleGroupSamplesPromise.push(this.$store.dispatch('getCollection', sampleGroupSamplesCollection))
-      }
-      const samplesGroupResult = await Promise.all(sampleGroupSamplesPromise)
-
-      for (let j = 0; j < samplesGroupResult.length; j++) {
-        sampleGroupSamples = sampleGroupSamples.concat(samplesGroupResult[j].toJSON())
-      }
-
-      this.sampleGroupSamples = sampleGroupSamples
-    },
     updateSampleGroupInputDisabled(value) {
       this.sampleGroupInputDisabled = value
     },
@@ -482,6 +464,19 @@ export default {
       sampleClone.NAME = this.generateSampleNameForPucks(baseName)
 
       return sampleClone
+    },
+    async populateInitialSampleGroupValue(sample) {
+      let matchingSampleGroup
+      if (sample['SAMPLEGROUP']) {
+        const sampleGroupsCollection = new SampleGroups(null)
+        sampleGroupsCollection.queryParams.BLSAMPLEID = sample['BLSAMPLEID']
+        const result = await this.$store.dispatch('getCollection', sampleGroupsCollection)
+        const sampleGroups = result.toJSON()
+        matchingSampleGroup = sampleGroups.find(item => Number(item['BLSAMPLEGROUPID']) === Number(sample['SAMPLEGROUP']))
+      }
+
+      sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
+      return sample
     }
   },
   computed: {
@@ -524,7 +519,6 @@ export default {
       $sampleGroups: () => this.sampleGroups,
       $queueForUDC: () => this.QUEUEFORUDC,
       $proteins: () => this.proteins,
-      $sampleGroupsSamples: () => this.sampleGroupSamples,
       $sampleGroupInputDisabled: () => this.sampleGroupInputDisabled,
       $containerStatus: () => this.container ? this.container['CONTAINERSTATUS'] : null,
       $globalProteins:() => this.globalProteins,

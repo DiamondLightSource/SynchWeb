@@ -518,7 +518,6 @@ export default {
     this.formatExperimentKindList()
     this.getSampleGroups()
     this.getUsers()
-    this.fetchSampleGroupSamples()
     this.getSpaceGroupsCollection()
     this.getImagingCollections()
     this.getImagingScheduleCollections()

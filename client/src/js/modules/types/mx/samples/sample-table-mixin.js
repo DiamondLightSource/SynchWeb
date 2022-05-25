@@ -110,9 +110,6 @@ export default {
     queueForUDC() {
       return this.$queueForUDC()
     },
-    sampleGroupSamples() {
-      return this.$sampleGroupsSamples()
-    },
     // Based on the requirements of UDC sample creations we want to return the
     // sample group that is saved in the strategyOption if the screening method is "Collect Best N";
     // otherwise, we want to return the first sample group that the sample belongs to

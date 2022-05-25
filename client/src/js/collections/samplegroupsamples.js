@@ -15,6 +15,12 @@ define(['backbone', 'backbone.paginator', 'models/samplegroupsample'], function(
       return parseInt(m.get('GROUPORDER'))
     },
 
+    initialize(collection, options) {
+      if (options.sampleGroupId) {
+        this.sampleGroupId = options.sampleGroupId
+      }
+    },
+
     state: {
       pageSize: 100,
     },

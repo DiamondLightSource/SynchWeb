@@ -120,8 +120,7 @@ define([
         },
 
         initialize() {
-            this.collection = new SampleGroupSamples(null, { state: { pageSize: 9999 } })
-            this.collection.sampleGroupId = this.model.id
+            this.collection = new SampleGroupSamples(null, { state: { pageSize: 9999 }, sampleGroupId: this.model.id })
             this.deferred = []
             this.deferred.push(this.collection.fetch())
         },
